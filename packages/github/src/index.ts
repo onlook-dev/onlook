@@ -2,6 +2,8 @@ import { createAppAuth } from '@octokit/auth-app';
 import { Octokit } from '@octokit/rest';
 import * as crypto from 'crypto';
 
+export * from './types';
+
 export interface GitHubAppConfig {
   appId: string;
   clientId: string;

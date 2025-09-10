@@ -3,35 +3,13 @@
 import { Routes } from '@/utils/constants';
 import { useRouter } from 'next/navigation';
 import { createContext, useContext, useEffect, useState } from 'react';
+import { GitHubOrganization, GitHubRepository } from '@onlook/github';
 import {
     useGitHubAppInstallation,
     useGitHubData,
     useRepositoryImport,
     useRepositoryValidation,
 } from '../_hooks';
-
-interface GitHubOrganization {
-    id: number;
-    login: string;
-    avatar_url: string;
-    description?: string;
-}
-
-interface GitHubRepository {
-    id: number;
-    name: string;
-    full_name: string;
-    description?: string;
-    private: boolean;
-    default_branch: string;
-    clone_url: string;
-    html_url: string;
-    updated_at: string;
-    owner: {
-        login: string;
-        avatar_url: string;
-    };
-}
 
 interface ImportGithubProjectProviderProps {
     children: React.ReactNode;

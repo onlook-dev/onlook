@@ -96,7 +96,7 @@ export const ConnectGithub = () => {
                 ) : (
                     <Button
                         className="px-3 py-2"
-                        onClick={redirectToGitHubAppInstallation}
+                        onClick={() => redirectToGitHubAppInstallation()}
                         disabled={isCheckingAppInstallation}
                     >
                         <Icons.GitHubLogo className="w-4 h-4 mr-2" />

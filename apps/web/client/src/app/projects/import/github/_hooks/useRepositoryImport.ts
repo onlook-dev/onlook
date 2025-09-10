@@ -5,22 +5,7 @@ import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-
-interface GitHubRepository {
-    id: number;
-    name: string;
-    full_name: string;
-    description?: string;
-    private: boolean;
-    default_branch: string;
-    clone_url: string;
-    html_url: string;
-    updated_at: string;
-    owner: {
-        login: string;
-        avatar_url: string;
-    };
-}
+import { GitHubRepository } from '@onlook/github';
 
 export const useRepositoryImport = () => {
     const router = useRouter();
