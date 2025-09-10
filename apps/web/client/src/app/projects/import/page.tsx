@@ -43,9 +43,10 @@ const Page = () => {
                         </div>
                     </CardHeader>
                 </Card>
+                {/* Temporary disabled */}
                 <Card
-                    className={`w-full h-64 cursor-pointer transition-all duration-200 bg-background/80 backdrop-blur-xl hover:shadow-lg hover:scale-[1.02] border-[0.5px] border-foreground-tertiary/50`}
-                    onClick={() => handleCardClick('github')}
+                    className={'w-full h-64 cursor-pointer transition-all duration-200 bg-background/80 backdrop-blur-xl hover:shadow-lg hover:scale-[1.02] border-[0.5px] border-foreground-tertiary/50 cursor-not-allowed opacity-60'}
+                    onClick={() => false && handleCardClick('github')}
                     tabIndex={0}
                     role="button"
                     aria-label="Connect to GitHub"
