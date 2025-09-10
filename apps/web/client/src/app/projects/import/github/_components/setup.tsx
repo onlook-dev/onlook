@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { motion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StepContent, StepFooter, StepHeader } from '../../steps';
-import { useImportGithubProject } from '../_context/context';
+import { useImportGithubProject } from '../_context';
 
 export const SetupGithub = () => {
     const {

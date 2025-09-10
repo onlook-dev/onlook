@@ -6,7 +6,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { motion } from 'motion/react';
 import { StepContent, StepFooter, StepHeader } from '../../steps';
-import { useImportGithubProject } from '../_context/context';
+import { useImportGithubProject } from '../_context';
 
 export const ConnectGithub = () => {
     const {

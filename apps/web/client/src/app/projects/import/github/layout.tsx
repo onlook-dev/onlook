@@ -2,7 +2,7 @@ import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 import { type Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { ImportGithubProjectProvider } from './_context/context';
+import { ImportGithubProjectProvider } from './_context';
 
 export const metadata: Metadata = {
     title: 'Onlook',

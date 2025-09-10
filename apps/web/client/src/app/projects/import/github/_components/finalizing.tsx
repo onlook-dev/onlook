@@ -5,7 +5,7 @@ import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { ProgressWithInterval } from '@onlook/ui/progress-with-interval';
 import { motion } from 'motion/react';
 import { StepContent, StepFooter, StepHeader } from '../../steps';
-import { useImportGithubProject } from '../_context/context';
+import { useImportGithubProject } from '../_context';
 
 export const FinalizingGithubProject = () => {
     const { repositoryImport, retry, cancel } = useImportGithubProject();
