@@ -62,7 +62,6 @@ export const githubRouter = createTRPCRouter({
 
     getOrganizations: protectedProcedure
         .query(async ({ ctx }) => {
-
             try {
                 const { octokit, installationId } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
 
@@ -110,7 +109,6 @@ export const githubRouter = createTRPCRouter({
             });
             return data;
         }),
-    // GitHub App Installation Flow
     generateInstallationUrl: protectedProcedure
         .input(
             z.object({
