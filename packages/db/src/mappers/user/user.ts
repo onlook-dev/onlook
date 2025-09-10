@@ -12,7 +12,7 @@ export const toDbUser = (user: User): DbUser => {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
         stripeCustomerId: user.stripeCustomerId,
-        githubInstallationId: null,
+        githubInstallationId: user.githubInstallationId,
     };
 };
 
@@ -27,5 +27,6 @@ export const fromDbUser = (user: DbUser): User => {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
         stripeCustomerId: user.stripeCustomerId,
+        githubInstallationId: user.githubInstallationId,
     };
 };

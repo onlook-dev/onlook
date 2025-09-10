@@ -120,14 +120,10 @@ export const githubRouter = createTRPCRouter({
                 // If installed on a user account, return empty (no organizations)
                 return [];
             } catch (error) {
-                // If installation is invalid, clear it from database
-                await ctx.db.update(users)
-                    .set({ githubInstallationId: null })
-                    .where(eq(users.id, user.user.id));
-
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'GitHub App installation is invalid or has been revoked',
+                    cause: error
                 });
             }
         }),
@@ -185,51 +181,43 @@ export const githubRouter = createTRPCRouter({
 
     checkGitHubAppInstallation: protectedProcedure
         .query(async ({ ctx }): Promise<string | null> => {
-            try {
-                const { data: user } = await ctx.supabase.auth.getUser();
-                if (!user?.user?.id) {
-                    return null;
-                }
+            const user = await ctx.user;
 
-                // Get user's GitHub installation ID from database
-                const userData = await ctx.db.query.users.findFirst({
-                    where: eq(users.id, user.user.id),
-                    columns: { githubInstallationId: true }
-                });
+            // Get user's GitHub installation ID from database
+            const userData = await ctx.db.query.users.findFirst({
+                where: eq(users.id, user.id),
+                columns: { githubInstallationId: true }
+            });
 
-                if (!userData?.githubInstallationId) {
-                    return null;
-                }
-
-                // Verify the installation is still valid
-                const config = getGitHubAppConfig();
-                if (!config) {
-                    // If no GitHub App config, clear any stored installation ID
-                    await ctx.db.update(users)
-                        .set({ githubInstallationId: null })
-                        .where(eq(users.id, user.user.id));
-                    return null;
-                }
-
-                try {
-                    const octokit = createInstallationOctokit(config, userData.githubInstallationId);
-                    await octokit.rest.apps.getInstallation({
-                        installation_id: parseInt(userData.githubInstallationId, 10),
-                    });
-
-                    return userData.githubInstallationId;
-                } catch (error) {
-                    // Installation might be deleted or suspended
-                    // Clear the invalid installation ID from database
-                    await ctx.db.update(users)
-                        .set({ githubInstallationId: null })
-                        .where(eq(users.id, user.user.id));
-                    return null;
-                }
-            } catch (error) {
-                console.error('Error checking GitHub App installation:', error);
+            if (!userData?.githubInstallationId) {
                 return null;
             }
+
+            // Verify the installation is still valid
+            const config = getGitHubAppConfig();
+            if (!config) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'GitHub App configuration not available'
+                });
+            }
+
+            try {
+                const octokit = createInstallationOctokit(config, userData.githubInstallationId);
+                await octokit.rest.apps.getInstallation({
+                    installation_id: parseInt(userData.githubInstallationId, 10),
+                });
+
+                return userData.githubInstallationId;
+            } catch (error) {
+                console.error('Error checking GitHub App installation:', error);
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: error instanceof Error ? error.message : 'GitHub App installation is invalid or has been revoked',
+                    cause: error
+                });
+            }
+
         }),
 
     // Repository fetching using GitHub App installation (required)
@@ -294,15 +282,10 @@ export const githubRouter = createTRPCRouter({
                     },
                 }));
             } catch (error) {
-                // If installation is invalid, clear it from database
-                await ctx.supabase
-                    .from('users')
-                    .update({ githubInstallationId: null })
-                    .eq('id', user.user.id);
-
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'GitHub App installation is invalid or has been revoked. Please reinstall the GitHub App.',
+                    cause: error
                 });
             }
         }),

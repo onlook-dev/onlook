@@ -16,7 +16,7 @@ export interface GitHubAppInstallation {
 export const useGitHubAppInstallation: () => GitHubAppInstallation = () => {
     const generateInstallationUrl = api.github.generateInstallationUrl.useMutation();
     const { data: installationId, refetch: checkInstallation, isFetching: isChecking, error: checkInstallationError } = api.github.checkGitHubAppInstallation.useQuery(undefined, {
-        refetchOnWindowFocus: false,
+        refetchOnWindowFocus: true,
     });
     const [error, setError] = useState<string | null>(null);
     const hasInstallation = !!installationId;

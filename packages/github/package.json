@@ -23,6 +23,7 @@
         "build": "tsc",
         "dev": "tsc --watch",
         "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "convert-key": "openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in"
     }
 }
