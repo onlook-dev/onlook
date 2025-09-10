@@ -3,7 +3,7 @@
 import { Routes } from '@/utils/constants';
 import { useRouter } from 'next/navigation';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { GitHubOrganization, GitHubRepository } from '@onlook/github';
+import type { GitHubOrganization, GitHubRepository } from '@onlook/github';
 import {
     useGitHubAppInstallation,
     useGitHubData,
