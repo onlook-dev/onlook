@@ -136,7 +136,7 @@ export class SandboxManager {
     /**
      * Process files in non-blocking batches to avoid blocking the UI thread
      */
-    private async processFilesInBatches(allFilePaths: string[], batchSize: number = 5): Promise<void> {
+    private async processFilesInBatches(allFilePaths: string[], batchSize: number = 10): Promise<void> {
         let processed = 0;
         let cacheHits = 0;
         let remoteFetches = 0;
@@ -182,7 +182,7 @@ export class SandboxManager {
         const endTime = performance.now();
         const totalTime = (endTime - startTime).toFixed(2);
         const cacheEfficiency = processed > 0 ? ((cacheHits / processed) * 100).toFixed(1) : '0';
-        
+
         console.log(`[SandboxManager] Completed processing ${processed} files in ${totalTime}ms`);
         console.log(`[SandboxManager] Cache Performance: ${cacheHits} hits, ${remoteFetches} remote fetches (${cacheEfficiency}% cache hit rate)`);
     }

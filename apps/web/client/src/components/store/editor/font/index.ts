@@ -1,6 +1,6 @@
 'use client';
 
-import { type CodeDiff, type FontUploadFile } from '@onlook/models';
+import { LeftPanelTabValue, type CodeDiff, type FontUploadFile } from '@onlook/models';
 import type { Font } from '@onlook/models/assets';
 import { generate } from '@onlook/parser';
 import { makeAutoObservable, reaction } from 'mobx';
@@ -55,6 +55,9 @@ export class FontManager {
                 };
             },
             (sandboxStatus) => {
+                if (this.editorEngine.state.leftPanelTab !== LeftPanelTabValue.BRAND) {
+                    return;
+                }
                 if (sandboxStatus.isIndexed && !sandboxStatus.isIndexing) {
                     this.loadInitialFonts();
                     this.getCurrentDefaultFont();
