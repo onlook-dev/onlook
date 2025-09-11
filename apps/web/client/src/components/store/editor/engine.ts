@@ -68,11 +68,12 @@ export class EditorEngine {
     readonly preloadScript: PreloadScriptManager = new PreloadScriptManager(this);
     readonly screenshot: ScreenshotManager = new ScreenshotManager(this);
     readonly snap: SnapManager = new SnapManager(this);
-    readonly templateNodes: TemplateNodeManager = new TemplateNodeManager(this);
+    readonly templateNodes: TemplateNodeManager;
 
     constructor(projectId: string, posthog: PostHog) {
         this.projectId = projectId;
         this.posthog = posthog;
+        this.templateNodes = new TemplateNodeManager(this, projectId);
         makeAutoObservable(this);
     }
 

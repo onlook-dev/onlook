@@ -88,7 +88,7 @@ export class SandboxManager {
     }
 
     async index(force = false) {
-        console.log('[SandboxManager] Starting indexing, force:', force);
+        console.log(`[SandboxManager] Starting indexing for ${this.branch.projectId}/${this.branch.id}, force: ${force}`);
 
         if (this._isIndexing || (this._isIndexed && !force)) {
             return;
@@ -101,6 +101,7 @@ export class SandboxManager {
 
         this._isIndexing = true;
         const timer = new LogTimer('Sandbox Indexing');
+        console.log(`[SandboxManager] Pre-cached files: ${this.fileSync.listAllFiles().length}`);
 
         try {
             // Detect router configuration first
@@ -135,39 +136,55 @@ export class SandboxManager {
     /**
      * Process files in non-blocking batches to avoid blocking the UI thread
      */
-    private async processFilesInBatches(allFilePaths: string[], batchSize: number = 20): Promise<void> {
+    private async processFilesInBatches(allFilePaths: string[], batchSize: number = 5): Promise<void> {
         let processed = 0;
+        let cacheHits = 0;
+        let remoteFetches = 0;
+        const startTime = performance.now();
 
         for (let i = 0; i < allFilePaths.length; i += batchSize) {
             const batch = allFilePaths.slice(i, i + batchSize);
 
-            // Process current batch
-            for (const filePath of batch) {
+            // Process batch in parallel for better performance
+            const batchPromises = batch.map(async (filePath) => {
                 // Track image files first
                 if (isImageFile(filePath)) {
                     this.fileSync.writeEmptyFile(filePath, 'binary');
-                    processed++;
-                    continue;
+                    return;
                 }
 
-                const remoteFile = await this.readRemoteFile(filePath);
-                if (remoteFile) {
-                    this.fileSync.updateCache(remoteFile);
+                // Check cache first
+                const cachedFile = this.fileSync.readCache(filePath);
+                if (cachedFile && cachedFile.content !== null) {
+                    cacheHits++;
                     if (this.isJsxFile(filePath)) {
-                        await this.processFileForMapping(remoteFile);
+                        await this.processFileForMapping(cachedFile);
+                    }
+                } else {
+                    remoteFetches++;
+                    const file = await this.fileSync.readOrFetch(filePath, this.readRemoteFile.bind(this));
+                    if (file && this.isJsxFile(filePath)) {
+                        await this.processFileForMapping(file);
                     }
                 }
-                processed++;
-            }
+            });
+
+            await Promise.all(batchPromises);
+            processed += batch.length;
 
             // Yield control to the event loop after each batch
             if (i + batchSize < allFilePaths.length) {
                 console.log(`[SandboxManager] Processed ${processed}/${allFilePaths.length} files...`);
-                await new Promise(resolve => setTimeout(resolve, 0));
+                await new Promise(resolve => setTimeout(resolve, 1));
             }
         }
 
-        console.log(`[SandboxManager] Completed processing ${processed} files`);
+        const endTime = performance.now();
+        const totalTime = (endTime - startTime).toFixed(2);
+        const cacheEfficiency = processed > 0 ? ((cacheHits / processed) * 100).toFixed(1) : '0';
+        
+        console.log(`[SandboxManager] Completed processing ${processed} files in ${totalTime}ms`);
+        console.log(`[SandboxManager] Cache Performance: ${cacheHits} hits, ${remoteFetches} remote fetches (${cacheEfficiency}% cache hit rate)`);
     }
 
     /**
