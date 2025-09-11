@@ -1,10 +1,16 @@
 import { env } from '@/env';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { applyCodeChange } from '@onlook/ai';
-import type { WebSearchResult } from '@onlook/models';
+import type { WebSearchResult, CloneWebsiteResult } from '@onlook/models';
 import Exa from 'exa-js';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { initModel } from '@onlook/ai';
+import { LLMProvider, ANTHROPIC_MODELS } from '@onlook/models';
+import { generateObject } from 'ai';
+import { CLONE_WEBSITE_DESIGN_PROMPT } from '@onlook/ai/src/prompt/clone';
+import { DesignSchema } from '@onlook/models/tools';
+
 
 export const codeRouter = createTRPCRouter({
     applyDiff: protectedProcedure
@@ -145,6 +151,135 @@ export const codeRouter = createTRPCRouter({
                 return {
                     error: error instanceof Error ? error.message : 'Unknown error',
                     result: [],
+                };
+            }
+        }),
+
+    cloneWebsite: protectedProcedure
+        .input(z.object({
+            url: z.string().url(),
+        }))
+        .mutation(async ({ input }): Promise<CloneWebsiteResult> => {
+            try {
+                if (!env.FIRECRAWL_API_KEY) {
+                    throw new Error('FIRECRAWL_API_KEY is not configured');
+                }
+
+                const app = new FirecrawlApp({ apiKey: env.FIRECRAWL_API_KEY });
+
+                // Scrape the website with screenshot to get visual content
+                const result = await app.scrapeUrl(input.url, {
+                    formats: ['html', 'screenshot@fullPage', 'markdown'],
+                    onlyMainContent: false,
+                    waitFor: 2000,
+                });
+                const imageAssetsResult = await app.scrapeUrl(input.url, {
+                    formats: ['markdown'],
+                    onlyMainContent: false,
+                    includeTags: ['img'],
+                    waitFor: 2000,
+                });
+
+                if (!result.success) {
+                    throw new Error(`Failed to clone website: ${result.error || 'Unknown error'}`);
+                }
+         
+                let imageAssets: {
+                    url: string;
+                    title: string;
+                }[] = [];
+                if ('success' in imageAssetsResult && imageAssetsResult.success && imageAssetsResult.markdown) {
+                    const md = imageAssetsResult.markdown;
+                    const mdImgRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+                    let match: RegExpExecArray | null;
+                    while ((match = mdImgRegex.exec(md)) !== null) {
+                        const alt = (match[1] || '').trim();
+                        const urlCandidate = match[2];
+                        const title = alt ? alt.replace(/\s+/g, '-') : '';
+                        if (!urlCandidate) continue;
+                        try {
+                            const absoluteUrl = new URL(urlCandidate, input.url).toString();
+                            imageAssets.push({ url: absoluteUrl, title });
+                        } catch {
+                            imageAssets.push({ url: urlCandidate, title });
+                        }
+                    }
+                } else if (result.html) {
+                    // Fallback: parse from HTML if markdown not available
+                    const imgTagRegex = /<img[^>]*>/gi;
+                    const srcRegex = /src=["']([^"']+)["']/i;
+                    const altRegex = /alt=["']([^"']*)["']/i;
+                    let tagMatch: RegExpExecArray | null;
+                    while ((tagMatch = imgTagRegex.exec(result.html)) !== null) {
+                        const tag = tagMatch[0];
+                        const srcMatch = srcRegex.exec(tag);
+                        if (!srcMatch) continue;
+                        const srcCandidate = srcMatch[1] ?? '';
+                        const altMatch = altRegex.exec(tag);
+                        const alt = (altMatch?.[1] ?? '').trim();
+                        const title = alt ? alt.replace(/\s+/g, '-') : '';
+                        try {
+                            const absoluteUrl = new URL(srcCandidate, input.url).toString();
+                            imageAssets.push({ url: absoluteUrl, title });
+                        } catch {
+                            imageAssets.push({ url: srcCandidate, title });
+                        }
+                    }
+                }
+
+
+                // Dedupe by URL
+                
+                const byUrl = new Map<string, { url: string; title: string }>();
+                for (const asset of imageAssets) {
+                    if (!byUrl.has(asset.url)) {
+                        byUrl.set(asset.url, asset);
+                    }
+                }
+                imageAssets = Array.from(byUrl.values());
+                
+          
+                const { model, headers } = await initModel({
+                    provider: LLMProvider.ANTHROPIC,
+                    model: ANTHROPIC_MODELS.SONNET_4,
+                });
+
+                const { object } = await generateObject({
+                    model,
+                    headers,
+                    schema: DesignSchema,
+                    messages: [
+                        {
+                            role: 'system',
+                            content: CLONE_WEBSITE_DESIGN_PROMPT,
+                        },
+                        {
+                            role: 'user',
+                            content: `HTML: ${result.html}
+                            Markdown: ${result.markdown}
+                            Screenshot: ${result.screenshot}`,
+                        },
+                    ],
+                    maxOutputTokens: 10000,
+                });
+
+                const designDocument: z.infer<typeof DesignSchema> = object;
+
+                return {
+                    result: {
+                        markdown: result.markdown || '',
+                        html: result.html || '',
+                        designScreenshot: result.screenshot || '',
+                        designDocument: designDocument,
+                        assets: imageAssets,
+                    },
+                    error: null,
+                };
+            } catch (error) {
+                console.error('Error cloning website:', error);
+                return {
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                    result: null,
                 };
             }
         }),

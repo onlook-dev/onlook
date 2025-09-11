@@ -36,6 +36,8 @@ import {
     webSearchTool,
     WRITE_FILE_TOOL_NAME,
     writeFileTool,
+    CLONE_WEBSITE_TOOL_NAME,
+    cloneWebsiteTool,
 } from './tools';
 
 export const ASK_TOOL_SET: ToolSet = {
@@ -61,4 +63,5 @@ export const BUILD_TOOL_SET: ToolSet = {
     [SANDBOX_TOOL_NAME]: sandboxTool,
     [TERMINAL_COMMAND_TOOL_NAME]: terminalCommandTool,
     [TYPECHECK_TOOL_NAME]: typecheckTool,
+    [CLONE_WEBSITE_TOOL_NAME]: cloneWebsiteTool,
 };

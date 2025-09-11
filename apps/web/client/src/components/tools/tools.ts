@@ -35,7 +35,9 @@ import {
     WEB_SEARCH_TOOL_NAME,
     WEB_SEARCH_TOOL_PARAMETERS,
     WRITE_FILE_TOOL_NAME,
-    WRITE_FILE_TOOL_PARAMETERS
+    WRITE_FILE_TOOL_PARAMETERS,
+    CLONE_WEBSITE_TOOL_NAME,
+    CLONE_WEBSITE_TOOL_PARAMETERS,
 } from '@onlook/ai';
 import { toast } from '@onlook/ui/sonner';
 import { type z } from 'zod';
@@ -56,7 +58,8 @@ import {
     handleTerminalCommandTool,
     handleTypecheckTool,
     handleWebSearchTool,
-    handleWriteFileTool
+    handleWriteFileTool,
+    handleCloneWebsiteTool,
 } from './handlers';
 import { EMPTY_TOOL_PARAMETERS } from './helpers';
 
@@ -173,6 +176,12 @@ const TOOL_HANDLERS: ClientToolMap = {
         inputSchema: CHECK_ERRORS_TOOL_PARAMETERS,
         handler: async (args: z.infer<typeof CHECK_ERRORS_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
             handleCheckErrors(args, editorEngine),
+    },
+    [CLONE_WEBSITE_TOOL_NAME]: {
+        name: CLONE_WEBSITE_TOOL_NAME,
+        inputSchema: CLONE_WEBSITE_TOOL_PARAMETERS,
+        handler: async (args: z.infer<typeof CLONE_WEBSITE_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
+            handleCloneWebsiteTool(args, editorEngine),
     },
 };
 

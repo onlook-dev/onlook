@@ -31,7 +31,9 @@ import {
     WEB_SEARCH_TOOL_NAME,
     type WEB_SEARCH_TOOL_PARAMETERS,
     WRITE_FILE_TOOL_NAME,
-    type WRITE_FILE_TOOL_PARAMETERS
+    type WRITE_FILE_TOOL_PARAMETERS,
+    CLONE_WEBSITE_TOOL_NAME,
+    type CLONE_WEBSITE_TOOL_PARAMETERS,
 } from '@onlook/ai';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
@@ -60,6 +62,7 @@ const TOOL_ICONS: Record<string, any> = {
     [TYPECHECK_TOOL_NAME]: Icons.MagnifyingGlass,
     [LIST_BRANCHES_TOOL_NAME]: Icons.Commit,
     [GLOB_TOOL_NAME]: Icons.MagnifyingGlass,
+    [CLONE_WEBSITE_TOOL_NAME]: Icons.Globe,
 } as const;
 
 function truncateString(str: string, maxLength: number = 30) {
@@ -192,6 +195,18 @@ export function ToolCallSimple({
                     return 'Reading Onlook instructions';
                 case TYPECHECK_TOOL_NAME:
                     return 'Checking types';
+                case CLONE_WEBSITE_TOOL_NAME:
+                    const params13 = toolInvocation.input as z.infer<typeof CLONE_WEBSITE_TOOL_PARAMETERS>;
+                    if (params13?.url) {
+                        try {
+                            const url = new URL(params13.url);
+                            return 'Cloning ' + (url.hostname || 'website');
+                        } catch (error) {
+                            return 'Cloning website';
+                        }
+                    } else {
+                        return 'Cloning website';
+                    }
                 default:
                     return toolName?.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
             }
