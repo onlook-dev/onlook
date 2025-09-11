@@ -6,8 +6,8 @@ import { normalizePath } from './helpers';
 export class FileSyncManager {
     private cacheManager: FileCacheManager;
 
-    constructor() {
-        this.cacheManager = new FileCacheManager();
+    constructor(projectId: string, branchId: string) {
+        this.cacheManager = new FileCacheManager(projectId, branchId);
         makeAutoObservable(this);
     }
 

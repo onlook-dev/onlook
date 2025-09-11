@@ -1,3 +1,4 @@
+import type { Branch } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { PostHog } from 'posthog-js';
 import { ActionManager } from './action';
@@ -28,7 +29,6 @@ import { TemplateNodeManager } from './template-nodes';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { VersionsManager } from './version';
-import type { Branch } from '@onlook/models';
 
 export class EditorEngine {
     readonly projectId: string;
@@ -68,11 +68,12 @@ export class EditorEngine {
     readonly preloadScript: PreloadScriptManager = new PreloadScriptManager(this);
     readonly screenshot: ScreenshotManager = new ScreenshotManager(this);
     readonly snap: SnapManager = new SnapManager(this);
-    readonly templateNodes: TemplateNodeManager = new TemplateNodeManager(this);
+    readonly templateNodes: TemplateNodeManager;
 
     constructor(projectId: string, posthog: PostHog) {
         this.projectId = projectId;
         this.posthog = posthog;
+        this.templateNodes = new TemplateNodeManager(this, projectId);
         makeAutoObservable(this);
     }
 

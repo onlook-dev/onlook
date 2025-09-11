@@ -15,8 +15,7 @@ import {
     getDirName,
     isImageFile,
     isRootLayoutFile,
-    isSubdirectory,
-    LogTimer,
+    isSubdirectory
 } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
@@ -54,7 +53,7 @@ export class SandboxManager {
             this.branch,
             this.errorManager
         );
-        this.fileSync = new FileSyncManager();
+        this.fileSync = new FileSyncManager(this.branch.projectId, this.branch.id);
         makeAutoObservable(this);
     }
 
@@ -88,7 +87,7 @@ export class SandboxManager {
     }
 
     async index(force = false) {
-        console.log('[SandboxManager] Starting indexing, force:', force);
+        console.log(`[SandboxManager] Starting indexing for ${this.branch.projectId}/${this.branch.id}, force: ${force}`);
 
         if (this._isIndexing || (this._isIndexed && !force)) {
             return;
@@ -100,30 +99,22 @@ export class SandboxManager {
         }
 
         this._isIndexing = true;
-        const timer = new LogTimer('Sandbox Indexing');
 
         try {
             // Detect router configuration first
             if (!this._routerConfig) {
                 this._routerConfig = await detectRouterTypeInSandbox(this);
-                if (this._routerConfig) {
-                    timer.log(
-                        `Router detected: ${this._routerConfig.type} at ${this._routerConfig.basePath}`,
-                    );
-                }
             }
 
             // Get all file paths
             const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES);
             this._discoveredFiles = allFilePaths;
-            timer.log(`File discovery completed - ${allFilePaths.length} files found`);
 
             // Process files in non-blocking batches
             await this.processFilesInBatches(allFilePaths);
 
             await this.watchFiles();
             this._isIndexed = true;
-            timer.log('Indexing completed successfully');
         } catch (error) {
             console.error('Error during indexing:', error);
             throw error;
@@ -135,39 +126,39 @@ export class SandboxManager {
     /**
      * Process files in non-blocking batches to avoid blocking the UI thread
      */
-    private async processFilesInBatches(allFilePaths: string[], batchSize: number = 20): Promise<void> {
-        let processed = 0;
-
+    private async processFilesInBatches(allFilePaths: string[], batchSize: number = 10): Promise<void> {
         for (let i = 0; i < allFilePaths.length; i += batchSize) {
             const batch = allFilePaths.slice(i, i + batchSize);
 
-            // Process current batch
-            for (const filePath of batch) {
+            // Process batch in parallel for better performance
+            const batchPromises = batch.map(async (filePath) => {
                 // Track image files first
                 if (isImageFile(filePath)) {
                     this.fileSync.writeEmptyFile(filePath, 'binary');
-                    processed++;
-                    continue;
+                    return;
                 }
 
-                const remoteFile = await this.readRemoteFile(filePath);
-                if (remoteFile) {
-                    this.fileSync.updateCache(remoteFile);
+                // Check cache first
+                const cachedFile = this.fileSync.readCache(filePath);
+                if (cachedFile && cachedFile.content !== null) {
                     if (this.isJsxFile(filePath)) {
-                        await this.processFileForMapping(remoteFile);
+                        await this.processFileForMapping(cachedFile);
+                    }
+                } else {
+                    const file = await this.fileSync.readOrFetch(filePath, this.readRemoteFile.bind(this));
+                    if (file && this.isJsxFile(filePath)) {
+                        await this.processFileForMapping(file);
                     }
                 }
-                processed++;
-            }
+            });
+
+            await Promise.all(batchPromises);
 
             // Yield control to the event loop after each batch
             if (i + batchSize < allFilePaths.length) {
-                console.log(`[SandboxManager] Processed ${processed}/${allFilePaths.length} files...`);
-                await new Promise(resolve => setTimeout(resolve, 0));
+                await new Promise(resolve => setTimeout(resolve, 1));
             }
         }
-
-        console.log(`[SandboxManager] Completed processing ${processed} files`);
     }
 
     /**
