@@ -137,11 +137,6 @@ export class SandboxManager {
      * Process files in non-blocking batches to avoid blocking the UI thread
      */
     private async processFilesInBatches(allFilePaths: string[], batchSize: number = 10): Promise<void> {
-        let processed = 0;
-        let cacheHits = 0;
-        let remoteFetches = 0;
-        const startTime = performance.now();
-
         for (let i = 0; i < allFilePaths.length; i += batchSize) {
             const batch = allFilePaths.slice(i, i + batchSize);
 
@@ -156,12 +151,10 @@ export class SandboxManager {
                 // Check cache first
                 const cachedFile = this.fileSync.readCache(filePath);
                 if (cachedFile && cachedFile.content !== null) {
-                    cacheHits++;
                     if (this.isJsxFile(filePath)) {
                         await this.processFileForMapping(cachedFile);
                     }
                 } else {
-                    remoteFetches++;
                     const file = await this.fileSync.readOrFetch(filePath, this.readRemoteFile.bind(this));
                     if (file && this.isJsxFile(filePath)) {
                         await this.processFileForMapping(file);
@@ -170,21 +163,12 @@ export class SandboxManager {
             });
 
             await Promise.all(batchPromises);
-            processed += batch.length;
 
             // Yield control to the event loop after each batch
             if (i + batchSize < allFilePaths.length) {
-                console.log(`[SandboxManager] Processed ${processed}/${allFilePaths.length} files...`);
                 await new Promise(resolve => setTimeout(resolve, 1));
             }
         }
-
-        const endTime = performance.now();
-        const totalTime = (endTime - startTime).toFixed(2);
-        const cacheEfficiency = processed > 0 ? ((cacheHits / processed) * 100).toFixed(1) : '0';
-
-        console.log(`[SandboxManager] Completed processing ${processed} files in ${totalTime}ms`);
-        console.log(`[SandboxManager] Cache Performance: ${cacheHits} hits, ${remoteFetches} remote fetches (${cacheEfficiency}% cache hit rate)`);
     }
 
     /**
