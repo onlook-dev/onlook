@@ -21,7 +21,7 @@ export class FileCacheManager {
             maxItems: 1000,
             maxSizeBytes: 5 * 1024 * 1024, // 5MB
             ttlMs: 1000 * 60 * 60, // 1 hour
-            persistent: false, // Directories are lightweight, no need to persist
+            persistent: true,
         });
     }
 
@@ -235,7 +235,7 @@ export class FileCacheManager {
                 maxItems: 1000,
                 maxSizeBytes: 5 * 1024 * 1024,
                 ttlMs: 1000 * 60 * 60,
-                persistent: false,
+                persistent: true,
             });
 
             await Promise.all([
