@@ -54,7 +54,7 @@ export class SandboxManager {
             this.branch,
             this.errorManager
         );
-        this.fileSync = new FileSyncManager();
+        this.fileSync = new FileSyncManager(this.branch.projectId, this.branch.id);
         makeAutoObservable(this);
     }
 

@@ -6,10 +6,14 @@ import { UnifiedCacheManager } from './unified-cache';
 export class FileCacheManager {
     private fileCache: UnifiedCacheManager<SandboxFile>;
     private directoryCache: UnifiedCacheManager<SandboxDirectory>;
+    private readonly cacheId: string;
 
-    constructor() {
+    constructor(projectId: string, branchId: string) {
+        this.cacheId = `${projectId}-${branchId}`;
+        console.log(`[FileCacheManager] Initializing cache for project: ${projectId}, branch: ${branchId}`);
+        
         this.fileCache = new UnifiedCacheManager({
-            name: 'sandbox-files',
+            name: `${projectId}-${branchId}-sandbox-files`,
             maxItems: 500,
             maxSizeBytes: 50 * 1024 * 1024, // 50MB
             ttlMs: 1000 * 60 * 30, // 30 minutes
@@ -17,7 +21,7 @@ export class FileCacheManager {
         });
 
         this.directoryCache = new UnifiedCacheManager({
-            name: 'sandbox-directories',
+            name: `${projectId}-${branchId}-sandbox-directories`,
             maxItems: 1000,
             maxSizeBytes: 5 * 1024 * 1024, // 5MB
             ttlMs: 1000 * 60 * 60, // 1 hour
@@ -214,5 +218,41 @@ export class FileCacheManager {
 
     get directoryCount(): number {
         return this.directoryCache.size;
+    }
+
+    /**
+     * Static method to clear persistent cache for a specific project/branch
+     * without creating an instance
+     */
+    static async clearPersistentForBranch(projectId: string, branchId: string): Promise<void> {
+        try {
+            const fileCache = new UnifiedCacheManager({
+                name: `${projectId}-${branchId}-sandbox-files`,
+                maxItems: 500,
+                maxSizeBytes: 50 * 1024 * 1024,
+                ttlMs: 1000 * 60 * 30,
+                persistent: true,
+            });
+            
+            const directoryCache = new UnifiedCacheManager({
+                name: `${projectId}-${branchId}-sandbox-directories`,
+                maxItems: 1000,
+                maxSizeBytes: 5 * 1024 * 1024,
+                ttlMs: 1000 * 60 * 60,
+                persistent: false,
+            });
+
+            await Promise.all([
+                fileCache.init(),
+                directoryCache.init(),
+            ]);
+
+            await Promise.all([
+                fileCache.clearPersistent(),
+                directoryCache.clearPersistent(),
+            ]);
+        } catch (error) {
+            console.error(`Error clearing persistent cache for project ${projectId}, branch ${branchId}:`, error);
+        }
     }
 }
