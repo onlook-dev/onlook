@@ -51,8 +51,5 @@
     "devDependencies": {
         "husky": "^9.1.6"
     },
-    "packageManager": "bun@1.2.21",
-    "dependencies": {
-        "unicornstudio-react": "^1.4.29-1"
-    }
+    "packageManager": "bun@1.2.21"
 }
