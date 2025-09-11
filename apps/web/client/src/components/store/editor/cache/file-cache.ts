@@ -6,11 +6,8 @@ import { UnifiedCacheManager } from './unified-cache';
 export class FileCacheManager {
     private fileCache: UnifiedCacheManager<SandboxFile>;
     private directoryCache: UnifiedCacheManager<SandboxDirectory>;
-    private readonly cacheId: string;
 
     constructor(projectId: string, branchId: string) {
-        this.cacheId = `${projectId}-${branchId}`;
-        
         this.fileCache = new UnifiedCacheManager({
             name: `${projectId}-${branchId}-sandbox-files`,
             maxItems: 500,
@@ -232,7 +229,7 @@ export class FileCacheManager {
                 ttlMs: 1000 * 60 * 30,
                 persistent: true,
             });
-            
+
             const directoryCache = new UnifiedCacheManager({
                 name: `${projectId}-${branchId}-sandbox-directories`,
                 maxItems: 1000,
