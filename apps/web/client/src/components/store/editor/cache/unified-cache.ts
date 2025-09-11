@@ -1,8 +1,8 @@
 'use client';
 
-import { LRUCache } from 'lru-cache';
-import localforage from 'localforage';
 import { jsonClone } from '@onlook/utility';
+import localforage from 'localforage';
+import { LRUCache } from 'lru-cache';
 import type { CacheConfig, CachedItem, PersistentCacheData, Serializable } from './types';
 
 export class UnifiedCacheManager<T extends Serializable = Serializable> {
@@ -13,7 +13,7 @@ export class UnifiedCacheManager<T extends Serializable = Serializable> {
 
     constructor(config: CacheConfig) {
         this.config = config;
-        
+
         this.memoryCache = new LRUCache({
             max: config.maxItems,
             maxSize: config.maxSizeBytes,
@@ -36,7 +36,7 @@ export class UnifiedCacheManager<T extends Serializable = Serializable> {
         if (this.persistentStore && this.memoryCache.size === 0) {
             await this.loadFromPersistent();
         }
-        
+
         this.initialized = true;
     }
 
@@ -53,9 +53,9 @@ export class UnifiedCacheManager<T extends Serializable = Serializable> {
             contentHash,
             size,
         };
-        
+
         this.memoryCache.set(key, item);
-        
+
         // Trigger periodic persistence
         if (this.shouldPersist()) {
             this.saveToPersistent().catch(console.warn);
@@ -94,12 +94,12 @@ export class UnifiedCacheManager<T extends Serializable = Serializable> {
     getCached(key: string, currentContentHash?: string): T | undefined {
         const cached = this.memoryCache.get(key);
         if (!cached) return undefined;
-        
+
         if (currentContentHash && cached.contentHash !== currentContentHash) {
             this.delete(key);
             return undefined;
         }
-        
+
         return cached.data;
     }
 
@@ -126,7 +126,6 @@ export class UnifiedCacheManager<T extends Serializable = Serializable> {
         }
     }
 
-
     async saveToPersistent(): Promise<void> {
         if (!this.persistentStore || this.memoryCache.size === 0) return;
 
@@ -144,7 +143,7 @@ export class UnifiedCacheManager<T extends Serializable = Serializable> {
             }
 
             if (entries.length === 0) {
-                    return;
+                return;
             }
 
             const data: PersistentCacheData = {
