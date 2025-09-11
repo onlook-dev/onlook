@@ -156,16 +156,10 @@ export const sandboxRouter = createTRPCRouter({
 
             for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
                 try {
-                    const { CodeSandbox } = await import('@codesandbox/sdk');
-                    const sdk = new CodeSandbox();
-                    
-                    const sandbox = await sdk.sandboxes.create({
-                        source: 'git',
-                        url: input.repoUrl,
+                    const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
+                    const sandbox = await CodesandboxProvider.createProjectFromGit({
+                        repoUrl: input.repoUrl,
                         branch: input.branch,
-                        async setup(session) {
-                            await session.setup.run();
-                        },
                     });
 
                     const previewUrl = getSandboxPreviewUrl(sandbox.id, DEFAULT_PORT);
