@@ -106,6 +106,7 @@
         "tailwind-merge": "^3.2.0",
         "tldts": "^7.0.12",
         "tw-animate-css": "^1.2.5",
+        "unicornstudio-react": "^1.4.29-1",
         "use-resize-observer": "^9.1.0",
         "uuid": "^11.1.0",
         "webfontloader": "^1.6.28",

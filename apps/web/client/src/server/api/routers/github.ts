@@ -43,7 +43,6 @@ export const githubRouter = createTRPCRouter({
                 isPrivateRepo: data.private
             };
         }),
-
     getRepo: protectedProcedure
         .input(
             z.object({
