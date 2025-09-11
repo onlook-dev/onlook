@@ -27,11 +27,10 @@ export class TemplateNodeManager {
     private templateNodes = new Map<string, TemplateNode>();
     private processCache: UnifiedCacheManager<TemplateNodeCacheData>;
 
-    constructor(editorEngine: EditorEngine, projectId?: string) {
+    constructor(editorEngine: EditorEngine, projectId: string) {
         this.editorEngine = editorEngine;
-        const cacheNameSuffix = projectId ? `-${projectId}` : '';
         this.processCache = new UnifiedCacheManager({
-            name: `template-nodes${cacheNameSuffix}`,
+            name: `template-nodes-${projectId}`,
             maxItems: 200,
             maxSizeBytes: 25 * 1024 * 1024, // 25MB
             ttlMs: 1000 * 60 * 30, // 30 minutes

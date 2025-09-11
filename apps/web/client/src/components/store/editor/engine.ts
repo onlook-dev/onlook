@@ -1,3 +1,4 @@
+import type { Branch } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { PostHog } from 'posthog-js';
 import { ActionManager } from './action';
@@ -28,7 +29,6 @@ import { TemplateNodeManager } from './template-nodes';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { VersionsManager } from './version';
-import type { Branch } from '@onlook/models';
 
 export class EditorEngine {
     readonly projectId: string;
