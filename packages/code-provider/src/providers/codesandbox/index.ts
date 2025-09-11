@@ -171,6 +171,33 @@ export class CodesandboxProvider extends Provider {
         };
     }
 
+    static async createProjectFromGit(input: {
+        repoUrl: string;
+        branch: string;
+    }): Promise<CreateProjectOutput> {
+        const sdk = new CodeSandbox();
+        const TIMEOUT_MS = 30000;
+
+        const createPromise = sdk.sandboxes.create({
+            source: 'git',
+            url: input.repoUrl,
+            branch: input.branch,
+            async setup(session) {
+                await session.setup.run();
+            },
+        });
+
+        const timeoutPromise = new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error('Repository access timeout')), TIMEOUT_MS);
+        });
+
+        const newSandbox = await Promise.race([createPromise, timeoutPromise]);
+
+        return {
+            id: newSandbox.id,
+        };
+    }
+
     async pauseProject(input: PauseProjectInput): Promise<PauseProjectOutput> {
         if (this.sandbox && this.options.sandboxId) {
             const sdk = new CodeSandbox();
