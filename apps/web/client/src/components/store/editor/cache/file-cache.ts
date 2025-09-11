@@ -10,7 +10,6 @@ export class FileCacheManager {
 
     constructor(projectId: string, branchId: string) {
         this.cacheId = `${projectId}-${branchId}`;
-        console.log(`[FileCacheManager] Initializing cache for project: ${projectId}, branch: ${branchId}`);
         
         this.fileCache = new UnifiedCacheManager({
             name: `${projectId}-${branchId}-sandbox-files`,
