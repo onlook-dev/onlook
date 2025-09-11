@@ -15,8 +15,7 @@ import {
     getDirName,
     isImageFile,
     isRootLayoutFile,
-    isSubdirectory,
-    LogTimer,
+    isSubdirectory
 } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
@@ -100,31 +99,22 @@ export class SandboxManager {
         }
 
         this._isIndexing = true;
-        const timer = new LogTimer('Sandbox Indexing');
-        console.log(`[SandboxManager] Pre-cached files: ${this.fileSync.listAllFiles().length}`);
 
         try {
             // Detect router configuration first
             if (!this._routerConfig) {
                 this._routerConfig = await detectRouterTypeInSandbox(this);
-                if (this._routerConfig) {
-                    timer.log(
-                        `Router detected: ${this._routerConfig.type} at ${this._routerConfig.basePath}`,
-                    );
-                }
             }
 
             // Get all file paths
             const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES);
             this._discoveredFiles = allFilePaths;
-            timer.log(`File discovery completed - ${allFilePaths.length} files found`);
 
             // Process files in non-blocking batches
             await this.processFilesInBatches(allFilePaths);
 
             await this.watchFiles();
             this._isIndexed = true;
-            timer.log('Indexing completed successfully');
         } catch (error) {
             console.error('Error during indexing:', error);
             throw error;
