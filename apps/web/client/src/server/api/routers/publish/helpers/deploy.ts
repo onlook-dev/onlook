@@ -1,6 +1,5 @@
 import { trackEvent } from '@/utils/analytics/server.ts';
-import { deployments, type Deployment } from '@onlook/db';
-import type { DrizzleDb } from '@onlook/db/src/client';
+import { deployments, type Deployment, type DrizzleDb } from '@onlook/db';
 import {
     DeploymentStatus,
     DeploymentType,

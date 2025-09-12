@@ -3,7 +3,7 @@ import { ChatType } from '@onlook/models';
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helperts';
+import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helpers';
 
 const MAX_STEPS = 20;
 

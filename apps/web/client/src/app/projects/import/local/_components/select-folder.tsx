@@ -61,7 +61,11 @@ export const NewSelectFolder = () => {
         const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
         // Find the common root path from all files
-        const allPaths = files.map((file) => (file as any).webkitRelativePath || file.name);
+        const allPaths = files.map((file) => (file).webkitRelativePath || file.name);
+
+        if (!allPaths[0]) {
+            return processedFiles;
+        }
 
         const rootPath =
             allPaths.length > 0 && allPaths[0].includes('/') ? allPaths[0].split('/')[0] : '';
@@ -69,7 +73,10 @@ export const NewSelectFolder = () => {
         for (const file of files) {
             // Get relative path from webkitRelativePath or name
             // Remove the root path from the relative path
-            let relativePath = (file as any).webkitRelativePath || file.name;
+            let relativePath = (file).webkitRelativePath || file.name;
+            if (!rootPath) {
+                continue;
+            }
             relativePath = relativePath.replace(rootPath, '').replace(/^\//, '');
 
             // Skip ignored directories
@@ -242,7 +249,7 @@ export const NewSelectFolder = () => {
                 if (entry) {
                     if (entry.isFile) {
                         // Handle individual file
-                        const fileEntry = entry as any;
+                        const fileEntry = entry as FileSystemFileEntry;
                         try {
                             const file = await new Promise<File>((resolve, reject) => {
                                 fileEntry.file(resolve, reject);

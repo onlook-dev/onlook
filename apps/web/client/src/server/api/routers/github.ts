@@ -1,5 +1,4 @@
-import type { DrizzleDb } from '@onlook/db/src/client';
-import { users } from '@onlook/db/src/schema';
+import { users, type DrizzleDb } from '@onlook/db';
 import {
     createInstallationOctokit,
     generateInstallationUrl

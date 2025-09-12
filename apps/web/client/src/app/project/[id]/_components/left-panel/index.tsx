@@ -13,7 +13,12 @@ import { LayersTab } from './layers-tab';
 import { PagesTab } from './page-tab';
 import { ZoomControls } from './zoom-controls';
 
-const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; disabled?: boolean }[] =
+const tabs: {
+    value: LeftPanelTabValue;
+    icon: React.ReactNode;
+    label: any,
+    disabled?: boolean
+}[] =
     [
         {
             value: LeftPanelTabValue.LAYERS,
@@ -117,7 +122,7 @@ export const LeftPanel = observer(() => {
                         onMouseEnter={() => !tab.disabled && handleMouseEnter(tab.value)}
                     >
                         {tab.icon}
-                        <span className="text-xs leading-tight">{t(tab.label as any)}</span>
+                        <span className="text-xs leading-tight">{t(tab.label)}</span>
                     </button>
                 ))}
 
