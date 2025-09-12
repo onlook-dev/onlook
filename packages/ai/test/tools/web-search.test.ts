@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import {
-    ASK_TOOL_SET,
-    BUILD_TOOL_SET,
+    askTools,
+    buildTools,
     WEB_SEARCH_TOOL_NAME,
     WEB_SEARCH_TOOL_PARAMETERS,
     webSearchTool,
@@ -15,10 +15,10 @@ describe('Web Search Tool', () => {
     });
 
     it('should be included in both buildToolSet and askToolSet', () => {
-        expect(BUILD_TOOL_SET[WEB_SEARCH_TOOL_NAME]).toBeDefined();
-        expect(ASK_TOOL_SET[WEB_SEARCH_TOOL_NAME]).toBeDefined();
-        expect(BUILD_TOOL_SET[WEB_SEARCH_TOOL_NAME]).toBe(webSearchTool);
-        expect(ASK_TOOL_SET[WEB_SEARCH_TOOL_NAME]).toBe(webSearchTool);
+        expect(buildTools[WEB_SEARCH_TOOL_NAME]).toBeDefined();
+        expect(askTools[WEB_SEARCH_TOOL_NAME]).toBeDefined();
+        expect(buildTools[WEB_SEARCH_TOOL_NAME]).toBe(webSearchTool);
+        expect(askTools[WEB_SEARCH_TOOL_NAME]).toBe(webSearchTool);
     });
 
     describe('parameter validation', () => {

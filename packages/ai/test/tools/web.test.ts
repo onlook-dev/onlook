@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import {
-    ASK_TOOL_SET,
-    BUILD_TOOL_SET,
+    askTools,
+    buildTools,
     SCRAPE_URL_TOOL_NAME,
     SCRAPE_URL_TOOL_PARAMETERS,
     scrapeUrlTool,
@@ -15,10 +15,10 @@ describe('Firecrawl Web Scraping Tool', () => {
     });
 
     it('should be included in both buildToolSet and askToolSet', () => {
-        expect(BUILD_TOOL_SET[SCRAPE_URL_TOOL_NAME]).toBeDefined();
-        expect(ASK_TOOL_SET[SCRAPE_URL_TOOL_NAME]).toBeDefined();
-        expect(BUILD_TOOL_SET[SCRAPE_URL_TOOL_NAME]).toBe(scrapeUrlTool);
-        expect(ASK_TOOL_SET[SCRAPE_URL_TOOL_NAME]).toBe(scrapeUrlTool);
+        expect(buildTools[SCRAPE_URL_TOOL_NAME]).toBeDefined();
+        expect(askTools[SCRAPE_URL_TOOL_NAME]).toBeDefined();
+        expect(buildTools[SCRAPE_URL_TOOL_NAME]).toBe(scrapeUrlTool);
+        expect(askTools[SCRAPE_URL_TOOL_NAME]).toBe(scrapeUrlTool);
     });
 
     it('should have the correct parameter schema', () => {

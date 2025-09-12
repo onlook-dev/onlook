@@ -1,5 +1,5 @@
+import type { ChatMessage } from "@onlook/models";
 import { ChatMessageRole, type MessageCheckpoints, type MessageContext } from "@onlook/models";
-import type { UIMessage as AiMessage } from "ai";
 import { relations } from "drizzle-orm";
 import { boolean, jsonb, pgEnum, pgTable, text, timestamp, uuid, type AnyPgColumn } from "drizzle-orm/pg-core";
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
@@ -22,7 +22,7 @@ export const messages = pgTable("messages", {
     applied: boolean("applied"),
     commitOid: text("commit_oid"),
     snapshots: jsonb("snapshots").$type<any>(),
-    parts: jsonb("parts").$type<AiMessage['parts']>().default([]),
+    parts: jsonb("parts").$type<ChatMessage['parts']>().default([]),
     content: text("content"),
 }).enableRLS();
 

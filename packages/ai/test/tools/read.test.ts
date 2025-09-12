@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import {
-    ASK_TOOL_SET,
-    BUILD_TOOL_SET,
+    askTools,
+    buildTools,
     LIST_FILES_TOOL_NAME,
     LIST_FILES_TOOL_PARAMETERS,
     listFilesTool,
@@ -18,10 +18,10 @@ describe('Read File Tool', () => {
     });
 
     test('should be included in both toolsets', () => {
-        expect(BUILD_TOOL_SET[READ_FILE_TOOL_NAME]).toBeDefined();
-        expect(ASK_TOOL_SET[READ_FILE_TOOL_NAME]).toBeDefined();
-        expect(BUILD_TOOL_SET[READ_FILE_TOOL_NAME]).toBe(readFileTool);
-        expect(ASK_TOOL_SET[READ_FILE_TOOL_NAME]).toBe(readFileTool);
+        expect(buildTools[READ_FILE_TOOL_NAME]).toBeDefined();
+        expect(askTools[READ_FILE_TOOL_NAME]).toBeDefined();
+        expect(buildTools[READ_FILE_TOOL_NAME]).toBe(readFileTool);
+        expect(askTools[READ_FILE_TOOL_NAME]).toBe(readFileTool);
     });
 
     test('should have correct parameter schema', () => {
@@ -84,10 +84,10 @@ describe('List Files Tool', () => {
     });
 
     test('should be included in both toolsets', () => {
-        expect(BUILD_TOOL_SET[LIST_FILES_TOOL_NAME]).toBeDefined();
-        expect(ASK_TOOL_SET[LIST_FILES_TOOL_NAME]).toBeDefined();
-        expect(BUILD_TOOL_SET[LIST_FILES_TOOL_NAME]).toBe(listFilesTool);
-        expect(ASK_TOOL_SET[LIST_FILES_TOOL_NAME]).toBe(listFilesTool);
+        expect(buildTools[LIST_FILES_TOOL_NAME]).toBeDefined();
+        expect(askTools[LIST_FILES_TOOL_NAME]).toBeDefined();
+        expect(buildTools[LIST_FILES_TOOL_NAME]).toBe(listFilesTool);
+        expect(askTools[LIST_FILES_TOOL_NAME]).toBe(listFilesTool);
     });
 
     test('should have correct parameter schema', () => {
