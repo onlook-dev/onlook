@@ -2,7 +2,7 @@ import type { SandboxManager } from '@/components/store/editor/sandbox';
 import type { Provider } from '@onlook/code-provider';
 
 // System reserved names (Windows compatibility)
-export const RESERVED_NAMES = [
+export const RESERVED_NAMES: string[] = [
     'CON',
     'PRN',
     'AUX',
@@ -25,7 +25,7 @@ export const RESERVED_NAMES = [
     'LPT7',
     'LPT8',
     'LPT9',
-] as const;
+]
 
 // Invalid characters for file/folder names across platforms
 export const INVALID_CHARS_REGEX = /[<>:"|?*\\/]/;
@@ -35,7 +35,7 @@ export const FILE_CONSTRAINTS = {
     MIN_NAME_LENGTH: 1,
     INVALID_CHARS: ['<', '>', ':', '"', '|', '?', '*', '\\', '/'],
     RESERVED_NAMES,
-} as const;
+}
 
 export const validateFileName = (fileName: string): { valid: boolean; error?: string } => {
     if (!fileName) {
@@ -50,7 +50,7 @@ export const validateFileName = (fileName: string): { valid: boolean; error?: st
     // Check for reserved names
     if (
         FILE_CONSTRAINTS.RESERVED_NAMES.includes(
-            fileName.toUpperCase() as (typeof FILE_CONSTRAINTS.RESERVED_NAMES)[number],
+            fileName.toUpperCase(),
         )
     ) {
         return { valid: false, error: 'File name is reserved' };
@@ -75,7 +75,7 @@ export const validateFolderName = (folderName: string): { valid: boolean; error?
     }
 
     // Check for reserved names
-    if (RESERVED_NAMES.includes(folderName.toUpperCase() as any)) {
+    if (RESERVED_NAMES.includes(folderName.toUpperCase())) {
         return { valid: false, error: 'Folder name is reserved' };
     }
 
