@@ -50,7 +50,23 @@ export const MessageContent = observer(
                     />
                 );
             } else if (part.type === 'reasoning') {
-                return null;
+                const processedText = part.text.replace('[REDACTED]', '');
+                if (processedText === '') {
+                    return null;
+                }
+                return (
+                    <div key={`reasoning-${idx}`} className="my-2 px-3 py-2 border-l-1 max-h-32 overflow-y-auto">
+                        <MarkdownRenderer
+                            messageId={messageId}
+                            type="text"
+                            key={processedText}
+                            content={processedText}
+                            applied={applied}
+                            isStream={isStream}
+                            className="text-xs text-foreground-secondary p-0 m-0"
+                        />
+                    </div>
+                );
             }
         }).filter(Boolean);
 

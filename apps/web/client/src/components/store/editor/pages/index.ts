@@ -28,12 +28,19 @@ export class PagesManager {
 
     init() {
         reaction(
-            () => this.editorEngine.activeSandbox.routerConfig,
             () => {
+                return {
+                    isIndexing: this.editorEngine.activeSandbox.isIndexing,
+                    isIndexed: this.editorEngine.activeSandbox.isIndexed,
+                };
+            },
+            (sandboxStatus) => {
                 if (this.editorEngine.state.leftPanelTab !== LeftPanelTabValue.PAGES) {
                     return;
                 }
-                this.scanPages();
+                if (sandboxStatus.isIndexed && !sandboxStatus.isIndexing) {
+                    this.scanPages();
+                }
             },
         );
     }

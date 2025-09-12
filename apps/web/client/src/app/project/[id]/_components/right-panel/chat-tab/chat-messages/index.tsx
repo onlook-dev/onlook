@@ -20,7 +20,7 @@ export const ChatMessages = observer(() => {
     const conversation = editorEngine.chat.conversation.current;
     const engineMessages = editorEngine.chat.conversation.current?.messages;
 
-    const renderMessage = useCallback((message: ChatMessage) => {
+    const renderMessage = useCallback((message: ChatMessage, index: number) => {
         let messageNode;
         switch (message.role) {
             case ChatMessageRole.ASSISTANT:
@@ -32,7 +32,7 @@ export const ChatMessages = observer(() => {
             default:
                 assertNever(message);
         }
-        return <div key={`message-${message.id}`}>{messageNode}</div>;
+        return <div key={`message-${message.id}-${index}`}>{messageNode}</div>;
     }, []);
 
     // Exclude the currently streaming assistant message (rendered by <StreamMessage />)
@@ -71,7 +71,7 @@ export const ChatMessages = observer(() => {
 
     return (
         <ChatMessageList contentKey={`${messagesToRender.map((m) => m.id).join('|')}${isWaiting ? `|${uiMessages?.[uiMessages.length - 1]?.id ?? ''}` : ''}`}>
-            {messagesToRender.map((message) => renderMessage(message))}
+            {messagesToRender.map((message, index) => renderMessage(message, index))}
             <StreamMessage />
             <ErrorMessage />
         </ChatMessageList>
