@@ -1,7 +1,7 @@
 import { api } from '@/trpc/client';
 import { toDbMessage } from '@onlook/db';
 import type { GitCommit } from '@onlook/git';
-import { ChatMessageRole, MessageCheckpointType, type ChatConversation, type ChatMessage, type MessageContext, type UserChatMessage } from '@onlook/models';
+import { MessageCheckpointType, type ChatConversation, type ChatMessage, type MessageContext } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { toast } from 'sonner';
 import type { EditorEngine } from '../engine';
@@ -114,7 +114,7 @@ export class ConversationManager {
     async addUserMessage(
         content: string,
         context: MessageContext[],
-    ): Promise<UserChatMessage> {
+    ): Promise<ChatMessage> {
         if (!this.current) {
             console.error('No conversation found');
             throw new Error('No conversation found');
@@ -146,22 +146,23 @@ export class ConversationManager {
         listConversation.displayName = title;
     }
 
+    // TODO: Bring this to Server
     async attachCommitToUserMessage(id: string, commit: GitCommit): Promise<void> {
-        const message = this.current?.messages.find((m) => m.id === id && m.role === ChatMessageRole.USER);
+        const message = this.current?.messages.find((m) => m.id === id && m.role === 'user');
         if (!message) {
             console.error('No message found with id', id);
             return;
         }
-        const userMessage = message as UserChatMessage;
+        const userMessage = message as ChatMessage;
         const newCheckpoints = [
-            ...userMessage.metadata.checkpoints,
+            ...(userMessage.metadata?.checkpoints ?? []),
             {
                 type: MessageCheckpointType.GIT,
                 oid: commit.oid,
                 createdAt: new Date(),
             },
         ];
-        userMessage.metadata.checkpoints = newCheckpoints;
+        userMessage.metadata?.checkpoints = newCheckpoints;
         await api.chat.message.updateCheckpoints.mutate({
             messageId: message.id,
             checkpoints: newCheckpoints,
@@ -180,7 +181,7 @@ export class ConversationManager {
         } else {
             this.current.messages[index] = message;
         }
-        await this.upsertMessageInStorage(message);
+        await this.upsertMessageInStorage(message, this.current.conversation.id);
     }
 
     async removeMessages(messages: ChatMessage[]) {
@@ -208,8 +209,8 @@ export class ConversationManager {
         await api.chat.message.delete.mutate({ messageIds });
     }
 
-    async upsertMessageInStorage(message: ChatMessage) {
-        await api.chat.message.upsert.mutate({ message: toDbMessage(message) });
+    async upsertMessageInStorage(message: ChatMessage, conversationId: string) {
+        await api.chat.message.upsert.mutate({ message: toDbMessage(message, conversationId) });
     }
 
     clear() {

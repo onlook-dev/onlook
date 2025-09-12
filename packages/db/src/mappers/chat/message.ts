@@ -1,7 +1,5 @@
 import type { Message as DbMessage } from "@onlook/db";
-import { ChatMessageRole, type ChatMessage } from "@onlook/models";
-import { assertNever } from '@onlook/utility';
-import { v4 as uuidv4 } from 'uuid';
+import { type ChatMessage } from "@onlook/models";
 
 export const fromDbMessage = (message: DbMessage): ChatMessage => {
     return {
@@ -17,23 +15,20 @@ export const fromDbMessage = (message: DbMessage): ChatMessage => {
     }
 }
 
-export const toDbMessage = (message: ChatMessage): DbMessage => {
+export const toDbMessage = (message: ChatMessage, conversationId: string): DbMessage => {
     return {
         id: message.id,
-        createdAt: message.createdAt,
-        conversationId: message.conversationId,
+        createdAt: message.metadata?.createdAt ?? new Date(),
+        conversationId,
         context: message?.metadata?.context ?? [],
         parts: message.parts,
-        content: message.parts.map((part) => {
-            if (part.type === 'text') {
-                return part.text;
-            }
-            return '';
-        }).join(''),
-        role: message.role as DbMessage['role'],
+        role: message.role,
         checkpoints: message.metadata?.checkpoints ?? [],
+
+        // deprecated
         applied: null,
         commitOid: null,
         snapshots: null,
-    } satisfies DbMessage;
+        content: null,
+    }
 }

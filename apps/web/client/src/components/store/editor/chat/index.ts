@@ -1,5 +1,5 @@
 import type { GitCommit } from '@onlook/git';
-import { ChatMessageRole, type MessageContext, type UserChatMessage } from '@onlook/models/chat';
+import { type ChatMessage, type MessageContext } from '@onlook/models/chat';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { ChatContext } from './context';
@@ -37,7 +37,7 @@ export class ChatManager {
         return this.conversation.current?.conversation.id;
     }
 
-    async addEditMessage(content: string, contextOverride?: MessageContext[]): Promise<UserChatMessage> {
+    async addEditMessage(content: string, contextOverride?: MessageContext[]): Promise<ChatMessage> {
         const context = contextOverride ?? await this.context.getChatContext();
         const userMessage = await this.conversation.addUserMessage(content, context);
         this.createAndAttachCommitToUserMessage(userMessage.id, content);
@@ -51,13 +51,13 @@ export class ChatManager {
         }
     }
 
-    async addAskMessage(content: string, contextOverride?: MessageContext[]): Promise<UserChatMessage> {
+    async addAskMessage(content: string, contextOverride?: MessageContext[]): Promise<ChatMessage> {
         const context = contextOverride ?? await this.context.getChatContext();
         const userMessage = await this.conversation.addUserMessage(content, context);
         return userMessage;
     }
 
-    async addFixErrorMessage(): Promise<UserChatMessage> {
+    async addFixErrorMessage(): Promise<ChatMessage> {
         const errors = this.editorEngine.branches.getAllErrors();
         const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
         const errorContexts = this.context.getErrorContext(errors);
@@ -69,22 +69,22 @@ export class ChatManager {
         return userMessage
     }
 
-    async resubmitMessage(id: string, newMessageContent: string): Promise<UserChatMessage | null> {
-        const oldMessageIndex = this.conversation.current?.messages.findIndex((m) => m.id === id && m.role === ChatMessageRole.USER);
+    async resubmitMessage(id: string, newMessageContent: string): Promise<ChatMessage | null> {
+        const oldMessageIndex = this.conversation.current?.messages.findIndex((m) => m.id === id && m.role === 'user');
         if (oldMessageIndex === undefined || oldMessageIndex === -1 || !this.conversation.current?.messages[oldMessageIndex]) {
             console.error('No message found with id', id);
             return null;
         }
 
-        const oldMessage = this.conversation.current?.messages[oldMessageIndex] as UserChatMessage;
+        const oldMessage = this.conversation.current?.messages[oldMessageIndex] as ChatMessage;
 
         // Update the old message with the new content
-        const newContext = await this.context.getRefreshedContext(oldMessage.metadata.context);
-        oldMessage.metadata.context = newContext;
+        const newContext = await this.context.getRefreshedContext(oldMessage.metadata?.context ?? []);
+        oldMessage.metadata?.context = newContext;
         oldMessage.parts = [{ type: 'text', text: newMessageContent }];
 
         // Remove all messages after the old message
-        const messagesToRemove = this.conversation.current?.messages.filter((m) => m.createdAt > oldMessage.createdAt);
+        const messagesToRemove = this.conversation.current?.messages.filter((m) => m.metadata?.createdAt && m.metadata.createdAt > oldMessage.metadata?.createdAt);
         await this.conversation.removeMessages(messagesToRemove);
         return oldMessage;
     }

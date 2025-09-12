@@ -1,13 +1,7 @@
 import type { ChatTools } from '@onlook/ai';
 import type { JSONValue, UIMessage, UIMessagePart } from 'ai';
-import type { CodeDiff } from '../../code/index.ts';
 import type { MessageCheckpoints } from './checkpoint.ts';
 import type { MessageContext } from './context.ts';
-
-export enum ChatMessageRole {
-    USER = 'user',
-    ASSISTANT = 'assistant',
-}
 
 // interface BaseChatMessage {
 //     id: string;
@@ -30,12 +24,10 @@ export enum ChatMessageRole {
 //     role: ChatMessageRole.ASSISTANT;
 // }
 
-export type ChatSnapshot = Record<string, CodeDiff>;
 export type ChatMetadata = {
     createdAt: Date;
     conversationId: string;
-    xw;
-    vercelId?: string;
+    vercelId: string;
     context: MessageContext[];
     checkpoints: MessageCheckpoints[];
 };

@@ -62,7 +62,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
 
     // create or update last message in database
     // https://github.com/vercel-labs/ai-sdk-persistence-db/blob/main/lib/db/actions.ts#L50
-    await upsertMessage({ conversationId, id: message.id, message });
+    await upsertMessage({ conversationId, message });
 
     // load the previous messages from the server:
     // https://github.com/vercel-labs/ai-sdk-persistence-db/blob/main/lib/db/actions.ts#L50
@@ -131,15 +131,6 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         return result.toUIMessageStreamResponse(
             {
                 originalMessages: messages,
-                messageMetadata: ({
-                    part
-                }) => {
-                    if (part.type === 'finish-step') {
-                        return {
-                            finishReason: part.finishReason,
-                        }
-                    }
-                },
                 onError: errorHandler,
             }
         );

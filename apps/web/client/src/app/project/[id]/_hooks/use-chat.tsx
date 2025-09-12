@@ -4,8 +4,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import { toVercelMessageFromOnlook } from '@onlook/ai';
-import { toOnlookMessageFromVercel } from '@onlook/db';
-import { ChatMessageRole, ChatType } from '@onlook/models';
+import { ChatType } from '@onlook/models';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, type UIMessage } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
@@ -39,6 +38,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
                 output: result,
             });
         },
+        // TODO: Don't save on finish
         onFinish: ({ message }) => {
             if (!message.metadata) {
                 return;
@@ -86,8 +86,8 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
             toVercelMessageFromOnlook(message, {
                 totalMessages: messages.length,
                 currentMessageIndex: index,
-                lastUserMessageIndex: messages.findLastIndex(m => m.role === ChatMessageRole.USER),
-                lastAssistantMessageIndex: messages.findLastIndex(m => m.role === ChatMessageRole.ASSISTANT),
+                lastUserMessageIndex: messages.findLastIndex(m => m.role === 'user'),
+                lastAssistantMessageIndex: messages.findLastIndex(m => m.role === 'assistant'),
             })
         );
 
