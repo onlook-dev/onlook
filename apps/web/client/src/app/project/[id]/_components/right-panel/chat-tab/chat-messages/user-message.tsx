@@ -84,7 +84,7 @@ export const UserMessage = ({ message }: { message: ChatMessage }) => {
             if (!newMessage) {
                 throw new Error('Message not found');
             }
-            sendMessageToChat(ChatType.EDIT);
+            sendMessageToChat(newMessage, ChatType.EDIT);
         } catch (error) {
             console.error('Failed to resubmit message', error);
             toast.error('Failed to resubmit message. Please try again.', {

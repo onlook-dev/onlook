@@ -1,6 +1,8 @@
+import { api } from '@/trpc/client';
 import type { GitCommit } from '@onlook/git';
-import { type ChatMessage, type MessageContext } from '@onlook/models/chat';
+import { MessageCheckpointType, type ChatMessage, type MessageContext } from '@onlook/models/chat';
 import { makeAutoObservable } from 'mobx';
+import { v4 as uuidv4 } from 'uuid';
 import type { EditorEngine } from '../engine';
 import { ChatContext } from './context';
 import { ConversationManager } from './conversation';
@@ -47,8 +49,41 @@ export class ChatManager {
     async createAndAttachCommitToUserMessage(messageId: string, content: string): Promise<void> {
         const commit = await this.createCommit(content)
         if (commit) {
-            await this.conversation.attachCommitToUserMessage(messageId, commit);
+            await this.attachCommitToUserMessage(messageId, commit);
         }
+    }
+
+    async attachCommitToUserMessage(id: string, commit: GitCommit): Promise<void> {
+        if (!this.conversation.current) {
+            console.error('No conversation found');
+            return;
+        }
+        const message = this.conversation.current?.messages.find((m) => m.id === id && m.role === 'user');
+        if (!message) {
+            console.error('No message found with id', id);
+            return;
+        }
+        const newCheckpoints = [
+            ...(message.metadata?.checkpoints ?? []),
+            {
+                type: MessageCheckpointType.GIT,
+                oid: commit.oid,
+                createdAt: new Date(),
+            },
+        ];
+        message.metadata = {
+            ...message.metadata,
+            createdAt: message.metadata?.createdAt ?? new Date(),
+            conversationId: message.metadata?.conversationId || this.conversation.current.conversation.id,
+            checkpoints: newCheckpoints,
+            vercelId: message.metadata?.vercelId ?? uuidv4(),
+            context: message.metadata?.context ?? [],
+        };
+        await api.chat.message.updateCheckpoints.mutate({
+            messageId: message.id,
+            checkpoints: newCheckpoints,
+        });
+        await this.conversation.addOrReplaceMessage(message);
     }
 
     async addAskMessage(content: string, contextOverride?: MessageContext[]): Promise<ChatMessage> {
@@ -70,21 +105,32 @@ export class ChatManager {
     }
 
     async resubmitMessage(id: string, newMessageContent: string): Promise<ChatMessage | null> {
+        if (!this.conversation.current?.conversation.id) {
+            console.error('No conversation found');
+            return null;
+        }
         const oldMessageIndex = this.conversation.current?.messages.findIndex((m) => m.id === id && m.role === 'user');
         if (oldMessageIndex === undefined || oldMessageIndex === -1 || !this.conversation.current?.messages[oldMessageIndex]) {
             console.error('No message found with id', id);
             return null;
         }
 
-        const oldMessage = this.conversation.current?.messages[oldMessageIndex] as ChatMessage;
+        const oldMessage = this.conversation.current?.messages[oldMessageIndex];
 
         // Update the old message with the new content
         const newContext = await this.context.getRefreshedContext(oldMessage.metadata?.context ?? []);
-        oldMessage.metadata?.context = newContext;
+        oldMessage.metadata = {
+            ...oldMessage.metadata,
+            context: newContext,
+            createdAt: oldMessage.metadata?.createdAt || new Date(),
+            conversationId: oldMessage.metadata?.conversationId || this.conversation.current?.conversation.id,
+            vercelId: oldMessage.metadata?.vercelId ?? uuidv4(),
+            checkpoints: oldMessage.metadata?.checkpoints ?? [],
+        };
         oldMessage.parts = [{ type: 'text', text: newMessageContent }];
 
         // Remove all messages after the old message
-        const messagesToRemove = this.conversation.current?.messages.filter((m) => m.metadata?.createdAt && m.metadata.createdAt > oldMessage.metadata?.createdAt);
+        const messagesToRemove = this.conversation.current?.messages.filter((m) => m.metadata?.createdAt && m.metadata.createdAt > (oldMessage.metadata?.createdAt ?? new Date()));
         await this.conversation.removeMessages(messagesToRemove);
         return oldMessage;
     }

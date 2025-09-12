@@ -1,12 +1,10 @@
 import { api } from '@/trpc/client';
 import { toDbMessage } from '@onlook/db';
-import type { GitCommit } from '@onlook/git';
-import { MessageCheckpointType, type ChatConversation, type ChatMessage, type MessageContext } from '@onlook/models';
+import { type ChatConversation, type ChatMessage, type MessageContext } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { toast } from 'sonner';
 import type { EditorEngine } from '../engine';
 import { getUserChatMessageFromString } from './message';
-
 interface CurrentConversation {
     conversation: ChatConversation;
     messages: ChatMessage[];
@@ -146,30 +144,6 @@ export class ConversationManager {
         listConversation.displayName = title;
     }
 
-    // TODO: Bring this to Server
-    async attachCommitToUserMessage(id: string, commit: GitCommit): Promise<void> {
-        const message = this.current?.messages.find((m) => m.id === id && m.role === 'user');
-        if (!message) {
-            console.error('No message found with id', id);
-            return;
-        }
-        const userMessage = message as ChatMessage;
-        const newCheckpoints = [
-            ...(userMessage.metadata?.checkpoints ?? []),
-            {
-                type: MessageCheckpointType.GIT,
-                oid: commit.oid,
-                createdAt: new Date(),
-            },
-        ];
-        userMessage.metadata?.checkpoints = newCheckpoints;
-        await api.chat.message.updateCheckpoints.mutate({
-            messageId: message.id,
-            checkpoints: newCheckpoints,
-        });
-        await this.addOrReplaceMessage(userMessage);
-    }
-
     async addOrReplaceMessage(message: ChatMessage) {
         if (!this.current) {
             console.error('No conversation found');
@@ -181,7 +155,6 @@ export class ConversationManager {
         } else {
             this.current.messages[index] = message;
         }
-        await this.upsertMessageInStorage(message, this.current.conversation.id);
     }
 
     async removeMessages(messages: ChatMessage[]) {

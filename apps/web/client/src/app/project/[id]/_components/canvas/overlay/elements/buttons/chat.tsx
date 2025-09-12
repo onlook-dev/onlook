@@ -28,8 +28,8 @@ export const OverlayChatInput = observer(({
     const handleSubmit = async () => {
         try {
             editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
-            await editorEngine.chat.addEditMessage(inputState.value);
-            sendMessageToChat(ChatType.EDIT);
+            const message = await editorEngine.chat.addEditMessage(inputState.value);
+            sendMessageToChat(message, ChatType.EDIT);
             setInputState(DEFAULT_INPUT_STATE);
         } catch (error) {
             console.error('Error sending message', error);
