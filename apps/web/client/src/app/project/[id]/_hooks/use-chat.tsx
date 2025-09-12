@@ -66,8 +66,6 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         onError: (error) => {
             console.error('Error in chat', error);
             editorEngine.chat.error.handleChatError(error);
-            const filteredMessages = chat.messages.filter(msg => msg.role !== 'assistant');
-            chat.setMessages(filteredMessages);
             if (lastMessageRef.current) {
                 const currentConversationId = editorEngine.chat.conversation.current?.conversation.id;
                 editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(lastMessageRef.current, currentConversationId ?? ''));
