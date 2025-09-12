@@ -66,20 +66,8 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         onError: (error) => {
             console.error('Error in chat', error);
             editorEngine.chat.error.handleChatError(error);
-
-            chat.stop();
-
             const filteredMessages = chat.messages.filter(msg => msg.role !== 'assistant');
             chat.setMessages(filteredMessages);
-
-            if (chat.status === 'streaming' || chat.status === 'submitted') {
-                setTimeout(() => {
-                    if (chat.status === 'streaming' || chat.status === 'submitted') {
-                        chat.stop();
-                    }
-                }, 100);
-            }
-
             if (lastMessageRef.current) {
                 const currentConversationId = editorEngine.chat.conversation.current?.conversation.id;
                 editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(lastMessageRef.current, currentConversationId ?? ''));
