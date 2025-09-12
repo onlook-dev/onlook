@@ -323,7 +323,7 @@ export const projectRouter = createTRPCRouter({
             try {
                 const { model, providerOptions, headers } = await initModel({
                     provider: LLMProvider.OPENROUTER,
-                    model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+                    model: OPENROUTER_MODELS.OPEN_AI_GPT_5_NANO,
                 });
 
                 const MAX_NAME_LENGTH = 50;
