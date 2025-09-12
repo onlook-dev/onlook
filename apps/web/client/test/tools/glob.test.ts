@@ -1,6 +1,6 @@
-import { describe, expect, test, mock, beforeEach, afterEach } from 'bun:test';
-import { handleGlobTool } from '../../src/components/tools/handlers/glob';
+import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 import type { EditorEngine } from '../../src/components/store/editor/engine';
+import { handleGlobTool } from '../../src/components/tools/handlers/glob';
 
 // Mock sandbox and session for testing
 const createMockSession = (commandResults: Record<string, { success: boolean; output: string; error?: string }>) => ({
@@ -24,7 +24,7 @@ const createMockEditorEngine = (sandbox: any): EditorEngine => ({
     branches: {
         getSandboxById: mock((id: string) => sandbox)
     }
-} as any);
+});
 
 describe('Glob Tool', () => {
     let mockSandbox: any;
@@ -232,7 +232,7 @@ describe('Glob Tool', () => {
             const result = await handleGlobTool(args, mockEngine);
             expect(result).toContain('Found 1 file:');
             expect(result).toContain('src/file.js');
-            
+
             // Verify sh was not called for complex pattern
             expect(mockSandbox.session.runCommand).not.toHaveBeenCalledWith(
                 expect.stringContaining('sh -c'),
@@ -437,7 +437,7 @@ describe('Glob Tool', () => {
 
         test('should handle truncation for large result sets', async () => {
             const largeOutput = Array.from({ length: 1500 }, (_, i) => `file${i}.js`).join('\n');
-            
+
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },

@@ -1,8 +1,8 @@
 import { useEditorEngine } from '@/components/store/editor';
 import type { LayerNode } from '@onlook/models/element';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { type NodeApi, Tree, type TreeApi } from 'react-arborist';
+import { useCallback, useEffect, useRef, useState, type ElementType } from 'react';
+import { Tree, type NodeApi, type RowRendererProps, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import { RightClickMenu } from '../../right-click-menu';
 import { TreeNode } from './tree/tree-node';
@@ -148,7 +148,7 @@ export const LayersTab = observer(() => {
                     rowHeight={24}
                     height={height ?? 300}
                     width={width ?? 365}
-                    renderRow={TreeRow as any}
+                    renderRow={TreeRow as unknown as ElementType<RowRendererProps<LayerNode>>}
                     onMove={handleDragEnd}
                     disableDrop={disableDrop}
                     className="overflow-auto"

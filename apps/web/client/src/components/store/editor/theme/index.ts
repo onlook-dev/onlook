@@ -406,7 +406,7 @@ export class ThemeManager {
 
                         // Find the group
                         const groupProp = colorObj.properties.find((prop) =>
-                            isValidTailwindConfigProperty(prop as any, camelCaseName),
+                            isValidTailwindConfigProperty(prop, camelCaseName),
                         );
 
                         if (groupProp && 'value' in groupProp) {
@@ -414,7 +414,7 @@ export class ThemeManager {
                                 if (colorName) {
                                     // Delete specific color within group
                                     const colorIndex = groupProp.value.properties.findIndex(
-                                        (prop) => isValidTailwindConfigProperty(prop as any, colorName),
+                                        (prop) => isValidTailwindConfigProperty(prop, colorName),
                                     );
 
                                     if (colorIndex !== -1) {
@@ -939,9 +939,9 @@ export class ThemeManager {
                     }
 
                     if (!parentName) {
-                        addTailwindRootColor(colorObj as any, newName, newCssVarName);
+                        addTailwindRootColor(colorObj, newName, newCssVarName);
                     } else {
-                        addTailwindNestedColor(colorObj as any, parentName, newName, newCssVarName);
+                        addTailwindNestedColor(colorObj, parentName, newName, newCssVarName);
                     }
                 }
             },

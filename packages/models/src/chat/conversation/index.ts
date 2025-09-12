@@ -9,4 +9,16 @@ export interface ChatConversation {
     metadata?: {
         suggestions: ChatSuggestion[];
     };
+
+    // Subchat support
+    parentConversationId?: string;
+    parentMessageId?: string;
+}
+
+export interface ChatConversationWithSubchats extends ChatConversation {
+    subchats: ChatConversation[];
+}
+
+export interface ChatConversationTree extends ChatConversation {
+    subchats: ChatConversationTree[];
 }

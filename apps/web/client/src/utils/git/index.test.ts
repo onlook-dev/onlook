@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'bun:test';
-import { sanitizeCommitMessage, escapeShellString, prepareCommitMessage } from './index';
+import { escapeShellString, prepareCommitMessage, sanitizeCommitMessage } from './index';
 
 describe('Git utilities', () => {
     describe('sanitizeCommitMessage', () => {
         it('should handle empty messages', () => {
             expect(sanitizeCommitMessage('')).toBe('Empty commit message');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            expect(sanitizeCommitMessage(null as any)).toBe('Empty commit message');
+            expect(sanitizeCommitMessage(null as unknown as string)).toBe('Empty commit message');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            expect(sanitizeCommitMessage(undefined as any)).toBe('Empty commit message');
+            expect(sanitizeCommitMessage(undefined as unknown as string)).toBe('Empty commit message');
         });
 
         it('should truncate long messages', () => {
@@ -50,7 +50,7 @@ describe('Git utilities', () => {
         it('should handle empty strings', () => {
             expect(escapeShellString('')).toBe('""');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            expect(escapeShellString(null as any)).toBe('""');
+            expect(escapeShellString(null as unknown as string)).toBe('""');
         });
 
         it('should not quote safe strings', () => {

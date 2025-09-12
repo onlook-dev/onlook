@@ -3,7 +3,8 @@ import { ChatType } from '@onlook/models';
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helperts';
+import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helpers';
+import { saveMessageWithParts } from './helpers/persistence';
 
 const MAX_STEPS = 20;
 
@@ -130,6 +131,17 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                         return {
                             finishReason: part.finishReason,
                         }
+                    }
+                },
+                onFinish: async ({ responseMessage, messages: allMessages }) => {
+                    try {
+                        // Save the new assistant response message with its parts
+                        await saveMessageWithParts(responseMessage, conversationId);
+
+                        console.log(`Saved message ${responseMessage.id} with ${responseMessage.parts?.length || 0} parts`);
+                    } catch (error) {
+                        console.error('Failed to save message during streaming:', error);
+                        // Don't throw here to avoid breaking the stream
                     }
                 },
                 onError: errorHandler,

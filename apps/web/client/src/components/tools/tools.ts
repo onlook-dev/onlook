@@ -1,4 +1,4 @@
-import { getToolSetFromType } from '@/app/api/chat/helperts';
+import { getToolSetFromType } from '@/app/api/chat/helpers';
 import type { EditorEngine } from '@/components/store/editor/engine';
 import type { ToolCall } from '@ai-sdk/provider-utils';
 import {

@@ -1,6 +1,6 @@
 import { EditorAttributes } from '@onlook/constants';
 import type { StyleChange } from '@onlook/models';
-import { generate, parse, walk, type CssNode, type Declaration, type Raw, type Rule, type SelectorList } from 'css-tree';
+import { generate, List, parse, walk, type CssNode, type Declaration, type Raw, type Rule, type SelectorList } from 'css-tree';
 import { getDomIdSelector } from '../../helpers';
 
 class CSSManager {
@@ -106,7 +106,7 @@ class CSSManager {
                             },
                         ],
                     },
-                ] as any,
+                ] as unknown as List<CssNode>,
             },
             block: {
                 type: 'Block',
@@ -116,7 +116,7 @@ class CSSManager {
                         property: property,
                         value: { type: 'Raw', value: value },
                     },
-                ] as any,
+                ] as unknown as List<CssNode>,
             },
         };
 

@@ -163,7 +163,7 @@ export class CLISessionImpl implements CLISession {
 
         // Override write method to handle Claude Code's redrawing patterns
         const originalWrite = terminal.write.bind(terminal);
-        (terminal as any).write = (data: string | Uint8Array, callback?: () => void) => {
+        (terminal).write = (data: string | Uint8Array, callback?: () => void) => {
             if (typeof data === 'string') {
                 // Detect Claude Code's redraw pattern: multiple line clears with cursor movement
                 const lineUpPattern = /(\x1b\[2K\x1b\[1A)+\x1b\[2K\x1b\[G/;
