@@ -1,5 +1,5 @@
 import type { Message as DbMessage, Part as DbPart } from "@onlook/db";
-import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type UserChatMessage, type ChatUIMessage, type InternalChatMetadata } from "@onlook/models";
+import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type ChatUIMessage, type InternalChatMetadata, type UserChatMessage } from "@onlook/models";
 import { assertNever } from '@onlook/utility';
 import { v4 as uuidv4 } from 'uuid';
 import { fromDbParts, toDbParts } from './parts';
@@ -78,18 +78,25 @@ export const getDbPartsFromMessage = (message: ChatMessage) => {
     return toDbParts(message.parts, message.id);
 }
 
-export const toOnlookMessageFromVercel = (message: { id: string; parts: ChatUIMessage['parts']; role: 'user' | 'assistant' | 'system'; metadata?: unknown }, conversationId: string): ChatMessage => {
+export const toOnlookMessageFromVercel = (
+    message: {
+        id: string; parts: ChatUIMessage['parts'];
+        role: ChatUIMessage['role'];
+        metadata?: unknown
+    },
+    conversationId: string
+): ChatMessage => {
     const metadata: InternalChatMetadata = {
         vercelId: message.id,
         context: [],
         checkpoints: [],
     }
-    
+
     // Filter out system role messages as our ChatMessage doesn't support them
     if (message.role === 'system') {
         throw new Error('System messages are not supported in ChatMessage type');
     }
-    
+
     const baseMessage: ChatMessage = {
         id: uuidv4(),
         createdAt: new Date(),
