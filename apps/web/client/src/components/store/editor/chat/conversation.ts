@@ -50,7 +50,7 @@ export class ConversationManager {
     async startNewConversation() {
         try {
             this.creatingConversation = true;
-            if (this.current?.messages.length === 0 && !this.current?.conversation.title) {
+            if (this.current?.messages.length === 0 && !this.current?.conversation.displayName) {
                 throw new Error('Current conversation is already empty.');
             }
             const newConversation = await api.chat.conversation.upsert.mutate({
@@ -122,7 +122,7 @@ export class ConversationManager {
         const message = getUserChatMessageFromString(content, context, this.current.conversation.id);
 
         await this.addOrReplaceMessage(message);
-        if (!this.current.conversation.title) {
+        if (!this.current.conversation.displayName) {
             this.addConversationTitle(this.current.conversation.id, content);
         }
         return message;
@@ -143,7 +143,7 @@ export class ConversationManager {
             console.error('No conversation found');
             return;
         }
-        listConversation.title = title;
+        listConversation.displayName = title;
     }
 
     async attachCommitToUserMessage(id: string, commit: GitCommit): Promise<void> {
