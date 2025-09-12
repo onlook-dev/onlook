@@ -6,7 +6,9 @@ export const fromDbConversation = (conversation: DbConversation): ChatConversati
         ...conversation,
         metadata: {
             suggestions: conversation.suggestions || [],
-        }
+        },
+        parentConversationId: conversation.parentConversationId || undefined,
+        parentMessageId: conversation.parentMessageId || undefined,
     }
 }
 
@@ -16,5 +18,7 @@ export const toDbConversation = (conversation: ChatConversation): DbConversation
         projectId: conversation.projectId,
         displayName: conversation.title || null,
         suggestions: conversation.metadata?.suggestions || [],
+        parentConversationId: conversation.parentConversationId || null,
+        parentMessageId: conversation.parentMessageId || null,
     }
 }

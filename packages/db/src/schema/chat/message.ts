@@ -29,11 +29,16 @@ export const messages = pgTable("messages", {
 export const messageInsertSchema = createInsertSchema(messages);
 export const messageUpdateSchema = createUpdateSchema(messages);
 
-export const messageRelations = relations(messages, ({ one }) => ({
+export const messageRelations = relations(messages, ({ one, many }) => ({
     conversation: one(conversations, {
         fields: [messages.conversationId],
         references: [conversations.id],
         relationName: CONVERSATION_MESSAGe_RELATION_NAME,
+    }),
+    
+    // Subchats spawned from this message
+    spawnedSubchats: many(conversations, {
+        relationName: "conversation_spawned_from_message",
     }),
 }));
 

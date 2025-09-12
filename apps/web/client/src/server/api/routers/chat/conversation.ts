@@ -3,11 +3,12 @@ import {
     conversationInsertSchema,
     conversations,
     conversationUpdateSchema,
-    fromDbConversation
+    fromDbConversation,
+    messages
 } from '@onlook/db';
 import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
 import { generateText } from 'ai';
-import { eq } from 'drizzle-orm';
+import { eq, isNull } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -62,6 +63,116 @@ export const conversationRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             await ctx.db.delete(conversations).where(eq(conversations.id, input.conversationId));
         }),
+    
+    // Subchat operations
+    getSubchats: protectedProcedure
+        .input(z.object({
+            parentConversationId: z.string()
+        }))
+        .query(async ({ ctx, input }) => {
+            const subchats = await ctx.db.query.conversations.findMany({
+                where: eq(conversations.parentConversationId, input.parentConversationId),
+                orderBy: (conversations, { asc }) => [asc(conversations.createdAt)],
+            });
+            return subchats.map((subchat) => fromDbConversation(subchat));
+        }),
+    
+    createSubchat: protectedProcedure
+        .input(z.object({
+            projectId: z.string(),
+            parentConversationId: z.string(),
+            parentMessageId: z.string().optional(),
+            displayName: z.string().optional(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+            // Verify parent conversation exists and belongs to the same project
+            const parentConversation = await ctx.db.query.conversations.findFirst({
+                where: eq(conversations.id, input.parentConversationId),
+            });
+            
+            if (!parentConversation) {
+                throw new Error('Parent conversation not found');
+            }
+            
+            if (parentConversation.projectId !== input.projectId) {
+                throw new Error('Parent conversation does not belong to the specified project');
+            }
+            
+            // If parentMessageId provided, verify it exists and belongs to the parent conversation
+            if (input.parentMessageId) {
+                const parentMessage = await ctx.db.query.messages.findFirst({
+                    where: eq(messages.id, input.parentMessageId),
+                });
+                
+                if (!parentMessage || parentMessage.conversationId !== input.parentConversationId) {
+                    throw new Error('Parent message not found or does not belong to the parent conversation');
+                }
+            }
+            
+            const [subchat] = await ctx.db.insert(conversations).values({
+                projectId: input.projectId,
+                parentConversationId: input.parentConversationId,
+                parentMessageId: input.parentMessageId || null,
+                displayName: input.displayName || null,
+                suggestions: [],
+            }).returning();
+            
+            if (!subchat) {
+                throw new Error('Subchat not created');
+            }
+            
+            return fromDbConversation(subchat);
+        }),
+    
+    getRootConversations: protectedProcedure
+        .input(z.object({ 
+            projectId: z.string() 
+        }))
+        .query(async ({ ctx, input }) => {
+            // Get only root conversations (no parent)
+            const rootConversations = await ctx.db.query.conversations.findMany({
+                where: (conversations, { eq, and, isNull }) => and(
+                    eq(conversations.projectId, input.projectId),
+                    isNull(conversations.parentConversationId)
+                ),
+                orderBy: (conversations, { desc }) => [desc(conversations.updatedAt)],
+            });
+            return rootConversations.map((conversation) => fromDbConversation(conversation));
+        }),
+    
+    getConversationTree: protectedProcedure
+        .input(z.object({
+            conversationId: z.string()
+        }))
+        .query(async ({ ctx, input }) => {
+            // Get the root conversation and all its descendants
+            const buildTree = async (parentId: string): Promise<any> => {
+                const conversation = await ctx.db.query.conversations.findFirst({
+                    where: eq(conversations.id, parentId),
+                });
+                
+                if (!conversation) {
+                    return null;
+                }
+                
+                const subchats = await ctx.db.query.conversations.findMany({
+                    where: eq(conversations.parentConversationId, parentId),
+                    orderBy: (conversations, { asc }) => [asc(conversations.createdAt)],
+                });
+                
+                const subchatTrees = await Promise.all(
+                    subchats.map(subchat => buildTree(subchat.id))
+                );
+                
+                return {
+                    ...fromDbConversation(conversation),
+                    subchats: subchatTrees.filter(Boolean)
+                };
+            };
+            
+            return await buildTree(input.conversationId);
+        }),
+        
     generateTitle: protectedProcedure
         .input(z.object({
             conversationId: z.string(),
