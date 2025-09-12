@@ -1,5 +1,5 @@
-import type { DrizzleDb } from '@onlook/db/src/client';
-import { users } from '@onlook/db/src/schema';
+import type { DrizzleDb } from '@onlook/db';
+import { users } from '@onlook/db';
 import {
     createInstallationOctokit,
     generateInstallationUrl
@@ -73,7 +73,7 @@ export const githubRouter = createTRPCRouter({
                 if (installation.data.account && 'type' in installation.data.account && installation.data.account.type === 'Organization') {
                     return [{
                         id: installation.data.account.id,
-                        login: 'login' in installation.data.account ? installation.data.account.login : (installation.data.account as any).name || '',
+                        login: 'login' in installation.data.account ? installation.data.account.login : (installation.data.account as { name: string }).name || '',
                         avatar_url: installation.data.account.avatar_url,
                         description: undefined, // Organizations don't have descriptions in this context
                     }];

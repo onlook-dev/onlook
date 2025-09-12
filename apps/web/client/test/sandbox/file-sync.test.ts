@@ -190,7 +190,7 @@ describe('FileSyncManager', async () => {
 
     test('should evict least recently used files when cache exceeds limits', async () => {
         // Create a new FileSyncManager with small limits for testing
-        const testManager = new (FileSyncManager as any)();
+        const testManager = new (FileSyncManager)();
 
         // Add files beyond the cache limit to test eviction
         const files: SandboxFile[] = [];

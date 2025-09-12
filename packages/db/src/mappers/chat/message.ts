@@ -1,7 +1,6 @@
 import type { Message as DbMessage, Part as DbPart } from "@onlook/db";
-import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type UserChatMessage } from "@onlook/models";
+import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type UserChatMessage, type ChatUIMessage, type InternalChatMetadata } from "@onlook/models";
 import { assertNever } from '@onlook/utility';
-import type { UIMessage as VercelMessage } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
 import { fromDbParts, toDbParts } from './parts';
 
@@ -24,13 +23,16 @@ export const fromDbMessage = (message: DbMessage): ChatMessage => {
         case ChatMessageRole.ASSISTANT:
             return {
                 ...baseMessage,
-                role: message.role as ChatMessageRole.ASSISTANT,
+                role: message.role as typeof ChatMessageRole.ASSISTANT,
             } satisfies AssistantChatMessage;
         case ChatMessageRole.USER:
             return {
                 ...baseMessage,
-                role: message.role as ChatMessageRole.USER,
+                role: message.role as typeof ChatMessageRole.USER,
             } satisfies UserChatMessage;
+        case ChatMessageRole.SYSTEM:
+            // System messages are not supported in our ChatMessage type
+            throw new Error('System messages are not supported');
         default:
             assertNever(message.role);
     }
@@ -65,6 +67,7 @@ export const toDbMessage = (message: ChatMessage): DbMessage => {
         applied: null,
         commitOid: null,
         snapshots: null,
+        parts: message.parts, // Keep parts for backwards compatibility during transition
     } satisfies DbMessage;
 }
 
@@ -75,24 +78,29 @@ export const getDbPartsFromMessage = (message: ChatMessage) => {
     return toDbParts(message.parts, message.id);
 }
 
-export const toOnlookMessageFromVercel = (message: VercelMessage, conversationId: string): ChatMessage => {
-    const metadata = {
+export const toOnlookMessageFromVercel = (message: { id: string; parts: ChatUIMessage['parts']; role: 'user' | 'assistant' | 'system'; metadata?: unknown }, conversationId: string): ChatMessage => {
+    const metadata: InternalChatMetadata = {
         vercelId: message.id,
         context: [],
         checkpoints: [],
     }
+    
+    // Filter out system role messages as our ChatMessage doesn't support them
+    if (message.role === 'system') {
+        throw new Error('System messages are not supported in ChatMessage type');
+    }
+    
     const baseMessage: ChatMessage = {
-        ...message,
         id: uuidv4(),
         createdAt: new Date(),
         threadId: conversationId,
         metadata,
         parts: message.parts ?? [],
-        role: message.role as ChatMessageRole,
+        role: message.role,
     }
     return baseMessage;
 }
 
-export const toDbMessageFromVercel = (message: VercelMessage, conversationId: string): DbMessage => {
+export const toDbMessageFromVercel = (message: ChatUIMessage, conversationId: string): DbMessage => {
     return toDbMessage(toOnlookMessageFromVercel(message, conversationId));
 }

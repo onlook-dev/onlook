@@ -75,7 +75,7 @@ export const validateFolderName = (folderName: string): { valid: boolean; error?
     }
 
     // Check for reserved names
-    if (RESERVED_NAMES.includes(folderName.toUpperCase() as any)) {
+    if (RESERVED_NAMES.includes(folderName.toUpperCase() as (typeof RESERVED_NAMES)[number])) {
         return { valid: false, error: 'Folder name is reserved' };
     }
 

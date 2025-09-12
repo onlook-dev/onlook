@@ -1,7 +1,7 @@
-import { describe, expect, mock, test } from 'bun:test';
 import type { ReaddirEntry } from '@codesandbox/sdk';
 import type { PageNode, SandboxFile } from '@onlook/models';
 import { RouterType } from '@onlook/models';
+import { describe, expect, mock, test } from 'bun:test';
 import { scanAppDirectory } from '../../src/components/store/editor/pages/helper';
 
 // Mock SandboxManager interface
@@ -705,7 +705,7 @@ describe('scanAppDirectory', () => {
     testCases.forEach(({ name, input, expected }) => {
         test(`should handle ${name}`, async () => {
             const result = await scanAppDirectory(
-                input.sandboxManager as any,
+                input.sandboxManager,
                 input.directory
             );
 
@@ -731,7 +731,7 @@ describe('scanAppDirectory', () => {
             throw new Error('Directory not found');
         });
 
-        const result = await scanAppDirectory(mockSandboxManager as any, 'nonexistent');
+        const result = await scanAppDirectory(mockSandboxManager, 'nonexistent');
         expect(result).toEqual([]);
     });
 
@@ -747,7 +747,7 @@ describe('scanAppDirectory', () => {
         });
 
         // The function should throw an error when file reading fails
-        await expect(scanAppDirectory(mockSandboxManager as any, 'app')).rejects.toThrow('File read error');
+        await expect(scanAppDirectory(mockSandboxManager, 'app')).rejects.toThrow('File read error');
     });
 
     test('should handle metadata extraction errors', async () => {
@@ -765,7 +765,7 @@ describe('scanAppDirectory', () => {
             });
         });
 
-        const result = await scanAppDirectory(mockSandboxManager as any, 'app');
+        const result = await scanAppDirectory(mockSandboxManager, 'app');
         expect(result).toHaveLength(1);
         expect(result[0].metadata).toEqual({});
     });

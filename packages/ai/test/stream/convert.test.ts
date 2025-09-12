@@ -1,6 +1,6 @@
 import type { ChatMessage } from '@onlook/models';
 import { ChatMessageRole } from '@onlook/models';
-import type { UIMessagePart, UIDataTypes, UITools } from 'ai';
+import type { UIDataTypes, UIMessagePart, UITools } from 'ai';
 import { describe, expect, test } from 'bun:test';
 import { convertToStreamMessages, extractTextFromParts } from '../../src/stream';
 
@@ -128,27 +128,27 @@ describe('extractTextFromParts', () => {
             { type: 'text', text: 'World' },
         ];
 
-        const result = extractTextFromParts(parts as any);
+        const result = extractTextFromParts(parts);
         expect(result).toBe('HelloWorld');
     });
 
     test('handles non-text parts by returning empty string', () => {
         const parts = [
-            { type: 'reasoning', reasoning: 'Some reasoning' } as any,
+            { type: 'reasoning', reasoning: 'Some reasoning' },
             { type: 'text', text: 'Hello' },
         ];
 
-        const result = extractTextFromParts(parts as any);
+        const result = extractTextFromParts(parts);
         expect(result).toBe('Hello');
     });
 
     test('returns empty string for empty parts array', () => {
-        const result = extractTextFromParts([] as any);
+        const result = extractTextFromParts([]);
         expect(result).toBe('');
     });
 
     test('handles undefined parts', () => {
-        const result = extractTextFromParts(undefined as any);
+        const result = extractTextFromParts(undefined);
         expect(result).toBeUndefined();
     });
 });

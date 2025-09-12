@@ -1,16 +1,11 @@
 import {
     conversations,
+    fromDbMessageWithParts,
     messageInsertSchema,
     messages,
     messageUpdateSchema,
-    fromDbMessage,
-    fromDbMessageWithParts,
-    getDbPartsFromMessage,
-    toDbMessage,
     parts,
-    partsInsertSchema,
-    type Message,
-    type Part
+    type Message
 } from '@onlook/db';
 import { MessageCheckpointType, type ChatMessageRole } from '@onlook/models';
 import { asc, eq, inArray } from 'drizzle-orm';
@@ -32,7 +27,7 @@ export const messageRouter = createTRPCRouter({
                     }
                 }
             });
-            return result.map((message) => 
+            return result.map((message) =>
                 fromDbMessageWithParts(message, message.parts || [])
             );
         }),
@@ -52,14 +47,14 @@ export const messageRouter = createTRPCRouter({
                     throw new Error(`Conversation not found`);
                 }
             }
-            
+
             const { parts: messageParts, ...messageData } = input.message;
             const normalizedMessage = normalizeMessage(messageData);
-            
+
             // Start transaction to ensure consistency
-            return await ctx.db.transaction(async (trx) => {
+            return await ctx.db.transaction(async (tx) => {
                 // Insert/update message
-                const [dbMessage] = await trx
+                const [dbMessage] = await tx
                     .insert(messages)
                     .values(normalizedMessage)
                     .onConflictDoUpdate({
@@ -70,11 +65,15 @@ export const messageRouter = createTRPCRouter({
                     })
                     .returning();
 
+                if (!dbMessage) {
+                    throw new Error('Message not created');
+                }
+
                 // Handle parts if provided
                 if (messageParts && messageParts.length > 0) {
                     // Delete existing parts
-                    await trx.delete(parts).where(eq(parts.messageId, dbMessage.id));
-                    
+                    await tx.delete(parts).where(eq(parts.messageId, dbMessage.id));
+
                     // Convert and insert new parts
                     const dbParts = messageParts.map((part, index) => ({
                         messageId: dbMessage.id,
@@ -82,8 +81,8 @@ export const messageRouter = createTRPCRouter({
                         order: index,
                         ...getPartFields(part)
                     }));
-                    
-                    await trx.insert(parts).values(dbParts);
+
+                    await tx.insert(parts).values(dbParts);
                 }
 
                 return dbMessage;

@@ -62,7 +62,7 @@ export function restoreElementStyle(el: HTMLElement) {
         if (saved) {
             const style = JSON.parse(saved);
             for (const key in style) {
-                el.style[key as any] = style[key];
+                el.style[key as unknown as number] = style[key];
             }
         }
     } catch (e) {

@@ -45,7 +45,7 @@ describe('TemplateNodeManager', () => {
                     readFile: mock(async () => ({ type: 'text', content: 'file content' })),
                 })),
             },
-        } as any;
+        };
         manager = new TemplateNodeManager(mockEditorEngine, 'test-project');
         await manager.init();
     });
@@ -247,7 +247,7 @@ describe('TemplateNodeManager', () => {
 
         // Mock addOidsToAst to simulate existing OIDs being preserved
         const { addOidsToAst } = await import('@onlook/parser');
-        const mockAddOidsToAst = addOidsToAst as any;
+        const mockAddOidsToAst = addOidsToAst;
 
         // Clear any previous calls
         mockAddOidsToAst.mockClear();
@@ -283,7 +283,7 @@ describe('TemplateNodeManager', () => {
 
         // Mock parser functions to track calls
         const { createTemplateNodeMap } = await import('@onlook/parser');
-        const mockCreateTemplateNodeMap = createTemplateNodeMap as any;
+        const mockCreateTemplateNodeMap = createTemplateNodeMap;
         mockCreateTemplateNodeMap.mockClear();
 
         // Act - First processing
@@ -307,7 +307,7 @@ describe('TemplateNodeManager', () => {
 
         // Mock parser functions to track calls
         const { createTemplateNodeMap } = await import('@onlook/parser');
-        const mockCreateTemplateNodeMap = createTemplateNodeMap as any;
+        const mockCreateTemplateNodeMap = createTemplateNodeMap;
         mockCreateTemplateNodeMap.mockClear();
 
         // Act - First processing
@@ -369,7 +369,7 @@ describe('TemplateNodeManager', () => {
 
         // Mock to return different template node maps
         const { createTemplateNodeMap } = await import('@onlook/parser');
-        const mockCreateTemplateNodeMap = createTemplateNodeMap as any;
+        const mockCreateTemplateNodeMap = createTemplateNodeMap;
         mockCreateTemplateNodeMap
             .mockReturnValueOnce(new Map([['oid1', node1]]))
             .mockReturnValueOnce(new Map([['oid2', node2]]));

@@ -1,21 +1,43 @@
-import { db } from '@onlook/db';
-import { messages, parts } from '@onlook/db/schema';
+import { messages, parts } from '@onlook/db';
+import { db } from '@onlook/db/src/client';
+import type { ChatUIMessage, ChatUIMessagePart, chatMetadataSchema } from '@onlook/models';
 import type { UIMessage } from 'ai';
 import { eq } from 'drizzle-orm';
 
 /**
+ * Convert a generic AI SDK UIMessage to our ChatUIMessage structure
+ */
+function convertToTypedUIMessage(message: UIMessage): ChatUIMessage {
+    // Type-safe conversion of generic UIMessage to our specific ChatUIMessage
+    const convertedParts: ChatUIMessagePart[] = message.parts.map(part => {
+        // The parts are compatible, we just need to assert the correct type
+        return part as ChatUIMessagePart;
+    });
+
+    return {
+        id: message.id,
+        role: message.role as 'user' | 'assistant',
+        parts: convertedParts,
+        metadata: message.metadata as ReturnType<typeof chatMetadataSchema.parse>,
+    };
+}
+
+/**
  * Save a UIMessage with its parts to the database using the new parts table structure
  */
-export async function saveMessageWithParts(message: UIMessage, conversationId: string) {
-    return await db.transaction(async (trx) => {
+export async function saveMessageWithParts(message: UIMessage | ChatUIMessage, conversationId: string) {
+    const typedMessage = 'metadata' in message && message.metadata !== undefined 
+        ? message as ChatUIMessage 
+        : convertToTypedUIMessage(message as UIMessage);
+    return await db.transaction(async (tx) => {
         // Prepare message data
         const messageData = {
-            id: message.id,
+            id: typedMessage.id,
             conversationId,
-            role: message.role,
-            content: message.parts
+            role: typedMessage.role,
+            content: typedMessage.parts
                 .filter(part => part.type === 'text')
-                .map(part => (part as any).text)
+                .map(part => (part as { text: string }).text)
                 .join(''),
             createdAt: new Date(),
             context: [],
@@ -24,11 +46,11 @@ export async function saveMessageWithParts(message: UIMessage, conversationId: s
             commitOid: null,
             snapshots: null,
             // Keep legacy parts for backward compatibility during transition
-            parts: message.parts,
+            parts: typedMessage.parts
         };
 
         // Insert/update message
-        const [dbMessage] = await trx
+        const [dbMessage] = await tx
             .insert(messages)
             .values(messageData)
             .onConflictDoUpdate({
@@ -40,13 +62,13 @@ export async function saveMessageWithParts(message: UIMessage, conversationId: s
             .returning();
 
         // Handle parts
-        if (message.parts && message.parts.length > 0) {
+        if (typedMessage.parts && typedMessage.parts.length > 0) {
             // Delete existing parts for this message
-            await trx.delete(parts).where(eq(parts.messageId, message.id));
+            await tx.delete(parts).where(eq(parts.messageId, typedMessage.id));
 
             // Convert and insert new parts
-            const dbParts = message.parts.map((part, index) => ({
-                messageId: message.id,
+            const dbParts = typedMessage.parts.map((part, index) => ({
+                messageId: typedMessage.id,
                 type: part.type,
                 order: index,
                 createdAt: new Date(),
@@ -54,7 +76,7 @@ export async function saveMessageWithParts(message: UIMessage, conversationId: s
             }));
 
             if (dbParts.length > 0) {
-                await trx.insert(parts).values(dbParts);
+                await tx.insert(parts).values(dbParts);
             }
         }
 
@@ -65,64 +87,68 @@ export async function saveMessageWithParts(message: UIMessage, conversationId: s
 /**
  * Convert UIMessage part to database part fields using prefix-based columns
  */
-function convertUIPartToDbFields(part: UIMessage['parts'][0]): Record<string, any> {
-    const fields: Record<string, any> = {
-        providerMetadata: part.providerMetadata
+function convertUIPartToDbFields(part: ChatUIMessage['parts'][0]): Record<string, unknown> {
+    const fields: Record<string, unknown> = {
+        providerMetadata: 'providerMetadata' in part ? part.providerMetadata as Record<string, unknown> | undefined : undefined
     };
 
     switch (part.type) {
         case "text":
-            fields.text_text = (part as any).text;
+            fields.text_text = (part).text;
             break;
 
         case "reasoning":
-            fields.reasoning_text = (part as any).text;
+            fields.reasoning_text = (part).text;
             break;
 
         case "file":
-            fields.file_mediaType = (part as any).mediaType;
-            fields.file_filename = (part as any).filename;
-            fields.file_url = (part as any).url;
+            fields.file_mediaType = (part).mediaType;
+            fields.file_filename = (part).filename;
+            fields.file_url = (part).url;
             break;
 
-        case "source_url":
-            fields.source_url_sourceId = (part as any).sourceId;
-            fields.source_url_url = (part as any).url;
-            fields.source_url_title = (part as any).title;
+        case "source-url":
+            fields.source_url_sourceId = (part).sourceId;
+            fields.source_url_url = (part).url;
+            fields.source_url_title = (part).title;
             break;
 
-        case "source_document":
-            fields.source_document_sourceId = (part as any).sourceId;
-            fields.source_document_mediaType = (part as any).mediaType;
-            fields.source_document_title = (part as any).title;
-            fields.source_document_filename = (part as any).filename;
+        case "source-document":
+            fields.source_document_sourceId = (part).sourceId;
+            fields.source_document_mediaType = (part).mediaType;
+            fields.source_document_title = (part).title;
+            fields.source_document_filename = (part).filename;
             break;
 
         default:
             // Handle tool calls
             if (part.type.startsWith("tool-")) {
                 const toolName = part.type.replace("tool-", "");
-                const toolPart = part as any;
                 
-                fields.tool_toolCallId = toolPart.toolCallId;
-                fields.tool_state = toolPart.state;
-                fields.tool_errorText = toolPart.errorText;
-                
-                // Map specific tool input/output columns
-                const inputKey = `tool_${toolName}_input`;
-                const outputKey = `tool_${toolName}_output`;
-                fields[inputKey] = toolPart.input;
-                fields[outputKey] = toolPart.output;
+                // Type guard to ensure this is a tool part with the expected properties
+                if ('toolCallId' in part && 'state' in part) {
+                    const toolPart = part as { toolCallId: string; state: string; errorText?: string; input?: unknown; output?: unknown };
+
+                    fields.tool_toolCallId = toolPart.toolCallId;
+                    fields.tool_state = toolPart.state;
+                    fields.tool_errorText = toolPart.errorText;
+
+                    // Map specific tool input/output columns
+                    const inputKey = `tool_${toolName}_input`;
+                    const outputKey = `tool_${toolName}_output`;
+                    fields[inputKey] = toolPart.input;
+                    fields[outputKey] = toolPart.output;
+                }
             }
             // Handle data parts
             else if (part.type.startsWith("data-")) {
                 const dataType = part.type.replace("data-", "");
-                if (dataType === "weather") {
-                    const dataPart = part as any;
+                if (dataType === "weather" && 'id' in part && 'data' in part) {
+                    const dataPart = part as { id: string; data: { location?: string; weather?: string; temperature?: number } };
                     fields.data_weather_id = dataPart.id;
-                    fields.data_weather_location = dataPart.weather?.location;
-                    fields.data_weather_weather = dataPart.weather?.weather;
-                    fields.data_weather_temperature = dataPart.weather?.temperature;
+                    fields.data_weather_location = dataPart.data?.location;
+                    fields.data_weather_weather = dataPart.data?.weather;
+                    fields.data_weather_temperature = dataPart.data?.temperature;
                 }
             }
             break;

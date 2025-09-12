@@ -105,6 +105,12 @@ export const parts = pgTable("parts", {
     tool_typecheck_input: jsonb(),
     tool_typecheck_output: jsonb(),
 
+    // Data part columns
+    data_weather_id: varchar(),
+    data_weather_location: varchar(),
+    data_weather_weather: varchar(),
+    data_weather_temperature: integer(),
+
     // Provider metadata
     providerMetadata: jsonb(),
 }, (table) => ({

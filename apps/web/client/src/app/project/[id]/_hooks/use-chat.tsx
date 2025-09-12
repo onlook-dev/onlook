@@ -51,7 +51,12 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
 
             if (finishReason !== 'tool-calls') {
                 const currentConversationId = editorEngine.chat.conversation.current?.conversation.id;
-                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(message, currentConversationId ?? ''));
+                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel({
+                    id: message.id,
+                    parts: message.parts,
+                    role: message.role,
+                    metadata: message.metadata
+                }, currentConversationId ?? ''));
                 editorEngine.chat.suggestions.generateSuggestions();
                 lastMessageRef.current = null;
             }
@@ -68,7 +73,13 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
             editorEngine.chat.error.handleChatError(error);
             if (lastMessageRef.current) {
                 const currentConversationId = editorEngine.chat.conversation.current?.conversation.id;
-                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(lastMessageRef.current, currentConversationId ?? ''));
+                editorEngine.chat.conversation.addOrReplaceMessage(
+                    toOnlookMessageFromVercel({
+                        id: lastMessageRef.current.id,
+                        parts: lastMessageRef.current.parts,
+                        role: lastMessageRef.current.role,
+                        metadata: lastMessageRef.current.metadata
+                    }, currentConversationId ?? ''));
                 lastMessageRef.current = null;
             }
         }

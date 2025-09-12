@@ -7,7 +7,7 @@ import { conversations } from "./conversation";
 import { parts } from "./parts";
 
 export const CONVERSATION_MESSAGe_RELATION_NAME = 'conversation_messages';
-export const messageRole = pgEnum("message_role", ChatMessageRole);
+export const messageRole = pgEnum("message_role", ['user', 'assistant', 'system']);
 
 export const messages = pgTable("messages", {
     id: uuid("id").primaryKey().defaultRandom(),

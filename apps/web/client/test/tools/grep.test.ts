@@ -1,6 +1,6 @@
-import { describe, expect, test, mock, beforeEach, afterEach } from 'bun:test';
-import { handleGrepTool } from '../../src/components/tools/handlers/grep';
+import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 import type { EditorEngine } from '../../src/components/store/editor/engine';
+import { handleGrepTool } from '../../src/components/tools/handlers/grep';
 
 // Mock sandbox and session for testing
 const createMockSession = (commandResults: Record<string, { success: boolean; output: string; error?: string }>) => ({
@@ -24,7 +24,7 @@ const createMockEditorEngine = (sandbox: any): EditorEngine => ({
     branches: {
         getSandboxById: mock((id: string) => sandbox)
     }
-} as any);
+});
 
 describe('Grep Tool', () => {
     let mockSandbox: any;
@@ -462,9 +462,9 @@ describe('Grep Tool', () => {
         test('should handle -A (after) context lines', async () => {
             mockSandbox.session.runCommand.mockImplementation((command: string) => {
                 if (command.includes('-A 2')) {
-                    return Promise.resolve({ 
-                        success: true, 
-                        output: 'src/file.ts:1:match line\nsrc/file.ts:2:after line 1\nsrc/file.ts:3:after line 2' 
+                    return Promise.resolve({
+                        success: true,
+                        output: 'src/file.ts:1:match line\nsrc/file.ts:2:after line 1\nsrc/file.ts:3:after line 2'
                     });
                 }
                 return Promise.resolve({ success: true, output: 'exists' });
@@ -486,9 +486,9 @@ describe('Grep Tool', () => {
         test('should handle -B (before) context lines', async () => {
             mockSandbox.session.runCommand.mockImplementation((command: string) => {
                 if (command.includes('-B 1')) {
-                    return Promise.resolve({ 
-                        success: true, 
-                        output: 'src/file.ts:1:before line\nsrc/file.ts:2:match line' 
+                    return Promise.resolve({
+                        success: true,
+                        output: 'src/file.ts:1:before line\nsrc/file.ts:2:match line'
                     });
                 }
                 return Promise.resolve({ success: true, output: 'exists' });
@@ -509,9 +509,9 @@ describe('Grep Tool', () => {
         test('should handle -C (context) lines', async () => {
             mockSandbox.session.runCommand.mockImplementation((command: string) => {
                 if (command.includes('-C 1')) {
-                    return Promise.resolve({ 
-                        success: true, 
-                        output: 'src/file.ts:1:before\nsrc/file.ts:2:match\nsrc/file.ts:3:after' 
+                    return Promise.resolve({
+                        success: true,
+                        output: 'src/file.ts:1:before\nsrc/file.ts:2:match\nsrc/file.ts:3:after'
                     });
                 }
                 return Promise.resolve({ success: true, output: 'exists' });
@@ -533,9 +533,9 @@ describe('Grep Tool', () => {
         test('should include line numbers when -n flag is set', async () => {
             mockSandbox.session.runCommand.mockImplementation((command: string) => {
                 if (command.includes('-n')) {
-                    return Promise.resolve({ 
-                        success: true, 
-                        output: 'src/file.ts:42:match line' 
+                    return Promise.resolve({
+                        success: true,
+                        output: 'src/file.ts:42:match line'
                     });
                 }
                 return Promise.resolve({ success: true, output: 'exists' });
@@ -690,8 +690,8 @@ describe('Grep Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'find': { 
-                    success: true, 
+                'find': {
+                    success: true,
                     output: Array.from({ length: 50 }, (_, i) => `file${i}.ts:match`).join('\n')
                 }
             });
@@ -712,9 +712,9 @@ describe('Grep Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'find': { 
-                    success: true, 
-                    output: 'src/file.ts:line with \x07 bell and \x01 control' 
+                'find': {
+                    success: true,
+                    output: 'src/file.ts:line with \x07 bell and \x01 control'
                 }
             });
             mockEngine = createMockEditorEngine(mockSandbox);
