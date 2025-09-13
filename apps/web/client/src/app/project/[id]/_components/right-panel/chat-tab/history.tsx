@@ -88,7 +88,7 @@ export const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps)
                                             >
                                                 <Icons.ChatBubble className="flex-none mx-2" />
                                                 <span className="text-xs truncate w-80 text-left">
-                                                    {conversation.title ?? 'New Conversation'}
+                                                    {conversation.displayName ?? 'New Conversation'}
                                                 </span>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>

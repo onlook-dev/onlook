@@ -2,11 +2,11 @@ import type { ChatSuggestion } from '../suggestion';
 
 export interface ChatConversation {
     id: string;
-    title?: string;
+    displayName: string | null;
     projectId: string;
     createdAt: Date;
     updatedAt: Date;
-    metadata?: {
-        suggestions: ChatSuggestion[];
-    };
+    suggestions: ChatSuggestion[] | null;
+    parentConversationId?: string | null;
+    parentMessageId?: string | null;
 }

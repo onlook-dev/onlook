@@ -1,4 +1,5 @@
-import { type ToolSet } from 'ai';
+import { ChatType } from '@onlook/models';
+import { type InferUITools, type ToolSet } from 'ai';
 import {
     BASH_EDIT_TOOL_NAME,
     BASH_READ_TOOL_NAME,
@@ -38,7 +39,7 @@ import {
     writeFileTool,
 } from './tools';
 
-export const ASK_TOOL_SET: ToolSet = {
+export const askTools: ToolSet = {
     [LIST_FILES_TOOL_NAME]: listFilesTool,
     [READ_FILE_TOOL_NAME]: readFileTool,
     [BASH_READ_TOOL_NAME]: bashReadTool,
@@ -51,8 +52,8 @@ export const ASK_TOOL_SET: ToolSet = {
     [GREP_TOOL_NAME]: grepTool,
 };
 
-export const BUILD_TOOL_SET: ToolSet = {
-    ...ASK_TOOL_SET,
+export const buildTools: ToolSet = {
+    ...askTools,
     [SEARCH_REPLACE_EDIT_FILE_TOOL_NAME]: searchReplaceEditFileTool,
     [SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME]: searchReplaceMultiEditFileTool,
     [FUZZY_EDIT_FILE_TOOL_NAME]: fuzzyEditFileTool,
@@ -62,3 +63,9 @@ export const BUILD_TOOL_SET: ToolSet = {
     [TERMINAL_COMMAND_TOOL_NAME]: terminalCommandTool,
     [TYPECHECK_TOOL_NAME]: typecheckTool,
 };
+
+export type ChatTools = InferUITools<typeof buildTools>;
+
+export async function getToolSetFromType(chatType: ChatType) {
+    return chatType === ChatType.ASK ? askTools : buildTools;
+}

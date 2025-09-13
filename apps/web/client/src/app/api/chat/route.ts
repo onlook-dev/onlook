@@ -1,9 +1,11 @@
 import { trackEvent } from '@/utils/analytics/server';
-import { ChatType } from '@onlook/models';
-import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from 'ai';
+import { getToolSetFromType } from '@onlook/ai';
+import { ChatType, type ChatMessage } from '@onlook/models';
+import { convertToModelMessages, stepCountIs, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helpers';
+import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, incrementUsage, loadChat, repairToolCall } from './helpers';
+import { debouncedUpsertMessage } from './helpers/message';
 
 const MAX_STEPS = 20;
 
@@ -52,13 +54,6 @@ export async function POST(req: NextRequest) {
 }
 
 export const streamResponse = async (req: NextRequest, userId: string) => {
-    const body = await req.json();
-    const { messages, chatType, conversationId, projectId } = body as {
-        messages: UIMessage[],
-        chatType: ChatType,
-        conversationId: string,
-        projectId: string,
-    };
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
     // If the call below fails, the user will not be penalized.
@@ -68,11 +63,21 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
     } | null = null;
 
     try {
-        const lastUserMessage = messages.findLast((message: UIMessage) => message.role === 'user');
-        const traceId = lastUserMessage?.id ?? uuidv4();
+        const { message, chatType, conversationId, projectId }: {
+            message: ChatMessage,
+            chatType: ChatType,
+            conversationId: string,
+            projectId: string,
+        } = await req.json()
+
+        const messageId = message.id;
+
+        // create or update last message in database
+        await debouncedUpsertMessage({ id: messageId, conversationId, message });
+        const messages = await loadChat(conversationId);
 
         if (chatType === ChatType.EDIT) {
-            usageRecord = await incrementUsage(req, traceId);
+            usageRecord = await incrementUsage(req, message.id);
         }
         const modelConfig = await getModelFromType(chatType);
         const { model, providerOptions, headers } = modelConfig;
@@ -100,7 +105,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                     userId,
                     chatType: chatType,
                     tags: ['chat'],
-                    langfuseTraceId: traceId,
+                    langfuseTraceId: message.id,
                     sessionId: conversationId,
                 },
             },
@@ -123,16 +128,21 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         return result.toUIMessageStreamResponse(
             {
                 originalMessages: messages,
-                messageMetadata: ({
-                    part
-                }) => {
-                    if (part.type === 'finish-step') {
-                        return {
-                            finishReason: part.finishReason,
-                        }
-                    }
-                },
+                generateMessageId: () => uuidv4(),
+                messageMetadata: (_) => ({
+                    createdAt: new Date(),
+                    conversationId,
+                    context: [],
+                    checkpoints: [],
+                }),
                 onError: errorHandler,
+                onFinish: async (message) => {
+                    await debouncedUpsertMessage({
+                        id: message.responseMessage.id,
+                        conversationId,
+                        message: message.responseMessage,
+                    });
+                },
             }
         );
     } catch (error) {

@@ -98,11 +98,11 @@ export const useStartProject = () => {
             const context: MessageContext[] = [...createContext, ...imageContexts];
             const prompt = creationData.context.filter((context) => context.type === CreateRequestContextType.PROMPT).map((context) => (context.content)).join('\n');
 
-            await editorEngine.chat.addEditMessage(
+            const message = await editorEngine.chat.addEditMessage(
                 prompt,
                 context,
             );
-            sendMessageToChat(ChatType.CREATE);
+            sendMessageToChat(message, ChatType.CREATE);
 
             try {
                 await updateCreateRequest({

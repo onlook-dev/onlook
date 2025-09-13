@@ -1,21 +1,20 @@
-import { ChatMessageRole } from "@onlook/models";
-import type { MessageContext, UserChatMessage } from "@onlook/models/chat";
+import { type ChatMessage, type MessageContext } from "@onlook/models/chat";
 import { v4 as uuidv4 } from 'uuid';
 
 export const getUserChatMessageFromString = (
     content: string,
     context: MessageContext[],
     conversationId: string,
-): UserChatMessage => {
+): ChatMessage => {
     return {
         id: uuidv4(),
-        role: ChatMessageRole.USER,
+        role: 'user',
         parts: [{ type: 'text', text: content }],
         metadata: {
+            createdAt: new Date(),
+            conversationId,
             context,
             checkpoints: [],
         },
-        createdAt: new Date(),
-        threadId: conversationId,
     }
 }
