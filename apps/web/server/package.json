@@ -7,10 +7,17 @@
         "dev": "bun run --watch src/index.ts",
         "build": "bun build src/index.ts --outdir dist --target bun",
         "start": "bun dist/index.js",
-        "preview": "bun run build && bun run start"
+        "preview": "bun run build && bun run start",
+        "lint": "eslint . --max-warnings 0",
+        "format": "eslint --fix .",
+        "typecheck": "tsc --noEmit"
     },
     "devDependencies": {
-        "@types/bun": "latest"
+        "@onlook/eslint": "*",
+        "@onlook/typescript": "*",
+        "@types/bun": "latest",
+        "eslint": "^9.0.0",
+        "typescript": "^5.5.4"
     },
     "peerDependencies": {
         "typescript": "^5"

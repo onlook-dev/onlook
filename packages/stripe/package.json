@@ -10,7 +10,9 @@
         "clean": "rm -rf node_modules",
         "typecheck": "tsc --noEmit",
         "setup": "bun src/scripts/dev/setup.ts",
-        "dev:webhook": "stripe listen --forward-to localhost:3000/webhook/stripe"
+        "dev:webhook": "stripe listen --forward-to localhost:3000/webhook/stripe",
+        "lint": "eslint . --max-warnings 0",
+        "format": "eslint --fix ."
     },
     "keywords": [
         "onlook",
@@ -23,7 +25,9 @@
     "license": "Apache-2.0",
     "homepage": "https://onlook.com",
     "devDependencies": {
-        "typescript": "^5.8.2"
+        "@onlook/eslint": "*",
+        "eslint": "^9.0.0",
+        "typescript": "^5.5.4"
     },
     "dependencies": {
         "stripe": "^18.2.1",
