@@ -1,3 +1,4 @@
+import { Icons } from '@onlook/ui/icons/index';
 import type { ToolUIPart, UIMessage } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { useMemo } from 'react';
@@ -50,22 +51,16 @@ export const MessageContent = observer(
                     />
                 );
             } else if (part.type === 'reasoning') {
-                const processedText = part.text.replace('[REDACTED]', '');
-                if (processedText === '') {
-                    return null;
-                }
                 return (
-                    <div key={`reasoning-${idx}`} className="my-2 px-3 py-2 border-l-1 max-h-32 overflow-y-auto">
-                        <MarkdownRenderer
-                            messageId={messageId}
-                            type="text"
-                            key={processedText}
-                            content={processedText}
-                            applied={applied}
-                            isStream={isStream}
-                            className="text-xs text-foreground-secondary p-0 m-0"
-                        />
-                    </div>
+                    <>
+                        <div className="px-2 flex items-center gap-2 text-foreground-tertiary">
+                            <Icons.Lightbulb className="w-4 h-4" />
+                            <p className="text-sm">Reasoning</p>
+                        </div>
+                        {isStream && <pre key={`reasoning-${idx}`} className="my-2 px-3 py-2 border-l-1 max-h-32 overflow-y-auto whitespace-pre-wrap break-words">
+                            {part.text}
+                        </pre>}
+                    </>
                 );
             }
         }).filter(Boolean);
