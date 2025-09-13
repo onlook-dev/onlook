@@ -1,3 +1,4 @@
+import { cn } from '@onlook/ui/utils';
 import type { ToolUIPart, UIMessage } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { useMemo } from 'react';
@@ -55,7 +56,7 @@ export const MessageContent = observer(
                     return null;
                 }
                 return (
-                    <div key={`reasoning-${idx}`} className="my-2 px-3 py-2 border-l-1 max-h-32 overflow-y-auto">
+                    <div key={`reasoning-${idx}`} className={cn("my-2 px-3 py-2 border-l-1 ", !isStream && "overflow-y-auto max-h-32")}>
                         <MarkdownRenderer
                             messageId={messageId}
                             type="text"
