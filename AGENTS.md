@@ -20,6 +20,8 @@ Actionable rules for repo agents—keep diffs minimal, safe, token‑efficient.
 
 - UI: Next.js App Router, TailwindCSS.
 - API: tRPC + Zod (`apps/web/client/src/server/api/*`).
+- Package manager: Bun only — use Bun for all installs and scripts; do not use
+  npm, yarn, or pnpm.
 
 ### Agent Priorities
 
