@@ -32,7 +32,7 @@
     },
     "dependencies": {
         "@ai-sdk/provider-utils": "^3.0.5",
-        "@ai-sdk/react": "2.0.44",
+        "@ai-sdk/react": "2.0.25",
         "@codemirror/lang-css": "^6.2.0",
         "@codemirror/lang-html": "^6.4.7",
         "@codemirror/lang-javascript": "^6.2.3",
@@ -67,7 +67,7 @@
         "@vercel/otel": "^1.13.0",
         "@xterm/addon-fit": "^0.10.0",
         "@xterm/xterm": "^5.5.0",
-        "ai": "5.0.44",
+        "ai": "5.0.26",
         "blob-util": "^2.0.2",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
