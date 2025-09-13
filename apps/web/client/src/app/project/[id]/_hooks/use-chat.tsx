@@ -49,20 +49,20 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
                 output: result,
             });
         },
-        // TODO: Don't save on finish
-        onFinish: ({ message }) => {
-            console.log('onFinish', message);
+        onFinish: (options: { message: ChatMessage, }) => {
+            const { message } = options;
+            console.log('onFinish', options);
             if (!message.metadata) {
                 return;
             }
-            const finishReason = (message.metadata as { finishReason?: string }).finishReason;
+            const finishReason = options.finishReason;
             lastMessageRef.current = message;
+            editorEngine.chat.conversation.addOrReplaceMessage(message);
             if (finishReason !== 'error') {
                 editorEngine.chat.error.clear();
             }
 
             if (finishReason !== 'tool-calls') {
-                editorEngine.chat.conversation.addOrReplaceMessage(message);
                 editorEngine.chat.suggestions.generateSuggestions();
                 lastMessageRef.current = null;
             }

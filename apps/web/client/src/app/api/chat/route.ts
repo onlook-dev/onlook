@@ -4,7 +4,8 @@ import { ChatType, type ChatMessage } from '@onlook/models';
 import { convertToModelMessages, stepCountIs, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, incrementUsage, loadChat, repairToolCall, upsertMessage } from './helpers';
+import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, incrementUsage, loadChat, repairToolCall } from './helpers';
+import { debouncedUpsertMessage } from './helpers/message';
 
 const MAX_STEPS = 20;
 
@@ -72,8 +73,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         const messageId = message.id;
 
         // create or update last message in database
-        await upsertMessage({ id: messageId, conversationId, message });
-
+        await debouncedUpsertMessage({ id: messageId, conversationId, message });
         const messages = await loadChat(conversationId);
 
         if (chatType === ChatType.EDIT) {
@@ -129,7 +129,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
             {
                 originalMessages: messages,
                 generateMessageId: () => uuidv4(),
-                messageMetadata: (options) => ({
+                messageMetadata: (_) => ({
                     createdAt: new Date(),
                     conversationId,
                     context: [],
@@ -137,8 +137,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                 }),
                 onError: errorHandler,
                 onFinish: async (message) => {
-                    console.log('onFinish', message);
-                    await upsertMessage({
+                    await debouncedUpsertMessage({
                         id: message.responseMessage.id,
                         conversationId,
                         message: message.responseMessage,
