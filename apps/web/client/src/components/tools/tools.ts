@@ -176,43 +176,31 @@ const TOOL_HANDLERS: ClientToolMap = {
     },
 };
 
-export function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine, addToolResult?: (result: any) => void) {
-    const executeToolCall = async () => {
-        try {
-            const toolName = toolCall.toolName;
+export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
+    try {
+        const toolName = toolCall.toolName;
 
-            const currentChatMode = editorEngine.state.chatMode;
-            const availableTools = await getToolSetFromType(currentChatMode);
+        const currentChatMode = editorEngine.state.chatMode;
+        const availableTools = await getToolSetFromType(currentChatMode);
 
-            if (!availableTools[toolName]) {
-                toast.error(`Tool "${toolName}" not available in ask mode`, {
-                    description: `Switch to build mode to use this tool.`,
-                    duration: 2000,
-                });
+        if (!availableTools[toolName]) {
+            toast.error(`Tool "${toolName}" not available in ask mode`, {
+                description: `Switch to build mode to use this tool.`,
+                duration: 2000,
+            });
 
-                throw new Error(`Tool "${toolName}" is not available in ${currentChatMode} mode`);
-            }
-
-            const clientTool = TOOL_HANDLERS[toolName];
-
-            if (!clientTool) {
-                throw new Error(`Unknown tool call: ${toolName}`);
-            }
-
-            const result = await clientTool.handler(toolCall.input, editorEngine);
-            if (addToolResult) {
-                addToolResult({ toolCallId: toolCall.toolCallId, result });
-            }
-            return result;
-        } catch (error) {
-            console.error('Error handling tool call', error);
-            const errorResult = 'error handling tool call ' + error;
-            if (addToolResult) {
-                addToolResult({ toolCallId: toolCall.toolCallId, result: errorResult });
-            }
-            return errorResult;
+            throw new Error(`Tool "${toolName}" is not available in ${currentChatMode} mode`);
         }
-    };
 
-    executeToolCall();
+        const clientTool = TOOL_HANDLERS[toolName];
+
+        if (!clientTool) {
+            throw new Error(`Unknown tool call: ${toolName}`);
+        }
+
+        return await clientTool.handler(toolCall.input, editorEngine);
+    } catch (error) {
+        console.error('Error handling tool call', error);
+        return 'error handling tool call ' + error;
+    }
 }

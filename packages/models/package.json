@@ -33,7 +33,7 @@
     "devDependencies": {
         "@onlook/typescript": "*",
         "typescript": "^5.5.4",
-        "ai": "5.0.44"
+        "ai": "5.0.26"
     },
     "dependencies": {
         "zod": "^4.1.3"
