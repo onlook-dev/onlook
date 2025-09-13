@@ -51,6 +51,7 @@ const user0 = {
     createdAt: new Date(),
     updatedAt: new Date(),
     stripeCustomerId: null,
+    githubInstallationId: null,
 } satisfies User;
 
 const project0 = createDefaultProject({
@@ -156,6 +157,7 @@ const context0 = {
     path: 'src/index.ts',
     displayName: 'index.ts',
     content: 'console.log("Hello, world!");',
+    branchId: branch0.id,
 } satisfies MessageContext;
 
 const context1 = {
@@ -165,6 +167,7 @@ const context1 = {
     content: 'console.log("Hello, world!");',
     start: 0,
     end: 10,
+    branchId: branch0.id,
 } satisfies MessageContext;
 
 const contexts = [context0, context1];

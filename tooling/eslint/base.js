@@ -37,7 +37,6 @@ export const restrictEnvAccess = tseslint.config(
 );
 
 export default tseslint.config(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     includeIgnoreFile(path.join(import.meta.dirname, '../../.gitignore')),
     {
         ignores: [
@@ -52,15 +51,12 @@ export default tseslint.config(
     {
         files: ['**/*.js', '**/*.ts', '**/*.tsx'],
         plugins: {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             import: importPlugin,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             prettier: prettierPlugin,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             onlyWarn,
         },
         extends: [
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             eslint.configs.recommended,
             ...tseslint.configs.recommended,
             ...tseslint.configs.recommendedTypeChecked,
