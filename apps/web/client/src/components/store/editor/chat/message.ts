@@ -13,7 +13,6 @@ export const getUserChatMessageFromString = (
         metadata: {
             createdAt: new Date(),
             conversationId,
-            vercelId: uuidv4(),
             context,
             checkpoints: [],
         },

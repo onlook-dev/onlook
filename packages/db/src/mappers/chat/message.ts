@@ -7,7 +7,6 @@ export const fromDbMessage = (message: DbMessage): ChatMessage => {
         metadata: {
             conversationId: message.conversationId,
             createdAt: message.createdAt,
-            vercelId: message.id,
             context: message.context ?? [],
             checkpoints: message.checkpoints ?? [],
         },

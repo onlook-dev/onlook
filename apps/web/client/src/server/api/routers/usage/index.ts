@@ -77,7 +77,7 @@ export const usageRouter = createTRPCRouter({
                 type: input.type,
                 timestamp: new Date(),
                 traceId: input.traceId,
-            }).returning({ id: usageRecords.id });
+            }).onConflictDoNothing().returning({ id: usageRecords.id });
 
             return { rateLimitId, usageRecordId: usageRecord?.[0]?.id };
         });

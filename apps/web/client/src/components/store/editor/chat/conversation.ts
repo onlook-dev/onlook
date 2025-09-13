@@ -149,7 +149,7 @@ export class ConversationManager {
             console.error('No conversation found');
             return;
         }
-        const index = this.current.messages.findIndex((m) => m.id === message.id || (m.metadata?.vercelId && m.metadata?.vercelId === message.metadata?.vercelId));
+        const index = this.current.messages.findIndex((m) => m.id === message.id);
         if (index === -1) {
             this.current.messages.push(message);
         } else {

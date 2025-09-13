@@ -2,7 +2,6 @@ import { api } from '@/trpc/client';
 import type { GitCommit } from '@onlook/git';
 import { MessageCheckpointType, type ChatMessage, type MessageContext } from '@onlook/models/chat';
 import { makeAutoObservable } from 'mobx';
-import { v4 as uuidv4 } from 'uuid';
 import type { EditorEngine } from '../engine';
 import { ChatContext } from './context';
 import { ConversationManager } from './conversation';
@@ -76,7 +75,6 @@ export class ChatManager {
             createdAt: message.metadata?.createdAt ?? new Date(),
             conversationId: message.metadata?.conversationId || this.conversation.current.conversation.id,
             checkpoints: newCheckpoints,
-            vercelId: message.metadata?.vercelId ?? uuidv4(),
             context: message.metadata?.context ?? [],
         };
         await api.chat.message.updateCheckpoints.mutate({
@@ -124,7 +122,6 @@ export class ChatManager {
             context: newContext,
             createdAt: oldMessage.metadata?.createdAt || new Date(),
             conversationId: oldMessage.metadata?.conversationId || this.conversation.current?.conversation.id,
-            vercelId: oldMessage.metadata?.vercelId ?? uuidv4(),
             checkpoints: oldMessage.metadata?.checkpoints ?? [],
         };
         oldMessage.parts = [{ type: 'text', text: newMessageContent }];

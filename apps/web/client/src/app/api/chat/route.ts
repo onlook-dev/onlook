@@ -3,6 +3,7 @@ import { getToolSetFromType } from '@onlook/ai';
 import { ChatType, type ChatMessage } from '@onlook/models';
 import { convertToModelMessages, stepCountIs, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
 import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, incrementUsage, loadChat, repairToolCall, upsertMessage } from './helpers';
 
 const MAX_STEPS = 20;
@@ -68,8 +69,10 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
             projectId: string,
         } = await req.json()
 
+        const messageId = message.id;
+
         // create or update last message in database
-        await upsertMessage({ conversationId, message });
+        await upsertMessage({ id: messageId, conversationId, message });
 
         const messages = await loadChat(conversationId);
 
@@ -125,7 +128,22 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         return result.toUIMessageStreamResponse(
             {
                 originalMessages: messages,
+                generateMessageId: () => uuidv4(),
+                messageMetadata: (options) => ({
+                    createdAt: new Date(),
+                    conversationId,
+                    context: [],
+                    checkpoints: [],
+                }),
                 onError: errorHandler,
+                onFinish: async (message) => {
+                    console.log('onFinish', message);
+                    await upsertMessage({
+                        id: message.responseMessage.id,
+                        conversationId,
+                        message: message.responseMessage,
+                    });
+                },
             }
         );
     } catch (error) {

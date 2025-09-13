@@ -4,16 +4,21 @@ import type { ChatMessage } from "@onlook/models";
 import { eq } from "drizzle-orm";
 
 export const upsertMessage = async ({
+    id,
     conversationId,
     message,
 }: {
+    id: string;
     conversationId: string;
     message: ChatMessage;
 }) => {
     const dbMessage = toDbMessage(message, conversationId);
     const [updatedMessage] = await db
         .insert(messages)
-        .values(dbMessage)
+        .values({
+            ...dbMessage,
+            id,
+        })
         .onConflictDoUpdate({
             target: messages.id,
             set: dbMessage,

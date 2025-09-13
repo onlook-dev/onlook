@@ -51,6 +51,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         },
         // TODO: Don't save on finish
         onFinish: ({ message }) => {
+            console.log('onFinish', message);
             if (!message.metadata) {
                 return;
             }
