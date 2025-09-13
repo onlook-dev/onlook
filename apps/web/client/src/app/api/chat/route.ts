@@ -68,15 +68,9 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
             projectId: string,
         } = await req.json()
 
-        console.log('streamResponse', { message: JSON.stringify(message), chatType, conversationId, projectId });
-
         // create or update last message in database
-        // https://github.com/vercel-labs/ai-sdk-persistence-db/blob/main/lib/db/actions.ts#L50
         await upsertMessage({ conversationId, message });
 
-        console.log('upsertMessage', { conversationId, message });
-        // load the previous messages from the server:
-        // https://github.com/vercel-labs/ai-sdk-persistence-db/blob/main/lib/db/actions.ts#L50
         const messages = await loadChat(conversationId);
 
         if (chatType === ChatType.EDIT) {

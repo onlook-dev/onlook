@@ -16,9 +16,10 @@ export const fromDbMessage = (message: DbMessage): ChatMessage => {
 }
 
 export const toDbMessage = (message: ChatMessage, conversationId: string): DbMessage => {
+    const createdAt = message.metadata?.createdAt;
     return {
         id: message.id,
-        createdAt: message.metadata?.createdAt ?? new Date(),
+        createdAt: createdAt instanceof Date ? createdAt : createdAt ? new Date(createdAt) : new Date(),
         conversationId,
         context: message?.metadata?.context ?? [],
         parts: message.parts,
