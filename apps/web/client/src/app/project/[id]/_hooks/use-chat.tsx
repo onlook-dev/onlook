@@ -49,16 +49,27 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
                 output: result,
             });
         },
-        onFinish: (options: { message: ChatMessage, }) => {
-            const { message } = options;
+        onData: (data) => {
+            // Update UI with streaming content in real-time
+            const currentMessages = chat.messages;
+            const lastMessage = currentMessages[currentMessages.length - 1];
+            
+            if (lastMessage && lastMessage.role === 'assistant') {
+                // Update the last assistant message with streaming content
+                lastMessageRef.current = lastMessage;
+                editorEngine.chat.conversation.addOrReplaceMessage(lastMessage);
+            }
+        },
+        onFinish: (options: { message: ChatMessage; isAbort?: boolean; isDisconnect?: boolean; isError?: boolean }) => {
+            const { message, isError = false } = options;
             console.log('onFinish', options);
             if (!message.metadata) {
                 return;
             }
-            const finishReason = options.finishReason;
+            const finishReason = (message.metadata as any)?.finishReason;
             lastMessageRef.current = message;
             editorEngine.chat.conversation.addOrReplaceMessage(message);
-            if (finishReason !== 'error') {
+            if (finishReason !== 'error' && !isError) {
                 editorEngine.chat.error.clear();
             }
 
@@ -76,11 +87,22 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         },
         onError: (error) => {
             console.error('Error in chat', error);
-            editorEngine.chat.error.handleChatError(error);
-            if (lastMessageRef.current) {
+            
+            // Save any partial content from streaming before handling error
+            const currentMessages = chat.messages;
+            const lastMessage = currentMessages[currentMessages.length - 1];
+            
+            if (lastMessage && lastMessage.role === 'assistant' && lastMessage.parts.length > 0) {
+                // Preserve partial assistant response
+                lastMessageRef.current = lastMessage;
+                editorEngine.chat.conversation.addOrReplaceMessage(lastMessage);
+            } else if (lastMessageRef.current) {
+                // Fallback to stored reference
                 editorEngine.chat.conversation.addOrReplaceMessage(lastMessageRef.current);
-                lastMessageRef.current = null;
             }
+            
+            editorEngine.chat.error.handleChatError(error);
+            lastMessageRef.current = null;
         }
     });
 
