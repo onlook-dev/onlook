@@ -11,17 +11,18 @@ export const upsertMessage = async ({
     message: ChatMessage;
 }) => {
     const dbMessage = toDbMessage(message, conversationId);
-    await db.transaction(async (tx) => {
-        await tx
-            .insert(messages)
-            .values(dbMessage)
-            .onConflictDoUpdate({
-                target: messages.id,
-                set: {
-                    conversationId,
-                },
-            });
-    });
+    const [updatedMessage] = await db
+        .insert(messages)
+        .values(dbMessage)
+        .onConflictDoUpdate({
+            target: messages.id,
+            set: dbMessage,
+        }).returning();
+
+    if (!updatedMessage) {
+        throw new Error('Message not updated');
+    }
+    return updatedMessage;
 };
 
 export const loadChat = async (chatId: string): Promise<ChatMessage[]> => {

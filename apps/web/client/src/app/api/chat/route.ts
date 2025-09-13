@@ -1,9 +1,9 @@
 import { trackEvent } from '@/utils/analytics/server';
+import { getToolSetFromType } from '@onlook/ai';
 import { ChatType, type ChatMessage } from '@onlook/models';
 import { convertToModelMessages, stepCountIs, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
-import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, loadChat, repairToolCall, upsertMessage } from './helpers';
+import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, incrementUsage, loadChat, repairToolCall, upsertMessage } from './helpers';
 
 const MAX_STEPS = 20;
 
@@ -52,22 +52,6 @@ export async function POST(req: NextRequest) {
 }
 
 export const streamResponse = async (req: NextRequest, userId: string) => {
-    const body = await req.json();
-    const { message, chatType, conversationId, projectId } = body as {
-        message: ChatMessage,
-        chatType: ChatType,
-        conversationId: string,
-        projectId: string,
-    };
-
-    // create or update last message in database
-    // https://github.com/vercel-labs/ai-sdk-persistence-db/blob/main/lib/db/actions.ts#L50
-    await upsertMessage({ conversationId, message });
-
-    // load the previous messages from the server:
-    // https://github.com/vercel-labs/ai-sdk-persistence-db/blob/main/lib/db/actions.ts#L50
-    const messages = await loadChat(conversationId);
-
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
     // If the call below fails, the user will not be penalized.
@@ -77,10 +61,26 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
     } | null = null;
 
     try {
-        const traceId = message?.id ?? uuidv4();
+        const { message, chatType, conversationId, projectId }: {
+            message: ChatMessage,
+            chatType: ChatType,
+            conversationId: string,
+            projectId: string,
+        } = await req.json()
+
+        console.log('streamResponse', { message: JSON.stringify(message), chatType, conversationId, projectId });
+
+        // create or update last message in database
+        // https://github.com/vercel-labs/ai-sdk-persistence-db/blob/main/lib/db/actions.ts#L50
+        await upsertMessage({ conversationId, message });
+
+        console.log('upsertMessage', { conversationId, message });
+        // load the previous messages from the server:
+        // https://github.com/vercel-labs/ai-sdk-persistence-db/blob/main/lib/db/actions.ts#L50
+        const messages = await loadChat(conversationId);
 
         if (chatType === ChatType.EDIT) {
-            usageRecord = await incrementUsage(req, traceId);
+            usageRecord = await incrementUsage(req, message.id);
         }
         const modelConfig = await getModelFromType(chatType);
         const { model, providerOptions, headers } = modelConfig;
@@ -108,7 +108,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                     userId,
                     chatType: chatType,
                     tags: ['chat'],
-                    langfuseTraceId: traceId,
+                    langfuseTraceId: message.id,
                     sessionId: conversationId,
                 },
             },

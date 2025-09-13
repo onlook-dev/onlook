@@ -4,27 +4,40 @@ import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import { ChatType, type ChatMessage } from '@onlook/models';
+import { jsonClone } from '@onlook/utility';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
-import { createContext, useContext, useRef } from 'react';
+import { createContext, useContext, useRef, useState } from 'react';
 
 type ExtendedUseChatHelpers = UseChatHelpers<ChatMessage> & { sendMessageToChat: (message: ChatMessage, type: ChatType) => Promise<void> };
 const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 
 export const ChatProvider = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
+    const conversationId = editorEngine.chat.conversation.current?.conversation.id;
     const lastMessageRef = useRef<ChatMessage | null>(null);
     const posthog = usePostHog();
-    const conversationId = editorEngine.chat.conversation.current?.conversation.id;
+    const [chatType, setChatType] = useState<ChatType>(ChatType.EDIT);
+
     const chat = useChat<ChatMessage>({
-        id: 'user-chat',
+        id: conversationId,
         sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
         transport: new DefaultChatTransport({
             api: '/api/chat',
-            body: {
-                conversationId,
-                projectId: editorEngine.projectId,
+            prepareSendMessagesRequest: ({ messages }) => {
+                // send only the last message and chat id
+                // we will then fetch message history (for our chatId) on server
+                // and append this message for the full context to send to the model
+                const lastMessage = messages[messages.length - 1];
+                return {
+                    body: {
+                        chatType,
+                        message: lastMessage,
+                        conversationId,
+                        projectId: editorEngine.projectId,
+                    },
+                };
             },
         }),
         onToolCall: async (toolCall) => {
@@ -71,6 +84,8 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
     });
 
     const sendMessageToChat = async (message: ChatMessage, type: ChatType = ChatType.EDIT) => {
+        const clonedMessage = jsonClone(message);
+        setChatType(type);
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
         try {
@@ -80,9 +95,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         } catch (error) {
             console.error('Error tracking user send message: ', error)
         }
-        return chat.sendMessage(message, {
-            body: { chatType: type },
-        });
+        return chat.sendMessage(clonedMessage);
     };
 
     return <ChatContext.Provider value={{ ...chat, sendMessageToChat }}>{children}</ChatContext.Provider>;

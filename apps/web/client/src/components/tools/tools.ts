@@ -1,4 +1,3 @@
-import { getToolSetFromType } from '@/app/api/chat/helpers';
 import type { EditorEngine } from '@/components/store/editor/engine';
 import type { ToolCall } from '@ai-sdk/provider-utils';
 import {
@@ -10,6 +9,7 @@ import {
     CHECK_ERRORS_TOOL_PARAMETERS,
     FUZZY_EDIT_FILE_TOOL_NAME,
     FUZZY_EDIT_FILE_TOOL_PARAMETERS,
+    getToolSetFromType,
     GLOB_TOOL_NAME,
     GLOB_TOOL_PARAMETERS,
     GREP_TOOL_NAME,
@@ -204,3 +204,4 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
         return 'error handling tool call ' + error;
     }
 }
+

@@ -1,3 +1,4 @@
+import { ChatType } from '@onlook/models';
 import { type InferUITools, type ToolSet } from 'ai';
 import {
     BASH_EDIT_TOOL_NAME,
@@ -64,3 +65,7 @@ export const buildTools: ToolSet = {
 };
 
 export type ChatTools = InferUITools<typeof buildTools>;
+
+export async function getToolSetFromType(chatType: ChatType) {
+    return chatType === ChatType.ASK ? askTools : buildTools;
+}
