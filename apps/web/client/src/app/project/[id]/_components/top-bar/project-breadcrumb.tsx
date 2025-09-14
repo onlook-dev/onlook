@@ -1,8 +1,10 @@
+import { useAuthContext } from '@/app/auth/auth-context';
 import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
-import { Routes } from '@/utils/constants';
+import { LocalForageKeys, Routes } from '@/utils/constants';
+import { SandboxTemplates, Templates } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -14,12 +16,14 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
+import localforage from 'localforage';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { redirect, useRouter } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
 import { useRef, useState } from 'react';
 import { RecentProjectsMenu } from './recent-projects';
+import { NewProjectMenu } from './new-project-menu';
 
 export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -27,6 +31,10 @@ export const ProjectBreadcrumb = observer(() => {
     const posthog = usePostHog();
 
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: user } = api.user.get.useQuery();
+    const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
+    const { mutateAsync: createProject } = api.project.create.useMutation();
+    const { setIsAuthModalOpen } = useAuthContext();
 
     const t = useTranslations();
     const closeTimeoutRef = useRef<Timer | null>(null);
@@ -140,21 +148,7 @@ export const ProjectBreadcrumb = observer(() => {
                     <DropdownMenuSeparator />
                     <RecentProjectsMenu />
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                        onClick={() => router.push(Routes.HOME)}
-                        className="cursor-pointer"
-                    >
-                        <div className="flex row center items-center group">
-                            <Icons.Plus className="mr-2" />
-                            {t(transKeys.projects.actions.newProject)}
-                        </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push(Routes.IMPORT_PROJECT)}>
-                        <div className="flex row center items-center group">
-                            <Icons.Upload className="mr-2" />
-                            {t(transKeys.projects.actions.import)}
-                        </div>
-                    </DropdownMenuItem>
+                    <NewProjectMenu />
                     <DropdownMenuItem
                         onClick={handleDownloadCode}
                         disabled={isDownloading}

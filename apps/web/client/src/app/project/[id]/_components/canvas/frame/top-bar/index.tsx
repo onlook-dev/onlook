@@ -8,7 +8,6 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { HoverOnlyTooltip } from '../../../editor-bar/hover-tooltip';
 import { BranchDisplay } from './branch';
-import { PageSelector } from './page-selector';
 
 export const TopBar = observer(
     ({ frame }: { frame: Frame }) => {
@@ -199,7 +198,6 @@ export const TopBar = observer(
                         </Button>
                     </HoverOnlyTooltip>
                     <BranchDisplay frame={frame} />
-                    <PageSelector frame={frame} />
                 </div>
                 <HoverOnlyTooltip content="Preview in new tab" side="top" hideArrow className="mb-1">
                     <Link

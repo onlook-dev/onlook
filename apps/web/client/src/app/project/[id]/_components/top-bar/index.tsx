@@ -96,7 +96,7 @@ export const TopBar = observer(() => {
                             <Icons.CounterClockwiseClock className="h-4 w-4" />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom">
+                    <TooltipContent side="bottom" hideArrow>
                         {t(transKeys.editor.toolbar.versionHistory)}
                     </TooltipContent>
                 </Tooltip>

@@ -12,7 +12,7 @@ const Page = observer(() => {
     return (
         <div className="w-screen h-screen flex flex-col">
             <TopBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-            <div className="flex justify-center w-full h-full overflow-y-auto">
+            <div className="flex justify-center w-full h-full overflow-y-auto overflow-x-visible">
                 <SelectProject externalSearchQuery={searchQuery} />
             </div>
             <SubscriptionModal />

@@ -50,6 +50,7 @@ declare const messages: {
             "rename": "Rename",
             "goToAllProjects": "Go to all Projects",
             "newProject": "New Project",
+            "blankProject": "Blank Project",
             "startFromScratch": "Start from scratch",
             "importProject": "Import a project",
             "subscriptions": "Subscriptions",

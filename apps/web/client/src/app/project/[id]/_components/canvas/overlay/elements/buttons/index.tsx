@@ -43,7 +43,7 @@ export const OverlayButtons = observer(() => {
     }, [chatPosition.x, chatPosition.y]);
 
     const animationClass =
-        'origin-center scale-[0.2] opacity-0 -translate-y-2 transition-all duration-200';
+        'origin-center opacity-0 -translate-y-2 transition-all duration-200';
 
     useEffect(() => {
         if (domId) {

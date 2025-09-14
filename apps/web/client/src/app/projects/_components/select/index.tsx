@@ -221,14 +221,21 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     }
 
     return (
-        <div className="w-full h-full flex flex-col px-6 py-8" style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}>
-            <div className="max-w-6xl w-full mx-auto pb-12">
-                <div className="mb-12">
+        <div className="w-full h-full flex flex-col px-6 py-8 relative overflow-x-visible" style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}>
+            <div className="max-w-6xl w-full mx-auto pb-12 overflow-x-visible">
+                <div className="mb-12 overflow-x-visible">
                     <h2 className="text-2xl text-foreground font-normal mb-[12px]">
                         Recent projects
                     </h2>
 
-                    <div className="flex gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none]">
+                    <div className="relative overflow-x-visible">
+                        {/* Left gradient - positioned to start left of initial view */}
+                        <div className="absolute left-0 top-0 bottom-4 w-16 bg-gradient-to-r from-background to-transparent pointer-events-none z-10" style={{ transform: 'translateX(-48px)' }} />
+                        
+                        {/* Right gradient - always visible */}
+                        <div className="absolute right-0 top-0 bottom-4 w-16 bg-gradient-to-l from-background to-transparent pointer-events-none z-10" />
+                        
+                        <div className="flex gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none]">
                         {filteredAndSortedProjects.length === 0 ? (
                             <div className="w-full flex items-center justify-center py-8">
                                 <div className="text-center">
@@ -288,6 +295,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                                 </motion.div>
                             </AnimatePresence>
                         )}
+                        </div>
                     </div>
                 </div>
 
@@ -296,6 +304,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                         templateProjects={templateProjects}
                         searchQuery={debouncedSearchQuery}
                         onTemplateClick={handleTemplateClick}
+                        onViewInfo={handleTemplateClick}
                         onToggleStar={handleToggleStar}
                         starredTemplates={starredTemplates}
                     />

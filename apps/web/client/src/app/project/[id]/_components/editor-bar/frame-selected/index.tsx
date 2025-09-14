@@ -4,7 +4,6 @@ import { useEditorEngine } from '@/components/store/editor';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { BranchDisplay } from '../../canvas/frame/top-bar/branch';
-import { PageSelector } from '../../canvas/frame/top-bar/page-selector';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { useMeasureGroup } from '../hooks/use-measure-group';
 import { OverflowMenu } from '../overflow-menu';
@@ -32,21 +31,8 @@ export const FrameSelected = observer(({ availableWidth = 0 }: { availableWidth?
             ]
         },
         {
-            key: 'page',
-            label: 'Page',
-            components: [
-                <PageSelector
-                    key="page"
-                    frame={frameData.frame}
-                    tooltipSide="bottom"
-                    showIcon={true}
-                    buttonClassName="px-3 py-2"
-                />
-            ]
-        },
-        {
             key: 'branch',
-            label: 'Branch',
+            label: 'Branch & Pages',
             components: [
                 <BranchDisplay
                     key="branch"

@@ -1,8 +1,11 @@
 'use client';
 
+import { useAuthContext } from '@/app/auth/auth-context';
 import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
 import { transKeys } from '@/i18n/keys';
-import { Routes } from '@/utils/constants';
+import { api } from '@/trpc/react';
+import { LocalForageKeys, Routes } from '@/utils/constants';
+import { SandboxTemplates, Templates } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -19,6 +22,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 const RECENT_SEARCHES_KEY = 'onlook_recent_searches';
 const RECENT_COLORS_KEY = 'onlook_recent_colors';
@@ -34,8 +38,15 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [recentSearches, setRecentSearches] = useState<string[]>([]);
     const [recentColors, setRecentColors] = useState<string[]>([]);
+    const [isCreatingProject, setIsCreatingProject] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const searchContainerRef = useRef<HTMLDivElement>(null);
+    
+    // API hooks
+    const { data: user } = api.user.get.useQuery();
+    const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
+    const { mutateAsync: createProject } = api.project.create.useMutation();
+    const { setIsAuthModalOpen } = useAuthContext();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -92,6 +103,7 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
             if (e.key === 'Escape') {
                 setIsSearchFocused(false);
                 searchInputRef.current?.blur();
+                onSearchChange?.('');
             }
         };
 
@@ -99,7 +111,58 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
         return () => {
             document.removeEventListener('keydown', handleEscape);
         };
-    }, []);
+    }, [onSearchChange]);
+
+    const handleStartBlankProject = async () => {
+        if (!user?.id) {
+            // Store the return URL and open auth modal
+            localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
+            setIsAuthModalOpen(true);
+            return;
+        }
+
+        setIsCreatingProject(true);
+        try {
+            // Create a blank project using the BLANK template
+            const { sandboxId, previewUrl } = await forkSandbox({
+                sandbox: SandboxTemplates[Templates.EMPTY_NEXTJS],
+                config: {
+                    title: `Blank project - ${user.id}`,
+                    tags: ['blank', user.id],
+                },
+            });
+
+            const newProject = await createProject({
+                project: {
+                    name: 'New Project',
+                    description: 'Your new blank project',
+                    tags: ['blank'],
+                },
+                sandboxId,
+                sandboxUrl: previewUrl,
+                userId: user.id,
+            });
+
+            if (newProject) {
+                router.push(`${Routes.PROJECT}/${newProject.id}`);
+            }
+        } catch (error) {
+            console.error('Error creating blank project:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+
+            if (errorMessage.includes('502') || errorMessage.includes('sandbox')) {
+                toast.error('Sandbox service temporarily unavailable', {
+                    description: 'Please try again in a few moments. Our servers may be experiencing high load.',
+                });
+            } else {
+                toast.error('Failed to create project', {
+                    description: errorMessage,
+                });
+            }
+        } finally {
+            setIsCreatingProject(false);
+        }
+    };
 
     return (
         <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 px-0 text-small text-foreground-secondary gap-6">
@@ -125,46 +188,6 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                             placeholder="Search projects"
                             className="pl-9 pr-7 focus-visible:border-transparent focus-visible:ring-0"
                         />
-                        {(isSearchFocused || (searchQuery ?? '').length > 0) && (
-                            <div className="absolute left-0 right-0 top-full mt-2 rounded-md border bg-background shadow-lg p-2 z-50">
-                                {recentSearches.length > 0 && (
-                                    <div className="mb-2">
-                                        <div className="px-2 pb-1 text-foreground-tertiary text-xs">Recent searches</div>
-                                        <div className="flex flex-wrap gap-2 px-2">
-                                            {recentSearches.map((q) => (
-                                                <button
-                                                    key={q}
-                                                    onMouseDown={(e) => e.preventDefault()}
-                                                    onClick={() => onSearchChange?.(q)}
-                                                    className="rounded bg-secondary px-2 py-1 text-xs text-foreground hover:bg-secondary/80"
-                                                >
-                                                    {q}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                                {recentColors.length > 0 && (
-                                    <div>
-                                        <div className="px-2 pb-1 text-foreground-tertiary text-xs">Recently used colors</div>
-                                        <div className="flex flex-wrap gap-1 px-2">
-                                            {recentColors.map((c, i) => (
-                                                <button
-                                                    key={`${c}-${i}`}
-                                                    title={c}
-                                                    onMouseDown={(e) => e.preventDefault()}
-                                                    className="w-5 h-5 rounded border"
-                                                    style={{ background: c }}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                                {recentSearches.length === 0 && recentColors.length === 0 && (
-                                    <div className="px-2 py-1 text-xs text-foreground-tertiary">Start typing to search projects…</div>
-                                )}
-                            </div>
-                        )}
                         {searchQuery && (
                             <button
                                 onClick={() => onSearchChange?.('')}
@@ -205,6 +228,24 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                         >
                             <Icons.Plus className="w-4 h-4 mr-1 text-foreground-secondary group-hover:text-blue-100" />
                             {t(transKeys.projects.actions.newProject)}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            className={cn(
+                                'focus:bg-blue-100 focus:text-blue-900',
+                                'hover:bg-blue-100 hover:text-blue-900',
+                                'dark:focus:bg-blue-900 dark:focus:text-blue-100',
+                                'dark:hover:bg-blue-900 dark:hover:text-blue-100',
+                                'cursor-pointer select-none group',
+                            )}
+                            onSelect={handleStartBlankProject}
+                            disabled={isCreatingProject}
+                        >
+                            {isCreatingProject ? (
+                                <Icons.LoadingSpinner className="w-4 h-4 mr-1 animate-spin text-foreground-secondary group-hover:text-blue-100" />
+                            ) : (
+                                <Icons.FilePlus className="w-4 h-4 mr-1 text-foreground-secondary group-hover:text-blue-100" />
+                            )}
+                            {t(transKeys.projects.actions.blankProject)}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             className={cn(

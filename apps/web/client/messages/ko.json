@@ -47,6 +47,7 @@
             "rename": "이름 변경",
             "goToAllProjects": "모든 프로젝트로 이동",
             "newProject": "새 프로젝트",
+            "blankProject": "빈 프로젝트",
             "startFromScratch": "처음부터 시작하기",
             "importProject": "프로젝트 가져오기",
             "subscriptions": "구독하기",
