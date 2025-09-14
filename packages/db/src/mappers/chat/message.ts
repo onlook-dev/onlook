@@ -29,6 +29,6 @@ export const toDbMessage = (message: ChatMessage, conversationId: string): DbMes
         applied: null,
         commitOid: null,
         snapshots: null,
-        content: null,
+        content: '',
     }
 }
