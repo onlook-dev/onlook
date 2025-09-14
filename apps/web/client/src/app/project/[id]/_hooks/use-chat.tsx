@@ -8,10 +8,14 @@ import { jsonClone } from '@onlook/utility';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
-import { createContext, useContext, useRef, useState } from 'react';
+import { createContext, useContext, useMemo, useRef, useState } from 'react';
 
-type ExtendedUseChatHelpers = UseChatHelpers<ChatMessage> & { sendMessageToChat: (message: ChatMessage, type: ChatType) => Promise<void> };
-const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
+interface ExtraChatHelpers {
+    sendMessageToChat: (message: ChatMessage, type: ChatType) => Promise<void>;
+    streamingMessage: ChatMessage | null;
+}
+
+const ChatContext = createContext<UseChatHelpers<ChatMessage> & ExtraChatHelpers | null>(null);
 
 export const ChatProvider = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
@@ -53,7 +57,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
             // Update UI with streaming content in real-time
             const currentMessages = chat.messages;
             const lastMessage = currentMessages[currentMessages.length - 1];
-            
+
             if (lastMessage && lastMessage.role === 'assistant') {
                 // Update the last assistant message with streaming content
                 lastMessageRef.current = lastMessage;
@@ -62,13 +66,14 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         },
         onFinish: (options: { message: ChatMessage; isAbort?: boolean; isDisconnect?: boolean; isError?: boolean }) => {
             const { message, isError = false } = options;
-            console.log('onFinish', options);
-            if (!message.metadata) {
-                return;
-            }
-            const finishReason = (message.metadata as any)?.finishReason;
             lastMessageRef.current = message;
             editorEngine.chat.conversation.addOrReplaceMessage(message);
+
+            // Extract finishReason safely from metadata
+            const finishReason = message.metadata && typeof message.metadata === 'object' && 'finishReason' in message.metadata
+                ? message.metadata.finishReason as string
+                : undefined;
+
             if (finishReason !== 'error' && !isError) {
                 editorEngine.chat.error.clear();
             }
@@ -87,11 +92,11 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         },
         onError: (error) => {
             console.error('Error in chat', error);
-            
+
             // Save any partial content from streaming before handling error
             const currentMessages = chat.messages;
             const lastMessage = currentMessages[currentMessages.length - 1];
-            
+
             if (lastMessage && lastMessage.role === 'assistant' && lastMessage.parts.length > 0) {
                 // Preserve partial assistant response
                 lastMessageRef.current = lastMessage;
@@ -100,7 +105,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
                 // Fallback to stored reference
                 editorEngine.chat.conversation.addOrReplaceMessage(lastMessageRef.current);
             }
-            
+
             editorEngine.chat.error.handleChatError(error);
             lastMessageRef.current = null;
         }
@@ -121,7 +126,18 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         return chat.sendMessage(clonedMessage);
     };
 
-    return <ChatContext.Provider value={{ ...chat, sendMessageToChat }}>{children}</ChatContext.Provider>;
+    const streamingMessage = useMemo(() => {
+        if (chat.messages.length > 0) {
+            const lastMessage = chat.messages[chat.messages.length - 1];
+            if (lastMessage && lastMessage.role === 'assistant') {
+                return lastMessage;
+            }
+            return null;
+        }
+        return null;
+    }, [chat.messages]);
+
+    return <ChatContext.Provider value={{ ...chat, sendMessageToChat, streamingMessage }}>{children}</ChatContext.Provider>;
 });
 
 export function useChatContext() {

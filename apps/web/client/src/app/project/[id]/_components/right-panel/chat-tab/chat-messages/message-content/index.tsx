@@ -1,6 +1,5 @@
 import type { ToolUIPart, UIMessage } from 'ai';
 import { observer } from 'mobx-react-lite';
-import { useMemo } from 'react';
 import { MarkdownRenderer } from '../markdown-renderer';
 import { ToolCallDisplay } from './tool-call-display';
 
@@ -16,14 +15,6 @@ export const MessageContent = observer(
         applied: boolean;
         isStream: boolean;
     }) => {
-        // Find the index of the last tool-*** part
-        const lastToolInvocationIdx = useMemo(() =>
-            parts?.map((part, index) => ({ type: part.type, index }))
-                .filter(item => item.type.startsWith('tool-'))
-                .pop()?.index ?? -1,
-            [parts]
-        );
-
         const renderedParts = parts.map((part, idx) => {
             if (part.type === 'text') {
                 return (
@@ -42,7 +33,7 @@ export const MessageContent = observer(
                     <ToolCallDisplay
                         messageId={messageId}
                         index={idx}
-                        lastToolInvocationIdx={lastToolInvocationIdx}
+                        lastToolInvocationIdx={parts.length - 1}
                         toolInvocation={toolPart}
                         key={toolPart.toolCallId}
                         isStream={isStream}
@@ -50,22 +41,18 @@ export const MessageContent = observer(
                     />
                 );
             } else if (part.type === 'reasoning') {
-                const processedText = part.text.replace('[REDACTED]', '');
-                if (processedText === '') {
-                    return null;
-                }
                 return (
-                    <div key={`reasoning-${idx}`} className="my-2 px-3 py-2 border-l-1 max-h-32 overflow-y-auto">
+                    <pre key={`reasoning-${idx}`} className="my-2 px-3 py-2 border-l-1 max-h-32 overflow-y-auto">
                         <MarkdownRenderer
                             messageId={messageId}
                             type="text"
-                            key={processedText}
-                            content={processedText}
+                            key={part.text}
+                            content={part.text}
                             applied={applied}
                             isStream={isStream}
                             className="text-xs text-foreground-secondary p-0 m-0"
                         />
-                    </div>
+                    </pre>
                 );
             }
         }).filter(Boolean);

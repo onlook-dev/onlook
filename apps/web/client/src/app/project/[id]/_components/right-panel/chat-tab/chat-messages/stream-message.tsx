@@ -1,43 +1,27 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { Icons } from '@onlook/ui/icons';
-import { useMemo } from 'react';
 import { MessageContent } from './message-content';
 
 export const StreamMessage = () => {
-    const { messages, isWaiting } = useChatContext();
-    const streamMessage = messages.length > 0 ? messages[messages.length - 1] : null;
-    const isAssistantStreamMessage = useMemo(() =>
-        streamMessage?.role === 'assistant',
-        [streamMessage?.role]
-    );
+    const { streamingMessage, isWaiting } = useChatContext();
 
-    const hasReasoningParts = streamMessage?.parts?.some(part => part.type === 'reasoning') ?? false;
-    const shouldShowIntrospecting = isWaiting && hasReasoningParts;
-
+    if (!isWaiting || !streamingMessage) {
+        return null;
+    }
     return (
         <>
-            {streamMessage && isAssistantStreamMessage && streamMessage.parts && isWaiting && (
-                <div className="px-4 py-2 text-small content-start flex flex-col text-wrap gap-2">
-                    <MessageContent
-                        messageId={streamMessage.id}
-                        parts={streamMessage.parts}
-                        applied={false}
-                        isStream={true}
-                    />
-                </div>
-            )}
-            {isWaiting && !shouldShowIntrospecting && (
-                <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
-                    <Icons.LoadingSpinner className="animate-spin" />
-                    <p>Thinking ...</p>
-                </div>
-            )}
-            {shouldShowIntrospecting && (
-                <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
-                    <Icons.LoadingSpinner className="animate-spin" />
-                    <p>Introspecting...</p>
-                </div>
-            )}
+            <div className="px-4 py-2 text-small content-start flex flex-col text-wrap gap-2">
+                <MessageContent
+                    messageId={streamingMessage.id}
+                    parts={streamingMessage.parts}
+                    applied={false}
+                    isStream={true}
+                />
+            </div>
+            <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
+                <Icons.LoadingSpinner className="animate-spin" />
+                <p>Thinking ...</p>
+            </div>
         </>
     );
 };

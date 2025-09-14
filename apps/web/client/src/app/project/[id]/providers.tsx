@@ -17,7 +17,7 @@ export const ProjectProviders = ({
     return (
         <EditorEngineProvider project={project} branches={branches}>
             <HostingProvider>
-                <ChatProvider>
+                <ChatProvider >
                     {children}
                 </ChatProvider>
             </HostingProvider>
