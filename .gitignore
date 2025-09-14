@@ -44,3 +44,6 @@ yarn.lock
 .env.production.local
 
 mise.toml
+
+# Temporary files
+.tmp/
