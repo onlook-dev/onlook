@@ -44,10 +44,8 @@ export const MessageContent = observer(
             } else if (part.type === 'reasoning') {
                 return (
                     <ReasoningBlock
-                        messageId={messageId}
                         idx={idx}
                         part={part}
-                        applied={applied}
                         isStream={isStream}
                     />
                 );

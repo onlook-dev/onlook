@@ -1,13 +1,20 @@
 import type { ReasoningPart } from "@ai-sdk/provider-utils";
+import { Icons } from "@onlook/ui/icons/index";
 
 export const ReasoningBlock = ({
-    messageId, idx, part, applied, isStream
+    idx, part, isStream
 }: {
-    messageId: string, idx: number, part: ReasoningPart, applied: boolean, isStream: boolean
+    idx: number, part: ReasoningPart, isStream: boolean
 }) => {
     return (
-        <pre key={`reasoning-${idx}-${part.text}`} className=" prose prose-invert text-small my-2 px-3 py-2 border-l-1 max-h-32 overflow-y-auto">
-            {part.text}
-        </pre>
+        <>
+            <div className="px-2 flex items-center gap-2 text-foreground-tertiary">
+                <Icons.Lightbulb className="w-4 h-4" />
+                <p className="text-sm">Reasoning</p>
+            </div>
+            {isStream && <pre key={`reasoning-${idx}`} className="prose prose-invert text-xs my-2 px-3 py-2 border-l-1 whitespace-pre-wrap break-words">
+                {part.text}
+            </pre>}
+        </>
     );
 };
