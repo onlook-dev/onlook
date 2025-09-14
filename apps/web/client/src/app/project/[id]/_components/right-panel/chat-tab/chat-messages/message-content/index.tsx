@@ -1,6 +1,7 @@
 import type { ToolUIPart, UIMessage } from 'ai';
 import { observer } from 'mobx-react-lite';
-import { MarkdownRenderer } from '../markdown-renderer';
+import { MarkdownRenderer } from '../markdown';
+import { ReasoningBlock } from './reasoning';
 import { ToolCallDisplay } from './tool-call-display';
 
 export const MessageContent = observer(
@@ -42,17 +43,13 @@ export const MessageContent = observer(
                 );
             } else if (part.type === 'reasoning') {
                 return (
-                    <pre key={`reasoning-${idx}`} className="my-2 px-3 py-2 border-l-1 max-h-32 overflow-y-auto">
-                        <MarkdownRenderer
-                            messageId={messageId}
-                            type="text"
-                            key={part.text}
-                            content={part.text}
-                            applied={applied}
-                            isStream={isStream}
-                            className="text-xs text-foreground-secondary p-0 m-0"
-                        />
-                    </pre>
+                    <ReasoningBlock
+                        messageId={messageId}
+                        idx={idx}
+                        part={part}
+                        applied={applied}
+                        isStream={isStream}
+                    />
                 );
             }
         }).filter(Boolean);
