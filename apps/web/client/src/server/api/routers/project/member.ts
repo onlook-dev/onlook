@@ -1,4 +1,4 @@
-import { toUser, userProjects } from '@onlook/db';
+import { fromDbUser, userProjects } from '@onlook/db';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -20,7 +20,7 @@ export const memberRouter = createTRPCRouter({
             // TODO: Fix this later
             return members.map((member) => ({
                 role: member.role,
-                user: toUser({
+                user: fromDbUser({
                     id: member.user.id,
                     email: member.user.email,
                     createdAt: new Date(),
@@ -36,6 +36,8 @@ export const memberRouter = createTRPCRouter({
                     avatarUrl: member.user.avatarUrl ?? '',
                     // @ts-expect-error - TODO: Fix this later
                     stripeCustomerId: member.user.stripeCustomerId ?? null,
+                    // @ts-expect-error - TODO: Fix this later
+                    githubInstallationId: member.user.githubInstallationId ?? null,
                 }),
             }));
         }),

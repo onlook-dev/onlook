@@ -1,5 +1,4 @@
-import { deployments, deploymentUpdateSchema, previewDomains, projectCustomDomains, projects, type Deployment } from '@onlook/db';
-import type { DrizzleDb } from '@onlook/db/src/client';
+import { deployments, deploymentUpdateSchema, previewDomains, projectCustomDomains, type Deployment, type DrizzleDb } from '@onlook/db';
 import {
     DeploymentStatus,
     DeploymentType
@@ -39,20 +38,7 @@ export async function getProjectUrls(db: DrizzleDb, projectId: string, type: Dep
     return urls;
 }
 
-export async function getSandboxId(db: DrizzleDb, projectId: string): Promise<string> {
-    const project = await db.query.projects.findFirst({
-        where: eq(projects.id, projectId),
-    });
-    if (!project) {
-        throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Project not found',
-        });
-    }
-    return project.sandboxId;
-}
-
-export async function updateDeployment(db: DrizzleDb, deploymentId: string, deployment: z.infer<typeof deploymentUpdateSchema>): Promise<Deployment | null> {
+export async function updateDeployment(db: DrizzleDb, deployment: z.infer<typeof deploymentUpdateSchema>): Promise<Deployment | null> {
     try {
         const [result] = await db.update(deployments).set({
             ...deployment,
@@ -60,13 +46,13 @@ export async function updateDeployment(db: DrizzleDb, deploymentId: string, depl
             status: deployment.status as DeploymentStatus
         }).where(
             and(
-                eq(deployments.id, deploymentId),
+                eq(deployments.id, deployment.id),
                 ne(deployments.status, DeploymentStatus.CANCELLED)
             )
         ).returning();
         return result ?? null;
     } catch (error) {
-        console.error(`Failed to update deployment ${deploymentId}:`, error);
+        console.error(`Failed to update deployment ${deployment.id}:`, error);
         return null;
     }
 }

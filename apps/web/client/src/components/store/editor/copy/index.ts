@@ -54,7 +54,7 @@ export class CopyManager {
             console.error('Failed to copy element');
             return;
         }
-        const codeBlock = await this.editorEngine.sandbox.getCodeBlock(selectedEl.oid);
+        const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(selectedEl.oid);
         this.copied = { element: targetEl, codeBlock: codeBlock };
         await this.clearClipboard();
     }

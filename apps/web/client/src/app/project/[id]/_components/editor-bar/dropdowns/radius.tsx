@@ -106,7 +106,7 @@ export const Radius = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className="gap-1 flex items-center min-w-10"
+                        className="gap-1 flex items-center min-w-9"
                     >
                         <RadiusIcon className="h-4 min-h-4 w-4 min-w-4" />
                         {radiusValue && (

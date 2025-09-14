@@ -3,22 +3,27 @@ import { createTRPCRouter, protectedProcedure } from '@/server/api/trpc';
 import { trackEvent } from '@/utils/analytics/server';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { initModel } from '@onlook/ai';
-import { STORAGE_BUCKETS } from '@onlook/constants';
+import { getSandboxPreviewUrl, STORAGE_BUCKETS } from '@onlook/constants';
 import {
+    branches,
     canvases,
+    conversations,
+    createDefaultBranch,
     createDefaultCanvas,
+    createDefaultConversation,
     createDefaultFrame,
     createDefaultUserCanvas,
+    DefaultFrameType,
     frames,
-    fromPreviewImg,
+    fromDbCanvas,
+    fromDbFrame,
+    fromDbProject,
     projectCreateRequestInsertSchema,
     projectCreateRequests,
     projectInsertSchema,
     projects,
     projectUpdateSchema,
-    toCanvas,
-    toFrame,
-    toProject,
+    toDbPreviewImg,
     userCanvases,
     userProjects,
     type Canvas,
@@ -31,6 +36,7 @@ import { generateText } from 'ai';
 import { and, eq, ne } from 'drizzle-orm';
 import { z } from 'zod';
 import { projectCreateRequestRouter } from './createRequest';
+import { extractCsbPort } from './helper';
 import { forkTemplate } from './template';
 
 export const projectRouter = createTRPCRouter({
@@ -57,31 +63,35 @@ export const projectRouter = createTRPCRouter({
                     throw new Error('FIRECRAWL_API_KEY is not configured');
                 }
 
-                const project = await ctx.db.query.projects.findFirst({
-                    where: eq(projects.id, input.projectId),
+                const branch = await ctx.db.query.branches.findFirst({
+                    where: and(eq(branches.projectId, input.projectId), eq(branches.isDefault, true)),
+                    with: {
+                        frames: true,
+                    },
                 });
 
-                if (!project) {
-                    throw new Error('Project not found');
+                if (!branch) {
+                    throw new Error('Branch not found');
                 }
 
-                if (!project.sandboxUrl) {
-                    throw new Error('No sandbox URL found');
+                if (!branch.sandboxId) {
+                    throw new Error('No sandbox found for branch');
                 }
 
+                // Extract port from existing frame URL or fall back to 3000
+                const port = extractCsbPort(branch.frames) ?? 3000;
+                const url = getSandboxPreviewUrl(branch.sandboxId, port);
                 const app = new FirecrawlApp({ apiKey: env.FIRECRAWL_API_KEY });
 
-                const result = await app.scrapeUrl(project.sandboxUrl, {
+                // Optional: Add actions to click the button for CSB free tier
+                // const _csbFreeActions = [{
+                //     type: 'click',
+                //     selector: '#btn-answer-yes',
+                // }];
+                const result = await app.scrapeUrl(url, {
                     formats: ['screenshot'],
                     onlyMainContent: true,
                     timeout: 10000,
-                    // Optional: Add actions to click the button for CSB free tier
-                    // actions: [
-                    //     {
-                    //         type: 'click',
-                    //         selector: '#btn-answer-yes',
-                    //     },
-                    // ],
                 });
 
                 if (!result.success) {
@@ -116,7 +126,7 @@ export const projectRouter = createTRPCRouter({
                 const finalMimeType = useCompressed ? 'image/jpeg' : mimeType;
                 const finalBuffer = useCompressed ? (compressedImage.buffer ?? buffer) : buffer;
 
-                const path = getScreenshotPath(project.id, finalMimeType);
+                const path = getScreenshotPath(input.projectId, finalMimeType);
 
                 const { data, error } = await ctx.supabase.storage
                     .from(STORAGE_BUCKETS.PREVIEW_IMAGES)
@@ -137,12 +147,13 @@ export const projectRouter = createTRPCRouter({
                     previewImgPath,
                     previewImgBucket,
                     updatedPreviewImgAt,
-                } = fromPreviewImg({
+                } = toDbPreviewImg({
                     type: 'storage',
                     storagePath: {
                         bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
                         path: data.path,
                     },
+                    updatedAt: new Date(),
                 });
 
                 await ctx.db.update(projects)
@@ -153,7 +164,7 @@ export const projectRouter = createTRPCRouter({
                         updatedPreviewImgAt,
                         updatedAt: new Date(),
                     })
-                    .where(eq(projects.id, project.id));
+                    .where(eq(projects.id, input.projectId));
 
                 return { success: true, path: data.path };
             } catch (error) {
@@ -177,7 +188,7 @@ export const projectRouter = createTRPCRouter({
                 },
                 limit: input?.limit,
             });
-            return fetchedUserProjects.map((userProject) => toProject(userProject.project)).sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
+            return fetchedUserProjects.map((userProject) => fromDbProject(userProject.project)).sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
         }),
     get: protectedProcedure
         .input(z.object({ projectId: z.string() }))
@@ -189,7 +200,7 @@ export const projectRouter = createTRPCRouter({
                 console.error('project not found');
                 return null;
             }
-            return toProject(project)
+            return fromDbProject(project)
         }),
     getProjectWithCanvas: protectedProcedure
         .input(z.object({ projectId: z.string() }))
@@ -215,15 +226,17 @@ export const projectRouter = createTRPCRouter({
             const userCanvas: UserCanvas = project.canvas?.userCanvases[0] ?? createDefaultUserCanvas(ctx.user.id, canvas.id);
 
             return {
-                project: toProject(project),
-                userCanvas: toCanvas(userCanvas),
-                frames: project.canvas?.frames.map(toFrame) ?? [],
+                project: fromDbProject(project),
+                userCanvas: fromDbCanvas(userCanvas),
+                frames: project.canvas?.frames.map(fromDbFrame) ?? [],
             };
         }),
     create: protectedProcedure
         .input(z.object({
             project: projectInsertSchema,
             userId: z.string(),
+            sandboxId: z.string(),
+            sandboxUrl: z.string(),
             creationData: projectCreateRequestInsertSchema
                 .omit({
                     projectId: true,
@@ -238,14 +251,21 @@ export const projectRouter = createTRPCRouter({
                     throw new Error('Failed to create project in database');
                 }
 
-                // 2. Create the association in the junction table
+                // 2. Create the default branch
+                const newBranch = createDefaultBranch({
+                    projectId: newProject.id,
+                    sandboxId: input.sandboxId,
+                });
+                await tx.insert(branches).values(newBranch);
+
+                // 3. Create the association in the junction table
                 await tx.insert(userProjects).values({
                     userId: input.userId,
                     projectId: newProject.id,
                     role: ProjectRole.OWNER,
                 });
 
-                // 3. Create the default canvas
+                // 4. Create the default canvas
                 const newCanvas = createDefaultCanvas(newProject.id);
                 await tx.insert(canvases).values(newCanvas);
 
@@ -256,23 +276,26 @@ export const projectRouter = createTRPCRouter({
                 });
                 await tx.insert(userCanvases).values(newUserCanvas);
 
-                // 4. Create the default frame
-                const desktopFrame = createDefaultFrame(newCanvas.id, input.project.sandboxUrl, {
-                    x: '5',
-                    y: '0',
-                    width: '1536',
-                    height: '960',
+                // 5. Create the default frame
+                const desktopFrame = createDefaultFrame({
+                    canvasId: newCanvas.id,
+                    branchId: newBranch.id,
+                    url: input.sandboxUrl,
+                    type: DefaultFrameType.DESKTOP,
                 });
                 await tx.insert(frames).values(desktopFrame);
-                const mobileFrame = createDefaultFrame(newCanvas.id, input.project.sandboxUrl, {
-                    x: '1600',
-                    y: '0',
-                    width: '440',
-                    height: '956',
+                const mobileFrame = createDefaultFrame({
+                    canvasId: newCanvas.id,
+                    branchId: newBranch.id,
+                    url: input.sandboxUrl,
+                    type: DefaultFrameType.MOBILE,
                 });
                 await tx.insert(frames).values(mobileFrame);
 
-                // 5. Create the creation request
+                // 6. Create the default chat conversation
+                await tx.insert(conversations).values(createDefaultConversation(newProject.id));
+
+                // 7. Create the creation request
                 if (input.creationData) {
                     await tx.insert(projectCreateRequests).values({
                         ...input.creationData,
@@ -300,7 +323,7 @@ export const projectRouter = createTRPCRouter({
             try {
                 const { model, providerOptions, headers } = await initModel({
                     provider: LLMProvider.OPENROUTER,
-                    model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+                    model: OPENROUTER_MODELS.OPEN_AI_GPT_5_NANO,
                 });
 
                 const MAX_NAME_LENGTH = 50;
@@ -309,7 +332,7 @@ export const projectRouter = createTRPCRouter({
                     headers,
                     prompt: `Generate a concise and meaningful project name (2-4 words maximum) that reflects the main purpose or theme of the project based on user's creation prompt. Generate only the project name, nothing else. Keep it short and descriptive. User's creation prompt: <prompt>${input.prompt}</prompt>`,
                     providerOptions,
-                    maxTokens: 50,
+                    maxOutputTokens: 50,
                     experimental_telemetry: {
                         isEnabled: true, metadata: {
                             userId: ctx.user.id,
@@ -346,16 +369,19 @@ export const projectRouter = createTRPCRouter({
                     project: true,
                 },
             });
-            return projects.map((project) => toProject(project.project));
+            return projects.map((project) => fromDbProject(project.project));
         }),
-    update: protectedProcedure.input(z.object({
-        id: z.string(),
-        project: projectUpdateSchema,
-    })).mutation(async ({ ctx, input }) => {
-        await ctx.db.update(projects).set({
-            ...input.project,
+    update: protectedProcedure.input(projectUpdateSchema).mutation(async ({ ctx, input }) => {
+        const [updatedProject] = await ctx.db.update(projects).set({
+            ...input,
             updatedAt: new Date(),
-        }).where(eq(projects.id, input.id));
+        }).where(
+            eq(projects.id, input.id)
+        ).returning();
+        if (!updatedProject) {
+            throw new Error('Project not found');
+        }
+        return fromDbProject(updatedProject);
     }),
     addTag: protectedProcedure.input(z.object({
         projectId: z.string(),

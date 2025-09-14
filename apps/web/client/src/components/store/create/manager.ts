@@ -1,10 +1,9 @@
 import { api } from '@/trpc/client';
 import { SandboxTemplates, Templates } from '@onlook/constants';
-import type { Project as DbProject } from '@onlook/db';
+import { createDefaultProject } from '@onlook/db';
 import { CreateRequestContextType } from '@onlook/models';
 import { type ImageMessageContext } from '@onlook/models/chat';
 import { makeAutoObservable } from "mobx";
-import { v4 as uuidv4 } from 'uuid';
 import { parseRepoUrl } from '../editor/pages/helper';
 
 export class CreateManager {
@@ -45,10 +44,16 @@ export class CreateManager {
                 }),
                 this.generateProjectName(prompt)
             ]);
-            const project = this.createDefaultProject(sandboxId, previewUrl, projectName);
+            const project = createDefaultProject({
+                overrides: {
+                    name: projectName,
+                },
+            });
             const newProject = await api.project.create.mutate({
                 project,
                 userId,
+                sandboxId,
+                sandboxUrl: previewUrl,
                 creationData: {
                     context: [
                         {
@@ -70,24 +75,6 @@ export class CreateManager {
             console.error(error);
             this.error = error instanceof Error ? error.message : 'An unknown error occurred';
         }
-    }
-
-    createDefaultProject(sandboxId: string, previewUrl: string, name = 'New Project'): DbProject {
-        const newProject = {
-            id: uuidv4(),
-            name,
-            sandboxId,
-            sandboxUrl: previewUrl,
-            tags: [],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            previewImgUrl: null,
-            previewImgPath: null,
-            previewImgBucket: null,
-            updatedPreviewImgAt: null,
-            description: 'Your new project',
-        } satisfies DbProject;
-        return newProject;
     }
 
     async startGitHubTemplate(userId: string, repoUrl: string) {
@@ -112,10 +99,16 @@ export class CreateManager {
                 this.createSandboxFromGithub(repoUrl, branch),
                 this.generateProjectName(`Import from GitHub repository: ${repo}`)
             ]);
-            const project = this.createDefaultProject(sandboxId, previewUrl, projectName);
+            const project = createDefaultProject({
+                overrides: {
+                    name: projectName,
+                },
+            });
             const newProject = await api.project.create.mutate({
                 project,
                 userId,
+                sandboxId,
+                sandboxUrl: previewUrl,
             });
             return newProject;
         }

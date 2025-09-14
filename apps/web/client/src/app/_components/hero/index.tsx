@@ -3,7 +3,7 @@
 import { api } from '@/trpc/react';
 import { Icons } from '@onlook/ui/icons';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Create } from './create';
 import { CreateError } from './create-error';
 import { HighDemand } from './high-demand';
@@ -16,28 +16,44 @@ import { vujahdayScript } from '../../fonts';
 export function Hero() {
     const [cardKey, setCardKey] = useState(0);
     const [isCreatingProject, setIsCreatingProject] = useState(false);
+    const [isShortScreen, setIsShortScreen] = useState(false);
     const { data: user } = api.user.get.useQuery();
+
+    useEffect(() => {
+        const checkScreenHeight = () => {
+            setIsShortScreen(window.innerHeight < 700);
+        };
+
+        checkScreenHeight();
+        window.addEventListener('resize', checkScreenHeight);
+
+        return () => window.removeEventListener('resize', checkScreenHeight);
+    }, []);
 
     return (
         <div className="w-full h-full flex flex-col items-center text-lg text-center relative">
             <UnicornBackground />
             <div className="w-full h-full flex flex-col items-center justify-center mb-42 gap-10 pt-12">
-                <div className="flex flex-col gap-3 items-center relative z-20 pt-0 pb-2">
-                    <motion.div
-                        className="flex flex-col gap-3 items-center relative z-20 pt-4 pb-2 mb-6"
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 1.2, ease: "easeOut" }}
-                    >
-                        <a
-                            href="https://www.ycombinator.com/companies/onlook/jobs/e4gHv1n-founding-engineer-fullstack" target="_blank"
-                            className="inline-flex items-center gap-2 px-3 py-1.5 hover:bg-foreground-secondary/20 backdrop-blur-sm border border-foreground-secondary/20 rounded-full text-xs text-foreground-secondary transition-all duration-200 hover:scale-102"
+                <div className="flex flex-col gap-3 items-center relative z-20 pt-8 pb-2">
+                    {!isShortScreen && (
+                        <motion.div
+                            className="flex flex-col gap-3 items-center relative z-20 pt-4 pb-2 mb-6"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 1.2, ease: "easeOut" }}
                         >
-                            We're hiring engineers
-                            <Icons.ArrowRight className="w-4 h-4" />
-                        </a>
+                            <a
+                                href="https://www.ycombinator.com/companies/onlook/jobs/e4gHv1n-founding-engineer-fullstack"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 px-3 py-1.5 hover:bg-foreground-secondary/20 backdrop-blur-sm border border-foreground-secondary/20 rounded-full text-xs text-foreground-secondary transition-all duration-200 hover:scale-102"
+                            >
+                                We're hiring engineers
+                                <Icons.ArrowRight className="w-4 h-4" />
+                            </a>
 
-                    </motion.div>
+                        </motion.div>
+                    )}
                     <motion.h1
                         className="text-6xl font-light leading-tight text-center !leading-[0.9]"
                         initial={{ opacity: 0, filter: "blur(4px)" }}

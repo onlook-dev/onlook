@@ -208,16 +208,16 @@ export function TailwindColorEditorMockup() {
           <div className="h-[4px] w-6 rounded-full bg-foreground-primary" />
         </ToolbarButton>
         {/* Align left */}
-        <ToolbarButton className="flex items-center justify-center min-w-10">
+        <ToolbarButton className="flex items-center justify-center min-w-9">
           {/* eslint-disable-next-line react/no-children-prop */}
           {React.createElement(Icons.TextAlignLeft as unknown as React.FC<React.SVGProps<SVGSVGElement>>, { className: 'h-4 w-4' } as any)}
         </ToolbarButton>
         {/* Advanced typography */}
-        <ToolbarButton className="flex items-center justify-center min-w-10 px-2">
+        <ToolbarButton className="flex items-center justify-center min-w-9 px-2">
           <Icons.AdvancedTypography className="h-4 w-4" />
         </ToolbarButton>
         <InputSeparator />
-         <ToolbarButton className="flex items-center justify-center min-w-10">
+         <ToolbarButton className="flex items-center justify-center min-w-9">
            {React.createElement(Icons.DotsHorizontal as unknown as React.FC<React.SVGProps<SVGSVGElement>>, { className: 'h-4 w-4' } as any)}
          </ToolbarButton>
         </div>

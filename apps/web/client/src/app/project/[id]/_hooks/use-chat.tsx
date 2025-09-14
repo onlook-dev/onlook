@@ -3,39 +3,55 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
+import { toVercelMessageFromOnlook } from '@onlook/ai';
 import { toOnlookMessageFromVercel } from '@onlook/db';
-import { ChatType } from '@onlook/models';
-import type { Message } from 'ai';
+import { ChatMessageRole, ChatType } from '@onlook/models';
+import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, type UIMessage } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
 import { createContext, useContext, useRef } from 'react';
 
-type ExtendedUseChatHelpers = UseChatHelpers & { sendMessage: (type: ChatType) => Promise<string | null | undefined> };
+type ExtendedUseChatHelpers = UseChatHelpers<UIMessage> & { sendMessageToChat: (type: ChatType) => Promise<void> };
 const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 
 export const ChatProvider = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
-    const lastMessageRef = useRef<Message | null>(null);
+    const lastMessageRef = useRef<UIMessage | null>(null);
     const posthog = usePostHog();
 
     const conversationId = editorEngine.chat.conversation.current?.conversation.id;
     const chat = useChat({
         id: 'user-chat',
-        api: '/api/chat',
-        maxSteps: 20,
-        body: {
-            conversationId,
-            projectId: editorEngine.projectId,
+        sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+        transport: new DefaultChatTransport({
+            api: '/api/chat',
+            body: {
+                conversationId,
+                projectId: editorEngine.projectId,
+            },
+        }),
+        onToolCall: async (toolCall) => {
+            const result = await handleToolCall(toolCall.toolCall, editorEngine);
+
+            chat.addToolResult({
+                tool: toolCall.toolCall.toolName,
+                toolCallId: toolCall.toolCall.toolCallId,
+                output: result,
+            });
         },
-        onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
-        onFinish: (message, { finishReason }) => {
+        onFinish: ({ message }) => {
+            if (!message.metadata) {
+                return;
+            }
+            const finishReason = (message.metadata as { finishReason?: string }).finishReason;
             lastMessageRef.current = message;
             if (finishReason !== 'error') {
                 editorEngine.chat.error.clear();
             }
 
             if (finishReason !== 'tool-calls') {
-                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(message, conversationId ?? ''));
+                const currentConversationId = editorEngine.chat.conversation.current?.conversation.id;
+                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(message, currentConversationId ?? ''));
                 editorEngine.chat.suggestions.generateSuggestions();
                 lastMessageRef.current = null;
             }
@@ -50,22 +66,32 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         onError: (error) => {
             console.error('Error in chat', error);
             editorEngine.chat.error.handleChatError(error);
-
             if (lastMessageRef.current) {
-                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(lastMessageRef.current, conversationId ?? ''));
+                const currentConversationId = editorEngine.chat.conversation.current?.conversation.id;
+                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(lastMessageRef.current, currentConversationId ?? ''));
                 lastMessageRef.current = null;
             }
-        },
-        sendExtraMessageFields: true,
+        }
     });
 
-    const sendMessage = async (type: ChatType = ChatType.EDIT) => {
+    const sendMessageToChat = async (type: ChatType = ChatType.EDIT) => {
         if (!conversationId) {
             throw new Error('No conversation id');
         }
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
-        chat.setMessages(editorEngine.chat.conversation.current?.messages ?? [] as any);
+
+        const messages = editorEngine.chat.conversation.current?.messages ?? [];
+        const uiMessages = messages.map((message, index) =>
+            toVercelMessageFromOnlook(message, {
+                totalMessages: messages.length,
+                currentMessageIndex: index,
+                lastUserMessageIndex: messages.findLastIndex(m => m.role === ChatMessageRole.USER),
+                lastAssistantMessageIndex: messages.findLastIndex(m => m.role === ChatMessageRole.ASSISTANT),
+            })
+        );
+
+        chat.setMessages(uiMessages);
         try {
             posthog.capture('user_send_message', {
                 type,
@@ -73,7 +99,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         } catch (error) {
             console.error('Error tracking user send message: ', error)
         }
-        return chat.reload({
+        return chat.regenerate({
             body: {
                 chatType: type,
                 conversationId
@@ -81,12 +107,13 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         });
     };
 
-    return <ChatContext.Provider value={{ ...chat, sendMessage }}>{children}</ChatContext.Provider>;
+    return <ChatContext.Provider value={{ ...chat, sendMessageToChat }}>{children}</ChatContext.Provider>;
 });
 
 export function useChatContext() {
     const context = useContext(ChatContext);
     if (!context) throw new Error('useChatContext must be used within a ChatProvider');
     const isWaiting = context.status === 'streaming' || context.status === 'submitted';
+
     return { ...context, isWaiting };
 }

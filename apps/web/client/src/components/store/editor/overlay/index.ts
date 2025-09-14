@@ -7,10 +7,14 @@ import { adaptRectToCanvas } from './utils';
 
 export class OverlayManager {
     state: OverlayState = new OverlayState();
+    private canvasReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
-        reaction(
+    }
+
+    init() {
+        this.canvasReactionDisposer = reaction(
             () => ({
                 position: this.editorEngine.canvas?.position,
                 scale: this.editorEngine.canvas?.scale,
@@ -50,6 +54,28 @@ export class OverlayManager {
         this.state.removeClickRects();
         for (const clickRect of newClickRects) {
             this.state.addClickRect(clickRect.rect, clickRect.styles);
+        }
+
+        // Refresh text editor position if it's active
+        if (this.editorEngine.text.isEditing && this.editorEngine.text.targetElement) {
+            const targetElement = this.editorEngine.text.targetElement;
+            const frameData = this.editorEngine.frames.get(targetElement.frameId);
+            if (frameData?.view) {
+                try {
+                    const el: DomElement = await frameData.view.getElementByDomId(
+                        targetElement.domId,
+                        true,
+                    );
+                    if (el) {
+                        const adaptedRect = adaptRectToCanvas(el.rect, frameData.view);
+                        this.state.updateTextEditor(adaptedRect, {
+                            styles: el.styles?.computed
+                        });
+                    }
+                } catch {
+                    console.error('Error refreshing text editor position');
+                }
+            }
         }
     };
 
@@ -94,8 +120,13 @@ export class OverlayManager {
         this.state.removeMeasurement();
     };
 
-    clear = () => {
+    clearUI = () => {
         this.removeMeasurement();
         this.state.clear();
+    };
+
+    clear = () => {
+        this.canvasReactionDisposer?.();
+        this.canvasReactionDisposer = undefined;
     };
 }

@@ -1,11 +1,13 @@
 'use client';
 
 import type { Provider, ProviderTask, ProviderTerminal } from '@onlook/code-provider';
+import type { FitAddon } from '@xterm/addon-fit';
+import type { Terminal } from '@xterm/xterm';
 import { v4 as uuidv4 } from 'uuid';
 import type { ErrorManager } from '../error';
 // Dynamic imports to avoid SSR issues
-let FitAddon: any;
-let XTerm: any;
+let FitAddonClass: typeof FitAddon | null = null;
+let TerminalClass: typeof Terminal | null = null;
 
 export enum CLISessionType {
     TERMINAL = 'terminal',
@@ -19,8 +21,8 @@ export interface CLISession {
     terminal: ProviderTerminal | null;
     // Task is readonly
     task: ProviderTask | null;
-    xterm: any;
-    fitAddon: any;
+    xterm: Terminal | null;
+    fitAddon: FitAddon | null;
 }
 
 export interface TaskSession extends CLISession {
@@ -37,8 +39,8 @@ export class CLISessionImpl implements CLISession {
     id: string;
     terminal: ProviderTerminal | null;
     task: ProviderTask | null;
-    xterm: any;
-    fitAddon: any;
+    xterm: Terminal | null;
+    fitAddon: FitAddon | null;
 
     constructor(
         public readonly name: string,
@@ -55,14 +57,14 @@ export class CLISessionImpl implements CLISession {
     }
 
     private async ensureXTermLibraries() {
-        if (!FitAddon || !XTerm) {
+        if (!FitAddonClass || !TerminalClass) {
             try {
                 const [fitAddonModule, xtermModule] = await Promise.all([
                     import('@xterm/addon-fit'),
                     import('@xterm/xterm')
                 ]);
-                FitAddon = fitAddonModule.FitAddon;
-                XTerm = xtermModule.Terminal;
+                FitAddonClass = fitAddonModule.FitAddon;
+                TerminalClass = xtermModule.Terminal;
             } catch (error) {
                 console.error('Failed to load xterm libraries:', error);
                 throw new Error('Failed to load terminal libraries');
@@ -73,9 +75,9 @@ export class CLISessionImpl implements CLISession {
     async initTerminal() {
         try {
             await this.ensureXTermLibraries();
-            
+
             // Initialize xterm and fitAddon
-            this.fitAddon = new FitAddon();
+            this.fitAddon = new FitAddonClass!();
             this.xterm = this.createXTerm();
             this.xterm.loadAddon(this.fitAddon);
 
@@ -86,7 +88,7 @@ export class CLISessionImpl implements CLISession {
             }
             this.terminal = terminal;
             terminal.onOutput((data: string) => {
-                this.xterm.write(data);
+                this.xterm?.write(data);
             });
 
             this.xterm.onData((data: string) => {
@@ -117,9 +119,9 @@ export class CLISessionImpl implements CLISession {
     async initTask() {
         try {
             await this.ensureXTermLibraries();
-            
+
             // Initialize xterm and fitAddon
-            this.fitAddon = new FitAddon();
+            this.fitAddon = new FitAddonClass!();
             this.xterm = this.createXTerm();
             this.xterm.loadAddon(this.fitAddon);
 
@@ -133,7 +135,7 @@ export class CLISessionImpl implements CLISession {
             this.xterm.write(output);
             this.errorManager.processMessage(output);
             task.onOutput((data: string) => {
-                this.xterm.write(data);
+                this.xterm?.write(data);
                 this.errorManager.processMessage(data);
             });
         } catch (error) {
@@ -141,8 +143,8 @@ export class CLISessionImpl implements CLISession {
         }
     }
 
-    createXTerm() {
-        const terminal = new XTerm({
+    createXTerm(): Terminal {
+        const terminal = new TerminalClass!({
             cursorBlink: true,
             fontSize: 12,
             fontFamily: 'monospace',

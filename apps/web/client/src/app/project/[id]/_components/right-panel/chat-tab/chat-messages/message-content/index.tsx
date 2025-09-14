@@ -1,5 +1,7 @@
-import type { Message } from 'ai';
+import { Icons } from '@onlook/ui/icons/index';
+import type { ToolUIPart, UIMessage } from 'ai';
 import { observer } from 'mobx-react-lite';
+import { useMemo } from 'react';
 import { MarkdownRenderer } from '../markdown-renderer';
 import { ToolCallDisplay } from './tool-call-display';
 
@@ -11,16 +13,19 @@ export const MessageContent = observer(
         isStream,
     }: {
         messageId: string;
-        parts: Message['parts'];
+        parts: UIMessage['parts'];
         applied: boolean;
         isStream: boolean;
     }) => {
-        if (!parts) {
-            return null;
-        }
-        // Find the index of the last tool-invocation part
-        const lastToolInvocationIdx = parts.map(p => p.type).lastIndexOf('tool-invocation');
-        return parts.map((part, idx) => {
+        // Find the index of the last tool-*** part
+        const lastToolInvocationIdx = useMemo(() =>
+            parts?.map((part, index) => ({ type: part.type, index }))
+                .filter(item => item.type.startsWith('tool-'))
+                .pop()?.index ?? -1,
+            [parts]
+        );
+
+        const renderedParts = parts.map((part, idx) => {
             if (part.type === 'text') {
                 return (
                     <MarkdownRenderer
@@ -32,26 +37,38 @@ export const MessageContent = observer(
                         isStream={isStream}
                     />
                 );
-            } else if (part.type === 'tool-invocation') {
+            } else if (part.type.startsWith('tool-')) {
+                const toolPart = part as ToolUIPart;
                 return (
                     <ToolCallDisplay
                         messageId={messageId}
                         index={idx}
                         lastToolInvocationIdx={lastToolInvocationIdx}
-                        toolInvocationData={part.toolInvocation}
-                        key={part.toolInvocation.toolCallId}
+                        toolInvocation={toolPart}
+                        key={toolPart.toolCallId}
                         isStream={isStream}
                         applied={applied}
                     />
                 );
             } else if (part.type === 'reasoning') {
-                if (!isStream) {
-                    return null;
-                }
                 return (
-                    <p>Introspecting...</p>
+                    <>
+                        <div className="px-2 flex items-center gap-2 text-foreground-tertiary">
+                            <Icons.Lightbulb className="w-4 h-4" />
+                            <p className="text-sm">Reasoning</p>
+                        </div>
+                        {isStream && <pre key={`reasoning-${idx}`} className="my-2 px-3 py-2 border-l-1 max-h-32 overflow-y-auto whitespace-pre-wrap break-words">
+                            {part.text}
+                        </pre>}
+                    </>
                 );
             }
-        });
+        }).filter(Boolean);
+
+        return (
+            <>
+                {renderedParts}
+            </>
+        );
     },
 );

@@ -1,5 +1,5 @@
 import { api } from '@/trpc/client';
-import { fromMessage } from '@onlook/db';
+import { toDbMessage } from '@onlook/db';
 import type { GitCommit } from '@onlook/git';
 import { ChatMessageRole, MessageCheckpointType, type ChatConversation, type ChatMessage, type MessageContext, type UserChatMessage } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
@@ -120,6 +120,7 @@ export class ConversationManager {
             throw new Error('No conversation found');
         }
         const message = getUserChatMessageFromString(content, context, this.current.conversation.id);
+
         await this.addOrReplaceMessage(message);
         if (!this.current.conversation.title) {
             this.addConversationTitle(this.current.conversation.id, content);
@@ -153,14 +154,14 @@ export class ConversationManager {
         }
         const userMessage = message as UserChatMessage;
         const newCheckpoints = [
-            ...userMessage.content.metadata.checkpoints,
+            ...userMessage.metadata.checkpoints,
             {
                 type: MessageCheckpointType.GIT,
                 oid: commit.oid,
                 createdAt: new Date(),
             },
         ];
-        userMessage.content.metadata.checkpoints = newCheckpoints;
+        userMessage.metadata.checkpoints = newCheckpoints;
         await api.chat.message.updateCheckpoints.mutate({
             messageId: message.id,
             checkpoints: newCheckpoints,
@@ -173,7 +174,7 @@ export class ConversationManager {
             console.error('No conversation found');
             return;
         }
-        const index = this.current.messages.findIndex((m) => m.id === message.id || (m.content.metadata.vercelId && m.content.metadata.vercelId === message.content.metadata.vercelId));
+        const index = this.current.messages.findIndex((m) => m.id === message.id || (m.metadata?.vercelId && m.metadata?.vercelId === message.metadata?.vercelId));
         if (index === -1) {
             this.current.messages.push(message);
         } else {
@@ -196,10 +197,7 @@ export class ConversationManager {
     }
 
     async updateConversationInStorage(conversation: Partial<ChatConversation> & { id: string }) {
-        await api.chat.conversation.update.mutate({
-            conversationId: conversation.id,
-            conversation,
-        });
+        await api.chat.conversation.update.mutate(conversation);
     }
 
     async deleteConversationInStorage(id: string) {
@@ -211,7 +209,7 @@ export class ConversationManager {
     }
 
     async upsertMessageInStorage(message: ChatMessage) {
-        await api.chat.message.upsert.mutate({ message: fromMessage(message) });
+        await api.chat.message.upsert.mutate({ message: toDbMessage(message) });
     }
 
     clear() {

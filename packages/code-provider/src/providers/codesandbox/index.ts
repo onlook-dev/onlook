@@ -60,9 +60,9 @@ import {
     type WriteFileInput,
     type WriteFileOutput,
 } from '../../types';
-import { writeFile } from './utils/write-file';
 import { listFiles } from './utils/list-files';
 import { readFile } from './utils/read-file';
+import { writeFile } from './utils/write-file';
 
 export interface CodesandboxProviderOptions {
     sandboxId?: string;
@@ -157,7 +157,7 @@ export class CodesandboxProvider extends Provider {
         this.sandbox = null;
     }
 
-    async createProject(input: CreateProjectInput): Promise<CreateProjectOutput> {
+    static async createProject(input: CreateProjectInput): Promise<CreateProjectOutput> {
         const sdk = new CodeSandbox();
         const newSandbox = await sdk.sandboxes.create({
             id: input.id,
@@ -166,6 +166,33 @@ export class CodesandboxProvider extends Provider {
             description: input.description,
             tags: input.tags,
         });
+        return {
+            id: newSandbox.id,
+        };
+    }
+
+    static async createProjectFromGit(input: {
+        repoUrl: string;
+        branch: string;
+    }): Promise<CreateProjectOutput> {
+        const sdk = new CodeSandbox();
+        const TIMEOUT_MS = 30000;
+
+        const createPromise = sdk.sandboxes.create({
+            source: 'git',
+            url: input.repoUrl,
+            branch: input.branch,
+            async setup(session) {
+                await session.setup.run();
+            },
+        });
+
+        const timeoutPromise = new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error('Repository access timeout')), TIMEOUT_MS);
+        });
+
+        const newSandbox = await Promise.race([createPromise, timeoutPromise]);
+
         return {
             id: newSandbox.id,
         };

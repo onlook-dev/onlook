@@ -47,13 +47,14 @@ describe('Prompt', () => {
 
         const message = getHydratedUserMessage(
             'test',
-            'test',
+            [{ type: 'text', text: 'test' }],
             [
                 {
                     path: 'test.txt',
                     content: 'test',
                     type: MessageContextType.FILE,
                     displayName: 'test.txt',
+                    branchId: 'test',
                 },
 
                 {
@@ -63,12 +64,14 @@ describe('Prompt', () => {
                     content: 'test',
                     type: MessageContextType.HIGHLIGHT,
                     displayName: 'test.txt',
+                    branchId: 'test',
                 },
 
                 {
                     content: 'test',
                     type: MessageContextType.ERROR,
                     displayName: 'test',
+                    branchId: 'test',
                 },
                 {
                     path: 'test',
@@ -80,7 +83,7 @@ describe('Prompt', () => {
             options,
         );
 
-        const prompt = message.content;
+        const prompt = message.parts[0]?.type === 'text' ? message.parts[0].text : '';
 
         if (SHOULD_WRITE_USER_MESSAGE) {
             await Bun.write(userMessagePath, prompt);
@@ -100,8 +103,8 @@ describe('Prompt', () => {
             lastAssistantMessageIndex: 0,
         };
 
-        const message = getHydratedUserMessage('test', '', [], options);
-        const prompt = message.content;
+        const message = getHydratedUserMessage('test', [], [], options);
+        const prompt = message.parts[0]?.type === 'text' ? message.parts[0].text : '';
 
         if (SHOULD_WRITE_USER_MESSAGE) {
             await Bun.write(userMessagePath, prompt);
@@ -121,12 +124,14 @@ describe('Prompt', () => {
                     content: 'test',
                     type: MessageContextType.FILE,
                     displayName: 'test.txt',
+                    branchId: 'test',
                 },
                 {
                     path: 'test2.txt',
                     content: 'test2',
                     type: MessageContextType.FILE,
                     displayName: 'test2.txt',
+                    branchId: 'test',
                 },
             ],
             [
@@ -137,6 +142,7 @@ describe('Prompt', () => {
                     content: 'test',
                     type: MessageContextType.HIGHLIGHT,
                     displayName: 'test.txt',
+                    branchId: 'test',
                 },
             ],
         );
@@ -160,6 +166,7 @@ describe('Prompt', () => {
                 content: 'test',
                 type: MessageContextType.HIGHLIGHT,
                 displayName: 'test.txt',
+                branchId: 'test',
             },
             {
                 path: 'test.txt',
@@ -168,6 +175,7 @@ describe('Prompt', () => {
                 content: 'test2',
                 type: MessageContextType.HIGHLIGHT,
                 displayName: 'test.txt',
+                branchId: 'test',
             },
         ]);
         if (SHOULD_WRITE_HIGHLIGHTS) {

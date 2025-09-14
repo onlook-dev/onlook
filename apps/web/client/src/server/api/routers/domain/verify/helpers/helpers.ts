@@ -1,9 +1,8 @@
-import { customDomains, customDomainVerification, userProjects, type CustomDomain } from '@onlook/db';
-import type { DrizzleDb } from '@onlook/db/src/client';
+import { customDomains, customDomainVerification, userProjects, type CustomDomain, type DrizzleDb } from '@onlook/db';
 import { VerificationRequestStatus } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
-import { parse } from 'psl';
+import { parse } from 'tldts';
 
 export const ensureUserOwnsDomain = async (db: DrizzleDb, userId: string, domain: string): Promise<boolean> => {
     const foundUserProjects = await db.query.userProjects.findMany({
@@ -25,10 +24,10 @@ export const ensureUserOwnsDomain = async (db: DrizzleDb, userId: string, domain
 
 export const getCustomDomain = async (db: DrizzleDb, domain: string): Promise<{ customDomain: CustomDomain, subdomain: string | null }> => {
     const parsedDomain = parse(domain);
-    if (parsedDomain.error) {
+    if (!parsedDomain.domain) {
         throw new TRPCError({
             code: 'BAD_REQUEST',
-            message: `Invalid domain: ${parsedDomain.error.message}`,
+            message: `Invalid domain format ${domain}`,
         });
     }
 

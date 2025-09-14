@@ -25,6 +25,10 @@ export class ChatManager {
         makeAutoObservable(this);
     }
 
+    init() {
+        this.context.init();
+    }
+
     focusChatInput() {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
     }
@@ -54,9 +58,9 @@ export class ChatManager {
     }
 
     async addFixErrorMessage(): Promise<UserChatMessage> {
-        const errors = this.editorEngine.error.errors;
+        const errors = this.editorEngine.branches.getAllErrors();
         const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
-        const errorContexts = this.context.getMessageContext(errors);
+        const errorContexts = this.context.getErrorContext(errors);
         const projectContexts = this.context.getProjectContext();
         const userMessage = await this.conversation.addUserMessage(prompt, [
             ...errorContexts,
@@ -75,9 +79,9 @@ export class ChatManager {
         const oldMessage = this.conversation.current?.messages[oldMessageIndex] as UserChatMessage;
 
         // Update the old message with the new content
-        const newContext = await this.context.getRefreshedContext(oldMessage.content.metadata.context);
-        oldMessage.content.metadata.context = newContext;
-        oldMessage.content.parts = [{ type: 'text', text: newMessageContent }];
+        const newContext = await this.context.getRefreshedContext(oldMessage.metadata.context);
+        oldMessage.metadata.context = newContext;
+        oldMessage.parts = [{ type: 'text', text: newMessageContent }];
 
         // Remove all messages after the old message
         const messagesToRemove = this.conversation.current?.messages.filter((m) => m.createdAt > oldMessage.createdAt);

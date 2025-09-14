@@ -171,10 +171,17 @@ export class NodeFsProvider extends Provider {
         return true;
     }
 
-    async createProject(input: CreateProjectInput): Promise<CreateProjectOutput> {
+    static async createProject(input: CreateProjectInput): Promise<CreateProjectOutput> {
         return {
             id: input.id,
         };
+    }
+
+    static async createProjectFromGit(input: {
+        repoUrl: string;
+        branch: string;
+    }): Promise<CreateProjectOutput> {
+        throw new Error('createProjectFromGit not implemented for NodeFs provider');
     }
 
     async pauseProject(input: PauseProjectInput): Promise<PauseProjectOutput> {

@@ -3,7 +3,7 @@ import {
     messageInsertSchema,
     messages,
     messageUpdateSchema,
-    toMessage,
+    fromDbMessage,
     type Message
 } from '@onlook/db';
 import { MessageCheckpointType, type ChatMessageRole } from '@onlook/models';
@@ -21,7 +21,7 @@ export const messageRouter = createTRPCRouter({
                 where: eq(messages.conversationId, input.conversationId),
                 orderBy: [asc(messages.createdAt)],
             });
-            return result.map((message) => toMessage(message));
+            return result.map((message) => fromDbMessage(message));
         }),
     upsert: protectedProcedure
         .input(z.object({

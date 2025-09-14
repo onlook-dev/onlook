@@ -217,7 +217,15 @@ export abstract class Provider {
     abstract reconnect(): Promise<void>;
     abstract ping(): Promise<boolean>;
 
-    abstract createProject(input: CreateProjectInput): Promise<CreateProjectOutput>;
+    static createProject(input: CreateProjectInput): Promise<CreateProjectOutput> {
+        throw new Error('createProject must be implemented by subclass');
+    }
+    static createProjectFromGit(input: {
+        repoUrl: string;
+        branch: string;
+    }): Promise<CreateProjectOutput> {
+        throw new Error('createProjectFromGit must be implemented by subclass');
+    }
     abstract pauseProject(input: PauseProjectInput): Promise<PauseProjectOutput>;
     abstract stopProject(input: StopProjectInput): Promise<StopProjectOutput>;
     abstract listProjects(input: ListProjectsInput): Promise<ListProjectsOutput>;

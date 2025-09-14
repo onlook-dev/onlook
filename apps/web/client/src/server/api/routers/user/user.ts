@@ -1,6 +1,6 @@
 import { trackEvent } from '@/utils/analytics/server';
 import { callUserWebhook } from '@/utils/n8n/webhook';
-import { toUser, userInsertSchema, users, type User } from '@onlook/db';
+import { fromDbUser, userInsertSchema, users, type User } from '@onlook/db';
 import { extractNames } from '@onlook/utility';
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { eq } from 'drizzle-orm';
@@ -16,7 +16,7 @@ export const userRouter = createTRPCRouter({
         });
 
         const { displayName, firstName, lastName } = getUserName(authUser);
-        const userData = user ? toUser({
+        const userData = user ? fromDbUser({
             ...user,
             firstName: user.firstName ?? firstName,
             lastName: user.lastName ?? lastName,
