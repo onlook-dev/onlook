@@ -2,39 +2,12 @@ import * as path from 'node:path';
 import { includeIgnoreFile } from '@eslint/compat';
 import eslint from '@eslint/js';
 import importPlugin from 'eslint-plugin-import';
+import * as jsoncPlugin from 'eslint-plugin-jsonc';
 import onlyWarn from 'eslint-plugin-only-warn';
 import prettierPlugin from 'eslint-plugin-prettier';
 import tseslint from 'typescript-eslint';
 
 import prettierConfig from '@onlook/prettier';
-
-/**
- * All packages that leverage t3-env should use this rule
- */
-export const restrictEnvAccess = tseslint.config(
-    { ignores: ['**/env.ts'] },
-    {
-        files: ['**/*.js', '**/*.ts', '**/*.tsx'],
-        rules: {
-            'no-restricted-properties': [
-                'error',
-                {
-                    object: 'process',
-                    property: 'env',
-                    message: "Use `import { env } from '@/env'` instead to ensure validated types.",
-                },
-            ],
-            'no-restricted-imports': [
-                'error',
-                {
-                    name: 'process',
-                    importNames: ['env'],
-                    message: "Use `import { env } from '@/env'` instead to ensure validated types.",
-                },
-            ],
-        },
-    },
-);
 
 export default tseslint.config(
     includeIgnoreFile(path.join(import.meta.dirname, '../../.gitignore')),
@@ -47,6 +20,19 @@ export default tseslint.config(
             '**/build/**',
             '**/.next/**',
         ],
+    },
+    ...jsoncPlugin.configs['flat/recommended-with-json'],
+    {
+        files: ['**/*.json', '**/*.jsonc'],
+        plugins: {
+            prettier: prettierPlugin,
+        },
+        rules: {
+            'prettier/prettier': ['warn', prettierConfig],
+            // Disable some JSON rules that conflict with prettier
+            'jsonc/comma-dangle': 'off',
+            'jsonc/indent': 'off',
+        },
     },
     {
         files: ['**/*.js', '**/*.ts', '**/*.tsx'],

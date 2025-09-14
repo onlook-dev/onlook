@@ -1,5 +1,5 @@
-import baseConfig, { restrictEnvAccess } from "@onlook/eslint/base";
-import nextjsConfig from "@onlook/eslint/nextjs";
+import baseConfig from "@onlook/eslint/base";
+import nextjsConfig, { restrictEnvAccess } from "@onlook/eslint/nextjs";
 import reactConfig from "@onlook/eslint/react";
 
 /** @type {import('typescript-eslint').Config} */
