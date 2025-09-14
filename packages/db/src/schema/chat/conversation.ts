@@ -1,6 +1,6 @@
 import type { ChatSuggestion } from "@onlook/models";
 import { relations } from "drizzle-orm";
-import { jsonb, pgTable, timestamp, uuid, varchar, type AnyPgColumn } from "drizzle-orm/pg-core";
+import { jsonb, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { z } from "zod";
 import { projects } from "../project";
@@ -17,17 +17,11 @@ export const conversations = pgTable("conversations", {
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
     suggestions: jsonb("suggestions").$type<ChatSuggestion[]>().default([]),
-
-    // Optional: For subchats
-    parentConversationId: uuid("parent_conversation_id")
-        .references((): AnyPgColumn => conversations.id, { onDelete: "cascade", onUpdate: "cascade" }),
-    parentMessageId: uuid("parent_message_id")
-        .references((): AnyPgColumn => messages.id, { onDelete: "cascade", onUpdate: "cascade" }),
 }).enableRLS();
 
 export const conversationInsertSchema = createInsertSchema(conversations);
 export const conversationUpdateSchema = createUpdateSchema(conversations, {
-    id: z.uuid(),
+    id: z.string().uuid(),
 });
 
 export const conversationRelations = relations(conversations, ({ one, many }) => ({
