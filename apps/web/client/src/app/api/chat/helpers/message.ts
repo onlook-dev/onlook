@@ -2,9 +2,8 @@ import { fromDbMessage, messages, toDbMessage } from "@onlook/db";
 import { db } from "@onlook/db/src/client";
 import type { ChatMessage } from "@onlook/models";
 import { and, eq, gt } from "drizzle-orm";
-import debounce from "lodash/debounce";
 
-const upsertMessage = async ({
+export const upsertMessage = async ({
     id,
     conversationId,
     message,
@@ -36,8 +35,6 @@ const upsertMessage = async ({
         return updatedMessage;
     });
 };
-
-export const debouncedUpsertMessage = debounce(upsertMessage, 500);
 
 export const loadChat = async (chatId: string): Promise<ChatMessage[]> => {
     const result = await db.query.messages.findMany({
