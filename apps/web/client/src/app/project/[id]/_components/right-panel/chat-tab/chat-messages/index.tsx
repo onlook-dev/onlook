@@ -26,6 +26,7 @@ export const ChatMessages = observer(() => {
 
     return (
         <ChatMessageList contentKey={``}>
+            <RenderedChatMessages />
             <StreamMessage />
             <ErrorMessage />
         </ChatMessageList>
@@ -37,20 +38,10 @@ export const RenderedChatMessages = observer(() => {
     const t = useTranslations();
     const { streamingMessage, isWaiting } = useChatContext();
     const engineMessages = editorEngine.chat.conversation.current?.messages;
-
-    // Exclude the currently streaming assistant message (rendered by <StreamMessage />)
-    const messagesToRender = useMemo(() => {
-        if (!engineMessages || engineMessages.length === 0) {
-            return [];
-        }
-
-        const streamingAssistantId = isWaiting && streamingMessage?.role === 'assistant' ? streamingMessage.id : undefined;
-        if (!streamingAssistantId) {
-            return engineMessages;
-        }
-
-        return (engineMessages).filter((m) => m.id !== streamingAssistantId);
-    }, [engineMessages, streamingMessage, isWaiting]);
+    const messagesToRender = useMemo(() => isWaiting ?
+        engineMessages?.filter((m) => m.id !== streamingMessage?.id) :
+        engineMessages,
+        [engineMessages, isWaiting, streamingMessage]);
 
     if (!messagesToRender || messagesToRender.length === 0) {
         return (
