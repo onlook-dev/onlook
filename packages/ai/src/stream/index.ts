@@ -26,15 +26,16 @@ export const toVercelMessageFromOnlook = (
     message: ChatMessage,
     opt: HydrateMessageOptions,
 ): VercelMessage => {
+    const parts = filterReasoningParts(message.parts);
     if (message.role === 'assistant') {
         return {
             ...message,
-            parts: message.parts,
+            parts,
         } satisfies VercelMessage;
     } else if (message.role === 'user') {
         const hydratedMessage = getHydratedUserMessage(
             message.id,
-            message.parts,
+            parts,
             message.metadata?.context ?? [],
             opt,
         );
@@ -43,13 +44,8 @@ export const toVercelMessageFromOnlook = (
     return message;
 };
 
-export const extractTextFromParts = (parts: ChatMessage['parts']): string => {
-    return parts
-        ?.map((part) => {
-            if (part.type === 'text') {
-                return part.text;
-            }
-            return '';
-        })
-        .join('');
+export const filterReasoningParts = (parts: ChatMessage['parts']): ChatMessage['parts'] => {
+    return parts.filter((part) => part.type !== 'reasoning');
 };
+
+export const ensureToolResultParts = (parts: ChatMessage['parts']): ChatMessage['parts'] => {};

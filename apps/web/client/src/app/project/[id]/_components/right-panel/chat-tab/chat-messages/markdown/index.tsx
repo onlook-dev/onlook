@@ -32,11 +32,7 @@ export const MarkdownRenderer = memo(({
 
     return (
         <div
-            className={cn(
-                // TODO: Restore dark:invert once theming is fixed
-                'prose prose-stone prose-invert prose-compact text-small break-words select-text',
-                className,
-            )}
+            className={cn('prose prose-stone prose-invert prose-compact text-small break-words select-text', className)}
         >
             {blocks.map((block, index) => (
                 <MarkdownBlock

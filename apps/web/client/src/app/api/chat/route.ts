@@ -1,7 +1,7 @@
 import { trackEvent } from '@/utils/analytics/server';
-import { getToolSetFromType } from '@onlook/ai';
+import { convertToStreamMessages, getToolSetFromType } from '@onlook/ai';
 import { ChatType, type ChatMessage } from '@onlook/models';
-import { convertToModelMessages, stepCountIs, streamText } from 'ai';
+import { stepCountIs, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -104,7 +104,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                     content: systemPrompt,
                     providerOptions,
                 },
-                ...convertToModelMessages(messages),
+                ...convertToStreamMessages(messages),
             ],
             experimental_telemetry: {
                 isEnabled: true,
@@ -123,14 +123,6 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                 console.error('Error in chat stream call', error);
                 // if there was an error with the API, do not penalize the user
                 await decrementUsage(req, usageRecord);
-
-                // Ensure the stream stops on error by re-throwing
-                if (error instanceof Error) {
-                    throw error;
-                } else {
-                    const errorMessage = typeof error === 'string' ? error : JSON.stringify(error);
-                    throw new Error(errorMessage);
-                }
             }
         })
 

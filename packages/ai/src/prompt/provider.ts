@@ -48,19 +48,6 @@ export function getAskModeSystemPrompt() {
     return prompt;
 }
 
-export function getExampleConversation(
-    conversation: {
-        role: string;
-        content: string;
-    }[],
-) {
-    let prompt = '';
-    for (const message of conversation) {
-        prompt += `${message.role.toUpperCase()}: ${message.content}\n`;
-    }
-    return prompt;
-}
-
 export function getHydratedUserMessage(
     id: string,
     parts: UIMessagePart<UIDataTypes, UITools>[],
