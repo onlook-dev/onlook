@@ -75,12 +75,12 @@ export const Border = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className="flex items-center gap-1 min-w-9"
+                        className={`flex items-center gap-1 min-w-9 ${borderValue ? '!text-foreground-primary [&_*]:!text-foreground-primary' : ''}`}
                     >
                         <Icons.BorderEdit className={`h-4 w-4 min-h-4 min-w-4 ${borderExists ? 'text-white' : ''}
 `} />
                         {borderValue && (
-                            <span className="text-xs">
+                            <span className="text-xs !text-white data-[state=open]:!text-foreground-primary">
                                 {borderValue}
                             </span>
                         )}

@@ -153,11 +153,11 @@ export const Margin = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className="gap-1 flex items-center min-w-9"
+                        className={`gap-1 flex items-center min-w-9 ${marginValue ? '!text-foreground-primary [&_*]:!text-foreground-primary' : ''}`}
                     >
                         <MarginIcon className="h-4 min-h-4 w-4 min-w-4" />
                         {marginValue && (
-                            <span className="text-small data-[state=open]:text-white">{marginValue}</span>
+                            <span className="text-small !text-foreground-primary data-[state=open]:!text-white">{marginValue}</span>
                         )}
                     </ToolbarButton>
                 </DropdownMenuTrigger>

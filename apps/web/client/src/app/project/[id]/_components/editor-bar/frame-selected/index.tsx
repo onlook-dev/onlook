@@ -31,15 +31,10 @@ export const FrameSelected = observer(({ availableWidth = 0 }: { availableWidth?
             ]
         },
         {
-            key: 'branch',
-            label: 'Branch & Pages',
+            key: 'rotate',
+            label: 'Rotate',
             components: [
-                <BranchDisplay
-                    key="branch"
-                    frame={frameData.frame}
-                    tooltipSide="bottom"
-                    buttonClassName="px-3 py-2"
-                />,
+                <RotateGroup key="rotate" frameData={frameData} />
             ]
         },
         {
@@ -56,13 +51,6 @@ export const FrameSelected = observer(({ availableWidth = 0 }: { availableWidth?
                 <ThemeGroup key="theme" frameData={frameData} />
             ]
         },
-        {
-            key: 'rotate',
-            label: 'Rotate',
-            components: [
-                <RotateGroup key="rotate" frameData={frameData} />
-            ]
-        }
     ];
 
     const { visibleCount } = useMeasureGroup({
@@ -73,7 +61,7 @@ export const FrameSelected = observer(({ availableWidth = 0 }: { availableWidth?
     const overflowGroups = WINDOW_GROUPS.slice(visibleCount);
 
     return (
-        <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden">
+        <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden px-0.5">
             {visibleGroups.map((group, groupIdx) => (
                 <React.Fragment key={group.key}>
                     {groupIdx > 0 && <InputSeparator />}

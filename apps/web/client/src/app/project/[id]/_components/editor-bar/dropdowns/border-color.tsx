@@ -49,7 +49,7 @@ export const BorderColor = observer(() => {
                     >
                         <Icons.PencilIcon className="h-4 w-4 min-h-4 min-w-4" />
                         <div
-                            className="w-6 rounded-full bg-current"
+                            className="w-6 rounded-full bg-current border-[0.5px] border-border"
                             style={{ backgroundColor: colorHex, height: '4px' }}
                         />
                     </ToolbarButton>
