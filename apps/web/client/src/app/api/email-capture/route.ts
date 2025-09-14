@@ -19,10 +19,12 @@ export async function POST(request: Request) {
 
         const webhookUsername = process.env.N8N_LANDING_FORM_USERNAME;
         const webhookPassword = process.env.N8N_LANDING_FORM_PASSWORD;
+        const headerName = process.env.N8N_LANDING_FORM_HEADER_NAME;
+        const headerValue = process.env.N8N_LANDING_FORM_HEADER_VALUE;
         const landingFormUrl = process.env.N8N_LANDING_FORM_URL;
         
-        if (!webhookUsername || !webhookPassword || !landingFormUrl) {
-            console.error('Missing N8N landing form env: ensure N8N_LANDING_FORM_USERNAME, N8N_LANDING_FORM_PASSWORD, and N8N_LANDING_FORM_URL are set');
+        if (!landingFormUrl) {
+            console.error('Missing N8N_LANDING_FORM_URL environment variable');
             return new Response(JSON.stringify({ error: 'Server configuration error' }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' }
@@ -39,13 +41,18 @@ export async function POST(request: Request) {
         if (utm_term) url.searchParams.append('utm_term', utm_term);
         if (utm_content) url.searchParams.append('utm_content', utm_content);
 
-        const credentials = btoa(`${webhookUsername}:${webhookPassword}`);
-        
+        // Build auth headers: prefer Basic if user/pass provided, else use custom header if provided
+        const authHeaders: Record<string, string> = {};
+        if (webhookUsername && webhookPassword) {
+            const credentials = btoa(`${webhookUsername}:${webhookPassword}`);
+            authHeaders['Authorization'] = `Basic ${credentials}`;
+        } else if (headerName && headerValue) {
+            authHeaders[headerName] = headerValue;
+        }
+
         const response = await fetch(url.toString(), {
             method: 'GET',
-            headers: {
-                'Authorization': `Basic ${credentials}`,
-            },
+            headers: authHeaders,
         });
 
         if (!response.ok) {
