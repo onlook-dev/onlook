@@ -1,7 +1,7 @@
 import { fromDbMessage, messages, toDbMessage } from "@onlook/db";
 import { db } from "@onlook/db/src/client";
 import type { ChatMessage } from "@onlook/models";
-import { eq } from "drizzle-orm";
+import { and, eq, gt } from "drizzle-orm";
 import debounce from "lodash/debounce";
 
 const upsertMessage = async ({
@@ -13,26 +13,28 @@ const upsertMessage = async ({
     conversationId: string;
     message: ChatMessage;
 }) => {
-    console.log('upsertMessage', id, conversationId);
     const dbMessage = toDbMessage(message, conversationId);
-    const [updatedMessage] = await db
-        .insert(messages)
-        .values({
-            ...dbMessage,
-            id,
-        })
-        .onConflictDoUpdate({
-            target: [messages.id],
-            set: {
+    return await db.transaction(async (tx) => {
+        // Remove messages newer than the updated message
+        await tx.delete(messages).where(and(
+            eq(messages.conversationId, conversationId),
+            gt(messages.createdAt, dbMessage?.createdAt ?? new Date()),
+        ));
+        const [updatedMessage] = await tx
+            .insert(messages)
+            .values({
                 ...dbMessage,
                 id,
-            },
-        }).returning();
-
-    if (!updatedMessage) {
-        throw new Error('Message not updated');
-    }
-    return updatedMessage;
+            })
+            .onConflictDoUpdate({
+                target: [messages.id],
+                set: {
+                    ...dbMessage,
+                    id,
+                },
+            }).returning();
+        return updatedMessage;
+    });
 };
 
 export const debouncedUpsertMessage = debounce(upsertMessage, 500);
