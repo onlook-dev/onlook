@@ -1,7 +1,7 @@
 import { trackEvent } from '@/utils/analytics/server';
 import { convertToStreamMessages, getToolSetFromType } from '@onlook/ai';
 import { ChatType, type ChatMessage } from '@onlook/models';
-import { stepCountIs, streamText } from 'ai';
+import { smoothStream, stepCountIs, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -123,7 +123,8 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                 console.error('Error in chat stream call', error);
                 // if there was an error with the API, do not penalize the user
                 await decrementUsage(req, usageRecord);
-            }
+            },
+            experimental_transform: smoothStream(),
         })
 
         return result.toUIMessageStreamResponse(

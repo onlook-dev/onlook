@@ -15,6 +15,7 @@ import { UserMessage } from './user-message';
 export const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
     const conversation = editorEngine.chat.conversation.current;
+    const { streamingMessage } = useChatContext();
     if (!conversation) {
         return (
             <div className="flex-1 flex flex-row items-center justify-center text-foreground-tertiary/80 h-full gap-2">
@@ -25,7 +26,7 @@ export const ChatMessages = observer(() => {
     }
 
     return (
-        <ChatMessageList contentKey={``}>
+        <ChatMessageList contentKey={streamingMessage?.parts?.join('') ?? ''}>
             <RenderedChatMessages />
             <StreamMessage />
             <ErrorMessage />
