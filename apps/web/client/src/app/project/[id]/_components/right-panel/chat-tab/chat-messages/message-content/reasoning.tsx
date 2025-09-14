@@ -12,9 +12,9 @@ export const ReasoningBlock = ({
                 <Icons.Lightbulb className="w-4 h-4" />
                 <p className="text-sm">Reasoning</p>
             </div>
-            {isStream && <pre key={`reasoning-${idx}`} className="prose prose-invert text-xs my-2 px-3 py-2 border-l-1 whitespace-pre-wrap break-words">
+            <pre className="prose prose-invert text-xs my-2 px-3 py-2 border-l-1 whitespace-pre-wrap break-words">
                 {part.text}
-            </pre>}
+            </pre>
         </>
     );
 };

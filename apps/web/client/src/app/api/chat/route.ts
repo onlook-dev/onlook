@@ -63,21 +63,20 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
     } | null = null;
 
     try {
-        const { message, chatType, conversationId, projectId }: {
+        const { message, chatType, conversationId, projectId, traceId }: {
             message: ChatMessage,
             chatType: ChatType,
             conversationId: string,
             projectId: string,
+            traceId: string,
         } = await req.json()
 
-        const messageId = message.id;
-
         // create or update last message in database
-        await debouncedUpsertMessage({ id: messageId, conversationId, message });
+        await debouncedUpsertMessage({ id: message.id, conversationId, message });
         const messages = await loadChat(conversationId);
 
         if (chatType === ChatType.EDIT) {
-            usageRecord = await incrementUsage(req, message.id);
+            usageRecord = await incrementUsage(req, traceId);
         }
         const modelConfig = await getModelFromType(chatType);
         const { model, providerOptions, headers } = modelConfig;
@@ -104,8 +103,8 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                     projectId,
                     userId,
                     chatType: chatType,
-                    tags: ['chat'],
-                    langfuseTraceId: message.id,
+                    tags: ['chat', chatType],
+                    langfuseTraceId: traceId,
                     sessionId: conversationId,
                 },
             },

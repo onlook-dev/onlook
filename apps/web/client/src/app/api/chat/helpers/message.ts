@@ -13,6 +13,7 @@ const upsertMessage = async ({
     conversationId: string;
     message: ChatMessage;
 }) => {
+    console.log('upsertMessage', id, conversationId);
     const dbMessage = toDbMessage(message, conversationId);
     const [updatedMessage] = await db
         .insert(messages)
@@ -21,8 +22,11 @@ const upsertMessage = async ({
             id,
         })
         .onConflictDoUpdate({
-            target: messages.id,
-            set: dbMessage,
+            target: [messages.id],
+            set: {
+                ...dbMessage,
+                id,
+            },
         }).returning();
 
     if (!updatedMessage) {

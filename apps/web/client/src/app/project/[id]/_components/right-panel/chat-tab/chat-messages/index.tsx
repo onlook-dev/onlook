@@ -16,9 +16,10 @@ import { UserMessage } from './user-message';
 export const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
-    const { messages: uiMessages, isWaiting } = useChatContext();
+    const { streamingMessage, isWaiting } = useChatContext();
     const conversation = editorEngine.chat.conversation.current;
     const engineMessages = editorEngine.chat.conversation.current?.messages;
+    const messagesToRender = useMemo(() => isWaiting ? engineMessages?.filter((m) => m.id !== streamingMessage?.id) : engineMessages, [engineMessages, isWaiting]);
 
     const renderMessage = useCallback((message: ChatMessage, index: number) => {
         let messageNode;
@@ -37,18 +38,6 @@ export const ChatMessages = observer(() => {
         }
         return <div key={`message-${message.id}-${index}`}>{messageNode}</div>;
     }, []);
-
-    // Exclude the currently streaming assistant message (rendered by <StreamMessage />)
-    const messagesToRender = useMemo(() => {
-        if (!engineMessages || engineMessages.length === 0) return [] as ChatMessage[];
-
-        const lastUiMessage = uiMessages?.[uiMessages.length - 1];
-        const streamingAssistantId = isWaiting && lastUiMessage?.role === 'assistant' ? lastUiMessage.id : undefined;
-
-        if (!streamingAssistantId) return engineMessages;
-
-        return (engineMessages).filter((m) => m.id !== streamingAssistantId);
-    }, [engineMessages, uiMessages, isWaiting]);
 
     if (!conversation) {
         return (
@@ -73,7 +62,7 @@ export const ChatMessages = observer(() => {
     }
 
     return (
-        <ChatMessageList contentKey={`${messagesToRender.map((m) => m.id).join('|')}${isWaiting ? `|${uiMessages?.[uiMessages.length - 1]?.id ?? ''}` : ''}`}>
+        <ChatMessageList contentKey={`${messagesToRender.map((m) => m.id).join('|')}${isWaiting ? `|${streamingMessage?.id ?? ''}` : ''}`}>
             {messagesToRender.map((message, index) => renderMessage(message, index))}
             <StreamMessage />
             <ErrorMessage />

@@ -8,7 +8,7 @@ import { jsonClone } from '@onlook/utility';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
-import { createContext, useContext, useMemo, useRef, useState } from 'react';
+import { createContext, useContext, useMemo, useRef } from 'react';
 
 interface ExtraChatHelpers {
     sendMessageToChat: (message: ChatMessage, type: ChatType) => Promise<void>;
@@ -19,10 +19,11 @@ const ChatContext = createContext<UseChatHelpers<ChatMessage> & ExtraChatHelpers
 
 export const ChatProvider = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
-    const conversationId = editorEngine.chat.conversation.current?.conversation.id;
-    const lastMessageRef = useRef<ChatMessage | null>(null);
     const posthog = usePostHog();
-    const [chatType, setChatType] = useState<ChatType>(ChatType.EDIT);
+    const lastMessageRef = useRef<ChatMessage | null>(null);
+    const traceId = useRef<string | null>(null);
+    const chatTypeRef = useRef<ChatType>(ChatType.EDIT);
+    const conversationId = editorEngine.chat.conversation.current?.conversation.id;
 
     const chat = useChat<ChatMessage>({
         id: conversationId,
@@ -30,90 +31,45 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         transport: new DefaultChatTransport({
             api: '/api/chat',
             prepareSendMessagesRequest: ({ messages }) => {
-                // send only the last message and chat id
-                // we will then fetch message history (for our chatId) on server
-                // and append this message for the full context to send to the model
                 const lastMessage = messages[messages.length - 1];
                 return {
                     body: {
-                        chatType,
+                        chatType: chatTypeRef.current,
                         message: lastMessage,
                         conversationId,
                         projectId: editorEngine.projectId,
+                        traceId: traceId.current,
                     },
                 };
             },
         }),
         onToolCall: async (toolCall) => {
             const result = await handleToolCall(toolCall.toolCall, editorEngine);
-
             chat.addToolResult({
                 tool: toolCall.toolCall.toolName,
                 toolCallId: toolCall.toolCall.toolCallId,
                 output: result,
             });
         },
-        onData: (data) => {
-            // Update UI with streaming content in real-time
-            const currentMessages = chat.messages;
-            const lastMessage = currentMessages[currentMessages.length - 1];
-
-            if (lastMessage && lastMessage.role === 'assistant') {
-                // Update the last assistant message with streaming content
-                lastMessageRef.current = lastMessage;
-                editorEngine.chat.conversation.addOrReplaceMessage(lastMessage);
-            }
-        },
-        onFinish: (options: { message: ChatMessage; isAbort?: boolean; isDisconnect?: boolean; isError?: boolean }) => {
-            const { message, isError = false } = options;
-            lastMessageRef.current = message;
-            editorEngine.chat.conversation.addOrReplaceMessage(message);
-
-            // Extract finishReason safely from metadata
-            const finishReason = message.metadata && typeof message.metadata === 'object' && 'finishReason' in message.metadata
-                ? message.metadata.finishReason as string
-                : undefined;
-
-            if (finishReason !== 'error' && !isError) {
-                editorEngine.chat.error.clear();
-            }
-
-            if (finishReason !== 'tool-calls') {
-                editorEngine.chat.suggestions.generateSuggestions();
-                lastMessageRef.current = null;
-            }
-            if (finishReason === 'stop') {
-                editorEngine.chat.context.clearAttachments();
-            } else if (finishReason === 'length') {
-                editorEngine.chat.error.handleChatError(new Error('Output length limit reached'));
-            } else if (finishReason === 'content-filter') {
-                editorEngine.chat.error.handleChatError(new Error('Content filter error'));
-            }
-        },
         onError: (error) => {
             console.error('Error in chat', error);
-
-            // Save any partial content from streaming before handling error
-            const currentMessages = chat.messages;
-            const lastMessage = currentMessages[currentMessages.length - 1];
-
-            if (lastMessage && lastMessage.role === 'assistant' && lastMessage.parts.length > 0) {
-                // Preserve partial assistant response
-                lastMessageRef.current = lastMessage;
-                editorEngine.chat.conversation.addOrReplaceMessage(lastMessage);
-            } else if (lastMessageRef.current) {
-                // Fallback to stored reference
+            if (lastMessageRef.current) {
                 editorEngine.chat.conversation.addOrReplaceMessage(lastMessageRef.current);
             }
-
             editorEngine.chat.error.handleChatError(error);
-            lastMessageRef.current = null;
-        }
+        },
+        onFinish: (options: { message: ChatMessage; isAbort?: boolean; isDisconnect?: boolean; isError?: boolean }) => {
+            const { message } = options;
+            editorEngine.chat.conversation.addOrReplaceMessage(message);
+            editorEngine.chat.suggestions.generateSuggestions();
+            editorEngine.chat.context.clearAttachments();
+        },
     });
 
     const sendMessageToChat = async (message: ChatMessage, type: ChatType = ChatType.EDIT) => {
         const clonedMessage = jsonClone(message);
-        setChatType(type);
+        chatTypeRef.current = type;
+        traceId.current = message.id;
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
         try {
@@ -130,6 +86,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         if (chat.messages.length > 0) {
             const lastMessage = chat.messages[chat.messages.length - 1];
             if (lastMessage && lastMessage.role === 'assistant') {
+                lastMessageRef.current = lastMessage;
                 return lastMessage;
             }
             return null;
