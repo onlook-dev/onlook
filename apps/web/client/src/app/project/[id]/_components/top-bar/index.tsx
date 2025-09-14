@@ -13,6 +13,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { useChatContext } from '../../_hooks/use-chat';
 import { Members } from '../members';
 import { BranchDisplay } from './branch';
@@ -22,6 +23,7 @@ import { PublishButton } from './publish';
 
 export const TopBar = observer(() => {
     const stateManager = useStateManager();
+    const [isMembersPopoverOpen, setIsMembersPopoverOpen] = useState(false);
     const editorEngine = useEditorEngine();
     const { isWaiting } = useChatContext();
     const t = useTranslations();
@@ -49,8 +51,21 @@ export const TopBar = observer(() => {
             </div>
             <ModeToggle />
             <div className="flex flex-grow basis-0 justify-end items-center gap-2 mr-2">
-                <Members />
-                <CurrentUserAvatar className="size-7 cursor-pointer hover:opacity-80" />
+                <div className="flex items-center group">
+                    <div className={`transition-all duration-200 ${isMembersPopoverOpen ? 'mr-2' : '-mr-2 group-hover:mr-2'}`}>
+                        <Members onPopoverOpenChange={setIsMembersPopoverOpen} />
+                    </div>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="flex items-center">
+                                <CurrentUserAvatar className="size-8 cursor-pointer hover:border-foreground-primary" />
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="mt-1" hideArrow>
+                            <p>Profile</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </div>
                 <motion.div
                     className="space-x-0 hidden lg:block"
                     layout
@@ -96,7 +111,7 @@ export const TopBar = observer(() => {
                             <Icons.CounterClockwiseClock className="h-4 w-4" />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom" hideArrow>
+                    <TooltipContent side="bottom" className="mt-1" hideArrow>
                         {t(transKeys.editor.toolbar.versionHistory)}
                     </TooltipContent>
                 </Tooltip>
