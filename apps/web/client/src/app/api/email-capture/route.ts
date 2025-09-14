@@ -19,16 +19,17 @@ export async function POST(request: Request) {
 
         const webhookUsername = process.env.N8N_LANDING_FORM_USERNAME;
         const webhookPassword = process.env.N8N_LANDING_FORM_PASSWORD;
+        const landingFormUrl = process.env.N8N_LANDING_FORM_URL;
         
-        if (!webhookUsername || !webhookPassword) {
-            console.error('N8N_LANDING_FORM_USERNAME or N8N_LANDING_FORM_PASSWORD environment variables are not set');
+        if (!webhookUsername || !webhookPassword || !landingFormUrl) {
+            console.error('Missing N8N landing form env: ensure N8N_LANDING_FORM_USERNAME, N8N_LANDING_FORM_PASSWORD, and N8N_LANDING_FORM_URL are set');
             return new Response(JSON.stringify({ error: 'Server configuration error' }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
-        const url = new URL('https://n8n.process.onlook.com/webhook/website-landing-form');
+        const url = new URL(landingFormUrl);
         url.searchParams.append('name', name.trim());
         url.searchParams.append('email', email.trim());
         

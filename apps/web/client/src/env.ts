@@ -42,6 +42,7 @@ export const env = createEnv({
         N8N_API_KEY: z.string().optional(),
         N8N_LANDING_FORM_USERNAME: z.string().optional(),
         N8N_LANDING_FORM_PASSWORD: z.string().optional(),
+        N8N_LANDING_FORM_URL: z.string().url().optional(),
 
         // Firecrawl
         FIRECRAWL_API_KEY: z.string().optional(),
@@ -133,6 +134,7 @@ export const env = createEnv({
         N8N_API_KEY: process.env.N8N_API_KEY,
         N8N_LANDING_FORM_USERNAME: process.env.N8N_LANDING_FORM_USERNAME,
         N8N_LANDING_FORM_PASSWORD: process.env.N8N_LANDING_FORM_PASSWORD,
+        N8N_LANDING_FORM_URL: process.env.N8N_LANDING_FORM_URL,
 
         // Firecrawl
         FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
