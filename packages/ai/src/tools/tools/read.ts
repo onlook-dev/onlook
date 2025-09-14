@@ -8,7 +8,7 @@ export const READ_FILE_TOOL_PARAMETERS = z.object({
         .string()
         .min(1)
         .describe(
-            'The absolute path to the file to read. Supports fuzzy path matching if exact path is not found.',
+            'The path to the file to read. Supports fuzzy path matching if exact path is not found.',
         ),
     offset: z
         .number()
@@ -56,6 +56,6 @@ export const LIST_FILES_TOOL_PARAMETERS = z.object({
 });
 export const listFilesTool = tool({
     description:
-        'List files and directories in a specified path. Supports both absolute and relative paths with fuzzy matching. Can filter by type and exclude patterns. Returns file paths with type information (file/directory). Only lists immediate children (non-recursive).',
+        'List files and directories in a specified path. Can filter by type and exclude patterns. Returns file paths with type information (file/directory). Only lists immediate children (non-recursive).',
     inputSchema: LIST_FILES_TOOL_PARAMETERS,
 });

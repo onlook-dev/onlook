@@ -4,7 +4,7 @@ import { BRANCH_ID_SCHEMA } from './branch';
 
 export const SEARCH_REPLACE_EDIT_FILE_TOOL_NAME = 'search_replace_edit_file';
 export const SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS = z.object({
-    file_path: z.string().describe('Absolute path to file'),
+    file_path: z.string().describe('Path to file'),
     old_string: z.string().describe('Text to replace'),
     new_string: z.string().describe('Replacement text'),
     replace_all: z.boolean().optional().default(false).describe('Replace all occurrences'),
@@ -17,7 +17,7 @@ export const searchReplaceEditFileTool = tool({
 
 export const SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME = 'search_replace_multi_edit_file';
 export const SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS = z.object({
-    file_path: z.string().describe('Absolute path to file'),
+    file_path: z.string().describe('Path to file'),
     edits: z
         .array(
             z.object({
@@ -40,7 +40,7 @@ export const searchReplaceMultiEditFileTool = tool({
 
 export const WRITE_FILE_TOOL_NAME = 'write_file';
 export const WRITE_FILE_TOOL_PARAMETERS = z.object({
-    file_path: z.string().describe('Absolute path to file'),
+    file_path: z.string().describe('Path to file'),
     content: z.string().describe('File content'),
     branchId: BRANCH_ID_SCHEMA,
 });
@@ -52,7 +52,7 @@ export const writeFileTool = tool({
 
 export const FUZZY_EDIT_FILE_TOOL_NAME = 'fuzzy_edit_file';
 export const FUZZY_EDIT_FILE_TOOL_PARAMETERS = z.object({
-    file_path: z.string().describe('The absolute path to the file to edit'),
+    file_path: z.string().describe('The path to the file to edit'),
     content: z.string()
         .describe(`The edit to the file. You only need to include the parts of the code that are being edited instead of the entire file. A smaller model will handle implementing the rest of the code. You must leave comments to indicate the parts of the code that are not being edited such as:
 // ... existing code

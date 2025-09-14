@@ -48,4 +48,26 @@ export const filterReasoningParts = (parts: ChatMessage['parts']): ChatMessage['
     return parts.filter((part) => part.type !== 'reasoning');
 };
 
-export const ensureToolResultParts = (parts: ChatMessage['parts']): ChatMessage['parts'] => {};
+export const ensureToolResultParts = (parts: ChatMessage['parts']): ChatMessage['parts'] => {
+    const processedParts = [...parts];
+
+    for (let i = 0; i < processedParts.length; i++) {
+        const part = processedParts[i];
+
+        if (!part) continue;
+
+        // Check if this is a tool part that needs completion
+        if (part.type.startsWith('tool-') && 'toolCallId' in part && 'state' in part) {
+            // If tool call is in streaming state, mark it as having input available
+            if (part.state === 'input-streaming') {
+                const updatedPart = {
+                    ...part,
+                    state: 'input-available' as const,
+                };
+                processedParts[i] = updatedPart;
+            }
+        }
+    }
+
+    return processedParts;
+};
