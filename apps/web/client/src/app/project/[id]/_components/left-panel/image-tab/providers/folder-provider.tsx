@@ -388,20 +388,19 @@ export const FolderProvider = observer(({ children }: FolderProviderProps) => {
 
     // Get all folder paths
     const getImagesInFolder = useCallback((folder: FolderNode) => {
-        return editorEngine.activeSandbox.files.filter(image => {
+        // Use the image manager's scanned image paths instead of sandbox files
+        return editorEngine.image.imagePaths.filter(image => {
             if (image.startsWith(folder.fullPath)) {
                 // Check if this is a direct child (not in a subdirectory)
                 const relativePath = image.slice(folder.fullPath.length);
                 // Remove leading slash if present
                 const cleanRelativePath = relativePath.startsWith('/') ? relativePath.slice(1) : relativePath;
                 // Only include if it's a direct child (no additional path separators)
-                if (!cleanRelativePath.includes('/')) {
-                    return isImageFile(image);
-                }
+                return !cleanRelativePath.includes('/') && cleanRelativePath.length > 0;
             }
             return false;
         });
-    }, [editorEngine.activeSandbox.files]);
+    }, [editorEngine.image.imagePaths]);
 
     // Check if any operation is loading
     const isOperating =

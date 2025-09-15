@@ -183,16 +183,13 @@ export class ImageManager {
     }
 
     async scanImages() {
-        if (this._isScanning) {
-            return;
-        }
-
-        this._isScanning = true;
-
         try {
-            const files = await this.editorEngine.activeSandbox.listFilesRecursively(
-                DefaultSettings.IMAGE_FOLDER,
-            );
+            if (this._isScanning) {
+                return;
+            }
+            this._isScanning = true;
+
+            const files = this.editorEngine.activeSandbox.files;
             if (!files) {
                 console.error('No files found in image folder');
                 return;
@@ -201,7 +198,7 @@ export class ImageManager {
                 this._imagePaths = [];
                 return;
             }
-            this._imagePaths = files.filter((file: string) => isImageFile(file));
+            this._imagePaths = files.filter((file: string) => file.startsWith(DefaultSettings.IMAGE_FOLDER) && isImageFile(file));
         } catch (error) {
             console.error('Error scanning images:', error);
             this._imagePaths = [];
