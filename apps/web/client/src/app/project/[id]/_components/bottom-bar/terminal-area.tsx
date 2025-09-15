@@ -86,9 +86,9 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
             connectionStartTimeRef.current = Date.now();
         }
 
-        // Check if we've been connecting for too long (30 seconds like frame component)
+        // Check if we've been connecting for too long (5 seconds - users see 502 quickly)
         const connectionDuration = Date.now() - connectionStartTimeRef.current;
-        const TIMEOUT_MS = 30000; // 30 seconds to match frame timeout
+        const TIMEOUT_MS = 5000; // 5 seconds - enough to avoid false positives but quick enough for 502s
 
         if (connectionDuration >= TIMEOUT_MS) {
             // This is a real timeout/502 - show amber
