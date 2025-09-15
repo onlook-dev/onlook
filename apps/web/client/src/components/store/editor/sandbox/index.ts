@@ -656,6 +656,12 @@ export class SandboxManager {
                 },
             });
 
+            // Read and cache the copied file
+            const copiedFile = await this.readRemoteFile(normalizedTargetPath);
+            if (copiedFile) {
+                this.fileSync.updateCache(copiedFile);
+            }
+
             return true;
         } catch (error) {
             console.error(`Error copying ${path} to ${targetPath}:`, error);
@@ -722,6 +728,7 @@ export class SandboxManager {
                 },
             });
 
+            // Note: Cache update handled by file watcher rename event
             return true;
         } catch (error) {
             console.error(`Error renaming file ${oldPath} to ${newPath}:`, error);
