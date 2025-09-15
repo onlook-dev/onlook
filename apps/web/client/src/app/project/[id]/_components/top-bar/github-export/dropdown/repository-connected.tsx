@@ -15,6 +15,7 @@ interface GitHubRepository {
     name: string;
     full_name: string;
     html_url: string;
+    default_branch?: string;
     owner: {
         login: string;
         avatar_url: string;
@@ -162,8 +163,8 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
                         <Button
                             onClick={() => handleSyncChanges()}
                             disabled={isSyncingChanges}
-                            size="sm"
-                            className="flex-1"
+                            size="lg"
+                            className="flex-1 h-11 text-sm font-medium"
                         >
                             {isSyncingChanges ? (
                                 <>
@@ -180,8 +181,8 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
                         <Button
                             onClick={() => handlePushChanges()}
                             disabled={isPushingChanges}
-                            size="sm" 
-                            className="flex-1"
+                            size="lg"
+                            className="flex-1 h-11 text-sm font-medium"
                         >
                             {isPushingChanges ? (
                                 <>
@@ -262,20 +263,30 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
                     </div>
                 ) : branches && branches.length > 0 ? (
                     <div className="space-y-1 max-h-32 overflow-y-auto">
-                        {branches.map((branch) => (
-                            <div
-                                key={branch.name}
-                                className="flex items-center justify-between p-2 rounded text-xs hover:bg-background-secondary"
-                            >
-                                <div className="flex items-center gap-2">
-                                    <Icons.Commit className="h-3 w-3 text-foreground-secondary" />
-                                    <span className="font-mono">{branch.name}</span>
-                                    {branch.protected && (
-                                        <Icons.LockClosed className="h-3 w-3 text-amber-500" />
-                                    )}
+                        {branches.map((branch) => {
+                            const isActiveBranch = branch.name === (repositoryData.default_branch || 'main');
+                            return (
+                                <div
+                                    key={branch.name}
+                                    className={`flex items-center justify-between p-2 rounded text-xs hover:bg-background-secondary ${
+                                        isActiveBranch ? 'bg-accent/50 border border-accent' : ''
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <Icons.Commit className="h-3 w-3 text-foreground-secondary" />
+                                        <span className="font-mono">{branch.name}</span>
+                                        {isActiveBranch && (
+                                            <span className="px-1.5 py-0.5 bg-accent text-accent-foreground text-[10px] rounded-full font-medium">
+                                                Active
+                                            </span>
+                                        )}
+                                        {branch.protected && (
+                                            <Icons.LockClosed className="h-3 w-3 text-amber-500" />
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 ) : (
                     <p className="text-xs text-foreground-secondary text-center py-2">
