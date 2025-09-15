@@ -549,42 +549,20 @@ export class SandboxManager {
     async handleFileChangedEvent(normalizedPath: string) {
         const cachedFile = this.fileSync.readCache(normalizedPath);
 
-        if (isImageFile(normalizedPath)) {
-            if (!cachedFile || cachedFile.content === null) {
-                // If the file was not cached, we need to write an empty file
-                this.fileSync.writeEmptyFile(normalizedPath, 'binary');
-            } else {
-                // If the file was already cached, we need to read the remote file and update the cache
-                const remoteFile = await this.readRemoteFile(normalizedPath);
-                if (!remoteFile || remoteFile.content === null) {
-                    console.error(`File content for ${normalizedPath} not found in remote`);
-                    return;
-                }
-                this.fileSync.updateCache(remoteFile);
-            }
-        } else {
-            // If the file is not an image, we need to read the remote file and update the cache
-            const remoteFile = await this.readRemoteFile(normalizedPath);
-            if (!remoteFile || remoteFile.content === null) {
-                console.error(`File content for ${normalizedPath} not found in remote`);
-                return;
-            }
-            if (remoteFile.type === 'text') {
-                // If the file is a text file, we need to process it for mapping
-                this.fileSync.updateCache({
-                    type: 'text',
-                    path: normalizedPath,
-                    content: remoteFile.content,
-                });
-                if (remoteFile.content !== cachedFile?.content) {
-                    await this.processFileForMapping(remoteFile);
-                }
-            } else {
-                this.fileSync.updateCache({
-                    type: 'binary',
-                    path: normalizedPath,
-                    content: remoteFile.content,
-                });
+        // Always read the remote file and update the cache, regardless of file type
+        const remoteFile = await this.readRemoteFile(normalizedPath);
+        if (!remoteFile) {
+            console.error(`File content for ${normalizedPath} not found in remote`);
+            return;
+        }
+
+        // Always update the cache with the fresh remote file content
+        this.fileSync.updateCache(remoteFile);
+
+        // For text files, also process for mapping if content has changed
+        if (remoteFile.type === 'text' && this.isJsxFile(normalizedPath)) {
+            if (remoteFile.content !== cachedFile?.content) {
+                await this.processFileForMapping(remoteFile);
             }
         }
     }
