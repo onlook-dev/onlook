@@ -17,8 +17,6 @@ export async function POST(request: Request) {
             });
         }
 
-        const webhookUsername = process.env.N8N_LANDING_FORM_USERNAME;
-        const webhookPassword = process.env.N8N_LANDING_FORM_PASSWORD;
         const headerName = process.env.N8N_LANDING_FORM_HEADER_NAME;
         const headerValue = process.env.N8N_LANDING_FORM_HEADER_VALUE;
         const landingFormUrl = process.env.N8N_LANDING_FORM_URL;
@@ -41,13 +39,10 @@ export async function POST(request: Request) {
         if (utm_term) url.searchParams.append('utm_term', utm_term);
         if (utm_content) url.searchParams.append('utm_content', utm_content);
 
-        // Build auth headers: prefer custom header if provided, else Basic if user/pass provided
+        // Build auth headers: use custom header if provided
         const authHeaders: Record<string, string> = {};
         if (headerName && headerValue) {
             authHeaders[headerName] = headerValue;
-        } else if (webhookUsername && webhookPassword) {
-            const credentials = btoa(`${webhookUsername}:${webhookPassword}`);
-            authHeaders['Authorization'] = `Basic ${credentials}`;
         }
 
         const response = await fetch(url.toString(), {
