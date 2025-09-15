@@ -1,9 +1,11 @@
+import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { Separator } from '@onlook/ui/separator';
+import { toast } from '@onlook/ui/sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
@@ -25,8 +27,11 @@ interface RepositoryConnectedStepProps {
 }
 
 export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: RepositoryConnectedStepProps) => {
+    const editorEngine = useEditorEngine();
     const [newBranchName, setNewBranchName] = useState('feature-');
     const [showCreateBranch, setShowCreateBranch] = useState(false);
+    const [isSyncingChanges, setIsSyncingChanges] = useState(false);
+    const [isPushingChanges, setIsPushingChanges] = useState(false);
 
     const { data: branches, isLoading: loadingBranches, refetch: refetchBranches } = 
         api.github.getBranches.useQuery({
@@ -35,6 +40,72 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
         });
 
     const createBranchMutation = api.github.createBranch.useMutation();
+    const syncFilesMutation = api.github.syncProjectFiles.useMutation();
+    const pushChangesMutation = api.github.pushChanges.useMutation();
+
+    const handleSyncChanges = async () => {
+        setIsSyncingChanges(true);
+        try {
+            const result = await syncFilesMutation.mutateAsync({
+                owner: repositoryData.owner.login,
+                repo: repositoryData.name,
+                projectId: editorEngine.projectId,
+                message: 'Sync changes from Onlook',
+            });
+            
+            // Show success notification
+            toast.success(`Successfully synced ${result.filesCount} files to GitHub!`, {
+                description: `Commit: ${result.commitSha}`,
+                action: {
+                    label: 'View on GitHub',
+                    onClick: () => window.open(result.commitUrl, '_blank'),
+                },
+                duration: 5000,
+            });
+        } catch (error) {
+            console.error('Failed to sync changes:', error);
+            // Show error notification
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+            toast.error('Failed to sync changes', {
+                description: errorMessage,
+                duration: 5000,
+            });
+        } finally {
+            setIsSyncingChanges(false);
+        }
+    };
+
+    const handlePushChanges = async () => {
+        setIsPushingChanges(true);
+        try {
+            const result = await pushChangesMutation.mutateAsync({
+                owner: repositoryData.owner.login,
+                repo: repositoryData.name,
+                projectId: editorEngine.projectId,
+                message: 'Push changes from Onlook',
+            });
+            
+            // Show success notification
+            toast.success(`Successfully pushed ${result.filesCount} files to GitHub!`, {
+                description: `Commit: ${result.commitSha}`,
+                action: {
+                    label: 'View on GitHub',
+                    onClick: () => window.open(result.commitUrl, '_blank'),
+                },
+                duration: 5000,
+            });
+        } catch (error) {
+            console.error('Failed to push changes:', error);
+            // Show error notification
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+            toast.error('Failed to push changes', {
+                description: errorMessage,
+                duration: 5000,
+            });
+        } finally {
+            setIsPushingChanges(false);
+        }
+    };
 
     const handleCreateBranch = async () => {
         if (!newBranchName.trim()) return;
@@ -84,9 +155,54 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
 
             <Separator />
 
-            <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                    <h5 className="text-xs font-semibold text-foreground-primary">Branches</h5>
+            <div className="space-y-4">
+                <div className="space-y-3">
+                    <h5 className="text-xs font-semibold text-foreground-primary">Quick Actions</h5>
+                    <div className="flex gap-2">
+                        <Button
+                            onClick={() => handleSyncChanges()}
+                            disabled={isSyncingChanges}
+                            size="sm"
+                            className="flex-1"
+                        >
+                            {isSyncingChanges ? (
+                                <>
+                                    <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />
+                                    Syncing...
+                                </>
+                            ) : (
+                                <>
+                                    <Icons.Reload className="mr-2 h-4 w-4" />
+                                    Sync Changes
+                                </>
+                            )}
+                        </Button>
+                        <Button
+                            onClick={() => handlePushChanges()}
+                            disabled={isPushingChanges}
+                            size="sm" 
+                            className="flex-1"
+                        >
+                            {isPushingChanges ? (
+                                <>
+                                    <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />
+                                    Pushing...
+                                </>
+                            ) : (
+                                <>
+                                    <Icons.ArrowUp className="mr-2 h-4 w-4" />
+                                    Push to GitHub
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <h5 className="text-xs font-semibold text-foreground-primary">Branches</h5>
                     <Button
                         onClick={() => setShowCreateBranch(!showCreateBranch)}
                         size="sm"
@@ -166,6 +282,7 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
                         No branches found
                     </p>
                 )}
+                </div>
             </div>
         </div>
     );

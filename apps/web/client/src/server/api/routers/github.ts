@@ -1,4 +1,4 @@
-import { branches, users, type DrizzleDb } from '@onlook/db';
+import { branches, projects, users, type DrizzleDb } from '@onlook/db';
 import {
     createInstallationOctokit,
     generateInstallationUrl
@@ -7,6 +7,153 @@ import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
+import type { Provider } from '@onlook/code-provider';
+
+async function getProvider({
+    sandboxId,
+    provider = CodeProvider.CodeSandbox,
+}: {
+    sandboxId: string;
+    provider?: CodeProvider;
+}): Promise<Provider> {
+    if (provider === CodeProvider.CodeSandbox) {
+        return createCodeProviderClient(CodeProvider.CodeSandbox, {
+            providerOptions: {
+                codesandbox: {
+                    sandboxId,
+                    initClient: true,
+                },
+            },
+        });
+    } else if (provider === CodeProvider.NodeFs) {
+        return createCodeProviderClient(CodeProvider.NodeFs, {
+            providerOptions: {
+                nodefs: {},
+            },
+        });
+    }
+
+    throw new Error(`Unsupported provider: ${provider}`);
+}
+
+async function getChangedFiles(
+    octokit: any,
+    owner: string,
+    repo: string,
+    baseTreeSha: string,
+    projectFiles: Array<{ path: string; content: string }>
+): Promise<Array<{ path: string; mode: '100644'; type: 'blob'; content: string }>> {
+    const { data: currentTree } = await octokit.rest.git.getTree({
+        owner,
+        repo,
+        tree_sha: baseTreeSha,
+        recursive: 'true',
+    });
+
+    const changedFiles: Array<{ path: string; mode: '100644'; type: 'blob'; content: string }> = [];
+
+    for (const file of projectFiles) {
+        const existingFile = currentTree.tree.find(
+            (treeItem: any) => treeItem.path === file.path && treeItem.type === 'blob'
+        );
+
+        if (existingFile) {
+            try {
+                const { data: existingBlob } = await octokit.rest.git.getBlob({
+                    owner,
+                    repo,
+                    file_sha: existingFile.sha!,
+                });
+                
+                const existingContent = Buffer.from(existingBlob.content, 'base64').toString('utf8');
+                
+                if (existingContent !== file.content) {
+                    changedFiles.push({
+                        path: file.path,
+                        mode: '100644' as const,
+                        type: 'blob' as const,
+                        content: file.content,
+                    });
+                }
+            } catch {
+                changedFiles.push({
+                    path: file.path,
+                    mode: '100644' as const,
+                    type: 'blob' as const,
+                    content: file.content,
+                });
+            }
+        } else {
+            changedFiles.push({
+                path: file.path,
+                mode: '100644' as const,
+                type: 'blob' as const,
+                content: file.content,
+            });
+        }
+    }
+
+    return changedFiles;
+}
+
+async function getProjectFiles(projectId: string, db: DrizzleDb): Promise<Array<{ path: string; content: string }>> {
+    const defaultBranch = await db.query.branches.findFirst({
+        where: and(
+            eq(branches.projectId, projectId),
+            eq(branches.isDefault, true)
+        ),
+    });
+
+    if (!defaultBranch?.sandboxId) {
+        throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: 'Project has no sandbox',
+        });
+    }
+
+    const provider = await getProvider({ sandboxId: defaultBranch.sandboxId });
+    const allFiles: Array<{ path: string; content: string }> = [];
+    const dirsToProcess = ['./'];
+    
+    const EXCLUDED_DIRECTORIES = ['node_modules', '.git', 'dist', 'build', '.next', '.onlook'];
+    const INCLUDED_EXTENSIONS = ['.tsx', '.ts', '.jsx', '.js', '.css', '.scss', '.sass', '.json', '.md', '.html'];
+    
+    while (dirsToProcess.length > 0) {
+        const currentDir = dirsToProcess.shift()!;
+        
+        try {
+            const { files } = await provider.listFiles({ args: { path: currentDir } });
+            
+            for (const entry of files) {
+                const fullPath = currentDir === './' ? entry.name : `${currentDir}/${entry.name}`;
+                
+                if (entry.type === 'directory') {
+                    if (!EXCLUDED_DIRECTORIES.includes(entry.name)) {
+                        dirsToProcess.push(fullPath);
+                    }
+                } else if (entry.type === 'file') {
+                    const hasValidExtension = INCLUDED_EXTENSIONS.some(ext => entry.name.endsWith(ext));
+                    if (hasValidExtension) {
+                        try {
+                            const { file } = await provider.readFile({ args: { path: fullPath } });
+                            allFiles.push({
+                                path: fullPath.startsWith('./') ? fullPath.slice(2) : fullPath,
+                                content: file.toString(),
+                            });
+                        } catch {
+                            // Skip files that can't be read
+                        }
+                    }
+                }
+            }
+        } catch {
+            // Skip directories that can't be listed
+        }
+    }
+    
+    return allFiles;
+}
 
 const getUserGitHubInstallation = async (db: DrizzleDb, userId: string) => {
     const user = await db.query.users.findFirst({
@@ -391,11 +538,18 @@ export const githubRouter = createTRPCRouter({
                     content: file.content,
                 }));
 
-                // Create new tree
+                // Get the current tree for proper Git operations
+                const { data: currentCommit } = await octokit.rest.git.getCommit({
+                    owner: input.owner,
+                    repo: input.repo,
+                    commit_sha: baseCommitSha,
+                });
+
+                // Create new tree with base_tree for proper Git operations
                 const { data: newTree } = await octokit.rest.git.createTree({
                     owner: input.owner,
                     repo: input.repo,
-                    base_tree: baseCommit.tree.sha,
+                    base_tree: currentCommit.tree.sha,
                     tree: treeEntries,
                 });
 
@@ -747,6 +901,194 @@ export const githubRouter = createTRPCRouter({
                 throw new TRPCError({
                     code: 'INTERNAL_SERVER_ERROR',
                     message: 'Sync failed',
+                    cause: error,
+                });
+            }
+        }),
+
+    syncProjectFiles: protectedProcedure
+        .input(
+            z.object({
+                owner: z.string(),
+                repo: z.string(),
+                projectId: z.string(),
+                message: z.string().default('Sync project files from Onlook'),
+                branch: z.string().optional(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            try {
+                const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
+
+                const project = await ctx.db.query.projects.findFirst({
+                    where: eq(projects.id, input.projectId),
+                });
+
+                if (!project) {
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: 'Project not found',
+                    });
+                }
+
+                const projectFiles = await getProjectFiles(input.projectId, ctx.db);
+                const branch = input.branch || 'main';
+                
+                const { data: branchRef } = await octokit.rest.git.getRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `heads/${branch}`,
+                });
+
+                const baseCommitSha = branchRef.object.sha;
+
+                const { data: baseCommit } = await octokit.rest.git.getCommit({
+                    owner: input.owner,
+                    repo: input.repo,
+                    commit_sha: baseCommitSha,
+                });
+
+                const changedFiles = await getChangedFiles(
+                    octokit,
+                    input.owner,
+                    input.repo,
+                    baseCommit.tree.sha,
+                    projectFiles
+                );
+
+                if (changedFiles.length === 0) {
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: 'No changes detected',
+                    });
+                }
+
+                const { data: newTree } = await octokit.rest.git.createTree({
+                    owner: input.owner,
+                    repo: input.repo,
+                    base_tree: baseCommit.tree.sha,
+                    tree: changedFiles,
+                });
+
+                const { data: newCommit } = await octokit.rest.git.createCommit({
+                    owner: input.owner,
+                    repo: input.repo,
+                    message: input.message,
+                    tree: newTree.sha,
+                    parents: [baseCommitSha],
+                });
+
+                await octokit.rest.git.updateRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `heads/${branch}`,
+                    sha: newCommit.sha,
+                });
+
+                return {
+                    success: true,
+                    commitSha: newCommit.sha,
+                    commitUrl: `https://github.com/${input.owner}/${input.repo}/commit/${newCommit.sha}`,
+                    filesCount: changedFiles.length,
+                };
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `Sync failed: ${error.message}`,
+                    cause: error,
+                });
+            }
+        }),
+
+    pushChanges: protectedProcedure
+        .input(
+            z.object({
+                owner: z.string(),
+                repo: z.string(),
+                message: z.string().default('Push changes from Onlook'),
+                branch: z.string().optional(),
+                projectId: z.string(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            try {
+                const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
+
+                const project = await ctx.db.query.projects.findFirst({
+                    where: eq(projects.id, input.projectId),
+                });
+
+                if (!project) {
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: 'Project not found',
+                    });
+                }
+
+                const projectFiles = await getProjectFiles(input.projectId, ctx.db);
+                const branch = input.branch || 'main';
+                
+                const { data: branchRef } = await octokit.rest.git.getRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `heads/${branch}`,
+                });
+
+                const baseCommitSha = branchRef.object.sha;
+
+                const { data: baseCommit } = await octokit.rest.git.getCommit({
+                    owner: input.owner,
+                    repo: input.repo,
+                    commit_sha: baseCommitSha,
+                });
+
+                const changedFiles = await getChangedFiles(
+                    octokit,
+                    input.owner,
+                    input.repo,
+                    baseCommit.tree.sha,
+                    projectFiles
+                );
+
+                if (changedFiles.length === 0) {
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: 'No changes detected',
+                    });
+                }
+
+                const { data: newTree } = await octokit.rest.git.createTree({
+                    owner: input.owner,
+                    repo: input.repo,
+                    base_tree: baseCommit.tree.sha,
+                    tree: changedFiles,
+                });
+
+                const { data: newCommit } = await octokit.rest.git.createCommit({
+                    owner: input.owner,
+                    repo: input.repo,
+                    message: input.message,
+                    tree: newTree.sha,
+                    parents: [baseCommitSha],
+                });
+
+                await octokit.rest.git.updateRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `heads/${branch}`,
+                    sha: newCommit.sha,
+                });
+
+                return {
+                    success: true,
+                    commitSha: newCommit.sha,
+                    commitUrl: `https://github.com/${input.owner}/${input.repo}/commit/${newCommit.sha}`,
+                    filesCount: changedFiles.length,
+                };
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `Push failed: ${error.message}`,
                     cause: error,
                 });
             }
