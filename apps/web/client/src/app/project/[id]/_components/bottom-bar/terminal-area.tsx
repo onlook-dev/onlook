@@ -1,3 +1,5 @@
+'use client';
+
 import { useEditorEngine } from '@/components/store/editor';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
@@ -48,40 +50,49 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
     }
 
     const [terminalHidden, setTerminalHidden] = useState(true);
+    const [restarting, setRestarting] = useState(false);
 
     // Extract restart logic into a reusable function to follow DRY principles
     const handleRestartSandbox = async () => {
         const activeBranch = branches.activeBranch;
-        if (!activeBranch) return;
+        if (!activeBranch || restarting) return;
 
+        setRestarting(true);
+        
         try {
             const sandbox = branches.getSandboxById(activeBranch.id);
             if (!sandbox?.session) {
                 toast.error('Sandbox session not available');
+                setRestarting(false);
                 return;
             }
 
             const success = await sandbox.session.restartDevServer();
             if (success) {
-                // Refresh all webviews for the active branch
-                const frames = editorEngine.frames.getAll();
-                frames.forEach(frame => {
-                    try {
-                        editorEngine.frames.reloadView(frame.frame.id);
-                    } catch (frameError) {
-                        console.error('Failed to reload frame:', frame.frame.id, frameError);
-                    }
-                });
-                
                 toast.success('Sandbox restarted successfully', {
                     icon: <Icons.Cube className="h-4 w-4" />,
                 });
+                
+                // Wait 5 seconds before refreshing webviews to avoid 502 errors
+                setTimeout(() => {
+                    const frames = editorEngine.frames.getAll();
+                    frames.forEach(frame => {
+                        try {
+                            editorEngine.frames.reloadView(frame.frame.id);
+                        } catch (frameError) {
+                            console.error('Failed to reload frame:', frame.frame.id, frameError);
+                        }
+                    });
+                    setRestarting(false);
+                }, 5000);
             } else {
                 toast.error('Failed to restart sandbox');
+                setRestarting(false);
             }
         } catch (error) {
             console.error('Error restarting sandbox:', error);
             toast.error('An error occurred while restarting the sandbox');
+            setRestarting(false);
         }
     };
 
@@ -94,15 +105,19 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                         <TooltipTrigger asChild>
                             <button
                                 onClick={handleRestartSandbox}
-                                disabled={!branches.activeBranch}
+                                disabled={!branches.activeBranch || restarting}
                                 className={cn(
                                     "h-9 w-9 flex items-center justify-center rounded-md border border-transparent",
-                                    branches.activeBranch 
+                                    branches.activeBranch && !restarting
                                         ? "hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50"
                                         : "text-foreground-disabled cursor-not-allowed opacity-50"
                                 )}
                             >
-                                <Icons.RestartSandbox className="h-4 w-4" />
+                                {restarting ? (
+                                    <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Icons.RestartSandbox className="h-4 w-4" />
+                                )}
                             </button>
                         </TooltipTrigger>
                         <TooltipContent sideOffset={5} hideArrow>Restart Sandbox</TooltipContent>
@@ -139,15 +154,19 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                             <TooltipTrigger asChild>
                                 <button
                                     onClick={handleRestartSandbox}
-                                    disabled={!branches.activeBranch}
+                                    disabled={!branches.activeBranch || restarting}
                                     className={cn(
                                         "h-9 w-9 flex items-center justify-center rounded-md border border-transparent",
-                                        branches.activeBranch 
+                                        branches.activeBranch && !restarting
                                             ? "hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50"
                                             : "text-foreground-disabled cursor-not-allowed opacity-50"
                                     )}
                                 >
-                                    <Icons.RestartSandbox className="h-4 w-4" />
+                                    {restarting ? (
+                                        <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Icons.RestartSandbox className="h-4 w-4" />
+                                    )}
                                 </button>
                             </TooltipTrigger>
                             <TooltipContent sideOffset={5} hideArrow>Restart Sandbox</TooltipContent>
