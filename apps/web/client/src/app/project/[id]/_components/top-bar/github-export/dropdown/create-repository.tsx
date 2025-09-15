@@ -13,21 +13,25 @@ interface CreateRepositoryStepProps {
     selectedOwner: string;
     onRepositoryCreated: (repo: any) => void;
     onBack: () => void;
+    existingRepository?: any;
+    onDisconnect?: () => void;
 }
 
 export const CreateRepositoryStep = observer(({ 
     selectedOwner, 
     onRepositoryCreated, 
-    onBack 
+    onBack,
+    existingRepository,
+    onDisconnect
 }: CreateRepositoryStepProps) => {
     const editorEngine = useEditorEngine();
     const { data: currentProject } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     
     const [repoName, setRepoName] = useState(
-        currentProject?.name?.toLowerCase().replace(/\s+/g, '-') || 'onlook-project'
+        existingRepository?.name || currentProject?.name?.toLowerCase().replace(/\s+/g, '-') || 'onlook-project'
     );
-    const [description, setDescription] = useState('');
-    const [isPrivate, setIsPrivate] = useState(true);
+    const [description, setDescription] = useState(existingRepository?.description || '');
+    const [isPrivate, setIsPrivate] = useState(existingRepository?.private ?? true);
     const [createBranch, setCreateBranch] = useState(false);
     const [branchName, setBranchName] = useState('onlook-changes');
 
@@ -153,17 +157,16 @@ export const CreateRepositoryStep = observer(({
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium text-foreground-primary">
-                    Create Repository
+                    {existingRepository ? 'Repository Details' : 'Create Repository'}
                 </h4>
                 <Button
                     variant="ghost"
                     size="sm"
                     onClick={onBack}
-                    className="h-6 px-2 text-xs"
+                    className="h-6 w-6 p-0"
                     disabled={createRepository.isPending}
                 >
-                    <Icons.ArrowLeft className="mr-1 h-3 w-3" />
-                    Back
+                    <Icons.ArrowRight className="h-3 w-3" />
                 </Button>
             </div>
 
@@ -178,7 +181,7 @@ export const CreateRepositoryStep = observer(({
                         onChange={(e) => setRepoName(e.target.value)}
                         placeholder="my-awesome-project"
                         className="mt-1"
-                        disabled={createRepository.isPending}
+                        disabled={createRepository.isPending || !!existingRepository}
                     />
                     <p className="text-xs text-foreground-secondary mt-1">
                         {selectedOwner === 'personal' ? 'your-username' : selectedOwner}/{repoName}
@@ -195,7 +198,7 @@ export const CreateRepositoryStep = observer(({
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="A brief description of your project"
                         className="mt-1 min-h-[60px]"
-                        disabled={createRepository.isPending}
+                        disabled={createRepository.isPending || !!existingRepository}
                     />
                 </div>
 
@@ -205,7 +208,7 @@ export const CreateRepositoryStep = observer(({
                             id="private"
                             checked={isPrivate}
                             onCheckedChange={(checked) => setIsPrivate(checked as boolean)}
-                            disabled={createRepository.isPending}
+                            disabled={createRepository.isPending || !!existingRepository}
                         />
                         <Label htmlFor="private" className="text-xs cursor-pointer">
                             Make this repository private
@@ -237,24 +240,36 @@ export const CreateRepositoryStep = observer(({
                     )}
                 </div>
 
-                <Button
-                    onClick={handleCreateRepository}
-                    disabled={!repoName.trim() || createRepository.isPending}
-                    className="w-full"
-                    size="sm"
-                >
-                    {createRepository.isPending ? (
-                        <>
-                            <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />
-                            Creating Repository...
-                        </>
-                    ) : (
-                        <>
-                            <Icons.GitHubLogo className="mr-2 h-4 w-4" />
-                            Create Repository & Export
-                        </>
-                    )}
-                </Button>
+                {existingRepository ? (
+                    <Button
+                        onClick={onDisconnect}
+                        variant="destructive"
+                        className="w-full"
+                        size="sm"
+                    >
+                        <Icons.Trash className="mr-2 h-4 w-4" />
+                        Disconnect Repository
+                    </Button>
+                ) : (
+                    <Button
+                        onClick={handleCreateRepository}
+                        disabled={!repoName.trim() || createRepository.isPending}
+                        className="w-full"
+                        size="sm"
+                    >
+                        {createRepository.isPending ? (
+                            <>
+                                <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />
+                                Creating Repository...
+                            </>
+                        ) : (
+                            <>
+                                <Icons.GitHubLogo className="mr-2 h-4 w-4" />
+                                Create Repository & Export
+                            </>
+                        )}
+                    </Button>
+                )}
 
             </div>
         </div>

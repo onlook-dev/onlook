@@ -4,6 +4,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { Separator } from '@onlook/ui/separator';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
@@ -20,7 +21,7 @@ interface GitHubRepository {
 
 interface RepositoryConnectedStepProps {
     repositoryData: GitHubRepository;
-    onBack: () => void;
+    onBack?: () => void;
 }
 
 export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: RepositoryConnectedStepProps) => {
@@ -59,41 +60,26 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-foreground-primary">
-                    Repository Connected
-                </h4>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onBack}
-                    className="h-6 px-2 text-xs"
-                >
-                    <Icons.ArrowLeft className="mr-1 h-3 w-3" />
-                    Back
-                </Button>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 bg-teal-50 dark:bg-teal-950/20 rounded-md border border-teal-200 dark:border-teal-800">
-                <div className="w-10 h-10 bg-teal-100 dark:bg-teal-900/20 rounded-full flex items-center justify-center">
-                    <Icons.CheckCircled className="h-5 w-5 text-teal-600 dark:text-teal-400" />
-                </div>
-                <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground-primary">
-                        {repositoryData.full_name}
-                    </p>
-                    <p className="text-xs text-foreground-secondary">
-                        Successfully exported and connected
-                    </p>
-                </div>
-                <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => window.open(repositoryData.html_url, '_blank')}
-                    className="h-8 px-2"
-                >
-                    <Icons.ExternalLink className="h-4 w-4" />
-                </Button>
+            <div className="flex items-center gap-2">
+                <Icons.CheckCircled className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                <span className="text-sm font-medium text-foreground-primary">
+                    {repositoryData.full_name}
+                </span>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => window.open(repositoryData.html_url, '_blank')}
+                            className="h-6 w-6 p-0"
+                        >
+                            <Icons.ExternalLink className="h-3 w-3" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        Open on GitHub
+                    </TooltipContent>
+                </Tooltip>
             </div>
 
             <Separator />

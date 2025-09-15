@@ -6,7 +6,7 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { CreateRepositoryStep } from './create-repository';
 import { InstallationStep } from './installation';
 import { RepositoryConnectedStep } from './repository-connected';
@@ -41,10 +41,17 @@ export const GitHubExportDropdown = observer(() => {
             enabled: !!installationId && currentStep === ExportStep.SELECT_OWNER,
         });
 
-    // Determine the current step based on installation status
+    React.useEffect(() => {
+        if (existingConnection && !selectedOwner) {
+            setSelectedOwner(existingConnection.repositoryOwner);
+        }
+    }, [existingConnection, selectedOwner]);
     const determineStep = () => {
         if (checkingInstallation) return ExportStep.INSTALLATION;
         if (installationError || !installationId) return ExportStep.INSTALLATION;
+        
+        if (currentStep === ExportStep.CREATE_REPOSITORY) return ExportStep.CREATE_REPOSITORY;
+        
         if (existingConnection || repositoryData) return ExportStep.REPOSITORY_CONNECTED;
         if (!selectedOwner) return ExportStep.SELECT_OWNER;
         return ExportStep.CREATE_REPOSITORY;
@@ -76,6 +83,19 @@ export const GitHubExportDropdown = observer(() => {
                     />
                 );
             case ExportStep.CREATE_REPOSITORY:
+                const connectedRepoForCreation = repositoryData || (existingConnection ? {
+                    id: existingConnection.repositoryId || 0,
+                    name: existingConnection.repositoryName,
+                    full_name: existingConnection.fullName,
+                    html_url: existingConnection.repositoryUrl,
+                    description: '',
+                    private: true,
+                    owner: {
+                        login: existingConnection.repositoryOwner,
+                        avatar_url: '',
+                    },
+                } : null);
+                
                 return (
                     <CreateRepositoryStep
                         selectedOwner={selectedOwner}
@@ -85,6 +105,12 @@ export const GitHubExportDropdown = observer(() => {
                         onBack={() => {
                             setSelectedOwner('');
                             setCurrentStep(ExportStep.SELECT_OWNER);
+                        }}
+                        existingRepository={connectedRepoForCreation}
+                        onDisconnect={() => {
+                            setRepositoryData(null);
+                            setSelectedOwner('');
+                            // TODO: Add API call to disconnect from database
                         }}
                     />
                 );
@@ -103,11 +129,7 @@ export const GitHubExportDropdown = observer(() => {
                 return connectedRepoData ? (
                     <RepositoryConnectedStep
                         repositoryData={connectedRepoData}
-                        onBack={() => {
-                            setRepositoryData(null);
-                            setSelectedOwner('');
-                            setCurrentStep(ExportStep.SELECT_OWNER);
-                        }}
+                        onBack={() => {}}
                     />
                 ) : null;
             default:
@@ -118,11 +140,25 @@ export const GitHubExportDropdown = observer(() => {
     return (
         <div className="rounded-md flex flex-col text-foreground-secondary">
             <div className="p-4 pb-0">
-                <div className="flex items-center gap-2 mb-4">
-                    <Icons.GitHubLogo className="h-5 w-5" />
-                    <h3 className="text-sm font-semibold text-foreground-primary">
-                        Export to GitHub
-                    </h3>
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                        <Icons.GitHubLogo className="h-5 w-5" />
+                        <h3 className="text-sm font-semibold text-foreground-primary">
+                            Export to GitHub
+                        </h3>
+                    </div>
+                    {actualStep === ExportStep.REPOSITORY_CONNECTED && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                                setCurrentStep(ExportStep.CREATE_REPOSITORY);
+                            }}
+                            className="h-6 w-6 p-0"
+                        >
+                            <Icons.ArrowLeft className="h-3 w-3" />
+                        </Button>
+                    )}
                 </div>
                 
                 {/* Step indicator - only show when not connected */}
