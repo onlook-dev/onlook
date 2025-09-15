@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Terminal } from './terminal';
 
 export const TerminalArea = observer(({ children }: { children: React.ReactNode }) => {
@@ -51,68 +51,67 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
 
     const [terminalHidden, setTerminalHidden] = useState(true);
     const [restarting, setRestarting] = useState(false);
-    const [hasConnectionTimeout, setHasConnectionTimeout] = useState(false);
-    const connectionStartTimeRef = useRef<number | null>(null);
+    
+    // Ultra-lightweight error detection using a single timer
+    const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
+    const [hasSandboxError, setHasSandboxError] = useState(false);
 
-    // Track connection state and detect timeouts (actual 502 errors)
+    // Single effect that only sets/clears one timer - extremely efficient
     useEffect(() => {
+        // Clear any existing timer first
+        if (timeoutIdRef.current) {
+            clearTimeout(timeoutIdRef.current);
+            timeoutIdRef.current = null;
+        }
+
         const activeBranch = branches.activeBranch;
         if (!activeBranch) {
-            setHasConnectionTimeout(false);
-            connectionStartTimeRef.current = null;
+            setHasSandboxError(false);
             return;
         }
 
         const branchData = branches.getBranchDataById(activeBranch.id);
-        const isConnecting = branchData?.sandbox?.session?.isConnecting || branchData?.sandbox?.isIndexing;
-        const hasProvider = branchData?.sandbox?.session?.provider;
-
-        // If we have a provider, connection is successful - clear any timeout
-        if (hasProvider) {
-            setHasConnectionTimeout(false);
-            connectionStartTimeRef.current = null;
+        const sandbox = branchData?.sandbox;
+        
+        // Quick bailouts - no timer needed
+        if (!sandbox?.session) {
+            setHasSandboxError(false);
             return;
         }
-
-        // If not connecting, clear the timeout tracking
+        
+        // If we have a provider, we're connected - no error
+        if (sandbox.session.provider) {
+            setHasSandboxError(false);
+            return;
+        }
+        
+        // Only set timer if actually connecting (not just idle)
+        const isConnecting = sandbox.session.isConnecting || sandbox.isIndexing;
         if (!isConnecting) {
-            setHasConnectionTimeout(false);
-            connectionStartTimeRef.current = null;
+            setHasSandboxError(false);
             return;
         }
 
-        // Start tracking connection time if not already
-        if (!connectionStartTimeRef.current) {
-            connectionStartTimeRef.current = Date.now();
-        }
+        // Set a single 5-second timer - that's it, ultra simple
+        timeoutIdRef.current = setTimeout(() => {
+            // Final check after 5 seconds
+            const stillConnecting = branches.getBranchDataById(activeBranch.id)?.sandbox?.session?.isConnecting || 
+                                  branches.getBranchDataById(activeBranch.id)?.sandbox?.isIndexing;
+            const stillNoProvider = !branches.getBranchDataById(activeBranch.id)?.sandbox?.session?.provider;
+            
+            if (stillConnecting && stillNoProvider) {
+                setHasSandboxError(true);
+            }
+        }, 5000);
 
-        // Check if we've been connecting for too long (5 seconds - users see 502 quickly)
-        const connectionDuration = Date.now() - connectionStartTimeRef.current;
-        const TIMEOUT_MS = 5000; // 5 seconds - enough to avoid false positives but quick enough for 502s
-
-        if (connectionDuration >= TIMEOUT_MS) {
-            // This is a real timeout/502 - show amber
-            setHasConnectionTimeout(true);
-        } else {
-            // Set up a timeout to check again
-            const remainingTime = TIMEOUT_MS - connectionDuration;
-            const timeoutId = setTimeout(() => {
-                // Re-check if still connecting after timeout
-                const stillConnecting = branches.getBranchDataById(activeBranch.id)?.sandbox?.session?.isConnecting || 
-                                       branches.getBranchDataById(activeBranch.id)?.sandbox?.isIndexing;
-                const stillNoProvider = !branches.getBranchDataById(activeBranch.id)?.sandbox?.session?.provider;
-                
-                if (stillConnecting && stillNoProvider) {
-                    setHasConnectionTimeout(true);
-                }
-            }, remainingTime);
-
-            return () => clearTimeout(timeoutId);
-        }
-    }, [branches, branches.activeBranch]);
-
-    // Simple computed value - just check if we have a confirmed timeout
-    const hasSandboxError = hasConnectionTimeout;
+        // Cleanup on unmount or deps change
+        return () => {
+            if (timeoutIdRef.current) {
+                clearTimeout(timeoutIdRef.current);
+                timeoutIdRef.current = null;
+            }
+        };
+    }, [branches.activeBranch?.id, branches]); // Only re-run when branch ID changes
 
     // Extract restart logic into a reusable function to follow DRY principles
     const handleRestartSandbox = async () => {
@@ -120,8 +119,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
         if (!activeBranch || restarting) return;
 
         setRestarting(true);
-        setHasConnectionTimeout(false); // Clear timeout state on restart
-        connectionStartTimeRef.current = null; // Reset connection tracking
+        setHasSandboxError(false); // Clear error state on restart
         
         try {
             const sandbox = branches.getSandboxById(activeBranch.id);
