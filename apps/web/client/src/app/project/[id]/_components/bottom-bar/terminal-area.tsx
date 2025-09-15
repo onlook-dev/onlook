@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Terminal } from './terminal';
 
 export const TerminalArea = observer(({ children }: { children: React.ReactNode }) => {
@@ -51,6 +51,40 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
 
     const [terminalHidden, setTerminalHidden] = useState(true);
     const [restarting, setRestarting] = useState(false);
+    const [hasSandboxError, setHasSandboxError] = useState(false);
+
+    // Check for sandbox errors (connection failures, timeouts, etc.)
+    useEffect(() => {
+        const checkForErrors = () => {
+            const activeBranch = branches.activeBranch;
+            if (!activeBranch) {
+                setHasSandboxError(false);
+                return;
+            }
+
+            // Check if any frames have connection issues
+            const frames = editorEngine.frames.getAll();
+            const hasConnectionIssue = frames.some(frame => {
+                // Check if frame belongs to active branch
+                if (frame.frame.branchId !== activeBranch.id) return false;
+                
+                // Check for connection timeout or other indicators
+                const branchData = editorEngine.branches.getBranchDataById(frame.frame.branchId);
+                const isConnecting = branchData?.sandbox?.session?.isConnecting || branchData?.sandbox?.isIndexing;
+                
+                // If it's been connecting for too long, likely a 502 or connection issue
+                return isConnecting;
+            });
+
+            setHasSandboxError(hasConnectionIssue);
+        };
+
+        // Check immediately and then periodically
+        checkForErrors();
+        const interval = setInterval(checkForErrors, 2000); // Check every 2 seconds
+
+        return () => clearInterval(interval);
+    }, [branches.activeBranch, editorEngine.frames, editorEngine.branches]);
 
     // Extract restart logic into a reusable function to follow DRY principles
     const handleRestartSandbox = async () => {
@@ -58,6 +92,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
         if (!activeBranch || restarting) return;
 
         setRestarting(true);
+        setHasSandboxError(false); // Clear error state when restarting
         
         try {
             const sandbox = branches.getSandboxById(activeBranch.id);
@@ -84,6 +119,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                         }
                     });
                     setRestarting(false);
+                    setHasSandboxError(false); // Clear any error state after successful restart
                 }, 5000);
             } else {
                 toast.error('Failed to restart sandbox');
@@ -107,8 +143,10 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                                 onClick={handleRestartSandbox}
                                 disabled={!branches.activeBranch || restarting}
                                 className={cn(
-                                    "h-9 w-9 flex items-center justify-center rounded-md border border-transparent",
-                                    branches.activeBranch && !restarting
+                                    "h-9 w-9 flex items-center justify-center rounded-md border border-transparent transition-colors",
+                                    hasSandboxError
+                                        ? "bg-amber-900 text-amber-200 hover:bg-amber-800 hover:text-amber-100"
+                                        : branches.activeBranch && !restarting
                                         ? "hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50"
                                         : "text-foreground-disabled cursor-not-allowed opacity-50"
                                 )}
@@ -116,7 +154,10 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                                 {restarting ? (
                                     <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
                                 ) : (
-                                    <Icons.RestartSandbox className="h-4 w-4" />
+                                    <Icons.RestartSandbox className={cn(
+                                        "h-4 w-4",
+                                        hasSandboxError && "text-amber-200"
+                                    )} />
                                 )}
                             </button>
                         </TooltipTrigger>
@@ -156,8 +197,10 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                                     onClick={handleRestartSandbox}
                                     disabled={!branches.activeBranch || restarting}
                                     className={cn(
-                                        "h-9 w-9 flex items-center justify-center rounded-md border border-transparent",
-                                        branches.activeBranch && !restarting
+                                        "h-9 w-9 flex items-center justify-center rounded-md border border-transparent transition-colors",
+                                        hasSandboxError
+                                            ? "bg-amber-900 text-amber-200 hover:bg-amber-800 hover:text-amber-100"
+                                            : branches.activeBranch && !restarting
                                             ? "hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50"
                                             : "text-foreground-disabled cursor-not-allowed opacity-50"
                                     )}
@@ -165,7 +208,10 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                                     {restarting ? (
                                         <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
                                     ) : (
-                                        <Icons.RestartSandbox className="h-4 w-4" />
+                                        <Icons.RestartSandbox className={cn(
+                                            "h-4 w-4",
+                                            hasSandboxError && "text-amber-200"
+                                        )} />
                                     )}
                                 </button>
                             </TooltipTrigger>
