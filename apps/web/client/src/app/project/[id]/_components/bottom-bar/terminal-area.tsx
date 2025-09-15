@@ -65,10 +65,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
         // Check if sandbox is stuck connecting/indexing (indicates 502 or connection issue)
         const isStuckConnecting = branchData.sandbox.session?.isConnecting || branchData.sandbox.isIndexing;
         
-        // Also check if there's a connection timeout flag if available
-        const hasConnectionTimeout = branchData.sandbox.session?.hasTimedOut || false;
-        
-        return isStuckConnecting || hasConnectionTimeout;
+        return isStuckConnecting;
     })();
 
     // Extract restart logic into a reusable function to follow DRY principles
