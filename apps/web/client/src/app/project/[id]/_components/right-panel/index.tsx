@@ -28,7 +28,10 @@ export const RightPanel = observer(() => {
     const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
     const [inputValue, setInputValue] = useState('');
 
-    const selectedTab = editorEngine.state.rightPanelTab;
+    // Force chat tab when in code mode
+    const selectedTab = editorEngine.state.editorMode === EditorMode.CODE 
+        ? EditorTabValue.CHAT 
+        : editorEngine.state.rightPanelTab;
     const editPanelWidth = EDIT_PANEL_WIDTHS[selectedTab];
 
     return (
@@ -61,13 +64,15 @@ export const RightPanel = observer(() => {
                                     <Icons.ChevronDown className="ml-0.5 h-3 w-3 text-muted-foreground" />
                                 </TabsTrigger>
                             </ChatPanelDropdown>
-                            <TabsTrigger
-                                className="bg-transparent py-2 px-1 text-small hover:text-foreground-hover cursor-pointer"
-                                value={EditorTabValue.DEV}
-                            >
-                                <Icons.Code className="mr-1 h-4 w-4" />
-                                Code
-                            </TabsTrigger>
+                            {editorEngine.state.editorMode !== EditorMode.CODE && (
+                                <TabsTrigger
+                                    className="bg-transparent py-2 px-1 text-small hover:text-foreground-hover cursor-pointer"
+                                    value={EditorTabValue.DEV}
+                                >
+                                    <Icons.Code className="mr-1 h-4 w-4" />
+                                    Code
+                                </TabsTrigger>
+                            )}
                         </div>
                         {selectedTab === EditorTabValue.CHAT && <ChatControls />}
                         {selectedTab === EditorTabValue.DEV && <CodeControls />}

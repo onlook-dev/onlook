@@ -1,7 +1,7 @@
 import { Hotkey } from '@/components/hotkey';
 import { IDE } from '@/components/ide';
 import { useEditorEngine } from '@/components/store/editor';
-import { EditorTabValue } from '@onlook/models/editor';
+import { EditorMode, EditorTabValue } from '@onlook/models/editor';
 import type { DomElement } from '@onlook/models/element';
 import { DEFAULT_IDE } from '@onlook/models/ide';
 import {
@@ -158,6 +158,15 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             menuItems = [WINDOW_ITEMS];
         } else {
             const updatedToolItems = [
+                {
+                    label: 'Open in Code',
+                    action: () => {
+                        editorEngine.state.editorMode = EditorMode.CODE;
+                        viewSource(root);
+                    },
+                    icon: <Icons.Code className="mr-2 h-4 w-4" />,
+                    disabled: !root,
+                },
                 instance !== null && {
                     label: 'View instance code',
                     action: () => viewSource(instance),

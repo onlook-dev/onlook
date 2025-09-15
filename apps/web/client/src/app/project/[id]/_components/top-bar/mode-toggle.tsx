@@ -12,11 +12,14 @@ import { useTranslations } from 'next-intl';
 
 const MODE_TOGGLE_ITEMS: {
     mode: EditorMode;
-    hotkey: Hotkey;
+    hotkey?: Hotkey;
 }[] = [
         {
             mode: EditorMode.DESIGN,
             hotkey: Hotkey.SELECT,
+        },
+        {
+            mode: EditorMode.CODE,
         },
         {
             mode: EditorMode.PREVIEW,
@@ -27,12 +30,14 @@ const MODE_TOGGLE_ITEMS: {
 export const ModeToggle = observer(() => {
     const t = useTranslations();
     const editorEngine = useEditorEngine();
-    const mode: EditorMode.DESIGN | EditorMode.PREVIEW = getNormalizedMode(
+    const mode: EditorMode.DESIGN | EditorMode.CODE | EditorMode.PREVIEW = getNormalizedMode(
         editorEngine.state.editorMode,
     );
 
     function getNormalizedMode(unnormalizedMode: EditorMode) {
-        return unnormalizedMode === EditorMode.PREVIEW ? EditorMode.PREVIEW : EditorMode.DESIGN;
+        if (unnormalizedMode === EditorMode.PREVIEW) return EditorMode.PREVIEW;
+        if (unnormalizedMode === EditorMode.CODE) return EditorMode.CODE;
+        return EditorMode.DESIGN;
     }
 
     return (
@@ -48,33 +53,49 @@ export const ModeToggle = observer(() => {
                 }}
             >
                 {MODE_TOGGLE_ITEMS.map((item) => (
-                    <Tooltip key={item.mode}>
-                        <TooltipTrigger asChild>
-                            <ToggleGroupItem
-                                value={item.mode}
-                                aria-label={item.hotkey.description}
-                                className={cn(
-                                    'transition-all duration-150 ease-in-out px-4 py-2 whitespace-nowrap bg-transparent cursor-pointer text-sm',
-                                    mode === item.mode
-                                        ? 'text-active text-sm hover:text-active hover:bg-transparent'
-                                        : 'text-foreground-secondary text-sm hover:text-foreground-hover hover:bg-transparent',
-                                )}
-                            >
-                                {t(transKeys.editor.modes[item.mode.toLowerCase() as keyof typeof transKeys.editor.modes].name)}
-                            </ToggleGroupItem>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">
-                            <HotkeyLabel hotkey={item.hotkey} />
-                        </TooltipContent>
-                    </Tooltip>
+                    item.hotkey ? (
+                        <Tooltip key={item.mode}>
+                            <TooltipTrigger asChild>
+                                <ToggleGroupItem
+                                    value={item.mode}
+                                    aria-label={item.hotkey.description}
+                                    className={cn(
+                                        'transition-all duration-150 ease-in-out px-4 py-2 whitespace-nowrap bg-transparent cursor-pointer text-sm',
+                                        mode === item.mode
+                                            ? 'text-active text-sm hover:text-active hover:bg-transparent'
+                                            : 'text-foreground-secondary text-sm hover:text-foreground-hover hover:bg-transparent',
+                                    )}
+                                >
+                                    {item.mode === EditorMode.CODE ? 'Code' : t(transKeys.editor.modes[item.mode.toLowerCase() as keyof typeof transKeys.editor.modes].name)}
+                                </ToggleGroupItem>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">
+                                <HotkeyLabel hotkey={item.hotkey} />
+                            </TooltipContent>
+                        </Tooltip>
+                    ) : (
+                        <ToggleGroupItem
+                            key={item.mode}
+                            value={item.mode}
+                            aria-label={`${item.mode} mode`}
+                            className={cn(
+                                'transition-all duration-150 ease-in-out px-4 py-2 whitespace-nowrap bg-transparent cursor-pointer text-sm',
+                                mode === item.mode
+                                    ? 'text-active text-sm hover:text-active hover:bg-transparent'
+                                    : 'text-foreground-secondary text-sm hover:text-foreground-hover hover:bg-transparent',
+                            )}
+                        >
+                            {item.mode === EditorMode.CODE ? 'Code' : t(transKeys.editor.modes[item.mode.toLowerCase() as keyof typeof transKeys.editor.modes].name)}
+                        </ToggleGroupItem>
+                    )
                 ))}
             </ToggleGroup>
             <motion.div
                 className="absolute -top-1 h-0.5 bg-foreground"
                 initial={false}
                 animate={{
-                    width: '50%',
-                    x: mode === EditorMode.DESIGN ? '0%' : '100%',
+                    width: '33.33%',
+                    x: mode === EditorMode.DESIGN ? '0%' : mode === EditorMode.CODE ? '100%' : '200%',
                 }}
                 transition={{
                     type: 'tween',

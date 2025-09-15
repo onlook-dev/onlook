@@ -7,6 +7,9 @@ import { useHotkeys } from 'react-hotkeys-hook';
 
 export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     const editorEngine = useEditorEngine();
+    
+    // Check if we're in Code mode to disable certain hotkeys
+    const isCodeMode = editorEngine.state.editorMode === EditorMode.CODE;
 
     // Zoom
     useHotkeys(
@@ -50,39 +53,61 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys('alt', () => editorEngine.overlay.showMeasurement(), { keydown: true });
     useHotkeys('alt', () => editorEngine.overlay.removeMeasurement(), { keyup: true });
 
-    // Actions
-    useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo(), {
-        preventDefault: true,
+    // Actions - disabled in Code mode
+    useHotkeys(Hotkey.UNDO.command, () => !isCodeMode && editorEngine.action.undo(), {
+        preventDefault: !isCodeMode,
+        enabled: !isCodeMode,
     });
-    useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo(), {
-        preventDefault: true,
+    useHotkeys(Hotkey.REDO.command, () => !isCodeMode && editorEngine.action.redo(), {
+        preventDefault: !isCodeMode,
+        enabled: !isCodeMode,
     });
-    useHotkeys(Hotkey.ENTER.command, () => editorEngine.text.editSelectedElement(), { preventDefault: true });
+    useHotkeys(Hotkey.ENTER.command, () => !isCodeMode && editorEngine.text.editSelectedElement(), { 
+        preventDefault: !isCodeMode,
+        enabled: !isCodeMode 
+    });
     useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => {
-        if (editorEngine.elements.selected.length > 0) {
-            editorEngine.elements.delete();
+        if (!isCodeMode) {
+            if (editorEngine.elements.selected.length > 0) {
+                editorEngine.elements.delete();
+            }
+            else if (editorEngine.frames.selected.length > 0 && editorEngine.frames.canDelete()) {
+                editorEngine.frames.deleteSelected();
+            }
         }
-        else if (editorEngine.frames.selected.length > 0 && editorEngine.frames.canDelete()) {
-            editorEngine.frames.deleteSelected();
-        }
-    }, { preventDefault: true });
+    }, { preventDefault: !isCodeMode, enabled: !isCodeMode });
 
-    // Group
-    useHotkeys(Hotkey.GROUP.command, () => editorEngine.group.groupSelectedElements());
-    useHotkeys(Hotkey.UNGROUP.command, () => editorEngine.group.ungroupSelectedElement());
+    // Group - disabled in Code mode
+    useHotkeys(Hotkey.GROUP.command, () => !isCodeMode && editorEngine.group.groupSelectedElements(), {
+        enabled: !isCodeMode
+    });
+    useHotkeys(Hotkey.UNGROUP.command, () => !isCodeMode && editorEngine.group.ungroupSelectedElement(), {
+        enabled: !isCodeMode
+    });
 
-    // Copy
-    useHotkeys(Hotkey.COPY.command, () => editorEngine.copy.copy(), { preventDefault: true });
-    useHotkeys(Hotkey.PASTE.command, () => editorEngine.copy.paste(), { preventDefault: true });
-    useHotkeys(Hotkey.CUT.command, () => editorEngine.copy.cut(), { preventDefault: true });
+    // Copy - disabled in Code mode
+    useHotkeys(Hotkey.COPY.command, () => !isCodeMode && editorEngine.copy.copy(), { 
+        preventDefault: !isCodeMode,
+        enabled: !isCodeMode 
+    });
+    useHotkeys(Hotkey.PASTE.command, () => !isCodeMode && editorEngine.copy.paste(), { 
+        preventDefault: !isCodeMode,
+        enabled: !isCodeMode 
+    });
+    useHotkeys(Hotkey.CUT.command, () => !isCodeMode && editorEngine.copy.cut(), { 
+        preventDefault: !isCodeMode,
+        enabled: !isCodeMode 
+    });
     useHotkeys(Hotkey.DUPLICATE.command, () => {
-        if (editorEngine.elements.selected.length > 0) {
-            editorEngine.copy.duplicate();
+        if (!isCodeMode) {
+            if (editorEngine.elements.selected.length > 0) {
+                editorEngine.copy.duplicate();
+            }
+            else if (editorEngine.frames.selected.length > 0 && editorEngine.frames.canDuplicate()) {
+                editorEngine.frames.duplicateSelected();
+            }
         }
-        else if (editorEngine.frames.selected.length > 0 && editorEngine.frames.canDuplicate()) {
-            editorEngine.frames.duplicateSelected();
-        }
-    }, { preventDefault: true });
+    }, { preventDefault: !isCodeMode, enabled: !isCodeMode });
 
     // AI
     useHotkeys(
