@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
@@ -61,7 +62,14 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                                     if (activeBranch) {
                                         const sandbox = branches.getSandboxById(activeBranch.id);
                                         if (sandbox?.session) {
-                                            await sandbox.session.restartDevServer();
+                                            const success = await sandbox.session.restartDevServer();
+                                            if (success) {
+                                                toast.success('Sandbox restarted successfully', {
+                                                    icon: <Icons.Cube className="h-4 w-4" />,
+                                                });
+                                            } else {
+                                                toast.error('Failed to restart sandbox');
+                                            }
                                         }
                                     }
                                 }}
@@ -73,7 +81,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                                         : "text-foreground-disabled cursor-not-allowed opacity-50"
                                 )}
                             >
-                                <Icons.Rotate className="h-4 w-4" />
+                                <Icons.Reload className="h-4 w-4" />
                             </button>
                         </TooltipTrigger>
                         <TooltipContent sideOffset={5} hideArrow>Restart Sandbox</TooltipContent>
@@ -126,7 +134,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                                             : "text-foreground-disabled cursor-not-allowed opacity-50"
                                     )}
                                 >
-                                    <Icons.Rotate className="h-4 w-4" />
+                                    <Icons.Reload className="h-4 w-4" />
                                 </button>
                             </TooltipTrigger>
                             <TooltipContent sideOffset={5} hideArrow>Restart Sandbox</TooltipContent>
