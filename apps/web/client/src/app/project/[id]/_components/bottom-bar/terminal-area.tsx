@@ -49,6 +49,42 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
 
     const [terminalHidden, setTerminalHidden] = useState(true);
 
+    // Extract restart logic into a reusable function to follow DRY principles
+    const handleRestartSandbox = async () => {
+        const activeBranch = branches.activeBranch;
+        if (!activeBranch) return;
+
+        try {
+            const sandbox = branches.getSandboxById(activeBranch.id);
+            if (!sandbox?.session) {
+                toast.error('Sandbox session not available');
+                return;
+            }
+
+            const success = await sandbox.session.restartDevServer();
+            if (success) {
+                // Refresh all webviews for the active branch
+                const frames = editorEngine.frames.getAll();
+                frames.forEach(frame => {
+                    try {
+                        editorEngine.frames.reloadView(frame.frame.id);
+                    } catch (frameError) {
+                        console.error('Failed to reload frame:', frame.frame.id, frameError);
+                    }
+                });
+                
+                toast.success('Sandbox restarted successfully', {
+                    icon: <Icons.Cube className="h-4 w-4" />,
+                });
+            } else {
+                toast.error('Failed to restart sandbox');
+            }
+        } catch (error) {
+            console.error('Error restarting sandbox:', error);
+            toast.error('An error occurred while restarting the sandbox');
+        }
+    };
+
     return (
         <>
             {terminalHidden ? (
@@ -57,22 +93,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <button
-                                onClick={async () => {
-                                    const activeBranch = branches.activeBranch;
-                                    if (activeBranch) {
-                                        const sandbox = branches.getSandboxById(activeBranch.id);
-                                        if (sandbox?.session) {
-                                            const success = await sandbox.session.restartDevServer();
-                                            if (success) {
-                                                toast.success('Sandbox restarted successfully', {
-                                                    icon: <Icons.Cube className="h-4 w-4" />,
-                                                });
-                                            } else {
-                                                toast.error('Failed to restart sandbox');
-                                            }
-                                        }
-                                    }
-                                }}
+                                onClick={handleRestartSandbox}
                                 disabled={!branches.activeBranch}
                                 className={cn(
                                     "h-9 w-9 flex items-center justify-center rounded-md border border-transparent",
@@ -81,7 +102,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                                         : "text-foreground-disabled cursor-not-allowed opacity-50"
                                 )}
                             >
-                                <Icons.Reload className="h-4 w-4" />
+                                <Icons.RestartSandbox className="h-4 w-4" />
                             </button>
                         </TooltipTrigger>
                         <TooltipContent sideOffset={5} hideArrow>Restart Sandbox</TooltipContent>
@@ -117,15 +138,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <button
-                                    onClick={async () => {
-                                        const activeBranch = branches.activeBranch;
-                                        if (activeBranch) {
-                                            const sandbox = branches.getSandboxById(activeBranch.id);
-                                            if (sandbox?.session) {
-                                                await sandbox.session.restartDevServer();
-                                            }
-                                        }
-                                    }}
+                                    onClick={handleRestartSandbox}
                                     disabled={!branches.activeBranch}
                                     className={cn(
                                         "h-9 w-9 flex items-center justify-center rounded-md border border-transparent",
@@ -134,7 +147,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                                             : "text-foreground-disabled cursor-not-allowed opacity-50"
                                     )}
                                 >
-                                    <Icons.Reload className="h-4 w-4" />
+                                    <Icons.RestartSandbox className="h-4 w-4" />
                                 </button>
                             </TooltipTrigger>
                             <TooltipContent sideOffset={5} hideArrow>Restart Sandbox</TooltipContent>
