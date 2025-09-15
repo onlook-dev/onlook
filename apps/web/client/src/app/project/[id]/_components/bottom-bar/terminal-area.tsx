@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Terminal } from './terminal';
 
 export const TerminalArea = observer(({ children }: { children: React.ReactNode }) => {
@@ -69,9 +69,8 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
         }
     }, []);
 
-    // Efficiently detect sandbox errors using MobX reactivity (no polling needed)
-    // This will only recompute when the observed values actually change
-    const hasSandboxError = (() => {
+    // Efficiently detect sandbox errors - properly memoized to only recompute when dependencies change
+    const hasSandboxError = useMemo(() => {
         // Don't show errors during the startup grace period
         if (!hasPassedGracePeriod) return false;
         
@@ -86,7 +85,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
         const isStuckConnecting = branchData.sandbox.session?.isConnecting || branchData.sandbox.isIndexing;
         
         return isStuckConnecting;
-    })();
+    }, [hasPassedGracePeriod, branches]);
 
     // Extract restart logic into a reusable function to follow DRY principles
     const handleRestartSandbox = async () => {
