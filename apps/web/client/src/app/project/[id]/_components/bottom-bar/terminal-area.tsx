@@ -51,46 +51,68 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
 
     const [terminalHidden, setTerminalHidden] = useState(true);
     const [restarting, setRestarting] = useState(false);
-    const startupTimeRef = useRef<number>(Date.now());
-    const [hasPassedGracePeriod, setHasPassedGracePeriod] = useState(false);
+    const [hasConnectionTimeout, setHasConnectionTimeout] = useState(false);
+    const connectionStartTimeRef = useRef<number | null>(null);
 
-    // Add grace period on startup (15 seconds) before showing amber warnings
+    // Track connection state and detect timeouts (actual 502 errors)
     useEffect(() => {
-        const gracePeriodMs = 15000; // 15 seconds grace period on startup
-        const timeElapsed = Date.now() - startupTimeRef.current;
-        
-        if (timeElapsed < gracePeriodMs) {
-            const timeout = setTimeout(() => {
-                setHasPassedGracePeriod(true);
-            }, gracePeriodMs - timeElapsed);
-            return () => clearTimeout(timeout);
-        } else {
-            setHasPassedGracePeriod(true);
-        }
-    }, []);
-
-    // Efficiently detect sandbox errors - properly memoized to only recompute when dependencies change
-    const hasSandboxError = useMemo(() => {
-        // Don't show errors during the startup grace period
-        if (!hasPassedGracePeriod) return false;
-        
         const activeBranch = branches.activeBranch;
-        if (!activeBranch) return false;
+        if (!activeBranch) {
+            setHasConnectionTimeout(false);
+            connectionStartTimeRef.current = null;
+            return;
+        }
 
-        // Only check the active branch's sandbox state (much more efficient)
         const branchData = branches.getBranchDataById(activeBranch.id);
-        if (!branchData?.sandbox?.session) return false;
+        const isConnecting = branchData?.sandbox?.session?.isConnecting || branchData?.sandbox?.isIndexing;
+        const hasProvider = branchData?.sandbox?.session?.provider;
 
-        const session = branchData.sandbox.session;
-        
-        // If we have a provider, the connection is successful - no error
-        if (session.provider) return false;
-        
-        // Only show error if we're stuck connecting/indexing AND don't have a provider
-        const isStuckConnecting = session.isConnecting || branchData.sandbox.isIndexing;
-        
-        return isStuckConnecting;
-    }, [hasPassedGracePeriod, branches]);
+        // If we have a provider, connection is successful - clear any timeout
+        if (hasProvider) {
+            setHasConnectionTimeout(false);
+            connectionStartTimeRef.current = null;
+            return;
+        }
+
+        // If not connecting, clear the timeout tracking
+        if (!isConnecting) {
+            setHasConnectionTimeout(false);
+            connectionStartTimeRef.current = null;
+            return;
+        }
+
+        // Start tracking connection time if not already
+        if (!connectionStartTimeRef.current) {
+            connectionStartTimeRef.current = Date.now();
+        }
+
+        // Check if we've been connecting for too long (30 seconds like frame component)
+        const connectionDuration = Date.now() - connectionStartTimeRef.current;
+        const TIMEOUT_MS = 30000; // 30 seconds to match frame timeout
+
+        if (connectionDuration >= TIMEOUT_MS) {
+            // This is a real timeout/502 - show amber
+            setHasConnectionTimeout(true);
+        } else {
+            // Set up a timeout to check again
+            const remainingTime = TIMEOUT_MS - connectionDuration;
+            const timeoutId = setTimeout(() => {
+                // Re-check if still connecting after timeout
+                const stillConnecting = branches.getBranchDataById(activeBranch.id)?.sandbox?.session?.isConnecting || 
+                                       branches.getBranchDataById(activeBranch.id)?.sandbox?.isIndexing;
+                const stillNoProvider = !branches.getBranchDataById(activeBranch.id)?.sandbox?.session?.provider;
+                
+                if (stillConnecting && stillNoProvider) {
+                    setHasConnectionTimeout(true);
+                }
+            }, remainingTime);
+
+            return () => clearTimeout(timeoutId);
+        }
+    }, [branches, branches.activeBranch]);
+
+    // Simple computed value - just check if we have a confirmed timeout
+    const hasSandboxError = hasConnectionTimeout;
 
     // Extract restart logic into a reusable function to follow DRY principles
     const handleRestartSandbox = async () => {
@@ -98,6 +120,8 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
         if (!activeBranch || restarting) return;
 
         setRestarting(true);
+        setHasConnectionTimeout(false); // Clear timeout state on restart
+        connectionStartTimeRef.current = null; // Reset connection tracking
         
         try {
             const sandbox = branches.getSandboxById(activeBranch.id);
