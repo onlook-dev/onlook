@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Terminal } from './terminal';
 
 export const TerminalArea = observer(({ children }: { children: React.ReactNode }) => {
@@ -51,10 +51,30 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
 
     const [terminalHidden, setTerminalHidden] = useState(true);
     const [restarting, setRestarting] = useState(false);
+    const startupTimeRef = useRef<number>(Date.now());
+    const [hasPassedGracePeriod, setHasPassedGracePeriod] = useState(false);
+
+    // Add grace period on startup (15 seconds) before showing amber warnings
+    useEffect(() => {
+        const gracePeriodMs = 15000; // 15 seconds grace period on startup
+        const timeElapsed = Date.now() - startupTimeRef.current;
+        
+        if (timeElapsed < gracePeriodMs) {
+            const timeout = setTimeout(() => {
+                setHasPassedGracePeriod(true);
+            }, gracePeriodMs - timeElapsed);
+            return () => clearTimeout(timeout);
+        } else {
+            setHasPassedGracePeriod(true);
+        }
+    }, []);
 
     // Efficiently detect sandbox errors using MobX reactivity (no polling needed)
     // This will only recompute when the observed values actually change
     const hasSandboxError = (() => {
+        // Don't show errors during the startup grace period
+        if (!hasPassedGracePeriod) return false;
+        
         const activeBranch = branches.activeBranch;
         if (!activeBranch) return false;
 
@@ -126,7 +146,9 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                                     "h-9 w-9 flex items-center justify-center rounded-md border border-transparent transition-colors",
                                     hasSandboxError
                                         ? "bg-amber-900 text-amber-200 hover:bg-amber-800 hover:text-amber-100"
-                                        : branches.activeBranch && !restarting
+                                        : restarting
+                                        ? "text-foreground-tertiary bg-accent/30" // Keep visible during restart
+                                        : branches.activeBranch
                                         ? "hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50"
                                         : "text-foreground-disabled cursor-not-allowed opacity-50"
                                 )}
@@ -180,7 +202,9 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                                         "h-9 w-9 flex items-center justify-center rounded-md border border-transparent transition-colors",
                                         hasSandboxError
                                             ? "bg-amber-900 text-amber-200 hover:bg-amber-800 hover:text-amber-100"
-                                            : branches.activeBranch && !restarting
+                                            : restarting
+                                            ? "text-foreground-tertiary bg-accent/30" // Keep visible during restart
+                                            : branches.activeBranch
                                             ? "hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50"
                                             : "text-foreground-disabled cursor-not-allowed opacity-50"
                                     )}
