@@ -1,5 +1,5 @@
 import { DefaultSettings } from '@onlook/constants';
-import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models';
+import { LeftPanelTabValue, type ActionTarget, type ImageContentData, type InsertImageAction } from '@onlook/models';
 import { convertToBase64, generateNewFolderPath, getBaseName, getMimeType, isImageFile, stripImageFolderPrefix } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -18,10 +18,18 @@ export class ImageManager {
 
     init() {
         this.indexingReactionDisposer = reaction(
-            () => this.editorEngine.activeSandbox.isIndexing,
-            async (isIndexingFiles) => {
-                if (!isIndexingFiles) {
-                    await this.scanImages();
+            () => {
+                return {
+                    isIndexing: this.editorEngine.activeSandbox.isIndexing,
+                    isIndexed: this.editorEngine.activeSandbox.isIndexed,
+                };
+            },
+            (sandboxStatus) => {
+                if (this.editorEngine.state.leftPanelTab !== LeftPanelTabValue.IMAGES) {
+                    return;
+                }
+                if (sandboxStatus.isIndexed && !sandboxStatus.isIndexing) {
+                    this.scanImages();
                 }
             },
         );
