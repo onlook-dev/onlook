@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Terminal } from './terminal';
 
 export const TerminalArea = observer(({ children }: { children: React.ReactNode }) => {
@@ -51,40 +51,25 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
 
     const [terminalHidden, setTerminalHidden] = useState(true);
     const [restarting, setRestarting] = useState(false);
-    const [hasSandboxError, setHasSandboxError] = useState(false);
 
-    // Check for sandbox errors (connection failures, timeouts, etc.)
-    useEffect(() => {
-        const checkForErrors = () => {
-            const activeBranch = branches.activeBranch;
-            if (!activeBranch) {
-                setHasSandboxError(false);
-                return;
-            }
+    // Efficiently detect sandbox errors using MobX reactivity (no polling needed)
+    // This will only recompute when the observed values actually change
+    const hasSandboxError = (() => {
+        const activeBranch = branches.activeBranch;
+        if (!activeBranch) return false;
 
-            // Check if any frames have connection issues
-            const frames = editorEngine.frames.getAll();
-            const hasConnectionIssue = frames.some(frame => {
-                // Check if frame belongs to active branch
-                if (frame.frame.branchId !== activeBranch.id) return false;
-                
-                // Check for connection timeout or other indicators
-                const branchData = editorEngine.branches.getBranchDataById(frame.frame.branchId);
-                const isConnecting = branchData?.sandbox?.session?.isConnecting || branchData?.sandbox?.isIndexing;
-                
-                // If it's been connecting for too long, likely a 502 or connection issue
-                return isConnecting;
-            });
+        // Only check the active branch's sandbox state (much more efficient)
+        const branchData = branches.getBranchDataById(activeBranch.id);
+        if (!branchData?.sandbox) return false;
 
-            setHasSandboxError(hasConnectionIssue);
-        };
-
-        // Check immediately and then periodically
-        checkForErrors();
-        const interval = setInterval(checkForErrors, 2000); // Check every 2 seconds
-
-        return () => clearInterval(interval);
-    }, [branches.activeBranch, editorEngine.frames, editorEngine.branches]);
+        // Check if sandbox is stuck connecting/indexing (indicates 502 or connection issue)
+        const isStuckConnecting = branchData.sandbox.session?.isConnecting || branchData.sandbox.isIndexing;
+        
+        // Also check if there's a connection timeout flag if available
+        const hasConnectionTimeout = branchData.sandbox.session?.hasTimedOut || false;
+        
+        return isStuckConnecting || hasConnectionTimeout;
+    })();
 
     // Extract restart logic into a reusable function to follow DRY principles
     const handleRestartSandbox = async () => {
@@ -92,7 +77,6 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
         if (!activeBranch || restarting) return;
 
         setRestarting(true);
-        setHasSandboxError(false); // Clear error state when restarting
         
         try {
             const sandbox = branches.getSandboxById(activeBranch.id);
@@ -119,7 +103,6 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                         }
                     });
                     setRestarting(false);
-                    setHasSandboxError(false); // Clear any error state after successful restart
                 }, 5000);
             } else {
                 toast.error('Failed to restart sandbox');
