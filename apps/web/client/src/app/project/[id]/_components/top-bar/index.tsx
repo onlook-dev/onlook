@@ -16,6 +16,7 @@ import { useTranslations } from 'next-intl';
 import { useChatContext } from '../../_hooks/use-chat';
 import { Members } from '../members';
 import { BranchDisplay } from './branch';
+import { GitHubExportButton } from './github-export';
 import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
 import { PublishButton } from './publish';
@@ -100,6 +101,7 @@ export const TopBar = observer(() => {
                         {t(transKeys.editor.toolbar.versionHistory)}
                     </TooltipContent>
                 </Tooltip>
+                <GitHubExportButton />
                 <PublishButton />
             </div>
         </div>
