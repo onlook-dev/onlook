@@ -56,6 +56,31 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <button
+                                onClick={async () => {
+                                    const activeBranch = branches.activeBranch;
+                                    if (activeBranch) {
+                                        const sandbox = branches.getSandboxById(activeBranch.id);
+                                        if (sandbox?.session) {
+                                            await sandbox.session.restartDevServer();
+                                        }
+                                    }
+                                }}
+                                disabled={!branches.activeBranch}
+                                className={cn(
+                                    "h-9 w-9 flex items-center justify-center rounded-md border border-transparent",
+                                    branches.activeBranch 
+                                        ? "hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50"
+                                        : "text-foreground-disabled cursor-not-allowed opacity-50"
+                                )}
+                            >
+                                <Icons.Rotate className="h-4 w-4" />
+                            </button>
+                        </TooltipTrigger>
+                        <TooltipContent sideOffset={5} hideArrow>Restart Sandbox</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <button
                                 onClick={() => setTerminalHidden(!terminalHidden)}
                                 className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50 rounded-md border border-transparent"
                             >
@@ -81,6 +106,31 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                     </motion.span>
                     <div className="flex items-center gap-1">
                         <motion.div layout>{/* <RunButton /> */}</motion.div>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    onClick={async () => {
+                                        const activeBranch = branches.activeBranch;
+                                        if (activeBranch) {
+                                            const sandbox = branches.getSandboxById(activeBranch.id);
+                                            if (sandbox?.session) {
+                                                await sandbox.session.restartDevServer();
+                                            }
+                                        }
+                                    }}
+                                    disabled={!branches.activeBranch}
+                                    className={cn(
+                                        "h-9 w-9 flex items-center justify-center rounded-md border border-transparent",
+                                        branches.activeBranch 
+                                            ? "hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50"
+                                            : "text-foreground-disabled cursor-not-allowed opacity-50"
+                                    )}
+                                >
+                                    <Icons.Rotate className="h-4 w-4" />
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent sideOffset={5} hideArrow>Restart Sandbox</TooltipContent>
+                        </Tooltip>
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <button
