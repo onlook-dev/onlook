@@ -55,6 +55,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
     // Ultra-lightweight error detection using a single timer
     const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
     const [hasSandboxError, setHasSandboxError] = useState(false);
+    const mountTimeRef = useRef<number>(Date.now());
 
     // Single effect that only sets/clears one timer - extremely efficient
     useEffect(() => {
@@ -85,24 +86,22 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
             return;
         }
         
-        // Only set timer if actually connecting (not just idle)
-        const isConnecting = sandbox.session.isConnecting || sandbox.isIndexing;
-        if (!isConnecting) {
-            setHasSandboxError(false);
-            return;
+        // Check if enough time has passed since mount (avoid false positives on initial load)
+        const timeSinceMount = Date.now() - mountTimeRef.current;
+        if (timeSinceMount < 5000) {
+            // Set timer to check after 5 seconds from mount
+            const delay = 5000 - timeSinceMount;
+            timeoutIdRef.current = setTimeout(() => {
+                // Check if still no provider (indicates 502 or failure)
+                const stillNoProvider = !branches.getBranchDataById(activeBranch.id)?.sandbox?.session?.provider;
+                if (stillNoProvider) {
+                    setHasSandboxError(true);
+                }
+            }, delay);
+        } else {
+            // We're past the grace period - if no provider, it's an error
+            setHasSandboxError(true);
         }
-
-        // Set a single 5-second timer - that's it, ultra simple
-        timeoutIdRef.current = setTimeout(() => {
-            // Final check after 5 seconds
-            const stillConnecting = branches.getBranchDataById(activeBranch.id)?.sandbox?.session?.isConnecting || 
-                                  branches.getBranchDataById(activeBranch.id)?.sandbox?.isIndexing;
-            const stillNoProvider = !branches.getBranchDataById(activeBranch.id)?.sandbox?.session?.provider;
-            
-            if (stillConnecting && stillNoProvider) {
-                setHasSandboxError(true);
-            }
-        }, 5000);
 
         // Cleanup on unmount or deps change
         return () => {
