@@ -34,7 +34,6 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
         });
 
     const createBranchMutation = api.github.createBranch.useMutation();
-    const syncChangesMutation = api.github.syncProjectChanges.useMutation();
 
     const handleCreateBranch = async () => {
         if (!newBranchName.trim()) return;
@@ -56,20 +55,7 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
         }
     };
 
-    const handleSyncChanges = async () => {
-        try {
-            // TODO: Get projectId from context instead of repository id
-            await syncChangesMutation.mutateAsync({
-                projectId: repositoryData.id.toString(),
-            });
-        } catch (error) {
-            // TODO: Add user-facing error handling
-            console.error('Failed to sync changes:', error);
-        }
-    };
-
     const isCreatingBranch = createBranchMutation.isPending;
-    const isSyncing = syncChangesMutation.isPending;
 
     return (
         <div className="flex flex-col gap-4">
@@ -113,85 +99,60 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
             <Separator />
 
             <div className="space-y-3">
-                <h5 className="text-xs font-semibold text-foreground-primary">Quick Actions</h5>
-                
-                <Button
-                    onClick={handleSyncChanges}
-                    disabled={isSyncing}
-                    className="w-full justify-start"
-                    size="sm"
-                    variant="secondary"
-                >
-                    {isSyncing ? (
-                        <>
-                            <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />
-                            Syncing Changes...
-                        </>
-                    ) : (
-                        <>
-                            <Icons.Upload className="mr-2 h-4 w-4" />
-                            Sync Current Changes
-                        </>
-                    )}
-                </Button>
-
-                <Button
-                    onClick={() => setShowCreateBranch(!showCreateBranch)}
-                    className="w-full justify-start"
-                    size="sm"
-                    variant="secondary"
-                >
-                    <Icons.Plus className="mr-2 h-4 w-4" />
-                    Create New Branch
-                </Button>
-            </div>
-
-            {showCreateBranch && (
-                <div className="space-y-3 p-3 bg-background-secondary rounded-md">
-                    <div>
-                        <Label htmlFor="branch-name" className="text-xs font-medium">
-                            Branch Name
-                        </Label>
-                        <Input
-                            id="branch-name"
-                            value={newBranchName}
-                            onChange={(e) => setNewBranchName(e.target.value)}
-                            placeholder="feature-awesome-update"
-                            className="mt-1"
-                            disabled={isCreatingBranch}
-                        />
-                    </div>
-                    <div className="flex gap-2">
-                        <Button
-                            onClick={handleCreateBranch}
-                            disabled={!newBranchName.trim() || isCreatingBranch}
-                            size="sm"
-                            className="flex-1"
-                        >
-                            {isCreatingBranch ? (
-                                <>
-                                    <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />
-                                    Creating...
-                                </>
-                            ) : (
-                                'Create Branch'
-                            )}
-                        </Button>
-                        <Button
-                            onClick={() => setShowCreateBranch(false)}
-                            size="sm"
-                            variant="ghost"
-                        >
-                            Cancel
-                        </Button>
-                    </div>
+                <div className="flex items-center justify-between">
+                    <h5 className="text-xs font-semibold text-foreground-primary">Branches</h5>
+                    <Button
+                        onClick={() => setShowCreateBranch(!showCreateBranch)}
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 px-2 text-xs"
+                    >
+                        <Icons.Plus className="mr-1 h-3 w-3" />
+                        New
+                    </Button>
                 </div>
-            )}
 
-            <Separator />
-
-            <div className="space-y-2">
-                <h5 className="text-xs font-semibold text-foreground-primary">Branches</h5>
+                {showCreateBranch && (
+                    <div className="space-y-3 p-3 bg-background-secondary rounded-md">
+                        <div>
+                            <Label htmlFor="branch-name" className="text-xs font-medium">
+                                Branch Name
+                            </Label>
+                            <Input
+                                id="branch-name"
+                                value={newBranchName}
+                                onChange={(e) => setNewBranchName(e.target.value)}
+                                placeholder="feature-awesome-update"
+                                className="mt-1"
+                                disabled={isCreatingBranch}
+                            />
+                        </div>
+                        <div className="flex gap-2">
+                            <Button
+                                onClick={handleCreateBranch}
+                                disabled={!newBranchName.trim() || isCreatingBranch}
+                                size="sm"
+                                className="flex-1"
+                            >
+                                {isCreatingBranch ? (
+                                    <>
+                                        <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />
+                                        Creating...
+                                    </>
+                                ) : (
+                                    'Create Branch'
+                                )}
+                            </Button>
+                            <Button
+                                onClick={() => setShowCreateBranch(false)}
+                                size="sm"
+                                variant="ghost"
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                    </div>
+                )}
                 
                 {loadingBranches ? (
                     <div className="flex items-center justify-center py-4">

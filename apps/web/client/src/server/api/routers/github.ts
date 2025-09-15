@@ -63,14 +63,10 @@ export const githubRouter = createTRPCRouter({
             try {
                 const { octokit, installationId } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
 
-                console.log(`Checking installation ${installationId} for organizations`);
-
                 // Get installation details to determine account type
                 const installation = await octokit.rest.apps.getInstallation({
                     installation_id: parseInt(installationId, 10),
                 });
-
-                console.log(`Installation account:`, installation.data.account);
 
                 // Check if this is an organization installation by checking if login exists (organizations have login, users have login too)
                 // We need to differentiate by looking at the installation target_type or by checking available permissions
@@ -79,21 +75,17 @@ export const githubRouter = createTRPCRouter({
                 // If installed on an organization, return that organization
                 // GitHub App installations on orgs vs users can be distinguished by installation.data.target_type
                 if (installation.data.target_type === 'Organization' && account) {
-                    const orgData = [{
+                    return [{
                         id: account.id,
                         login: 'login' in account ? account.login : (account as any).name || '',
                         avatar_url: account.avatar_url,
                         description: undefined, // Organizations don't have descriptions in this context
                     }];
-                    console.log(`Returning organization data:`, orgData);
-                    return orgData;
                 }
 
                 // If installed on a user account, return empty (no organizations)
-                console.log('Installation is on user account, no organizations');
                 return [];
             } catch (error) {
-                console.error('Error fetching organizations:', error);
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'GitHub App installation is invalid or has been revoked',
@@ -218,7 +210,6 @@ export const githubRouter = createTRPCRouter({
                     .set({ githubInstallationId: input.installationId })
                     .where(eq(users.id, ctx.user.id));
 
-                console.log(`Updated installation ID for user: ${ctx.user.id}`);
 
                 return {
                     success: true,
@@ -259,14 +250,12 @@ export const githubRouter = createTRPCRouter({
                 let repoData;
                 if (input.owner) {
                     // Create in organization
-                    console.log(`Creating repository in organization: ${input.owner}`);
                     repoData = await octokit.rest.repos.createInOrg({
                         org: input.owner,
                         ...createParams,
                     });
                 } else {
                     // Create in user account
-                    console.log('Creating repository in user account');
                     repoData = await octokit.rest.repos.createForAuthenticatedUser(createParams);
                 }
 
@@ -285,7 +274,6 @@ export const githubRouter = createTRPCRouter({
                     },
                 };
             } catch (error: any) {
-                console.error('Repository creation failed:', error);
                 
                 if (error.status === 422) {
                     throw new TRPCError({
@@ -645,7 +633,6 @@ export const githubRouter = createTRPCRouter({
                     })
                     .where(eq(branches.id, defaultBranch.id));
 
-                console.log(`Connected project ${input.projectId} to GitHub repo ${input.repositoryOwner}/${input.repositoryName}`);
 
                 return {
                     success: true,
@@ -660,10 +647,9 @@ export const githubRouter = createTRPCRouter({
                     },
                 };
             } catch (error: any) {
-                console.error('Failed to connect project to repository:', error);
                 throw new TRPCError({
                     code: 'INTERNAL_SERVER_ERROR',
-                    message: `Failed to connect project to repository: ${error.message}`,
+                    message: 'Connection failed',
                     cause: error,
                 });
             }
@@ -723,18 +709,8 @@ export const githubRouter = createTRPCRouter({
             try {
                 const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
 
-                // Generate current project files if not provided
-                let filesToSync = input.files;
-                if (!filesToSync || filesToSync.length === 0) {
-                    // Import the ProjectExporter dynamically to avoid circular dependencies
-                    const { ProjectExporter } = await import('../../../app/project/[id]/_components/top-bar/github-export/utils/project-exporter');
-                    filesToSync = await ProjectExporter.exportProjectFiles(input.projectId, {
-                        projectName: repo,
-                        description: 'Synced changes from Onlook',
-                        includeAssets: true,
-                        includeMetadata: true,
-                    });
-                }
+                // Use provided files or create sync marker
+                const filesToSync = input.files || [];
 
                 // Use createOrUpdateFiles to sync changes
                 const result = await octokit.rest.repos.createOrUpdateFileContents({
@@ -768,10 +744,9 @@ export const githubRouter = createTRPCRouter({
                     filesCount: filesToSync.length,
                 };
             } catch (error: any) {
-                console.error('Failed to sync project changes:', error);
                 throw new TRPCError({
                     code: 'INTERNAL_SERVER_ERROR',
-                    message: `Failed to sync changes: ${error.message}`,
+                    message: 'Sync failed',
                     cause: error,
                 });
             }

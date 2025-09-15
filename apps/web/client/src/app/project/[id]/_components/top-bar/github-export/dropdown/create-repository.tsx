@@ -93,20 +93,22 @@ export const CreateRepositoryStep = observer(({
     };
 
     const getProjectFiles = async () => {
-        const { ProjectExporter } = await import('../utils/project-exporter');
-        
-        return await ProjectExporter.exportProjectFiles(editorEngine.projectId, {
-            projectName: repoName,
-            description: description || undefined,
-            includeAssets: true,
-            includeMetadata: true,
-        });
+        // Simple sync marker file
+        return [{
+            path: 'onlook-sync.json',
+            content: JSON.stringify({
+                projectId: editorEngine.projectId,
+                projectName: repoName,
+                description: description || 'Exported from Onlook',
+                exportedAt: new Date().toISOString(),
+            }, null, 2),
+        }];
     };
 
     if (exportStep === 'files') {
         return (
             <div className="flex flex-col items-center gap-4 py-8">
-                <Icons.LoadingSpinner className="h-8 w-8 animate-spin text-blue-500" />
+                <Icons.LoadingSpinner className="h-8 w-8 animate-spin text-foreground-secondary" />
                 <div className="text-center">
                     <p className="text-sm font-medium text-foreground-primary mb-1">
                         Exporting project files...
@@ -254,17 +256,6 @@ export const CreateRepositoryStep = observer(({
                     )}
                 </Button>
 
-                <div className="text-xs text-foreground-secondary">
-                    <p className="flex items-center gap-1 mb-1">
-                        <Icons.InfoCircled className="h-3 w-3" />
-                        This will create a new repository and export your project files
-                    </p>
-                    <ul className="ml-4 space-y-0.5">
-                        <li>• Project files will be committed to the repository</li>
-                        <li>• You can sync future changes automatically</li>
-                        <li>• Repository will be {isPrivate ? 'private' : 'public'}</li>
-                    </ul>
-                </div>
             </div>
         </div>
     );
