@@ -79,10 +79,15 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
 
         // Only check the active branch's sandbox state (much more efficient)
         const branchData = branches.getBranchDataById(activeBranch.id);
-        if (!branchData?.sandbox) return false;
+        if (!branchData?.sandbox?.session) return false;
 
-        // Check if sandbox is stuck connecting/indexing (indicates 502 or connection issue)
-        const isStuckConnecting = branchData.sandbox.session?.isConnecting || branchData.sandbox.isIndexing;
+        const session = branchData.sandbox.session;
+        
+        // If we have a provider, the connection is successful - no error
+        if (session.provider) return false;
+        
+        // Only show error if we're stuck connecting/indexing AND don't have a provider
+        const isStuckConnecting = session.isConnecting || branchData.sandbox.isIndexing;
         
         return isStuckConnecting;
     }, [hasPassedGracePeriod, branches]);
