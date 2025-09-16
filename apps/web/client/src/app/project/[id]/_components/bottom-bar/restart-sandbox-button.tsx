@@ -6,27 +6,27 @@ import { toast } from '@onlook/ui/sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-export const RestartSandboxButton = observer(({ className }: { className?: string }) => {
+export const RestartSandboxButton = observer(({
+    className,
+}: {
+    className?: string;
+}) => {
     const editorEngine = useEditorEngine();
     const branches = editorEngine.branches;
     const [restarting, setRestarting] = useState(false);
     const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
     const [hasSandboxError, setHasSandboxError] = useState(false);
     const mountTimeRef = useRef<number>(Date.now());
+    const checkInterval = 10000;
 
-    useEffect(() => {
-        // Clear any existing timer first
-        if (timeoutIdRef.current) {
-            clearTimeout(timeoutIdRef.current);
-            timeoutIdRef.current = null;
-        }
-
+    // Extract error checking logic with proper dependencies
+    const checkForError = useCallback(() => {
         const activeBranch = branches.activeBranch;
         if (!activeBranch) {
             setHasSandboxError(false);
-            return;
+            return false; // Stop checking
         }
 
         const branchData = branches.getBranchDataById(activeBranch.id);
@@ -34,26 +34,42 @@ export const RestartSandboxButton = observer(({ className }: { className?: strin
 
         if (!sandbox?.session) {
             setHasSandboxError(false);
-            return;
+            return false; // Stop checking if no session
         }
 
         if (sandbox.session.provider) {
             setHasSandboxError(false);
-            return;
+        } else {
+            // Only show error after initial grace period
+            const timeSinceMount = Date.now() - mountTimeRef.current;
+            if (timeSinceMount >= 5000) {
+                setHasSandboxError(true);
+            }
         }
 
-        const timeSinceMount = Date.now() - mountTimeRef.current;
-        if (timeSinceMount < 5000) {
-            const delay = 5000 - timeSinceMount;
-            timeoutIdRef.current = setTimeout(() => {
-                const stillNoProvider = !branches.getBranchDataById(activeBranch.id)?.sandbox?.session?.provider;
-                if (stillNoProvider) {
-                    setHasSandboxError(true);
-                }
-            }, delay);
-        } else {
-            setHasSandboxError(true);
+        return true; // Continue checking
+    }, [branches]);
+
+    // TODO: iFrame should also detect 502 errors and set hasSandboxError to true
+    useEffect(() => {
+        // Clear any existing timer first
+        if (timeoutIdRef.current) {
+            clearTimeout(timeoutIdRef.current);
+            timeoutIdRef.current = null;
         }
+
+        const scheduleNextCheck = () => {
+            const shouldContinue = checkForError();
+            if (shouldContinue) {
+                timeoutIdRef.current = setTimeout(scheduleNextCheck, checkInterval);
+            }
+        };
+
+        // Initial delay for grace period if needed
+        const timeSinceMount = Date.now() - mountTimeRef.current;
+        const initialDelay = timeSinceMount < 5000 ? 5000 - timeSinceMount : 0;
+
+        timeoutIdRef.current = setTimeout(scheduleNextCheck, initialDelay);
 
         return () => {
             if (timeoutIdRef.current) {
@@ -61,7 +77,7 @@ export const RestartSandboxButton = observer(({ className }: { className?: strin
                 timeoutIdRef.current = null;
             }
         };
-    }, [branches.activeBranch?.id, branches]); // Only re-run when branch ID changes
+    }, [checkForError, checkInterval]); // Re-run when checker or interval changes
 
     const handleRestartSandbox = async () => {
         try {
@@ -70,6 +86,8 @@ export const RestartSandboxButton = observer(({ className }: { className?: strin
 
             setRestarting(true);
             setHasSandboxError(false);
+            // Reset mount time for grace period after restart
+            mountTimeRef.current = Date.now();
             const sandbox = branches.getSandboxById(activeBranch.id);
             if (!sandbox?.session) {
                 toast.error('Sandbox session not available');
