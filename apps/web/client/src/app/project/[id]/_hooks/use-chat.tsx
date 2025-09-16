@@ -30,15 +30,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
                 projectId: editorEngine.projectId,
             },
         }),
-        onToolCall: async (toolCall) => {
-            const result = await handleToolCall(toolCall.toolCall, editorEngine);
-
-            chat.addToolResult({
-                tool: toolCall.toolCall.toolName,
-                toolCallId: toolCall.toolCall.toolCallId,
-                output: result,
-            });
-        },
+        onToolCall: (toolCall) => { handleToolCall(toolCall.toolCall, editorEngine, chat.addToolResult) },
         onFinish: ({ message }) => {
             if (!message.metadata) {
                 return;
