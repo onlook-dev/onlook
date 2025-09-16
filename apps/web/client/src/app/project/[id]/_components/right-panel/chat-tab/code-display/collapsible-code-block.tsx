@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { CodeBlock } from './code-block';
+import { CodeBlockSkeleton } from './code-block-skeleton';
 
 interface CollapsibleCodeBlockProps {
     path: string;
@@ -93,13 +94,18 @@ export const CollapsibleCodeBlock = observer(({
                                 style={{ overflow: 'hidden' }}
                             >
                                 <div className="border-t">
-                                    <CodeBlock code={updatedContent} />
+                                    {!isStream ? (
+                                        <CodeBlock code={updatedContent} />
+                                    ) : (
+                                        <CodeBlockSkeleton />
+                                    )}
                                     <div className="flex justify-end gap-1.5 p-1 border-t">
                                         <Button
                                             size="sm"
                                             variant="ghost"
                                             className="h-7 px-2 text-foreground-secondary hover:text-foreground font-sans select-none"
                                             onClick={copyToClipboard}
+                                            disabled={isStream}
                                         >
                                             {copied ? (
                                                 <>
