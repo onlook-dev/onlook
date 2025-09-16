@@ -25,7 +25,7 @@ export async function getModelFromType(chatType: ChatType) {
     return model;
 }
 
-export async function getToolSetFromType(chatType: ChatType) {
+export function getToolSetFromType(chatType: ChatType) {
     return chatType === ChatType.ASK ? ASK_TOOL_SET : BUILD_TOOL_SET;
 }
 

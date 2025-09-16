@@ -176,31 +176,39 @@ const TOOL_HANDLERS: ClientToolMap = {
     },
 };
 
-export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
-    try {
+export function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine, addToolResult: (toolResult: { tool: string, toolCallId: string, output: any }) => void) {
+    const runTool = async () => {
         const toolName = toolCall.toolName;
-
         const currentChatMode = editorEngine.state.chatMode;
-        const availableTools = await getToolSetFromType(currentChatMode);
+        const availableTools = getToolSetFromType(currentChatMode);
+        try {
+            if (!availableTools[toolName]) {
+                toast.error(`Tool "${toolName}" not available in ask mode`, {
+                    description: `Switch to build mode to use this tool.`,
+                    duration: 2000,
+                });
 
-        if (!availableTools[toolName]) {
-            toast.error(`Tool "${toolName}" not available in ask mode`, {
-                description: `Switch to build mode to use this tool.`,
-                duration: 2000,
+                throw new Error(`Tool "${toolName}" is not available in ${currentChatMode} mode`);
+            }
+
+            const clientTool = TOOL_HANDLERS[toolName];
+
+            if (!clientTool) {
+                throw new Error(`Unknown tool call: ${toolName}`);
+            }
+            const result = await clientTool.handler(toolCall.input, editorEngine);
+            addToolResult({
+                tool: toolName,
+                toolCallId: toolCall.toolCallId,
+                output: result,
             });
-
-            throw new Error(`Tool "${toolName}" is not available in ${currentChatMode} mode`);
+        } catch (error) {
+            addToolResult({
+                tool: toolName,
+                toolCallId: toolCall.toolCallId,
+                output: 'error handling tool call ' + error,
+            });
         }
-
-        const clientTool = TOOL_HANDLERS[toolName];
-
-        if (!clientTool) {
-            throw new Error(`Unknown tool call: ${toolName}`);
-        }
-
-        return await clientTool.handler(toolCall.input, editorEngine);
-    } catch (error) {
-        console.error('Error handling tool call', error);
-        return 'error handling tool call ' + error;
     }
+    runTool();
 }
