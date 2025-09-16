@@ -81,8 +81,14 @@ export const RestartSandboxButton = observer(({
 
     const handleRestartSandbox = async () => {
         try {
+            if (restarting) {
+                return;
+            }
             const activeBranch = branches.activeBranch;
-            if (!activeBranch || restarting) return;
+            if (!activeBranch) return;
+            if (restarting) {
+                return;
+            }
 
             setRestarting(true);
             setHasSandboxError(false);
@@ -97,7 +103,6 @@ export const RestartSandboxButton = observer(({
 
             const success = await sandbox.session.restartDevServer();
             if (success) {
-                toast.loading('Restarting sandbox...');
                 // Wait 5 seconds before refreshing webviews to avoid 502 errors
                 setTimeout(() => {
                     const frames = editorEngine.frames.getByBranchId(activeBranch.id);
@@ -119,8 +124,6 @@ export const RestartSandboxButton = observer(({
         } catch (error) {
             console.error('Error restarting sandbox:', error);
             toast.error('An error occurred while restarting the sandbox');
-        } finally {
-            toast.dismiss();
             setRestarting(false);
         }
     };
