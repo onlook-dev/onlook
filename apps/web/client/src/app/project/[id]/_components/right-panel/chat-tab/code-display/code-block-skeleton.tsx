@@ -1,3 +1,4 @@
+'use client';
 export const CodeBlockSkeleton = () => {
     return (
         <div className="p-4 space-y-3">
