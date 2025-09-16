@@ -2,13 +2,13 @@ import type { IFrameView } from '@/app/project/[id]/_components/canvas/frame/vie
 import { api } from '@/trpc/client';
 import { toDbFrame, toDbPartialFrame } from '@onlook/db';
 import { type Frame } from '@onlook/models';
+import { calculateNonOverlappingPosition } from '@onlook/utility';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
 import type { EditorEngine } from '../engine';
 import { roundDimensions } from './dimension';
 import { FrameNavigationManager } from './navigation';
-import { calculateNonOverlappingPosition } from '@onlook/utility';
 
 export interface FrameData {
     frame: Frame;
@@ -49,6 +49,10 @@ export class FramesManager {
 
     getAll(): FrameData[] {
         return Array.from(this._frameIdToData.values());
+    }
+
+    getByBranchId(branchId: string): FrameData[] {
+        return Array.from(this._frameIdToData.values()).filter((w) => w.frame.branchId === branchId);
     }
 
     get(id: string): FrameData | null {

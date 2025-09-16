@@ -2,13 +2,13 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import { Icons } from '@onlook/ui/icons';
-import { toast } from '@onlook/ui/sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import { RestartSandboxButton } from './restart-sandbox-button';
 import { Terminal } from './terminal';
 
 export const TerminalArea = observer(({ children }: { children: React.ReactNode }) => {
@@ -50,146 +50,13 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
     }
 
     const [terminalHidden, setTerminalHidden] = useState(true);
-    const [restarting, setRestarting] = useState(false);
-    
-    // Ultra-lightweight error detection using a single timer
-    const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
-    const [hasSandboxError, setHasSandboxError] = useState(false);
-    const mountTimeRef = useRef<number>(Date.now());
-
-    // Single effect that only sets/clears one timer - extremely efficient
-    useEffect(() => {
-        // Clear any existing timer first
-        if (timeoutIdRef.current) {
-            clearTimeout(timeoutIdRef.current);
-            timeoutIdRef.current = null;
-        }
-
-        const activeBranch = branches.activeBranch;
-        if (!activeBranch) {
-            setHasSandboxError(false);
-            return;
-        }
-
-        const branchData = branches.getBranchDataById(activeBranch.id);
-        const sandbox = branchData?.sandbox;
-        
-        // Quick bailouts - no timer needed
-        if (!sandbox?.session) {
-            setHasSandboxError(false);
-            return;
-        }
-        
-        // If we have a provider, we're connected - no error
-        if (sandbox.session.provider) {
-            setHasSandboxError(false);
-            return;
-        }
-        
-        // Check if enough time has passed since mount (avoid false positives on initial load)
-        const timeSinceMount = Date.now() - mountTimeRef.current;
-        if (timeSinceMount < 5000) {
-            // Set timer to check after 5 seconds from mount
-            const delay = 5000 - timeSinceMount;
-            timeoutIdRef.current = setTimeout(() => {
-                // Check if still no provider (indicates 502 or failure)
-                const stillNoProvider = !branches.getBranchDataById(activeBranch.id)?.sandbox?.session?.provider;
-                if (stillNoProvider) {
-                    setHasSandboxError(true);
-                }
-            }, delay);
-        } else {
-            // We're past the grace period - if no provider, it's an error
-            setHasSandboxError(true);
-        }
-
-        // Cleanup on unmount or deps change
-        return () => {
-            if (timeoutIdRef.current) {
-                clearTimeout(timeoutIdRef.current);
-                timeoutIdRef.current = null;
-            }
-        };
-    }, [branches.activeBranch?.id, branches]); // Only re-run when branch ID changes
-
-    // Extract restart logic into a reusable function to follow DRY principles
-    const handleRestartSandbox = async () => {
-        const activeBranch = branches.activeBranch;
-        if (!activeBranch || restarting) return;
-
-        setRestarting(true);
-        setHasSandboxError(false); // Clear error state on restart
-        
-        try {
-            const sandbox = branches.getSandboxById(activeBranch.id);
-            if (!sandbox?.session) {
-                toast.error('Sandbox session not available');
-                setRestarting(false);
-                return;
-            }
-
-            const success = await sandbox.session.restartDevServer();
-            if (success) {
-                toast.success('Sandbox restarted successfully', {
-                    icon: <Icons.Cube className="h-4 w-4" />,
-                });
-                
-                // Wait 5 seconds before refreshing webviews to avoid 502 errors
-                setTimeout(() => {
-                    const frames = editorEngine.frames.getAll();
-                    frames.forEach(frame => {
-                        try {
-                            editorEngine.frames.reloadView(frame.frame.id);
-                        } catch (frameError) {
-                            console.error('Failed to reload frame:', frame.frame.id, frameError);
-                        }
-                    });
-                    setRestarting(false);
-                }, 5000);
-            } else {
-                toast.error('Failed to restart sandbox');
-                setRestarting(false);
-            }
-        } catch (error) {
-            console.error('Error restarting sandbox:', error);
-            toast.error('An error occurred while restarting the sandbox');
-            setRestarting(false);
-        }
-    };
 
     return (
         <>
             {terminalHidden ? (
                 <motion.div layout className="flex items-center gap-1">
                     {children}
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <button
-                                onClick={handleRestartSandbox}
-                                disabled={!branches.activeBranch || restarting}
-                                className={cn(
-                                    "h-9 w-9 flex items-center justify-center rounded-md border border-transparent transition-colors",
-                                    hasSandboxError
-                                        ? "bg-amber-900 text-amber-200 hover:bg-amber-800 hover:text-amber-100"
-                                        : restarting
-                                        ? "text-foreground-tertiary bg-accent/30" // Keep visible during restart
-                                        : branches.activeBranch
-                                        ? "hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50"
-                                        : "text-foreground-disabled cursor-not-allowed opacity-50"
-                                )}
-                            >
-                                {restarting ? (
-                                    <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Icons.RestartSandbox className={cn(
-                                        "h-4 w-4",
-                                        hasSandboxError && "text-amber-200"
-                                    )} />
-                                )}
-                            </button>
-                        </TooltipTrigger>
-                        <TooltipContent sideOffset={5} hideArrow>Restart Sandbox</TooltipContent>
-                    </Tooltip>
+                    <RestartSandboxButton />
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <button
@@ -218,34 +85,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                     </motion.span>
                     <div className="flex items-center gap-1">
                         <motion.div layout>{/* <RunButton /> */}</motion.div>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <button
-                                    onClick={handleRestartSandbox}
-                                    disabled={!branches.activeBranch || restarting}
-                                    className={cn(
-                                        "h-9 w-9 flex items-center justify-center rounded-md border border-transparent transition-colors",
-                                        hasSandboxError
-                                            ? "bg-amber-900 text-amber-200 hover:bg-amber-800 hover:text-amber-100"
-                                            : restarting
-                                            ? "text-foreground-tertiary bg-accent/30" // Keep visible during restart
-                                            : branches.activeBranch
-                                            ? "hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50"
-                                            : "text-foreground-disabled cursor-not-allowed opacity-50"
-                                    )}
-                                >
-                                    {restarting ? (
-                                        <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <Icons.RestartSandbox className={cn(
-                                            "h-4 w-4",
-                                            hasSandboxError && "text-amber-200"
-                                        )} />
-                                    )}
-                                </button>
-                            </TooltipTrigger>
-                            <TooltipContent sideOffset={5} hideArrow>Restart Sandbox</TooltipContent>
-                        </Tooltip>
+                        <RestartSandboxButton />
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <button
