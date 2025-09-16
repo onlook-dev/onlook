@@ -1,3 +1,5 @@
+'use client';
+
 import { useEditorEngine } from '@/components/store/editor';
 import { Icons } from '@onlook/ui/icons';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
@@ -6,6 +8,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useState } from 'react';
+import { RestartSandboxButton } from './restart-sandbox-button';
 import { Terminal } from './terminal';
 
 export const TerminalArea = observer(({ children }: { children: React.ReactNode }) => {
@@ -53,6 +56,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
             {terminalHidden ? (
                 <motion.div layout className="flex items-center gap-1">
                     {children}
+                    <RestartSandboxButton />
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <button
@@ -81,6 +85,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                     </motion.span>
                     <div className="flex items-center gap-1">
                         <motion.div layout>{/* <RunButton /> */}</motion.div>
+                        <RestartSandboxButton />
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <button

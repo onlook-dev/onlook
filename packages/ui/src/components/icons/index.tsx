@@ -1668,6 +1668,32 @@ export const Icons = {
 
     QuestionMarkCircled: QuestionMarkCircledIcon,
     Reload: ReloadIcon,
+    RestartSandbox: ({ className, ...props }: IconProps) => (
+        <svg
+            width="15"
+            height="15"
+            viewBox="0 0 15 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M7.15756 7.497V13.354M7.15756 7.497L1.98945 4.59M7.15756 7.497L12.1619 4.68198M8.90971 12.9067L7.83305 13.5123C7.41355 13.7483 6.9013 13.7483 6.4818 13.5123L2.17514 11.0898C1.7412 10.8457 1.47266 10.3866 1.47266 9.88866V5.1053C1.47266 4.60742 1.7412 4.14825 2.17514 3.90416L6.4818 1.48167C6.9013 1.24569 7.41355 1.24569 7.83305 1.48167L12.1397 3.90416C12.5737 4.14825 12.8422 4.60742 12.8422 5.1053V6.30114V6.61615"
+                stroke="currentColor"
+                strokeWidth="0.9261"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M11.4963 7.89844L11.4984 9.99844M9.92344 8.83488C9.59671 9.20478 9.39844 9.69081 9.39844 10.2231C9.39844 11.3818 10.3377 12.321 11.4963 12.321C12.655 12.321 13.5942 11.3818 13.5942 10.2231C13.5942 9.69081 13.396 9.20478 13.0692 8.83488"
+                stroke="currentColor"
+                strokeWidth="0.84"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
     Reset: ResetIcon,
     RowSpacing: RowSpacingIcon,
 
