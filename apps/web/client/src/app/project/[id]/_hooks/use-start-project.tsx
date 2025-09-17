@@ -126,9 +126,34 @@ export const useStartProject = () => {
 
     useEffect(() => {
         if (tabState === 'reactivated') {
-            editorEngine.activeSandbox.session.reconnect(editorEngine.projectId, user?.id);
+            // Warm up the connection and clear throttled state
+            const warmUpConnection = async () => {
+                // Reconnect sandbox session
+                await editorEngine.activeSandbox.session.reconnect(editorEngine.projectId, user?.id);
+                
+                // Force a refresh of all frames to re-establish penpal connections
+                editorEngine.frames.getAll().forEach((frameData) => {
+                    if (frameData.view) {
+                        // Trigger a lightweight operation to wake up the connection
+                        frameData.view.getFrameId?.().catch(() => {});
+                    }
+                });
+                
+                // Clear any stale overlay state and refresh
+                editorEngine.overlay.clearUI();
+                if (editorEngine.elements.selected.length > 0) {
+                    // Re-trigger selection to refresh the outline
+                    const selected = [...editorEngine.elements.selected];
+                    editorEngine.elements.click(selected);
+                }
+                
+                // Invalidate cached data to ensure fresh state
+                await apiUtils.invalidate();
+            };
+            
+            warmUpConnection().catch(console.error);
         }
-    }, [tabState]);
+    }, [tabState, user?.id, editorEngine, apiUtils]);
 
     useEffect(() => {
         setError(userError?.message ?? canvasError?.message ?? conversationsError?.message ?? creationRequestError?.message ?? null);

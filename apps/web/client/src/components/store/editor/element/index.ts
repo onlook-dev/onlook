@@ -9,6 +9,7 @@ import { adaptRectToCanvas } from '../overlay/utils';
 export class ElementsManager {
     private _hovered: DomElement | undefined;
     private _selected: DomElement[] = [];
+    private lastClickTime: number = 0;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -60,6 +61,13 @@ export class ElementsManager {
     }
 
     click(domEls: DomElement[]) {
+        const now = performance.now();
+        const timeSinceLastClick = now - this.lastClickTime;
+        this.lastClickTime = now;
+        
+        // If it's been more than 5 seconds since last click, we may need to warm up
+        const needsWarmup = timeSinceLastClick > 5000;
+        
         // Batch all synchronous updates for the outline rendering
         runInAction(() => {
             // Immediately update the visual outline for instant feedback
@@ -87,6 +95,13 @@ export class ElementsManager {
                 );
             }
         });
+        
+        // If we need warmup, do a quick no-op to wake up the engine
+        if (needsWarmup && domEls.length > 0) {
+            // Quick ping to the frame to ensure connection is active
+            const frameData = this.editorEngine.frames.get(domEls[0].frameId);
+            frameData?.view?.getFrameId?.().catch(() => {});
+        }
         
         // Update selected elements in a separate action to control reaction timing
         runInAction(() => {
