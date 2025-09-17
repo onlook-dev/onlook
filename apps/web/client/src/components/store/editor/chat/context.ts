@@ -29,6 +29,12 @@ export class ChatContext {
         this.selectedReactionDisposer = reaction(
             () => this.editorEngine.elements.selected,
             () => {
+                // Skip on empty selection to avoid unnecessary work
+                if (this.editorEngine.elements.selected.length === 0) {
+                    this.context = [];
+                    return;
+                }
+                
                 // Cancel any pending context update
                 if (this.pendingContextUpdate) {
                     cancelAnimationFrame(this.pendingContextUpdate);
@@ -59,6 +65,7 @@ export class ChatContext {
                     this.pendingContextUpdate = undefined;
                 });
             },
+            { delay: 100 }  // Add small delay to batch rapid changes
         );
     }
 

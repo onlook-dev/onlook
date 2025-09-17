@@ -10,6 +10,7 @@ export class ElementsManager {
     private _hovered: DomElement | undefined;
     private _selected: DomElement[] = [];
     private lastClickTime: number = 0;
+    private isInitialized: boolean = false;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -61,12 +62,18 @@ export class ElementsManager {
     }
 
     click(domEls: DomElement[]) {
-        const now = performance.now();
-        const timeSinceLastClick = now - this.lastClickTime;
-        this.lastClickTime = now;
-        
-        // If it's been more than 5 seconds since last click, we may need to warm up
-        const needsWarmup = timeSinceLastClick > 5000;
+        // Skip warmup logic on first clicks to improve initial load
+        let needsWarmup = false;
+        if (this.isInitialized) {
+            const now = performance.now();
+            const timeSinceLastClick = now - this.lastClickTime;
+            this.lastClickTime = now;
+            // Only check for warmup after initialization
+            needsWarmup = timeSinceLastClick > 5000;
+        } else {
+            this.isInitialized = true;
+            this.lastClickTime = performance.now();
+        }
         
         // Batch all synchronous updates for the outline rendering
         runInAction(() => {

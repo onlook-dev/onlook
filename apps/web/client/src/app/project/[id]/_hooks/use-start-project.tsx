@@ -126,43 +126,24 @@ export const useStartProject = () => {
 
     useEffect(() => {
         if (tabState === 'reactivated') {
-            // Warm up the connection and clear throttled state
+            // Only warm up on reactivation, not on initial load
+            // The 'reactivated' state only occurs when returning to a previously inactive tab
             const warmUpConnection = async () => {
                 // Reconnect sandbox session
                 await editorEngine.activeSandbox.session.reconnect(editorEngine.projectId, user?.id);
                 
-                // Force a refresh of all frames to re-establish penpal connections
-                editorEngine.frames.getAll().forEach((frameData) => {
-                    if (frameData.view) {
-                        // Trigger a reload to wake up the connection if needed
-                        // The reload method exists on IFrameView
-                        try {
-                            // Just accessing the view helps wake it up
-                            const isLoading = frameData.view.isLoading();
-                            if (!isLoading) {
-                                // View is ready, connection should be active
-                            }
-                        } catch {
-                            // Ignore errors, this is just a warm-up
-                        }
-                    }
-                });
-                
-                // Clear any stale overlay state and refresh
-                editorEngine.overlay.clearUI();
+                // Clear any stale overlay state and refresh selected elements only
                 if (editorEngine.elements.selected.length > 0) {
                     // Re-trigger selection to refresh the outline
                     const selected = [...editorEngine.elements.selected];
+                    editorEngine.overlay.clearUI();
                     editorEngine.elements.click(selected);
                 }
-                
-                // Invalidate cached data to ensure fresh state
-                await apiUtils.invalidate();
             };
             
             warmUpConnection().catch(console.error);
         }
-    }, [tabState, user?.id, editorEngine, apiUtils]);
+    }, [tabState]);  // Reduce dependencies to prevent unnecessary re-runs
 
     useEffect(() => {
         setError(userError?.message ?? canvasError?.message ?? conversationsError?.message ?? creationRequestError?.message ?? null);
