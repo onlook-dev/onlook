@@ -16,7 +16,12 @@ import {
 import { jsonClone } from '@onlook/utility';
 
 export type SendMessage = (content: string, type: ChatType) => Promise<ChatMessage>;
-export type EditMessage = (messageId: string, newContent: string, type: ChatType) => Promise<void>;
+export type EditMessage = (messageId: string, newContent: string, type: ChatType) => Promise<ChatMessage>;
+export type ProcessMessage = (
+    content: string,
+    type: ChatType,
+    messageId?: string
+) => Promise<ChatMessage | void>;
 
 interface UseChatProps {
     conversationId: string;
@@ -77,7 +82,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             const newMessage = getUserChatMessageFromString(content, context, conversationId);
 
             if (type !== ChatType.ASK) {
-                const { commit } = await editorEngine.versions.createCommit(content);
+                const { commit } = await editorEngine.versions.createCommit(content, false);
                 if (!commit) {
                     throw new Error('Failed to create commit');
                 }
@@ -85,7 +90,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             }
             setMessages(jsonClone([...messagesRef.current, newMessage]));
 
-            await regenerate({
+            void regenerate({
                 body: {
                     chatType: type,
                     conversationId,
@@ -113,17 +118,13 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             const messageIndex = messagesRef.current.findIndex((m) => m.id === messageId);
             const message = messagesRef.current[messageIndex];
 
-            if (messageIndex === -1 || !message) {
+            if (messageIndex === -1 || !message || message.role !== 'user') {
                 throw new Error('Message not found.');
-            }
-
-            if (message.role !== 'user') {
-                throw new Error('Message is not a user message.');
             }
 
             const updatedMessages = messagesRef.current.slice(0, messageIndex);
 
-            if (chatType !== ChatType.ASK) {
+            if (chatType !== ChatType.ASK && message.role === 'user') {
                 const { commit } = await editorEngine.versions.createCommit(newContent, false);
                 if (!commit) {
                     throw new Error('Failed to create commit');
@@ -132,19 +133,31 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             }
             const context = await editorEngine.chat.context.getContextByChatType(chatType);
 
+            message.metadata = { 
+                ...message.metadata,
+                context,
+                conversationId,
+                createdAt: message.metadata?.createdAt ?? new Date(),
+                checkpoints: message.metadata?.checkpoints ?? [],
+            };
+            message.parts = [{ type: 'text', text: newContent }];
+            
+
             setMessages(
                 jsonClone([
                     ...updatedMessages,
-                    getUserChatMessageFromString(newContent, context, conversationId, messageId),
+                    message,
                 ]),
             );
 
-            return regenerate({
+            void regenerate({
                 body: {
                     chatType,
                     conversationId,
                 },
             });
+
+            return message;
         },
         [
             editorEngine.chat.context,

@@ -81,14 +81,21 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
     };
 
     const handleRetry = async () => {
-        await sendMessage(getUserMessageContent(message));
+        toast.promise(
+            onEditMessage(message.id, getUserMessageContent(message), ChatType.EDIT),
+            {
+                loading: 'Resubmitting message...',
+                success: 'Message resubmitted successfully',
+                error: 'Failed to resubmit message',
+            }
+        )     
     };
 
     const sendMessage = async (newContent: string) => {
         toast.promise(
             onEditMessage(message.id, newContent, ChatType.EDIT),
             {
-                loading: 'Resubmitting message...',
+                loading: 'Editing message...',
                 success: 'Message resubmitted successfully',
                 error: 'Failed to resubmit message',
             }
