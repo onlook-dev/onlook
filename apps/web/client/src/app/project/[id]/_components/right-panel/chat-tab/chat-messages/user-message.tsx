@@ -1,3 +1,5 @@
+'use client';
+
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { ChatType, MessageCheckpointType, type ChatMessage } from '@onlook/models';

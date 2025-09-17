@@ -1,5 +1,5 @@
+import { ChatType } from '@onlook/models';
 import { type InferUITools, type ToolSet } from 'ai';
-import { ChatType } from '../../../models/src/chat/type';
 import {
     BASH_EDIT_TOOL_NAME,
     BASH_READ_TOOL_NAME,
