@@ -129,8 +129,8 @@ describe('addOidsToAst', () => {
             const ast = getAstFromContent(inputContent);
             if (!ast) throw new Error('Failed to parse input code');
 
-            const globalOids = new Set();
-            const branchOidMap = new Map();
+            const globalOids = new Set<string>();
+            const branchOidMap = new Map<string, string>();
 
             const { ast: astWithIds, modified } = addOidsToAst(
                 ast,
