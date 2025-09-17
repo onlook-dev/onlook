@@ -130,7 +130,7 @@ export const Suggestions = observer(
                                 }
                             }}
                         >
-                            <Icons.Lightbulb className="w-4 h-4" />
+                            <Icons.Lightbulb className="w-4 h-4 flex-shrink-0" />
                             {suggestion.title}
                         </motion.button>
                     ))}

@@ -16,6 +16,20 @@ import type { EditorEngine } from '../engine';
 export class ChatContext {
     context: MessageContext[] = [];
     private selectedReactionDisposer?: () => void;
+    usage: {
+        promptTokens: number;
+        completionTokens: number;
+        totalTokens: number;
+    } | null = null;
+    cumulativeUsage: {
+        promptTokens: number;
+        completionTokens: number;
+        totalTokens: number;
+    } = {
+        promptTokens: 0,
+        completionTokens: 0,
+        totalTokens: 0,
+    };
 
     constructor(
         private editorEngine: EditorEngine,
@@ -283,9 +297,32 @@ export class ChatContext {
         this.context = this.context.filter((context) => context.type !== MessageContextType.IMAGE);
     }
 
+    updateUsage(usage: any) {
+        if (usage && typeof usage === 'object') {
+            const newUsage = {
+                promptTokens: usage.promptTokens || usage.prompt_tokens || 0,
+                completionTokens: usage.completionTokens || usage.completion_tokens || 0,
+                totalTokens: usage.totalTokens || usage.total_tokens || 0,
+            };
+            
+            this.usage = newUsage;
+            
+            // Add to cumulative usage
+            this.cumulativeUsage.promptTokens += newUsage.promptTokens;
+            this.cumulativeUsage.completionTokens += newUsage.completionTokens;
+            this.cumulativeUsage.totalTokens += newUsage.totalTokens;
+        }
+    }
+
     clear() {
         this.selectedReactionDisposer?.();
         this.selectedReactionDisposer = undefined;
         this.context = [];
+        this.usage = null;
+        this.cumulativeUsage = {
+            promptTokens: 0,
+            completionTokens: 0,
+            totalTokens: 0,
+        };
     }
 }

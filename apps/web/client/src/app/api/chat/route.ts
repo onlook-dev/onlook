@@ -120,6 +120,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
             }
         })
 
+
         return result.toUIMessageStreamResponse(
             {
                 originalMessages: messages,
@@ -127,8 +128,10 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                     part
                 }) => {
                     if (part.type === 'finish-step') {
+                        console.log('finish-step part with usage:', part);
                         return {
                             finishReason: part.finishReason,
+                            usage: part.usage, // Include usage data if available
                         }
                     }
                 },

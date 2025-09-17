@@ -29,7 +29,7 @@ export const DraftContextPill = React.forwardRef<
             }}
             className={cn(
                 'group relative flex flex-row items-center gap-1 justify-center border border-foreground-tertiary/20 rounded-md h-7 px-2',
-                isBranch ? 'bg-teal-900 border-teal-800 text-teal-200' : 'bg-background-tertiary'
+                isBranch ? 'bg-teal-900 border-teal-800 text-teal-200' : 'bg-background-tertiary/50 text-foreground-secondary'
             )}
             ref={ref}
         >

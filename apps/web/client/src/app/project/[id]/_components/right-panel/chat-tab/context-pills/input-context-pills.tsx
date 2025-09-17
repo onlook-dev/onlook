@@ -35,32 +35,25 @@ export const InputContextPills = observer(() => {
     }, [editorEngine.chat.context.context]);
 
     return (
-        <div
-            className={cn(
-                'flex flex-row flex-wrap w-full gap-1.5 text-micro mb-1 text-foreground-secondary',
-                editorEngine.chat.context.context.length > 0 ? 'min-h-6' : 'h-0',
-            )}
-        >
-            <AnimatePresence mode="popLayout">
-                {sortedContexts.map((context: MessageContext, index: number) => {
-                    if (context.type === MessageContextType.IMAGE) {
-                        return (
-                            <DraftImagePill
-                                key={`image-${context.content}-${index}`}
-                                context={context}
-                                onRemove={() => handleRemoveContext(context)}
-                            />
-                        );
-                    }
+        <AnimatePresence mode="popLayout">
+            {sortedContexts.map((context: MessageContext, index: number) => {
+                if (context.type === MessageContextType.IMAGE) {
                     return (
-                        <DraftContextPill
-                            key={`${context.type}-${context.content}-${index}`}
+                        <DraftImagePill
+                            key={`image-${context.content}-${index}`}
                             context={context}
                             onRemove={() => handleRemoveContext(context)}
                         />
                     );
-                })}
-            </AnimatePresence>
-        </div>
+                }
+                return (
+                    <DraftContextPill
+                        key={`${context.type}-${context.content}-${index}`}
+                        context={context}
+                        onRemove={() => handleRemoveContext(context)}
+                    />
+                );
+            })}
+        </AnimatePresence>
     );
 });

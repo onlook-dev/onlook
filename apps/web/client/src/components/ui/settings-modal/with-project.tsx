@@ -152,9 +152,15 @@ export const SettingsModalWithProjects = observer(() => {
                                     {/* Left navigation - fixed width */}
                                     <div className="flex flex-col overflow-y-scroll select-none">
                                         <div className="shrink-0 w-48 space-y-1 p-5 text-regularPlus">
-                                            <p className="text-muted-foreground text-smallPlus ml-2.5 mt-2 mb-2">
+                                            <p className="text-muted-foreground text-smallPlus ml-2.5 mt-2 mb-0.5">
                                                 Project
                                             </p>
+                                            <div className="flex items-center gap-1.5 ml-2.5 mb-3 text-muted-foreground/80">
+                                                <Icons.Commit className="min-h-3 min-w-3" />
+                                                <span className="text-small truncate max-w-30">
+                                                    {editorEngine.branches.activeBranch.name}
+                                                </span>
+                                            </div>
                                             {projectTabs.map((tab) => (
                                                 <Button
                                                     key={tab.label}

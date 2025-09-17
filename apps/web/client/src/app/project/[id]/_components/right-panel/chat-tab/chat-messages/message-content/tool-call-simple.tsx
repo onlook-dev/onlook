@@ -203,7 +203,7 @@ export function ToolCallSimple({
     return (
         <div className="flex flex-col gap-2">
             <div className={cn('flex items-center gap-2 ml-2 text-foreground-tertiary/80', className)}>
-                <Icon className="w-4 h-4" />
+                <Icon className="w-4 h-4 flex-shrink-0" />
                 <span
                     className={cn(
                         'text-regularPlus',
@@ -216,7 +216,7 @@ export function ToolCallSimple({
             </div>
             {(toolInvocation.state === 'output-error') && (
                 <div className="flex items-start gap-2 ml-2 text-red-500 text-small max-h-32 overflow-y-auto border-l">
-                    <Icons.ExclamationTriangle className="w-4 h-4" />
+                    <Icons.ExclamationTriangle className="w-4 h-4 flex-shrink-0" />
                     <span className="text-regularPlus">{toolInvocation.errorText || 'Error calling tool'}</span>
                 </div>
             )}

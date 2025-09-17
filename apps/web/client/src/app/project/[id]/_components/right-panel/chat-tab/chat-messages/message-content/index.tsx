@@ -54,7 +54,7 @@ export const MessageContent = observer(
                 return (
                     <>
                         <div className="px-2 flex items-center gap-2 text-foreground-tertiary">
-                            <Icons.Lightbulb className="w-4 h-4" />
+                            <Icons.Lightbulb className="w-4 h-4 flex-shrink-0" />
                             <p className="text-sm">Reasoning</p>
                         </div>
                         {isStream && <pre key={`reasoning-${idx}`} className="my-2 px-3 py-2 border-l-1 max-h-32 overflow-y-auto whitespace-pre-wrap break-words">
