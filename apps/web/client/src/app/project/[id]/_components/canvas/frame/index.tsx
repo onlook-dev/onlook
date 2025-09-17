@@ -67,7 +67,7 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
                 borderRadius: '4px',
             }}>
                 <ResizeHandles frame={frame} setIsResizing={setIsResizing} />
-                <FrameComponent key={reloadKey} frame={frame} reloadIframe={reloadIframe} ref={iFrameRef} />
+                <FrameComponent key={reloadKey} frame={frame} reloadIframe={reloadIframe} isInDragSelection={isInDragSelection} ref={iFrameRef} />
                 <GestureScreen frame={frame} isResizing={isResizing} />
 
                 {isConnecting && !hasTimedOut && (
