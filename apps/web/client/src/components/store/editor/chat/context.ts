@@ -51,8 +51,6 @@ export class ChatContext {
     async getChatContext(): Promise<MessageContext[]> {
         const selected = this.editorEngine.elements.selected;
 
-        console.log('selected', JSON.stringify(selected, null, 2));
-
         let highlightedContext: HighlightMessageContext[] = [];
         if (selected.length) {
             highlightedContext = await this.getHighlightedContext(selected);

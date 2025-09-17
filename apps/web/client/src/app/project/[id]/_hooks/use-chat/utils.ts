@@ -1,6 +1,5 @@
-import type { ChatMessage } from "@onlook/models";
-
-
+import type { ChatMessage, MessageContext } from "@onlook/models";
+import { v4 as uuidv4 } from 'uuid';
 
 export const prepareMessagesForSuggestions = (messages: ChatMessage[]) => {
     return messages.slice(-5).map((message) => ({
@@ -13,3 +12,21 @@ export const prepareMessagesForSuggestions = (messages: ChatMessage[]) => {
         }).join(''),
     }));
 };
+
+export const getUserChatMessageFromString = (
+    content: string,
+    context: MessageContext[],
+    conversationId: string,
+): ChatMessage => {
+    return {
+        id: uuidv4(),
+        role: 'user',
+        parts: [{ type: 'text', text: content }],
+        metadata: {
+            context,
+            checkpoints: [],
+            createdAt: new Date(),
+            conversationId,
+        },
+    }
+}

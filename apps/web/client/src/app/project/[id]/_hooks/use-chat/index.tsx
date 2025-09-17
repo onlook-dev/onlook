@@ -9,7 +9,7 @@ import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } fro
 import { usePostHog } from 'posthog-js/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { prepareMessagesForSuggestions } from './utils';
+import { getUserChatMessageFromString, prepareMessagesForSuggestions } from './utils';
 
 export type SendMessage = (content: string, type: ChatType) => Promise<string>;
 export type EditMessage = (messageId: string, newContent: string, type: ChatType) => Promise<void>;
@@ -70,23 +70,25 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
 
     const sendMessage: SendMessage = useCallback(
         async (content: string, type: ChatType) => {
+            posthog.capture('user_send_message', { type });
+
             const newContext = await editorEngine.chat.context.getContextByChatType(type);
 
-            console.log('newContext', JSON.stringify(newContext, null, 2));
+            const newMessage = getUserChatMessageFromString(content, newContext, conversationId);
 
-            const messageId = uuidv4();
-            await baseSendMessage(
-                { text: content },
-                {
-                    body: {
-                        chatType: type,
-                        conversationId,
-                        context: newContext,
-                    },
+            console.log('newMessage', JSON.stringify(newMessage, null, 2));
+
+            setMessages([...messages, newMessage]);
+
+            await regenerate({
+                body: {
+                    chatType: type,
+                    conversationId,
+                    context: newContext,
                 },
-            );
-            posthog.capture('user_send_message', { type });
-            return messageId;
+            });
+
+            return newMessage.id;
         },
         [editorEngine.chat.context, baseSendMessage, conversationId, posthog],
     );
