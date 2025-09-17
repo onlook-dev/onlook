@@ -1,6 +1,6 @@
 import { trackEvent } from '@/utils/analytics/server';
 import { getToolSetFromType } from '@onlook/ai';
-import { ChatType } from '@onlook/models';
+import { ChatType, type ChatMessage } from '@onlook/models';
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
 export const streamResponse = async (req: NextRequest, userId: string) => {
     const body = await req.json();
     const { messages, chatType, conversationId, projectId } = body as {
-        messages: UIMessage[],
+        messages: ChatMessage[],
         chatType: ChatType,
         conversationId: string,
         projectId: string,
@@ -124,13 +124,14 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         return result.toUIMessageStreamResponse(
             {
                 originalMessages: messages,
-                messageMetadata: ({
-                    part
-                }) => {
-                    if (part.type === 'finish-step') {
-                        return {
-                            finishReason: part.finishReason,
-                        }
+                generateMessageId: () => uuidv4(),
+                messageMetadata: ({ part }) => {
+                    return {
+                        createdAt: new Date(),
+                        conversationId,
+                        context: [],
+                        checkpoints: [],
+                        finishReason: part.type === 'finish-step' ? part.finishReason : undefined,
                     }
                 },
                 onError: errorHandler,

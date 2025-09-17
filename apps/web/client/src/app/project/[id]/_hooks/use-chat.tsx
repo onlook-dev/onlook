@@ -8,6 +8,7 @@ import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } fro
 import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
 import { createContext, useContext, useRef } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 type ExtendedUseChatHelpers = UseChatHelpers<ChatMessage> & { sendMessageToChat: (type: ChatType) => Promise<void> };
 const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
@@ -20,6 +21,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
     const conversationId = editorEngine.chat.conversation.current?.conversation.id;
     const chat = useChat<ChatMessage>({
         id: 'user-chat',
+        generateId: () => uuidv4(),
         sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
         transport: new DefaultChatTransport({
             api: '/api/chat',
