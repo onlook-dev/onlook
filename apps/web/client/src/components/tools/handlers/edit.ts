@@ -23,12 +23,13 @@ export async function handleSearchReplaceEditFileTool(args: z.infer<typeof SEARC
         if (args.replace_all) {
             newContent = file.content.replaceAll(args.old_string, args.new_string);
         } else {
-            if (!file.content.includes(args.old_string)) {
+            const firstIndex = file.content.indexOf(args.old_string);
+            if (firstIndex === -1) {
                 throw new Error(`String not found in file: ${args.old_string}`);
             }
 
-            const occurrences = file.content.split(args.old_string).length - 1;
-            if (occurrences > 1) {
+            const secondIndex = file.content.indexOf(args.old_string, firstIndex + args.old_string.length);
+            if (secondIndex !== -1) {
                 throw new Error(`Multiple occurrences found. Use replace_all=true or provide more context.`);
             }
 
@@ -57,21 +58,41 @@ export async function handleSearchReplaceMultiEditFileTool(args: z.infer<typeof 
             throw new Error(`Cannot read file ${args.file_path}: file not found or not text`);
         }
 
-        let content = file.content;
+        const originalContent = file.content;
+        let content = originalContent;
 
+        // Validate only the first non-replace_all edit against original content
+        // Sequential edits will be validated during application
+        let tempContent = originalContent;
+        for (const edit of args.edits) {
+            if (!edit.replace_all) {
+                const firstIndex = tempContent.indexOf(edit.old_string);
+                if (firstIndex === -1) {
+                    throw new Error(`String not found in file: ${edit.old_string}`);
+                }
+
+                const secondIndex = tempContent.indexOf(edit.old_string, firstIndex + edit.old_string.length);
+                if (secondIndex !== -1) {
+                    throw new Error(`Multiple occurrences found for "${edit.old_string}". Use replace_all=true or provide more context.`);
+                }
+                
+                // Simulate the edit for next validation
+                tempContent = tempContent.replace(edit.old_string, edit.new_string);
+            } else {
+                tempContent = tempContent.replaceAll(edit.old_string, edit.new_string);
+            }
+        }
+
+        // Apply edits sequentially in the order provided
+        // Each edit operates on the result of the previous edit
         for (const edit of args.edits) {
             if (edit.replace_all) {
                 content = content.replaceAll(edit.old_string, edit.new_string);
             } else {
-                if (!content.includes(edit.old_string)) {
-                    throw new Error(`String not found in file: ${edit.old_string}`);
+                const index = content.indexOf(edit.old_string);
+                if (index === -1) {
+                    throw new Error(`String not found in file after previous edits: ${edit.old_string}`);
                 }
-
-                const occurrences = content.split(edit.old_string).length - 1;
-                if (occurrences > 1) {
-                    throw new Error(`Multiple occurrences found for "${edit.old_string}". Use replace_all=true or provide more context.`);
-                }
-
                 content = content.replace(edit.old_string, edit.new_string);
             }
         }
@@ -83,7 +104,7 @@ export async function handleSearchReplaceMultiEditFileTool(args: z.infer<typeof 
 
         return `File ${args.file_path} edited with ${args.edits.length} changes`;
     } catch (error) {
-        throw new Error(`Cannot multi-edit file ${args.file_path}: ${error}`);
+        throw new Error(`Cannot multi-edit file ${args.file_path}: ${(error as Error).message}`);
     }
 }
 

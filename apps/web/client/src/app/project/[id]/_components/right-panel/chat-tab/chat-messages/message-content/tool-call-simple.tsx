@@ -95,7 +95,7 @@ export function ToolCallSimple({
                 case SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME:
                     const params1 = toolInvocation.input as z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS>;
                     if (params1?.edits) {
-                        return 'Editing ' + (params1.edits.map((edit: { old_string: string; new_string: string; replace_all: boolean; }) => edit.old_string).join(', ') || '');
+                        return 'Editing ' + (params1.file_path.split('/').pop() || '');
                     } else {
                         return 'Editing files';
                     }

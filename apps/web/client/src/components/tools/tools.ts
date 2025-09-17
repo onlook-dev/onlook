@@ -1,4 +1,3 @@
-import { getToolSetFromType } from '@/app/api/chat/helpers';
 import type { EditorEngine } from '@/components/store/editor/engine';
 import type { ToolCall } from '@ai-sdk/provider-utils';
 import {
@@ -9,8 +8,7 @@ import {
     CHECK_ERRORS_TOOL_NAME,
     CHECK_ERRORS_TOOL_PARAMETERS,
     FUZZY_EDIT_FILE_TOOL_NAME,
-    FUZZY_EDIT_FILE_TOOL_PARAMETERS,
-    GLOB_TOOL_NAME,
+    FUZZY_EDIT_FILE_TOOL_PARAMETERS, getToolSetFromType, GLOB_TOOL_NAME,
     GLOB_TOOL_PARAMETERS,
     GREP_TOOL_NAME,
     GREP_TOOL_PARAMETERS,
@@ -28,6 +26,8 @@ import {
     SCRAPE_URL_TOOL_PARAMETERS,
     SEARCH_REPLACE_EDIT_FILE_TOOL_NAME,
     SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS,
+    SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME,
+    SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS,
     TERMINAL_COMMAND_TOOL_NAME,
     TERMINAL_COMMAND_TOOL_PARAMETERS,
     TYPECHECK_TOOL_NAME,
@@ -53,6 +53,7 @@ import {
     handleSandboxTool,
     handleScrapeUrlTool,
     handleSearchReplaceEditFileTool,
+    handleSearchReplaceMultiEditFileTool,
     handleTerminalCommandTool,
     handleTypecheckTool,
     handleWebSearchTool,
@@ -120,6 +121,12 @@ const TOOL_HANDLERS: ClientToolMap = {
         handler: async (args: z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
             handleSearchReplaceEditFileTool(args, editorEngine),
     },
+    [SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME]: {
+        name: SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME,
+        inputSchema: SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS,
+        handler: async (args: z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
+            handleSearchReplaceMultiEditFileTool(args, editorEngine),
+    },
     [WRITE_FILE_TOOL_NAME]: {
         name: WRITE_FILE_TOOL_NAME,
         inputSchema: WRITE_FILE_TOOL_PARAMETERS,
@@ -176,31 +183,38 @@ const TOOL_HANDLERS: ClientToolMap = {
     },
 };
 
-export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
-    try {
+export function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine, addToolResult: (toolResult: { tool: string, toolCallId: string, output: any }) => void) {
+    const runTool = async () => {
         const toolName = toolCall.toolName;
-
         const currentChatMode = editorEngine.state.chatMode;
-        const availableTools = await getToolSetFromType(currentChatMode);
+        const availableTools = getToolSetFromType(currentChatMode);
+        let output: any = null;
 
-        if (!availableTools[toolName]) {
-            toast.error(`Tool "${toolName}" not available in ask mode`, {
-                description: `Switch to build mode to use this tool.`,
-                duration: 2000,
+        try {
+            if (!availableTools[toolName]) {
+                toast.error(`Tool "${toolName}" not available in ask mode`, {
+                    description: `Switch to build mode to use this tool.`,
+                    duration: 2000,
+                });
+
+                throw new Error(`Tool "${toolName}" is not available in ${currentChatMode} mode`);
+            }
+
+            const clientTool = TOOL_HANDLERS[toolName];
+
+            if (!clientTool) {
+                throw new Error(`Unknown tool call: ${toolName}`);
+            }
+            output = await clientTool.handler(toolCall.input, editorEngine);
+        } catch (error) {
+            output = 'error handling tool call ' + error;
+        } finally {
+            addToolResult({
+                tool: toolName,
+                toolCallId: toolCall.toolCallId,
+                output: output,
             });
-
-            throw new Error(`Tool "${toolName}" is not available in ${currentChatMode} mode`);
         }
-
-        const clientTool = TOOL_HANDLERS[toolName];
-
-        if (!clientTool) {
-            throw new Error(`Unknown tool call: ${toolName}`);
-        }
-
-        return await clientTool.handler(toolCall.input, editorEngine);
-    } catch (error) {
-        console.error('Error handling tool call', error);
-        return 'error handling tool call ' + error;
     }
+    runTool();
 }

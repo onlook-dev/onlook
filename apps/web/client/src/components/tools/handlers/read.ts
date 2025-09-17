@@ -12,7 +12,7 @@ async function safeRunCommand(sandbox: any, command: string, fallbackValue?: str
         // Some commands return success: false even when they work - check output too
         const hasOutput = result.output && result.output.trim().length > 0;
         const isActuallySuccessful = result.success || (hasOutput && !result.output.includes('command not found') && !result.output.includes('not found'));
-        
+
         return {
             success: isActuallySuccessful,
             output: result.output || '',
@@ -37,7 +37,7 @@ async function resolvePath(inputPath: string, sandbox: any): Promise<{ path: str
     // Check if test command is available
     const hasTestCommand = await isCommandAvailable(sandbox, 'test');
     const hasRealpathCommand = await isCommandAvailable(sandbox, 'realpath');
-    
+
     // If already absolute path, try it first
     if (inputPath.startsWith('/')) {
         if (hasTestCommand) {
@@ -48,7 +48,7 @@ async function resolvePath(inputPath: string, sandbox: any): Promise<{ path: str
         } else {
             // Fallback: try to read the file directly to check existence
             try {
-                const file = await sandbox.readFile(inputPath);
+                const file = await sandbox.readFile(inputPath, true);
                 if (file) {
                     return { path: inputPath, wasFuzzy: false };
                 }
@@ -69,7 +69,7 @@ async function resolvePath(inputPath: string, sandbox: any): Promise<{ path: str
         } else {
             // Fallback: try the relative path as-is first
             try {
-                const file = await sandbox.readFile(inputPath);
+                const file = await sandbox.readFile(inputPath, true);
                 if (file) {
                     return { path: inputPath, wasFuzzy: false };
                 }
@@ -78,7 +78,7 @@ async function resolvePath(inputPath: string, sandbox: any): Promise<{ path: str
             }
         }
     }
-    
+
     // Fuzzy path matching - try to find similar paths
     const fuzzyResult = await findFuzzyPath(inputPath, sandbox);
     return { path: fuzzyResult, wasFuzzy: fuzzyResult !== null };
@@ -88,41 +88,41 @@ async function findFuzzyPath(inputPath: string, sandbox: any): Promise<string | 
     // Extract filename/directory name from path
     const parts = inputPath.split('/').filter(p => p);
     const targetName = parts[parts.length - 1];
-    
+
     if (!targetName) return null;
-    
+
     // Check if find command is available
     const hasFindCommand = await isCommandAvailable(sandbox, 'find');
     const hasRealpathCommand = await isCommandAvailable(sandbox, 'realpath');
-    
+
     if (hasFindCommand) {
         // Search for files/directories with similar names using find
         // Properly escape the targetName by replacing single quotes with '\''
         const escapedTargetName = targetName.replace(/'/g, "'\\''");
         const findCommand = `find . \\( -name '*${escapedTargetName}*' -type f -o -name '*${escapedTargetName}*' -type d \\) | head -10`;
         const result = await safeRunCommand(sandbox, findCommand);
-        
+
         if (result.success && result.output.trim()) {
             const candidates = result.output.trim().split('\n').filter((line: string) => line.trim());
-            
+
             // Simple scoring - prefer exact matches and shorter paths
             const scored = candidates.map((candidate: string) => {
                 const candidateName = candidate.split('/').pop() || '';
                 let score = 0;
-                
+
                 // Exact name match gets highest score
                 if (candidateName === targetName) score += 100;
                 // Partial match
                 else if (candidateName.includes(targetName)) score += 50;
                 // Case insensitive match
                 else if (candidateName.toLowerCase().includes(targetName.toLowerCase())) score += 25;
-                
+
                 // Prefer shorter paths (less nested)
                 score -= candidate.split('/').length;
-                
+
                 return { path: candidate, score };
             });
-            
+
             // Return the highest scored candidate
             scored.sort((a: { path: string; score: number }, b: { path: string; score: number }) => b.score - a.score);
             if (scored.length > 0 && scored[0] && scored[0].score > 0) {
@@ -144,11 +144,11 @@ async function findFuzzyPath(inputPath: string, sandbox: any): Promise<string | 
             if (currentDirResult) {
                 const candidates = currentDirResult
                     .map((file: any) => file.name)
-                    .filter((name: string) => 
-                        name.includes(targetName) || 
+                    .filter((name: string) =>
+                        name.includes(targetName) ||
                         name.toLowerCase().includes(targetName.toLowerCase())
                     );
-                
+
                 if (candidates.length > 0) {
                     // Return the first match (could be improved with scoring)
                     return `./${candidates[0]}`;
@@ -158,7 +158,7 @@ async function findFuzzyPath(inputPath: string, sandbox: any): Promise<string | 
             // If directory listing fails, return null
         }
     }
-    
+
     return null;
 }
 
@@ -168,7 +168,7 @@ async function resolveDirectoryPath(inputPath: string | undefined, sandbox: any)
         const pwdResult = await safeRunCommand(sandbox, 'pwd', '.');
         return pwdResult.success ? pwdResult.output.trim() : '.';
     }
-    
+
     const resolved = await resolvePath(inputPath, sandbox);
     if (resolved.path) {
         // Verify it's a directory
@@ -190,7 +190,7 @@ async function resolveDirectoryPath(inputPath: string | undefined, sandbox: any)
             }
         }
     }
-    
+
     // Fallback to original path
     return inputPath.startsWith('/') ? inputPath : `./${inputPath}`;
 }
@@ -207,46 +207,46 @@ export async function handleListFilesTool(
     try {
         // Resolve the directory path with fuzzy matching support
         const resolvedPath = await resolveDirectoryPath(args.path, sandbox);
-        
+
         // Check if find command is available
         const hasFindCommand = await isCommandAvailable(sandbox, 'find');
-        
+
         let result: { success: boolean; output: string; isReliable: boolean };
-        
+
         if (hasFindCommand) {
             // Build the find command based on parameters
             let findCommand = `find "${resolvedPath}"`;
-            
+
             // Always use non-recursive behavior (maxdepth 1)
             findCommand += ' -maxdepth 1';
-            
+
             // Filter by type if specified
             if (args.file_types_only) {
                 findCommand += ' -type f';
             } else {
                 findCommand += ' -type f -o -type d';
             }
-            
+
             // Handle hidden files
             if (!args.show_hidden) {
                 findCommand += ' ! -name ".*"';
             }
-            
+
             // Add ignore patterns
             if (args.ignore && args.ignore.length > 0) {
                 for (const pattern of args.ignore) {
                     findCommand += ` ! -path "*/${pattern}" ! -name "${pattern}"`;
                 }
             }
-            
+
             // Add formatting to get file info
             findCommand += ' -printf "%p|%y|%s|%TY-%Tm-%Td %TH:%TM\\n"';
-            
+
             result = await safeRunCommand(sandbox, findCommand);
         } else {
             result = { success: false, output: '', isReliable: false };
         }
-        
+
         if (!result.success) {
             // Fallback to the original method if find command fails or unavailable
             const fallbackResult = await sandbox.readDir(resolvedPath);
@@ -258,11 +258,11 @@ export async function handleListFilesTool(
                 type: file.type,
             }));
         }
-        
+
         if (!result.output.trim()) {
             return [];
         }
-        
+
         // Parse the find output
         const files = result.output.trim().split('\n')
             .filter((line: string) => line.trim())
@@ -273,7 +273,7 @@ export async function handleListFilesTool(
                 const size = parts[2] || '';
                 const modified = parts[3] || '';
                 const relativePath = fullPath.replace(resolvedPath + '/', '').replace(resolvedPath, '.');
-                
+
                 return {
                     path: relativePath === '.' ? '.' : relativePath,
                     type: type === 'f' ? 'file' as const : 'directory' as const,
@@ -289,9 +289,9 @@ export async function handleListFilesTool(
                 }
                 return a.path.localeCompare(b.path);
             });
-            
+
         return files;
-        
+
     } catch (error) {
         throw new Error(`Cannot list directory: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -312,27 +312,27 @@ export async function handleReadFileTool(args: z.infer<typeof READ_FILE_TOOL_PAR
         const resolved = await resolvePath(args.file_path, sandbox);
         let resolvedPath = resolved.path;
         const wasFuzzyMatch = resolved.wasFuzzy;
-        
+
         if (!resolvedPath) {
             // If fuzzy matching fails, try the original path
             resolvedPath = args.file_path;
         }
 
         // Try reading with the resolved path first
-        let file = await sandbox.readFile(resolvedPath);
-        
+        let file = await sandbox.readFile(resolvedPath, true);
+
         // If that fails and we have a different resolved path, provide helpful error
         if (!file && resolvedPath !== args.file_path) {
             throw new Error(`Cannot read file ${args.file_path}: file not found. Tried fuzzy match: ${resolvedPath} but it's also not readable.`);
         }
-        
+
         if (!file) {
             // Try using terminal commands as fallback for better error messages
             const hasTestCommand = await isCommandAvailable(sandbox, 'test');
-            
+
             if (hasTestCommand) {
                 const testResult = await safeRunCommand(sandbox, `test -f "${resolvedPath}" && echo "file_exists" || (test -e "${resolvedPath}" && echo "exists_not_file" || echo "not_found")`);
-                
+
                 if (testResult.success) {
                     if (testResult.output.trim() === 'exists_not_file') {
                         throw new Error(`Cannot read file ${resolvedPath}: path exists but is not a file (might be a directory)`);
@@ -341,7 +341,7 @@ export async function handleReadFileTool(args: z.infer<typeof READ_FILE_TOOL_PAR
                     }
                 }
             }
-            
+
             throw new Error(`Cannot read file ${resolvedPath}: file not accessible`);
         }
 
@@ -350,7 +350,7 @@ export async function handleReadFileTool(args: z.infer<typeof READ_FILE_TOOL_PAR
             const hasHeadCommand = await isCommandAvailable(sandbox, 'head');
             const hasCatCommand = await isCommandAvailable(sandbox, 'cat');
             const hasFileCommand = await isCommandAvailable(sandbox, 'file');
-            
+
             if (hasHeadCommand && hasCatCommand) {
                 const catResult = await safeRunCommand(sandbox, `head -c 1000 "${resolvedPath}" | cat -v`);
                 if (catResult.success && catResult.output.length > 0) {
