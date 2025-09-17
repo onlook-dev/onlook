@@ -1,10 +1,10 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
+import type { ChatSuggestion } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { useChatContext } from '../../../_hooks/use-chat';
 
 export interface SuggestionsRef {
     handleTabNavigation: (reverse: boolean) => boolean;
@@ -12,29 +12,30 @@ export interface SuggestionsRef {
 }
 
 export const Suggestions = observer(
+    // eslint-disable-next-line react/display-name
     forwardRef<
         SuggestionsRef,
         {
+            isWaiting: boolean;
             disabled: boolean;
             inputValue: string;
             setInput: (input: string) => void;
             onSuggestionFocus?: (isFocused: boolean) => void;
         }
-    >(({ disabled, inputValue, setInput, onSuggestionFocus }, ref) => {
+    >(({ isWaiting, disabled, inputValue, setInput, onSuggestionFocus }, ref) => {
         const editorEngine = useEditorEngine();
-        const { isWaiting } = useChatContext();
         const { data: settings } = api.user.settings.get.useQuery();
         const [focusedIndex, setFocusedIndex] = useState<number>(-1);
         const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-        const suggestions = editorEngine.chat.suggestions.suggestions;
+        // const suggestions = editorEngine.chat.suggestions.suggestions;
+        const suggestions = [] as ChatSuggestion[];
         const shouldHideSuggestions =
             suggestions.length === 0 ||
             isWaiting ||
             !settings?.chat?.showSuggestions ||
             disabled ||
             inputValue.trim().length > 0 ||
-            editorEngine.chat.error.hasError() ||
             editorEngine.branches.getAllErrors().length > 0;
 
         const handleTabNavigation = (reverse: boolean) => {

@@ -4,6 +4,8 @@ import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from 
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helpers';
+import { api } from '@/trpc/server';
+import { toDbMessageFromVercel } from '@onlook/db';
 
 const MAX_STEPS = 20;
 
@@ -77,7 +79,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         const modelConfig = await getModelFromType(chatType);
         const { model, providerOptions, headers } = modelConfig;
         const systemPrompt = await getSystemPromptFromType(chatType);
-        const tools = await getToolSetFromType(chatType);
+        const tools = getToolSetFromType(chatType);
 
         const result = streamText({
             model,
@@ -131,6 +133,18 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                             finishReason: part.finishReason,
                         }
                     }
+                },
+                onFinish: async ({ messages: finalMessages }) => {
+                    const messagesToStore = finalMessages
+                        .filter(msg => 
+                            (msg.role === 'user' || msg.role === 'assistant')
+                        )
+                        .map(msg => toDbMessageFromVercel(msg, conversationId));
+                    
+                    await api.chat.message.replaceConversationMessages({
+                        conversationId,
+                        messages: messagesToStore,
+                    });
                 },
                 onError: errorHandler,
             }

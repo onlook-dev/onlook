@@ -1,4 +1,3 @@
-import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { EditorMode } from '@onlook/models';
@@ -11,7 +10,6 @@ import { DEFAULT_INPUT_STATE } from './helpers';
 export const OverlayButtons = observer(() => {
     const editorEngine = useEditorEngine();
     const { data: settings } = api.user.settings.get.useQuery();
-    const { isWaiting } = useChatContext();
     const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
     const prevChatPositionRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -22,7 +20,7 @@ export const OverlayButtons = observer(() => {
     const shouldHideButton =
         !selectedRect ||
         isPreviewMode ||
-        isWaiting ||
+        editorEngine.chat.isWaiting ||
         !settings?.chat?.showMiniChat;
 
     useEffect(() => {

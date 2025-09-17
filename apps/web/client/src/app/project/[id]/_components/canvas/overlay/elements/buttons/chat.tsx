@@ -1,4 +1,3 @@
-import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
 import { ChatType, EditorTabValue } from '@onlook/models';
@@ -23,13 +22,14 @@ export const OverlayChatInput = observer(({
     const t = useTranslations();
     const [isComposing, setIsComposing] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const { sendMessageToChat } = useChatContext();
 
     const handleSubmit = async () => {
         try {
             editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
             await editorEngine.chat.addEditMessage(inputState.value);
-            sendMessageToChat(ChatType.EDIT);
+            if (editorEngine.chat.sendMessageToChat) {
+                editorEngine.chat.sendMessageToChat(ChatType.EDIT);
+            }
             setInputState(DEFAULT_INPUT_STATE);
         } catch (error) {
             console.error('Error sending message', error);

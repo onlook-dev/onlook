@@ -1,4 +1,4 @@
-import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
+// import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { ChatType, MessageCheckpointType, type UserChatMessage } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
@@ -13,6 +13,7 @@ import { SentContextPill } from '../context-pills/sent-context-pill';
 import { MessageContent } from './message-content';
 
 interface UserMessageProps {
+    onEditMessage: (messageId: string, newContent: string) => Promise<void>;
     message: UserChatMessage;
 }
 
@@ -25,9 +26,8 @@ export const getUserMessageContent = (message: UserChatMessage) => {
     }).join('');
 }
 
-export const UserMessage = ({ message }: UserMessageProps) => {
+export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
-    const { sendMessageToChat } = useChatContext();
     const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
@@ -35,7 +35,9 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     const [isRestoring, setIsRestoring] = useState(false);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const commitOid = message.metadata?.checkpoints?.find((s) => s.type === MessageCheckpointType.GIT)?.oid;
+    const commitOid = message.metadata?.checkpoints?.find(
+        (s) => s.type === MessageCheckpointType.GIT,
+    )?.oid;
 
     useEffect(() => {
         if (isEditing && textareaRef.current) {
@@ -83,18 +85,17 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     };
 
     const sendMessage = async (newContent: string) => {
-        try {
-            const newMessage = await editorEngine.chat.resubmitMessage(message.id, newContent);
-            if (!newMessage) {
-                throw new Error('Message not found');
+        toast.promise(
+            onEditMessage(message.id, newContent),
+            {
+                loading: 'Resubmitting message...',
+                success: 'Message resubmitted successfully',
+                error: (error) => ({
+                    title: 'Failed to resubmit message',
+                    description: error instanceof Error ? error.message : 'Unknown error',
+                }),
             }
-            sendMessageToChat(ChatType.EDIT);
-        } catch (error) {
-            console.error('Failed to resubmit message', error);
-            toast.error('Failed to resubmit message. Please try again.', {
-                description: error instanceof Error ? error.message : 'Unknown error',
-            });
-        }
+        )
     };
 
     const handleRestoreCheckpoint = async () => {
@@ -217,7 +218,9 @@ export const UserMessage = ({ message }: UserMessageProps) => {
                     </div>
                 </div>
                 <div className="text-small mt-1">
-                    {isEditing ? renderEditingInput() : (
+                    {isEditing ? (
+                        renderEditingInput()
+                    ) : (
                         <MessageContent
                             messageId={message.id}
                             parts={message.parts}

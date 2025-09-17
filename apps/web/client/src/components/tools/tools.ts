@@ -185,7 +185,7 @@ const TOOL_HANDLERS: ClientToolMap = {
     },
 };
 
-export function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine, addToolResult: (toolResult: { tool: string, toolCallId: string, output: any }) => void) {
+export function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine, addToolResult: (toolResult: { tool: string, toolCallId: string, output: any }) => Promise<void>) {
     const runTool = async () => {
         const toolName = toolCall.toolName;
         const currentChatMode = editorEngine.state.chatMode;

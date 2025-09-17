@@ -1,5 +1,4 @@
 
-import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
 import { transKeys } from '@/i18n/keys';
@@ -20,15 +19,21 @@ import { InputContextPills } from '../context-pills/input-context-pills';
 import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 import { ChatModeToggle } from './chat-mode-toggle';
+import type { UIMessage } from 'ai';
+
+interface ChatInputProps {
+    messages: UIMessage[];
+    isWaiting: boolean;
+    onStop: () => Promise<void>;
+    onSendMessage: (content: string, type: ChatType) => Promise<void>;
+}
 
 export const ChatInput = observer(({
-    inputValue,
-    setInputValue,
-}: {
-    inputValue: string;
-    setInputValue: React.Dispatch<React.SetStateAction<string>>;
-}) => {
-    const { sendMessageToChat, stop, isWaiting } = useChatContext();
+    messages,
+    isWaiting,
+    onStop,
+    onSendMessage,
+}: ChatInputProps) => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -36,6 +41,7 @@ export const ChatInput = observer(({
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const chatMode = editorEngine.state.chatMode;
+    const [inputValue, setInputValue] = useState('');
 
     const focusInput = () => {
         requestAnimationFrame(() => {
@@ -47,7 +53,7 @@ export const ChatInput = observer(({
         if (textareaRef.current && !isWaiting) {
             focusInput();
         }
-    }, [editorEngine.chat.conversation.current?.messages]);
+    }, [isWaiting, messages]);
 
     useEffect(() => {
         if (editorEngine.state.rightPanelTab === EditorTabValue.CHAT) {
@@ -116,7 +122,7 @@ export const ChatInput = observer(({
             }
 
             if (!inputEmpty) {
-                sendMessage();
+                void sendMessage();
             }
         }
     };
@@ -132,11 +138,7 @@ export const ChatInput = observer(({
         }
         const savedInput = inputValue.trim();
         try {
-            const message = chatMode === ChatType.ASK
-                ? await editorEngine.chat.addAskMessage(savedInput)
-                : await editorEngine.chat.addEditMessage(savedInput);
-
-            await sendMessageToChat(chatMode);
+            await onSendMessage(savedInput, chatMode);
             setInputValue('');
         } catch (error) {
             console.error('Error sending message', error);
@@ -401,7 +403,7 @@ export const ChatInput = observer(({
                                     className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
                                     onClick={() => {
                                         setActionTooltipOpen(false);
-                                        stop();
+                                        void onStop();
                                     }}
                                 >
                                     <Icons.Stop />
@@ -415,7 +417,7 @@ export const ChatInput = observer(({
                             variant={'secondary'}
                             className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
                             disabled={inputEmpty || disabled}
-                            onClick={sendMessage}
+                            onClick={() => void sendMessage()}
                         >
                             <Icons.ArrowRight />
                         </Button>

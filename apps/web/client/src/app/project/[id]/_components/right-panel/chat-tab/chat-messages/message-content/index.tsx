@@ -17,8 +17,7 @@ export const MessageContent = observer(
         parts: UIMessage['parts'];
         applied: boolean;
         isStream: boolean;
-    }) => {
-
+        }) => {
         const renderedParts = parts.map((part, idx) => {
             if (part.type === 'text') {
                 return (

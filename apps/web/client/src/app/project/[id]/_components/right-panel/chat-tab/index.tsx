@@ -1,21 +1,26 @@
-import { ChatInput } from './chat-input';
-import { ChatMessages } from './chat-messages';
-import { ErrorSection } from './error';
+import { api } from '@/trpc/react';
+import { ChatTabContent } from './chat-tab-content';
 
-export const ChatTab = ({
-    inputValue,
-    setInputValue,
-}: {
-    inputValue: string;
-    setInputValue: React.Dispatch<React.SetStateAction<string>>;
-}) => {
+interface ChatTabProps {
+    conversationId: string;
+    projectId: string;
+}
+
+export const ChatTab = ({ conversationId, projectId }: ChatTabProps) => {
+    const { data: initialMessages } = api.chat.message.getAll.useQuery(
+        { conversationId: conversationId },
+        { enabled: !!conversationId },
+    );
+
+    if (!initialMessages) {
+        return null;
+    }
+
     return (
-        <div className="flex flex-col h-full justify-end gap-2 pt-2">
-            <div className="h-full flex-1 overflow-y-auto">
-                <ChatMessages />
-            </div>
-            <ErrorSection />
-            <ChatInput inputValue={inputValue} setInputValue={setInputValue} />
-        </div>
+        <ChatTabContent
+            conversationId={conversationId}
+            projectId={projectId}
+            initialMessages={initialMessages}
+        />
     );
 };

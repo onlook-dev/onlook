@@ -9,24 +9,32 @@ import type { ParsedError } from '@onlook/utility';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import { useChatContext } from '../../../_hooks/use-chat';
+import type { MessageContext } from '@onlook/models/chat';
 
-export const ErrorSection = observer(() => {
-    const { isWaiting, sendMessageToChat } = useChatContext();
+interface ErrorSectionProps {
+    isStreaming: boolean;
+    sendMessage: (content: string, type: ChatType, context?: MessageContext[]) => Promise<void>;
+}
+
+export const ErrorSection = observer(({ isStreaming, sendMessage }: ErrorSectionProps) => {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(false);
     const allErrors = editorEngine.branches.getAllErrors();
     const errorCount = editorEngine.branches.getTotalErrorCount();
 
     const sendFixError = async () => {
-        try {
-            await editorEngine.chat.addFixErrorMessage();
-            await sendMessageToChat(ChatType.FIX);
-        } catch (error) {
-            console.error('Error sending fix error message', error);
-            toast.error('Failed to send fix error message. Please try again.');
-        }
-    }
+        toast.promise(
+            () => {
+                const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
+                const errorContexts = editorEngine.chat.context.getErrorContext(allErrors);
+                const projectContexts = editorEngine.chat.context.getProjectContext();
+                return sendMessage(prompt, ChatType.FIX, [...errorContexts, ...projectContexts]);
+            },
+            {
+                error: 'Failed to send fix error message. Please try again.',
+            }
+        )
+    };
 
     return (
         <Collapsible
@@ -73,9 +81,9 @@ export const ErrorSection = observer(() => {
                         <Button
                             variant="ghost"
                             size="sm"
-                            disabled={isWaiting}
+                            disabled={isStreaming}
                             className="h-7 px-2 text-amber-600 dark:text-amber-400 hover:text-amber-900 hover:bg-amber-200 dark:hover:text-amber-100 dark:hover:bg-amber-700 font-sans select-none"
-                            onClick={sendFixError}
+                            onClick={void sendFixError}
                         >
                             <Icons.MagicWand className="h-4 w-4 mr-2" />
                             Fix

@@ -13,7 +13,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
-import { useChatContext } from '../../_hooks/use-chat';
 import { Members } from '../members';
 import { BranchDisplay } from './branch';
 import { ModeToggle } from './mode-toggle';
@@ -23,19 +22,18 @@ import { PublishButton } from './publish';
 export const TopBar = observer(() => {
     const stateManager = useStateManager();
     const editorEngine = useEditorEngine();
-    const { isWaiting } = useChatContext();
     const t = useTranslations();
 
     const UNDO_REDO_BUTTONS = [
         {
             click: () => editorEngine.action.undo(),
-            isDisabled: !editorEngine.history.canUndo || isWaiting,
+            isDisabled: !editorEngine.history.canUndo || editorEngine.chat.isWaiting,
             hotkey: Hotkey.UNDO,
             icon: <Icons.Reset className="h-4 w-4 mr-1" />,
         },
         {
             click: () => editorEngine.action.redo(),
-            isDisabled: !editorEngine.history.canRedo || isWaiting,
+            isDisabled: !editorEngine.history.canRedo || editorEngine.chat.isWaiting,
             hotkey: Hotkey.REDO,
             icon: <Icons.Reset className="h-4 w-4 mr-1 scale-x-[-1]" />,
         },

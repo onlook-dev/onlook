@@ -1,111 +1,150 @@
-'use client'
+'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
-import { useChat, type UseChatHelpers } from '@ai-sdk/react';
-import { toVercelMessageFromOnlook } from '@onlook/ai';
-import { toOnlookMessageFromVercel } from '@onlook/db';
-import { ChatMessageRole, ChatType } from '@onlook/models';
-import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, type UIMessage } from 'ai';
-import { observer } from 'mobx-react-lite';
+import { useChat as useAiChat, type UseChatHelpers } from '@ai-sdk/react';
+import { ChatType, type MessageContext } from '@onlook/models';
+import {
+    DefaultChatTransport,
+    lastAssistantMessageIsCompleteWithToolCalls,
+    type UIMessage,
+} from 'ai';
 import { usePostHog } from 'posthog-js/react';
-import { createContext, useContext, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
-type ExtendedUseChatHelpers = UseChatHelpers<UIMessage> & { sendMessageToChat: (type: ChatType) => Promise<void> };
-const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
+type ExtendedUseChatHelpers = UseChatHelpers<UIMessage> & {
+    sendMessage: (content: string, type: ChatType, context: MessageContext[]) => Promise<void>;
+    editMessage: (messageId: string, newContent: string) => Promise<void>;
+    isStreaming: boolean;
+};
 
-export const ChatProvider = observer(({ children }: { children: React.ReactNode }) => {
+interface UseChatProps {
+    conversationId: string;
+    projectId: string;
+    initialMessages: UIMessage[];
+}
+
+export function useChat({
+    conversationId,
+    projectId,
+    initialMessages,
+}: UseChatProps): ExtendedUseChatHelpers {
     const editorEngine = useEditorEngine();
-    const lastMessageRef = useRef<UIMessage | null>(null);
     const posthog = usePostHog();
-
-    const conversationId = editorEngine.chat.conversation.current?.conversation.id;
-    const chat = useChat({
+    const {
+        sendMessage: baseSendMessage,
+        addToolResult,
+        messages,
+        error,
+        stop,
+        setMessages,
+        regenerate,
+        status,
+    } = useAiChat({
         id: 'user-chat',
+        messages: initialMessages,
         sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
         transport: new DefaultChatTransport({
             api: '/api/chat',
             body: {
                 conversationId,
-                projectId: editorEngine.projectId,
+                projectId,
             },
         }),
-        onToolCall: (toolCall) => { handleToolCall(toolCall.toolCall, editorEngine, chat.addToolResult) },
+        onToolCall: async (toolCall) => {
+            handleToolCall(toolCall.toolCall, editorEngine, addToolResult)
+        },
         onFinish: ({ message }) => {
             if (!message.metadata) {
                 return;
             }
             const finishReason = (message.metadata as { finishReason?: string }).finishReason;
-            lastMessageRef.current = message;
-            if (finishReason !== 'error') {
-                editorEngine.chat.error.clear();
-            }
 
             if (finishReason !== 'tool-calls') {
-                const currentConversationId = editorEngine.chat.conversation.current?.conversation.id;
-                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(message, currentConversationId ?? ''));
-                editorEngine.chat.suggestions.generateSuggestions();
-                lastMessageRef.current = null;
+                // Generate suggestions, can maybe pull out of mobx store if suggestions aren't consumed anywhere other than the right-panel
             }
             if (finishReason === 'stop') {
                 editorEngine.chat.context.clearAttachments();
-            } else if (finishReason === 'length') {
-                editorEngine.chat.error.handleChatError(new Error('Output length limit reached'));
-            } else if (finishReason === 'content-filter') {
-                editorEngine.chat.error.handleChatError(new Error('Content filter error'));
             }
         },
-        onError: (error) => {
-            console.error('Error in chat', error);
-            editorEngine.chat.error.handleChatError(error);
-            if (lastMessageRef.current) {
-                const currentConversationId = editorEngine.chat.conversation.current?.conversation.id;
-                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(lastMessageRef.current, currentConversationId ?? ''));
-                lastMessageRef.current = null;
-            }
-        }
     });
 
-    const sendMessageToChat = async (type: ChatType = ChatType.EDIT) => {
-        if (!conversationId) {
-            throw new Error('No conversation id');
-        }
-        lastMessageRef.current = null;
-        editorEngine.chat.error.clear();
+    const isStreaming = status === 'streaming' || status === 'submitted';
 
-        const messages = editorEngine.chat.conversation.current?.messages ?? [];
-        const uiMessages = messages.map((message, index) =>
-            toVercelMessageFromOnlook(message, {
-                totalMessages: messages.length,
-                currentMessageIndex: index,
-                lastUserMessageIndex: messages.findLastIndex(m => m.role === ChatMessageRole.USER),
-                lastAssistantMessageIndex: messages.findLastIndex(m => m.role === ChatMessageRole.ASSISTANT),
-            })
-        );
+    useEffect(() => {
+        editorEngine.chat.setIsStreaming(isStreaming);
+    }, [editorEngine.chat, isStreaming]);
 
-        chat.setMessages(uiMessages);
-        try {
-            posthog.capture('user_send_message', {
-                type,
+    const sendMessage = useCallback(
+        // TODO: const context = await editorEngine.chat.context.getChatContext();
+        // TODO: context is optional
+        async (content: string, type: ChatType = ChatType.EDIT, context: MessageContext[]) => {
+            posthog.capture('user_send_message', { type });
+
+
+
+            return baseSendMessage(
+                { text: content },
+                {
+                    body: {
+                        chatType: type,
+                        conversationId,
+                        context,
+                    },
+                },
+            );
+        },
+        [baseSendMessage, conversationId, posthog],
+    );
+
+
+    // Store messages in a ref to avoid re-rendering editMessage
+    const messagesRef = useRef(messages);
+    useEffect(() => {
+        messagesRef.current = messages;
+    }, [messages]);    
+
+    const editMessage = useCallback(
+        async (messageId: string, newContent: string) => {
+            const messageIndex = messagesRef.current.findIndex((m) => m.id === messageId);
+            if (messageIndex === -1) {
+                throw new Error('Message not found');
+            }
+
+            const message = messagesRef.current.find((m) => m.id === messageId);
+            if (!message) {
+                throw new Error('Message not found');
+            }
+            
+            posthog.capture('user_edit_message', { type: ChatType.EDIT });
+
+            const updatedMessages = messagesRef.current.slice(0, messageIndex + 1);
+
+            updatedMessages[messageIndex] = {
+                ...updatedMessages[messageIndex],
+                parts: [{ type: 'text', text: newContent }],
+            };
+
+            setMessages(updatedMessages);
+
+            return regenerate({
+                body: {
+                    chatType: ChatType.EDIT,
+                    conversationId,
+                },
             });
-        } catch (error) {
-            console.error('Error tracking user send message: ', error)
-        }
-        return chat.regenerate({
-            body: {
-                chatType: type,
-                conversationId
-            },
+        },
+        [regenerate, conversationId, setMessages, posthog],
+    );
+
+
+
+    useEffect(() => {
+        editorEngine.chat.setChatActions({
+            sendMessage: sendMessage,
+            editMessage: editMessage,
         });
-    };
+    }, [editorEngine.chat, sendMessage, editMessage]);
 
-    return <ChatContext.Provider value={{ ...chat, sendMessageToChat }}>{children}</ChatContext.Provider>;
-});
-
-export function useChatContext() {
-    const context = useContext(ChatContext);
-    if (!context) throw new Error('useChatContext must be used within a ChatProvider');
-    const isWaiting = context.status === 'streaming' || context.status === 'submitted';
-
-    return { ...context, isWaiting };
+    return { status, sendMessage, editMessage, messages, error, stop, isStreaming };
 }

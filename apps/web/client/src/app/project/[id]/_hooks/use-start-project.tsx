@@ -1,6 +1,5 @@
 'use client';
 
-import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { type ProjectCreateRequest } from '@onlook/db';
@@ -33,7 +32,6 @@ export const useStartProject = () => {
     const { data: canvasWithFrames, error: canvasError } = api.userCanvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
     const { data: conversations, error: conversationsError } = api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
     const { data: creationRequest, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
-    const { sendMessageToChat } = useChatContext();
     const { mutateAsync: updateCreateRequest } = api.project.createRequest.updateStatus.useMutation({
         onSettled: async () => {
             await apiUtils.project.createRequest.getPendingRequest.invalidate({ projectId: editorEngine.projectId });
@@ -102,7 +100,6 @@ export const useStartProject = () => {
                 prompt,
                 context,
             );
-            sendMessageToChat(ChatType.CREATE);
 
             try {
                 await updateCreateRequest({
