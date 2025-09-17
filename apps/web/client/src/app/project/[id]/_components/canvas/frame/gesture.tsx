@@ -12,9 +12,6 @@ import { RightClickMenu } from './right-click';
 
 export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, isResizing: boolean }) => {
     const editorEngine = useEditorEngine();
-    const mouseDownPosition = useRef<ElementPosition | null>(null);
-    const isDragInitiated = useRef(false);
-    const DRAG_DEADZONE = 5; // pixels
 
     const getFrameData: () => FrameData | null = useCallback(() => {
         return editorEngine.frames.get(frame.id);
@@ -101,19 +98,7 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
                     return;
                 }
 
-                // Check if we should initiate drag based on deadzone
-                if (editorEngine.move.isPreparing && mouseDownPosition.current && !isDragInitiated.current) {
-                    const currentPosition = getRelativeMousePosition(e);
-                    const deltaX = Math.abs(currentPosition.x - mouseDownPosition.current.x);
-                    const deltaY = Math.abs(currentPosition.y - mouseDownPosition.current.y);
-                    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                    
-                    if (distance >= DRAG_DEADZONE) {
-                        isDragInitiated.current = true;
-                    }
-                }
-
-                if (editorEngine.move.shouldDrag && isDragInitiated.current) {
+                if (editorEngine.move.shouldDrag) {
                     await editorEngine.move.drag(e, getRelativeMousePosition);
                 } else if (
                     editorEngine.state.editorMode === EditorMode.DESIGN ||
@@ -122,15 +107,12 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
                         editorEngine.state.editorMode === EditorMode.INSERT_IMAGE) &&
                         !editorEngine.insert.isDrawing)
                 ) {
-                    // Only handle hover if not preparing to drag or drag deadzone not exceeded
-                    if (!editorEngine.move.isPreparing || isDragInitiated.current) {
-                        await handleMouseEvent(e, MouseAction.MOVE);
-                    }
+                    await handleMouseEvent(e, MouseAction.MOVE);
                 } else if (editorEngine.insert.isDrawing) {
                     editorEngine.insert.draw(e);
                 }
             }, 16),
-        [editorEngine, getRelativeMousePosition, handleMouseEvent, DRAG_DEADZONE],
+        [editorEngine, getRelativeMousePosition, handleMouseEvent],
     );
 
     useEffect(() => {
@@ -143,8 +125,6 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
     useEffect(() => {
         const handleGlobalMouseUp = (e: MouseEvent) => {
             if (editorEngine.move.shouldDrag || editorEngine.move.isPreparing) {
-                mouseDownPosition.current = null;
-                isDragInitiated.current = false;
                 editorEngine.move.cancelDragPreparation();
                 // Create a synthetic React event for consistency
                 const syntheticEvent = {
@@ -158,8 +138,6 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
         const handleKeyDown = (e: KeyboardEvent) => {
             // Terminate drag on Escape key
             if (e.key === 'Escape' && (editorEngine.move.shouldDrag || editorEngine.move.isPreparing)) {
-                mouseDownPosition.current = null;
-                isDragInitiated.current = false;
                 editorEngine.move.cancelDragPreparation();
                 void editorEngine.move.endAllDrag();
             }
@@ -168,8 +146,6 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
         const handleVisibilityChange = () => {
             // Terminate drag when page becomes hidden (e.g., tab switch, minimize)
             if (document.hidden && (editorEngine.move.shouldDrag || editorEngine.move.isPreparing)) {
-                mouseDownPosition.current = null;
-                isDragInitiated.current = false;
                 editorEngine.move.cancelDragPreparation();
                 void editorEngine.move.endAllDrag();
             }
@@ -178,8 +154,6 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
         const handleBlur = () => {
             // Terminate drag when window loses focus
             if (editorEngine.move.shouldDrag || editorEngine.move.isPreparing) {
-                mouseDownPosition.current = null;
-                isDragInitiated.current = false;
                 editorEngine.move.cancelDragPreparation();
                 void editorEngine.move.endAllDrag();
             }
@@ -215,10 +189,6 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
     }
 
     async function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
-        // Store initial mouse position for deadzone calculation
-        mouseDownPosition.current = getRelativeMousePosition(e);
-        isDragInitiated.current = false;
-        
         if (editorEngine.state.editorMode === EditorMode.DESIGN) {
             await handleMouseEvent(e, MouseAction.MOUSE_DOWN);
         } else if (
@@ -235,10 +205,6 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
         if (!frameData) {
             return;
         }
-
-        // Reset drag tracking state
-        mouseDownPosition.current = null;
-        isDragInitiated.current = false;
 
         editorEngine.move.cancelDragPreparation();
 
@@ -315,8 +281,6 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
                 onContextMenu={(e) => {
                     // Terminate drag on right-click
                     if (editorEngine.move.shouldDrag || editorEngine.move.isPreparing) {
-                        mouseDownPosition.current = null;
-                        isDragInitiated.current = false;
                         editorEngine.move.cancelDragPreparation();
                         void editorEngine.move.end(e);
                     }
