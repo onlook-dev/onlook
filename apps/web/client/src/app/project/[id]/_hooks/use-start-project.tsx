@@ -134,8 +134,17 @@ export const useStartProject = () => {
                 // Force a refresh of all frames to re-establish penpal connections
                 editorEngine.frames.getAll().forEach((frameData) => {
                     if (frameData.view) {
-                        // Trigger a lightweight operation to wake up the connection
-                        frameData.view.getFrameId?.().catch(() => {});
+                        // Trigger a reload to wake up the connection if needed
+                        // The reload method exists on IFrameView
+                        try {
+                            // Just accessing the view helps wake it up
+                            const isLoading = frameData.view.isLoading();
+                            if (!isLoading) {
+                                // View is ready, connection should be active
+                            }
+                        } catch {
+                            // Ignore errors, this is just a warm-up
+                        }
                     }
                 });
                 

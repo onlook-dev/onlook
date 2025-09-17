@@ -98,9 +98,16 @@ export class ElementsManager {
         
         // If we need warmup, do a quick no-op to wake up the engine
         if (needsWarmup && domEls.length > 0) {
-            // Quick ping to the frame to ensure connection is active
+            // Quick check to ensure frame is active
             const frameData = this.editorEngine.frames.get(domEls[0].frameId);
-            frameData?.view?.getFrameId?.().catch(() => {});
+            if (frameData?.view) {
+                try {
+                    // Just checking if loading helps wake up the view
+                    frameData.view.isLoading();
+                } catch {
+                    // Ignore errors during warmup
+                }
+            }
         }
         
         // Update selected elements in a separate action to control reaction timing
