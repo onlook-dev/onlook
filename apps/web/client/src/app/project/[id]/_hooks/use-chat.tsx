@@ -3,24 +3,22 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
-import { toVercelMessageFromOnlook } from '@onlook/ai';
-import { toOnlookMessageFromVercel } from '@onlook/db';
-import { ChatMessageRole, ChatType } from '@onlook/models';
-import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, type UIMessage } from 'ai';
+import { ChatType, type ChatMessage } from '@onlook/models';
+import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
 import { createContext, useContext, useRef } from 'react';
 
-type ExtendedUseChatHelpers = UseChatHelpers<UIMessage> & { sendMessageToChat: (type: ChatType) => Promise<void> };
+type ExtendedUseChatHelpers = UseChatHelpers<ChatMessage> & { sendMessageToChat: (type: ChatType) => Promise<void> };
 const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 
 export const ChatProvider = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
-    const lastMessageRef = useRef<UIMessage | null>(null);
+    const lastMessageRef = useRef<ChatMessage | null>(null);
     const posthog = usePostHog();
 
     const conversationId = editorEngine.chat.conversation.current?.conversation.id;
-    const chat = useChat({
+    const chat = useChat<ChatMessage>({
         id: 'user-chat',
         sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
         transport: new DefaultChatTransport({
@@ -43,7 +41,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
 
             if (finishReason !== 'tool-calls') {
                 const currentConversationId = editorEngine.chat.conversation.current?.conversation.id;
-                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(message, currentConversationId ?? ''));
+                editorEngine.chat.conversation.addOrReplaceMessage(message);
                 editorEngine.chat.suggestions.generateSuggestions();
                 lastMessageRef.current = null;
             }
@@ -59,8 +57,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
             console.error('Error in chat', error);
             editorEngine.chat.error.handleChatError(error);
             if (lastMessageRef.current) {
-                const currentConversationId = editorEngine.chat.conversation.current?.conversation.id;
-                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(lastMessageRef.current, currentConversationId ?? ''));
+                editorEngine.chat.conversation.addOrReplaceMessage(lastMessageRef.current);
                 lastMessageRef.current = null;
             }
         }
@@ -74,16 +71,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         editorEngine.chat.error.clear();
 
         const messages = editorEngine.chat.conversation.current?.messages ?? [];
-        const uiMessages = messages.map((message, index) =>
-            toVercelMessageFromOnlook(message, {
-                totalMessages: messages.length,
-                currentMessageIndex: index,
-                lastUserMessageIndex: messages.findLastIndex(m => m.role === ChatMessageRole.USER),
-                lastAssistantMessageIndex: messages.findLastIndex(m => m.role === ChatMessageRole.ASSISTANT),
-            })
-        );
-
-        chat.setMessages(uiMessages);
+        chat.setMessages(messages);
         try {
             posthog.capture('user_send_message', {
                 type,

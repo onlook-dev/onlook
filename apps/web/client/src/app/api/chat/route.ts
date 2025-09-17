@@ -1,9 +1,10 @@
 import { trackEvent } from '@/utils/analytics/server';
+import { getToolSetFromType } from '@onlook/ai';
 import { ChatType } from '@onlook/models';
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helpers';
+import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, incrementUsage, repairToolCall } from './helpers';
 
 const MAX_STEPS = 20;
 
@@ -76,8 +77,8 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         }
         const modelConfig = await getModelFromType(chatType);
         const { model, providerOptions, headers } = modelConfig;
-        const systemPrompt = await getSystemPromptFromType(chatType);
-        const tools = await getToolSetFromType(chatType);
+        const systemPrompt = getSystemPromptFromType(chatType);
+        const tools = getToolSetFromType(chatType);
 
         const result = streamText({
             model,

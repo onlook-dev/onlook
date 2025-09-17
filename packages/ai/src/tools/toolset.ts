@@ -1,4 +1,5 @@
-import { type ToolSet } from 'ai';
+import { type InferUITools, type ToolSet } from 'ai';
+import { ChatType } from '../../../models/src/chat/type';
 import {
     BASH_EDIT_TOOL_NAME,
     BASH_READ_TOOL_NAME,
@@ -62,3 +63,9 @@ export const BUILD_TOOL_SET: ToolSet = {
     [TERMINAL_COMMAND_TOOL_NAME]: terminalCommandTool,
     [TYPECHECK_TOOL_NAME]: typecheckTool,
 };
+
+export type ChatTools = InferUITools<typeof BUILD_TOOL_SET>;
+
+export function getToolSetFromType(chatType: ChatType) {
+    return chatType === ChatType.ASK ? ASK_TOOL_SET : BUILD_TOOL_SET;
+}
