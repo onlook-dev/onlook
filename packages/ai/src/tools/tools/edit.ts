@@ -11,7 +11,8 @@ export const SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS = z.object({
     branchId: BRANCH_ID_SCHEMA,
 });
 export const searchReplaceEditFileTool = tool({
-    description: 'Make exact string replacements in files with precise matching',
+    description:
+        'Performs exact string replacements in files. The edit will FAIL if `old_string` is not unique in the file. Either provide a larger string with more surrounding context to make it unique or use `replace_all` to change every instance of `old_string`.',
     inputSchema: SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS,
 });
 
@@ -34,7 +35,8 @@ export const SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS = z.object({
     branchId: BRANCH_ID_SCHEMA,
 });
 export const searchReplaceMultiEditFileTool = tool({
-    description: 'Make multiple edits to a single file in one atomic operation',
+    description:
+        'This is a tool for making multiple edits to a single file in one operation. It allows you to perform multiple find-and-replace operations efficiently. All edits are applied in sequence, in the order they are provided. Each edit operates on the result of the previous edit. All edits must be valid for the operation to succeed - if any edit fails, none will be applied.',
     inputSchema: SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS,
 });
 
@@ -46,7 +48,7 @@ export const WRITE_FILE_TOOL_PARAMETERS = z.object({
 });
 export const writeFileTool = tool({
     description:
-        'Write or overwrite file contents completely. Should be used only to write new files or completely overwrite existing files. If editing an existing file, use the search and replace tool instead.',
+        'Writes a file to the local filesystem. This tool will overwrite the existing file if there is one at the provided path. ALWAYS prefer editing existing files in the codebase. NEVER write new files unless explicitly required.',
     inputSchema: WRITE_FILE_TOOL_PARAMETERS,
 });
 
