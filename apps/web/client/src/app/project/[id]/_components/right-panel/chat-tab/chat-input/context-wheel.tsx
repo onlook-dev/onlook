@@ -13,7 +13,11 @@ export const ContextWheel = observer(({ className }: ContextWheelProps) => {
 
     const contextPercentage = useMemo(() => {
         // Use cumulative usage data if available, otherwise fall back to estimate
-        const cumulativeUsage = editorEngine.chat.context.cumulativeUsage;
+        const cumulativeUsage = {
+            promptTokens: 0,
+            completionTokens: 0,
+            totalTokens: 0,
+        };
 
         if (cumulativeUsage && cumulativeUsage.totalTokens > 0) {
             // Use cumulative token usage from all API responses
