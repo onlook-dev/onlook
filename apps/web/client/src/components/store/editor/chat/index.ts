@@ -1,6 +1,6 @@
-import type { EditMessage, SendMessage } from '@/app/project/[id]/_hooks/use-chat';
+import type { SendMessage } from '@/app/project/[id]/_hooks/use-chat';
 import type { GitCommit } from '@onlook/git';
-import { ChatType, type MessageContext } from '@onlook/models';
+import { ChatType } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { ChatContext } from './context';
@@ -9,9 +9,6 @@ import { ConversationManager } from './conversation';
 export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
 
 const stubSendMessage: SendMessage = () => {
-    throw new Error('Chat actions not initialized');
-}
-const stubEditMessage: EditMessage = () => {
     throw new Error('Chat actions not initialized');
 }
 
@@ -51,13 +48,19 @@ export class ChatManager {
         this.sendMessage = sendMessage;
     }
 
-    async addEditMessage(content: string, contextOverride?: MessageContext[]): Promise<void> {
+    async addEditMessage(content: string): Promise<void> {
         if (!this.sendMessage) {
             throw new Error('Chat actions not initialized');
         }
-        const context = contextOverride ?? await this.context.getChatContext();
-        const messageId = await this.sendMessage(content, ChatType.EDIT, context);
+        const messageId = await this.sendMessage(content, ChatType.EDIT);
         await this.createAndAttachCommitToUserMessage(messageId, content);
+    }
+
+    async addAskMessage(content: string): Promise<void> {
+        if (!this.sendMessage) {
+            throw new Error('Chat actions not initialized');
+        }
+        await this.sendMessage(content, ChatType.ASK);
     }
 
     async createAndAttachCommitToUserMessage(messageId: string, content: string): Promise<void> {
@@ -65,14 +68,6 @@ export class ChatManager {
         if (commit) {
             await this.conversation.attachCommitToUserMessage(messageId, commit);
         }
-    }
-
-    async addAskMessage(content: string, contextOverride?: MessageContext[]): Promise<void> {
-        if (!this.sendMessage) {
-            throw new Error('Chat actions not initialized');
-        }
-        const context = contextOverride ?? await this.context.getChatContext();
-        await this.sendMessage(content, ChatType.ASK, context);
     }
 
     async createCommit(userPrompt: string): Promise<GitCommit | null> {

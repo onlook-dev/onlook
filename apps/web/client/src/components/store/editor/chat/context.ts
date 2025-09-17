@@ -1,4 +1,4 @@
-import type { DomElement } from '@onlook/models';
+import { ChatType, type DomElement } from '@onlook/models';
 import {
     MessageContextType,
     type BranchMessageContext,
@@ -9,7 +9,7 @@ import {
     type MessageContext,
     type ProjectMessageContext,
 } from '@onlook/models/chat';
-import type { ParsedError } from '@onlook/utility';
+import { assertNever, type ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 
@@ -28,6 +28,19 @@ export class ChatContext {
             () => this.editorEngine.elements.selected,
             () => this.getChatContext().then((context) => (this.context = context)),
         );
+    }
+
+    async getContextByChatType(type: ChatType): Promise<MessageContext[]> {
+        switch (type) {
+            case ChatType.EDIT:
+            case ChatType.CREATE:
+            case ChatType.ASK:
+                return await this.getChatContext();
+            case ChatType.FIX:
+                return await this.getErrorContext([]);
+            default:
+                assertNever(type);
+        }
     }
 
     async getLatestContext(): Promise<MessageContext[]> {

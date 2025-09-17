@@ -1,3 +1,4 @@
+import type { EditMessage } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
 import { type ChatMessage } from '@onlook/models/chat';
@@ -14,7 +15,7 @@ import { UserMessage } from './user-message';
 
 interface ChatMessagesProps {
     messages: ChatMessage[];
-    onEditMessage: (messageId: string, newContent: string) => Promise<void>;
+    onEditMessage: EditMessage;
     isStreaming: boolean;
     error?: Error;
 }

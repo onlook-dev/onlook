@@ -3,7 +3,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat as useAiChat } from '@ai-sdk/react';
-import { ChatType, type ChatMessage, type MessageContext } from '@onlook/models';
+import { ChatType, type ChatMessage } from '@onlook/models';
 import {
     DefaultChatTransport,
     lastAssistantMessageIsCompleteWithToolCalls
@@ -12,8 +12,8 @@ import { usePostHog } from 'posthog-js/react';
 import { useCallback, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-export type SendMessage = (content: string, type?: ChatType, context?: MessageContext[]) => Promise<string>
-export type EditMessage = (messageId: string, newContent: string) => Promise<void>
+export type SendMessage = (content: string, type: ChatType) => Promise<string>
+export type EditMessage = (messageId: string, newContent: string, type: ChatType) => Promise<void>
 
 interface UseChatProps {
     conversationId: string;
@@ -73,25 +73,25 @@ export function useChat({
         editorEngine.chat.setIsStreaming(isStreaming);
     }, [editorEngine.chat, isStreaming]);
 
-    const sendMessage: SendMessage = useCallback(
-        async (content: string, type: ChatType = ChatType.EDIT) => {
-            const newContext = await editorEngine.chat.context.getLatestContext();
-            posthog.capture('user_send_message', { type });
-            const messageId = uuidv4();
-            await baseSendMessage(
-                { text: content, messageId },
-                {
-                    body: {
-                        chatType: type,
-                        conversationId,
-                        context: newContext,
-                    },
+    const sendMessage: SendMessage = useCallback(async (content: string, type: ChatType) => {
+        console.error('Sending message', content, type);
+        const newContext = await editorEngine.chat.context.getContextByChatType(type);
+        const messageId = uuidv4();
+        console.error('New context', newContext);
+        await baseSendMessage(
+            { text: content },
+            {
+                body: {
+                    chatType: type,
+                    conversationId,
+                    context: newContext,
                 },
-            );
-            return messageId;
-        },
-        [baseSendMessage, conversationId, posthog],
-    );
+            },
+        );
+        posthog.capture('user_send_message', { type });
+        console.error('Message sent', messageId);
+        return messageId;
+    }, [baseSendMessage, conversationId, posthog]);
 
     // Store messages in a ref to avoid re-rendering editMessage
     const messagesRef = useRef(messages);
@@ -100,7 +100,8 @@ export function useChat({
     }, [messages]);
 
     const editMessage: EditMessage = useCallback(
-        async (messageId: string, newContent: string) => {
+        async (messageId: string, newContent: string, chatType: ChatType) => {
+            // TODO: Handle types probably in context.getContextByType
             const messageIndex = messagesRef.current.findIndex((m) => m.id === messageId);
             if (messageIndex === -1) {
                 throw new Error('Message not found');
@@ -118,11 +119,14 @@ export function useChat({
                 parts: [{ type: 'text', text: newContent }],
             };
 
+            const context = await editorEngine.chat.context.getContextByChatType(chatType);
+
             setMessages(updatedMessages);
             return regenerate({
                 body: {
-                    chatType: ChatType.EDIT,
+                    chatType,
                     conversationId,
+                    context,
                 },
             });
         },

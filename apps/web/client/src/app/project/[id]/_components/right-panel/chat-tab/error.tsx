@@ -23,17 +23,13 @@ export const ErrorSection = observer(({ isStreaming, onSendMessage }: ErrorSecti
     const errorCount = editorEngine.branches.getTotalErrorCount();
 
     const sendFixError = async () => {
-        toast.promise(
-            () => {
-                const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
-                const errorContexts = editorEngine.chat.context.getErrorContext(allErrors);
-                const projectContexts = editorEngine.chat.context.getProjectContext();
-                return onSendMessage(prompt, ChatType.FIX, [...errorContexts, ...projectContexts]);
-            },
-            {
-                error: 'Failed to send fix error message. Please try again.',
-            }
-        )
+        try {
+            const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
+            return onSendMessage(prompt, ChatType.FIX);
+        } catch (error) {
+            console.error('Failed to send fix error message', error);
+            toast.error('Failed to send fix error message. Please try again.');
+        }
     };
 
     return (
@@ -83,7 +79,7 @@ export const ErrorSection = observer(({ isStreaming, onSendMessage }: ErrorSecti
                             size="sm"
                             disabled={isStreaming}
                             className="h-7 px-2 text-amber-600 dark:text-amber-400 hover:text-amber-900 hover:bg-amber-200 dark:hover:text-amber-100 dark:hover:bg-amber-700 font-sans select-none"
-                            onClick={void sendFixError}
+                            onClick={sendFixError}
                         >
                             <Icons.MagicWand className="h-4 w-4 mr-2" />
                             Fix
