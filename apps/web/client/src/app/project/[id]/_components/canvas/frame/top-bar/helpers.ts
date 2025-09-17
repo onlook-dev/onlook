@@ -19,6 +19,7 @@ export function createMouseMoveHandler(
 
     const startX = startEvent.clientX;
     const startY = startEvent.clientY;
+    let isDragActive = false;
 
     // Store initial positions for all selected frames
     const initialFramePositions = selectedFrames.map(frame => ({
@@ -28,10 +29,21 @@ export function createMouseMoveHandler(
     }));
 
     const handleMove = async (e: MouseEvent) => {
-        clearElements();
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        // Check deadzone - only start dragging after 5px movement
+        if (!isDragActive) {
+            if (dx * dx + dy * dy <= 25) {
+                return; // Still within deadzone
+            }
+            isDragActive = true;
+            clearElements();
+        }
+
         const scale = editorEngine.canvas.scale;
-        const deltaX = (e.clientX - startX) / scale;
-        const deltaY = (e.clientY - startY) / scale;
+        const deltaX = dx / scale;
+        const deltaY = dy / scale;
 
         // Update all selected frames
         for (const frameData of initialFramePositions) {
