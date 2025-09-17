@@ -106,6 +106,68 @@ describe('Edit Tool Handlers', () => {
             expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'replacement replacement replacement');
             expect(result).toBe('File /test/file.ts edited successfully');
         });
+
+        it('should handle replace_all with non-existent string', async () => {
+            mockSandbox.readFile.mockResolvedValue({
+                content: 'Hello world',
+                type: 'text',
+            });
+
+            const args = {
+                branchId: 'test-branch',
+                file_path: '/test/file.ts',
+                old_string: 'notfound',
+                new_string: 'replacement',
+                replace_all: true,
+            };
+
+            const result = await handleSearchReplaceEditFileTool(args, mockEditorEngine);
+
+            // replace_all with non-existent string should succeed but make no changes
+            expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'Hello world');
+            expect(result).toBe('File /test/file.ts edited successfully');
+        });
+
+        it('should handle empty old_string with replace_all', async () => {
+            mockSandbox.readFile.mockResolvedValue({
+                content: 'abc',
+                type: 'text',
+            });
+
+            const args = {
+                branchId: 'test-branch',
+                file_path: '/test/file.ts',
+                old_string: '',
+                new_string: 'X',
+                replace_all: true,
+            };
+
+            const result = await handleSearchReplaceEditFileTool(args, mockEditorEngine);
+
+            // Empty string replacement should insert between every character
+            expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'XaXbXcX');
+            expect(result).toBe('File /test/file.ts edited successfully');
+        });
+
+        it('should fail when old_string equals new_string', async () => {
+            mockSandbox.readFile.mockResolvedValue({
+                content: 'Hello world',
+                type: 'text',
+            });
+
+            const args = {
+                branchId: 'test-branch',
+                file_path: '/test/file.ts',
+                old_string: 'Hello',
+                new_string: 'Hello',
+                replace_all: false,
+            };
+
+            // This should still work, even though it's a no-op
+            const result = await handleSearchReplaceEditFileTool(args, mockEditorEngine);
+            expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'Hello world');
+            expect(result).toBe('File /test/file.ts edited successfully');
+        });
     });
 
     describe('handleSearchReplaceMultiEditFileTool', () => {
