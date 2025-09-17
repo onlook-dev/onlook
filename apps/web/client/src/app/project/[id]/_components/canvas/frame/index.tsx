@@ -2,6 +2,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { type Frame } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
+import { colors } from '@onlook/ui/tokens';
 import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
@@ -59,12 +60,11 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
             style={{ transform: `translate(${frame.position.x}px, ${frame.position.y}px)` }}
         >
             <RightClickMenu>
-                <TopBar frame={frame} />
+                <TopBar frame={frame} isInDragSelection={isInDragSelection} />
             </RightClickMenu>
             <div className="relative" style={{
-                outline: isSelected || isInDragSelection ? '2px solid rgb(94, 234, 212)' : 'none',
+                outline: isSelected ? `2px solid ${colors.teal[400]}` : isInDragSelection ? `2px solid ${colors.teal[500]}` : 'none',
                 borderRadius: '4px',
-                opacity: isInDragSelection && !isSelected ? 0.9 : 1,
             }}>
                 <ResizeHandles frame={frame} setIsResizing={setIsResizing} />
                 <FrameComponent key={reloadKey} frame={frame} reloadIframe={reloadIframe} ref={iFrameRef} />

@@ -11,7 +11,7 @@ import { BranchDisplay } from './branch';
 import { PageSelector } from './page-selector';
 
 export const TopBar = observer(
-    ({ frame }: { frame: Frame }) => {
+    ({ frame, isInDragSelection = false }: { frame: Frame; isInDragSelection?: boolean }) => {
         const editorEngine = useEditorEngine();
         const isSelected = editorEngine.frames.isSelected(frame.id);
         const topBarRef = useRef<HTMLDivElement>(null);
@@ -133,6 +133,7 @@ export const TopBar = observer(
                 className={cn(
                     'rounded-lg bg-background-primary/10  hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
                     isSelected && 'text-teal-400 fill-teal-400',
+                    !isSelected && isInDragSelection && 'text-teal-500 fill-teal-500',
                 )}
                 style={{
                     height: `${28 / editorEngine.canvas.scale}px`,
