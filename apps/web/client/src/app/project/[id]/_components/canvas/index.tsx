@@ -30,6 +30,7 @@ export const Canvas = observer(() => {
     const [isDragSelecting, setIsDragSelecting] = useState(false);
     const [dragSelectStart, setDragSelectStart] = useState({ x: 0, y: 0 });
     const [dragSelectEnd, setDragSelectEnd] = useState({ x: 0, y: 0 });
+    const [framesInSelection, setFramesInSelection] = useState<Set<string>>(new Set());
 
     const handleCanvasMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
         if (event.target !== containerRef.current) {
@@ -45,6 +46,10 @@ export const Canvas = observer(() => {
             setIsDragSelecting(true);
             setDragSelectStart({ x, y });
             setDragSelectEnd({ x, y });
+            setFramesInSelection(new Set());
+            
+            // Set a flag in the editor engine to suppress hover effects
+            editorEngine.state.isDragSelecting = true;
             
             // Clear existing selections if not shift-clicking
             if (!event.shiftKey) {
@@ -57,6 +62,49 @@ export const Canvas = observer(() => {
         }
     };
     
+    const updateFramesInSelection = useCallback((start: { x: number; y: number }, end: { x: number; y: number }) => {
+        const selectionRect = {
+            left: Math.min(start.x, end.x),
+            top: Math.min(start.y, end.y),
+            right: Math.max(start.x, end.x),
+            bottom: Math.max(start.y, end.y),
+        };
+        
+        // Convert selection rect to canvas coordinates
+        const canvasSelectionRect = {
+            left: (selectionRect.left - position.x) / scale,
+            top: (selectionRect.top - position.y) / scale,
+            right: (selectionRect.right - position.x) / scale,
+            bottom: (selectionRect.bottom - position.y) / scale,
+        };
+        
+        // Find all frames that intersect with the selection rectangle
+        const allFrames = editorEngine.frames.getAll();
+        const intersectingFrameIds = new Set<string>();
+        
+        allFrames.forEach(frameData => {
+            const frame = frameData.frame;
+            const frameLeft = frame.position.x;
+            const frameTop = frame.position.y;
+            const frameRight = frame.position.x + frame.dimension.width;
+            const frameBottom = frame.position.y + frame.dimension.height;
+            
+            // Check if frame intersects with selection rectangle
+            const intersects = !(
+                frameLeft > canvasSelectionRect.right ||
+                frameRight < canvasSelectionRect.left ||
+                frameTop > canvasSelectionRect.bottom ||
+                frameBottom < canvasSelectionRect.top
+            );
+            
+            if (intersects) {
+                intersectingFrameIds.add(frame.id);
+            }
+        });
+        
+        setFramesInSelection(intersectingFrameIds);
+    }, [position, scale, editorEngine.frames]);
+    
     const handleCanvasMouseMove = useCallback(
         throttle((event: React.MouseEvent<HTMLDivElement>) => {
             if (!isDragSelecting || !containerRef.current) {
@@ -67,8 +115,11 @@ export const Canvas = observer(() => {
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
             setDragSelectEnd({ x, y });
+            
+            // Update frames in selection for visual feedback
+            updateFramesInSelection(dragSelectStart, { x, y });
         }, 16), // ~60fps
-        [isDragSelecting]
+        [isDragSelecting, dragSelectStart, updateFramesInSelection]
     );
     
     const handleCanvasMouseUp = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -119,6 +170,8 @@ export const Canvas = observer(() => {
         }
         
         setIsDragSelecting(false);
+        setFramesInSelection(new Set());
+        editorEngine.state.isDragSelecting = false;
     };
 
     const handleZoom = useCallback(
@@ -265,7 +318,7 @@ export const Canvas = observer(() => {
                 }}
             >
                 <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
-                    <Frames />
+                    <Frames framesInDragSelection={framesInSelection} />
                 </div>
                 <RecenterCanvasButton />
                 <DragSelectOverlay

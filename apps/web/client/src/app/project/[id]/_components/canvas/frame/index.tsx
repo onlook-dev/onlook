@@ -11,7 +11,7 @@ import { RightClickMenu } from './right-click';
 import { TopBar } from './top-bar';
 import { FrameComponent, type IFrameView } from './view';
 
-export const FrameView = observer(({ frame }: { frame: Frame }) => {
+export const FrameView = observer(({ frame, isInDragSelection = false }: { frame: Frame; isInDragSelection?: boolean }) => {
     const editorEngine = useEditorEngine();
     const iFrameRef = useRef<IFrameView>(null);
     const [isResizing, setIsResizing] = useState(false);
@@ -62,8 +62,9 @@ export const FrameView = observer(({ frame }: { frame: Frame }) => {
                 <TopBar frame={frame} />
             </RightClickMenu>
             <div className="relative" style={{
-                outline: isSelected ? '2px solid rgb(94, 234, 212)' : 'none',
+                outline: isSelected || isInDragSelection ? '2px solid rgb(94, 234, 212)' : 'none',
                 borderRadius: '4px',
+                opacity: isInDragSelection && !isSelected ? 0.9 : 1,
             }}>
                 <ResizeHandles frame={frame} setIsResizing={setIsResizing} />
                 <FrameComponent key={reloadKey} frame={frame} reloadIframe={reloadIframe} ref={iFrameRef} />

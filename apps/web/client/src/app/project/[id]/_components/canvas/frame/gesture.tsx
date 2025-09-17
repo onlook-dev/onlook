@@ -93,6 +93,10 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
     const throttledMouseMove = useMemo(
         () =>
             throttle(async (e: React.MouseEvent<HTMLDivElement>) => {
+                // Skip hover events during drag selection
+                if (editorEngine.state.isDragSelecting) {
+                    return;
+                }
 
                 if (editorEngine.move.shouldDrag) {
                     await editorEngine.move.drag(e, getRelativeMousePosition);
