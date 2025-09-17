@@ -3,6 +3,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { EditorAttributes } from '@onlook/constants';
 import { EditorMode } from '@onlook/models';
+import { throttle } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Frames } from './frames';
@@ -35,7 +36,7 @@ export const Canvas = observer(() => {
             return;
         }
         
-        // Start drag selection only in design mode and when not holding middle mouse button
+        // Start drag selection only in design mode and left mouse button
         if (editorEngine.state.editorMode === EditorMode.DESIGN && event.button === 0) {
             const rect = containerRef.current.getBoundingClientRect();
             const x = event.clientX - rect.left;
@@ -50,21 +51,25 @@ export const Canvas = observer(() => {
                 editorEngine.clearUI();
                 editorEngine.frames.deselectAll();
             }
-        } else {
+        } else if (event.button === 0) {
+            // Only clear UI for left clicks that don't start drag selection
             editorEngine.clearUI();
         }
     };
     
-    const handleCanvasMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-        if (!isDragSelecting || !containerRef.current) {
-            return;
-        }
-        
-        const rect = containerRef.current.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        setDragSelectEnd({ x, y });
-    };
+    const handleCanvasMouseMove = useCallback(
+        throttle((event: React.MouseEvent<HTMLDivElement>) => {
+            if (!isDragSelecting || !containerRef.current) {
+                return;
+            }
+            
+            const rect = containerRef.current.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            setDragSelectEnd({ x, y });
+        }, 16), // ~60fps
+        [isDragSelecting]
+    );
     
     const handleCanvasMouseUp = (event: React.MouseEvent<HTMLDivElement>) => {
         if (!isDragSelecting) {
@@ -239,9 +244,10 @@ export const Canvas = observer(() => {
                 div.removeEventListener('wheel', handleWheel);
                 div.removeEventListener('mousedown', middleMouseButtonDown);
                 div.removeEventListener('mouseup', middleMouseButtonUp);
+                handleCanvasMouseMove.cancel?.(); // Clean up throttled function
             };
         }
-    }, [handleWheel, middleMouseButtonDown, middleMouseButtonUp]);
+    }, [handleWheel, middleMouseButtonDown, middleMouseButtonUp, handleCanvasMouseMove]);
 
     return (
         <HotkeysArea>
@@ -251,7 +257,12 @@ export const Canvas = observer(() => {
                 onMouseDown={handleCanvasMouseDown}
                 onMouseMove={handleCanvasMouseMove}
                 onMouseUp={handleCanvasMouseUp}
-                onMouseLeave={handleCanvasMouseUp}
+                onMouseLeave={(e) => {
+                    // Only terminate drag if no mouse button is pressed
+                    if (e.buttons === 0) {
+                        handleCanvasMouseUp(e);
+                    }
+                }}
             >
                 <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
                     <Frames />
