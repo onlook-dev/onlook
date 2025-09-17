@@ -12,6 +12,7 @@ import { Overlay } from './overlay';
 import { DragSelectOverlay } from './overlay/drag-select';
 import { PanOverlay } from './overlay/pan';
 import { RecenterCanvasButton } from './recenter-canvas-button';
+import { getFramesInSelection, getSelectedFrameData } from './selection-utils';
 
 const ZOOM_SENSITIVITY = 0.006;
 const PAN_SENSITIVITY = 0.52;
@@ -36,21 +37,21 @@ export const Canvas = observer(() => {
         if (event.target !== containerRef.current) {
             return;
         }
-        
+
         // Start drag selection only in design mode and left mouse button
         if (editorEngine.state.editorMode === EditorMode.DESIGN && event.button === 0) {
             const rect = containerRef.current.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
-            
+
             setIsDragSelecting(true);
             setDragSelectStart({ x, y });
             setDragSelectEnd({ x, y });
             setFramesInSelection(new Set());
-            
+
             // Set a flag in the editor engine to suppress hover effects
             editorEngine.state.isDragSelecting = true;
-            
+
             // Clear existing selections if not shift-clicking
             if (!event.shiftKey) {
                 editorEngine.clearUI();
@@ -61,67 +62,35 @@ export const Canvas = observer(() => {
             editorEngine.clearUI();
         }
     };
-    
+
     const updateFramesInSelection = useCallback((start: { x: number; y: number }, end: { x: number; y: number }) => {
-        const selectionRect = {
-            left: Math.min(start.x, end.x),
-            top: Math.min(start.y, end.y),
-            right: Math.max(start.x, end.x),
-            bottom: Math.max(start.y, end.y),
-        };
-        
-        // Convert selection rect to canvas coordinates
-        const canvasSelectionRect = {
-            left: (selectionRect.left - position.x) / scale,
-            top: (selectionRect.top - position.y) / scale,
-            right: (selectionRect.right - position.x) / scale,
-            bottom: (selectionRect.bottom - position.y) / scale,
-        };
-        
-        // Find all frames that intersect with the selection rectangle
-        const allFrames = editorEngine.frames.getAll();
-        const intersectingFrameIds = new Set<string>();
-        
-        allFrames.forEach(frameData => {
-            const frame = frameData.frame;
-            const frameLeft = frame.position.x;
-            const frameTop = frame.position.y;
-            const frameRight = frame.position.x + frame.dimension.width;
-            const frameBottom = frame.position.y + frame.dimension.height;
-            
-            // Check if frame intersects with selection rectangle
-            const intersects = !(
-                frameLeft > canvasSelectionRect.right ||
-                frameRight < canvasSelectionRect.left ||
-                frameTop > canvasSelectionRect.bottom ||
-                frameBottom < canvasSelectionRect.top
-            );
-            
-            if (intersects) {
-                intersectingFrameIds.add(frame.id);
-            }
-        });
-        
-        setFramesInSelection(intersectingFrameIds);
-    }, [position, scale, editorEngine.frames]);
-    
+        const intersectingFrameIds = getFramesInSelection(
+            editorEngine,
+            start,
+            end,
+            position,
+            scale
+        );
+        setFramesInSelection(new Set(intersectingFrameIds));
+    }, [position, scale, editorEngine]);
+
     const handleCanvasMouseMove = useCallback(
         throttle((event: React.MouseEvent<HTMLDivElement>) => {
             if (!isDragSelecting || !containerRef.current) {
                 return;
             }
-            
+
             const rect = containerRef.current.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
             setDragSelectEnd({ x, y });
-            
+
             // Update frames in selection for visual feedback
             updateFramesInSelection(dragSelectStart, { x, y });
         }, 16), // ~60fps
         [isDragSelecting, dragSelectStart, updateFramesInSelection]
     );
-    
+
     const handleCanvasMouseUp = (event: React.MouseEvent<HTMLDivElement>) => {
         // Mouse up is now handled by the global listener in useEffect
         // This function is kept for consistency but the logic is in the global handler
@@ -254,58 +223,38 @@ export const Canvas = observer(() => {
             };
         }
     }, [handleWheel, middleMouseButtonDown, middleMouseButtonUp, handleCanvasMouseMove]);
-    
+
     // Global mouseup listener to handle drag termination outside canvas
     useEffect(() => {
         if (isDragSelecting) {
             const handleGlobalMouseUp = (event: MouseEvent) => {
-                // Calculate which frames are within the selection rectangle
-                const selectionRect = {
-                    left: Math.min(dragSelectStart.x, dragSelectEnd.x),
-                    top: Math.min(dragSelectStart.y, dragSelectEnd.y),
-                    right: Math.max(dragSelectStart.x, dragSelectEnd.x),
-                    bottom: Math.max(dragSelectStart.y, dragSelectEnd.y),
-                };
-                
-                // Convert selection rect to canvas coordinates
-                const canvasSelectionRect = {
-                    left: (selectionRect.left - position.x) / scale,
-                    top: (selectionRect.top - position.y) / scale,
-                    right: (selectionRect.right - position.x) / scale,
-                    bottom: (selectionRect.bottom - position.y) / scale,
-                };
-                
-                // Find all frames that intersect with the selection rectangle
-                const allFrames = editorEngine.frames.getAll();
-                const selectedFrames = allFrames.filter(frameData => {
-                    const frame = frameData.frame;
-                    const frameLeft = frame.position.x;
-                    const frameTop = frame.position.y;
-                    const frameRight = frame.position.x + frame.dimension.width;
-                    const frameBottom = frame.position.y + frame.dimension.height;
-                    
-                    // Check if frame intersects with selection rectangle
-                    return !(
-                        frameLeft > canvasSelectionRect.right ||
-                        frameRight < canvasSelectionRect.left ||
-                        frameTop > canvasSelectionRect.bottom ||
-                        frameBottom < canvasSelectionRect.top
+                try {
+                    // Get frames that intersect with the selection rectangle
+                    const selectedFrames = getSelectedFrameData(
+                        editorEngine,
+                        dragSelectStart,
+                        dragSelectEnd,
+                        position,
+                        scale
                     );
-                });
-                
-                // Select the frames if any were found in the selection
-                if (selectedFrames.length > 0) {
-                    editorEngine.frames.select(
-                        selectedFrames.map(fd => fd.frame),
-                        event.shiftKey // multiselect if shift is held
-                    );
+
+                    // Select the frames if any were found in the selection
+                    if (selectedFrames.length > 0) {
+                        editorEngine.frames.select(
+                            selectedFrames.map(fd => fd.frame),
+                            event.shiftKey // multiselect if shift is held
+                        );
+                    }
+                } catch (error) {
+                    console.warn('Error during drag selection:', error);
+                } finally {
+                    // Always clean up drag selection state, even if selection fails
+                    setIsDragSelecting(false);
+                    setFramesInSelection(new Set());
+                    editorEngine.state.isDragSelecting = false;
                 }
-                
-                setIsDragSelecting(false);
-                setFramesInSelection(new Set());
-                editorEngine.state.isDragSelecting = false;
             };
-            
+
             window.addEventListener('mouseup', handleGlobalMouseUp);
             return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
         }
@@ -321,8 +270,12 @@ export const Canvas = observer(() => {
                 onMouseUp={handleCanvasMouseUp}
                 onMouseLeave={(e) => {
                     // Only terminate drag if no mouse button is pressed
-                    if (e.buttons === 0) {
-                        handleCanvasMouseUp(e);
+                    // Note: The global mouseup listener will handle the actual cleanup
+                    // This is just an additional safety check for when mouse leaves without buttons pressed
+                    if (e.buttons === 0 && isDragSelecting) {
+                        setIsDragSelecting(false);
+                        setFramesInSelection(new Set());
+                        editorEngine.state.isDragSelecting = false;
                     }
                 }}
             >
