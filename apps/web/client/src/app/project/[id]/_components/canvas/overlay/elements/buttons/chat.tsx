@@ -24,18 +24,16 @@ export const OverlayChatInput = observer(({
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const handleSubmit = async () => {
-        try {
+        toast.promise(async () => {
             editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
-            await editorEngine.chat.addEditMessage(inputState.value);
-            if (!editorEngine.chat.sendMessage) {
-                throw new Error('Chat actions not initialized');
-            }
-            editorEngine.chat.sendMessage(inputState.value, ChatType.EDIT);
-            setInputState(DEFAULT_INPUT_STATE);
-        } catch (error) {
-            console.error('Error sending message', error);
-            toast.error('Failed to send message. Please try again.');
-        }
+            void editorEngine.chat.sendMessage(inputState.value, ChatType.EDIT);
+        }, {
+            loading: 'Sending message...',
+            success: 'Message sent',
+            error: 'Failed to send message',
+        });
+
+        setInputState(DEFAULT_INPUT_STATE);
     };
 
     return (

@@ -68,15 +68,15 @@ export const useStartProject = () => {
                 updateProjectReadyState({ conversations: true });
             }
         };
-        applyConversations();
-    }, [conversations]);
+        void applyConversations();
+    }, [editorEngine.chat.conversation, conversations]);
 
     useEffect(() => {
         const isProjectReady = Object.values(projectReadyState).every((value) => value);
         if (creationRequest && processedRequestIdRef.current !== creationRequest.id && isProjectReady) {
             console.error('Resume create', creationRequest, isProjectReady, processedRequestIdRef.current);
             processedRequestIdRef.current = creationRequest.id;
-            resumeCreate(creationRequest);
+            void resumeCreate(creationRequest);
         }
     }, [creationRequest, projectReadyState]);
 
@@ -96,9 +96,9 @@ export const useStartProject = () => {
             const context: MessageContext[] = [...createContext, ...imageContexts];
             const prompt = creationData.context.filter((context) => context.type === CreateRequestContextType.PROMPT).map((context) => (context.content)).join('\n');
 
-            await editorEngine.chat.addEditMessage(
+            await editorEngine.chat.sendMessage(
                 prompt,
-                context,
+                ChatType.CREATE,
             );
 
             try {

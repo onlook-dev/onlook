@@ -71,6 +71,9 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const sendMessage: SendMessage = useCallback(
         async (content: string, type: ChatType) => {
             const newContext = await editorEngine.chat.context.getContextByChatType(type);
+
+            console.log('newContext', JSON.stringify(newContext, null, 2));
+
             const messageId = uuidv4();
             await baseSendMessage(
                 { text: content },
@@ -94,7 +97,6 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         messagesRef.current = messages;
     }, [messages]);
     useEffect(() => {
-        console.log('finishReason', finishReason);
         if (finishReason && finishReason !== 'tool-calls') {
             setFinishReason(null);
             setSuggestions([]);

@@ -37,7 +37,7 @@ export class ChatContext {
             case ChatType.ASK:
                 return await this.getChatContext();
             case ChatType.FIX:
-                return await this.getErrorContext([]);
+                return this.getErrorContext([]);
             default:
                 assertNever(type);
         }
@@ -50,6 +50,8 @@ export class ChatContext {
 
     async getChatContext(): Promise<MessageContext[]> {
         const selected = this.editorEngine.elements.selected;
+
+        console.log('selected', JSON.stringify(selected, null, 2));
 
         let highlightedContext: HighlightMessageContext[] = [];
         if (selected.length) {

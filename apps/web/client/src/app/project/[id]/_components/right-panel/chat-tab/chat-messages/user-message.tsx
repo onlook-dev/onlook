@@ -1,6 +1,6 @@
 import type { EditMessage } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
-import { MessageCheckpointType, type ChatMessage } from '@onlook/models';
+import { ChatType, MessageCheckpointType, type ChatMessage } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
@@ -61,7 +61,7 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
             e.preventDefault();
-            handleSubmit();
+            void handleSubmit();
         } else if (e.key === 'Escape') {
             e.preventDefault();
             handleCancel();
@@ -86,7 +86,7 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
 
     const sendMessage = async (newContent: string) => {
         toast.promise(
-            onEditMessage(message.id, newContent),
+            onEditMessage(message.id, newContent, ChatType.EDIT),
             {
                 loading: 'Resubmitting message...',
                 success: 'Message resubmitted successfully',
