@@ -18,13 +18,6 @@ export const MessageContent = observer(
         applied: boolean;
         isStream: boolean;
     }) => {
-        // Find the index of the last tool-*** part
-        const lastToolInvocationIdx = useMemo(() =>
-            parts?.map((part, index) => ({ type: part.type, index }))
-                .filter(item => item.type.startsWith('tool-'))
-                .pop()?.index ?? -1,
-            [parts]
-        );
 
         const renderedParts = parts.map((part, idx) => {
             if (part.type === 'text') {
@@ -40,11 +33,12 @@ export const MessageContent = observer(
                 );
             } else if (part.type.startsWith('tool-')) {
                 const toolPart = part as ToolUIPart;
+                const isLastPart = idx === parts.length - 1;
                 return (
                     <ToolCallDisplay
                         messageId={messageId}
                         index={idx}
-                        lastToolInvocationIdx={lastToolInvocationIdx}
+                        isLastPart={isLastPart}
                         toolInvocation={toolPart}
                         key={toolPart.toolCallId}
                         isStream={isStream}

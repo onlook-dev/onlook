@@ -26,21 +26,21 @@ import { ToolCallSimple } from './tool-call-simple';
 export const ToolCallDisplay = ({
     messageId,
     index,
-    lastToolInvocationIdx,
+    isLastPart,
     toolInvocation,
     isStream,
     applied
 }: {
     messageId: string,
     index: number,
-    lastToolInvocationIdx: number,
+    isLastPart: boolean,
     toolInvocation: ToolUIPart,
     isStream: boolean,
     applied: boolean
 }) => {
 
     const toolName = toolInvocation.type.split('-')[1];
-    const loading = isStream && index === lastToolInvocationIdx;
+    const loading = isStream && isLastPart;
 
     if (isStream) {
         return (
