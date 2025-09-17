@@ -62,15 +62,19 @@ export class OverlayState {
         isComponent?: boolean,
         domId?: string,
     ) => {
-        this.clickRects = [
-            ...this.clickRects,
-            {
-                ...rect,
-                styles,
-                isComponent,
-                id: domId ?? nanoid(4),
-            },
-        ];
+        // Limit the number of click rects to prevent memory issues
+        // In practice, we rarely need more than 10 simultaneous selections
+        const MAX_CLICK_RECTS = 20;
+        
+        const newRect = {
+            ...rect,
+            styles,
+            isComponent,
+            id: domId ?? nanoid(4),
+        };
+        
+        // Add new rect and trim if exceeding limit
+        this.clickRects = [...this.clickRects, newRect].slice(-MAX_CLICK_RECTS);
     };
 
     updateClickedRects = (newRect: Partial<RectDimensions>) => {

@@ -10,12 +10,16 @@ import {
     type ProjectMessageContext,
 } from '@onlook/models/chat';
 import type { ParsedError } from '@onlook/utility';
+import { debounce } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 
 export class ChatContext {
     context: MessageContext[] = [];
     private selectedReactionDisposer?: () => void;
+    private pendingContextUpdate?: number;
+    private contextUpdateAbortController?: AbortController;
+    
     constructor(
         private editorEngine: EditorEngine,
     ) {
@@ -26,9 +30,34 @@ export class ChatContext {
         this.selectedReactionDisposer = reaction(
             () => this.editorEngine.elements.selected,
             () => {
+                // Cancel any pending context update
+                if (this.pendingContextUpdate) {
+                    cancelAnimationFrame(this.pendingContextUpdate);
+                }
+                
+                // Abort any in-flight async operations
+                if (this.contextUpdateAbortController) {
+                    this.contextUpdateAbortController.abort();
+                }
+                
+                // Create new abort controller for this update
+                this.contextUpdateAbortController = new AbortController();
+                const signal = this.contextUpdateAbortController.signal;
+                
                 // Defer context update to prevent blocking UI
-                requestAnimationFrame(() => {
-                    this.getChatContext().then((context) => (this.context = context));
+                this.pendingContextUpdate = requestAnimationFrame(() => {
+                    if (!signal.aborted) {
+                        this.getChatContext().then((context) => {
+                            if (!signal.aborted) {
+                                this.context = context;
+                            }
+                        }).catch((error) => {
+                            if (!signal.aborted) {
+                                console.error('Error updating chat context:', error);
+                            }
+                        });
+                    }
+                    this.pendingContextUpdate = undefined;
                 });
             },
         );
@@ -90,17 +119,28 @@ export class ChatContext {
         highlightedContext.forEach(highlight => {
             filePathToBranch.set(highlight.path, highlight.branchId);
         });
+        
+        // Limit the number of file reads to prevent memory issues
+        const MAX_FILES_TO_READ = 5;
+        const filesToRead = Array.from(filePathToBranch.entries()).slice(0, MAX_FILES_TO_READ);
 
-        for (const [filePath, branchId] of filePathToBranch) {
+        for (const [filePath, branchId] of filesToRead) {
             const file = await this.editorEngine.activeSandbox.readFile(filePath);
             if (file === null || file.type === 'binary') {
                 continue;
             }
+            
+            // Limit file content size to prevent huge memory usage
+            const MAX_CONTENT_LENGTH = 50000; // ~50KB per file
+            const truncatedContent = file.content.length > MAX_CONTENT_LENGTH 
+                ? file.content.substring(0, MAX_CONTENT_LENGTH) + '\n... [truncated]'
+                : file.content;
+                
             fileContext.push({
                 type: MessageContextType.FILE,
                 displayName: filePath,
                 path: filePath,
-                content: file.content,
+                content: truncatedContent,
                 branchId: branchId,
             });
         }
@@ -138,19 +178,19 @@ export class ChatContext {
         for (const node of selected) {
             const oid = node.oid;
             if (!oid) {
-                console.error('No oid found for node', node);
+                // Removed console.error to prevent log spam
                 continue;
             }
 
             const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(oid);
             if (codeBlock === null) {
-                console.error('No code block found for node', node);
+                // Removed console.error to prevent log spam
                 continue;
             }
 
             const templateNode = this.editorEngine.templateNodes.getTemplateNode(oid);
             if (!templateNode) {
-                console.error('No template node found for node', node);
+                // Removed console.error to prevent log spam
                 continue;
             }
 
@@ -288,6 +328,18 @@ export class ChatContext {
     }
 
     clear() {
+        // Cancel pending updates
+        if (this.pendingContextUpdate) {
+            cancelAnimationFrame(this.pendingContextUpdate);
+            this.pendingContextUpdate = undefined;
+        }
+        
+        // Abort in-flight operations
+        if (this.contextUpdateAbortController) {
+            this.contextUpdateAbortController.abort();
+            this.contextUpdateAbortController = undefined;
+        }
+        
         this.selectedReactionDisposer?.();
         this.selectedReactionDisposer = undefined;
         this.context = [];

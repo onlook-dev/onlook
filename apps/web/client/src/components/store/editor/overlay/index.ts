@@ -8,6 +8,7 @@ import { adaptRectToCanvas } from './utils';
 export class OverlayManager {
     state: OverlayState = new OverlayState();
     private canvasReactionDisposer?: () => void;
+    private pendingRefreshPromise?: Promise<void>;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -27,24 +28,44 @@ export class OverlayManager {
     }
 
     undebouncedRefresh = async () => {
+        // Prevent multiple refresh operations from running concurrently
+        if (this.pendingRefreshPromise) {
+            return this.pendingRefreshPromise;
+        }
+        
+        this.pendingRefreshPromise = this.performRefresh();
+        
+        try {
+            await this.pendingRefreshPromise;
+        } finally {
+            this.pendingRefreshPromise = undefined;
+        }
+    };
+    
+    private performRefresh = async () => {
         this.state.removeHoverRect();
 
         // Refresh click rects
         const newClickRects: { rect: RectDimensions; styles: DomElementStyles | null }[] = [];
-        for (const selectedElement of this.editorEngine.elements.selected) {
+        
+        // Limit the number of elements to refresh to prevent performance issues
+        const MAX_ELEMENTS_TO_REFRESH = 10;
+        const elementsToRefresh = this.editorEngine.elements.selected.slice(0, MAX_ELEMENTS_TO_REFRESH);
+        
+        for (const selectedElement of elementsToRefresh) {
             const frameData = this.editorEngine.frames.get(selectedElement.frameId);
             if (!frameData) {
-                console.error('Frame data not found');
+                // Removed console.error to prevent log spam
                 continue;
             }
             const { view } = frameData;
             if (!view) {
-                console.error('No frame view found');
+                // Removed console.error to prevent log spam
                 continue;
             }
             const el: DomElement = await view.getElementByDomId(selectedElement.domId, true);
             if (!el) {
-                console.error('Element not found');
+                // Removed console.error to prevent log spam
                 continue;
             }
             const adaptedRect = adaptRectToCanvas(el.rect, view);
@@ -73,13 +94,13 @@ export class OverlayManager {
                         });
                     }
                 } catch {
-                    console.error('Error refreshing text editor position');
+                    // Removed console.error to prevent log spam
                 }
             }
         }
     };
 
-    refresh = debounce(this.undebouncedRefresh, 50, { leading: true });
+    refresh = debounce(this.undebouncedRefresh, 100, { leading: true, trailing: false, maxWait: 500 });
 
     showMeasurement() {
         this.editorEngine.overlay.removeMeasurement();
@@ -128,5 +149,7 @@ export class OverlayManager {
     clear = () => {
         this.canvasReactionDisposer?.();
         this.canvasReactionDisposer = undefined;
+        this.pendingRefreshPromise = undefined;
+        this.clearUI();
     };
 }
