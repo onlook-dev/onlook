@@ -1,7 +1,5 @@
 import { api } from '@/trpc/client';
-import { toDbMessage } from '@onlook/db';
-import type { GitCommit } from '@onlook/git';
-import { MessageCheckpointType, type ChatConversation, type ChatMessage } from '@onlook/models';
+import { type ChatConversation } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { toast } from 'sonner';
 import type { EditorEngine } from '../engine';
@@ -15,9 +13,7 @@ export class ConversationManager {
     conversations: ChatConversation[] = [];
     creatingConversation = false;
 
-    constructor(
-        private editorEngine: EditorEngine,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
@@ -101,33 +97,6 @@ export class ConversationManager {
         }
     }
 
-    async attachCommitToUserMessage(message: ChatMessage, commit: GitCommit): Promise<void> {
-        if (!this.current) {
-            console.error('No conversation found');
-            return;
-        }
-        const newCheckpoints = [
-            ...(message.metadata?.checkpoints ?? []),
-            {
-                type: MessageCheckpointType.GIT,
-                oid: commit.oid,
-                createdAt: new Date(),
-            },
-        ];
-        message.metadata = {
-            ...message.metadata,
-            createdAt: message.metadata?.createdAt ?? new Date(),
-            conversationId: message.metadata?.conversationId ?? this.current.id,
-            checkpoints: newCheckpoints,
-            context: message.metadata?.context ?? [],
-        };
-        await api.chat.message.updateCheckpoints.mutate({
-            messageId: message.id,
-            checkpoints: newCheckpoints,
-        });
-        await this.upsertMessageInStorage(message);
-    }
-
     async getConversationsFromStorage(id: string): Promise<ChatConversation[] | null> {
         return api.chat.conversation.getAll.query({ projectId: id });
     }
@@ -138,18 +107,6 @@ export class ConversationManager {
 
     async deleteConversationInStorage(id: string) {
         await api.chat.conversation.delete.mutate({ conversationId: id });
-    }
-
-    async deleteMessagesInStorage(messageIds: string[]) {
-        await api.chat.message.delete.mutate({ messageIds });
-    }
-
-    async upsertMessageInStorage(message: ChatMessage) {
-        if (!this.current) {
-            console.error('No conversation found');
-            return;
-        }
-        await api.chat.message.upsert.mutate({ message: toDbMessage(message, this.current.id) });
     }
 
     clear() {

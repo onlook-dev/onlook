@@ -8,7 +8,7 @@ import { ChatType, type ChatMessage, type ChatSuggestion } from '@onlook/models'
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import { usePostHog } from 'posthog-js/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getUserChatMessageFromString, prepareMessagesForSuggestions } from './utils';
+import { attachCommitToUserMessage, getUserChatMessageFromString, prepareMessagesForSuggestions } from './utils';
 import { jsonClone } from '@onlook/utility';
 
 export type SendMessage = (content: string, type: ChatType) => Promise<ChatMessage>;
@@ -98,12 +98,27 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             posthog.capture('user_edit_message', { type: ChatType.EDIT });
 
             const messageIndex = messagesRef.current.findIndex((m) => m.id === messageId);
-            if (messageIndex === -1) {
+            const message = messagesRef.current[messageIndex];
+            
+            if (messageIndex === -1 || !message) {
                 throw new Error('Message not found.');
             }
+            
+            if (message.role !== 'user') {
+                throw new Error('Message is not a user message.');
+            }
+
 
             const updatedMessages = messagesRef.current.slice(0, messageIndex);
 
+
+
+            if (chatType === ChatType.EDIT) {
+
+                    await attachCommitToUserMessage(message, commit, conversationId);
+
+            }
+            
             const context = await editorEngine.chat.context.getContextByChatType(chatType);
 
             setMessages(
