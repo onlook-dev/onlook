@@ -57,7 +57,7 @@ export function TemplateModal({
 
     const handleUseTemplate = async () => {
         if (!user?.id) {
-            localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
+            await localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
             setIsAuthModalOpen(true);
             return;
         }
