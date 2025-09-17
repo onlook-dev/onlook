@@ -1,5 +1,6 @@
 'use client';
 
+import { colors } from '@onlook/ui/tokens';
 import { observer } from 'mobx-react-lite';
 
 interface DragSelectOverlayProps {
@@ -22,12 +23,14 @@ export const DragSelectOverlay = observer(({ startX, startY, endX, endY, isSelec
 
     return (
         <div
-            className="absolute border border-blue-500 bg-blue-500/10 pointer-events-none"
+            className="absolute pointer-events-none"
             style={{
                 left: `${left}px`,
                 top: `${top}px`,
                 width: `${width}px`,
                 height: `${height}px`,
+                border: `1px solid ${colors.blue[500]}`,
+                backgroundColor: `${colors.blue[500]}1A`, // 10% opacity (1A in hex)
             }}
         />
     );
