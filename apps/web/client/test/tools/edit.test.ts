@@ -353,5 +353,68 @@ describe('Edit Tool Handlers', () => {
                 'Failed to write file /test/file.ts'
             );
         });
+
+        it('should handle empty edits array', async () => {
+            mockSandbox.readFile.mockResolvedValue({
+                content: 'Hello world',
+                type: 'text',
+            });
+
+            const args = {
+                branchId: 'test-branch',
+                file_path: '/test/file.ts',
+                edits: [],
+            };
+
+            const result = await handleSearchReplaceMultiEditFileTool(args, mockEditorEngine);
+
+            expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'Hello world');
+            expect(result).toBe('File /test/file.ts edited with 0 changes');
+        });
+
+        it('should handle replace_all with non-existent string', async () => {
+            mockSandbox.readFile.mockResolvedValue({
+                content: 'Hello world',
+                type: 'text',
+            });
+
+            const args = {
+                branchId: 'test-branch',
+                file_path: '/test/file.ts',
+                edits: [
+                    { old_string: 'notfound', new_string: 'replacement', replace_all: true },
+                ],
+            };
+
+            const result = await handleSearchReplaceMultiEditFileTool(args, mockEditorEngine);
+
+            // replace_all with non-existent string should succeed but make no changes
+            expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'Hello world');
+            expect(result).toBe('File /test/file.ts edited with 1 changes');
+        });
+
+        it('should validate sequential edits during validation phase', async () => {
+            mockSandbox.readFile.mockResolvedValue({
+                content: 'step1 content',
+                type: 'text',
+            });
+
+            const args = {
+                branchId: 'test-branch',
+                file_path: '/test/file.ts',
+                edits: [
+                    { old_string: 'step1', new_string: 'step2', replace_all: false },
+                    { old_string: 'step2', new_string: 'final', replace_all: false },
+                    { old_string: 'missing', new_string: 'wont work', replace_all: false }, // This should fail
+                ],
+            };
+
+            await expect(handleSearchReplaceMultiEditFileTool(args, mockEditorEngine)).rejects.toThrow(
+                'String not found in file: missing'
+            );
+
+            // Ensure no file was written due to validation failure
+            expect(mockSandbox.writeFile).not.toHaveBeenCalled();
+        });
     });
 });
