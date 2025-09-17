@@ -7,18 +7,13 @@ import { ChatContext } from './context';
 import { ConversationManager } from './conversation';
 
 export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
-
-const stubSendMessage: SendMessage = () => {
-    throw new Error('Chat actions not initialized');
-}
-
 export class ChatManager {
     conversation: ConversationManager;
     context: ChatContext;
     isStreaming = false;
 
     // Actions pulled in from useChat hook
-    sendMessage: SendMessage = stubSendMessage;
+    private chatSendMessage: SendMessage | null = null;
 
     constructor(
         private editorEngine: EditorEngine,
@@ -37,7 +32,7 @@ export class ChatManager {
     }
 
     getCurrentConversationId() {
-        return this.conversation.current?.conversation.id;
+        return this.conversation.current?.id;
     }
 
     setIsStreaming(isStreaming: boolean) {
@@ -45,22 +40,18 @@ export class ChatManager {
     }
 
     setChatActions(sendMessage: SendMessage) {
-        this.sendMessage = sendMessage;
+        this.chatSendMessage = sendMessage;
     }
 
-    async addEditMessage(content: string): Promise<void> {
-        if (!this.sendMessage) {
+    async sendMessage(content: string, type: ChatType): Promise<void> {
+        if (!this.chatSendMessage) {
             throw new Error('Chat actions not initialized');
         }
-        const messageId = await this.sendMessage(content, ChatType.EDIT);
-        await this.createAndAttachCommitToUserMessage(messageId, content);
-    }
 
-    async addAskMessage(content: string): Promise<void> {
-        if (!this.sendMessage) {
-            throw new Error('Chat actions not initialized');
+        const messageId = await this.chatSendMessage(content, type);
+        if (type !== ChatType.ASK) {
+            await this.createAndAttachCommitToUserMessage(messageId, content);
         }
-        await this.sendMessage(content, ChatType.ASK);
     }
 
     async createAndAttachCommitToUserMessage(messageId: string, content: string): Promise<void> {

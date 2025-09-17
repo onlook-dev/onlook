@@ -8,10 +8,10 @@ import { ChatType, type ChatMessage, type ChatSuggestion } from '@onlook/models'
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import { usePostHog } from 'posthog-js/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { getUserChatMessageFromString, prepareMessagesForSuggestions } from './utils';
+import { jsonClone } from '@onlook/utility';
 
-export type SendMessage = (content: string, type: ChatType) => Promise<string>;
+export type SendMessage = (content: string, type: ChatType) => Promise<ChatMessage>;
 export type EditMessage = (messageId: string, newContent: string, type: ChatType) => Promise<void>;
 
 interface UseChatProps {
@@ -27,9 +27,8 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const [suggestions, setSuggestions] = useState<ChatSuggestion[]>([]);
     const [finishReason, setFinishReason] = useState<string | null>(null);
     const [isExecutingToolCall, setIsExecutingToolCall] = useState(false);
-    
+
     const {
-        sendMessage: baseSendMessage,
         addToolResult,
         messages,
         error,
@@ -40,7 +39,6 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     } = useAiChat<ChatMessage>({
         id: 'user-chat',
         messages: initialMessages,
-        generateId: () => uuidv4(),
         sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
         transport: new DefaultChatTransport({
             api: '/api/chat',
@@ -68,43 +66,70 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         editorEngine.chat.setIsStreaming(isStreaming);
     }, [editorEngine.chat, isStreaming]);
 
+    // Store messages in a ref to avoid re-rendering sendMessage/editMessage
+    const messagesRef = useRef(messages);
+    useEffect(() => {
+        messagesRef.current = messages;
+    }, [messages]);
+
     const sendMessage: SendMessage = useCallback(
         async (content: string, type: ChatType) => {
             posthog.capture('user_send_message', { type });
 
-            const newContext = await editorEngine.chat.context.getContextByChatType(type);
-
-            const newMessage = getUserChatMessageFromString(content, newContext, conversationId);
-
-            console.log('newMessage', JSON.stringify(newMessage, null, 2));
-
-            setMessages([...messages, newMessage]);
+            const context = await editorEngine.chat.context.getContextByChatType(type);
+            const newMessage = getUserChatMessageFromString(content, context, conversationId);
+            setMessages(jsonClone([...messagesRef.current, newMessage]));
 
             await regenerate({
                 body: {
                     chatType: type,
                     conversationId,
-                    context: newContext,
+                    context,
                 },
             });
 
-            return newMessage.id;
+            return newMessage;
         },
-        [editorEngine.chat.context, baseSendMessage, conversationId, posthog],
+        [editorEngine.chat.context, messagesRef, setMessages, regenerate, conversationId, posthog],
     );
 
-    // Store messages in a ref to avoid re-rendering editMessage
-    const messagesRef = useRef(messages);
-    useEffect(() => {
-        messagesRef.current = messages;
-    }, [messages]);
+    const editMessage: EditMessage = useCallback(
+        async (messageId: string, newContent: string, chatType: ChatType) => {
+            posthog.capture('user_edit_message', { type: ChatType.EDIT });
+
+            const messageIndex = messagesRef.current.findIndex((m) => m.id === messageId);
+            if (messageIndex === -1) {
+                throw new Error('Message not found.');
+            }
+
+            const updatedMessages = messagesRef.current.slice(0, messageIndex);
+
+            const context = await editorEngine.chat.context.getContextByChatType(chatType);
+
+            setMessages(
+                jsonClone([
+                    ...updatedMessages,
+                    getUserChatMessageFromString(newContent, context, conversationId, messageId),
+                ]),
+            );
+
+            return regenerate({
+                body: {
+                    chatType,
+                    conversationId,
+                },
+            });
+        },
+        [editorEngine.chat.context, regenerate, conversationId, setMessages, posthog],
+    );
+
     useEffect(() => {
         if (finishReason && finishReason !== 'tool-calls') {
             setFinishReason(null);
             setSuggestions([]);
             const fetchSuggestions = async () => {
                 try {
-                    const suggestions = await api.chat.suggestions.generate.mutate({    
+                    const suggestions = await api.chat.suggestions.generate.mutate({
                         conversationId,
                         messages: prepareMessagesForSuggestions(messagesRef.current),
                     });
@@ -116,39 +141,6 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             void fetchSuggestions();
         }
     }, [finishReason, conversationId]);
-
-    const editMessage: EditMessage = useCallback(
-        async (messageId: string, newContent: string, chatType: ChatType) => {
-            const messageIndex = messagesRef.current.findIndex((m) => m.id === messageId);
-            if (messageIndex === -1) {
-                throw new Error('Message not found');
-            }
-
-            const message = messagesRef.current.find((m) => m.id === messageId);
-            if (!message) {
-                throw new Error('Message not found');
-            }
-
-            posthog.capture('user_edit_message', { type: ChatType.EDIT });
-            const updatedMessages = messagesRef.current.slice(0, messageIndex + 1);
-            updatedMessages[messageIndex] = {
-                ...message,
-                parts: [{ type: 'text', text: newContent }],
-            };
-
-            const context = await editorEngine.chat.context.getContextByChatType(chatType);
-
-            setMessages(updatedMessages);
-            return regenerate({
-                body: {
-                    chatType,
-                    conversationId,
-                    context,
-                },
-            });
-        },
-        [editorEngine.chat.context, regenerate, conversationId, setMessages, posthog],
-    );
 
     useEffect(() => {
         editorEngine.chat.setChatActions(sendMessage);
