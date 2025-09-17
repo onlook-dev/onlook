@@ -20,7 +20,6 @@ import { InputContextPills } from '../context-pills/input-context-pills';
 import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 import { ChatModeToggle } from './chat-mode-toggle';
-import { ContextWheel } from './context-wheel';
 
 export const ChatInput = observer(({
     inputValue,
@@ -345,7 +344,7 @@ export const ChatInput = observer(({
                 }}
             />
             <div className="flex flex-col w-full p-4">
-                <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                <div className="flex flex-row flex-wrap items-center gap-1.5 mb-1">
                     {/* <ContextWheel /> */}
                     <InputContextPills />
                 </div>

@@ -1,12 +1,12 @@
 'use client';
 
-import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
+import { cn } from "@onlook/ui/utils";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
@@ -106,7 +106,7 @@ export const Radius = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className={`gap-1 flex items-center min-w-9 ${radiusValue ? '!text-foreground-primary [&_*]:!text-foreground-primary' : ''}`}
+                        className={cn('gap-1 flex items-center min-w-9', radiusValue && '!text-foreground-primary [&_*]:!text-foreground-primary')}
                     >
                         <RadiusIcon className="h-4 min-h-4 w-4 min-w-4" />
                         {radiusValue && (
@@ -119,19 +119,22 @@ export const Radius = observer(() => {
                 <div className="flex items-center gap-2 mb-3">
                     <button
                         onClick={() => setActiveTab('all')}
-                        className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${activeTab === 'all'
-                            ? 'text-foreground-primary bg-background-active/50'
-                            : 'text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover'
-                            }`}
+                        className={cn(
+                            'flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer',
+                            activeTab === 'all'
+                                ? 'text-foreground-primary bg-background-active/50'
+                                : 'text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover'
+                        )}
                     >
                         All sides
                     </button>
                     <button
                         onClick={() => setActiveTab('individual')}
-                        className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${activeTab === 'individual'
-                            ? 'text-foreground-primary bg-background-active/50'
-                            : 'text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover'
-                            }`}
+                        className={cn('flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer',
+                            activeTab === 'individual'
+                                ? 'text-foreground-primary bg-background-active/50'
+                                : 'text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover'
+                        )}
                     >
                         Individual
                     </button>

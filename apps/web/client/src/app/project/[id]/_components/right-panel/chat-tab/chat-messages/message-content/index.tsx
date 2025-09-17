@@ -37,9 +37,8 @@ export const MessageContent = observer(
                 return (
                     <ToolCallDisplay
                         messageId={messageId}
-                        index={idx}
                         isLastPart={isLastPart}
-                        toolInvocation={toolPart}
+                        toolPart={toolPart}
                         key={toolPart.toolCallId}
                         isStream={isStream}
                         applied={applied}

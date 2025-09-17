@@ -4,7 +4,6 @@ import {
     DropdownMenuLabel,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
-import { Input } from "@onlook/ui/input";
 import { ScrollArea } from "@onlook/ui/scroll-area";
 import { timeAgo } from "@onlook/utility";
 import { useMemo, useState } from "react";
@@ -38,7 +37,6 @@ export function BranchList({
             <div className="p-1.5 border-b select-none">
                 <DropdownMenuLabel>Branches</DropdownMenuLabel>
             </div>
-
             <ScrollArea className="max-h-[300px]">
                 <div className="p-1">
                     {filteredBranches.map((branch) => (

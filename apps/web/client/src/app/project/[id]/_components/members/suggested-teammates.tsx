@@ -18,6 +18,10 @@ export const SuggestedTeammates = ({ projectId }: SuggestedTeammateProps) => {
         },
     });
 
+    if (suggestedUsers?.length === 0) {
+        return <div className="h-2"></div>;
+    }
+
     return (
         <div className="flex flex-col gap-2 p-3">
             <Separator />

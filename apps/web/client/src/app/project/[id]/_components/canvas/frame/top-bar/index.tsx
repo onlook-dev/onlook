@@ -157,11 +157,6 @@ export const TopBar = observer(
                     }}
                     ref={toolBarRef}
                 >
-                    {/* <HoverOnlyTooltip content="Hold to drag" side="top" className="mb-1" hideArrow>
-                        <div className="cursor-grab rounded-lg h-auto px-2 py-1 flex items-center justify-center opacity-70 hover:text-foreground-primary">
-                            <Icons.DragHandleDots />
-                        </div>
-                    </HoverOnlyTooltip> */}
                     <HoverOnlyTooltip content="Go back" side="top" className="mb-1" hideArrow>
                         <Button
                             variant="ghost"

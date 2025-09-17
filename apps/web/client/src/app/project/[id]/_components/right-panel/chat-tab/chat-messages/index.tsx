@@ -7,7 +7,7 @@ import { Icons } from '@onlook/ui/icons';
 import { assertNever } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { AssistantMessage } from './assistant-message';
 import { ErrorMessage } from './error-message';
 import { StreamMessage } from './stream-message';
@@ -20,34 +20,33 @@ export const ChatMessages = observer(() => {
     const conversation = editorEngine.chat.conversation.current;
     const engineMessages = editorEngine.chat.conversation.current?.messages;
 
-    const renderMessage = useCallback((message: ChatMessage, index: number) => {
+    const renderMessage = (message: ChatMessage, index: number) => {
         let messageNode;
-        switch (message.role) {
-            case 'assistant':
-                messageNode = <AssistantMessage message={message} />;
-                break;
-            case 'user':
-                messageNode = <UserMessage message={message} />;
-                break;
-            case 'system':
-                messageNode = null;
-                break;
-            default:
-                assertNever(message.role);
+        const isStreamingMessage = isWaiting && index === uiMessages.length - 1 && message.role === 'assistant';
+        if (isStreamingMessage) {
+            messageNode = <StreamMessage message={message} />;
+        } else {
+            switch (message.role) {
+                case 'assistant':
+                    messageNode = <AssistantMessage message={message} />;
+                    break;
+                case 'user':
+                    messageNode = <UserMessage message={message} />;
+                    break;
+                case 'system':
+                    messageNode = null;
+                    break;
+                default:
+                    assertNever(message.role);
+            }
         }
         return <div key={`message-${message.id}-${index}`}>{messageNode}</div>;
-    }, []);
+    };
 
     // Exclude the currently streaming assistant message (rendered by <StreamMessage />)
     const messagesToRender = useMemo(() => {
-        if (!engineMessages || engineMessages.length === 0) return [];
-
-        const lastUiMessage = uiMessages?.[uiMessages.length - 1];
-        const streamingAssistantId = isWaiting && lastUiMessage?.role === 'assistant' ? lastUiMessage.id : undefined;
-
-        if (!streamingAssistantId) return engineMessages;
-
-        return (engineMessages).filter((m) => m.id !== streamingAssistantId);
+        if (isWaiting) return uiMessages;
+        return engineMessages;
     }, [engineMessages, uiMessages, isWaiting]);
 
     if (!conversation) {
@@ -75,7 +74,12 @@ export const ChatMessages = observer(() => {
     return (
         <ChatMessageList contentKey={`${messagesToRender.map((m) => m.id).join('|')}${isWaiting ? `|${uiMessages?.[uiMessages.length - 1]?.id ?? ''}` : ''}`}>
             {messagesToRender.map((message, index) => renderMessage(message, index))}
-            <StreamMessage />
+            {isWaiting && (
+                <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
+                    <Icons.LoadingSpinner className="animate-spin" />
+                    <p>Thinking ...</p>
+                </div>
+            )}
             <ErrorMessage />
         </ChatMessageList>
     );

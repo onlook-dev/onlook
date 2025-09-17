@@ -38,8 +38,8 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
             }
             const finishReason = (message.metadata as { finishReason?: string; usage?: any }).finishReason;
             const usage = (message.metadata as { finishReason?: string; usage?: any }).usage;
-            
-            
+
+
             // Store usage data in the editor engine if available
             if (usage) {
                 console.log('Usage data received:', usage);
@@ -49,16 +49,16 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
                     completionTokens: usage.completionTokens || usage.completion_tokens || 0,
                     totalTokens: usage.totalTokens || usage.total_tokens || 0,
                 };
-                
-                (editorEngine.chat.context as any).usage = newUsage;
-                
+
+                editorEngine.chat.context.usage = newUsage;
+
                 // Add to cumulative usage
-                const cumulativeUsage = (editorEngine.chat.context as any).cumulativeUsage;
+                const cumulativeUsage = editorEngine.chat.context.cumulativeUsage;
                 cumulativeUsage.promptTokens += newUsage.promptTokens;
                 cumulativeUsage.completionTokens += newUsage.completionTokens;
                 cumulativeUsage.totalTokens += newUsage.totalTokens;
             }
-            
+
             lastMessageRef.current = message;
             if (finishReason !== 'error') {
                 editorEngine.chat.error.clear();
