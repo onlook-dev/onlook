@@ -103,12 +103,12 @@ export const ProjectBreadcrumb = observer(() => {
     }
 
     return (
-        <div className="mx-2 flex flex-row items-center text-small gap-2">
+        <div className="mr-1 flex flex-row items-center text-small gap-2">
             <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant='ghost'
-                        className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent cursor-pointer group"
+                        className="ml-1 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:!bg-transparent cursor-pointer group"
                     >
                         <Icons.OnlookLogo
                             className={cn(

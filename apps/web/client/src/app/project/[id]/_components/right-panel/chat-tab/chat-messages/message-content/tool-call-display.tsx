@@ -84,6 +84,7 @@ export const ToolCallDisplay = ({
         const args = toolInvocation.input as z.infer<typeof WRITE_FILE_TOOL_PARAMETERS> | null;
         const filePath = args?.file_path;
         const codeContent = args?.content;
+        const branchId = args?.branchId;
         if (!filePath || !codeContent) {
             return (
                 <ToolCallSimple
@@ -102,6 +103,7 @@ export const ToolCallDisplay = ({
                 isStream={isStream}
                 originalContent={codeContent}
                 updatedContent={codeContent}
+                branchId={branchId}
             />
         );
     }
@@ -110,6 +112,7 @@ export const ToolCallDisplay = ({
         const args = toolInvocation.input as z.infer<typeof FUZZY_EDIT_FILE_TOOL_PARAMETERS> | null;
         const filePath = args?.file_path;
         const codeContent = args?.content;
+        const branchId = args?.branchId;
         if (!filePath || !codeContent) {
             return (
                 <ToolCallSimple
@@ -128,6 +131,7 @@ export const ToolCallDisplay = ({
                 isStream={isStream}
                 originalContent={codeContent}
                 updatedContent={codeContent}
+                branchId={branchId}
             />
         );
     }
@@ -136,6 +140,7 @@ export const ToolCallDisplay = ({
         const args = toolInvocation.input as z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS> | null;
         const filePath = args?.file_path;
         const codeContent = args?.new_string;
+        const branchId = args?.branchId;
         if (!filePath || !codeContent) {
             return (
                 <ToolCallSimple
@@ -154,6 +159,7 @@ export const ToolCallDisplay = ({
                 isStream={isStream}
                 originalContent={codeContent}
                 updatedContent={codeContent}
+                branchId={branchId}
             />
         );
     }
@@ -162,6 +168,7 @@ export const ToolCallDisplay = ({
         const args = toolInvocation.input as z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS> | null;
         const filePath = args?.file_path;
         const codeContent = args?.edits?.map((edit) => edit.new_string).join('\n...\n');
+        const branchId = args?.branchId;
         if (!filePath || !codeContent) {
             return (
                 <ToolCallSimple
@@ -180,6 +187,7 @@ export const ToolCallDisplay = ({
                 isStream={isStream}
                 originalContent={codeContent}
                 updatedContent={codeContent}
+                branchId={branchId}
             />
         );
     }

@@ -83,7 +83,7 @@ export function BranchControls({
                     <span>{isForking ? "Forking..." : "Fork into a new Branch"}</span>
                 </DropdownMenuItem>
 
-                <DropdownMenuItem
+                {/* <DropdownMenuItem
                     className="flex items-center gap-2 p-2"
                     onSelect={handleCreateBlankSandbox}
                     disabled={isCreatingBlank}
@@ -94,7 +94,7 @@ export function BranchControls({
                         <Icons.Plus className="h-4 w-4" />
                     )}
                     <span>{isCreatingBlank ? "Creating..." : "Create blank sandbox"}</span>
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
 
                 <DropdownMenuSeparator />
 

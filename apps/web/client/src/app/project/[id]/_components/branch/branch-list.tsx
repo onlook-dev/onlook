@@ -35,16 +35,9 @@ export function BranchList({
 
     return (
         <>
-            {showSearch && (
-                <div className="p-2 border-b">
-                    <DropdownMenuLabel>Branches</DropdownMenuLabel>
-                    <Input
-                        placeholder="Search"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-            )}
+            <div className="p-1.5 border-b select-none">
+                <DropdownMenuLabel>Branches</DropdownMenuLabel>
+            </div>
 
             <ScrollArea className="max-h-[300px]">
                 <div className="p-1">

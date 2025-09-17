@@ -3,6 +3,7 @@ import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
+    DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
@@ -31,7 +32,7 @@ export const BranchDisplay = observer(() => {
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="ghost"
-                    className="text-small font-normal text-foreground-onlook hover:text-foreground-active hover:bg-transparent cursor-pointer group px-0 gap-2"
+                    className="text-small font-normal text-foreground-onlook hover:text-foreground-active hover:!bg-transparent cursor-pointer group px-0 gap-2"
                 >
                     <Icons.Commit className="h-4 w-4" />
                     <span className="max-w-[60px] md:max-w-[100px] lg:max-w-[200px] text-small truncate cursor-pointer group-hover:text-foreground-active">
@@ -46,6 +47,7 @@ export const BranchDisplay = observer(() => {
                     onBranchSwitch={handleBranchSwitch}
                     showSearch={true}
                 />
+                <DropdownMenuSeparator />
                 <BranchControls branch={activeBranch} onClose={() => setIsOpen(false)} />
             </DropdownMenuContent>
         </DropdownMenu>
