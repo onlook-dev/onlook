@@ -29,8 +29,8 @@ export const DragSelectOverlay = observer(({ startX, startY, endX, endY, isSelec
                 top: `${top}px`,
                 width: `${width}px`,
                 height: `${height}px`,
-                border: `1px solid ${colors.blue[500]}`,
-                backgroundColor: `${colors.blue[500]}1A`, // 10% opacity (1A in hex)
+                border: `1px solid ${colors.teal[300]}`,
+                backgroundColor: `${colors.teal[300]}1A`, // 10% opacity (1A in hex)
             }}
         />
     );
