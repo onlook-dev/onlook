@@ -3,7 +3,7 @@ import type { SendMessage } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
 import { transKeys } from '@/i18n/keys';
-import type { ChatMessage } from '@onlook/models';
+import type { ChatMessage, ChatSuggestion } from '@onlook/models';
 import { ChatType, EditorTabValue, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
@@ -24,6 +24,7 @@ import { ChatModeToggle } from './chat-mode-toggle';
 
 interface ChatInputProps {
     messages: ChatMessage[];
+    suggestions: ChatSuggestion[];
     isStreaming: boolean;
     onStop: () => Promise<void>;
     onSendMessage: SendMessage;
@@ -31,6 +32,7 @@ interface ChatInputProps {
 
 export const ChatInput = observer(({
     messages,
+    suggestions,
     isStreaming,
     onStop,
     onSendMessage,
@@ -165,7 +167,7 @@ export const ChatInput = observer(({
                 if (!file) {
                     continue;
                 }
-                handleImageEvent(file, 'Pasted image');
+                void handleImageEvent(file, 'Pasted image');
                 break;
             }
         }
@@ -182,7 +184,7 @@ export const ChatInput = observer(({
                 if (!file) {
                     continue;
                 }
-                handleImageEvent(file, 'Dropped image');
+                void handleImageEvent(file, 'Dropped image');
                 break;
             }
         }
@@ -201,7 +203,7 @@ export const ChatInput = observer(({
         const reader = new FileReader();
         reader.onload = async (event) => {
             const compressedImage = await compressImageInBrowser(file);
-            const base64URL = compressedImage || (event.target?.result as string);
+            const base64URL = compressedImage ?? (event.target?.result as string);
             const contextImage: ImageMessageContext = {
                 type: MessageContextType.IMAGE,
                 content: base64URL,
@@ -329,7 +331,8 @@ export const ChatInput = observer(({
         >
             <Suggestions
                 ref={suggestionRef}
-                isWaiting={isStreaming}
+                suggestions={suggestions}
+                isStreaming={isStreaming}
                 disabled={disabled}
                 inputValue={inputValue}
                 setInput={(suggestion) => {

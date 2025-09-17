@@ -23,6 +23,10 @@ export const suggestionsRouter = createTRPCRouter({
                 provider: LLMProvider.OPENROUTER,
                 model: OPENROUTER_MODELS.OPEN_AI_GPT_5_NANO,
             });
+
+
+            console.log('[START] - generating suggestions');
+            console.log(input.messages)
             const { object } = await generateObject({
                 model,
                 headers,
@@ -43,14 +47,20 @@ export const suggestionsRouter = createTRPCRouter({
                 ],
                 maxOutputTokens: 10000,
             });
+            console.log('[GENERATED] - generating suggestions');
+
             const suggestions = object.suggestions satisfies ChatSuggestion[];
             try {
                 await ctx.db.update(conversations).set({
                     suggestions,
                 }).where(eq(conversations.id, input.conversationId));
+                console.log('[UPDATED] - generating suggestions');
+
             } catch (error) {
                 console.error('Error updating conversation suggestions:', error);
             }
+            console.log('[DONE] - generating suggestions');
+
             return suggestions;
         }),
 });

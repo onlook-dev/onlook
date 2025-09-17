@@ -22,14 +22,13 @@ export const ErrorSection = observer(({ isStreaming, onSendMessage }: ErrorSecti
     const allErrors = editorEngine.branches.getAllErrors();
     const errorCount = editorEngine.branches.getTotalErrorCount();
 
-    const sendFixError = async () => {
-        try {
-            const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
-            return onSendMessage(prompt, ChatType.FIX);
-        } catch (error) {
-            console.error('Failed to send fix error message', error);
-            toast.error('Failed to send fix error message. Please try again.');
-        }
+    const sendFixError = () => {
+        toast.promise(
+            onSendMessage('How can I resolve these errors? If you propose a fix, please make it concise.', ChatType.FIX),
+            {
+                error: 'Failed to send fix error message. Please try again.',
+            }
+        )
     };
 
     return (

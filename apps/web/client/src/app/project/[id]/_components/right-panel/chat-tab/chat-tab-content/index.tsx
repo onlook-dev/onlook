@@ -15,7 +15,7 @@ export const ChatTabContent = ({
     projectId,
     initialMessages,
 }: ChatTabContentProps) => {
-    const { isStreaming, sendMessage, editMessage, messages, error, stop } = useChat({
+    const { isStreaming, sendMessage, editMessage, messages, error, stop, suggestions } = useChat({
         conversationId,
         projectId,
         initialMessages,
@@ -25,7 +25,7 @@ export const ChatTabContent = ({
         <div className="flex flex-col h-full justify-end gap-2 pt-2">
             <div className="h-full flex-1 overflow-y-auto">
                 <ChatMessages
-                    messages={messages as ChatMessage[]}
+                    messages={messages}
                     isStreaming={isStreaming}
                     error={error}
                     onEditMessage={editMessage}
@@ -34,6 +34,7 @@ export const ChatTabContent = ({
             <ErrorSection isStreaming={isStreaming} onSendMessage={sendMessage} />
             <ChatInput
                 messages={messages}
+                suggestions={suggestions}
                 isStreaming={isStreaming}
                 onStop={stop}
                 onSendMessage={sendMessage}

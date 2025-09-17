@@ -16,23 +16,22 @@ export const Suggestions = observer(
     forwardRef<
         SuggestionsRef,
         {
-            isWaiting: boolean;
+            suggestions: ChatSuggestion[];
+            isStreaming: boolean;
             disabled: boolean;
             inputValue: string;
             setInput: (input: string) => void;
             onSuggestionFocus?: (isFocused: boolean) => void;
         }
-    >(({ isWaiting, disabled, inputValue, setInput, onSuggestionFocus }, ref) => {
+    >(({ suggestions, isStreaming, disabled, inputValue, setInput, onSuggestionFocus }, ref) => {
         const editorEngine = useEditorEngine();
         const { data: settings } = api.user.settings.get.useQuery();
         const [focusedIndex, setFocusedIndex] = useState<number>(-1);
         const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-        // const suggestions = editorEngine.chat.suggestions.suggestions;
-        const suggestions = [] as ChatSuggestion[];
         const shouldHideSuggestions =
             suggestions.length === 0 ||
-            isWaiting ||
+            isStreaming ||
             !settings?.chat?.showSuggestions ||
             disabled ||
             inputValue.trim().length > 0 ||
