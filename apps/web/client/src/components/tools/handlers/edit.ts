@@ -61,26 +61,38 @@ export async function handleSearchReplaceMultiEditFileTool(args: z.infer<typeof 
         const originalContent = file.content;
         let content = originalContent;
 
-        // Validate all edits first to avoid partial application
+        // Validate only the first non-replace_all edit against original content
+        // Sequential edits will be validated during application
+        let tempContent = originalContent;
         for (const edit of args.edits) {
             if (!edit.replace_all) {
-                const firstIndex = originalContent.indexOf(edit.old_string);
+                const firstIndex = tempContent.indexOf(edit.old_string);
                 if (firstIndex === -1) {
                     throw new Error(`String not found in file: ${edit.old_string}`);
                 }
 
-                const secondIndex = originalContent.indexOf(edit.old_string, firstIndex + edit.old_string.length);
+                const secondIndex = tempContent.indexOf(edit.old_string, firstIndex + edit.old_string.length);
                 if (secondIndex !== -1) {
                     throw new Error(`Multiple occurrences found for "${edit.old_string}". Use replace_all=true or provide more context.`);
                 }
+                
+                // Simulate the edit for next validation
+                tempContent = tempContent.replace(edit.old_string, edit.new_string);
+            } else {
+                tempContent = tempContent.replaceAll(edit.old_string, edit.new_string);
             }
         }
 
-        // Apply edits after validation
+        // Apply edits sequentially in the order provided
+        // Each edit operates on the result of the previous edit
         for (const edit of args.edits) {
             if (edit.replace_all) {
                 content = content.replaceAll(edit.old_string, edit.new_string);
             } else {
+                const index = content.indexOf(edit.old_string);
+                if (index === -1) {
+                    throw new Error(`String not found in file after previous edits: ${edit.old_string}`);
+                }
                 content = content.replace(edit.old_string, edit.new_string);
             }
         }

@@ -1,11 +1,10 @@
-
-import { ChatMessageRole, type ChatMessage } from '@onlook/models/chat';
+import { type ChatMessage } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { useMemo } from 'react';
 import { MessageContent } from './message-content';
 
-export const StreamMessage = ({ 
-    messages, 
+export const StreamMessage = ({
+    messages,
     isStreaming,
 }: {
     messages: ChatMessage[];
@@ -13,7 +12,7 @@ export const StreamMessage = ({
 }) => {
     const streamMessage = messages.length > 0 ? messages[messages.length - 1] : null;
     const isAssistantStreamMessage = useMemo(() =>
-        streamMessage?.role === ChatMessageRole.ASSISTANT,
+        streamMessage?.role === 'assistant',
         [streamMessage?.role]
     );
 

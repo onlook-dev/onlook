@@ -12,7 +12,6 @@ export function addOidsToAst(
     let modified = false;
     // Track OIDs used within this AST to prevent duplicates in the same file
     const localOids = new Set<string>();
-
     traverse(ast, {
         JSXOpeningElement(path) {
             if (isReactFragment(path.node)) {

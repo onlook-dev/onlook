@@ -3,7 +3,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat as useAiChat, type UseChatHelpers } from '@ai-sdk/react';
-import { ChatType, type MessageContext } from '@onlook/models';
+import { ChatType, type ChatMessage, type MessageContext } from '@onlook/models';
 import {
     DefaultChatTransport,
     lastAssistantMessageIsCompleteWithToolCalls,
@@ -11,8 +11,9 @@ import {
 } from 'ai';
 import { usePostHog } from 'posthog-js/react';
 import { useCallback, useEffect, useRef } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
-type ExtendedUseChatHelpers = UseChatHelpers<UIMessage> & {
+type ExtendedUseChatHelpers = UseChatHelpers<ChatMessage> & {
     sendMessage: (content: string, type: ChatType, context: MessageContext[]) => Promise<void>;
     editMessage: (messageId: string, newContent: string) => Promise<void>;
     isStreaming: boolean;
@@ -21,7 +22,7 @@ type ExtendedUseChatHelpers = UseChatHelpers<UIMessage> & {
 interface UseChatProps {
     conversationId: string;
     projectId: string;
-    initialMessages: UIMessage[];
+    initialMessages: ChatMessage[];
 }
 
 export function useChat({
@@ -40,9 +41,10 @@ export function useChat({
         setMessages,
         regenerate,
         status,
-    } = useAiChat({
+    } = useAiChat<ChatMessage>({
         id: 'user-chat',
         messages: initialMessages,
+        generateId: () => uuidv4(),
         sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
         transport: new DefaultChatTransport({
             api: '/api/chat',
@@ -102,7 +104,7 @@ export function useChat({
     const messagesRef = useRef(messages);
     useEffect(() => {
         messagesRef.current = messages;
-    }, [messages]);    
+    }, [messages]);
 
     const editMessage = useCallback(
         async (messageId: string, newContent: string) => {
@@ -115,7 +117,7 @@ export function useChat({
             if (!message) {
                 throw new Error('Message not found');
             }
-            
+
             posthog.capture('user_edit_message', { type: ChatType.EDIT });
 
             const updatedMessages = messagesRef.current.slice(0, messageIndex + 1);

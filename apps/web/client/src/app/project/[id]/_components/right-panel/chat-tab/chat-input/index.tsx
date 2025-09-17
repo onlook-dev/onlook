@@ -2,6 +2,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
 import { transKeys } from '@/i18n/keys';
+import type { ChatMessage } from '@onlook/models';
 import { ChatType, EditorTabValue, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
@@ -19,10 +20,9 @@ import { InputContextPills } from '../context-pills/input-context-pills';
 import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 import { ChatModeToggle } from './chat-mode-toggle';
-import type { UIMessage } from 'ai';
 
 interface ChatInputProps {
-    messages: UIMessage[];
+    messages: ChatMessage[];
     isWaiting: boolean;
     onStop: () => Promise<void>;
     onSendMessage: (content: string, type: ChatType) => Promise<void>;

@@ -1,5 +1,5 @@
 import type { GitCommit } from '@onlook/git';
-import { ChatType, type ChatMessage, type MessageContext } from '@onlook/models/chat';
+import { ChatType, type ChatMessage, type MessageContext } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { ChatContext } from './context';
@@ -52,7 +52,7 @@ export class ChatManager {
             throw new Error('Chat actions not initialized');
         }
         const context = contextOverride ?? await this.context.getChatContext();
-        
+
         const commit = await this.createCommit(content);
         const message = await this.sendMessage(content, ChatType.EDIT, context);
         await this.createAndAttachCommitToUserMessage(message.id, content);

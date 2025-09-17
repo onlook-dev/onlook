@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
-import { ChatMessageRole, type ChatMessage } from '@onlook/models/chat';
+import { type ChatMessage } from '@onlook/models/chat';
 import { ChatMessageList } from '@onlook/ui/chat/chat-message-list';
 import { Icons } from '@onlook/ui/icons';
 import { assertNever } from '@onlook/utility';
@@ -9,8 +9,8 @@ import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 import { AssistantMessage } from './assistant-message';
 import { ErrorMessage } from './error-message';
-import { UserMessage } from './user-message';
 import { StreamMessage } from './stream-message';
+import { UserMessage } from './user-message';
 
 interface ChatMessagesProps {
     messages: ChatMessage[];
@@ -26,14 +26,17 @@ export const ChatMessages = observer(({ messages, onEditMessage, isStreaming, er
     const renderMessage = useCallback((message: ChatMessage, index: number) => {
         let messageNode;
         switch (message.role) {
-            case ChatMessageRole.ASSISTANT:
+            case 'assistant':
                 messageNode = <AssistantMessage message={message} />;
                 break;
-            case ChatMessageRole.USER:
+            case 'user':
                 messageNode = <UserMessage onEditMessage={onEditMessage} message={message} />;
                 break;
+            case 'system':
+                messageNode = null;
+                break;
             default:
-                assertNever(message);
+                assertNever(message.role);
         }
         return <div key={`message-${message.id}-${index}`}>{messageNode}</div>;
     }, [onEditMessage]);

@@ -1,6 +1,5 @@
-// import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
-import { ChatType, MessageCheckpointType, type UserChatMessage } from '@onlook/models';
+import { MessageCheckpointType, type ChatMessage } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
@@ -14,10 +13,10 @@ import { MessageContent } from './message-content';
 
 interface UserMessageProps {
     onEditMessage: (messageId: string, newContent: string) => Promise<void>;
-    message: UserChatMessage;
+    message: ChatMessage;
 }
 
-export const getUserMessageContent = (message: UserChatMessage) => {
+export const getUserMessageContent = (message: ChatMessage) => {
     return message.parts.map((part) => {
         if (part.type === 'text') {
             return part.text;

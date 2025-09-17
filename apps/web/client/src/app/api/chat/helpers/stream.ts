@@ -1,5 +1,5 @@
 import type { ToolCall } from '@ai-sdk/provider-utils';
-import { ASK_TOOL_SET, BUILD_TOOL_SET, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
+import { getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { ChatType, LLMProvider, OPENROUTER_MODELS, type ModelConfig } from '@onlook/models';
 import { generateObject, NoSuchToolError, type ToolSet } from 'ai';
 
@@ -25,11 +25,7 @@ export async function getModelFromType(chatType: ChatType) {
     return model;
 }
 
-export function getToolSetFromType(chatType: ChatType) {
-    return chatType === ChatType.ASK ? ASK_TOOL_SET : BUILD_TOOL_SET;
-}
-
-export async function getSystemPromptFromType(chatType: ChatType) {
+export function getSystemPromptFromType(chatType: ChatType) {
     let systemPrompt: string;
 
     switch (chatType) {
