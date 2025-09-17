@@ -41,7 +41,7 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
     const [isCreatingProject, setIsCreatingProject] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const searchContainerRef = useRef<HTMLDivElement>(null);
-    
+
     // API hooks
     const { data: user } = api.user.get.useQuery();
     const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
@@ -116,7 +116,7 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
     const handleStartBlankProject = async () => {
         if (!user?.id) {
             // Store the return URL and open auth modal
-            localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
+            await localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
             setIsAuthModalOpen(true);
             return;
         }
