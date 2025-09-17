@@ -1,5 +1,5 @@
 import { trackEvent } from '@/utils/analytics/server';
-import { getToolSetFromType } from '@onlook/ai';
+import { convertToStreamMessages, getToolSetFromType } from '@onlook/ai';
 import { ChatType, type ChatMessage } from '@onlook/models';
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from 'ai';
 import { type NextRequest } from 'next/server';
@@ -91,7 +91,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                     content: systemPrompt,
                     providerOptions,
                 },
-                ...convertToModelMessages(messages),
+                ...convertToStreamMessages(messages),
             ],
             experimental_telemetry: {
                 isEnabled: true,

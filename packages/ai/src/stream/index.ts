@@ -1,5 +1,5 @@
 import { type ChatMessage } from '@onlook/models';
-import { convertToModelMessages, type ModelMessage, type UIMessage as VercelMessage } from 'ai';
+import { convertToModelMessages, type ModelMessage } from 'ai';
 import { getHydratedUserMessage, type HydrateMessageOptions } from '../prompt';
 
 export function convertToStreamMessages(messages: ChatMessage[]): ModelMessage[] {
@@ -25,12 +25,11 @@ export function convertToStreamMessages(messages: ChatMessage[]): ModelMessage[]
 export const toVercelMessageFromOnlook = (
     message: ChatMessage,
     opt: HydrateMessageOptions,
-): VercelMessage => {
+): ChatMessage => {
     if (message.role === 'assistant') {
         return {
             ...message,
-            parts: message.parts,
-        } satisfies VercelMessage;
+        };
     } else if (message.role === 'user') {
         const hydratedMessage = getHydratedUserMessage(
             message.id,

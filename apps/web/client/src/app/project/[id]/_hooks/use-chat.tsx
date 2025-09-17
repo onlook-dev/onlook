@@ -4,6 +4,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import { ChatType, type ChatMessage } from '@onlook/models';
+import { jsonClone } from '@onlook/utility';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
@@ -42,7 +43,6 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
             }
 
             if (finishReason !== 'tool-calls') {
-                const currentConversationId = editorEngine.chat.conversation.current?.conversation.id;
                 editorEngine.chat.conversation.addOrReplaceMessage(message);
                 editorEngine.chat.suggestions.generateSuggestions();
                 lastMessageRef.current = null;
@@ -73,7 +73,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         editorEngine.chat.error.clear();
 
         const messages = editorEngine.chat.conversation.current?.messages ?? [];
-        chat.setMessages(messages);
+        chat.setMessages(jsonClone(messages));
         try {
             posthog.capture('user_send_message', {
                 type,
