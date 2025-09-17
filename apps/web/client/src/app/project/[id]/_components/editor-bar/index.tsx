@@ -93,19 +93,16 @@ export const EditorBar = observer(({ availableWidth }: { availableWidth?: number
     return (
         <DropdownManagerProvider>
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
+                exit={{ opacity: 0, y: 8 }}
                 className={cn(
                     'flex flex-col border-[0.5px] border-border p-1 px-1 bg-background rounded-xl backdrop-blur drop-shadow-xl z-50 overflow-hidden',
                     editorEngine.state.editorMode === EditorMode.PREVIEW && !windowSelected && 'hidden',
                 )}
                 transition={{
-                    type: 'spring',
-                    bounce: 0.1,
-                    duration: 0.4,
-                    stiffness: 200,
-                    damping: 25,
+                    duration: 0.15,
+                    ease: 'easeOut',
                 }}
             >
                 {getTopBar()}

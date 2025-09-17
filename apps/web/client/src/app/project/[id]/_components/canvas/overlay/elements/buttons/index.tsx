@@ -43,14 +43,14 @@ export const OverlayButtons = observer(() => {
     }, [chatPosition.x, chatPosition.y]);
 
     const animationClass =
-        'origin-center opacity-0 -translate-y-2 transition-all duration-200';
+        'origin-center opacity-0 -translate-y-1 transition-all duration-100';
 
     useEffect(() => {
         if (domId) {
             requestAnimationFrame(() => {
                 const element = document.querySelector(`[data-element-id="${domId}"]`);
                 if (element) {
-                    element.classList.remove('scale-[0.2]', 'opacity-0', '-translate-y-2');
+                    element.classList.remove('scale-[0.2]', 'opacity-0', '-translate-y-1');
                     element.classList.add('scale-100', 'opacity-100', 'translate-y-0');
                 }
             });
@@ -72,7 +72,7 @@ export const OverlayButtons = observer(() => {
         transform: 'translate(-50%, 0)',
         transformOrigin: 'center center',
         pointerEvents: 'auto',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'all 0.15s ease-out',
     };
 
     return (

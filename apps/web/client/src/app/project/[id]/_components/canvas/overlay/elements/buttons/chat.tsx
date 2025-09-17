@@ -40,7 +40,7 @@ export const OverlayChatInput = observer(({
     return (
         <div
             className={cn(
-                'rounded-xl backdrop-blur-lg transition-all duration-300',
+                'rounded-xl backdrop-blur-lg transition-all duration-150',
                 'shadow-xl shadow-background-secondary/50',
                 inputState.isInputting
                     ? 'bg-background/80 border shadow-xl shadow-background-secondary/50 p-1'

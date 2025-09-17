@@ -79,7 +79,7 @@ export class OverlayManager {
         }
     };
 
-    refresh = debounce(this.undebouncedRefresh, 100, { leading: true });
+    refresh = debounce(this.undebouncedRefresh, 50, { leading: true });
 
     showMeasurement() {
         this.editorEngine.overlay.removeMeasurement();

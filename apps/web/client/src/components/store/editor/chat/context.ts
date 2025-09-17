@@ -25,7 +25,12 @@ export class ChatContext {
     init() {
         this.selectedReactionDisposer = reaction(
             () => this.editorEngine.elements.selected,
-            () => this.getChatContext().then((context) => (this.context = context)),
+            () => {
+                // Defer context update to prevent blocking UI
+                requestAnimationFrame(() => {
+                    this.getChatContext().then((context) => (this.context = context));
+                });
+            },
         );
     }
 

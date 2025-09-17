@@ -1,7 +1,7 @@
 import type { CoreElementType, DomElement, DynamicType } from '@onlook/models';
 import type { RemoveElementAction } from '@onlook/models/actions';
 import { toast } from '@onlook/ui/sonner';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
 import { adaptRectToCanvas } from '../overlay/utils';
@@ -60,30 +60,41 @@ export class ElementsManager {
     }
 
     click(domEls: DomElement[]) {
-        this.editorEngine.overlay.state.removeClickRects();
-        this.clearSelectedElements();
-
-        for (const domEl of domEls) {
-            const frameData = this.editorEngine.frames.get(domEl.frameId);
-            if (!frameData) {
-                console.error('Frame data not found');
-                continue;
+        // Batch all synchronous updates for the outline rendering
+        runInAction(() => {
+            // Immediately update the visual outline for instant feedback
+            this.editorEngine.overlay.state.removeClickRects();
+            
+            // Process outline rendering first for immediate visual feedback
+            for (const domEl of domEls) {
+                const frameData = this.editorEngine.frames.get(domEl.frameId);
+                if (!frameData) {
+                    console.error('Frame data not found');
+                    continue;
+                }
+                const { view } = frameData;
+                if (!view) {
+                    console.error('No frame view found');
+                    continue;
+                }
+                const adjustedRect = adaptRectToCanvas(domEl.rect, view);
+                const isComponent = !!domEl.instanceId;
+                this.editorEngine.overlay.state.addClickRect(
+                    adjustedRect,
+                    domEl.styles,
+                    isComponent,
+                    domEl.domId,
+                );
             }
-            const { view } = frameData;
-            if (!view) {
-                console.error('No frame view found');
-                continue;
+        });
+        
+        // Update selected elements in a separate action to control reaction timing
+        runInAction(() => {
+            this.clearSelectedElements();
+            for (const domEl of domEls) {
+                this._selected.push(domEl);
             }
-            const adjustedRect = adaptRectToCanvas(domEl.rect, view);
-            const isComponent = !!domEl.instanceId;
-            this.editorEngine.overlay.state.addClickRect(
-                adjustedRect,
-                domEl.styles,
-                isComponent,
-                domEl.domId,
-            );
-            this._selected.push(domEl);
-        }
+        });
     }
 
     setHoveredElement(element: DomElement) {
