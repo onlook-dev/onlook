@@ -23,12 +23,14 @@ export async function handleSearchReplaceEditFileTool(args: z.infer<typeof SEARC
         if (args.replace_all) {
             newContent = file.content.replaceAll(args.old_string, args.new_string);
         } else {
-            if (!file.content.includes(args.old_string)) {
+            // More efficient: count occurrences in single pass
+            const firstIndex = file.content.indexOf(args.old_string);
+            if (firstIndex === -1) {
                 throw new Error(`String not found in file: ${args.old_string}`);
             }
 
-            const occurrences = file.content.split(args.old_string).length - 1;
-            if (occurrences > 1) {
+            const secondIndex = file.content.indexOf(args.old_string, firstIndex + args.old_string.length);
+            if (secondIndex !== -1) {
                 throw new Error(`Multiple occurrences found. Use replace_all=true or provide more context.`);
             }
 
@@ -63,12 +65,14 @@ export async function handleSearchReplaceMultiEditFileTool(args: z.infer<typeof 
             if (edit.replace_all) {
                 content = content.replaceAll(edit.old_string, edit.new_string);
             } else {
-                if (!content.includes(edit.old_string)) {
+                // More efficient: count occurrences in single pass
+                const firstIndex = content.indexOf(edit.old_string);
+                if (firstIndex === -1) {
                     throw new Error(`String not found in file: ${edit.old_string}`);
                 }
 
-                const occurrences = content.split(edit.old_string).length - 1;
-                if (occurrences > 1) {
+                const secondIndex = content.indexOf(edit.old_string, firstIndex + edit.old_string.length);
+                if (secondIndex !== -1) {
                     throw new Error(`Multiple occurrences found for "${edit.old_string}". Use replace_all=true or provide more context.`);
                 }
 
