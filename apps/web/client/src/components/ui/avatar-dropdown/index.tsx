@@ -4,9 +4,9 @@ import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/client';
+import { openFeedbackWidget, resetTelemetry } from '@/utils/telemetry';
 import { getReturnUrlQueryParam } from '@/utils/url';
 import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar';
-import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -18,7 +18,6 @@ import { Icons } from '@onlook/ui/icons';
 import { getInitials } from '@onlook/utility';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { resetTelemetry, openFeedbackWidget } from '@/utils/telemetry';
 import { UsageSection } from './plans';
 
 export const CurrentUserAvatar = ({ className }: { className?: string }) => {
@@ -105,7 +104,7 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
                                 className="cursor-pointer"
                                 onClick={button.onClick}
                             >
-                                <div className="flex row center items-center group">
+                                <div className="flex flex-row center items-center group">
                                     <IconComponent className="mr-2" />
                                     {button.label}
                                 </div>

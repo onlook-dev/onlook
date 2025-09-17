@@ -91,7 +91,7 @@ export const NewProjectMenu = observer(() => {
     return (
         <DropdownMenuSub>
             <DropdownMenuSubTrigger className="cursor-pointer">
-                <div className="flex row center items-center">
+                <div className="flex flex-row center items-center">
                     <Icons.Plus className="mr-2" />
                     {t(transKeys.projects.actions.newProject)}
                 </div>
@@ -101,7 +101,7 @@ export const NewProjectMenu = observer(() => {
                     onClick={() => router.push(Routes.HOME)}
                     className="cursor-pointer"
                 >
-                    <div className="flex row center items-center group">
+                    <div className="flex flex-row center items-center group">
                         <Icons.Plus className="mr-2" />
                         {t(transKeys.projects.actions.newProject)}
                     </div>
@@ -111,7 +111,7 @@ export const NewProjectMenu = observer(() => {
                     disabled={isCreatingProject}
                     className="cursor-pointer"
                 >
-                    <div className="flex row center items-center group">
+                    <div className="flex flex-row center items-center group">
                         {isCreatingProject ? (
                             <Icons.LoadingSpinner className="mr-2 animate-spin" />
                         ) : (
@@ -121,7 +121,7 @@ export const NewProjectMenu = observer(() => {
                     </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push(Routes.IMPORT_PROJECT)}>
-                    <div className="flex row center items-center group">
+                    <div className="flex flex-row center items-center group">
                         <Icons.Upload className="mr-2" />
                         {t(transKeys.projects.actions.import)}
                     </div>
