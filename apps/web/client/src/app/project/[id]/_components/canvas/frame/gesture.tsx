@@ -7,11 +7,14 @@ import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import throttle from 'lodash/throttle';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { RightClickMenu } from './right-click';
 
 export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, isResizing: boolean }) => {
     const editorEngine = useEditorEngine();
+    const mouseDownPosition = useRef<ElementPosition | null>(null);
+    const isDragInitiated = useRef(false);
+    const DRAG_DEADZONE = 5; // pixels
 
     const getFrameData: () => FrameData | null = useCallback(() => {
         return editorEngine.frames.get(frame.id);
@@ -98,7 +101,19 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
                     return;
                 }
 
-                if (editorEngine.move.shouldDrag) {
+                // Check if we should initiate drag based on deadzone
+                if (editorEngine.move.isPreparing && mouseDownPosition.current && !isDragInitiated.current) {
+                    const currentPosition = getRelativeMousePosition(e);
+                    const deltaX = Math.abs(currentPosition.x - mouseDownPosition.current.x);
+                    const deltaY = Math.abs(currentPosition.y - mouseDownPosition.current.y);
+                    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                    
+                    if (distance >= DRAG_DEADZONE) {
+                        isDragInitiated.current = true;
+                    }
+                }
+
+                if (editorEngine.move.shouldDrag && isDragInitiated.current) {
                     await editorEngine.move.drag(e, getRelativeMousePosition);
                 } else if (
                     editorEngine.state.editorMode === EditorMode.DESIGN ||
@@ -107,12 +122,15 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
                         editorEngine.state.editorMode === EditorMode.INSERT_IMAGE) &&
                         !editorEngine.insert.isDrawing)
                 ) {
-                    await handleMouseEvent(e, MouseAction.MOVE);
+                    // Only handle hover if not preparing to drag or drag deadzone not exceeded
+                    if (!editorEngine.move.isPreparing || isDragInitiated.current) {
+                        await handleMouseEvent(e, MouseAction.MOVE);
+                    }
                 } else if (editorEngine.insert.isDrawing) {
                     editorEngine.insert.draw(e);
                 }
             }, 16),
-        [editorEngine, getRelativeMousePosition, handleMouseEvent],
+        [editorEngine, getRelativeMousePosition, handleMouseEvent, DRAG_DEADZONE],
     );
 
     useEffect(() => {
@@ -120,6 +138,67 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
             throttledMouseMove.cancel();
         };
     }, [throttledMouseMove]);
+
+    // Global event listeners for comprehensive drag termination
+    useEffect(() => {
+        const handleGlobalMouseUp = (e: MouseEvent) => {
+            if (editorEngine.move.shouldDrag || editorEngine.move.isPreparing) {
+                mouseDownPosition.current = null;
+                isDragInitiated.current = false;
+                editorEngine.move.cancelDragPreparation();
+                // Create a synthetic React event for consistency
+                const syntheticEvent = {
+                    ...e,
+                    currentTarget: e.target,
+                } as unknown as React.MouseEvent<HTMLDivElement>;
+                void editorEngine.move.end(syntheticEvent);
+            }
+        };
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Terminate drag on Escape key
+            if (e.key === 'Escape' && (editorEngine.move.shouldDrag || editorEngine.move.isPreparing)) {
+                mouseDownPosition.current = null;
+                isDragInitiated.current = false;
+                editorEngine.move.cancelDragPreparation();
+                void editorEngine.move.endAllDrag();
+            }
+        };
+
+        const handleVisibilityChange = () => {
+            // Terminate drag when page becomes hidden (e.g., tab switch, minimize)
+            if (document.hidden && (editorEngine.move.shouldDrag || editorEngine.move.isPreparing)) {
+                mouseDownPosition.current = null;
+                isDragInitiated.current = false;
+                editorEngine.move.cancelDragPreparation();
+                void editorEngine.move.endAllDrag();
+            }
+        };
+
+        const handleBlur = () => {
+            // Terminate drag when window loses focus
+            if (editorEngine.move.shouldDrag || editorEngine.move.isPreparing) {
+                mouseDownPosition.current = null;
+                isDragInitiated.current = false;
+                editorEngine.move.cancelDragPreparation();
+                void editorEngine.move.endAllDrag();
+            }
+        };
+
+        // Add global event listeners
+        document.addEventListener('mouseup', handleGlobalMouseUp, true);
+        document.addEventListener('keydown', handleKeyDown, true);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('blur', handleBlur);
+
+        return () => {
+            // Clean up event listeners
+            document.removeEventListener('mouseup', handleGlobalMouseUp, true);
+            document.removeEventListener('keydown', handleKeyDown, true);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('blur', handleBlur);
+        };
+    }, [editorEngine.move]);
 
     const handleClick = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
@@ -136,6 +215,10 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
     }
 
     async function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
+        // Store initial mouse position for deadzone calculation
+        mouseDownPosition.current = getRelativeMousePosition(e);
+        isDragInitiated.current = false;
+        
         if (editorEngine.state.editorMode === EditorMode.DESIGN) {
             await handleMouseEvent(e, MouseAction.MOUSE_DOWN);
         } else if (
@@ -152,6 +235,10 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
         if (!frameData) {
             return;
         }
+
+        // Reset drag tracking state
+        mouseDownPosition.current = null;
+        isDragInitiated.current = false;
 
         editorEngine.move.cancelDragPreparation();
 
@@ -225,6 +312,15 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
                 onClick={handleClick}
                 onMouseOut={handleMouseOut}
                 onMouseLeave={handleMouseUp}
+                onContextMenu={(e) => {
+                    // Terminate drag on right-click
+                    if (editorEngine.move.shouldDrag || editorEngine.move.isPreparing) {
+                        mouseDownPosition.current = null;
+                        isDragInitiated.current = false;
+                        editorEngine.move.cancelDragPreparation();
+                        void editorEngine.move.end(e);
+                    }
+                }}
                 onMouseMove={throttledMouseMove}
                 onMouseDown={handleMouseDown}
                 onMouseUp={handleMouseUp}
