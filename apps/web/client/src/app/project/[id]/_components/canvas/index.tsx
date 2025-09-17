@@ -123,55 +123,8 @@ export const Canvas = observer(() => {
     );
     
     const handleCanvasMouseUp = (event: React.MouseEvent<HTMLDivElement>) => {
-        if (!isDragSelecting) {
-            return;
-        }
-        
-        // Calculate which frames are within the selection rectangle
-        const selectionRect = {
-            left: Math.min(dragSelectStart.x, dragSelectEnd.x),
-            top: Math.min(dragSelectStart.y, dragSelectEnd.y),
-            right: Math.max(dragSelectStart.x, dragSelectEnd.x),
-            bottom: Math.max(dragSelectStart.y, dragSelectEnd.y),
-        };
-        
-        // Convert selection rect to canvas coordinates
-        const canvasSelectionRect = {
-            left: (selectionRect.left - position.x) / scale,
-            top: (selectionRect.top - position.y) / scale,
-            right: (selectionRect.right - position.x) / scale,
-            bottom: (selectionRect.bottom - position.y) / scale,
-        };
-        
-        // Find all frames that intersect with the selection rectangle
-        const allFrames = editorEngine.frames.getAll();
-        const selectedFrames = allFrames.filter(frameData => {
-            const frame = frameData.frame;
-            const frameLeft = frame.position.x;
-            const frameTop = frame.position.y;
-            const frameRight = frame.position.x + frame.dimension.width;
-            const frameBottom = frame.position.y + frame.dimension.height;
-            
-            // Check if frame intersects with selection rectangle
-            return !(
-                frameLeft > canvasSelectionRect.right ||
-                frameRight < canvasSelectionRect.left ||
-                frameTop > canvasSelectionRect.bottom ||
-                frameBottom < canvasSelectionRect.top
-            );
-        });
-        
-        // Select the frames if any were found in the selection
-        if (selectedFrames.length > 0) {
-            editorEngine.frames.select(
-                selectedFrames.map(fd => fd.frame),
-                event.shiftKey // multiselect if shift is held
-            );
-        }
-        
-        setIsDragSelecting(false);
-        setFramesInSelection(new Set());
-        editorEngine.state.isDragSelecting = false;
+        // Mouse up is now handled by the global listener in useEffect
+        // This function is kept for consistency but the logic is in the global handler
     };
 
     const handleZoom = useCallback(
@@ -301,6 +254,62 @@ export const Canvas = observer(() => {
             };
         }
     }, [handleWheel, middleMouseButtonDown, middleMouseButtonUp, handleCanvasMouseMove]);
+    
+    // Global mouseup listener to handle drag termination outside canvas
+    useEffect(() => {
+        if (isDragSelecting) {
+            const handleGlobalMouseUp = (event: MouseEvent) => {
+                // Calculate which frames are within the selection rectangle
+                const selectionRect = {
+                    left: Math.min(dragSelectStart.x, dragSelectEnd.x),
+                    top: Math.min(dragSelectStart.y, dragSelectEnd.y),
+                    right: Math.max(dragSelectStart.x, dragSelectEnd.x),
+                    bottom: Math.max(dragSelectStart.y, dragSelectEnd.y),
+                };
+                
+                // Convert selection rect to canvas coordinates
+                const canvasSelectionRect = {
+                    left: (selectionRect.left - position.x) / scale,
+                    top: (selectionRect.top - position.y) / scale,
+                    right: (selectionRect.right - position.x) / scale,
+                    bottom: (selectionRect.bottom - position.y) / scale,
+                };
+                
+                // Find all frames that intersect with the selection rectangle
+                const allFrames = editorEngine.frames.getAll();
+                const selectedFrames = allFrames.filter(frameData => {
+                    const frame = frameData.frame;
+                    const frameLeft = frame.position.x;
+                    const frameTop = frame.position.y;
+                    const frameRight = frame.position.x + frame.dimension.width;
+                    const frameBottom = frame.position.y + frame.dimension.height;
+                    
+                    // Check if frame intersects with selection rectangle
+                    return !(
+                        frameLeft > canvasSelectionRect.right ||
+                        frameRight < canvasSelectionRect.left ||
+                        frameTop > canvasSelectionRect.bottom ||
+                        frameBottom < canvasSelectionRect.top
+                    );
+                });
+                
+                // Select the frames if any were found in the selection
+                if (selectedFrames.length > 0) {
+                    editorEngine.frames.select(
+                        selectedFrames.map(fd => fd.frame),
+                        event.shiftKey // multiselect if shift is held
+                    );
+                }
+                
+                setIsDragSelecting(false);
+                setFramesInSelection(new Set());
+                editorEngine.state.isDragSelecting = false;
+            };
+            
+            window.addEventListener('mouseup', handleGlobalMouseUp);
+            return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+        }
+    }, [isDragSelecting, dragSelectStart, dragSelectEnd, position, scale, editorEngine]);
 
     return (
         <HotkeysArea>
