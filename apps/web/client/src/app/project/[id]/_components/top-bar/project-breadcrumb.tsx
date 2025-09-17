@@ -140,7 +140,7 @@ export const ProjectBreadcrumb = observer(() => {
                         onClick={() => handleNavigateToProjects()}
                         className="cursor-pointer"
                     >
-                        <div className="flex row center items-center group">
+                        <div className="flex flex-row center items-center group">
                             <Icons.Tokens className="mr-2" />
                             {t(transKeys.projects.actions.goToAllProjects)}
                         </div>
@@ -148,13 +148,31 @@ export const ProjectBreadcrumb = observer(() => {
                     <DropdownMenuSeparator />
                     <RecentProjectsMenu />
                     <DropdownMenuSeparator />
+<<<<<<< Updated upstream
                     <NewProjectMenu />
+=======
+                    <DropdownMenuItem
+                        onClick={() => router.push(Routes.HOME)}
+                        className="cursor-pointer"
+                    >
+                        <div className="flex flex-row center items-center group">
+                            <Icons.Plus className="mr-2" />
+                            {t(transKeys.projects.actions.newProject)}
+                        </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push(Routes.IMPORT_PROJECT)}>
+                        <div className="flex flex-row center items-center group">
+                            <Icons.Upload className="mr-2" />
+                            {t(transKeys.projects.actions.import)}
+                        </div>
+                    </DropdownMenuItem>
+>>>>>>> Stashed changes
                     <DropdownMenuItem
                         onClick={handleDownloadCode}
                         disabled={isDownloading}
                         className="cursor-pointer"
                     >
-                        <div className="flex row center items-center group">
+                        <div className="flex flex-row center items-center group">
                             <Icons.Download className="mr-2" />
                             {isDownloading
                                 ? t(transKeys.projects.actions.downloadingCode)
@@ -166,7 +184,7 @@ export const ProjectBreadcrumb = observer(() => {
                         className="cursor-pointer"
                         onClick={() => (stateManager.isSettingsModalOpen = true)}
                     >
-                        <div className="flex row center items-center group">
+                        <div className="flex flex-row center items-center group">
                             <Icons.Gear className="mr-2 group-hover:rotate-12 transition-transform" />
                             {t(transKeys.help.menu.openSettings)}
                         </div>
