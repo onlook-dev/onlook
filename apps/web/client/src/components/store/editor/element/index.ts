@@ -99,13 +99,16 @@ export class ElementsManager {
         // If we need warmup, do a quick no-op to wake up the engine
         if (needsWarmup && domEls.length > 0) {
             // Quick check to ensure frame is active
-            const frameData = this.editorEngine.frames.get(domEls[0].frameId);
-            if (frameData?.view) {
-                try {
-                    // Just checking if loading helps wake up the view
-                    frameData.view.isLoading();
-                } catch {
-                    // Ignore errors during warmup
+            const firstElement = domEls[0];
+            if (firstElement) {
+                const frameData = this.editorEngine.frames.get(firstElement.frameId);
+                if (frameData?.view) {
+                    try {
+                        // Just checking if loading helps wake up the view
+                        frameData.view.isLoading();
+                    } catch {
+                        // Ignore errors during warmup
+                    }
                 }
             }
         }
