@@ -100,7 +100,7 @@ export class OverlayManager {
         }
     };
 
-    refresh = debounce(this.undebouncedRefresh, 100, { leading: true, trailing: false, maxWait: 500 });
+    refresh = debounce(this.undebouncedRefresh, 100, { leading: true, trailing: true, maxWait: 500 });
 
     showMeasurement() {
         this.editorEngine.overlay.removeMeasurement();
