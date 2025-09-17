@@ -12,9 +12,13 @@ export const StreamMessage = () => {
         [streamMessage?.role]
     );
 
+    if (!isWaiting) {
+        return null;
+    }
+
     return (
         <>
-            {streamMessage && isAssistantStreamMessage && streamMessage.parts && isWaiting && (
+            {streamMessage && isAssistantStreamMessage && (
                 <div className="px-4 py-2 text-small content-start flex flex-col text-wrap gap-2">
                     <MessageContent
                         messageId={streamMessage.id}
@@ -24,13 +28,10 @@ export const StreamMessage = () => {
                     />
                 </div>
             )}
-            {isWaiting && (
-                <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
-                    <Icons.LoadingSpinner className="animate-spin" />
-                    <p>Thinking ...</p>
-                </div>
-            )}
-
+            <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
+                <Icons.LoadingSpinner className="animate-spin" />
+                <p>Thinking ...</p>
+            </div>
         </>
     );
 };
