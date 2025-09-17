@@ -8,7 +8,11 @@ import { ChatType, type ChatMessage, type ChatSuggestion } from '@onlook/models'
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import { usePostHog } from 'posthog-js/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { attachCommitToUserMessage, getUserChatMessageFromString, prepareMessagesForSuggestions } from './utils';
+import {
+    attachCommitToUserMessage,
+    getUserChatMessageFromString,
+    prepareMessagesForSuggestions,
+} from './utils';
 import { jsonClone } from '@onlook/utility';
 
 export type SendMessage = (content: string, type: ChatType) => Promise<ChatMessage>;
@@ -28,37 +32,30 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const [finishReason, setFinishReason] = useState<string | null>(null);
     const [isExecutingToolCall, setIsExecutingToolCall] = useState(false);
 
-    const {
-        addToolResult,
-        messages,
-        error,
-        stop,
-        setMessages,
-        regenerate,
-        status,
-    } = useAiChat<ChatMessage>({
-        id: 'user-chat',
-        messages: initialMessages,
-        sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
-        transport: new DefaultChatTransport({
-            api: '/api/chat',
-            body: {
-                conversationId,
-                projectId,
+    const { addToolResult, messages, error, stop, setMessages, regenerate, status } =
+        useAiChat<ChatMessage>({
+            id: 'user-chat',
+            messages: initialMessages,
+            sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+            transport: new DefaultChatTransport({
+                api: '/api/chat',
+                body: {
+                    conversationId,
+                    projectId,
+                },
+            }),
+            onToolCall: async (toolCall) => {
+                setIsExecutingToolCall(true);
+                void handleToolCall(toolCall.toolCall, editorEngine, addToolResult).then(() => {
+                    setIsExecutingToolCall(false);
+                });
             },
-        }),
-        onToolCall: async (toolCall) => {
-            setIsExecutingToolCall(true);
-            void handleToolCall(toolCall.toolCall, editorEngine, addToolResult).then(() => {
-                setIsExecutingToolCall(false);
-            });
-        },
-        onFinish: ({ message }) => {
-            const finishReason = (message.metadata as { finishReason?: string } | undefined)
-                ?.finishReason;
-            setFinishReason(finishReason ?? null);
-        },
-    });
+            onFinish: ({ message }) => {
+                const finishReason = (message.metadata as { finishReason?: string } | undefined)
+                    ?.finishReason;
+                setFinishReason(finishReason ?? null);
+            },
+        });
 
     const isStreaming = status === 'streaming' || status === 'submitted' || isExecutingToolCall;
 
@@ -78,6 +75,14 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
 
             const context = await editorEngine.chat.context.getContextByChatType(type);
             const newMessage = getUserChatMessageFromString(content, context, conversationId);
+
+            if (type !== ChatType.ASK) {
+                const { commit } = await editorEngine.versions.createCommit(content);
+                if (!commit) {
+                    throw new Error('Failed to create commit');
+                }
+                await attachCommitToUserMessage(commit, newMessage, conversationId);
+            }
             setMessages(jsonClone([...messagesRef.current, newMessage]));
 
             await regenerate({
@@ -90,7 +95,15 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
 
             return newMessage;
         },
-        [editorEngine.chat.context, messagesRef, setMessages, regenerate, conversationId, posthog],
+        [
+            editorEngine.chat.context,
+            editorEngine.versions,
+            messagesRef,
+            setMessages,
+            regenerate,
+            conversationId,
+            posthog,
+        ],
     );
 
     const editMessage: EditMessage = useCallback(
@@ -99,26 +112,24 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
 
             const messageIndex = messagesRef.current.findIndex((m) => m.id === messageId);
             const message = messagesRef.current[messageIndex];
-            
+
             if (messageIndex === -1 || !message) {
                 throw new Error('Message not found.');
             }
-            
+
             if (message.role !== 'user') {
                 throw new Error('Message is not a user message.');
             }
 
-
             const updatedMessages = messagesRef.current.slice(0, messageIndex);
 
-
-
-            if (chatType === ChatType.EDIT) {
-
-                    await attachCommitToUserMessage(message, commit, conversationId);
-
+            if (chatType !== ChatType.ASK) {
+                const { commit } = await editorEngine.versions.createCommit(newContent, false);
+                if (!commit) {
+                    throw new Error('Failed to create commit');
+                }
+                await attachCommitToUserMessage(commit, message, conversationId);
             }
-            
             const context = await editorEngine.chat.context.getContextByChatType(chatType);
 
             setMessages(
@@ -135,7 +146,14 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 },
             });
         },
-        [editorEngine.chat.context, regenerate, conversationId, setMessages, posthog],
+        [
+            editorEngine.chat.context,
+            editorEngine.versions,
+            regenerate,
+            conversationId,
+            setMessages,
+            posthog,
+        ],
     );
 
     useEffect(() => {

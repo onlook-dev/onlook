@@ -76,7 +76,7 @@ export const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps)
                                                 className={cn(
                                                     'flex flex-row w-full py-2 items-center rounded-md hover:bg-background-onlook cursor-pointer select-none group relative',
                                                     conversation.id ===
-                                                    editorEngine.chat.conversation.current?.conversation.id &&
+                                                    editorEngine.chat.conversation.current?.id &&
                                                     'bg-background-onlook text-primary font-semibold',
                                                 )}
                                                 key={conversation.id}

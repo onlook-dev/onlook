@@ -17,9 +17,7 @@ export class ChatContext {
     context: MessageContext[] = [];
     private selectedReactionDisposer?: () => void;
 
-    constructor(
-        private editorEngine: EditorEngine,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 

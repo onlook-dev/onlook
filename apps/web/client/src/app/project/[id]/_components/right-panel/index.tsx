@@ -76,7 +76,7 @@ export const RightPanel = observer(() => {
                         {editorEngine.chat.conversation.current && (
                             <ChatTab
                                 conversationId={
-                                    editorEngine.chat.conversation.current.conversation.id
+                                    editorEngine.chat.conversation.current.id
                                 }
                                 projectId={editorEngine.projectId}
                             />
