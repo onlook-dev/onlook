@@ -304,7 +304,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                         templateProjects={templateProjects}
                         searchQuery={debouncedSearchQuery}
                         onTemplateClick={handleTemplateClick}
-                        onViewInfo={handleTemplateClick}
                         onToggleStar={handleToggleStar}
                         starredTemplates={starredTemplates}
                     />
