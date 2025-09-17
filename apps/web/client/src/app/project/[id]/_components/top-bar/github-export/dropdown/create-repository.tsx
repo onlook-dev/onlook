@@ -1,3 +1,5 @@
+'use client';
+
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { Button } from '@onlook/ui/button';
@@ -9,11 +11,26 @@ import { Textarea } from '@onlook/ui/textarea';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
+interface GitHubRepository {
+    id: number;
+    name: string;
+    full_name: string;
+    description: string | null;
+    private: boolean;
+    default_branch: string;
+    clone_url: string;
+    html_url: string;
+    owner: {
+        login: string;
+        avatar_url: string;
+    };
+}
+
 interface CreateRepositoryStepProps {
     selectedOwner: string;
-    onRepositoryCreated: (repo: any) => void;
+    onRepositoryCreated: (repo: GitHubRepository) => void;
     onBack: () => void;
-    existingRepository?: any;
+    existingRepository?: GitHubRepository;
     onDisconnect?: () => void;
 }
 
@@ -78,7 +95,6 @@ export const CreateRepositoryStep = observer(({
                 branch: createBranch && branchName.trim() ? branchName.trim() : repo.default_branch,
             });
 
-            // Connect project to repository for future syncing
             await connectProject.mutateAsync({
                 projectId: editorEngine.projectId,
                 repositoryOwner: repo.owner.login,
@@ -97,7 +113,6 @@ export const CreateRepositoryStep = observer(({
     };
 
     const getProjectFiles = async () => {
-        // Simple sync marker file
         return [{
             path: 'onlook-sync.json',
             content: JSON.stringify({
@@ -141,7 +156,8 @@ export const CreateRepositoryStep = observer(({
                     <Button
                         size="sm"
                         onClick={() => {
-                            const url = `https://github.com/${selectedOwner === 'personal' ? 'USERNAME' : selectedOwner}/${repoName}`;
+                            const actualOwner = selectedOwner === 'personal' ? 'user' : selectedOwner;
+                            const url = `https://github.com/${actualOwner}/${repoName}`;
                             window.open(url, '_blank');
                         }}
                     >

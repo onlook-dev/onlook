@@ -1,3 +1,5 @@
+'use client';
+
 import { api } from '@/trpc/react';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';

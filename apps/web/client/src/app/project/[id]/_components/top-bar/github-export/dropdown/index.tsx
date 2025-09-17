@@ -19,11 +19,26 @@ export enum ExportStep {
     REPOSITORY_CONNECTED = 'repository_connected',
 }
 
+interface GitHubRepository {
+    id: number;
+    name: string;
+    full_name: string;
+    html_url: string;
+    description: string | null;
+    private: boolean;
+    default_branch: string;
+    clone_url: string;
+    owner: {
+        login: string;
+        avatar_url: string;
+    };
+}
+
 export const GitHubExportDropdown = observer(() => {
     const editorEngine = useEditorEngine();
     const [currentStep, setCurrentStep] = useState<ExportStep>(ExportStep.INSTALLATION);
     const [selectedOwner, setSelectedOwner] = useState<string>('');
-    const [repositoryData, setRepositoryData] = useState<any>(null);
+    const [repositoryData, setRepositoryData] = useState<GitHubRepository | null>(null);
 
     // Check if GitHub App is installed
     const { data: installationId, isLoading: checkingInstallation, error: installationError } = 
@@ -90,6 +105,8 @@ export const GitHubExportDropdown = observer(() => {
                     html_url: existingConnection.repositoryUrl,
                     description: '',
                     private: true,
+                    default_branch: existingConnection.branch || 'main',
+                    clone_url: '',
                     owner: {
                         login: existingConnection.repositoryOwner,
                         avatar_url: '',
@@ -106,23 +123,26 @@ export const GitHubExportDropdown = observer(() => {
                             setSelectedOwner('');
                             setCurrentStep(ExportStep.SELECT_OWNER);
                         }}
-                        existingRepository={connectedRepoForCreation}
+                        existingRepository={connectedRepoForCreation || undefined}
                         onDisconnect={() => {
                             setRepositoryData(null);
                             setSelectedOwner('');
-                            // TODO: Add API call to disconnect from database
                         }}
                     />
                 );
             case ExportStep.REPOSITORY_CONNECTED:
                 const connectedRepoData = repositoryData || (existingConnection ? {
-                    id: 0, // We don't store the GitHub repo ID in our schema
+                    id: 0,
                     name: existingConnection.repositoryName,
                     full_name: existingConnection.fullName,
                     html_url: existingConnection.repositoryUrl,
+                    description: null,
+                    private: true,
+                    default_branch: 'main',
+                    clone_url: '',
                     owner: {
                         login: existingConnection.repositoryOwner,
-                        avatar_url: '', // We don't store avatar URL
+                        avatar_url: '',
                     },
                 } : null);
                 

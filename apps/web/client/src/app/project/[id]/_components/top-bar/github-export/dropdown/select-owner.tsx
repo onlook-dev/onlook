@@ -60,7 +60,7 @@ export const SelectOwnerStep = observer(({
                     id="personal"
                     name="Personal Account"
                     description="Create under your personal GitHub account"
-                    avatar="/api/placeholder-avatar" // You might want to get user's avatar
+                    avatar=""
                     icon={<Icons.Person className="h-4 w-4" />}
                     isSelected={selectedOwner === 'personal'}
                     onSelect={() => onOwnerSelect('personal')}

@@ -1,3 +1,5 @@
+'use client';
+
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { Button } from '@onlook/ui/button';
@@ -65,7 +67,6 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
             });
         } catch (error) {
             console.error('Failed to sync changes:', error);
-            // Show error notification
             const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
             toast.error('Failed to sync changes', {
                 description: errorMessage,
@@ -97,7 +98,6 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
             });
         } catch (error) {
             console.error('Failed to push changes:', error);
-            // Show error notification
             const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
             toast.error('Failed to push changes', {
                 description: errorMessage,
@@ -116,15 +116,19 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
                 owner: repositoryData.owner.login,
                 repo: repositoryData.name,
                 branchName: newBranchName.trim(),
-                fromBranch: 'main',
+                fromBranch: repositoryData.default_branch || 'main',
             });
 
             setNewBranchName('feature-');
             setShowCreateBranch(false);
             await refetchBranches();
         } catch (error) {
-            // TODO: Add user-facing error handling
             console.error('Failed to create branch:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Failed to create branch';
+            toast.error('Failed to create branch', {
+                description: errorMessage,
+                duration: 5000,
+            });
         }
     };
 
