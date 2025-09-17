@@ -17,6 +17,7 @@ export const FrameView = observer(({ frame }: { frame: Frame }) => {
     const [isResizing, setIsResizing] = useState(false);
     const [reloadKey, setReloadKey] = useState(0);
     const [hasTimedOut, setHasTimedOut] = useState(false);
+    const isSelected = editorEngine.frames.isSelected(frame.id);
 
     // Check if sandbox is connecting for this frame's branch
     const branchData = editorEngine.branches.getBranchDataById(frame.branchId);
@@ -60,7 +61,10 @@ export const FrameView = observer(({ frame }: { frame: Frame }) => {
             <RightClickMenu>
                 <TopBar frame={frame} />
             </RightClickMenu>
-            <div className="relative">
+            <div className="relative" style={{
+                outline: isSelected ? '2px solid rgb(94, 234, 212)' : 'none',
+                borderRadius: '4px',
+            }}>
                 <ResizeHandles frame={frame} setIsResizing={setIsResizing} />
                 <FrameComponent key={reloadKey} frame={frame} reloadIframe={reloadIframe} ref={iFrameRef} />
                 <GestureScreen frame={frame} isResizing={isResizing} />

@@ -4,10 +4,11 @@ import { useEditorEngine } from '@/components/store/editor';
 import { EditorAttributes } from '@onlook/constants';
 import { EditorMode } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Frames } from './frames';
 import { HotkeysArea } from './hotkeys';
 import { Overlay } from './overlay';
+import { DragSelectOverlay } from './overlay/drag-select';
 import { PanOverlay } from './overlay/pan';
 import { RecenterCanvasButton } from './recenter-canvas-button';
 
@@ -25,12 +26,94 @@ export const Canvas = observer(() => {
     const containerRef = useRef<HTMLDivElement>(null);
     const scale = editorEngine.canvas.scale;
     const position = editorEngine.canvas.position;
+    const [isDragSelecting, setIsDragSelecting] = useState(false);
+    const [dragSelectStart, setDragSelectStart] = useState({ x: 0, y: 0 });
+    const [dragSelectEnd, setDragSelectEnd] = useState({ x: 0, y: 0 });
 
     const handleCanvasMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
         if (event.target !== containerRef.current) {
             return;
         }
-        editorEngine.clearUI();
+        
+        // Start drag selection only in design mode and when not holding middle mouse button
+        if (editorEngine.state.editorMode === EditorMode.DESIGN && event.button === 0) {
+            const rect = containerRef.current.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            setIsDragSelecting(true);
+            setDragSelectStart({ x, y });
+            setDragSelectEnd({ x, y });
+            
+            // Clear existing selections if not shift-clicking
+            if (!event.shiftKey) {
+                editorEngine.clearUI();
+                editorEngine.frames.deselectAll();
+            }
+        } else {
+            editorEngine.clearUI();
+        }
+    };
+    
+    const handleCanvasMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+        if (!isDragSelecting || !containerRef.current) {
+            return;
+        }
+        
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        setDragSelectEnd({ x, y });
+    };
+    
+    const handleCanvasMouseUp = (event: React.MouseEvent<HTMLDivElement>) => {
+        if (!isDragSelecting) {
+            return;
+        }
+        
+        // Calculate which frames are within the selection rectangle
+        const selectionRect = {
+            left: Math.min(dragSelectStart.x, dragSelectEnd.x),
+            top: Math.min(dragSelectStart.y, dragSelectEnd.y),
+            right: Math.max(dragSelectStart.x, dragSelectEnd.x),
+            bottom: Math.max(dragSelectStart.y, dragSelectEnd.y),
+        };
+        
+        // Convert selection rect to canvas coordinates
+        const canvasSelectionRect = {
+            left: (selectionRect.left - position.x) / scale,
+            top: (selectionRect.top - position.y) / scale,
+            right: (selectionRect.right - position.x) / scale,
+            bottom: (selectionRect.bottom - position.y) / scale,
+        };
+        
+        // Find all frames that intersect with the selection rectangle
+        const allFrames = editorEngine.frames.getAll();
+        const selectedFrames = allFrames.filter(frameData => {
+            const frame = frameData.frame;
+            const frameLeft = frame.position.x;
+            const frameTop = frame.position.y;
+            const frameRight = frame.position.x + frame.dimension.width;
+            const frameBottom = frame.position.y + frame.dimension.height;
+            
+            // Check if frame intersects with selection rectangle
+            return !(
+                frameLeft > canvasSelectionRect.right ||
+                frameRight < canvasSelectionRect.left ||
+                frameTop > canvasSelectionRect.bottom ||
+                frameBottom < canvasSelectionRect.top
+            );
+        });
+        
+        // Select the frames if any were found in the selection
+        if (selectedFrames.length > 0) {
+            editorEngine.frames.select(
+                selectedFrames.map(fd => fd.frame),
+                event.shiftKey // multiselect if shift is held
+            );
+        }
+        
+        setIsDragSelecting(false);
     };
 
     const handleZoom = useCallback(
@@ -166,11 +249,21 @@ export const Canvas = observer(() => {
                 ref={containerRef}
                 className="overflow-hidden bg-background-onlook flex flex-grow relative"
                 onMouseDown={handleCanvasMouseDown}
+                onMouseMove={handleCanvasMouseMove}
+                onMouseUp={handleCanvasMouseUp}
+                onMouseLeave={handleCanvasMouseUp}
             >
                 <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
                     <Frames />
                 </div>
                 <RecenterCanvasButton />
+                <DragSelectOverlay
+                    startX={dragSelectStart.x}
+                    startY={dragSelectStart.y}
+                    endX={dragSelectEnd.x}
+                    endY={dragSelectEnd.y}
+                    isSelecting={isDragSelecting}
+                />
                 <Overlay />
                 <PanOverlay
                     clampPosition={(position: { x: number; y: number }) =>
