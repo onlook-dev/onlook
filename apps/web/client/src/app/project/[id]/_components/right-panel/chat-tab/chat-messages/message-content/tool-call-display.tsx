@@ -40,6 +40,17 @@ export const ToolCallDisplay = ({
 }) => {
 
     const toolName = toolInvocation.type.split('-')[1];
+    const loading = isStream && index === lastToolInvocationIdx;
+
+    if (isStream) {
+        return (
+            <ToolCallSimple
+                toolInvocation={toolInvocation}
+                key={toolInvocation.toolCallId}
+                loading={loading}
+            />
+        );
+    }
 
     if (toolName === TERMINAL_COMMAND_TOOL_NAME) {
         const args = toolInvocation.input as z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS> | null;
@@ -49,7 +60,7 @@ export const ToolCallDisplay = ({
                 <ToolCallSimple
                     toolInvocation={toolInvocation}
                     key={toolInvocation.toolCallId}
-                    loading={false}
+                    loading={loading}
                 />
             );
         }
@@ -89,7 +100,7 @@ export const ToolCallDisplay = ({
                 <ToolCallSimple
                     toolInvocation={toolInvocation}
                     key={toolInvocation.toolCallId}
-                    loading={false}
+                    loading={loading}
                 />
             );
         }
@@ -115,7 +126,7 @@ export const ToolCallDisplay = ({
                 <ToolCallSimple
                     toolInvocation={toolInvocation}
                     key={toolInvocation.toolCallId}
-                    loading={false}
+                    loading={loading}
                 />
             );
         }
@@ -141,7 +152,7 @@ export const ToolCallDisplay = ({
                 <ToolCallSimple
                     toolInvocation={toolInvocation}
                     key={toolInvocation.toolCallId}
-                    loading={false}
+                    loading={loading}
                 />
             );
         }
@@ -167,7 +178,7 @@ export const ToolCallDisplay = ({
                 <ToolCallSimple
                     toolInvocation={toolInvocation}
                     key={toolInvocation.toolCallId}
-                    loading={false}
+                    loading={loading}
                 />
             );
         }
@@ -192,7 +203,7 @@ export const ToolCallDisplay = ({
                 <ToolCallSimple
                     toolInvocation={toolInvocation}
                     key={toolInvocation.toolCallId}
-                    loading={false}
+                    loading={loading}
                 />
             );
         }
@@ -222,8 +233,8 @@ export const ToolCallDisplay = ({
                 key={toolInvocation.toolCallId}
                 content={'bunx tsc --noEmit'}
                 isStream={isStream}
-                defaultStdOut={error ? null : '✅ Typecheck passed!'}
-                defaultStdErr={error ? error : null}
+                defaultStdOut={(result?.success ? '✅ Typecheck passed!' : result?.error) ?? null}
+                defaultStdErr={error ?? null}
             />
         );
     }
@@ -232,7 +243,7 @@ export const ToolCallDisplay = ({
         <ToolCallSimple
             toolInvocation={toolInvocation}
             key={toolInvocation.toolCallId}
-            loading={isStream && index === lastToolInvocationIdx}
+            loading={loading}
         />
     );
 }
