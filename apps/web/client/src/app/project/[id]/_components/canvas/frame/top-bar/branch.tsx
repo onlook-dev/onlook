@@ -42,7 +42,7 @@ export const BranchDisplay = observer(({ frame, tooltipSide = "top", buttonSize 
                             buttonClassName
                         )}
                     >
-                        <Icons.Commit />
+                        <Icons.Branch />
                         <div className="flex items-center gap-1.5 max-w-24 truncate">
                             <span className="truncate">{frameBranch.name}</span>
                         </div>

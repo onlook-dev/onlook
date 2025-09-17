@@ -76,7 +76,7 @@ export const BranchesTab = observer(() => {
                                     {isActive ? (
                                         <Icons.CheckCircled className="w-4 h-4 text-teal-400 flex-shrink-0" />
                                     ) : (
-                                        <Icons.Commit className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                                        <Icons.Branch className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                                     )}
                                     <div className="min-w-0 flex-1 overflow-hidden">
                                         <div className="font-medium text-sm truncate">

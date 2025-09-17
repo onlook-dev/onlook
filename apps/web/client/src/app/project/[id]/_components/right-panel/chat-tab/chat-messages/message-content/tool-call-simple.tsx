@@ -58,7 +58,7 @@ const TOOL_ICONS: Record<string, any> = {
     [EXIT_PLAN_MODE_TOOL_NAME]: Icons.ListBullet,
     [BASH_READ_TOOL_NAME]: Icons.EyeOpen,
     [TYPECHECK_TOOL_NAME]: Icons.MagnifyingGlass,
-    [LIST_BRANCHES_TOOL_NAME]: Icons.Commit,
+    [LIST_BRANCHES_TOOL_NAME]: Icons.Branch,
     [GLOB_TOOL_NAME]: Icons.MagnifyingGlass,
 } as const;
 

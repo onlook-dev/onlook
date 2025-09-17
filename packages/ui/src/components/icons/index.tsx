@@ -1299,6 +1299,53 @@ export const Icons = {
             />
         </svg>
     ),
+    Branch: ({ className, ...props }: IconProps) => (
+        <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M4.5625 5.65625C5.33915 5.65625 5.96875 5.02665 5.96875 4.25C5.96875 3.47335 5.33915 2.84375 4.5625 2.84375C3.78585 2.84375 3.15625 3.47335 3.15625 4.25C3.15625 5.02665 3.78585 5.65625 4.5625 5.65625Z"
+                stroke="currentColor"
+                stroke-width="0.9375"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            />
+            <path
+                d="M4.5625 13.1562C5.33915 13.1562 5.96875 12.5267 5.96875 11.75C5.96875 10.9733 5.33915 10.3438 4.5625 10.3438C3.78585 10.3438 3.15625 10.9733 3.15625 11.75C3.15625 12.5267 3.78585 13.1562 4.5625 13.1562Z"
+                stroke="currentColor"
+                stroke-width="0.9375"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            />
+            <path
+                d="M11.4375 5.65625C12.2142 5.65625 12.8438 5.02665 12.8438 4.25C12.8438 3.47335 12.2142 2.84375 11.4375 2.84375C10.6608 2.84375 10.0312 3.47335 10.0312 4.25C10.0312 5.02665 10.6608 5.65625 11.4375 5.65625Z"
+                stroke="currentColor"
+                stroke-width="0.9375"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            />
+            <path
+                d="M4.5625 5.65625V10.3438"
+                stroke="currentColor"
+                stroke-width="0.9375"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            />
+            <path
+                d="M11.4375 5.65625V6.75C11.4375 7.44037 10.8779 8 10.1875 8H5.8125C5.12214 8 4.5625 8.55963 4.5625 9.25V10.3438"
+                stroke="currentColor"
+                stroke-width="0.9375"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            />
+        </svg>
+    ),
     Brand: ({ className, ...props }: IconProps) => (
         <svg
             width="15"

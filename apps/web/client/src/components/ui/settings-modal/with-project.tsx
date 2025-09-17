@@ -156,7 +156,7 @@ export const SettingsModalWithProjects = observer(() => {
                                                 Project
                                             </p>
                                             <div className="flex items-center gap-1.5 ml-2.5 mb-3 text-muted-foreground/80">
-                                                <Icons.Commit className="min-h-3 min-w-3" />
+                                                <Icons.Branch className="min-h-3 min-w-3" />
                                                 <span className="text-small truncate max-w-30">
                                                     {editorEngine.branches.activeBranch.name}
                                                 </span>

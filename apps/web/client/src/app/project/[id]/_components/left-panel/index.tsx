@@ -42,7 +42,7 @@ const tabs: {
         },
         {
             value: LeftPanelTabValue.BRANCHES,
-            icon: <Icons.Commit className="w-5 h-5" />,
+            icon: <Icons.Branch className="w-5 h-5" />,
             label: transKeys.editor.panels.layers.tabs.branches,
         },
     ];

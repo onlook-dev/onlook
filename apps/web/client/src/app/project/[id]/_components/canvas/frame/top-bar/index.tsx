@@ -131,16 +131,20 @@ export const TopBar = observer(
             <div
                 ref={topBarRef}
                 className={cn(
-                    'bg-blend-multiply hover:shadow py-10 px-2 m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
+                    'bg-blend-multiply hover:shadow m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
                     isSelected && 'text-teal-400 fill-teal-400',
                 )}
                 style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.04)',
                     ...(isSelected && { backgroundColor: 'rgba(20, 184, 166, 0.1)' }),
-                    height: '28px',
+                    height: `${28 / editorEngine.canvas.scale}px`,
                     width: `${frame.dimension.width}px`,
                     marginBottom: `${8 / editorEngine.canvas.scale}px`,
-                    borderRadius: `${18 / editorEngine.canvas.scale}px`,
+                    borderRadius: `${8 / editorEngine.canvas.scale}px`,
+                    paddingTop: `${16 / editorEngine.canvas.scale}px`,
+                    paddingBottom: `${16 / editorEngine.canvas.scale}px`,
+                    paddingLeft: `${4 / editorEngine.canvas.scale}px`,
+                    paddingRight: `${4 / editorEngine.canvas.scale}px`,
                 }}
                 onMouseDown={handleMouseDown}
                 onClick={handleClick}

@@ -78,7 +78,7 @@ export function BranchControls({
                     {isForking ? (
                         <Icons.LoadingSpinner className="h-4 w-4" />
                     ) : (
-                        <Icons.Commit className="h-4 w-4" />
+                        <Icons.Branch className="h-4 w-4" />
                     )}
                     <span>{isForking ? "Forking..." : "Fork into a new Branch"}</span>
                 </DropdownMenuItem>
