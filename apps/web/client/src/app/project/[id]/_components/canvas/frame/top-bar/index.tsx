@@ -8,15 +8,17 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { HoverOnlyTooltip } from '../../../editor-bar/hover-tooltip';
 import { BranchDisplay } from './branch';
+import { createMouseMoveHandler } from './helpers';
 import { PageSelector } from './page-selector';
 
 export const TopBar = observer(
-    ({ frame }: { frame: Frame }) => {
+    ({ frame, isInDragSelection = false }: { frame: Frame; isInDragSelection?: boolean }) => {
         const editorEngine = useEditorEngine();
         const isSelected = editorEngine.frames.isSelected(frame.id);
         const topBarRef = useRef<HTMLDivElement>(null);
         const toolBarRef = useRef<HTMLDivElement>(null);
         const [shouldShowExternalLink, setShouldShowExternalLink] = useState(true);
+        const mouseDownRef = useRef<{ x: number; y: number; time: number } | null>(null);
 
         useEffect(() => {
             const calculateVisibility = () => {
@@ -54,56 +56,20 @@ export const TopBar = observer(
         }, [isSelected, editorEngine.canvas.scale, frame.dimension.width]);
 
         const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-            e.preventDefault();
-            e.stopPropagation();
-            clearElements();
-
-            const startX = e.clientX;
-            const startY = e.clientY;
-            const startPositionX = frame.position.x;
-            const startPositionY = frame.position.y;
-
-            const handleMove = async (e: MouseEvent) => {
-                clearElements();
-                const scale = editorEngine.canvas.scale;
-                const deltaX = (e.clientX - startX) / scale;
-                const deltaY = (e.clientY - startY) / scale;
-
-                let newPosition = {
-                    x: startPositionX + deltaX,
-                    y: startPositionY + deltaY,
-                };
-
-                if (editorEngine.snap.config.enabled && !e.ctrlKey && !e.metaKey) {
-                    const snapTarget = editorEngine.snap.calculateSnapTarget(
-                        frame.id,
-                        newPosition,
-                        frame.dimension
-                    );
-
-                    if (snapTarget) {
-                        newPosition = snapTarget.position;
-                        editorEngine.snap.showSnapLines(snapTarget.snapLines);
-                    } else {
-                        editorEngine.snap.hideSnapLines();
-                    }
-                } else {
-                    editorEngine.snap.hideSnapLines();
-                }
-
-                editorEngine.frames.updateAndSaveToStorage(frame.id, { position: newPosition });
+            mouseDownRef.current = {
+                x: e.clientX,
+                y: e.clientY,
+                time: Date.now()
             };
 
-            const endMove = (e: MouseEvent) => {
-                e.preventDefault();
-                e.stopPropagation();
-                editorEngine.snap.hideSnapLines();
-                window.removeEventListener('mousemove', handleMove);
-                window.removeEventListener('mouseup', endMove);
-            };
+            const selectedFrames = editorEngine.frames.selected.map(frameData => frameData.frame);
+            const framesToMove = selectedFrames.length > 0 ? selectedFrames : [frame];
 
-            window.addEventListener('mousemove', handleMove);
-            window.addEventListener('mouseup', endMove);
+            createMouseMoveHandler(e, {
+                editorEngine,
+                selectedFrames: framesToMove,
+                clearElements
+            });
         };
 
         const clearElements = () => {
@@ -124,6 +90,24 @@ export const TopBar = observer(
         };
 
         const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+            if (!mouseDownRef.current) {
+                return;
+            }
+
+            const currentTime = Date.now();
+            const timeDiff = currentTime - mouseDownRef.current.time;
+            const distance = Math.sqrt(
+                Math.pow(e.clientX - mouseDownRef.current.x, 2) + 
+                Math.pow(e.clientY - mouseDownRef.current.y, 2)
+            );
+
+            // Don't register click if it was a long hold (>200ms) or significant movement (>5px)
+            if (timeDiff > 200 || distance > 5) {
+                mouseDownRef.current = null;
+                return;
+            }
+
+            mouseDownRef.current = null;
             editorEngine.frames.select([frame], e.shiftKey);
         };
 
@@ -133,6 +117,7 @@ export const TopBar = observer(
                 className={cn(
                     'bg-blend-multiply hover:shadow m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
                     isSelected && 'text-teal-400 fill-teal-400',
+                    !isSelected && isInDragSelection && 'text-teal-500 fill-teal-500',
                 )}
                 style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.04)',
