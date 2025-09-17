@@ -1,5 +1,4 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
-import { ChatMessageRole } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
 import { useMemo } from 'react';
 import { MessageContent } from './message-content';
@@ -8,7 +7,7 @@ export const StreamMessage = () => {
     const { messages, isWaiting } = useChatContext();
     const streamMessage = messages.length > 0 ? messages[messages.length - 1] : null;
     const isAssistantStreamMessage = useMemo(() =>
-        streamMessage?.role === ChatMessageRole.ASSISTANT,
+        streamMessage?.role === 'assistant',
         [streamMessage?.role]
     );
 

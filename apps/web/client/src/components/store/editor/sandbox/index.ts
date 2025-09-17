@@ -247,8 +247,11 @@ export class SandboxManager {
         }
     }
 
-    async readFile(path: string): Promise<SandboxFile | null> {
+    async readFile(path: string, remote: boolean = false): Promise<SandboxFile | null> {
         const normalizedPath = normalizePath(path);
+        if (remote) {
+            return this.readRemoteFile(normalizedPath);
+        }
         return this.fileSync.readOrFetch(normalizedPath, this.readRemoteFile.bind(this));
     }
 

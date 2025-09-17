@@ -1,7 +1,7 @@
 import { api } from '@/trpc/client';
 import { toDbMessage } from '@onlook/db';
 import type { GitCommit } from '@onlook/git';
-import { ChatMessageRole, MessageCheckpointType, type ChatConversation, type ChatMessage, type MessageContext, type UserChatMessage } from '@onlook/models';
+import { MessageCheckpointType, type ChatConversation, type ChatMessage, type MessageContext } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { toast } from 'sonner';
 import type { EditorEngine } from '../engine';
@@ -114,7 +114,7 @@ export class ConversationManager {
     async addUserMessage(
         content: string,
         context: MessageContext[],
-    ): Promise<UserChatMessage> {
+    ): Promise<ChatMessage> {
         if (!this.current) {
             console.error('No conversation found');
             throw new Error('No conversation found');
@@ -147,26 +147,35 @@ export class ConversationManager {
     }
 
     async attachCommitToUserMessage(id: string, commit: GitCommit): Promise<void> {
-        const message = this.current?.messages.find((m) => m.id === id && m.role === ChatMessageRole.USER);
+        if (!this.current) {
+            console.error('No conversation found');
+            return;
+        }
+        const message = this.current.messages.find((m) => m.id === id && m.role === 'user');
         if (!message) {
             console.error('No message found with id', id);
             return;
         }
-        const userMessage = message as UserChatMessage;
         const newCheckpoints = [
-            ...userMessage.metadata.checkpoints,
+            ...(message.metadata?.checkpoints ?? []),
             {
                 type: MessageCheckpointType.GIT,
                 oid: commit.oid,
                 createdAt: new Date(),
             },
         ];
-        userMessage.metadata.checkpoints = newCheckpoints;
+        message.metadata = {
+            ...message.metadata,
+            createdAt: message.metadata?.createdAt ?? new Date(),
+            conversationId: message.metadata?.conversationId || this.current.conversation.id,
+            checkpoints: newCheckpoints,
+            context: message.metadata?.context ?? [],
+        };
         await api.chat.message.updateCheckpoints.mutate({
             messageId: message.id,
             checkpoints: newCheckpoints,
         });
-        await this.addOrReplaceMessage(userMessage);
+        await this.addOrReplaceMessage(message);
     }
 
     async addOrReplaceMessage(message: ChatMessage) {
@@ -174,7 +183,7 @@ export class ConversationManager {
             console.error('No conversation found');
             return;
         }
-        const index = this.current.messages.findIndex((m) => m.id === message.id || (m.metadata?.vercelId && m.metadata?.vercelId === message.metadata?.vercelId));
+        const index = this.current.messages.findIndex((m) => m.id === message.id);
         if (index === -1) {
             this.current.messages.push(message);
         } else {
@@ -209,7 +218,11 @@ export class ConversationManager {
     }
 
     async upsertMessageInStorage(message: ChatMessage) {
-        await api.chat.message.upsert.mutate({ message: toDbMessage(message) });
+        if (!this.current) {
+            console.error('No conversation found');
+            return;
+        }
+        await api.chat.message.upsert.mutate({ message: toDbMessage(message, this.current.conversation.id) });
     }
 
     clear() {

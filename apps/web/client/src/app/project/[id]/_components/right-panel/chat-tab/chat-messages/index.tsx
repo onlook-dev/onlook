@@ -1,7 +1,7 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
-import { ChatMessageRole, type ChatMessage } from '@onlook/models/chat';
+import { type ChatMessage } from '@onlook/models/chat';
 import { ChatMessageList } from '@onlook/ui/chat/chat-message-list';
 import { Icons } from '@onlook/ui/icons';
 import { assertNever } from '@onlook/utility';
@@ -23,21 +23,24 @@ export const ChatMessages = observer(() => {
     const renderMessage = useCallback((message: ChatMessage, index: number) => {
         let messageNode;
         switch (message.role) {
-            case ChatMessageRole.ASSISTANT:
+            case 'assistant':
                 messageNode = <AssistantMessage message={message} />;
                 break;
-            case ChatMessageRole.USER:
+            case 'user':
                 messageNode = <UserMessage message={message} />;
                 break;
+            case 'system':
+                messageNode = null;
+                break;
             default:
-                assertNever(message);
+                assertNever(message.role);
         }
         return <div key={`message-${message.id}-${index}`}>{messageNode}</div>;
     }, []);
 
     // Exclude the currently streaming assistant message (rendered by <StreamMessage />)
     const messagesToRender = useMemo(() => {
-        if (!engineMessages || engineMessages.length === 0) return [] as ChatMessage[];
+        if (!engineMessages || engineMessages.length === 0) return [];
 
         const lastUiMessage = uiMessages?.[uiMessages.length - 1];
         const streamingAssistantId = isWaiting && lastUiMessage?.role === 'assistant' ? lastUiMessage.id : undefined;

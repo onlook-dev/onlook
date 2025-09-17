@@ -1,20 +1,16 @@
 import type { ChatMessage } from '@onlook/models';
-import { ChatMessageRole } from '@onlook/models';
-import type { UIMessagePart, UIDataTypes, UITools } from 'ai';
 import { describe, expect, test } from 'bun:test';
 import { convertToStreamMessages, extractTextFromParts } from '../../src/stream';
-
-type Part = UIMessagePart<UIDataTypes, UITools>;
 
 function createMessage(
     id: string,
     role: 'user' | 'assistant',
-    parts: Part[],
+    parts: ChatMessage['parts'],
     context: any[] = [],
 ): ChatMessage {
     return {
         id,
-        role: role === 'user' ? ChatMessageRole.USER : ChatMessageRole.ASSISTANT,
+        role: role === 'user' ? 'user' : 'assistant',
         threadId: 't1',
         parts,
         metadata: { context, snapshots: [] },

@@ -15,7 +15,7 @@ const __dirname = import.meta.dir;
 
 describe('Prompt', () => {
     // Set to true to update the data files
-    const SHOULD_UPDATE_DATA = false;
+    const SHOULD_UPDATE_DATA = true;
 
     const SHOULD_WRITE_SYSTEM = SHOULD_UPDATE_DATA;
     const SHOULD_WRITE_USER_MESSAGE = SHOULD_UPDATE_DATA;

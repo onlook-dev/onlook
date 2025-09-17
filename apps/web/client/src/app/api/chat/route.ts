@@ -1,9 +1,10 @@
 import { trackEvent } from '@/utils/analytics/server';
-import { ChatType } from '@onlook/models';
-import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from 'ai';
+import { convertToStreamMessages, getToolSetFromType } from '@onlook/ai';
+import { ChatType, type ChatMessage } from '@onlook/models';
+import { stepCountIs, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helpers';
+import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, incrementUsage, repairToolCall } from './helpers';
 
 const MAX_STEPS = 20;
 
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
 export const streamResponse = async (req: NextRequest, userId: string) => {
     const body = await req.json();
     const { messages, chatType, conversationId, projectId } = body as {
-        messages: UIMessage[],
+        messages: ChatMessage[],
         chatType: ChatType,
         conversationId: string,
         projectId: string,
@@ -68,7 +69,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
     } | null = null;
 
     try {
-        const lastUserMessage = messages.findLast((message: UIMessage) => message.role === 'user');
+        const lastUserMessage = messages.findLast((message) => message.role === 'user');
         const traceId = lastUserMessage?.id ?? uuidv4();
 
         if (chatType === ChatType.EDIT) {
@@ -76,8 +77,8 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         }
         const modelConfig = await getModelFromType(chatType);
         const { model, providerOptions, headers } = modelConfig;
-        const systemPrompt = await getSystemPromptFromType(chatType);
-        const tools = await getToolSetFromType(chatType);
+        const systemPrompt = getSystemPromptFromType(chatType);
+        const tools = getToolSetFromType(chatType);
 
         const result = streamText({
             model,
@@ -90,7 +91,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                     content: systemPrompt,
                     providerOptions,
                 },
-                ...convertToModelMessages(messages),
+                ...convertToStreamMessages(messages),
             ],
             experimental_telemetry: {
                 isEnabled: true,
@@ -123,13 +124,14 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         return result.toUIMessageStreamResponse(
             {
                 originalMessages: messages,
-                messageMetadata: ({
-                    part
-                }) => {
-                    if (part.type === 'finish-step') {
-                        return {
-                            finishReason: part.finishReason,
-                        }
+                generateMessageId: () => uuidv4(),
+                messageMetadata: ({ part }) => {
+                    return {
+                        createdAt: new Date(),
+                        conversationId,
+                        context: [],
+                        checkpoints: [],
+                        finishReason: part.type === 'finish-step' ? part.finishReason : undefined,
                     }
                 },
                 onError: errorHandler,

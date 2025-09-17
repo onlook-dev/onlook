@@ -1,8 +1,8 @@
 import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
-import type { ToolUIPart, UIMessage } from 'ai';
+import type { ToolUIPart } from 'ai';
+import type { ChatMessage } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
-import { useMemo } from 'react';
 import { MarkdownRenderer } from '../markdown-renderer';
 import { ToolCallDisplay } from './tool-call-display';
 
@@ -14,7 +14,7 @@ export const MessageContent = observer(
         isStream,
     }: {
         messageId: string;
-        parts: UIMessage['parts'];
+        parts: ChatMessage['parts'];
         applied: boolean;
         isStream: boolean;
     }) => {
