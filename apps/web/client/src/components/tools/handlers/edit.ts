@@ -23,7 +23,6 @@ export async function handleSearchReplaceEditFileTool(args: z.infer<typeof SEARC
         if (args.replace_all) {
             newContent = file.content.replaceAll(args.old_string, args.new_string);
         } else {
-            // More efficient: count occurrences in single pass
             const firstIndex = file.content.indexOf(args.old_string);
             if (firstIndex === -1) {
                 throw new Error(`String not found in file: ${args.old_string}`);
@@ -59,23 +58,29 @@ export async function handleSearchReplaceMultiEditFileTool(args: z.infer<typeof 
             throw new Error(`Cannot read file ${args.file_path}: file not found or not text`);
         }
 
-        let content = file.content;
+        const originalContent = file.content;
+        let content = originalContent;
 
+        // Validate all edits first to avoid partial application
         for (const edit of args.edits) {
-            if (edit.replace_all) {
-                content = content.replaceAll(edit.old_string, edit.new_string);
-            } else {
-                // More efficient: count occurrences in single pass
-                const firstIndex = content.indexOf(edit.old_string);
+            if (!edit.replace_all) {
+                const firstIndex = originalContent.indexOf(edit.old_string);
                 if (firstIndex === -1) {
                     throw new Error(`String not found in file: ${edit.old_string}`);
                 }
 
-                const secondIndex = content.indexOf(edit.old_string, firstIndex + edit.old_string.length);
+                const secondIndex = originalContent.indexOf(edit.old_string, firstIndex + edit.old_string.length);
                 if (secondIndex !== -1) {
                     throw new Error(`Multiple occurrences found for "${edit.old_string}". Use replace_all=true or provide more context.`);
                 }
+            }
+        }
 
+        // Apply edits after validation
+        for (const edit of args.edits) {
+            if (edit.replace_all) {
+                content = content.replaceAll(edit.old_string, edit.new_string);
+            } else {
                 content = content.replace(edit.old_string, edit.new_string);
             }
         }
@@ -87,7 +92,7 @@ export async function handleSearchReplaceMultiEditFileTool(args: z.infer<typeof 
 
         return `File ${args.file_path} edited with ${args.edits.length} changes`;
     } catch (error) {
-        throw new Error(`Cannot multi-edit file ${args.file_path}: ${error}`);
+        throw new Error(`Cannot multi-edit file ${args.file_path}: ${(error as Error).message}`);
     }
 }
 

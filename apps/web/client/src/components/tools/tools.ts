@@ -28,6 +28,8 @@ import {
     SCRAPE_URL_TOOL_PARAMETERS,
     SEARCH_REPLACE_EDIT_FILE_TOOL_NAME,
     SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS,
+    SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME,
+    SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS,
     TERMINAL_COMMAND_TOOL_NAME,
     TERMINAL_COMMAND_TOOL_PARAMETERS,
     TYPECHECK_TOOL_NAME,
@@ -53,6 +55,7 @@ import {
     handleSandboxTool,
     handleScrapeUrlTool,
     handleSearchReplaceEditFileTool,
+    handleSearchReplaceMultiEditFileTool,
     handleTerminalCommandTool,
     handleTypecheckTool,
     handleWebSearchTool,
@@ -120,6 +123,12 @@ const TOOL_HANDLERS: ClientToolMap = {
         handler: async (args: z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
             handleSearchReplaceEditFileTool(args, editorEngine),
     },
+    [SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME]: {
+        name: SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME,
+        inputSchema: SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS,
+        handler: async (args: z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
+            handleSearchReplaceMultiEditFileTool(args, editorEngine),
+    },
     [WRITE_FILE_TOOL_NAME]: {
         name: WRITE_FILE_TOOL_NAME,
         inputSchema: WRITE_FILE_TOOL_PARAMETERS,
@@ -181,6 +190,8 @@ export function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine
         const toolName = toolCall.toolName;
         const currentChatMode = editorEngine.state.chatMode;
         const availableTools = getToolSetFromType(currentChatMode);
+        let output: any = null;
+
         try {
             if (!availableTools[toolName]) {
                 toast.error(`Tool "${toolName}" not available in ask mode`, {
@@ -196,17 +207,14 @@ export function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine
             if (!clientTool) {
                 throw new Error(`Unknown tool call: ${toolName}`);
             }
-            const result = await clientTool.handler(toolCall.input, editorEngine);
-            addToolResult({
-                tool: toolName,
-                toolCallId: toolCall.toolCallId,
-                output: result,
-            });
+            output = await clientTool.handler(toolCall.input, editorEngine);
         } catch (error) {
+            output = 'error handling tool call ' + error;
+        } finally {
             addToolResult({
                 tool: toolName,
                 toolCallId: toolCall.toolCallId,
-                output: 'error handling tool call ' + error,
+                output: output,
             });
         }
     }
