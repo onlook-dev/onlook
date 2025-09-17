@@ -1,4 +1,4 @@
-import type { EditorEngine } from '@/components/store/editor';
+import type { EditorEngine } from '@/components/store/editor/engine';
 import type { Frame } from '@onlook/models';
 
 export interface MouseMoveHandlerOptions {
@@ -12,14 +12,14 @@ export function createMouseMoveHandler(
     options: MouseMoveHandlerOptions
 ) {
     const { editorEngine, selectedFrames, clearElements } = options;
-    
+
     startEvent.preventDefault();
     startEvent.stopPropagation();
     clearElements();
 
     const startX = startEvent.clientX;
     const startY = startEvent.clientY;
-    
+
     // Store initial positions for all selected frames
     const initialFramePositions = selectedFrames.map(frame => ({
         id: frame.id,
@@ -52,7 +52,7 @@ export function createMouseMoveHandler(
                     // Apply the snap offset to all frames
                     const snapDeltaX = snapTarget.position.x - newPosition.x;
                     const snapDeltaY = snapTarget.position.y - newPosition.y;
-                    
+
                     for (const otherFrameData of initialFramePositions) {
                         const adjustedPosition = {
                             x: otherFrameData.startPosition.x + deltaX + snapDeltaX,
@@ -60,7 +60,7 @@ export function createMouseMoveHandler(
                         };
                         editorEngine.frames.updateAndSaveToStorage(otherFrameData.id, { position: adjustedPosition });
                     }
-                    
+
                     editorEngine.snap.showSnapLines(snapTarget.snapLines);
                     return;
                 } else {
