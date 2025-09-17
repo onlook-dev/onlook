@@ -30,6 +30,11 @@ export class ChatContext {
         );
     }
 
+    async getLatestContext(): Promise<MessageContext[]> {
+        const context = await this.getChatContext();
+        return await this.getRefreshedContext(context);
+    }
+
     async getChatContext(): Promise<MessageContext[]> {
         const selected = this.editorEngine.elements.selected;
 

@@ -27,13 +27,13 @@ export const TopBar = observer(() => {
     const UNDO_REDO_BUTTONS = [
         {
             click: () => editorEngine.action.undo(),
-            isDisabled: !editorEngine.history.canUndo || editorEngine.chat.isWaiting,
+            isDisabled: !editorEngine.history.canUndo || editorEngine.chat.isStreaming,
             hotkey: Hotkey.UNDO,
             icon: <Icons.Reset className="h-4 w-4 mr-1" />,
         },
         {
             click: () => editorEngine.action.redo(),
-            isDisabled: !editorEngine.history.canRedo || editorEngine.chat.isWaiting,
+            isDisabled: !editorEngine.history.canRedo || editorEngine.chat.isStreaming,
             hotkey: Hotkey.REDO,
             icon: <Icons.Reset className="h-4 w-4 mr-1 scale-x-[-1]" />,
         },

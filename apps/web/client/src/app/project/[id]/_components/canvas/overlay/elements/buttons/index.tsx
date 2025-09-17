@@ -20,7 +20,7 @@ export const OverlayButtons = observer(() => {
     const shouldHideButton =
         !selectedRect ||
         isPreviewMode ||
-        editorEngine.chat.isWaiting ||
+        editorEngine.chat.isStreaming ||
         !settings?.chat?.showMiniChat;
 
     useEffect(() => {

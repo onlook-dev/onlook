@@ -2,22 +2,18 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
-import { useChat as useAiChat, type UseChatHelpers } from '@ai-sdk/react';
+import { useChat as useAiChat } from '@ai-sdk/react';
 import { ChatType, type ChatMessage, type MessageContext } from '@onlook/models';
 import {
     DefaultChatTransport,
-    lastAssistantMessageIsCompleteWithToolCalls,
-    type UIMessage,
+    lastAssistantMessageIsCompleteWithToolCalls
 } from 'ai';
 import { usePostHog } from 'posthog-js/react';
 import { useCallback, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-type ExtendedUseChatHelpers = UseChatHelpers<ChatMessage> & {
-    sendMessage: (content: string, type: ChatType, context: MessageContext[]) => Promise<void>;
-    editMessage: (messageId: string, newContent: string) => Promise<void>;
-    isStreaming: boolean;
-};
+export type SendMessage = (content: string, type?: ChatType, context?: MessageContext[]) => Promise<string>
+export type EditMessage = (messageId: string, newContent: string) => Promise<void>
 
 interface UseChatProps {
     conversationId: string;
@@ -29,7 +25,7 @@ export function useChat({
     conversationId,
     projectId,
     initialMessages,
-}: UseChatProps): ExtendedUseChatHelpers {
+}: UseChatProps) {
     const editorEngine = useEditorEngine();
     const posthog = usePostHog();
     const {
@@ -77,28 +73,25 @@ export function useChat({
         editorEngine.chat.setIsStreaming(isStreaming);
     }, [editorEngine.chat, isStreaming]);
 
-    const sendMessage = useCallback(
-        // TODO: const context = await editorEngine.chat.context.getChatContext();
-        // TODO: context is optional
-        async (content: string, type: ChatType = ChatType.EDIT, context: MessageContext[]) => {
+    const sendMessage: SendMessage = useCallback(
+        async (content: string, type: ChatType = ChatType.EDIT) => {
+            const newContext = await editorEngine.chat.context.getLatestContext();
             posthog.capture('user_send_message', { type });
-
-
-
-            return baseSendMessage(
-                { text: content },
+            const messageId = uuidv4();
+            await baseSendMessage(
+                { text: content, messageId },
                 {
                     body: {
                         chatType: type,
                         conversationId,
-                        context,
+                        context: newContext,
                     },
                 },
             );
+            return messageId;
         },
         [baseSendMessage, conversationId, posthog],
     );
-
 
     // Store messages in a ref to avoid re-rendering editMessage
     const messagesRef = useRef(messages);
@@ -106,7 +99,7 @@ export function useChat({
         messagesRef.current = messages;
     }, [messages]);
 
-    const editMessage = useCallback(
+    const editMessage: EditMessage = useCallback(
         async (messageId: string, newContent: string) => {
             const messageIndex = messagesRef.current.findIndex((m) => m.id === messageId);
             if (messageIndex === -1) {
@@ -119,16 +112,13 @@ export function useChat({
             }
 
             posthog.capture('user_edit_message', { type: ChatType.EDIT });
-
             const updatedMessages = messagesRef.current.slice(0, messageIndex + 1);
-
             updatedMessages[messageIndex] = {
-                ...updatedMessages[messageIndex],
+                ...message,
                 parts: [{ type: 'text', text: newContent }],
             };
 
             setMessages(updatedMessages);
-
             return regenerate({
                 body: {
                     chatType: ChatType.EDIT,
@@ -136,17 +126,12 @@ export function useChat({
                 },
             });
         },
-        [regenerate, conversationId, setMessages, posthog],
+        [regenerate, conversationId, setMessages, posthog]
     );
 
-
-
     useEffect(() => {
-        editorEngine.chat.setChatActions({
-            sendMessage: sendMessage,
-            editMessage: editMessage,
-        });
-    }, [editorEngine.chat, sendMessage, editMessage]);
+        editorEngine.chat.setChatActions(sendMessage);
+    }, [editorEngine.chat, sendMessage]);
 
     return { status, sendMessage, editMessage, messages, error, stop, isStreaming };
 }

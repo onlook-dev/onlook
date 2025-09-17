@@ -1,3 +1,4 @@
+import type { EditMessage } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { MessageCheckpointType, type ChatMessage } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
@@ -12,7 +13,7 @@ import { SentContextPill } from '../context-pills/sent-context-pill';
 import { MessageContent } from './message-content';
 
 interface UserMessageProps {
-    onEditMessage: (messageId: string, newContent: string) => Promise<void>;
+    onEditMessage: EditMessage;
     message: ChatMessage;
 }
 
@@ -89,10 +90,7 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
             {
                 loading: 'Resubmitting message...',
                 success: 'Message resubmitted successfully',
-                error: (error) => ({
-                    title: 'Failed to resubmit message',
-                    description: error instanceof Error ? error.message : 'Unknown error',
-                }),
+                error: 'Failed to resubmit message',
             }
         )
     };

@@ -9,14 +9,14 @@ import type { ParsedError } from '@onlook/utility';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import type { MessageContext } from '@onlook/models/chat';
+import type { SendMessage } from '../../../_hooks/use-chat';
 
 interface ErrorSectionProps {
     isStreaming: boolean;
-    sendMessage: (content: string, type: ChatType, context?: MessageContext[]) => Promise<void>;
+    onSendMessage: SendMessage;
 }
 
-export const ErrorSection = observer(({ isStreaming, sendMessage }: ErrorSectionProps) => {
+export const ErrorSection = observer(({ isStreaming, onSendMessage }: ErrorSectionProps) => {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(false);
     const allErrors = editorEngine.branches.getAllErrors();
@@ -28,7 +28,7 @@ export const ErrorSection = observer(({ isStreaming, sendMessage }: ErrorSection
                 const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
                 const errorContexts = editorEngine.chat.context.getErrorContext(allErrors);
                 const projectContexts = editorEngine.chat.context.getProjectContext();
-                return sendMessage(prompt, ChatType.FIX, [...errorContexts, ...projectContexts]);
+                return onSendMessage(prompt, ChatType.FIX, [...errorContexts, ...projectContexts]);
             },
             {
                 error: 'Failed to send fix error message. Please try again.',

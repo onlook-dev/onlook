@@ -1,4 +1,5 @@
 
+import type { SendMessage } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
 import { transKeys } from '@/i18n/keys';
@@ -23,14 +24,14 @@ import { ChatModeToggle } from './chat-mode-toggle';
 
 interface ChatInputProps {
     messages: ChatMessage[];
-    isWaiting: boolean;
+    isStreaming: boolean;
     onStop: () => Promise<void>;
-    onSendMessage: (content: string, type: ChatType) => Promise<void>;
+    onSendMessage: SendMessage;
 }
 
 export const ChatInput = observer(({
     messages,
-    isWaiting,
+    isStreaming,
     onStop,
     onSendMessage,
 }: ChatInputProps) => {
@@ -50,10 +51,10 @@ export const ChatInput = observer(({
     };
 
     useEffect(() => {
-        if (textareaRef.current && !isWaiting) {
+        if (textareaRef.current && !isStreaming) {
             focusInput();
         }
-    }, [isWaiting, messages]);
+    }, [isStreaming, messages]);
 
     useEffect(() => {
         if (editorEngine.state.rightPanelTab === EditorTabValue.CHAT) {
@@ -63,7 +64,7 @@ export const ChatInput = observer(({
 
     useEffect(() => {
         const focusHandler = () => {
-            if (textareaRef.current && !isWaiting) {
+            if (textareaRef.current && !isStreaming) {
                 focusInput();
             }
         };
@@ -89,7 +90,7 @@ export const ChatInput = observer(({
         return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
     }, []);
 
-    const disabled = isWaiting
+    const disabled = isStreaming
     const inputEmpty = !inputValue || inputValue.trim().length === 0;
 
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -132,7 +133,7 @@ export const ChatInput = observer(({
             console.warn('Empty message');
             return;
         }
-        if (isWaiting) {
+        if (isStreaming) {
             console.warn('Already waiting for response');
             return;
         }
@@ -328,6 +329,7 @@ export const ChatInput = observer(({
         >
             <Suggestions
                 ref={suggestionRef}
+                isWaiting={isStreaming}
                 disabled={disabled}
                 inputValue={inputValue}
                 setInput={(suggestion) => {
@@ -394,7 +396,7 @@ export const ChatInput = observer(({
                         handleImageEvent={handleImageEvent}
                         handleScreenshot={handleScreenshot}
                     />
-                    {isWaiting ? (
+                    {isStreaming ? (
                         <Tooltip open={actionTooltipOpen} onOpenChange={setActionTooltipOpen}>
                             <TooltipTrigger asChild>
                                 <Button

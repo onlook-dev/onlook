@@ -1,5 +1,6 @@
+import type { EditMessage, SendMessage } from '@/app/project/[id]/_hooks/use-chat';
 import type { GitCommit } from '@onlook/git';
-import { ChatType, type ChatMessage, type MessageContext } from '@onlook/models';
+import { ChatType, type MessageContext } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { ChatContext } from './context';
@@ -7,13 +8,20 @@ import { ConversationManager } from './conversation';
 
 export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
 
+const stubSendMessage: SendMessage = () => {
+    throw new Error('Chat actions not initialized');
+}
+const stubEditMessage: EditMessage = () => {
+    throw new Error('Chat actions not initialized');
+}
+
 export class ChatManager {
     conversation: ConversationManager;
     context: ChatContext;
-    // Data pulled in from useChat hook
-    sendMessage: ((content: string, type: ChatType, context?: MessageContext[]) => Promise<ChatMessage>) | null = null;
-    editMessage: ((messageId: string, newContent: string) => Promise<ChatMessage>) | null = null;
     isStreaming = false;
+
+    // Actions pulled in from useChat hook
+    sendMessage: SendMessage = stubSendMessage;
 
     constructor(
         private editorEngine: EditorEngine,
@@ -39,12 +47,8 @@ export class ChatManager {
         this.isStreaming = isStreaming;
     }
 
-    setChatActions(actions: {
-        sendMessage: (content: string, type: ChatType, context?: MessageContext[]) => Promise<void>;
-        editMessage: (messageId: string, newContent: string) => Promise<void>;
-    } | null) {
-        this.sendMessage = actions?.sendMessage ?? null;
-        this.editMessage = actions?.editMessage ?? null;
+    setChatActions(sendMessage: SendMessage) {
+        this.sendMessage = sendMessage;
     }
 
     async addEditMessage(content: string, contextOverride?: MessageContext[]): Promise<void> {
@@ -52,10 +56,8 @@ export class ChatManager {
             throw new Error('Chat actions not initialized');
         }
         const context = contextOverride ?? await this.context.getChatContext();
-
-        const commit = await this.createCommit(content);
-        const message = await this.sendMessage(content, ChatType.EDIT, context);
-        await this.createAndAttachCommitToUserMessage(message.id, content);
+        const messageId = await this.sendMessage(content, ChatType.EDIT, context);
+        await this.createAndAttachCommitToUserMessage(messageId, content);
     }
 
     async createAndAttachCommitToUserMessage(messageId: string, content: string): Promise<void> {
