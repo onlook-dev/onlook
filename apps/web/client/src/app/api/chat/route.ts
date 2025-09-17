@@ -1,7 +1,7 @@
 import { trackEvent } from '@/utils/analytics/server';
 import { convertToStreamMessages, getToolSetFromType } from '@onlook/ai';
 import { ChatType, type ChatMessage } from '@onlook/models';
-import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from 'ai';
+import { stepCountIs, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, incrementUsage, repairToolCall } from './helpers';
@@ -69,7 +69,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
     } | null = null;
 
     try {
-        const lastUserMessage = messages.findLast((message: UIMessage) => message.role === 'user');
+        const lastUserMessage = messages.findLast((message) => message.role === 'user');
         const traceId = lastUserMessage?.id ?? uuidv4();
 
         if (chatType === ChatType.EDIT) {

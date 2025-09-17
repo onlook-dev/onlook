@@ -9,7 +9,7 @@ export function convertToStreamMessages(messages: ChatMessage[]): ModelMessage[]
         (message) => message.role === 'assistant',
     );
 
-    const uiMessages = messages.map((message, index) => {
+    const streamMessages = messages.map((message, index) => {
         const opt: HydrateMessageOptions = {
             totalMessages,
             currentMessageIndex: index,
@@ -19,7 +19,7 @@ export function convertToStreamMessages(messages: ChatMessage[]): ModelMessage[]
         return toVercelMessageFromOnlook(message, opt);
     });
 
-    return convertToModelMessages(uiMessages);
+    return convertToModelMessages(streamMessages);
 }
 
 export const toVercelMessageFromOnlook = (

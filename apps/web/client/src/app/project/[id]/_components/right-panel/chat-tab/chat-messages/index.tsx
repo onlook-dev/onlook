@@ -40,7 +40,7 @@ export const ChatMessages = observer(() => {
 
     // Exclude the currently streaming assistant message (rendered by <StreamMessage />)
     const messagesToRender = useMemo(() => {
-        if (!engineMessages || engineMessages.length === 0) return [] as ChatMessage[];
+        if (!engineMessages || engineMessages.length === 0) return [];
 
         const lastUiMessage = uiMessages?.[uiMessages.length - 1];
         const streamingAssistantId = isWaiting && lastUiMessage?.role === 'assistant' ? lastUiMessage.id : undefined;
