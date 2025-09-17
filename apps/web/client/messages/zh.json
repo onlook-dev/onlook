@@ -47,6 +47,7 @@
             "rename": "重命名",
             "goToAllProjects": "查看所有项目",
             "newProject": "新建项目",
+            "blankProject": "空白项目",
             "startFromScratch": "从零开始",
             "importProject": "导入项目",
             "subscriptions": "订阅",

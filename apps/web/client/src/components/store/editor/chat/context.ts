@@ -16,7 +16,6 @@ import type { EditorEngine } from '../engine';
 export class ChatContext {
     context: MessageContext[] = [];
     private selectedReactionDisposer?: () => void;
-
     constructor(
         private editorEngine: EditorEngine,
     ) {

@@ -144,7 +144,7 @@ export const PageSelector = observer(({ frame, className, tooltipSide = "top", s
                         variant="ghost"
                         size={buttonSize}
                         className={cn(
-                            "h-auto px-2 py-1 text-xs hover:bg-background-secondary",
+                            "h-auto px-2 py-1 text-xs hover:!bg-transparent focus:!bg-transparent active:!bg-transparent",
                             buttonClassName,
                             className
                         )}

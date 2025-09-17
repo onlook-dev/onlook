@@ -42,14 +42,14 @@ export const RecentProjectsMenu = observer(() => {
         return (
             <DropdownMenuSub>
                 <DropdownMenuSubTrigger className="cursor-pointer">
-                    <div className="flex row center items-center">
+                    <div className="flex flex-row center items-center">
                         <Icons.Cube className="mr-2" />
                         {t(transKeys.projects.actions.recentProjects)}
                     </div>
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent className='ml-2'>
                     <DropdownMenuItem disabled>
-                        <div className="flex row center items-center">
+                        <div className="flex flex-row center items-center">
                             <Icons.LoadingSpinner className="mr-2 w-4 h-4 animate-spin" />
                             Loading...
                         </div>
@@ -63,21 +63,21 @@ export const RecentProjectsMenu = observer(() => {
         return (
             <DropdownMenuSub>
                 <DropdownMenuSubTrigger className="cursor-pointer">
-                    <div className="flex row center items-center">
+                    <div className="flex flex-row center items-center">
                         <Icons.Cube className="mr-2" />
                         {t(transKeys.projects.actions.recentProjects)}
                     </div>
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent className='ml-2'>
                     <DropdownMenuItem disabled>
-                        <div className="flex row center items-center text-muted-foreground">
+                        <div className="flex flex-row center items-center text-muted-foreground">
                             <Icons.Cube className="mr-2" />
                             {t(transKeys.projects.select.empty)}
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => router.push(Routes.PROJECTS)} className="cursor-pointer">
-                        <div className="flex row center items-center">
+                        <div className="flex flex-row center items-center">
                             <Icons.Tokens className="mr-2" />
                             {t(transKeys.projects.actions.goToAllProjects)}
                         </div>
@@ -90,7 +90,7 @@ export const RecentProjectsMenu = observer(() => {
     return (
         <DropdownMenuSub>
             <DropdownMenuSubTrigger className="cursor-pointer">
-                <div className="flex row center items-center">
+                <div className="flex flex-row center items-center">
                     <Icons.Cube className="mr-2" />
                     {t(transKeys.projects.actions.recentProjects)}
                 </div>
@@ -103,7 +103,7 @@ export const RecentProjectsMenu = observer(() => {
                         disabled={loadingProjectId === project.id}
                         className="cursor-pointer"
                     >
-                        <div className="flex row center items-center group">
+                        <div className="flex flex-row center items-center group">
                             {loadingProjectId === project.id ? (
                                 <Icons.LoadingSpinner className="mr-2 w-4 h-4 animate-spin" />
                             ) : (

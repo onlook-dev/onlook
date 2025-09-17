@@ -1,8 +1,8 @@
 'use client';
 
-import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useMemo, useState } from 'react';
 import { useBoxControl } from '../hooks/use-box-control';
@@ -37,7 +37,7 @@ export const Border = observer(() => {
 
         return values.every(val => val === values[0]);
     }, [boxState.borderTopWidth.num, boxState.borderRightWidth.num, boxState.borderBottomWidth.num, boxState.borderLeftWidth.num]);
-   
+
     const [activeTab, setActiveTab] = useState<BorderTab>(areAllBordersEqual ? BorderTab.ALL : BorderTab.INDIVIDUAL);
 
     const getBorderDisplay = () => {
@@ -45,17 +45,17 @@ export const Border = observer(() => {
         const right = boxState.borderRightWidth.num ?? 0;
         const bottom = boxState.borderBottomWidth.num ?? 0;
         const left = boxState.borderLeftWidth.num ?? 0;
-    
+
         if (top === 0 && right === 0 && bottom === 0 && left === 0) {
-            return null; 
+            return null;
         }
 
         const nonZeroValues = [top, right, bottom, left].filter(val => val !== 0);
-        
-        if(nonZeroValues.length === 4 && nonZeroValues.every((val) => val === nonZeroValues[0])) {
+
+        if (nonZeroValues.length === 4 && nonZeroValues.every((val) => val === nonZeroValues[0])) {
             return boxState.borderWidth.unit === 'px'
-            ? `${boxState.borderWidth.num}`
-            : `${boxState.borderWidth.value}`
+                ? `${boxState.borderWidth.num}`
+                : `${boxState.borderWidth.value}`
         }
 
         return "Mixed"
@@ -75,12 +75,11 @@ export const Border = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className="flex items-center gap-1 min-w-9"
+                        className={cn('flex items-center gap-1 min-w-9', borderValue && '!text-foreground-primary [&_*]:!text-foreground-primary')}
                     >
-                        <Icons.BorderEdit className={`h-4 w-4 min-h-4 min-w-4 ${borderExists ? 'text-white' : ''}
-`} />
+                        <Icons.BorderEdit className={cn('h-4 w-4 min-h-4 min-w-4', borderExists && 'text-white')} />
                         {borderValue && (
-                            <span className="text-xs">
+                            <span className="text-xs !text-white data-[state=open]:!text-foreground-primary">
                                 {borderValue}
                             </span>
                         )}

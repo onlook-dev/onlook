@@ -38,20 +38,23 @@ export const BranchDisplay = observer(({ frame, tooltipSide = "top", buttonSize 
                         variant="ghost"
                         size={buttonSize}
                         className={cn(
-                            "h-auto px-2 py-1 text-xs hover:bg-background-secondary",
+                            "h-auto px-2 py-1 text-xs hover:!bg-transparent focus:!bg-transparent active:!bg-transparent",
                             buttonClassName
                         )}
                     >
-                        <Icons.Commit />
-                        <span className="max-w-24 truncate">
-                            {frameBranch.name}
-                        </span>
+                        <Icons.Branch />
+                        <div className="flex items-center gap-1.5 max-w-24 truncate">
+                            <span className="truncate">{frameBranch.name}</span>
+                        </div>
                     </Button>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
             <DropdownMenuSeparator />
             <DropdownMenuContent align="start" className="w-[320px] p-0">
-                <BranchControls branch={frameBranch} onClose={() => setIsOpen(false)} />
+                <BranchControls 
+                    branch={frameBranch} 
+                    onClose={() => setIsOpen(false)}
+                />
             </DropdownMenuContent>
         </DropdownMenu >
     );
