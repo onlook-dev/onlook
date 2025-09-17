@@ -22,7 +22,7 @@ export const DragSelectOverlay = observer(({ startX, startY, endX, endY, isSelec
 
     return (
         <div
-            className="absolute border-2 border-blue-500 bg-blue-500/10 pointer-events-none"
+            className="absolute border border-blue-500 bg-blue-500/10 pointer-events-none"
             style={{
                 left: `${left}px`,
                 top: `${top}px`,
