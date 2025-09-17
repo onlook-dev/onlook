@@ -218,6 +218,96 @@ describe('Edit Tool Handlers', () => {
             expect(result).toBe('File /test/file.ts edited with 3 changes');
         });
 
+        it('should apply edits sequentially in provided order', async () => {
+            mockSandbox.readFile.mockResolvedValue({
+                content: 'old text here',
+                type: 'text',
+            });
+
+            const args = {
+                branchId: 'test-branch',
+                file_path: '/test/file.ts',
+                edits: [
+                    { old_string: 'old', new_string: 'new', replace_all: false },
+                    { old_string: 'new', new_string: 'final', replace_all: false },
+                ],
+            };
+
+            const result = await handleSearchReplaceMultiEditFileTool(args, mockEditorEngine);
+
+            // Sequential application: 'old' -> 'new' -> 'final'
+            expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'final text here');
+            expect(result).toBe('File /test/file.ts edited with 2 changes');
+        });
+
+        it('should handle multiple non-overlapping edits sequentially', async () => {
+            mockSandbox.readFile.mockResolvedValue({
+                content: 'start middle end',
+                type: 'text',
+            });
+
+            const args = {
+                branchId: 'test-branch',
+                file_path: '/test/file.ts',
+                edits: [
+                    { old_string: 'start', new_string: 'beginning', replace_all: false },
+                    { old_string: 'middle', new_string: 'center', replace_all: false },
+                    { old_string: 'end', new_string: 'finish', replace_all: false },
+                ],
+            };
+
+            const result = await handleSearchReplaceMultiEditFileTool(args, mockEditorEngine);
+
+            expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'beginning center finish');
+            expect(result).toBe('File /test/file.ts edited with 3 changes');
+        });
+
+        it('should apply mixed replace_all and single edits in order provided', async () => {
+            mockSandbox.readFile.mockResolvedValue({
+                content: 'foo bar foo',
+                type: 'text',
+            });
+
+            const args = {
+                branchId: 'test-branch',
+                file_path: '/test/file.ts',
+                edits: [
+                    { old_string: 'foo', new_string: 'qux', replace_all: true },
+                    { old_string: 'bar', new_string: 'baz', replace_all: false },
+                ],
+            };
+
+            const result = await handleSearchReplaceMultiEditFileTool(args, mockEditorEngine);
+
+            // Sequential: 'foo' -> 'qux' (all): 'qux bar qux'
+            // Then 'bar' -> 'baz': 'qux baz qux'
+            expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'qux baz qux');
+            expect(result).toBe('File /test/file.ts edited with 2 changes');
+        });
+
+        it('should handle multiple sequential edits correctly', async () => {
+            mockSandbox.readFile.mockResolvedValue({
+                content: 'const myVar = value; const otherVar = data;',
+                type: 'text',
+            });
+
+            const args = {
+                branchId: 'test-branch',
+                file_path: '/test/file.ts',
+                edits: [
+                    { old_string: 'myVar', new_string: 'newName', replace_all: false },
+                    { old_string: 'otherVar', new_string: 'anotherName', replace_all: false },
+                    { old_string: 'value', new_string: 'newValue', replace_all: false },
+                ],
+            };
+
+            const result = await handleSearchReplaceMultiEditFileTool(args, mockEditorEngine);
+
+            // Sequential application: each edit builds on the previous result
+            expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'const newName = newValue; const anotherName = data;');
+            expect(result).toBe('File /test/file.ts edited with 3 changes');
+        });
+
         it('should throw error when sandbox not found', async () => {
             mockBranches.getSandboxById.mockReturnValue(null);
 
