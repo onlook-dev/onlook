@@ -233,10 +233,9 @@ export const SubscriptionTab = observer(() => {
                             <p>Deleting your account will:</p>
                             <ul className="list-disc list-inside space-y-1 text-sm">
                                 <li>Permanently delete your account and prevent you from creating new projects.</li>
-                                <li>Delete all of your projects from ChatGPT and OpenAI servers.</li>
+                                <li>Delete all of your projects from Onlook's servers.</li>
                                 <li>You cannot create a new account using the same email address.</li>
                                 <li>This will also permanently delete your chat history and other data associated with your account.</li>
-                                <li>You cannot undo this action within 30 days, without the help of customer support.</li>
                                 <li>Deleting an account does not automatically cancel your subscription or entitled set of paid features.</li>
                                 <li>This is final and cannot be undone.</li>
                             </ul>
