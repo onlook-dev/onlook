@@ -154,6 +154,14 @@ export class FontManager {
      */
     async addFont(font: Font): Promise<boolean> {
         try {
+            const sandbox = this.editorEngine.activeSandbox;
+            if (!sandbox) {
+                console.error('No sandbox session found');
+                return false;
+            }
+
+            await this.ensureConfigFilesExist();
+
             const success = await this.fontConfigManager.addFont(font);
             if (success) {
                 // Update the fonts array
@@ -164,6 +172,12 @@ export class FontManager {
 
                 // Load the new font in the search manager
                 await this.fontSearchManager.loadFontFromBatch([font]);
+
+                // Add font to Tailwind config
+                await addFontToTailwindConfig(font, sandbox);
+
+                // Add font variable to root layout
+                await this.layoutManager.addFontVariableToRootLayout(font.id);
 
                 return true;
             }
