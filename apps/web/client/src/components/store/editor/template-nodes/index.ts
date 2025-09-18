@@ -26,6 +26,7 @@ export class TemplateNodeManager {
     private editorEngine: EditorEngine;
     private templateNodes = new Map<string, TemplateNode>();
     private processCache: UnifiedCacheManager<TemplateNodeCacheData>;
+    private MAX_TEMPLATE_NODES = 2000; // Lower limit for better performance on dense pages
 
     constructor(editorEngine: EditorEngine, projectId: string) {
         this.editorEngine = editorEngine;
@@ -131,10 +132,15 @@ export class TemplateNodeManager {
         const finalAst = astWithIdsAndFormatted ?? astWithIds;
         const templateNodeMap = createTemplateNodeMap({ ast: finalAst, filename: filePath, branchId });
 
-        // Store template nodes
+        // Store template nodes with size limit check
         templateNodeMap.forEach((node, oid) => {
             this.templateNodes.set(oid, node);
         });
+        
+        // If we've exceeded the max nodes, clean up old nodes
+        if (this.templateNodes.size > this.MAX_TEMPLATE_NODES) {
+            this.pruneOldTemplateNodes();
+        }
 
         const newContent = await getContentFromAst(finalAst, content);
 
@@ -214,6 +220,45 @@ export class TemplateNodeManager {
     getAllTemplateNodes(): Map<string, TemplateNode> {
         const activeBranchId = this.getActiveBranchId();
         return this.getBranchTemplateNodes(activeBranchId);
+    }
+
+    private pruneOldTemplateNodes(): void {
+        // Keep only nodes from the active branch and limit the total size
+        const activeBranchId = this.getActiveBranchId();
+        const activeBranchNodes: [string, TemplateNode][] = [];
+        const otherBranchNodes: [string, TemplateNode][] = [];
+        
+        for (const [oid, node] of this.templateNodes) {
+            if (node.branchId === activeBranchId) {
+                activeBranchNodes.push([oid, node]);
+            } else {
+                otherBranchNodes.push([oid, node]);
+            }
+        }
+        
+        // Clear the map and rebuild with limited nodes
+        this.templateNodes.clear();
+        
+        // Keep all active branch nodes up to limit
+        const nodesToKeep = Math.min(activeBranchNodes.length, Math.floor(this.MAX_TEMPLATE_NODES * 0.9));
+        for (let i = 0; i < nodesToKeep; i++) {
+            const entry = activeBranchNodes[i];
+            if (entry) {
+                const [oid, node] = entry;
+                this.templateNodes.set(oid, node);
+            }
+        }
+        
+        // Fill remaining space with other branch nodes if any
+        const remainingSpace = this.MAX_TEMPLATE_NODES - this.templateNodes.size;
+        const otherNodesToKeep = Math.min(otherBranchNodes.length, remainingSpace);
+        for (let i = 0; i < otherNodesToKeep; i++) {
+            const entry = otherBranchNodes[i];
+            if (entry) {
+                const [oid, node] = entry;
+                this.templateNodes.set(oid, node);
+            }
+        }
     }
 
     clearBranch(branchId: string): void {

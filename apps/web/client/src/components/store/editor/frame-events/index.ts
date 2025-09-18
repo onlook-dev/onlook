@@ -29,17 +29,21 @@ export class FrameEventManager {
 
     private async undebouncedHandleWindowMutated() {
         try {
-            await this.editorEngine.refreshLayers();
-            await this.editorEngine.overlay.refresh();
-            await this.validateAndCleanSelections();
+            // Only refresh if we have selected elements or are actively editing
+            if (this.editorEngine.elements.selected.length > 0 || this.editorEngine.text.isEditing) {
+                await this.editorEngine.refreshLayers();
+                await this.editorEngine.overlay.refresh();
+                await this.validateAndCleanSelections();
+            }
         } catch (error) {
             console.error('Error handling window mutation:', error);
         }
     }
 
-    handleWindowMutated = debounce(this.undebouncedHandleWindowMutated, 1000, {
+    handleWindowMutated = debounce(this.undebouncedHandleWindowMutated, 1500, {
         leading: true,
         trailing: true,
+        maxWait: 3000,
     });
 
     private isFrameInViewport(frame: Frame): boolean {

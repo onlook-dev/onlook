@@ -9,6 +9,8 @@ export class OverlayManager {
     state: OverlayState = new OverlayState();
     private canvasReactionDisposer?: () => void;
     private pendingRefreshPromise?: Promise<void>;
+    private elementCache = new Map<string, { element: DomElement; timestamp: number }>();
+    private CACHE_TTL = 500; // Cache element data for 500ms
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -23,6 +25,9 @@ export class OverlayManager {
             }),
             () => {
                 this.refresh();
+            },
+            {
+                delay: 50, // Add small delay to batch rapid changes
             },
         );
     }
@@ -45,6 +50,14 @@ export class OverlayManager {
     private performRefresh = async () => {
         this.state.removeHoverRect();
 
+        // Clean up old cache entries
+        const now = Date.now();
+        for (const [key, value] of this.elementCache.entries()) {
+            if (now - value.timestamp > this.CACHE_TTL) {
+                this.elementCache.delete(key);
+            }
+        }
+
         // Refresh click rects
         const newClickRects: { rect: RectDimensions; styles: DomElementStyles | null }[] = [];
         
@@ -52,24 +65,45 @@ export class OverlayManager {
         const MAX_ELEMENTS_TO_REFRESH = 10;
         const elementsToRefresh = this.editorEngine.elements.selected.slice(0, MAX_ELEMENTS_TO_REFRESH);
         
+        // Batch fetch elements if possible
+        const fetchPromises: Promise<void>[] = [];
+        
         for (const selectedElement of elementsToRefresh) {
-            const frameData = this.editorEngine.frames.get(selectedElement.frameId);
-            if (!frameData) {
-                // Removed console.error to prevent log spam
-                continue;
+            const cacheKey = `${selectedElement.frameId}-${selectedElement.domId}`;
+            const cached = this.elementCache.get(cacheKey);
+            
+            if (cached && now - cached.timestamp < this.CACHE_TTL) {
+                // Use cached element data
+                const frameData = this.editorEngine.frames.get(selectedElement.frameId);
+                if (frameData?.view) {
+                    const adaptedRect = adaptRectToCanvas(cached.element.rect, frameData.view);
+                    newClickRects.push({ rect: adaptedRect, styles: cached.element.styles });
+                }
+            } else {
+                // Fetch fresh data
+                const frameData = this.editorEngine.frames.get(selectedElement.frameId);
+                if (!frameData?.view) continue;
+                
+                const view = frameData.view;
+                const promise = view.getElementByDomId(selectedElement.domId, true)
+                    .then((el: DomElement) => {
+                        if (el) {
+                            // Cache the element data
+                            this.elementCache.set(cacheKey, { element: el, timestamp: now });
+                            const adaptedRect = adaptRectToCanvas(el.rect, view);
+                            newClickRects.push({ rect: adaptedRect, styles: el.styles });
+                        }
+                    })
+                    .catch(() => {
+                        // Silently ignore errors
+                    });
+                fetchPromises.push(promise);
             }
-            const { view } = frameData;
-            if (!view) {
-                // Removed console.error to prevent log spam
-                continue;
-            }
-            const el: DomElement = await view.getElementByDomId(selectedElement.domId, true);
-            if (!el) {
-                // Removed console.error to prevent log spam
-                continue;
-            }
-            const adaptedRect = adaptRectToCanvas(el.rect, view);
-            newClickRects.push({ rect: adaptedRect, styles: el.styles });
+        }
+        
+        // Wait for all fetches to complete
+        if (fetchPromises.length > 0) {
+            await Promise.all(fetchPromises);
         }
 
         this.state.removeClickRects();
@@ -150,6 +184,7 @@ export class OverlayManager {
         this.canvasReactionDisposer?.();
         this.canvasReactionDisposer = undefined;
         this.pendingRefreshPromise = undefined;
+        this.elementCache.clear();
         this.clearUI();
     };
 }

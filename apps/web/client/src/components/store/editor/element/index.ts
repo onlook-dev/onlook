@@ -1,10 +1,16 @@
 import type { CoreElementType, DomElement, DynamicType } from '@onlook/models';
 import type { RemoveElementAction } from '@onlook/models/actions';
 import { toast } from '@onlook/ui/sonner';
+import { throttle } from 'lodash';
 import { makeAutoObservable, runInAction } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
 import { adaptRectToCanvas } from '../overlay/utils';
+
+// Throttle console errors to prevent log spam during rapid clicks
+const throttledError = throttle((message: string, ...args: any[]) => {
+    console.error(message, ...args);
+}, 1000);
 
 export class ElementsManager {
     private _hovered: DomElement | undefined;
@@ -31,7 +37,7 @@ export class ElementsManager {
     mouseover(domEl: DomElement) {
         const frameData = this.editorEngine.frames.get(domEl.frameId);
         if (!frameData?.view) {
-            console.error('No frame view found');
+            throttledError('No frame view found');
             return;
         }
         if (this._hovered?.domId && this._hovered.domId === domEl.domId) {
@@ -84,12 +90,12 @@ export class ElementsManager {
             for (const domEl of domEls) {
                 const frameData = this.editorEngine.frames.get(domEl.frameId);
                 if (!frameData) {
-                    console.error('Frame data not found');
+                    throttledError('Frame data not found');
                     continue;
                 }
                 const { view } = frameData;
                 if (!view) {
-                    console.error('No frame view found');
+                    throttledError('No frame view found');
                     continue;
                 }
                 const adjustedRect = adaptRectToCanvas(domEl.rect, view);
@@ -138,7 +144,7 @@ export class ElementsManager {
     }
 
     emitError(error: string) {
-        console.error(error);
+        throttledError(error);
         toast.error('Cannot delete element', { description: error });
     }
 
@@ -152,7 +158,7 @@ export class ElementsManager {
             const frameId = selectedEl.frameId;
             const frameData = this.editorEngine.frames.get(frameId);
             if (!frameData?.view) {
-                console.error('No frame view found');
+                throttledError('No frame view found');
                 return;
             }
             const { shouldDelete, error } = await this.shouldDelete(selectedEl, frameData);
@@ -186,7 +192,7 @@ export class ElementsManager {
             removeAction.codeBlock = codeBlock;
 
             this.editorEngine.action.run(removeAction).catch((err) => {
-                console.error('Error deleting element', err);
+                throttledError('Error deleting element', err);
             });
         }
     }
@@ -202,7 +208,7 @@ export class ElementsManager {
 
         if (!instanceId) {
             if (!frameData.view) {
-                console.error('No frame view found');
+                throttledError('No frame view found');
                 return {
                     shouldDelete: false,
                     error: 'No frame view found',

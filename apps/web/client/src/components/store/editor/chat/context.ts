@@ -37,7 +37,7 @@ export class ChatContext {
                 
                 // Cancel any pending context update
                 if (this.pendingContextUpdate) {
-                    cancelAnimationFrame(this.pendingContextUpdate);
+                    clearTimeout(this.pendingContextUpdate);
                 }
                 
                 // Abort any in-flight async operations
@@ -50,7 +50,8 @@ export class ChatContext {
                 const signal = this.contextUpdateAbortController.signal;
                 
                 // Defer context update to prevent blocking UI
-                this.pendingContextUpdate = requestAnimationFrame(() => {
+                // Use setTimeout with longer delay for lower priority
+                this.pendingContextUpdate = window.setTimeout(() => {
                     if (!signal.aborted) {
                         this.getChatContext().then((context) => {
                             if (!signal.aborted) {
@@ -63,9 +64,9 @@ export class ChatContext {
                         });
                     }
                     this.pendingContextUpdate = undefined;
-                });
+                }, 300); // Delay context update by 300ms to prioritize UI
             },
-            { delay: 100 }  // Add small delay to batch rapid changes
+            { delay: 150 }  // Increase delay to further batch rapid changes
         );
     }
 
@@ -336,7 +337,7 @@ export class ChatContext {
     clear() {
         // Cancel pending updates
         if (this.pendingContextUpdate) {
-            cancelAnimationFrame(this.pendingContextUpdate);
+            clearTimeout(this.pendingContextUpdate);
             this.pendingContextUpdate = undefined;
         }
         
