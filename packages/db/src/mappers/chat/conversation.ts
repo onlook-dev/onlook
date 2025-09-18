@@ -4,9 +4,8 @@ import { type ChatConversation } from "@onlook/models";
 export const fromDbConversation = (conversation: DbConversation): ChatConversation => {
     return {
         ...conversation,
-        metadata: {
-            suggestions: conversation.suggestions || [],
-        }
+        title: conversation.displayName || null,
+        suggestions: conversation.suggestions || [],
     }
 }
 
@@ -15,6 +14,6 @@ export const toDbConversation = (conversation: ChatConversation): DbConversation
         ...conversation,
         projectId: conversation.projectId,
         displayName: conversation.title || null,
-        suggestions: conversation.metadata?.suggestions || [],
+        suggestions: conversation.suggestions || [],
     }
 }

@@ -1,3 +1,4 @@
+'use client';
 
 import type { SendMessage } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
