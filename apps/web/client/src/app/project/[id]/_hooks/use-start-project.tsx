@@ -9,7 +9,7 @@ import {
     MessageContextType,
     ProjectCreateRequestStatus,
     type ImageMessageContext,
-    type MessageContext
+    type MessageContext,
 } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { useEffect, useRef, useState } from 'react';
@@ -86,20 +86,35 @@ export const useStartProject = () => {
                 throw new Error('Project ID mismatch');
             }
 
-            const createContext: MessageContext[] = await editorEngine.chat.context.getCreateContext();
-            const imageContexts: ImageMessageContext[] = creationData.context.filter((context) => context.type === CreateRequestContextType.IMAGE).map((context) => ({
-                type: MessageContextType.IMAGE,
-                content: context.content,
-                mimeType: context.mimeType,
-                displayName: 'user image',
-            }));
-            const context: MessageContext[] = [...createContext, ...imageContexts];
-            const prompt = creationData.context.filter((context) => context.type === CreateRequestContextType.PROMPT).map((context) => (context.content)).join('\n');
+            const createContext: MessageContext[] =
+                await editorEngine.chat.context.getCreateContext();
+            const imageContexts: ImageMessageContext[] = creationData.context
+                .filter((context) => context.type === CreateRequestContextType.IMAGE)
+                .map((context) => ({
+                    type: MessageContextType.IMAGE,
+                    content: context.content,
+                    mimeType: context.mimeType,
+                    displayName: 'user image',
+                }));
 
-            await editorEngine.chat.sendMessage(
-                prompt,
-                ChatType.CREATE,
+            const context: MessageContext[] = [...createContext, ...imageContexts];
+            editorEngine.chat.context.context.push(...context);
+
+            const prompt = creationData.context
+                .filter((context) => context.type === CreateRequestContextType.PROMPT)
+                .map((context) => context.content)
+                .join('\n');
+
+            const [conversation] = await editorEngine.chat.conversation.getConversations(
+                editorEngine.projectId,
             );
+
+            if (!conversation) {
+                throw new Error('No conversation found');
+            }
+
+            await editorEngine.chat.conversation.selectConversation(conversation.id);
+            await editorEngine.chat.sendMessage(prompt, ChatType.CREATE);
 
             try {
                 await updateCreateRequest({

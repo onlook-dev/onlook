@@ -82,8 +82,6 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         async (content: string, type: ChatType) => {
             posthog.capture('user_send_message', { type });
 
-            console.log('[RERENDER] sendMessage');
-
             const context = await editorEngine.chat.context.getContextByChatType(type);
             const newMessage = getUserChatMessageFromString(content, context, conversationId);
 
@@ -96,18 +94,6 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                     context,
                 },
             });
-
-            // TODO: We're not blocking on attaching the commit here because this takes a while.
-            // this risks some commits not being attached to the message since it requires another message to be sent.
-            if (type !== ChatType.ASK) {
-                editorEngine.versions.createCommit(content, false).then(({ commit }) => {
-                    if (!commit) {
-                        throw new Error('Failed to create commit');
-                    }
-                    const message = attachCommitToUserMessage(commit, newMessage, conversationId);
-                    setMessages(jsonClone([...messagesRef.current, message]));
-                });
-            }
 
             return newMessage;
         },
@@ -157,22 +143,6 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 },
             });
 
-            // TODO: We're not blocking on attaching the commit here because this takes a while.
-            // this risks some commits not being attached to the message since it requires another message to be sent.
-            if (chatType !== ChatType.ASK) {
-                editorEngine.versions.createCommit(newContent, false).then(({ commit }) => {
-                    if (!commit) {
-                        throw new Error('Failed to create commit');
-                    }
-                    const messageWithCommit = attachCommitToUserMessage(
-                        commit,
-                        message,
-                        conversationId,
-                    );
-                    setMessages(jsonClone([...updatedMessages, messageWithCommit]));
-                });
-            }
-
             return message;
         },
         [
@@ -186,6 +156,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     );
 
     useEffect(() => {
+        // Actions to handle when the chat is finished
         if (finishReason && finishReason !== 'tool-calls') {
             setFinishReason(null);
             setSuggestions([]);
@@ -200,7 +171,48 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                     console.error('Error fetching suggestions:', error);
                 }
             };
+
+            const applyCommit = async () => {
+                const lastUserMessage = messagesRef.current.findLast((m) => m.role === 'user');
+
+                if (!lastUserMessage) {
+                    return;
+                }
+
+                const content = lastUserMessage.parts
+                    .map((p) => {
+                        if (p.type === 'text') {
+                            return p.text;
+                        }
+                        return '';
+                    })
+                    .join('');
+
+                if (!content) {
+                    return;
+                }
+
+                const { commit } = await editorEngine.versions.createCommit(content, false);
+                if (!commit) {
+                    throw new Error('Failed to create commit');
+                }
+
+                const messageWithCommit = attachCommitToUserMessage(
+                    commit,
+                    lastUserMessage,
+                    conversationId,
+                );
+                setMessages(
+                    jsonClone(
+                        messagesRef.current.map((m) =>
+                            m.id === lastUserMessage.id ? messageWithCommit : m,
+                        ),
+                    ),
+                );
+            };
+
             void fetchSuggestions();
+            void applyCommit();
         }
     }, [finishReason, conversationId]);
 

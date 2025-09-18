@@ -7,17 +7,19 @@ interface ChatTabProps {
 }
 
 export const ChatTab = ({ conversationId, projectId }: ChatTabProps) => {
-    const { data: initialMessages } = api.chat.message.getAll.useQuery(
+    const { data: initialMessages, isLoading } = api.chat.message.getAll.useQuery(
         { conversationId: conversationId },
         { enabled: !!conversationId },
     );
 
-    if (!initialMessages) {
+    if (!initialMessages || isLoading) {
         return null;
     }
 
     return (
         <ChatTabContent
+            // Used to force re-render the use-chat hook when the conversationId changes
+            key={conversationId}
             conversationId={conversationId}
             projectId={projectId}
             initialMessages={initialMessages}
