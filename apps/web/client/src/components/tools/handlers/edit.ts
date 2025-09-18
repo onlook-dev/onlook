@@ -75,7 +75,7 @@ export async function handleSearchReplaceMultiEditFileTool(args: z.infer<typeof 
                 if (secondIndex !== -1) {
                     throw new Error(`Multiple occurrences found for "${edit.old_string}". Use replace_all=true or provide more context.`);
                 }
-                
+
                 // Simulate the edit for next validation
                 tempContent = tempContent.replace(edit.old_string, edit.new_string);
             } else {
@@ -148,7 +148,7 @@ export async function handleFuzzyEditFileTool(
 
     const metadata = {
         projectId: editorEngine.projectId,
-        conversationId: editorEngine.chat.conversation.current?.conversation.id,
+        conversationId: editorEngine.chat.conversation.current?.id,
     };
 
     const updatedContent = await api.code.applyDiff.mutate({

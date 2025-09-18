@@ -35,7 +35,7 @@ export class ChatContext {
             case ChatType.ASK:
                 return await this.getChatContext();
             case ChatType.FIX:
-                return this.getErrorContext([]);
+                return this.getErrorContext();
             default:
                 assertNever(type);
         }
@@ -193,8 +193,8 @@ export class ChatContext {
         ];
     }
 
-    getErrorContext(errors: ParsedError[]): ErrorMessageContext[] {
-        const branchErrors = errors;
+    getErrorContext(): ErrorMessageContext[] {
+        const branchErrors = this.editorEngine.branches.getAllErrors();
         // Group errors by branch for context
         const branchGroups = new Map<string, ParsedError[]>();
         branchErrors.forEach(error => {

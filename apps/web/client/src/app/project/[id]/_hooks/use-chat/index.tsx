@@ -5,6 +5,7 @@ import { handleToolCall } from '@/components/tools';
 import { api } from '@/trpc/client';
 import { useChat as useAiChat } from '@ai-sdk/react';
 import { ChatType, type ChatMessage, type ChatSuggestion } from '@onlook/models';
+import { jsonClone } from '@onlook/utility';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import { usePostHog } from 'posthog-js/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -13,7 +14,6 @@ import {
     getUserChatMessageFromString,
     prepareMessagesForSuggestions,
 } from './utils';
-import { jsonClone } from '@onlook/utility';
 
 export type SendMessage = (content: string, type: ChatType) => Promise<ChatMessage>;
 export type EditMessage = (

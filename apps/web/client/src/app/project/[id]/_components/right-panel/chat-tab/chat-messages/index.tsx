@@ -39,8 +39,6 @@ export const ChatMessages = observer(
             };
         }, [baseMessages, isStreaming]);
 
-        console.log('messages', messages.length, streamedMessage);
-
         const renderMessage = useCallback(
             (message: ChatMessage, index: number) => {
                 let messageNode;
