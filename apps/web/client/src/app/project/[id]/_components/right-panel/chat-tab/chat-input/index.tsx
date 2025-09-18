@@ -351,7 +351,10 @@ export const ChatInput = observer(({
                 }}
             />
             <div className="flex flex-col w-full p-4">
-                <InputContextPills />
+                <div className="flex flex-row flex-wrap items-center gap-1.5 mb-1">
+                    {/* <ContextWheel /> */}
+                    <InputContextPills />
+                </div>
                 <Textarea
                     ref={textareaRef}
                     disabled={disabled}

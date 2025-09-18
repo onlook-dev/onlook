@@ -1,5 +1,5 @@
 import type { ChatTools } from '@onlook/ai';
-import type { JSONValue, UIMessage, UIMessagePart } from 'ai';
+import type { JSONValue, LanguageModelUsage, UIMessage, UIMessagePart } from 'ai';
 import type { MessageCheckpoints } from './checkpoint.ts';
 import type { MessageContext } from './context.ts';
 
@@ -9,6 +9,7 @@ export type ChatMetadata = {
     context: MessageContext[];
     checkpoints: MessageCheckpoints[];
     finishReason?: string;
+    usage?: LanguageModelUsage;
 };
 
 export type ChatProviderMetadata = Record<string, Record<string, JSONValue>>;

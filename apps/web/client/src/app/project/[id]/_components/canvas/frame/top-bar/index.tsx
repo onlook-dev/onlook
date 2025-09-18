@@ -8,15 +8,17 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { HoverOnlyTooltip } from '../../../editor-bar/hover-tooltip';
 import { BranchDisplay } from './branch';
+import { createMouseMoveHandler } from './helpers';
 import { PageSelector } from './page-selector';
 
 export const TopBar = observer(
-    ({ frame }: { frame: Frame }) => {
+    ({ frame, isInDragSelection = false }: { frame: Frame; isInDragSelection?: boolean }) => {
         const editorEngine = useEditorEngine();
         const isSelected = editorEngine.frames.isSelected(frame.id);
         const topBarRef = useRef<HTMLDivElement>(null);
         const toolBarRef = useRef<HTMLDivElement>(null);
         const [shouldShowExternalLink, setShouldShowExternalLink] = useState(true);
+        const mouseDownRef = useRef<{ x: number; y: number; time: number } | null>(null);
 
         useEffect(() => {
             const calculateVisibility = () => {
@@ -54,56 +56,20 @@ export const TopBar = observer(
         }, [isSelected, editorEngine.canvas.scale, frame.dimension.width]);
 
         const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-            e.preventDefault();
-            e.stopPropagation();
-            clearElements();
-
-            const startX = e.clientX;
-            const startY = e.clientY;
-            const startPositionX = frame.position.x;
-            const startPositionY = frame.position.y;
-
-            const handleMove = async (e: MouseEvent) => {
-                clearElements();
-                const scale = editorEngine.canvas.scale;
-                const deltaX = (e.clientX - startX) / scale;
-                const deltaY = (e.clientY - startY) / scale;
-
-                let newPosition = {
-                    x: startPositionX + deltaX,
-                    y: startPositionY + deltaY,
-                };
-
-                if (editorEngine.snap.config.enabled && !e.ctrlKey && !e.metaKey) {
-                    const snapTarget = editorEngine.snap.calculateSnapTarget(
-                        frame.id,
-                        newPosition,
-                        frame.dimension
-                    );
-
-                    if (snapTarget) {
-                        newPosition = snapTarget.position;
-                        editorEngine.snap.showSnapLines(snapTarget.snapLines);
-                    } else {
-                        editorEngine.snap.hideSnapLines();
-                    }
-                } else {
-                    editorEngine.snap.hideSnapLines();
-                }
-
-                editorEngine.frames.updateAndSaveToStorage(frame.id, { position: newPosition });
+            mouseDownRef.current = {
+                x: e.clientX,
+                y: e.clientY,
+                time: Date.now()
             };
 
-            const endMove = (e: MouseEvent) => {
-                e.preventDefault();
-                e.stopPropagation();
-                editorEngine.snap.hideSnapLines();
-                window.removeEventListener('mousemove', handleMove);
-                window.removeEventListener('mouseup', endMove);
-            };
+            const selectedFrames = editorEngine.frames.selected.map(frameData => frameData.frame);
+            const framesToMove = selectedFrames.length > 0 ? selectedFrames : [frame];
 
-            window.addEventListener('mousemove', handleMove);
-            window.addEventListener('mouseup', endMove);
+            createMouseMoveHandler(e, {
+                editorEngine,
+                selectedFrames: framesToMove,
+                clearElements
+            });
         };
 
         const clearElements = () => {
@@ -124,6 +90,24 @@ export const TopBar = observer(
         };
 
         const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+            if (!mouseDownRef.current) {
+                return;
+            }
+
+            const currentTime = Date.now();
+            const timeDiff = currentTime - mouseDownRef.current.time;
+            const distance = Math.sqrt(
+                Math.pow(e.clientX - mouseDownRef.current.x, 2) + 
+                Math.pow(e.clientY - mouseDownRef.current.y, 2)
+            );
+
+            // Don't register click if it was a long hold (>200ms) or significant movement (>5px)
+            if (timeDiff > 200 || distance > 5) {
+                mouseDownRef.current = null;
+                return;
+            }
+
+            mouseDownRef.current = null;
             editorEngine.frames.select([frame], e.shiftKey);
         };
 
@@ -131,13 +115,21 @@ export const TopBar = observer(
             <div
                 ref={topBarRef}
                 className={cn(
-                    'rounded-lg bg-background-primary/10  hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
+                    'bg-blend-multiply hover:shadow m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
                     isSelected && 'text-teal-400 fill-teal-400',
+                    !isSelected && isInDragSelection && 'text-teal-500 fill-teal-500',
                 )}
                 style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                    ...(isSelected && { backgroundColor: 'rgba(20, 184, 166, 0.1)' }),
                     height: `${28 / editorEngine.canvas.scale}px`,
                     width: `${frame.dimension.width}px`,
-                    marginBottom: `${4 / editorEngine.canvas.scale}px`,
+                    marginBottom: `${8 / editorEngine.canvas.scale}px`,
+                    borderRadius: `${8 / editorEngine.canvas.scale}px`,
+                    paddingTop: `${16 / editorEngine.canvas.scale}px`,
+                    paddingBottom: `${16 / editorEngine.canvas.scale}px`,
+                    paddingLeft: `${4 / editorEngine.canvas.scale}px`,
+                    paddingRight: `${4 / editorEngine.canvas.scale}px`,
                 }}
                 onMouseDown={handleMouseDown}
                 onClick={handleClick}
@@ -150,17 +142,12 @@ export const TopBar = observer(
                     }}
                     ref={toolBarRef}
                 >
-                    <HoverOnlyTooltip content="Hold to drag" side="top" className="mb-1" hideArrow>
-                        <div className="cursor-pointer rounded-lg h-auto px-1 py-1 flex items-center justify-center hover:bg-background-secondary -ml-2 opacity-70">
-                            <Icons.DragHandleDots />
-                        </div>
-                    </HoverOnlyTooltip>
                     <HoverOnlyTooltip content="Go back" side="top" className="mb-1" hideArrow>
                         <Button
                             variant="ghost"
                             size="sm"
                             className={cn(
-                                'cursor-pointer rounded-lg h-auto px-1 py-1',
+                                'cursor-pointer rounded-lg h-auto px-1 py-1 hover:!bg-transparent focus:!bg-transparent active:!bg-transparent',
                                 !editorEngine.frames.navigation.canGoBack(frame.id) && 'hidden',
                                 !isSelected && 'hidden',
                             )}
@@ -175,7 +162,7 @@ export const TopBar = observer(
                             variant="ghost"
                             size="sm"
                             className={cn(
-                                'cursor-pointer rounded-lg h-auto px-1 py-1',
+                                'cursor-pointer rounded-lg h-auto px-1 py-1 hover:!bg-transparent focus:!bg-transparent active:!bg-transparent',
                                 !editorEngine.frames.navigation.canGoForward(frame.id) && 'hidden',
                                 !isSelected && 'hidden',
                             )}
@@ -190,7 +177,7 @@ export const TopBar = observer(
                             variant="ghost"
                             size="sm"
                             className={cn(
-                                'cursor-pointer rounded-lg h-auto px-1 py-1',
+                                'cursor-pointer rounded-lg h-auto hover:!bg-transparent focus:!bg-transparent active:!bg-transparent',
                                 !isSelected && 'hidden',
                             )}
                             onClick={handleReload}
@@ -199,6 +186,7 @@ export const TopBar = observer(
                         </Button>
                     </HoverOnlyTooltip>
                     <BranchDisplay frame={frame} />
+                    <span className={cn("ml-1.25 mb-0.5", isSelected ? "text-teal-700" : "text-foreground-secondary/50")}>·</span>
                     <PageSelector frame={frame} />
                 </div>
                 <HoverOnlyTooltip content="Preview in new tab" side="top" hideArrow className="mb-1">
@@ -215,7 +203,7 @@ export const TopBar = observer(
                             pointerEvents: shouldShowExternalLink ? 'auto' : 'none',
                         }}
                     >
-                        <Button variant="ghost" size="icon" className="rounded-lg">
+                        <Button variant="ghost" size="icon" className="rounded-lg hover:!bg-transparent focus:!bg-transparent active:!bg-transparent">
                             <Icons.ExternalLink />
                         </Button>
                     </Link>

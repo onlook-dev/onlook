@@ -1,8 +1,7 @@
 import { useEditorEngine } from "@/components/store/editor";
 import { BranchTabValue, LeftPanelTabValue, type Branch } from "@onlook/models";
 import {
-    DropdownMenuItem,
-    DropdownMenuSeparator,
+    DropdownMenuItem
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
 import { useState } from "react";
@@ -67,44 +66,26 @@ export function BranchControls({
     };
 
     return (
-        <>
-            <div className="p-1">
-                <DropdownMenuItem
-                    className="flex items-center gap-2 p-2"
-                    onSelect={handleForkBranch}
-                    disabled={isForking}
-                >
-                    {isForking ? (
-                        <Icons.LoadingSpinner className="h-4 w-4" />
-                    ) : (
-                        <Icons.Commit className="h-4 w-4" />
-                    )}
-                    <span>{isForking ? "Forking..." : "Fork into a new Branch"}</span>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem
-                    className="flex items-center gap-2 p-2"
-                    onSelect={handleCreateBlankSandbox}
-                    disabled={isCreatingBlank}
-                >
-                    {isCreatingBlank ? (
-                        <Icons.LoadingSpinner className="h-4 w-4" />
-                    ) : (
-                        <Icons.Plus className="h-4 w-4" />
-                    )}
-                    <span>{isCreatingBlank ? "Creating..." : "Create blank sandbox"}</span>
-                </DropdownMenuItem>
-
-                <DropdownMenuSeparator />
-
-                <DropdownMenuItem
-                    className="flex items-center gap-2 p-2"
-                    onSelect={handleManageBranches}
-                >
-                    <Icons.Gear className="h-4 w-4" />
-                    <span>Manage Branch</span>
-                </DropdownMenuItem>
-            </div>
-        </>
+        <div className="p-1">
+            <DropdownMenuItem
+                className="flex items-center gap-2 p-2"
+                onSelect={handleForkBranch}
+                disabled={isForking}
+            >
+                {isForking ? (
+                    <Icons.LoadingSpinner className="h-4 w-4" />
+                ) : (
+                    <Icons.Branch className="h-4 w-4" />
+                )}
+                <span>{isForking ? "Forking..." : "Fork into a new Branch"}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+                className="flex items-center gap-2 p-2"
+                onSelect={handleManageBranches}
+            >
+                <Icons.Gear className="h-4 w-4" />
+                <span>Manage Branch</span>
+            </DropdownMenuItem>
+        </div>
     );
 }

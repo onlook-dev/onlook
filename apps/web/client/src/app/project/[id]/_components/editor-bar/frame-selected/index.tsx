@@ -4,7 +4,6 @@ import { useEditorEngine } from '@/components/store/editor';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { BranchDisplay } from '../../canvas/frame/top-bar/branch';
-import { PageSelector } from '../../canvas/frame/top-bar/page-selector';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { useMeasureGroup } from '../hooks/use-measure-group';
 import { OverflowMenu } from '../overflow-menu';
@@ -32,28 +31,10 @@ export const FrameSelected = observer(({ availableWidth = 0 }: { availableWidth?
             ]
         },
         {
-            key: 'page',
-            label: 'Page',
+            key: 'rotate',
+            label: 'Rotate',
             components: [
-                <PageSelector
-                    key="page"
-                    frame={frameData.frame}
-                    tooltipSide="bottom"
-                    showIcon={true}
-                    buttonClassName="px-3 py-2"
-                />
-            ]
-        },
-        {
-            key: 'branch',
-            label: 'Branch',
-            components: [
-                <BranchDisplay
-                    key="branch"
-                    frame={frameData.frame}
-                    tooltipSide="bottom"
-                    buttonClassName="px-3 py-2"
-                />,
+                <RotateGroup key="rotate" frameData={frameData} />
             ]
         },
         {
@@ -70,13 +51,6 @@ export const FrameSelected = observer(({ availableWidth = 0 }: { availableWidth?
                 <ThemeGroup key="theme" frameData={frameData} />
             ]
         },
-        {
-            key: 'rotate',
-            label: 'Rotate',
-            components: [
-                <RotateGroup key="rotate" frameData={frameData} />
-            ]
-        }
     ];
 
     const { visibleCount } = useMeasureGroup({
@@ -87,7 +61,7 @@ export const FrameSelected = observer(({ availableWidth = 0 }: { availableWidth?
     const overflowGroups = WINDOW_GROUPS.slice(visibleCount);
 
     return (
-        <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden">
+        <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden px-0.5">
             {visibleGroups.map((group, groupIdx) => (
                 <React.Fragment key={group.key}>
                     {groupIdx > 0 && <InputSeparator />}

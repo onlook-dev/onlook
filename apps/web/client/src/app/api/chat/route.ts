@@ -2,7 +2,7 @@ import { api } from '@/trpc/server';
 import { trackEvent } from '@/utils/analytics/server';
 import { convertToStreamMessages, getToolSetFromType } from '@onlook/ai';
 import { toDbMessage } from '@onlook/db';
-import { ChatType, type ChatMessage } from '@onlook/models';
+import { ChatType, type ChatMessage, type ChatMetadata } from '@onlook/models';
 import { stepCountIs, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
@@ -123,7 +123,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
             }
         })
 
-        return result.toUIMessageStreamResponse(
+        return result.toUIMessageStreamResponse<ChatMessage>(
             {
                 originalMessages: messages,
                 generateMessageId: () => uuidv4(),
@@ -134,7 +134,8 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                         context: [],
                         checkpoints: [],
                         finishReason: part.type === 'finish-step' ? part.finishReason : undefined,
-                    }
+                        usage: part.type === 'finish-step' ? part.usage : undefined,
+                    } satisfies ChatMetadata;
                 },
                 onFinish: async ({ messages: finalMessages }) => {
                     const messagesToStore = finalMessages
