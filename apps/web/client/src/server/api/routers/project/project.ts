@@ -482,31 +482,44 @@ export const projectRouter = createTRPCRouter({
         }
 
         return await ctx.db.transaction(async (tx) => {
-            // 1. Fork the sandbox from the default branch
-            // We need to determine the sandbox port from existing frames
+            // 1. Fork sandboxes for all branches that have them
             const port = extractCsbPort(defaultBranch.frames) ?? 3000;
             
             // Import the sandbox fork function here since it's not exposed
             const { getStaticCodeProvider } = await import('@onlook/code-provider');
             const { CodeProvider } = await import('@onlook/code-provider');
             
-            let newSandboxId: string;
-            let previewUrl: string;
+            // Map to store new sandbox IDs for each branch
+            const branchSandboxMap: Record<string, { sandboxId: string; previewUrl: string }> = {};
             
             try {
                 const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
-                const clonedSandbox = await CodesandboxProvider.createProject({
-                    source: 'sandbox',
-                    id: defaultBranch.sandboxId,
-                    title: `${input.name || sourceProject.name} (Clone)`,
-                    tags: ['clone', ctx.user.id],
-                });
                 
-                newSandboxId = clonedSandbox.id;
-                previewUrl = getSandboxPreviewUrl(newSandboxId, port);
+                // Clone sandbox for each branch that has one
+                for (const sourceBranch of sourceBranches) {
+                    if (sourceBranch.sandboxId) {
+                        const clonedSandbox = await CodesandboxProvider.createProject({
+                            source: 'sandbox',
+                            id: sourceBranch.sandboxId,
+                            title: `${input.name || sourceProject.name} (Clone) - ${sourceBranch.name}`,
+                            tags: ['clone', ctx.user.id, sourceBranch.name],
+                        });
+                        
+                        branchSandboxMap[sourceBranch.id] = {
+                            sandboxId: clonedSandbox.id,
+                            previewUrl: getSandboxPreviewUrl(clonedSandbox.id, port),
+                        };
+                    }
+                }
             } catch (error) {
-                console.error('Error cloning sandbox:', error);
-                throw new Error('Failed to clone sandbox');
+                console.error('Error cloning sandboxes:', error);
+                throw new Error('Failed to clone sandboxes');
+            }
+            
+            // Get the default branch's new sandbox info for main project creation
+            const defaultBranchSandbox = branchSandboxMap[defaultBranch.id];
+            if (!defaultBranchSandbox) {
+                throw new Error('Failed to create sandbox for default branch');
             }
 
             // 2. Create the new project
@@ -524,13 +537,14 @@ export const projectRouter = createTRPCRouter({
             // 3. Clone all branches from the source project
             const clonedBranches: typeof branches.$inferSelect[] = [];
             for (const sourceBranch of sourceBranches) {
+                const branchSandbox = branchSandboxMap[sourceBranch.id];
                 const newBranchData = {
                     id: crypto.randomUUID(),
                     projectId: newProject.id,
                     name: sourceBranch.name,
                     description: sourceBranch.description,
                     isDefault: sourceBranch.isDefault,
-                    sandboxId: sourceBranch.isDefault ? newSandboxId : sourceBranch.sandboxId,
+                    sandboxId: branchSandbox?.sandboxId || sourceBranch.sandboxId,
                     gitBranch: sourceBranch.gitBranch,
                     gitCommitSha: sourceBranch.gitCommitSha,
                     gitRepoUrl: sourceBranch.gitRepoUrl,
@@ -581,12 +595,16 @@ export const projectRouter = createTRPCRouter({
                 const clonedBranch = clonedBranches.find(cb => cb.name === sourceBranch.name);
                 if (!clonedBranch) continue;
 
+                // Get the new sandbox URL for this branch
+                const branchSandbox = branchSandboxMap[sourceBranch.id];
+                const frameUrl = branchSandbox?.previewUrl || defaultBranchSandbox.previewUrl;
+
                 for (const sourceFrame of sourceBranch.frames) {
                     const newFrameData = {
                         id: crypto.randomUUID(),
                         canvasId: newCanvas.id,
                         branchId: clonedBranch.id,
-                        url: sourceBranch.isDefault ? previewUrl : sourceFrame.url,
+                        url: frameUrl,
                         x: sourceFrame.x,
                         y: sourceFrame.y,
                         width: sourceFrame.width,
