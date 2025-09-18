@@ -86,7 +86,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 if (!commit) {
                     throw new Error('Failed to create commit');
                 }
-                await attachCommitToUserMessage(commit, newMessage, conversationId);
+                attachCommitToUserMessage(commit, newMessage, conversationId);
             }
             setMessages(jsonClone([...messagesRef.current, newMessage]));
 
@@ -115,6 +115,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         async (messageId: string, newContent: string, chatType: ChatType) => {
             posthog.capture('user_edit_message', { type: ChatType.EDIT });
 
+            console.log('[EDIT]start editing message');
             const messageIndex = messagesRef.current.findIndex((m) => m.id === messageId);
             const message = messagesRef.current[messageIndex];
 
@@ -125,13 +126,18 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             const updatedMessages = messagesRef.current.slice(0, messageIndex);
 
             if (chatType !== ChatType.ASK && message.role === 'user') {
+                console.log('[EDIT]create commit');
+
                 const { commit } = await editorEngine.versions.createCommit(newContent, false);
+                console.log('[EDIT]commit created');
                 if (!commit) {
                     throw new Error('Failed to create commit');
                 }
-                await attachCommitToUserMessage(commit, message, conversationId);
+                attachCommitToUserMessage(commit, message, conversationId);
             }
+            console.log('[EDIT]start fetching context');
             const context = await editorEngine.chat.context.getContextByChatType(chatType);
+            console.log('[EDIT]context fetched');
 
             message.metadata = { 
                 ...message.metadata,

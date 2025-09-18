@@ -34,14 +34,9 @@ export const getUserChatMessageFromString = (
     }
 }
 
-export const attachCommitToUserMessage = async (commit: GitCommit, message: ChatMessage, conversationId: string): Promise<void> => {
-    // Vercel converts createdAt to a string, which our API doesn't accept.
-    const oldCheckpoints = (message.metadata?.checkpoints ?? []).map((checkpoint) => ({
-        ...checkpoint,
-        createdAt: new Date(checkpoint.createdAt),
-    }));
+export const attachCommitToUserMessage = (commit: GitCommit, message: ChatMessage, conversationId: string) => {
     const newCheckpoints = [
-        ...oldCheckpoints,
+        ...message.metadata?.checkpoints ?? [],
         {
             type: MessageCheckpointType.GIT,
             oid: commit.oid,
@@ -56,8 +51,4 @@ export const attachCommitToUserMessage = async (commit: GitCommit, message: Chat
         checkpoints: newCheckpoints,
         context: message.metadata?.context ?? [],
     };
-    await api.chat.message.updateCheckpoints.mutate({
-        messageId: message.id,
-        checkpoints: newCheckpoints,
-    });
 }
