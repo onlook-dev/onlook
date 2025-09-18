@@ -1,7 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import type { MessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
-import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
 import { useMemo } from 'react';
@@ -35,12 +34,7 @@ export const InputContextPills = observer(() => {
     }, [editorEngine.chat.context.context]);
 
     return (
-        <div
-            className={cn(
-                'flex flex-row flex-wrap w-full gap-1.5 text-micro mb-1 text-foreground-secondary',
-                editorEngine.chat.context.context.length > 0 ? 'min-h-6' : 'h-0',
-            )}
-        >
+        <div className="flex flex-row flex-wrap items-center gap-1.5">
             <AnimatePresence mode="popLayout">
                 {sortedContexts.map((context: MessageContext, index: number) => {
                     if (context.type === MessageContextType.IMAGE) {

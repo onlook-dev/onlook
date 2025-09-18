@@ -3,13 +3,16 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { EditorAttributes } from '@onlook/constants';
 import { EditorMode } from '@onlook/models';
+import { throttle } from 'lodash';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Frames } from './frames';
 import { HotkeysArea } from './hotkeys';
 import { Overlay } from './overlay';
+import { DragSelectOverlay } from './overlay/drag-select';
 import { PanOverlay } from './overlay/pan';
 import { RecenterCanvasButton } from './recenter-canvas-button';
+import { getFramesInSelection, getSelectedFrameData } from './selection-utils';
 
 const ZOOM_SENSITIVITY = 0.006;
 const PAN_SENSITIVITY = 0.52;
@@ -25,12 +28,72 @@ export const Canvas = observer(() => {
     const containerRef = useRef<HTMLDivElement>(null);
     const scale = editorEngine.canvas.scale;
     const position = editorEngine.canvas.position;
+    const [isDragSelecting, setIsDragSelecting] = useState(false);
+    const [dragSelectStart, setDragSelectStart] = useState({ x: 0, y: 0 });
+    const [dragSelectEnd, setDragSelectEnd] = useState({ x: 0, y: 0 });
+    const [framesInSelection, setFramesInSelection] = useState<Set<string>>(new Set());
 
     const handleCanvasMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
         if (event.target !== containerRef.current) {
             return;
         }
-        editorEngine.clearUI();
+
+        // Start drag selection only in design mode and left mouse button
+        if (editorEngine.state.editorMode === EditorMode.DESIGN && event.button === 0) {
+            const rect = containerRef.current.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            setIsDragSelecting(true);
+            setDragSelectStart({ x, y });
+            setDragSelectEnd({ x, y });
+            setFramesInSelection(new Set());
+
+            // Set a flag in the editor engine to suppress hover effects
+            editorEngine.state.isDragSelecting = true;
+
+            // Clear existing selections if not shift-clicking
+            if (!event.shiftKey) {
+                editorEngine.clearUI();
+                editorEngine.frames.deselectAll();
+            }
+        } else if (event.button === 0) {
+            // Only clear UI for left clicks that don't start drag selection
+            editorEngine.clearUI();
+        }
+    };
+
+    const updateFramesInSelection = useCallback((start: { x: number; y: number }, end: { x: number; y: number }) => {
+        const intersectingFrameIds = getFramesInSelection(
+            editorEngine,
+            start,
+            end,
+            position,
+            scale
+        );
+        setFramesInSelection(new Set(intersectingFrameIds));
+    }, [position, scale, editorEngine]);
+
+    const handleCanvasMouseMove = useCallback(
+        throttle((event: React.MouseEvent<HTMLDivElement>) => {
+            if (!isDragSelecting || !containerRef.current) {
+                return;
+            }
+
+            const rect = containerRef.current.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            setDragSelectEnd({ x, y });
+
+            // Update frames in selection for visual feedback
+            updateFramesInSelection(dragSelectStart, { x, y });
+        }, 16), // ~60fps
+        [isDragSelecting, dragSelectStart, updateFramesInSelection]
+    );
+
+    const handleCanvasMouseUp = (event: React.MouseEvent<HTMLDivElement>) => {
+        // Mouse up is now handled by the global listener in useEffect
+        // This function is kept for consistency but the logic is in the global handler
     };
 
     const handleZoom = useCallback(
@@ -156,9 +219,46 @@ export const Canvas = observer(() => {
                 div.removeEventListener('wheel', handleWheel);
                 div.removeEventListener('mousedown', middleMouseButtonDown);
                 div.removeEventListener('mouseup', middleMouseButtonUp);
+                handleCanvasMouseMove.cancel?.(); // Clean up throttled function
             };
         }
-    }, [handleWheel, middleMouseButtonDown, middleMouseButtonUp]);
+    }, [handleWheel, middleMouseButtonDown, middleMouseButtonUp, handleCanvasMouseMove]);
+
+    // Global mouseup listener to handle drag termination outside canvas
+    useEffect(() => {
+        if (isDragSelecting) {
+            const handleGlobalMouseUp = (event: MouseEvent) => {
+                try {
+                    // Get frames that intersect with the selection rectangle
+                    const selectedFrames = getSelectedFrameData(
+                        editorEngine,
+                        dragSelectStart,
+                        dragSelectEnd,
+                        position,
+                        scale
+                    );
+
+                    // Select the frames if any were found in the selection
+                    if (selectedFrames.length > 0) {
+                        editorEngine.frames.select(
+                            selectedFrames.map(fd => fd.frame),
+                            event.shiftKey // multiselect if shift is held
+                        );
+                    }
+                } catch (error) {
+                    console.warn('Error during drag selection:', error);
+                } finally {
+                    // Always clean up drag selection state, even if selection fails
+                    setIsDragSelecting(false);
+                    setFramesInSelection(new Set());
+                    editorEngine.state.isDragSelecting = false;
+                }
+            };
+
+            window.addEventListener('mouseup', handleGlobalMouseUp);
+            return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+        }
+    }, [isDragSelecting, dragSelectStart, dragSelectEnd, position, scale, editorEngine]);
 
     return (
         <HotkeysArea>
@@ -166,11 +266,30 @@ export const Canvas = observer(() => {
                 ref={containerRef}
                 className="overflow-hidden bg-background-onlook flex flex-grow relative"
                 onMouseDown={handleCanvasMouseDown}
+                onMouseMove={handleCanvasMouseMove}
+                onMouseUp={handleCanvasMouseUp}
+                onMouseLeave={(e) => {
+                    // Only terminate drag if no mouse button is pressed
+                    // Note: The global mouseup listener will handle the actual cleanup
+                    // This is just an additional safety check for when mouse leaves without buttons pressed
+                    if (e.buttons === 0 && isDragSelecting) {
+                        setIsDragSelecting(false);
+                        setFramesInSelection(new Set());
+                        editorEngine.state.isDragSelecting = false;
+                    }
+                }}
             >
                 <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
-                    <Frames />
+                    <Frames framesInDragSelection={framesInSelection} />
                 </div>
                 <RecenterCanvasButton />
+                <DragSelectOverlay
+                    startX={dragSelectStart.x}
+                    startY={dragSelectStart.y}
+                    endX={dragSelectEnd.x}
+                    endY={dragSelectEnd.y}
+                    isSelecting={isDragSelecting}
+                />
                 <Overlay />
                 <PanOverlay
                     clampPosition={(position: { x: number; y: number }) =>

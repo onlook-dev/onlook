@@ -46,7 +46,7 @@ export function SquareProjectCard({
 
     return (
         <div
-            className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-black/20 group"
+            className="cursor-pointer transition-all duration-300 group"
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
@@ -70,7 +70,7 @@ export function SquareProjectCard({
 
                 <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
 
-                <div className="absolute inset-0 bg-background/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div className="absolute inset-0 bg-background/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-30">
                     <EditAppButton
                         project={project}
                         onClick={(e) => {
@@ -80,7 +80,7 @@ export function SquareProjectCard({
                     />
                 </div>
 
-                <div className="absolute bottom-0 left-0 right-0 p-3">
+                <div className="absolute bottom-0 left-0 right-0 p-3 z-10 group-hover:opacity-50 transition-opacity duration-300">
                     <div className="text-white font-medium text-sm mb-1 truncate drop-shadow-lg">
                         {HighlightText ? (
                             <HighlightText text={project.name} searchQuery={searchQuery} />

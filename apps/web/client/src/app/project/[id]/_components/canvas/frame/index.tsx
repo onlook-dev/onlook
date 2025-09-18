@@ -2,6 +2,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { type Frame } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
+import { colors } from '@onlook/ui/tokens';
 import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
@@ -11,12 +12,13 @@ import { RightClickMenu } from './right-click';
 import { TopBar } from './top-bar';
 import { FrameComponent, type IFrameView } from './view';
 
-export const FrameView = observer(({ frame }: { frame: Frame }) => {
+export const FrameView = observer(({ frame, isInDragSelection = false }: { frame: Frame; isInDragSelection?: boolean }) => {
     const editorEngine = useEditorEngine();
     const iFrameRef = useRef<IFrameView>(null);
     const [isResizing, setIsResizing] = useState(false);
     const [reloadKey, setReloadKey] = useState(0);
     const [hasTimedOut, setHasTimedOut] = useState(false);
+    const isSelected = editorEngine.frames.isSelected(frame.id);
 
     // Check if sandbox is connecting for this frame's branch
     const branchData = editorEngine.branches.getBranchDataById(frame.branchId);
@@ -58,11 +60,14 @@ export const FrameView = observer(({ frame }: { frame: Frame }) => {
             style={{ transform: `translate(${frame.position.x}px, ${frame.position.y}px)` }}
         >
             <RightClickMenu>
-                <TopBar frame={frame} />
+                <TopBar frame={frame} isInDragSelection={isInDragSelection} />
             </RightClickMenu>
-            <div className="relative">
+            <div className="relative" style={{
+                outline: isSelected ? `2px solid ${colors.teal[400]}` : isInDragSelection ? `2px solid ${colors.teal[500]}` : 'none',
+                borderRadius: '4px',
+            }}>
                 <ResizeHandles frame={frame} setIsResizing={setIsResizing} />
-                <FrameComponent key={reloadKey} frame={frame} reloadIframe={reloadIframe} ref={iFrameRef} />
+                <FrameComponent key={reloadKey} frame={frame} reloadIframe={reloadIframe} isInDragSelection={isInDragSelection} ref={iFrameRef} />
                 <GestureScreen frame={frame} isResizing={isResizing} />
 
                 {isConnecting && !hasTimedOut && (

@@ -1,12 +1,11 @@
 import {
     conversations,
+    fromDbMessage,
     messageInsertSchema,
     messages,
-    messageUpdateSchema,
-    fromDbMessage,
-    type Message
+    messageUpdateSchema
 } from '@onlook/db';
-import { MessageCheckpointType, type ChatMessageRole } from '@onlook/models';
+import { MessageCheckpointType } from '@onlook/models';
 import { asc, eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -64,15 +63,14 @@ export const messageRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             await ctx.db.update(messages).set({
                 ...input.message,
-                role: input.message.role as ChatMessageRole,
-                parts: input.message.parts as Message['parts'],
+                parts: input.message.parts
             }).where(eq(messages.id, input.messageId));
         }),
     updateCheckpoints: protectedProcedure
         .input(z.object({
             messageId: z.string(),
             checkpoints: z.array(z.object({
-                type: z.nativeEnum(MessageCheckpointType),
+                type: z.enum(MessageCheckpointType),
                 oid: z.string(),
                 createdAt: z.date(),
             })),
@@ -94,8 +92,7 @@ export const messageRouter = createTRPCRouter({
 const normalizeMessage = (message: z.infer<typeof messageInsertSchema>) => {
     return {
         ...message,
-        role: message.role as ChatMessageRole,
-        parts: message.parts as Message['parts'],
+        parts: message.parts,
         createdAt: typeof message.createdAt === 'string' ? new Date(message.createdAt) : message.createdAt,
     };
 };

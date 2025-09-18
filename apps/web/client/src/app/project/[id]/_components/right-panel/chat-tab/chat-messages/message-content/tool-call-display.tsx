@@ -25,48 +25,56 @@ import { ToolCallSimple } from './tool-call-simple';
 
 export const ToolCallDisplay = ({
     messageId,
-    index,
-    lastToolInvocationIdx,
-    toolInvocation,
+    isLastPart,
+    toolPart,
     isStream,
     applied
 }: {
     messageId: string,
-    index: number,
-    lastToolInvocationIdx: number,
-    toolInvocation: ToolUIPart,
+    isLastPart: boolean,
+    toolPart: ToolUIPart,
     isStream: boolean,
     applied: boolean
 }) => {
+    const toolName = toolPart.type.split('-')[1];
+    const loading = isStream && isLastPart;
 
-    const toolName = toolInvocation.type.split('-')[1];
+    if (isStream && toolPart.state !== 'output-available' && toolPart.state !== 'input-available') {
+        return (
+            <ToolCallSimple
+                toolPart={toolPart}
+                key={toolPart.toolCallId}
+                loading={loading}
+            />
+        );
+    }
 
     if (toolName === TERMINAL_COMMAND_TOOL_NAME) {
-        const args = toolInvocation.input as z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS> | null;
-        const result = toolInvocation.output as { output?: string; error?: string } | null;
+        const args = toolPart.input as z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS> | null;
+        const result = toolPart.output as { output?: string; error?: string } | null;
         if (!args?.command) {
             return (
                 <ToolCallSimple
-                    toolInvocation={toolInvocation}
-                    key={toolInvocation.toolCallId}
-                    loading={false}
+                    toolPart={toolPart}
+                    key={toolPart.toolCallId}
+                    loading={loading}
                 />
             );
         }
         return (
             <BashCodeDisplay
-                key={toolInvocation.toolCallId}
+                key={toolPart.toolCallId}
                 content={args.command}
                 isStream={isStream}
-                defaultStdOut={toolInvocation.state === 'output-available' ? result?.output ?? null : null}
-                defaultStdErr={toolInvocation.state === 'output-available' ? result?.error ?? null : null}
+                defaultStdOut={toolPart.state === 'output-available' ? result?.output ?? null : null}
+                defaultStdErr={toolPart.state === 'output-available' ? result?.error ?? null : null}
             />
         );
     }
 
-    if (toolName === WEB_SEARCH_TOOL_NAME && toolInvocation.state === 'output-available') {
-        const searchResult: WebSearchResult | null = toolInvocation.output as WebSearchResult | null;
-        const args = toolInvocation.input as z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>;
+    if (toolName === WEB_SEARCH_TOOL_NAME && toolPart.state === 'output-available') {
+        const searchResult: WebSearchResult | null = toolPart.output as WebSearchResult | null;
+        const args = toolPart.input as z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>;
         if (args?.query && searchResult?.result && searchResult.result.length > 0) {
             return (
                 <SearchSourcesDisplay
@@ -81,15 +89,16 @@ export const ToolCallDisplay = ({
     }
 
     if (toolName === WRITE_FILE_TOOL_NAME) {
-        const args = toolInvocation.input as z.infer<typeof WRITE_FILE_TOOL_PARAMETERS> | null;
+        const args = toolPart.input as z.infer<typeof WRITE_FILE_TOOL_PARAMETERS> | null;
         const filePath = args?.file_path;
         const codeContent = args?.content;
+        const branchId = args?.branchId;
         if (!filePath || !codeContent) {
             return (
                 <ToolCallSimple
-                    toolInvocation={toolInvocation}
-                    key={toolInvocation.toolCallId}
-                    loading={false}
+                    toolPart={toolPart}
+                    key={toolPart.toolCallId}
+                    loading={loading}
                 />
             );
         }
@@ -102,20 +111,22 @@ export const ToolCallDisplay = ({
                 isStream={isStream}
                 originalContent={codeContent}
                 updatedContent={codeContent}
+                branchId={branchId}
             />
         );
     }
 
     if (toolName === FUZZY_EDIT_FILE_TOOL_NAME) {
-        const args = toolInvocation.input as z.infer<typeof FUZZY_EDIT_FILE_TOOL_PARAMETERS> | null;
+        const args = toolPart.input as z.infer<typeof FUZZY_EDIT_FILE_TOOL_PARAMETERS> | null;
         const filePath = args?.file_path;
         const codeContent = args?.content;
+        const branchId = args?.branchId;
         if (!filePath || !codeContent) {
             return (
                 <ToolCallSimple
-                    toolInvocation={toolInvocation}
-                    key={toolInvocation.toolCallId}
-                    loading={false}
+                    toolPart={toolPart}
+                    key={toolPart.toolCallId}
+                    loading={loading}
                 />
             );
         }
@@ -128,20 +139,22 @@ export const ToolCallDisplay = ({
                 isStream={isStream}
                 originalContent={codeContent}
                 updatedContent={codeContent}
+                branchId={branchId}
             />
         );
     }
 
     if (toolName === SEARCH_REPLACE_EDIT_FILE_TOOL_NAME) {
-        const args = toolInvocation.input as z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS> | null;
+        const args = toolPart.input as z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS> | null;
         const filePath = args?.file_path;
         const codeContent = args?.new_string;
+        const branchId = args?.branchId;
         if (!filePath || !codeContent) {
             return (
                 <ToolCallSimple
-                    toolInvocation={toolInvocation}
-                    key={toolInvocation.toolCallId}
-                    loading={false}
+                    toolPart={toolPart}
+                    key={toolPart.toolCallId}
+                    loading={loading}
                 />
             );
         }
@@ -154,20 +167,22 @@ export const ToolCallDisplay = ({
                 isStream={isStream}
                 originalContent={codeContent}
                 updatedContent={codeContent}
+                branchId={branchId}
             />
         );
     }
 
     if (toolName === SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME) {
-        const args = toolInvocation.input as z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS> | null;
+        const args = toolPart.input as z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS> | null;
         const filePath = args?.file_path;
         const codeContent = args?.edits?.map((edit) => edit.new_string).join('\n...\n');
+        const branchId = args?.branchId;
         if (!filePath || !codeContent) {
             return (
                 <ToolCallSimple
-                    toolInvocation={toolInvocation}
-                    key={toolInvocation.toolCallId}
-                    loading={false}
+                    toolPart={toolPart}
+                    key={toolPart.toolCallId}
+                    loading={loading}
                 />
             );
         }
@@ -180,19 +195,20 @@ export const ToolCallDisplay = ({
                 isStream={isStream}
                 originalContent={codeContent}
                 updatedContent={codeContent}
+                branchId={branchId}
             />
         );
     }
 
     if (toolName === TODO_WRITE_TOOL_NAME) {
-        const args = toolInvocation.input as z.infer<typeof TODO_WRITE_TOOL_PARAMETERS> | null;
+        const args = toolPart.input as z.infer<typeof TODO_WRITE_TOOL_PARAMETERS> | null;
         const todos = args?.todos;
         if (!todos || todos.length === 0) {
             return (
                 <ToolCallSimple
-                    toolInvocation={toolInvocation}
-                    key={toolInvocation.toolCallId}
-                    loading={false}
+                    toolPart={toolPart}
+                    key={toolPart.toolCallId}
+                    loading={loading}
                 />
             );
         }
@@ -215,24 +231,24 @@ export const ToolCallDisplay = ({
     }
 
     if (toolName === TYPECHECK_TOOL_NAME) {
-        const result = toolInvocation.output as { success: boolean; error?: string } | null;
+        const result = toolPart.output as { success: boolean; error?: string } | null;
         const error = stripAnsi(result?.error || '');
         return (
             <BashCodeDisplay
-                key={toolInvocation.toolCallId}
+                key={toolPart.toolCallId}
                 content={'bunx tsc --noEmit'}
                 isStream={isStream}
-                defaultStdOut={error ? null : '✅ Typecheck passed!'}
-                defaultStdErr={error ? error : null}
+                defaultStdOut={(result?.success ? '✅ Typecheck passed!' : result?.error) ?? null}
+                defaultStdErr={error ?? null}
             />
         );
     }
 
     return (
         <ToolCallSimple
-            toolInvocation={toolInvocation}
-            key={toolInvocation.toolCallId}
-            loading={isStream && index === lastToolInvocationIdx}
+            toolPart={toolPart}
+            key={toolPart.toolCallId}
+            loading={loading}
         />
     );
 }
