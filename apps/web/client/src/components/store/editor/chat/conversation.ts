@@ -41,9 +41,21 @@ export class ConversationManager {
         return sorted || [];
     }
 
+    setConversationLength(length: number) {
+        if (this.current) {
+            this.current = {
+                ...this.current,
+                messageCount: length,
+            };
+        }
+    }
+
     async startNewConversation() {
         try {
             this.creatingConversation = true;
+            if (this.current?.messageCount === 0 && !this.current?.title) {
+                throw new Error('Current conversation is already empty.');
+            }
             const newConversation = await api.chat.conversation.upsert.mutate({
                 projectId: this.editorEngine.projectId,
             });
