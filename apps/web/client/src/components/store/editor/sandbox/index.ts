@@ -270,25 +270,9 @@ export class SandboxManager {
 
     async writeFile(path: string, content: string): Promise<boolean> {
         const normalizedPath = normalizePath(path);
-        let writeContent = content;
-
-        // If the file is a JSX file, we need to process it for mapping before writing
-        if (this.isJsxFile(normalizedPath)) {
-            try {
-                const { newContent } = await this.editorEngine.templateNodes.processFileForMapping(
-                    this.branch.id,
-                    normalizedPath,
-                    content,
-                    this.routerConfig?.type,
-                );
-                writeContent = newContent;
-            } catch (error) {
-                console.error(`Error processing file ${normalizedPath}:`, error);
-            }
-        }
         const success = await this.fileSync.write(
             normalizedPath,
-            writeContent,
+            content,
             this.writeRemoteFile.bind(this),
         );
 
