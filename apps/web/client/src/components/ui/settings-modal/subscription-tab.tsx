@@ -159,18 +159,20 @@ export const SubscriptionTab = observer(() => {
                             Are you sure you want to cancel your subscription? You'll lose access to all premium features at the end of your current billing period.
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter className="gap-2 sm:gap-0">
+                    <DialogFooter className="flex-col sm:flex-row gap-3 sm:gap-2">
                         <Button
                             variant="outline"
                             onClick={() => setShowCancelModal(false)}
+                            className="order-2 sm:order-1"
                         >
-                            Keep subscription
+                            Keep Subscription
                         </Button>
                         <Button
-                            variant="destructive"
+                            variant="outline"
                             onClick={handleConfirmCancel}
+                            className="order-1 sm:order-2 text-red-200 hover:text-red-100 hover:bg-red-500/10 border-red-200 hover:border-red-100"
                         >
-                            Cancel subscription
+                            Cancel Subscription
                         </Button>
                     </DialogFooter>
                 </DialogContent>
