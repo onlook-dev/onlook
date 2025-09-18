@@ -1094,4 +1094,126 @@ export const githubRouter = createTRPCRouter({
             }
         }),
 
+    pullChanges: protectedProcedure
+        .input(
+            z.object({
+                owner: z.string(),
+                repo: z.string(),
+                projectId: z.string(),
+                branch: z.string().optional(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            try {
+                const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
+
+                const project = await ctx.db.query.projects.findFirst({
+                    where: eq(projects.id, input.projectId),
+                });
+
+                if (!project) {
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: 'Project not found',
+                    });
+                }
+
+                // Get project's sandbox info from default branch
+                const defaultBranch = await ctx.db.query.branches.findFirst({
+                    where: and(
+                        eq(branches.projectId, input.projectId),
+                        eq(branches.isDefault, true)
+                    ),
+                });
+
+                if (!defaultBranch?.sandboxId) {
+                    throw new TRPCError({
+                        code: 'PRECONDITION_FAILED',
+                        message: 'Project has no sandbox',
+                    });
+                }
+
+                const branch = input.branch || defaultBranch.gitBranch || 'main';
+                
+                // Get latest commit SHA from GitHub
+                const { data: branchRef } = await octokit.rest.git.getRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `heads/${branch}`,
+                });
+
+                const latestCommitSha = branchRef.object.sha;
+
+                // Fetch complete file tree from repository
+                const { data: tree } = await octokit.rest.git.getTree({
+                    owner: input.owner,
+                    repo: input.repo,
+                    tree_sha: latestCommitSha,
+                    recursive: 'true',
+                });
+
+                // Only pull source files, exclude build artifacts and deps
+                const INCLUDED_EXTENSIONS = ['.tsx', '.ts', '.jsx', '.js', '.css', '.scss', '.sass', '.json', '.md', '.html'];
+                const EXCLUDED_PATHS = ['node_modules/', '.git/', 'dist/', 'build/', '.next/', '.onlook/'];
+                
+                const provider = await getProvider({ sandboxId: defaultBranch.sandboxId });
+                let updatedFilesCount = 0;
+
+                for (const item of tree.tree) {
+                    if (item.type === 'blob' && item.path) {
+                        // Filter for relevant source files only
+                        const hasValidExtension = INCLUDED_EXTENSIONS.some(ext => item.path!.endsWith(ext));
+                        const isExcluded = EXCLUDED_PATHS.some(path => item.path!.startsWith(path));
+                        
+                        if (hasValidExtension && !isExcluded) {
+                            try {
+                                // Download file content from GitHub
+                                const { data: blob } = await octokit.rest.git.getBlob({
+                                    owner: input.owner,
+                                    repo: input.repo,
+                                    file_sha: item.sha!,
+                                });
+                                
+                                const content = Buffer.from(blob.content, 'base64').toString('utf8');
+                                
+                                // Write to project sandbox
+                                await provider.writeFile({
+                                    args: { 
+                                        path: item.path,
+                                        content 
+                                    }
+                                });
+                                
+                                updatedFilesCount++;
+                            } catch (error) {
+                                // Skip files that can't be written (permissions, etc.)
+                                console.warn(`Failed to update file ${item.path}:`, error);
+                            }
+                        }
+                    }
+                }
+
+                // Track pulled commit SHA for future sync operations
+                await ctx.db.update(branches)
+                    .set({
+                        gitCommitSha: latestCommitSha,
+                        updatedAt: new Date(),
+                    })
+                    .where(eq(branches.id, defaultBranch.id));
+
+                return {
+                    success: true,
+                    commitSha: latestCommitSha,
+                    commitUrl: `https://github.com/${input.owner}/${input.repo}/commit/${latestCommitSha}`,
+                    filesCount: updatedFilesCount,
+                };
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `Pull failed: ${error.message}`,
+                    cause: error,
+                });
+            }
+        }),
+
 });

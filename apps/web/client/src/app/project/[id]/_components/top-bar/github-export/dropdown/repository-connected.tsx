@@ -33,7 +33,7 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
     const editorEngine = useEditorEngine();
     const [newBranchName, setNewBranchName] = useState('feature-');
     const [showCreateBranch, setShowCreateBranch] = useState(false);
-    const [isSyncingChanges, setIsSyncingChanges] = useState(false);
+    const [isPullingChanges, setIsPullingChanges] = useState(false);
     const [isPushingChanges, setIsPushingChanges] = useState(false);
 
     const { data: branches, isLoading: loadingBranches, refetch: refetchBranches } = 
@@ -43,22 +43,20 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
         });
 
     const createBranchMutation = api.github.createBranch.useMutation();
-    const syncFilesMutation = api.github.syncProjectFiles.useMutation();
-    const pushChangesMutation = api.github.pushChanges.useMutation();
+    const pullChangesMutation = api.github.pullChanges.useMutation();
+    const pushChangesMutation = api.github.syncProjectFiles.useMutation();
 
-    const handleSyncChanges = async () => {
-        setIsSyncingChanges(true);
+    const handlePullChanges = async () => {
+        setIsPullingChanges(true);
         try {
-            const result = await syncFilesMutation.mutateAsync({
+            const result = await pullChangesMutation.mutateAsync({
                 owner: repositoryData.owner.login,
                 repo: repositoryData.name,
                 projectId: editorEngine.projectId,
-                message: 'Sync changes from Onlook',
             });
             
-            // Show success notification
-            toast.success(`Successfully synced ${result.filesCount} files to GitHub!`, {
-                description: `Commit: ${result.commitSha}`,
+            toast.success(`Successfully pulled ${result.filesCount} files from GitHub!`, {
+                description: `Updated to commit: ${result.commitSha}`,
                 action: {
                     label: 'View on GitHub',
                     onClick: () => window.open(result.commitUrl, '_blank'),
@@ -66,14 +64,14 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
                 duration: 5000,
             });
         } catch (error) {
-            console.error('Failed to sync changes:', error);
+            console.error('Failed to pull changes:', error);
             const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-            toast.error('Failed to sync changes', {
+            toast.error('Failed to pull changes', {
                 description: errorMessage,
                 duration: 5000,
             });
         } finally {
-            setIsSyncingChanges(false);
+            setIsPullingChanges(false);
         }
     };
 
@@ -165,20 +163,21 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
                     <h5 className="text-xs font-semibold text-foreground-primary">Quick Actions</h5>
                     <div className="flex gap-2">
                         <Button
-                            onClick={() => handleSyncChanges()}
-                            disabled={isSyncingChanges}
+                            onClick={() => handlePullChanges()}
+                            disabled={isPullingChanges}
                             size="lg"
                             className="flex-1 h-11 text-sm font-medium"
+                            variant="outline"
                         >
-                            {isSyncingChanges ? (
+                            {isPullingChanges ? (
                                 <>
                                     <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />
-                                    Syncing...
+                                    Pulling...
                                 </>
                             ) : (
                                 <>
-                                    <Icons.Reload className="mr-2 h-4 w-4" />
-                                    Sync Changes
+                                    <Icons.Download className="mr-2 h-4 w-4" />
+                                    Pull Changes
                                 </>
                             )}
                         </Button>
@@ -196,7 +195,7 @@ export const RepositoryConnectedStep = observer(({ repositoryData, onBack }: Rep
                             ) : (
                                 <>
                                     <Icons.ArrowUp className="mr-2 h-4 w-4" />
-                                    Push to GitHub
+                                    Push Changes
                                 </>
                             )}
                         </Button>
