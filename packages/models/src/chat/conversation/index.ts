@@ -6,7 +6,5 @@ export interface ChatConversation {
     projectId: string;
     createdAt: Date;
     updatedAt: Date;
-    metadata?: {
-        suggestions: ChatSuggestion[];
-    };
+    suggestions: ChatSuggestion[];
 }

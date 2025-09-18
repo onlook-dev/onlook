@@ -5,9 +5,7 @@ export const fromDbConversation = (conversation: DbConversation): ChatConversati
     return {
         ...conversation,
         title: conversation.displayName || null,
-        metadata: {
-            suggestions: conversation.suggestions || [],
-        }
+        suggestions: conversation.suggestions || [],
     }
 }
 
@@ -16,6 +14,6 @@ export const toDbConversation = (conversation: ChatConversation): DbConversation
         ...conversation,
         projectId: conversation.projectId,
         displayName: conversation.title || null,
-        suggestions: conversation.metadata?.suggestions || [],
+        suggestions: conversation.suggestions || [],
     }
 }
