@@ -429,4 +429,136 @@ export const projectRouter = createTRPCRouter({
 
         return { success: true, tags: newTags };
     }),
+    clone: protectedProcedure.input(z.object({
+        projectId: z.string(),
+        name: z.string().optional(),
+    })).mutation(async ({ ctx, input }) => {
+        // Get the source project with its default branch
+        const sourceProject = await ctx.db.query.projects.findFirst({
+            where: eq(projects.id, input.projectId),
+            with: {
+                userProjects: {
+                    where: eq(userProjects.userId, ctx.user.id),
+                },
+            },
+        });
+
+        if (!sourceProject) {
+            throw new Error('Project not found');
+        }
+
+        // Check if user has access to the source project
+        if (sourceProject.userProjects.length === 0) {
+            throw new Error('Access denied');
+        }
+
+        // Get the default branch to access the sandbox
+        const sourceBranch = await ctx.db.query.branches.findFirst({
+            where: and(eq(branches.projectId, input.projectId), eq(branches.isDefault, true)),
+            with: {
+                frames: true,
+            },
+        });
+
+        if (!sourceBranch?.sandboxId) {
+            throw new Error('Source project has no sandbox to clone');
+        }
+
+        return await ctx.db.transaction(async (tx) => {
+            // 1. Fork the sandbox from the source project
+            // We need to determine the sandbox port from existing frames
+            const port = extractCsbPort(sourceBranch.frames) ?? 3000;
+            
+            // Import the sandbox fork function here since it's not exposed
+            const { getStaticCodeProvider } = await import('@onlook/code-provider');
+            const { CodeProvider } = await import('@onlook/code-provider');
+            
+            let newSandboxId: string;
+            let previewUrl: string;
+            
+            try {
+                const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
+                const clonedSandbox = await CodesandboxProvider.createProject({
+                    source: 'sandbox',
+                    id: sourceBranch.sandboxId,
+                    title: `${input.name || sourceProject.name} (Clone)`,
+                    tags: ['clone', ctx.user.id],
+                });
+                
+                newSandboxId = clonedSandbox.id;
+                previewUrl = getSandboxPreviewUrl(newSandboxId, port);
+            } catch (error) {
+                console.error('Error cloning sandbox:', error);
+                throw new Error('Failed to clone sandbox');
+            }
+
+            // 2. Create the new project
+            const clonedProjectData = {
+                name: input.name || `${sourceProject.name} (Clone)`,
+                description: sourceProject.description ? `${sourceProject.description} (Clone)` : 'Cloned project',
+                tags: sourceProject.tags ? [...sourceProject.tags.filter(tag => tag !== 'template'), 'clone'] : ['clone'],
+            };
+
+            const [newProject] = await tx.insert(projects).values(clonedProjectData).returning();
+            if (!newProject) {
+                throw new Error('Failed to create cloned project in database');
+            }
+
+            // 3. Create the default branch with the new sandbox
+            const newBranch = createDefaultBranch({
+                projectId: newProject.id,
+                sandboxId: newSandboxId,
+            });
+            await tx.insert(branches).values(newBranch);
+
+            // 4. Create the association in the junction table
+            await tx.insert(userProjects).values({
+                userId: ctx.user.id,
+                projectId: newProject.id,
+                role: ProjectRole.OWNER,
+            });
+
+            // 5. Create the default canvas
+            const newCanvas = createDefaultCanvas(newProject.id);
+            await tx.insert(canvases).values(newCanvas);
+
+            const newUserCanvas = createDefaultUserCanvas(ctx.user.id, newCanvas.id, {
+                x: '120',
+                y: '120',
+                scale: '0.56',
+            });
+            await tx.insert(userCanvases).values(newUserCanvas);
+
+            // 6. Create the default frames
+            const desktopFrame = createDefaultFrame({
+                canvasId: newCanvas.id,
+                branchId: newBranch.id,
+                url: previewUrl,
+                type: DefaultFrameType.DESKTOP,
+            });
+            await tx.insert(frames).values(desktopFrame);
+            
+            const mobileFrame = createDefaultFrame({
+                canvasId: newCanvas.id,
+                branchId: newBranch.id,
+                url: previewUrl,
+                type: DefaultFrameType.MOBILE,
+            });
+            await tx.insert(frames).values(mobileFrame);
+
+            // 7. Create the default chat conversation
+            await tx.insert(conversations).values(createDefaultConversation(newProject.id));
+
+            trackEvent({
+                distinctId: ctx.user.id,
+                event: 'user_clone_project',
+                properties: {
+                    projectId: newProject.id,
+                    sourceProjectId: input.projectId,
+                },
+            });
+
+            return fromDbProject(newProject);
+        });
+    }),
 });

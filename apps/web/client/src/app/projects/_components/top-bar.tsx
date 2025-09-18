@@ -11,6 +11,10 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
@@ -39,13 +43,16 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
     const [recentSearches, setRecentSearches] = useState<string[]>([]);
     const [recentColors, setRecentColors] = useState<string[]>([]);
     const [isCreatingProject, setIsCreatingProject] = useState(false);
+    const [isCloningProject, setIsCloningProject] = useState<string | null>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const searchContainerRef = useRef<HTMLDivElement>(null);
 
     // API hooks
     const { data: user } = api.user.get.useQuery();
+    const { data: projects } = api.project.list.useQuery({ limit: 10 });
     const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
     const { mutateAsync: createProject } = api.project.create.useMutation();
+    const { mutateAsync: cloneProject } = api.project.clone.useMutation();
     const { setIsAuthModalOpen } = useAuthContext();
 
     useEffect(() => {
@@ -164,6 +171,42 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
         }
     };
 
+    const handleCloneProject = async (projectId: string, projectName: string) => {
+        if (!user?.id) {
+            await localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
+            setIsAuthModalOpen(true);
+            return;
+        }
+
+        setIsCloningProject(projectId);
+        try {
+            const clonedProject = await cloneProject({
+                projectId,
+                name: `${projectName} (Clone)`,
+            });
+
+            if (clonedProject) {
+                toast.success('Project cloned successfully');
+                router.push(`${Routes.PROJECT}/${clonedProject.id}`);
+            }
+        } catch (error) {
+            console.error('Error cloning project:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+
+            if (errorMessage.includes('502') || errorMessage.includes('sandbox')) {
+                toast.error('Sandbox service temporarily unavailable', {
+                    description: 'Please try again in a few moments. Our servers may be experiencing high load.',
+                });
+            } else {
+                toast.error('Failed to clone project', {
+                    description: errorMessage,
+                });
+            }
+        } finally {
+            setIsCloningProject(null);
+        }
+    };
+
     return (
         <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 px-0 text-small text-foreground-secondary gap-6">
             <Link href={Routes.HOME} className="flex items-center justify-start mt-0 py-3">
@@ -262,6 +305,53 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                             <Icons.Upload className="w-4 h-4 mr-1 text-foreground-secondary group-hover:text-teal-100" />
                             <p className="text-microPlus">{t(transKeys.projects.actions.import)}</p>
                         </DropdownMenuItem>
+                        
+                        {projects && projects.length > 0 && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger
+                                        className={cn(
+                                            'focus:bg-green-100 focus:text-green-900',
+                                            'hover:bg-green-100 hover:text-green-900',
+                                            'dark:focus:bg-green-900 dark:focus:text-green-100',
+                                            'dark:hover:bg-green-900 dark:hover:text-green-100',
+                                            'cursor-pointer select-none group',
+                                        )}
+                                    >
+                                        <Icons.Copy className="w-4 h-4 mr-1 text-foreground-secondary group-hover:text-green-100" />
+                                        Clone Project
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuSubContent className="w-56 ml-2">
+                                        <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b">
+                                            Clone from project:
+                                        </div>
+                                        {projects.slice(0, 8).map((project) => (
+                                            <DropdownMenuItem
+                                                key={project.id}
+                                                onSelect={() => handleCloneProject(project.id, project.name)}
+                                                disabled={isCloningProject !== null}
+                                                className="cursor-pointer"
+                                            >
+                                                <div className="flex flex-row center items-center group w-full">
+                                                    {isCloningProject === project.id ? (
+                                                        <Icons.LoadingSpinner className="w-4 h-4 mr-1 animate-spin flex-shrink-0" />
+                                                    ) : (
+                                                        <Icons.Copy className="w-4 h-4 mr-1 flex-shrink-0" />
+                                                    )}
+                                                    <span className="truncate">{project.name}</span>
+                                                </div>
+                                            </DropdownMenuItem>
+                                        ))}
+                                        {projects.length > 8 && (
+                                            <div className="px-2 py-1.5 text-xs text-muted-foreground border-t">
+                                                +{projects.length - 8} more projects
+                                            </div>
+                                        )}
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuSub>
+                            </>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <CurrentUserAvatar className="w-8 h-8" />
