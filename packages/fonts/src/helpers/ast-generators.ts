@@ -55,17 +55,11 @@ function createFontConfigAst(font: Font): T.ObjectExpression {
  * }
  */
 export function createFontFamilyProperty(font: Font): T.ObjectProperty {
-    // Use string literal if font ID contains special characters (like hyphens)
-    // otherwise use identifier for cleaner output
-    const fontIdKey = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(font.id) 
-        ? t.identifier(font.id)
-        : t.stringLiteral(font.id);
-
     return t.objectProperty(
         t.identifier('fontFamily'),
         t.objectExpression([
             t.objectProperty(
-                fontIdKey,
+                t.identifier(font.id),
                 t.arrayExpression([
                     t.stringLiteral(`var(${font.variable})`),
                     t.stringLiteral('sans-serif'),
