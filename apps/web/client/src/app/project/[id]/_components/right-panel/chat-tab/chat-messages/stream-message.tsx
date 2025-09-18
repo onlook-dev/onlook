@@ -3,30 +3,16 @@ import { Icons } from '@onlook/ui/icons';
 import { useMemo } from 'react';
 import { MessageContent } from './message-content';
 
-export const StreamMessage = ({
-    messages,
-    isStreaming,
-}: {
-    messages: ChatMessage[];
-    isStreaming: boolean;
-}) => {
-    const streamMessage = messages.length > 0 ? messages[messages.length - 1] : null;
-    const isAssistantStreamMessage = useMemo(() =>
-        streamMessage?.role === 'assistant',
-        [streamMessage?.role]
-    );
-
-    if (!isStreaming) {
-        return null;
-    }
+export const StreamMessage = ({ message }: { message: ChatMessage }) => {
+    const isAssistantStreamMessage = useMemo(() => message?.role === 'assistant', [message?.role]);
 
     return (
         <>
-            {streamMessage && isAssistantStreamMessage && (
+            {message && isAssistantStreamMessage && (
                 <div className="px-4 py-2 text-small content-start flex flex-col text-wrap gap-2">
                     <MessageContent
-                        messageId={streamMessage.id}
-                        parts={streamMessage.parts}
+                        messageId={message.id}
+                        parts={message.parts}
                         applied={false}
                         isStream={true}
                     />
