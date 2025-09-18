@@ -27,8 +27,8 @@ export class FileSyncManager {
         return file && file.content !== null;
     }
 
-    readCache(filePath: string) {
-        return this.cacheManager.getFile(filePath);
+    async readCache(filePath: string) {
+        return await this.cacheManager.getFile(filePath);
     }
 
     async readOrFetch(
@@ -46,41 +46,41 @@ export class FileSyncManager {
         return await this.cacheManager.write(filePath, content, writeFile);
     }
 
-    updateCache(file: SandboxFile): void {
-        this.cacheManager.setFile(file);
+    async updateCache(file: SandboxFile): Promise<void> {
+        await this.cacheManager.setFile(file);
     }
 
-    updateDirectoryCache(dirPath: string): void {
-        this.cacheManager.setDirectory({
+    async updateDirectoryCache(dirPath: string): Promise<void> {
+        await this.cacheManager.setDirectory({
             type: 'directory',
             path: dirPath,
         });
     }
 
-    deleteDir(dirPath: string) {
-        this.cacheManager.deleteDirectory(dirPath);
+    async deleteDir(dirPath: string) {
+        await this.cacheManager.deleteDirectory(dirPath);
         // Iterate through cache keys to find files in the directory
         for (const path of this.cacheManager.listAllFiles()) {
             if (path.startsWith(dirPath + '/')) {
-                this.cacheManager.deleteFile(path);
+                await this.cacheManager.deleteFile(path);
             }
         }
     }
 
     async delete(path: string) {
-        this.cacheManager.deleteFile(path);
+        await this.cacheManager.deleteFile(path);
     }
 
     async rename(oldPath: string, newPath: string) {
         const normalizedOldPath = normalizePath(oldPath);
         const normalizedNewPath = normalizePath(newPath);
-        this.cacheManager.rename(normalizedOldPath, normalizedNewPath);
+        await this.cacheManager.rename(normalizedOldPath, normalizedNewPath);
     }
 
     async renameDir(oldPath: string, newPath: string) {
         const normalizedOldPath = normalizePath(oldPath);
         const normalizedNewPath = normalizePath(newPath);
-        this.cacheManager.renameDirectory(normalizedOldPath, normalizedNewPath);
+        await this.cacheManager.renameDirectory(normalizedOldPath, normalizedNewPath);
     }
 
     listAllFiles() {
@@ -91,8 +91,8 @@ export class FileSyncManager {
         return this.cacheManager.listAllDirectories();
     }
 
-    writeEmptyFile(filePath: string, type: 'binary') {
-        this.cacheManager.writeEmptyFile(filePath, type);
+    async writeEmptyFile(filePath: string, type: 'binary') {
+        await this.cacheManager.writeEmptyFile(filePath, type);
     }
 
     async clear() {

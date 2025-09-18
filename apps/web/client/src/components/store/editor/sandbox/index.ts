@@ -134,12 +134,12 @@ export class SandboxManager {
             const batchPromises = batch.map(async (filePath) => {
                 // Track image files first
                 if (isImageFile(filePath)) {
-                    this.fileSync.writeEmptyFile(filePath, 'binary');
+                    await this.fileSync.writeEmptyFile(filePath, 'binary');
                     return;
                 }
 
                 // Check cache first
-                const cachedFile = this.fileSync.readCache(filePath);
+                const cachedFile = await this.fileSync.readCache(filePath);
                 if (cachedFile && cachedFile.content !== null) {
                     if (this.isJsxFile(filePath)) {
                         await this.processFileForMapping(cachedFile);
@@ -190,7 +190,7 @@ export class SandboxManager {
                         if (!excludeDirs.includes(entry.name)) {
                             dirsToProcess.push(normalizedPath);
                         }
-                        this.fileSync.updateDirectoryCache(normalizedPath);
+                        await this.fileSync.updateDirectoryCache(normalizedPath);
                     } else if (entry.type === 'file') {
                         allPaths.push(normalizedPath);
                     }
@@ -502,7 +502,7 @@ export class SandboxManager {
 
                 if (stat?.type === 'directory') {
                     const normalizedPath = normalizePath(path);
-                    this.fileSync.updateDirectoryCache(normalizedPath);
+                    await this.fileSync.updateDirectoryCache(normalizedPath);
                     continue;
                 }
 
@@ -550,7 +550,7 @@ export class SandboxManager {
     }
 
     async handleFileChangedEvent(normalizedPath: string) {
-        const cachedFile = this.fileSync.readCache(normalizedPath);
+        const cachedFile = await this.fileSync.readCache(normalizedPath);
 
         // Always read the remote file and update the cache, regardless of file type
         const remoteFile = await this.readRemoteFile(normalizedPath);
@@ -560,7 +560,7 @@ export class SandboxManager {
         }
 
         // Always update the cache with the fresh remote file content
-        this.fileSync.updateCache(remoteFile);
+        await this.fileSync.updateCache(remoteFile);
 
         // For text files, also process for mapping if content has changed
         if (remoteFile.type === 'text' && this.isJsxFile(normalizedPath)) {
@@ -662,7 +662,7 @@ export class SandboxManager {
             // Read and cache the copied file
             const copiedFile = await this.readRemoteFile(normalizedTargetPath);
             if (copiedFile) {
-                this.fileSync.updateCache(copiedFile);
+                await this.fileSync.updateCache(copiedFile);
             }
 
             return true;
