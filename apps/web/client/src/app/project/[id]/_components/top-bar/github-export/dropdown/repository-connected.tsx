@@ -36,6 +36,7 @@ export const RepositoryConnectedStep = observer(({ repositoryData}: RepositoryCo
     const [isPullingChanges, setIsPullingChanges] = useState(false);
     const [isPushingChanges, setIsPushingChanges] = useState(false);
     const [selectedBranch, setSelectedBranch] = useState<string>('');
+    const [isSwitchingBranch, setIsSwitchingBranch] = useState(false);
 
     const { data: branches, isLoading: loadingBranches, refetch: refetchBranches } = 
         api.github.getBranches.useQuery({
@@ -47,6 +48,7 @@ export const RepositoryConnectedStep = observer(({ repositoryData}: RepositoryCo
     const pullChangesMutation = api.github.pullChanges.useMutation();
     const pushChangesMutation = api.github.syncProjectFiles.useMutation();
     const switchBranchMutation = api.github.switchGitBranch.useMutation();
+    const deleteGitBranchMutation = api.github.deleteGitBranch.useMutation();
 
     const { data: projectConnection } = api.github.getProjectRepositoryConnection.useQuery({
         projectId: editorEngine.projectId,
@@ -68,8 +70,9 @@ export const RepositoryConnectedStep = observer(({ repositoryData}: RepositoryCo
     }, [projectConnection?.branch, repositoryData.default_branch, editorEngine.projectId, editorEngine.branches.activeGitBranch]);
 
     const handleSwitchBranch = async (branchName: string) => {
-        if (branchName === selectedBranch) return;
+        if (branchName === selectedBranch || isSwitchingBranch) return;
 
+        setIsSwitchingBranch(true);
         try {
             const branch = branches?.find(b => b.name === branchName);
             
@@ -107,6 +110,38 @@ export const RepositoryConnectedStep = observer(({ repositoryData}: RepositoryCo
             toast.error('Git branch switch failed', {
                 description: errorMessage,
                 duration: 5000,
+            });
+        } finally {
+            setIsSwitchingBranch(false);
+        }
+    };
+
+    const handleDeleteGitBranch = async (branchName: string) => {
+        if (!confirm(`Delete Git branch "${branchName}"? This will also delete all associated sandboxes.`)) return;
+
+        try {
+            const result = await deleteGitBranchMutation.mutateAsync({
+                owner: repositoryData.owner.login,
+                repo: repositoryData.name,
+                branchName,
+                projectId: editorEngine.projectId,
+            });
+
+            if (selectedBranch === branchName) {
+                setSelectedBranch(repositoryData.default_branch || 'main');
+                localStorage.setItem(`selectedGitBranch-${editorEngine.projectId}`, repositoryData.default_branch || 'main');
+            }
+
+            await refetchBranches();
+            await editorEngine.branches.reloadBranchesForGitContext(repositoryData.default_branch || 'main');
+
+            toast.success(`Git branch "${branchName}" deleted`, {
+                description: `Deleted ${result.deletedCount} associated sandbox${result.deletedCount === 1 ? '' : 'es'}`,
+            });
+        } catch (error) {
+            console.error('Failed to delete Git branch:', error);
+            toast.error('Failed to delete Git branch', {
+                description: error instanceof Error ? error.message : 'Unknown error',
             });
         }
     };
@@ -347,26 +382,42 @@ export const RepositoryConnectedStep = observer(({ repositoryData}: RepositoryCo
                             return (
                                 <div
                                     key={branch.name}
-                                    className={`flex items-center justify-between p-2 rounded text-xs cursor-pointer hover:bg-background-secondary transition-colors ${
+                                    className={`group flex items-center justify-between p-2 rounded text-xs cursor-pointer hover:bg-background-secondary transition-colors ${
                                         isSelectedBranch ? 'bg-accent/50 border border-accent' : ''
                                     }`}
                                     onClick={() => handleSwitchBranch(branch.name)}
                                 >
-                                    <div className="flex items-center gap-2">
-                                        <Icons.Commit className="h-3 w-3 text-foreground-secondary" />
-                                        <span className="font-mono">{branch.name}</span>
-                                        {isSelectedBranch && (
-                                            <span className="px-1.5 py-0.5 bg-accent text-accent-foreground text-[10px] rounded-full font-medium">
-                                                Active
-                                            </span>
-                                        )}
-                                        {isDefaultBranch && !isSelectedBranch && (
-                                            <span className="px-1.5 py-0.5 bg-muted text-muted-foreground text-[10px] rounded-full font-medium">
-                                                Default
-                                            </span>
-                                        )}
-                                        {branch.protected && (
-                                            <Icons.LockClosed className="h-3 w-3 text-amber-500" />
+                                    <div className="flex items-center justify-between w-full">
+                                        <div className="flex items-center gap-2">
+                                            <Icons.Commit className="h-3 w-3 text-foreground-secondary" />
+                                            <span className="font-mono">{branch.name}</span>
+                                            {isSelectedBranch && (
+                                                <span className="px-1.5 py-0.5 bg-accent text-accent-foreground text-[10px] rounded-full font-medium">
+                                                    Active
+                                                </span>
+                                            )}
+                                            {isDefaultBranch && !isSelectedBranch && (
+                                                <span className="px-1.5 py-0.5 bg-muted text-muted-foreground text-[10px] rounded-full font-medium">
+                                                    Default
+                                                </span>
+                                            )}
+                                            {branch.protected && (
+                                                <Icons.LockClosed className="h-3 w-3 text-amber-500" />
+                                            )}
+                                        </div>
+                                        {!isDefaultBranch && !branch.protected && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteGitBranch(branch.name);
+                                                }}
+                                                disabled={deleteGitBranchMutation.isPending}
+                                            >
+                                                <Icons.Trash className="h-3 w-3 text-red-500" />
+                                            </Button>
                                         )}
                                     </div>
                                 </div>

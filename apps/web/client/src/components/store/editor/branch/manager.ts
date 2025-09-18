@@ -170,6 +170,17 @@ export class BranchManager {
         }
     }
 
+    clearGitContext(): void {
+        for (const { sandbox, history, error } of this.branchMap.values()) {
+            sandbox.clear();
+            history.clear();
+            error.clear();
+        }
+        this.branchMap.clear();
+        this.currentBranchId = null;
+        this.currentGitBranch = null;
+    }
+
     async forkBranch(branchId: string): Promise<void> {
         if (!branchId) {
             throw new Error('No active branch to fork');
@@ -313,22 +324,22 @@ export class BranchManager {
                 this.editorEngine.frames.delete(frameState.frame.id);
             }
 
-            // Clean up the sandbox, history, and error manager
             branchData.sandbox.clear();
             branchData.history.clear();
             branchData.error.clear();
-            // Clean up template nodes for this branch
             this.editorEngine.templateNodes.clearBranch(branchId);
-            // Remove from the map
             this.branchMap.delete(branchId);
 
-            // If this was the current branch, switch to default or first available
             if (this.currentBranchId === branchId) {
                 const remainingBranches = Array.from(this.branchMap.values()).map(({ branch }) => branch);
                 this.currentBranchId =
                     remainingBranches.find(b => b.isDefault)?.id
                     ?? remainingBranches[0]?.id
                     ?? null;
+                
+                if (this.currentBranchId === null) {
+                    this.currentGitBranch = null;
+                }
             }
         }
     }

@@ -1129,7 +1129,7 @@ export const githubRouter = createTRPCRouter({
         .input(
             z.object({
                 projectId: z.string(),
-                branchName: z.string(),
+                branchName: z.string().max(100).regex(/^[a-zA-Z0-9._/-]+$/, 'Invalid branch name characters'),
                 commitSha: z.string().optional(),
                 currentActiveBranchId: z.string().optional(),
             })
@@ -1240,6 +1240,46 @@ export const githubRouter = createTRPCRouter({
                 throw new TRPCError({
                     code: 'INTERNAL_SERVER_ERROR',
                     message: `Failed to switch Git branch: ${error.message}`,
+                    cause: error,
+                });
+            }
+        }),
+
+    deleteGitBranch: protectedProcedure
+        .input(
+            z.object({
+                owner: z.string(),
+                repo: z.string(),
+                branchName: z.string().max(100).regex(/^[a-zA-Z0-9._/-]+$/, 'Invalid branch name characters'),
+                projectId: z.string(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            try {
+                const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
+
+                await octokit.rest.git.deleteRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `heads/${input.branchName}`,
+                });
+
+                const deletedBranches = await ctx.db.delete(branches)
+                    .where(and(
+                        eq(branches.projectId, input.projectId),
+                        eq(branches.gitBranch, input.branchName)
+                    ))
+                    .returning();
+
+                return {
+                    success: true,
+                    branchName: input.branchName,
+                    deletedCount: deletedBranches.length,
+                };
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `Failed to delete Git branch: ${error.message}`,
                     cause: error,
                 });
             }
