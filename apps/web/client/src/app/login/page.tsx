@@ -33,7 +33,7 @@ export default function LoginPage() {
                             {t(transKeys.welcome.description)}
                         </p>
                     </div>
-                    <div className="space-y-2 md:space-x-2 flex flex-col md:flex-row">
+                    <div className="space-y-2 md:space-y-0 md:space-x-2 flex flex-col md:flex-row">
                         <GithubLoginButton returnUrl={returnUrl} />
                         <GoogleLoginButton returnUrl={returnUrl} />
                     </div>
