@@ -32,17 +32,13 @@ export function createInsertedElement(insertedChild: CodeInsert): T.JSXElement {
     if (insertedChild.codeBlock) {
         element =
             getAstFromCodeblock(insertedChild.codeBlock, true) || createJSXElement(insertedChild);
+        addParamToElement(element, EditorAttributes.DATA_ONLOOK_ID, insertedChild.oid);
     } else {
         element = createJSXElement(insertedChild);
     }
-
-    // Set data-oid, prioritizing pasteParams.oid over insertedChild.oid
     if (insertedChild.pasteParams) {
         addPasteParamsToElement(element, insertedChild.pasteParams);
-    } else {
-        addParamToElement(element, EditorAttributes.DATA_ONLOOK_ID, insertedChild.oid);
     }
-
     addKeyToElement(element);
     return element;
 }
