@@ -179,6 +179,9 @@ export class FontManager {
                 // Add font variable to root layout
                 await this.layoutManager.addFontVariableToRootLayout(font.id);
 
+                // Reload all views to apply new font styles
+                this.editorEngine.frames.reloadAllViews();
+
                 return true;
             }
             return false;
@@ -208,6 +211,9 @@ export class FontManager {
                 if (font.id === this._defaultFont) {
                     this._defaultFont = null;
                 }
+
+                // Reload all views to apply font removal
+                this.editorEngine.frames.reloadAllViews();
 
                 return result;
             }
@@ -402,6 +408,9 @@ export class FontManager {
                 this._fonts = currentFonts;
                 // Update font search manager with current fonts
                 this.fontSearchManager.updateFontsList(this._fonts);
+                
+                // Reload all views to apply font changes
+                this.editorEngine.frames.reloadAllViews();
             }
 
             this.previousFonts = currentFonts;
