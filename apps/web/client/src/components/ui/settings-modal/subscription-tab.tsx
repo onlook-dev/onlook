@@ -17,15 +17,27 @@ import { useState } from 'react';
 import { useSubscription } from '../pricing-modal/use-subscription';
 import { ProductType, ScheduledSubscriptionAction } from '@onlook/stripe';
 
-const STRIPE_BILLING_PORTAL_URL = 'https://billing.stripe.com/p/login/7sY6oG8u8cS2aUMenO9ws00';
-
 export const SubscriptionTab = observer(() => {
     const stateManager = useStateManager();
     const { data: user } = api.user.get.useQuery();
     const { subscription, isPro } = useSubscription();
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [isManageDropdownOpen, setIsManageDropdownOpen] = useState(false);
-    const [isPaymentDropdownOpen, setIsPaymentDropdownOpen] = useState(false);
+    const [isLoadingPortal, setIsLoadingPortal] = useState(false);
+
+    const manageSubscriptionMutation = api.subscription.manageSubscription.useMutation({
+        onSuccess: (session) => {
+            if (session?.url) {
+                window.open(session.url, '_blank');
+            }
+        },
+        onError: (error) => {
+            console.error('Failed to create portal session:', error);
+        },
+        onSettled: () => {
+            setIsLoadingPortal(false);
+        }
+    });
 
     const handleUpgradePlan = () => {
         stateManager.isSubscriptionModalOpen = true;
@@ -43,9 +55,11 @@ export const SubscriptionTab = observer(() => {
         setShowCancelModal(false);
     };
 
-    const handleManageBilling = () => {
-        window.open(STRIPE_BILLING_PORTAL_URL, '_blank');
-        setIsPaymentDropdownOpen(false);
+    const handleManageBilling = async () => {
+        if (isPro && subscription) {
+            setIsLoadingPortal(true);
+            await manageSubscriptionMutation.mutateAsync();
+        }
     };
 
     return (
@@ -104,9 +118,9 @@ export const SubscriptionTab = observer(() => {
                                 {isPro && (
                                     <DropdownMenuItem 
                                         onClick={handleCancelSubscription}
-                                        className="cursor-pointer text-destructive"
+                                        className="cursor-pointer text-red-200 hover:text-red-100 group"
                                     >
-                                        <Icons.CrossS className="mr-2 h-4 w-4" />
+                                        <Icons.CrossS className="mr-2 h-4 w-4 text-red-200 group-hover:text-red-100" />
                                         {subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION ? 'Reactivate subscription' : 'Cancel subscription'}
                                     </DropdownMenuItem>
                                 )}
@@ -124,23 +138,14 @@ export const SubscriptionTab = observer(() => {
                                 Manage your payment methods and billing details
                             </p>
                         </div>
-                        <DropdownMenu open={isPaymentDropdownOpen} onOpenChange={setIsPaymentDropdownOpen}>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                    Manage
-                                    <Icons.ChevronDown className="ml-1 h-3 w-3" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56">
-                                <DropdownMenuItem 
-                                    onClick={handleManageBilling}
-                                    className="cursor-pointer"
-                                >
-                                    <Icons.CreditCard className="mr-2 h-4 w-4" />
-                                    Manage billing
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={handleManageBilling}
+                            disabled={isLoadingPortal || !isPro}
+                        >
+                            {isLoadingPortal ? 'Opening...' : 'Manage'}
+                        </Button>
                     </div>
                 </div>
             </div>
