@@ -65,7 +65,6 @@ export const CreateRepositoryStep = observer(({
         try {
             setExportStep('repository');
             
-            // Create repository
             const repo = await createRepository.mutateAsync({
                 name: repoName.trim(),
                 description: description.trim() || undefined,
@@ -73,7 +72,6 @@ export const CreateRepositoryStep = observer(({
                 owner: selectedOwner === 'personal' ? undefined : selectedOwner,
             });
 
-            // Create branch if requested
             if (createBranch && branchName.trim()) {
                 await createBranchMutation.mutateAsync({
                     owner: repo.owner.login,
@@ -85,7 +83,6 @@ export const CreateRepositoryStep = observer(({
 
             setExportStep('files');
 
-            // Export project files
             const projectFiles = await getProjectFiles();
             await exportFiles.mutateAsync({
                 owner: repo.owner.login,

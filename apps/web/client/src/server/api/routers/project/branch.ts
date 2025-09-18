@@ -24,16 +24,34 @@ export const branchRouter = createTRPCRouter({
             z.object({
                 projectId: z.string(),
                 onlyDefault: z.boolean().optional(),
+                gitBranch: z.string().optional(), // Filter by Git branch
             }),
         )
         .query(async ({ ctx, input }) => {
-            const dbBranches = await ctx.db.query.branches.findMany({
-                where: input.onlyDefault ?
-                    and(eq(branches.isDefault, true), eq(branches.projectId, input.projectId)) :
+            let whereCondition;
+            
+            if (input.gitBranch) {
+                // Filter by specific Git branch
+                whereCondition = and(
                     eq(branches.projectId, input.projectId),
-            });
-            // TODO: Create a default branch if none exists for backwards compatibility
+                    eq(branches.gitBranch, input.gitBranch)
+                );
+            } else if (input.onlyDefault) {
+                // Only default branch
+                whereCondition = and(
+                    eq(branches.isDefault, true), 
+                    eq(branches.projectId, input.projectId)
+                );
+            } else {
+                // All branches for project
+                whereCondition = eq(branches.projectId, input.projectId);
+            }
 
+            const dbBranches = await ctx.db.query.branches.findMany({
+                where: whereCondition,
+            });
+
+            // TODO: Create a default branch if none exists for backwards compatibility
             if (!dbBranches || dbBranches.length === 0) {
                 throw new TRPCError({
                     code: 'NOT_FOUND',

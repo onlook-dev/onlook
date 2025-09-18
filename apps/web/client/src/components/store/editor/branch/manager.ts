@@ -20,10 +20,19 @@ export class BranchManager {
     private currentBranchId: string | null = null;
     private branchMap = new Map<string, BranchData>();
     private reactionDisposer: (() => void) | null = null;
+    private currentGitBranch: string | null = null; // Track current Git branch context
 
     constructor(editorEngine: EditorEngine) {
         this.editorEngine = editorEngine;
         makeAutoObservable(this);
+    }
+
+    get activeGitBranch(): string | null {
+        return this.currentGitBranch;
+    }
+
+    setGitBranchContext(gitBranch: string): void {
+        this.currentGitBranch = gitBranch;
     }
 
     initBranches(branches: Branch[]): void {
@@ -35,6 +44,11 @@ export class BranchManager {
             error.clear();
         }
         this.branchMap.clear();
+        
+        if (branches.length > 0 && branches[0]?.git?.branch) {
+            this.currentGitBranch = branches[0].git.branch;
+        }
+        
         for (const branch of branches) {
             const errorManager = new ErrorManager(branch);
             const sandboxManager = new SandboxManager(branch, this.editorEngine, errorManager);
@@ -133,6 +147,27 @@ export class BranchManager {
 
     async listBranches(): Promise<Branch[]> {
         return [];
+    }
+
+    async reloadBranchesForGitContext(gitBranch: string): Promise<void> {
+        try {
+            const currentBranches = Array.from(this.branchMap.values());
+            if (currentBranches.length === 0) {
+                throw new Error('No project context available');
+            }
+            const projectId = currentBranches[0]!.branch.projectId;
+
+            const branches = await api.branch.getByProjectId.query({ 
+                projectId, 
+                gitBranch 
+            });
+
+            this.initBranches(branches);
+            await this.init();
+        } catch (error) {
+            console.error('Failed to reload branches for Git context:', error);
+            throw error;
+        }
     }
 
     async forkBranch(branchId: string): Promise<void> {

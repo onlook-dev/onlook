@@ -4,7 +4,7 @@ import {
     generateInstallationUrl
 } from '@onlook/github';
 import { TRPCError } from '@trpc/server';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
@@ -97,22 +97,55 @@ async function getChangedFiles(
     return changedFiles;
 }
 
-async function getProjectFiles(projectId: string, db: DrizzleDb): Promise<Array<{ path: string; content: string }>> {
-    const defaultBranch = await db.query.branches.findFirst({
-        where: and(
-            eq(branches.projectId, projectId),
-            eq(branches.isDefault, true)
-        ),
-    });
+async function forkSandbox(sourceSandboxId: string, newBranchName: string): Promise<string> {
+    try {
+        const { getStaticCodeProvider, CodeProvider } = await import('@onlook/code-provider');
+        const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
+        
+        const forkedSandbox = await CodesandboxProvider.createProject({
+            source: 'template',
+            id: sourceSandboxId,
+            title: `${newBranchName}-primary`,
+            tags: ['git-branch', newBranchName],
+        });
+        
+        return forkedSandbox.id;
+    } catch (error) {
+        console.error('Failed to fork sandbox:', error);
+        // Fallback: reuse source sandbox ID if forking fails
+        return sourceSandboxId;
+    }
+}
 
-    if (!defaultBranch?.sandboxId) {
+async function getProjectFiles(projectId: string, db: DrizzleDb, gitBranch?: string): Promise<Array<{ path: string; content: string }>> {
+    let branch;
+    
+    if (gitBranch) {
+        branch = await db.query.branches.findFirst({
+            where: and(
+                eq(branches.projectId, projectId),
+                eq(branches.gitBranch, gitBranch)
+            ),
+        });
+    }
+    
+    if (!branch) {
+        branch = await db.query.branches.findFirst({
+            where: and(
+                eq(branches.projectId, projectId),
+                eq(branches.isDefault, true)
+            ),
+        });
+    }
+
+    if (!branch?.sandboxId) {
         throw new TRPCError({
             code: 'PRECONDITION_FAILED',
             message: 'Project has no sandbox',
         });
     }
 
-    const provider = await getProvider({ sandboxId: defaultBranch.sandboxId });
+    const provider = await getProvider({ sandboxId: branch.sandboxId });
     const allFiles: Array<{ path: string; content: string }> = [];
     const dirsToProcess = ['./'];
     
@@ -380,7 +413,7 @@ export const githubRouter = createTRPCRouter({
                 name: z.string().min(1, 'Repository name is required'),
                 description: z.string().optional(),
                 private: z.boolean().default(true),
-                owner: z.string().optional(), // for organization repos
+                owner: z.string().optional(),
             })
         )
         .mutation(async ({ input, ctx }) => {
@@ -391,18 +424,16 @@ export const githubRouter = createTRPCRouter({
                     name: input.name,
                     description: input.description,
                     private: input.private,
-                    auto_init: true, // Create with initial commit
+                    auto_init: true,
                 };
 
                 let repoData;
                 if (input.owner) {
-                    // Create in organization
                     repoData = await octokit.rest.repos.createInOrg({
                         org: input.owner,
                         ...createParams,
                     });
                 } else {
-                    // Create in user account
                     repoData = await octokit.rest.repos.createForAuthenticatedUser(createParams);
                 }
 
@@ -931,8 +962,8 @@ export const githubRouter = createTRPCRouter({
                     });
                 }
 
-                const projectFiles = await getProjectFiles(input.projectId, ctx.db);
                 const branch = input.branch || 'main';
+                const projectFiles = await getProjectFiles(input.projectId, ctx.db, branch);
                 
                 const { data: branchRef } = await octokit.rest.git.getRef({
                     owner: input.owner,
@@ -1025,8 +1056,8 @@ export const githubRouter = createTRPCRouter({
                     });
                 }
 
-                const projectFiles = await getProjectFiles(input.projectId, ctx.db);
                 const branch = input.branch || 'main';
+                const projectFiles = await getProjectFiles(input.projectId, ctx.db, branch);
                 
                 const { data: branchRef } = await octokit.rest.git.getRef({
                     owner: input.owner,
@@ -1089,6 +1120,126 @@ export const githubRouter = createTRPCRouter({
                 throw new TRPCError({
                     code: 'INTERNAL_SERVER_ERROR',
                     message: `Push failed: ${error.message}`,
+                    cause: error,
+                });
+            }
+        }),
+
+    switchGitBranch: protectedProcedure
+        .input(
+            z.object({
+                projectId: z.string(),
+                branchName: z.string(),
+                commitSha: z.string().optional(),
+                currentActiveBranchId: z.string().optional(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            try {
+                // Check if branches already exist for this Git branch
+                const existingBranchesForGitBranch = await ctx.db.query.branches.findMany({
+                    where: and(
+                        eq(branches.projectId, input.projectId),
+                        eq(branches.gitBranch, input.branchName)
+                    ),
+                });
+
+                // Also check for branches with NULL git_branch (for migration compatibility)
+                const nullGitBranches = await ctx.db.query.branches.findMany({
+                    where: and(
+                        eq(branches.projectId, input.projectId),
+                        isNull(branches.gitBranch)
+                    ),
+                });
+
+                if (input.branchName === 'main' && nullGitBranches.length > 0) {
+                    
+                    await ctx.db.update(branches)
+                        .set({ 
+                            gitBranch: 'main',
+                            gitCommitSha: input.commitSha || null,
+                            updatedAt: new Date()
+                        })
+                        .where(and(
+                            eq(branches.projectId, input.projectId),
+                            isNull(branches.gitBranch)
+                        ));
+
+                    return {
+                        success: true,
+                        branchName: input.branchName,
+                        commitSha: input.commitSha,
+                        action: 'migrated',
+                        branchCount: nullGitBranches.length,
+                    };
+                }
+
+                if (existingBranchesForGitBranch.length > 0) {
+                    return {
+                        success: true,
+                        branchName: input.branchName,
+                        commitSha: input.commitSha,
+                        action: 'switched',
+                        branchCount: existingBranchesForGitBranch.length,
+                    };
+                }
+
+                let sourceBranch;
+                
+                if (input.currentActiveBranchId) {
+                    sourceBranch = await ctx.db.query.branches.findFirst({
+                        where: eq(branches.id, input.currentActiveBranchId),
+                    });
+                } else {
+                    sourceBranch = await ctx.db.query.branches.findFirst({
+                        where: and(
+                            eq(branches.projectId, input.projectId),
+                            eq(branches.isDefault, true)
+                        ),
+                    });
+                }
+
+                if (!sourceBranch) {
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: 'No source branch found to fork from',
+                    });
+                }
+
+                const forkedSandboxId = await forkSandbox(sourceBranch.sandboxId, input.branchName);
+
+                const now = new Date();
+                const { v4: uuidv4 } = await import('uuid');
+                const newBranchId = uuidv4();
+                
+                const newBranch = {
+                    id: newBranchId,
+                    name: `${input.branchName}-primary`,
+                    description: `Primary sandbox for Git branch: ${input.branchName}`,
+                    projectId: input.projectId,
+                    sandboxId: forkedSandboxId,
+                    isDefault: false,
+                    gitBranch: input.branchName,
+                    gitCommitSha: input.commitSha || null,
+                    gitRepoUrl: sourceBranch.gitRepoUrl,
+                    createdAt: now,
+                    updatedAt: now,
+                };
+
+                await ctx.db.insert(branches).values(newBranch);
+
+                return {
+                    success: true,
+                    branchName: input.branchName,
+                    commitSha: input.commitSha,
+                    action: 'created',
+                    newBranchId: newBranch.id,
+                    forkedFromSandbox: sourceBranch.sandboxId,
+                };
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `Failed to switch Git branch: ${error.message}`,
                     cause: error,
                 });
             }
