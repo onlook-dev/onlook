@@ -452,22 +452,39 @@ export const projectRouter = createTRPCRouter({
             throw new Error('Access denied');
         }
 
-        // Get the default branch to access the sandbox
-        const sourceBranch = await ctx.db.query.branches.findFirst({
-            where: and(eq(branches.projectId, input.projectId), eq(branches.isDefault, true)),
+        // Get all branches and canvas data from the source project
+        const sourceBranches = await ctx.db.query.branches.findMany({
+            where: eq(branches.projectId, input.projectId),
             with: {
                 frames: true,
             },
         });
 
-        if (!sourceBranch?.sandboxId) {
-            throw new Error('Source project has no sandbox to clone');
+        // Get the canvas data to preserve positions
+        const sourceCanvas = await ctx.db.query.canvases.findFirst({
+            where: eq(canvases.projectId, input.projectId),
+            with: {
+                frames: true,
+                userCanvases: {
+                    where: eq(userCanvases.userId, ctx.user.id),
+                },
+            },
+        });
+
+        if (sourceBranches.length === 0) {
+            throw new Error('Source project has no branches to clone');
+        }
+
+        // Find the default branch to use as the primary sandbox source
+        const defaultBranch = sourceBranches.find(branch => branch.isDefault);
+        if (!defaultBranch?.sandboxId) {
+            throw new Error('Source project has no default branch with sandbox to clone');
         }
 
         return await ctx.db.transaction(async (tx) => {
-            // 1. Fork the sandbox from the source project
+            // 1. Fork the sandbox from the default branch
             // We need to determine the sandbox port from existing frames
-            const port = extractCsbPort(sourceBranch.frames) ?? 3000;
+            const port = extractCsbPort(defaultBranch.frames) ?? 3000;
             
             // Import the sandbox fork function here since it's not exposed
             const { getStaticCodeProvider } = await import('@onlook/code-provider');
@@ -480,7 +497,7 @@ export const projectRouter = createTRPCRouter({
                 const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
                 const clonedSandbox = await CodesandboxProvider.createProject({
                     source: 'sandbox',
-                    id: sourceBranch.sandboxId,
+                    id: defaultBranch.sandboxId,
                     title: `${input.name || sourceProject.name} (Clone)`,
                     tags: ['clone', ctx.user.id],
                 });
@@ -504,12 +521,26 @@ export const projectRouter = createTRPCRouter({
                 throw new Error('Failed to create cloned project in database');
             }
 
-            // 3. Create the default branch with the new sandbox
-            const newBranch = createDefaultBranch({
-                projectId: newProject.id,
-                sandboxId: newSandboxId,
-            });
-            await tx.insert(branches).values(newBranch);
+            // 3. Clone all branches from the source project
+            const clonedBranches: typeof branches.$inferSelect[] = [];
+            for (const sourceBranch of sourceBranches) {
+                const newBranchData = {
+                    id: crypto.randomUUID(),
+                    projectId: newProject.id,
+                    name: sourceBranch.name,
+                    description: sourceBranch.description,
+                    isDefault: sourceBranch.isDefault,
+                    sandboxId: sourceBranch.isDefault ? newSandboxId : sourceBranch.sandboxId,
+                    gitBranch: sourceBranch.gitBranch,
+                    gitCommitSha: sourceBranch.gitCommitSha,
+                    gitRepoUrl: sourceBranch.gitRepoUrl,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                };
+                
+                await tx.insert(branches).values(newBranchData);
+                clonedBranches.push(newBranchData);
+            }
 
             // 4. Create the association in the junction table
             await tx.insert(userProjects).values({
@@ -518,33 +549,55 @@ export const projectRouter = createTRPCRouter({
                 role: ProjectRole.OWNER,
             });
 
-            // 5. Create the default canvas
-            const newCanvas = createDefaultCanvas(newProject.id);
+            // 5. Create the canvas (preserve source canvas settings if available)
+            const newCanvas = sourceCanvas ? {
+                id: crypto.randomUUID(),
+                projectId: newProject.id,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            } : createDefaultCanvas(newProject.id);
             await tx.insert(canvases).values(newCanvas);
 
-            const newUserCanvas = createDefaultUserCanvas(ctx.user.id, newCanvas.id, {
+            // Create user canvas with preserved settings if available
+            const sourceUserCanvas = sourceCanvas?.userCanvases?.[0];
+            const newUserCanvas = sourceUserCanvas ? {
+                id: crypto.randomUUID(),
+                userId: ctx.user.id,
+                canvasId: newCanvas.id,
+                x: sourceUserCanvas.x,
+                y: sourceUserCanvas.y,
+                scale: sourceUserCanvas.scale,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            } : createDefaultUserCanvas(ctx.user.id, newCanvas.id, {
                 x: '120',
                 y: '120',
                 scale: '0.56',
             });
             await tx.insert(userCanvases).values(newUserCanvas);
 
-            // 6. Create the default frames
-            const desktopFrame = createDefaultFrame({
-                canvasId: newCanvas.id,
-                branchId: newBranch.id,
-                url: previewUrl,
-                type: DefaultFrameType.DESKTOP,
-            });
-            await tx.insert(frames).values(desktopFrame);
-            
-            const mobileFrame = createDefaultFrame({
-                canvasId: newCanvas.id,
-                branchId: newBranch.id,
-                url: previewUrl,
-                type: DefaultFrameType.MOBILE,
-            });
-            await tx.insert(frames).values(mobileFrame);
+            // 6. Clone all frames from all branches with their positions preserved
+            for (const sourceBranch of sourceBranches) {
+                const clonedBranch = clonedBranches.find(cb => cb.name === sourceBranch.name);
+                if (!clonedBranch) continue;
+
+                for (const sourceFrame of sourceBranch.frames) {
+                    const newFrameData = {
+                        id: crypto.randomUUID(),
+                        canvasId: newCanvas.id,
+                        branchId: clonedBranch.id,
+                        url: sourceBranch.isDefault ? previewUrl : sourceFrame.url,
+                        x: sourceFrame.x,
+                        y: sourceFrame.y,
+                        width: sourceFrame.width,
+                        height: sourceFrame.height,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    };
+                    
+                    await tx.insert(frames).values(newFrameData);
+                }
+            }
 
             // 7. Create the default chat conversation
             await tx.insert(conversations).values(createDefaultConversation(newProject.id));

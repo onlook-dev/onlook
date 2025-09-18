@@ -8,7 +8,6 @@ import { LocalForageKeys, Routes } from '@/utils/constants';
 import { SandboxTemplates, Templates } from '@onlook/constants';
 import {
     DropdownMenuItem,
-    DropdownMenuSeparator,
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
@@ -24,10 +23,6 @@ import { useState } from 'react';
 export const NewProjectMenu = observer(() => {
     const editorEngine = useEditorEngine();
     const { data: user } = api.user.get.useQuery();
-    const { data: projects } = api.project.list.useQuery({ 
-        excludeProjectId: editorEngine.projectId,
-        limit: 10 
-    });
     const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
     const { mutateAsync: createProject } = api.project.create.useMutation();
     const { mutateAsync: cloneProject } = api.project.clone.useMutation();
@@ -35,7 +30,7 @@ export const NewProjectMenu = observer(() => {
     const t = useTranslations();
     const router = useRouter();
     const [isCreatingProject, setIsCreatingProject] = useState(false);
-    const [isCloningProject, setIsCloningProject] = useState<string | null>(null);
+    const [isCloningCurrentProject, setIsCloningCurrentProject] = useState(false);
 
     const handleStartBlankProject = async () => {
         if (!user?.id) {
@@ -95,14 +90,19 @@ export const NewProjectMenu = observer(() => {
         }
     };
 
-    const handleCloneProject = async (projectId: string, projectName: string) => {
+    const handleCloneCurrentProject = async () => {
         if (!user?.id) {
             await localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
             setIsAuthModalOpen(true);
             return;
         }
 
-        setIsCloningProject(projectId);
+        if (!editorEngine.projectId) {
+            toast.error('No project to clone');
+            return;
+        }
+
+        setIsCloningCurrentProject(true);
         try {
             // Capture screenshot of current project before navigation
             try {
@@ -112,8 +112,7 @@ export const NewProjectMenu = observer(() => {
             }
 
             const clonedProject = await cloneProject({
-                projectId,
-                name: `${projectName} (Clone)`,
+                projectId: editorEngine.projectId,
             });
 
             if (clonedProject) {
@@ -134,7 +133,7 @@ export const NewProjectMenu = observer(() => {
                 });
             }
         } finally {
-            setIsCloningProject(null);
+            setIsCloningCurrentProject(false);
         }
     };
 
@@ -176,47 +175,20 @@ export const NewProjectMenu = observer(() => {
                         {t(transKeys.projects.actions.import)}
                     </div>
                 </DropdownMenuItem>
-                
-                {projects && projects.length > 0 && (
-                    <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuSub>
-                            <DropdownMenuSubTrigger className="cursor-pointer">
-                                <div className="flex flex-row center items-center">
-                                    <Icons.Copy className="mr-2" />
-                                    Clone Project
-                                </div>
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuSubContent className="w-56 ml-2">
-                                <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b">
-                                    Clone from project:
-                                </div>
-                                {projects.slice(0, 8).map((project) => (
-                                    <DropdownMenuItem
-                                        key={project.id}
-                                        onClick={() => handleCloneProject(project.id, project.name)}
-                                        disabled={isCloningProject !== null}
-                                        className="cursor-pointer"
-                                    >
-                                        <div className="flex flex-row center items-center group w-full">
-                                            {isCloningProject === project.id ? (
-                                                <Icons.LoadingSpinner className="mr-2 animate-spin flex-shrink-0" />
-                                            ) : (
-                                                <Icons.Copy className="mr-2 flex-shrink-0" />
-                                            )}
-                                            <span className="truncate">{project.name}</span>
-                                        </div>
-                                    </DropdownMenuItem>
-                                ))}
-                                {projects.length > 8 && (
-                                    <div className="px-2 py-1.5 text-xs text-muted-foreground border-t">
-                                        +{projects.length - 8} more projects
-                                    </div>
-                                )}
-                            </DropdownMenuSubContent>
-                        </DropdownMenuSub>
-                    </>
-                )}
+                <DropdownMenuItem
+                    onClick={handleCloneCurrentProject}
+                    disabled={isCloningCurrentProject}
+                    className="cursor-pointer"
+                >
+                    <div className="flex flex-row center items-center group">
+                        {isCloningCurrentProject ? (
+                            <Icons.LoadingSpinner className="mr-2 animate-spin" />
+                        ) : (
+                            <Icons.Copy className="mr-2" />
+                        )}
+                        Clone this project
+                    </div>
+                </DropdownMenuItem>
             </DropdownMenuSubContent>
         </DropdownMenuSub>
     );
