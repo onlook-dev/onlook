@@ -210,7 +210,7 @@ export const ChatInput = observer(({
                 mimeType: file.type,
                 displayName: displayName ?? file.name,
             };
-            editorEngine.chat.context.context.push(contextImage);
+            editorEngine.chat.context.addContexts([contextImage]);
         };
         reader.readAsDataURL(file);
     };
@@ -223,15 +223,13 @@ export const ChatInput = observer(({
 
             const { success, errorMessage } = validateImageLimit(currentImages, 1);
             if (!success) {
-                toast.error(errorMessage);
-                return;
+                throw new Error(errorMessage);
             }
 
             const framesWithViews = editorEngine.frames.getAll().filter(f => !!f.view);
 
             if (framesWithViews.length === 0) {
-                toast.error('No active frame available for screenshot');
-                return;
+                throw new Error('No active frame available for screenshot');
             }
 
             let screenshotData = null;
@@ -255,8 +253,7 @@ export const ChatInput = observer(({
             }
 
             if (!screenshotData) {
-                toast.error('Failed to capture screenshot. Please refresh the page and try again.');
-                return;
+                throw new Error('No screenshot data');
             }
 
             const contextImage: ImageMessageContext = {
@@ -265,10 +262,10 @@ export const ChatInput = observer(({
                 mimeType: mimeType,
                 displayName: 'Screenshot',
             };
-            editorEngine.chat.context.context.push(contextImage);
+            editorEngine.chat.context.addContexts([contextImage]);
             toast.success('Screenshot added to chat');
         } catch (error) {
-            toast.error('Failed to capture screenshot. Please try again.');
+            toast.error('Failed to capture screenshot. Error: ' + error);
         }
     };
 

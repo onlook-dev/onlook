@@ -109,6 +109,34 @@ export class ConversationManager {
         }
     }
 
+    async generateTitle(content: string): Promise<void> {
+        if (!this.current) {
+            console.error('No conversation found');
+            return;
+        }
+        const title = await api.chat.conversation.generateTitle.mutate({
+            conversationId: this.current?.id,
+            content,
+        });
+        if (!title) {
+            console.error('Error generating conversation title. No title returned.');
+            return;
+        }
+        // Update local active conversation 
+        this.current = {
+            ...this.current,
+            title,
+        };
+        // Update in local conversations list
+        const index = this.conversations.findIndex((c) => c.id === this.current?.id);
+        if (index !== -1 && this.conversations[index]) {
+            this.conversations[index] = {
+                ...this.conversations[index],
+                title,
+            };
+        }
+    }
+
     async getConversationsFromStorage(id: string): Promise<ChatConversation[] | null> {
         return api.chat.conversation.getAll.query({ projectId: id });
     }

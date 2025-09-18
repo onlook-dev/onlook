@@ -60,8 +60,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 });
             },
             onFinish: ({ message }) => {
-                const finishReason = (message.metadata as { finishReason?: string } | undefined)
-                    ?.finishReason;
+                const finishReason = message.metadata?.finishReason;
                 setFinishReason(finishReason ?? null);
             },
         });
@@ -94,7 +93,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                     context,
                 },
             });
-
+            void editorEngine.chat.conversation.generateTitle(content);
             return newMessage;
         },
         [
@@ -123,11 +122,13 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
 
             const updatedMessages = messagesRef.current.slice(0, messageIndex);
 
-            const context = await editorEngine.chat.context.getContextByChatType(chatType);
+            // For resubmitted messages, we want to keep the previous context and refresh if possible
+            const previousContext = message.metadata?.context ?? [];
+            const updatedContext = await editorEngine.chat.context.getRefreshedContext(previousContext);
 
             message.metadata = {
                 ...message.metadata,
-                context,
+                context: updatedContext,
                 conversationId,
                 createdAt: message.metadata?.createdAt ?? new Date(),
                 checkpoints: message.metadata?.checkpoints ?? [],
@@ -211,6 +212,11 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 );
             };
 
+            const cleanupContext = async () => {
+                await editorEngine.chat.context.clearImagesFromContext();
+            };
+
+            void cleanupContext();
             void fetchSuggestions();
             void applyCommit();
         }

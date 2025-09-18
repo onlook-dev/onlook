@@ -98,7 +98,7 @@ export const useStartProject = () => {
                 }));
 
             const context: MessageContext[] = [...createContext, ...imageContexts];
-            editorEngine.chat.context.context.push(...context);
+            editorEngine.chat.context.addContexts(context);
 
             const prompt = creationData.context
                 .filter((context) => context.type === CreateRequestContextType.PROMPT)

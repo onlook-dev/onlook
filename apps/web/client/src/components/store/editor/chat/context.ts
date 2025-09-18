@@ -14,7 +14,7 @@ import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 
 export class ChatContext {
-    context: MessageContext[] = [];
+    private _context: MessageContext[] = [];
     private selectedReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
@@ -26,6 +26,18 @@ export class ChatContext {
             () => this.editorEngine.elements.selected,
             () => this.getChatContext().then((context) => (this.context = context)),
         );
+    }
+
+    get context(): MessageContext[] {
+        return this._context;
+    }
+
+    set context(context: MessageContext[]) {
+        this._context = context;
+    }
+
+    addContexts(contexts: MessageContext[]) {
+        this._context = [...this._context, ...contexts];
     }
 
     async getContextByChatType(type: ChatType): Promise<MessageContext[]> {
@@ -63,6 +75,8 @@ export class ChatContext {
     }
 
     async getRefreshedContext(context: MessageContext[]): Promise<MessageContext[]> {
+        // Refresh the context if possible. Files and highlight content may have changed since the last time they were added to the context.
+        // Images are not refreshed as they are not editable.
         return await Promise.all(context.map(async (c) => {
             if (c.type === MessageContextType.FILE) {
                 const fileContent = await this.editorEngine.activeSandbox.readFile(c.path);
@@ -216,16 +230,16 @@ export class ChatContext {
 
     async getCreateContext() {
         try {
-            const context: MessageContext[] = [];
+            const createContext: MessageContext[] = [];
             const pageContext = await this.getDefaultPageContext();
             const styleGuideContext = await this.getDefaultStyleGuideContext();
             if (pageContext) {
-                context.push(pageContext);
+                createContext.push(pageContext);
             }
             if (styleGuideContext) {
-                context.push(...styleGuideContext);
+                createContext.push(...styleGuideContext);
             }
-            return context;
+            return createContext;
         } catch (error) {
             console.error('Error getting create context', error);
             return [];
@@ -295,7 +309,7 @@ export class ChatContext {
         }
     }
 
-    clearAttachments() {
+    clearImagesFromContext() {
         this.context = this.context.filter((context) => context.type !== MessageContextType.IMAGE);
     }
 
