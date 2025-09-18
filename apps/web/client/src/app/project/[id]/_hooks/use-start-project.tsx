@@ -73,12 +73,11 @@ export const useStartProject = () => {
 
     useEffect(() => {
         const isProjectReady = Object.values(projectReadyState).every((value) => value);
-        if (creationRequest && processedRequestIdRef.current !== creationRequest.id && isProjectReady) {
-            console.error('Resume create', creationRequest, isProjectReady, processedRequestIdRef.current);
+        if (creationRequest && processedRequestIdRef.current !== creationRequest.id && isProjectReady && editorEngine.chat._sendMessageAction) {
             processedRequestIdRef.current = creationRequest.id;
             void resumeCreate(creationRequest);
         }
-    }, [creationRequest, projectReadyState]);
+    }, [creationRequest, projectReadyState, editorEngine.chat._sendMessageAction]);
 
     const resumeCreate = async (creationData: ProjectCreateRequest) => {
         try {

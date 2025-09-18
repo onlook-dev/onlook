@@ -11,7 +11,7 @@ export class ChatManager {
     context: ChatContext;
 
     // Content sent from useChat hook
-    private chatSendMessage: SendMessage | null = null;
+    _sendMessageAction: SendMessage | null = null;
     isStreaming = false;
 
     constructor(private editorEngine: EditorEngine) {
@@ -37,15 +37,15 @@ export class ChatManager {
     }
 
     setChatActions(sendMessage: SendMessage) {
-        this.chatSendMessage = sendMessage;
+        this._sendMessageAction = sendMessage;
     }
 
     async sendMessage(content: string, type: ChatType): Promise<void> {
-        if (!this.chatSendMessage) {
+        if (!this._sendMessageAction) {
             throw new Error('Chat actions not initialized');
         }
 
-        await this.chatSendMessage(content, type);
+        await this._sendMessageAction(content, type);
     }
 
     clear() {

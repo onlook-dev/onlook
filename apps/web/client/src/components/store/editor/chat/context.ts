@@ -24,7 +24,7 @@ export class ChatContext {
     init() {
         this.selectedReactionDisposer = reaction(
             () => this.editorEngine.elements.selected,
-            () => this.getChatContext().then((context) => (this.context = context)),
+            () => this.generateContextFromReaction().then((context) => (this.context = context)),
         );
     }
 
@@ -45,7 +45,7 @@ export class ChatContext {
             case ChatType.EDIT:
             case ChatType.CREATE:
             case ChatType.ASK:
-                return await this.getChatContext();
+                return await this.getLatestContext();
             case ChatType.FIX:
                 return this.getErrorContext();
             default:
@@ -54,11 +54,10 @@ export class ChatContext {
     }
 
     async getLatestContext(): Promise<MessageContext[]> {
-        const context = await this.getChatContext();
-        return await this.getRefreshedContext(context);
+        return await this.getRefreshedContext(this.context);
     }
 
-    async getChatContext(): Promise<MessageContext[]> {
+    private async generateContextFromReaction(): Promise<MessageContext[]> {
         const selected = this.editorEngine.elements.selected;
 
         let highlightedContext: HighlightMessageContext[] = [];
