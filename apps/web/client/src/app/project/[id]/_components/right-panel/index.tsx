@@ -29,7 +29,6 @@ export const RightPanel = observer(() => {
 
     const selectedTab = editorEngine.state.rightPanelTab;
     const currentConversation = editorEngine.chat.conversation.current;
-
     const editPanelWidth = EDIT_PANEL_WIDTHS[selectedTab];
 
     return (
