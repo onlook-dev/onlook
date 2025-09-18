@@ -1,5 +1,7 @@
+import { api } from '@/trpc/server';
 import { trackEvent } from '@/utils/analytics/server';
 import { convertToStreamMessages, getToolSetFromType } from '@onlook/ai';
+import { toDbMessage } from '@onlook/db';
 import { ChatType, type ChatMessage, type ChatMetadata } from '@onlook/models';
 import { stepCountIs, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
@@ -134,6 +136,18 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                         finishReason: part.type === 'finish-step' ? part.finishReason : undefined,
                         usage: part.type === 'finish-step' ? part.usage : undefined,
                     } satisfies ChatMetadata;
+                },
+                onFinish: async ({ messages: finalMessages }) => {
+                    const messagesToStore = finalMessages
+                        .filter(msg =>
+                            (msg.role === 'user' || msg.role === 'assistant')
+                        )
+                        .map(msg => toDbMessage(msg, conversationId));
+
+                    await api.chat.message.replaceConversationMessages({
+                        conversationId,
+                        messages: messagesToStore,
+                    });
                 },
                 onError: errorHandler,
             }

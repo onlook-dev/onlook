@@ -63,7 +63,6 @@ export const messageRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             await ctx.db.update(messages).set({
                 ...input.message,
-                parts: input.message.parts
             }).where(eq(messages.id, input.messageId));
         }),
     updateCheckpoints: protectedProcedure
@@ -87,12 +86,36 @@ export const messageRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             await ctx.db.delete(messages).where(inArray(messages.id, input.messageIds));
         }),
+
+    // TODO: We're just doing a full replacement here which is inefficient.
+    // To improve this, there's basically two use-cases we need to support:
+    // 1) Add new messages (doesn't need to delete + reinsert messages)
+    // 2) Edit a previous message (requires deleting all messages following the edited message and inserting new ones)
+    // Tool calls are supported in both cases by the fact that they result in new messages being added.
+    replaceConversationMessages: protectedProcedure
+        .input(z.object({
+            conversationId: z.string(),
+            messages: messageInsertSchema.array(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+            await ctx.db.transaction(async (tx) => {
+                await tx.delete(messages).where(eq(messages.conversationId, input.conversationId));
+
+                if (input.messages.length > 0) {
+                    const normalizedMessages = input.messages.map(normalizeMessage);
+                    await tx.insert(messages).values(normalizedMessages);
+                }
+
+                await tx.update(conversations).set({
+                    updatedAt: new Date()
+                }).where(eq(conversations.id, input.conversationId));
+            });
+        }),
 })
 
 const normalizeMessage = (message: z.infer<typeof messageInsertSchema>) => {
     return {
         ...message,
-        parts: message.parts,
         createdAt: typeof message.createdAt === 'string' ? new Date(message.createdAt) : message.createdAt,
     };
 };

@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { type ChatMessage } from '@onlook/models/chat';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
@@ -29,7 +30,7 @@ export const ContextWheel = observer(({ className }: ContextWheelProps) => {
 
         // Fallback to estimation if no usage data is available yet
         const contextItems = editorEngine.chat.context.context;
-        const messages = editorEngine.chat.conversation.current?.messages || [];
+        const messages: ChatMessage[] = [];
 
         let estimatedTokens = 0;
 
@@ -67,7 +68,7 @@ export const ContextWheel = observer(({ className }: ContextWheelProps) => {
         const percentage = Math.min((estimatedTokens / maxContextTokens) * 100, 100);
 
         return Math.round(percentage);
-    }, [(editorEngine.chat.context as any).cumulativeUsage, editorEngine.chat.context.context, editorEngine.chat.conversation.current?.messages]);
+    }, [(editorEngine.chat.context as any).cumulativeUsage, editorEngine.chat.context.context]);
 
     const getColorClass = (percentage: number) => {
         if (percentage < 50) return 'text-gray-500';
@@ -89,7 +90,7 @@ export const ContextWheel = observer(({ className }: ContextWheelProps) => {
     const strokeDashoffset = circumference - (contextPercentage / 100) * circumference;
 
     const contextItems = editorEngine.chat.context.context;
-    const messages = editorEngine.chat.conversation.current?.messages || [];
+    const messages: ChatMessage[] = [];
     const cumulativeUsage = (editorEngine.chat.context as any).cumulativeUsage;
 
     return (

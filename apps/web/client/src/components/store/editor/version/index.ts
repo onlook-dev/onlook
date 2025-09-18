@@ -43,7 +43,7 @@ export class VersionsManager {
     }
 
     createCommit = async (
-        message: string = 'New Onlook backup',
+        message = 'New Onlook backup',
         showToast = true,
     ): Promise<{
         success: boolean;

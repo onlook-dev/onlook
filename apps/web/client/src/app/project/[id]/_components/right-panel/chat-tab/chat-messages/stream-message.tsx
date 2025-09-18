@@ -1,27 +1,18 @@
-import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
+import { type ChatMessage } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { useMemo } from 'react';
 import { MessageContent } from './message-content';
 
-export const StreamMessage = () => {
-    const { messages, isWaiting } = useChatContext();
-    const streamMessage = messages.length > 0 ? messages[messages.length - 1] : null;
-    const isAssistantStreamMessage = useMemo(() =>
-        streamMessage?.role === 'assistant',
-        [streamMessage?.role]
-    );
-
-    if (!isWaiting) {
-        return null;
-    }
+export const StreamMessage = ({ message }: { message: ChatMessage }) => {
+    const isAssistantStreamMessage = useMemo(() => message?.role === 'assistant', [message?.role]);
 
     return (
         <>
-            {streamMessage && isAssistantStreamMessage && (
+            {message && isAssistantStreamMessage && (
                 <div className="px-4 py-2 text-small content-start flex flex-col text-wrap gap-2">
                     <MessageContent
-                        messageId={streamMessage.id}
-                        parts={streamMessage.parts}
+                        messageId={message.id}
+                        parts={message.parts}
                         applied={false}
                         isStream={true}
                     />
