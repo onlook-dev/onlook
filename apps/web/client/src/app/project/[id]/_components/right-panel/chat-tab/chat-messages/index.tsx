@@ -26,7 +26,6 @@ export const ChatMessages = observer(
         const t = useTranslations();
 
         const { messages, streamedMessage } = useMemo(() => {
-            console.log('baseMessages', baseMessages.length, isStreaming);
             if (isStreaming) {
                 return {
                     messages: baseMessages.slice(0, -1),
