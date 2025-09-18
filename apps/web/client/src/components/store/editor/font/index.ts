@@ -154,14 +154,6 @@ export class FontManager {
      */
     async addFont(font: Font): Promise<boolean> {
         try {
-            const sandbox = this.editorEngine.activeSandbox;
-            if (!sandbox) {
-                console.error('No sandbox session found');
-                return false;
-            }
-
-            await this.ensureConfigFilesExist();
-
             const success = await this.fontConfigManager.addFont(font);
             if (success) {
                 // Update the fonts array
@@ -172,15 +164,6 @@ export class FontManager {
 
                 // Load the new font in the search manager
                 await this.fontSearchManager.loadFontFromBatch([font]);
-
-                // Add font to Tailwind config
-                await addFontToTailwindConfig(font, sandbox);
-
-                // Add font variable to root layout
-                await this.layoutManager.addFontVariableToRootLayout(font.id);
-
-                // Reload all views to apply new font styles
-                this.editorEngine.frames.reloadAllViews();
 
                 return true;
             }
@@ -211,9 +194,6 @@ export class FontManager {
                 if (font.id === this._defaultFont) {
                     this._defaultFont = null;
                 }
-
-                // Reload all views to apply font removal
-                this.editorEngine.frames.reloadAllViews();
 
                 return result;
             }
@@ -408,9 +388,6 @@ export class FontManager {
                 this._fonts = currentFonts;
                 // Update font search manager with current fonts
                 this.fontSearchManager.updateFontsList(this._fonts);
-                
-                // Reload all views to apply font changes
-                this.editorEngine.frames.reloadAllViews();
             }
 
             this.previousFonts = currentFonts;

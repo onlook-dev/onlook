@@ -347,14 +347,9 @@ export function addFontToTailwindTheme(font: Font, content: string): string {
                 );
                 if (!fontExists) {
                     // Add the new font to existing fontFamily
-                    // Use string literal if font ID contains special characters (like hyphens)
-                    const fontIdKey = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(font.id) 
-                        ? t.identifier(font.id)
-                        : t.stringLiteral(font.id);
-                    
                     fontFamilyValue.properties.push(
                         t.objectProperty(
-                            fontIdKey,
+                            t.identifier(font.id),
                             t.arrayExpression([
                                 t.stringLiteral(`var(${font.variable})`),
                                 t.stringLiteral('sans-serif'),
