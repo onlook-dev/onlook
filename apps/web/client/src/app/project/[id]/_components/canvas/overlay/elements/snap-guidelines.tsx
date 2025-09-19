@@ -39,7 +39,7 @@ export const SnapGuidelines = observer(() => {
                                 left: `${line.start}px`,
                                 top: `${line.position + visualOffset}px`,
                                 width: `${line.end - line.start}px`,
-                                height: `${Math.max(1, 2 / scale)}px`,
+                                height: `${Math.max(1, 1 / scale)}px`,
                                 opacity: 0.9,
                                 boxShadow: '0 0 4px rgba(239, 68, 68, 0.6)',
                             }}
@@ -53,7 +53,7 @@ export const SnapGuidelines = observer(() => {
                             style={{
                                 left: `${line.position}px`,
                                 top: `${line.start}px`,
-                                width: `${Math.max(1, 2 / scale)}px`,
+                                width: `${Math.max(1, 1 / scale)}px`,
                                 height: `${line.end - line.start}px`,
                                 opacity: 0.9,
                                 boxShadow: '0 0 4px rgba(239, 68, 68, 0.6)',

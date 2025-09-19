@@ -1,3 +1,5 @@
+'use client';
+
 import { useEditorEngine } from '@/components/store/editor';
 import { DefaultSettings } from '@onlook/constants';
 import { type FolderNode } from '@onlook/models';
@@ -206,14 +208,41 @@ const Folder = observer(() => {
                         </button>
                     )}
                 </div>
-                <Button
-                    variant="default"
-                    size="icon"
-                    className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
-                    onClick={() => handleCreateFolder(currentFolder)}
-                >
-                    <Icons.DirectoryPlus className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant={'default'}
+                            size={'icon'}
+                            className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
+                            onClick={() => handleCreateFolder(currentFolder)}
+                            disabled={isAnyOperationLoading}
+                        >
+                            <Icons.DirectoryPlus className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipPortal>
+                        <TooltipContent>
+                            <p>Create a folder</p>
+                        </TooltipContent>
+                    </TooltipPortal>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant={'default'}
+                            size={'icon'}
+                            className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
+                            onClick={() => editorEngine.image.scanImages()}
+                        >
+                            <Icons.Reload className="w-4 h-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipPortal>
+                        <TooltipContent>
+                            <p>Refresh Images</p>
+                        </TooltipContent>
+                    </TooltipPortal>
+                </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
@@ -223,7 +252,7 @@ const Folder = observer(() => {
                             onClick={uploadOperations.handleClickAddButton}
                             disabled={isAnyOperationLoading}
                         >
-                            <Icons.Plus />
+                            <Icons.Plus className="w-4 h-4" />
                         </Button>
                     </TooltipTrigger>
                     <TooltipPortal>

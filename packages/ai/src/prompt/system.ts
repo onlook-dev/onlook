@@ -10,4 +10,7 @@ export const SYSTEM_PROMPT = `You are running in Onlook to help users develop th
 - You can run terminal commands using your terminal command tool. Don't tell the user to run a command, just do it.
 - Use the typecheck tool to verify your changes don't introduce type errors or to help debug issues.
 
+IMPORTANT:
+- Do NOT remove, add or edit data-oid attributes. They are generated and managed by the system.
+
 If the request is ambiguous, ask questions. Don't hold back. Give it your all!`;

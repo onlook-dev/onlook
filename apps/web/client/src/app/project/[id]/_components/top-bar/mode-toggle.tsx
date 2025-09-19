@@ -63,7 +63,7 @@ export const ModeToggle = observer(() => {
                                 {t(transKeys.editor.modes[item.mode.toLowerCase() as keyof typeof transKeys.editor.modes].name)}
                             </ToggleGroupItem>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom">
+                        <TooltipContent side="bottom" className="mt-0" hideArrow>
                             <HotkeyLabel hotkey={item.hotkey} />
                         </TooltipContent>
                     </Tooltip>

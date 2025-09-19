@@ -51,7 +51,7 @@ export const ColorBackground = observer(() => {
                             className="flex w-10 flex-col items-center justify-center gap-0.5"
                         >
                             <Icons.PaintBucket className="h-2 w-2" />
-                            <div className="h-[4px] w-6 rounded-full" style={previewStyle} />
+                            <div className="h-[4px] w-6 rounded-full border-[0.5px] border-border" style={previewStyle} />
                         </ToolbarButton>
                     </DropdownMenuTrigger>
                 </HoverOnlyTooltip>

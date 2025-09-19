@@ -1,4 +1,4 @@
-import type { DomElement } from '@onlook/models';
+import { ChatType, type DomElement } from '@onlook/models';
 import {
     MessageContextType,
     type BranchMessageContext,
@@ -9,28 +9,55 @@ import {
     type MessageContext,
     type ProjectMessageContext,
 } from '@onlook/models/chat';
-import type { ParsedError } from '@onlook/utility';
+import { assertNever, type ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 
 export class ChatContext {
-    context: MessageContext[] = [];
+    private _context: MessageContext[] = [];
     private selectedReactionDisposer?: () => void;
 
-    constructor(
-        private editorEngine: EditorEngine,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
     init() {
         this.selectedReactionDisposer = reaction(
             () => this.editorEngine.elements.selected,
-            () => this.getChatContext().then((context) => (this.context = context)),
+            () => this.generateContextFromReaction().then((context) => (this.context = context)),
         );
     }
 
-    async getChatContext(): Promise<MessageContext[]> {
+    get context(): MessageContext[] {
+        return this._context;
+    }
+
+    set context(context: MessageContext[]) {
+        this._context = context;
+    }
+
+    addContexts(contexts: MessageContext[]) {
+        this._context = [...this._context, ...contexts];
+    }
+
+    async getContextByChatType(type: ChatType): Promise<MessageContext[]> {
+        switch (type) {
+            case ChatType.EDIT:
+            case ChatType.CREATE:
+            case ChatType.ASK:
+                return await this.getLatestContext();
+            case ChatType.FIX:
+                return this.getErrorContext();
+            default:
+                assertNever(type);
+        }
+    }
+
+    async getLatestContext(): Promise<MessageContext[]> {
+        return await this.getRefreshedContext(this.context);
+    }
+
+    private async generateContextFromReaction(): Promise<MessageContext[]> {
         const selected = this.editorEngine.elements.selected;
 
         let highlightedContext: HighlightMessageContext[] = [];
@@ -47,6 +74,8 @@ export class ChatContext {
     }
 
     async getRefreshedContext(context: MessageContext[]): Promise<MessageContext[]> {
+        // Refresh the context if possible. Files and highlight content may have changed since the last time they were added to the context.
+        // Images are not refreshed as they are not editable.
         return await Promise.all(context.map(async (c) => {
             if (c.type === MessageContextType.FILE) {
                 const fileContent = await this.editorEngine.activeSandbox.readFile(c.path);
@@ -177,8 +206,8 @@ export class ChatContext {
         ];
     }
 
-    getErrorContext(errors: ParsedError[]): ErrorMessageContext[] {
-        const branchErrors = errors;
+    getErrorContext(): ErrorMessageContext[] {
+        const branchErrors = this.editorEngine.branches.getAllErrors();
         // Group errors by branch for context
         const branchGroups = new Map<string, ParsedError[]>();
         branchErrors.forEach(error => {
@@ -200,16 +229,16 @@ export class ChatContext {
 
     async getCreateContext() {
         try {
-            const context: MessageContext[] = [];
+            const createContext: MessageContext[] = [];
             const pageContext = await this.getDefaultPageContext();
             const styleGuideContext = await this.getDefaultStyleGuideContext();
             if (pageContext) {
-                context.push(pageContext);
+                createContext.push(pageContext);
             }
             if (styleGuideContext) {
-                context.push(...styleGuideContext);
+                createContext.push(...styleGuideContext);
             }
-            return context;
+            return createContext;
         } catch (error) {
             console.error('Error getting create context', error);
             return [];
@@ -279,7 +308,7 @@ export class ChatContext {
         }
     }
 
-    clearAttachments() {
+    clearImagesFromContext() {
         this.context = this.context.filter((context) => context.type !== MessageContextType.IMAGE);
     }
 
