@@ -1,7 +1,7 @@
 export async function POST(request: Request) {
     try {
         const { name, email, utm_source, utm_medium, utm_campaign, utm_term, utm_content } = await request.json();
-        
+
         if (!name?.trim() || !email?.trim()) {
             return new Response(JSON.stringify({ error: 'Name and email are required' }), {
                 status: 400,
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
         const headerName = process.env.N8N_LANDING_FORM_HEADER_NAME;
         const headerValue = process.env.N8N_LANDING_FORM_HEADER_VALUE;
         const landingFormUrl = process.env.N8N_LANDING_FORM_URL;
-        
+
         if (!landingFormUrl) {
             console.error('Missing N8N_LANDING_FORM_URL environment variable');
             return new Response(JSON.stringify({ error: 'Server configuration error' }), {
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
         const url = new URL(landingFormUrl);
         url.searchParams.append('name', name.trim());
         url.searchParams.append('email', email.trim());
-        
+
         if (utm_source) url.searchParams.append('utm_source', utm_source);
         if (utm_medium) url.searchParams.append('utm_medium', utm_medium);
         if (utm_campaign) url.searchParams.append('utm_campaign', utm_campaign);

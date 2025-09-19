@@ -4,7 +4,7 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Input } from '@onlook/ui/input';
 import { motion } from 'framer-motion';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 interface FormData {
     name: string;
@@ -16,12 +16,20 @@ interface FormData {
     utm_content: string;
 }
 
+// Constants for better maintainability
+const MEASUREMENT_DELAY = 100; // ms - delay for DOM measurement
+const SUCCESS_TIMEOUT = 7000; // ms - how long to show success message
+
 export function MobileEmailCapture() {
     const [showEmailForm, setShowEmailForm] = useState(false);
     const [containerHeight, setContainerHeight] = useState<number>(140); // Increased default height for notification
     const notificationRef = useRef<HTMLDivElement>(null);
     const formRef = useRef<HTMLDivElement>(null);
     const nameInputRef = useRef<HTMLInputElement>(null);
+    const emailInputRef = useRef<HTMLInputElement>(null);
+    const successTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const measurementTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const resizeTimerRef = useRef<NodeJS.Timeout | null>(null);
     const [formData, setFormData] = useState<FormData>({
         name: '',
         email: '',
@@ -64,10 +72,7 @@ export function MobileEmailCapture() {
     const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            const emailInput = document.getElementById('email') as HTMLInputElement;
-            if (emailInput) {
-                emailInput.focus();
-            }
+            emailInputRef.current?.focus();
         }
     };
 
@@ -76,7 +81,7 @@ export function MobileEmailCapture() {
         if (e.key === 'Enter') {
             e.preventDefault();
             if (isValidEmail(formData.email) && formData.name.trim()) {
-                handleSubmit(e as any);
+                handleSubmit(e);
             }
         }
     };
@@ -127,7 +132,7 @@ export function MobileEmailCapture() {
             }
 
             setShowSuccess(true);
-            setTimeout(() => {
+            successTimeoutRef.current = setTimeout(() => {
                 setShowSuccess(false);
                 setFormData({
                     name: '',
@@ -139,7 +144,8 @@ export function MobileEmailCapture() {
                     utm_content: ''
                 });
                 setShowEmailForm(false);
-            }, 7000);
+                successTimeoutRef.current = null;
+            }, SUCCESS_TIMEOUT);
 
         } catch (error) {
             console.error('Failed to submit email capture form:', error);
@@ -162,39 +168,83 @@ export function MobileEmailCapture() {
         }
     };
 
-    const measureAndSetHeight = () => {
-        if (showEmailForm && formRef.current) {
-            const height = formRef.current.scrollHeight;
-            // Add extra padding when error is present to ensure error message is visible
-            const extraPadding = 32;
-            setContainerHeight(Math.max(height + extraPadding, 100));
-        } else if (!showEmailForm && notificationRef.current) {
-            const height = notificationRef.current.scrollHeight;
-            setContainerHeight(Math.max(height + 32, 100)); // Add padding and ensure minimum height
+    const measureAndSetHeight = useCallback(() => {
+        try {
+            if (showEmailForm && formRef.current) {
+                const height = formRef.current.scrollHeight;
+                // Add extra padding when error is present to ensure error message is visible
+                const extraPadding = 32;
+                setContainerHeight(Math.max(height + extraPadding, 100));
+            } else if (!showEmailForm && notificationRef.current) {
+                const height = notificationRef.current.scrollHeight;
+                setContainerHeight(Math.max(height + 32, 100)); // Add padding and ensure minimum height
+            }
+        } catch (error) {
+            console.warn('Failed to measure container height:', error);
+            // Fallback to default height if measurement fails
+            setContainerHeight(140);
         }
-    };
+    }, [showEmailForm, error]);
+
+    // Debounced measurement function to prevent race conditions
+    const debouncedMeasurement = useCallback(() => {
+        // Clear any existing measurement timer
+        if (measurementTimerRef.current) {
+            clearTimeout(measurementTimerRef.current);
+        }
+
+        measurementTimerRef.current = setTimeout(() => {
+            measureAndSetHeight();
+            measurementTimerRef.current = null;
+        }, MEASUREMENT_DELAY);
+    }, [measureAndSetHeight]);
 
     // Measure height whenever showEmailForm or error changes
     useEffect(() => {
-        const timer = setTimeout(measureAndSetHeight, 100); // Increased delay for better measurement
-        return () => clearTimeout(timer);
-    }, [showEmailForm, error]);
+        debouncedMeasurement();
+    }, [debouncedMeasurement]);
 
     // Also measure on window resize
     useEffect(() => {
-        let resizeTimer: NodeJS.Timeout;
-
         const handleResize = () => {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(measureAndSetHeight, 100);
+            // Clear any existing resize timer
+            if (resizeTimerRef.current) {
+                clearTimeout(resizeTimerRef.current);
+            }
+
+            resizeTimerRef.current = setTimeout(() => {
+                measureAndSetHeight();
+                resizeTimerRef.current = null;
+            }, MEASUREMENT_DELAY);
         };
 
         window.addEventListener('resize', handleResize);
         return () => {
             window.removeEventListener('resize', handleResize);
-            clearTimeout(resizeTimer);
+            if (resizeTimerRef.current) {
+                clearTimeout(resizeTimerRef.current);
+                resizeTimerRef.current = null;
+            }
         };
-    }, [showEmailForm]);
+    }, [measureAndSetHeight]);
+
+    // Cleanup all timers on unmount
+    useEffect(() => {
+        return () => {
+            if (successTimeoutRef.current) {
+                clearTimeout(successTimeoutRef.current);
+                successTimeoutRef.current = null;
+            }
+            if (measurementTimerRef.current) {
+                clearTimeout(measurementTimerRef.current);
+                measurementTimerRef.current = null;
+            }
+            if (resizeTimerRef.current) {
+                clearTimeout(resizeTimerRef.current);
+                resizeTimerRef.current = null;
+            }
+        };
+    }, []);
 
     // Focus the name input when form opens
     useEffect(() => {
@@ -212,6 +262,20 @@ export function MobileEmailCapture() {
 
     const handleClose = () => {
         if (!isSubmitting) {
+            // Clear all timers if they exist
+            if (successTimeoutRef.current) {
+                clearTimeout(successTimeoutRef.current);
+                successTimeoutRef.current = null;
+            }
+            if (measurementTimerRef.current) {
+                clearTimeout(measurementTimerRef.current);
+                measurementTimerRef.current = null;
+            }
+            if (resizeTimerRef.current) {
+                clearTimeout(resizeTimerRef.current);
+                resizeTimerRef.current = null;
+            }
+
             setFormData({
                 name: '',
                 email: '',
@@ -255,7 +319,7 @@ export function MobileEmailCapture() {
                     ref={notificationRef}
                 >
                     <div className="text-center text-base xs:text-lg font-light my-2 text-foreground-secondary px-2">
-                        Onlook doesn't work on mobile
+                        Onlook doesn't work on mobile yet!
                     </div>
                     <Button
                         size="sm"
@@ -285,8 +349,9 @@ export function MobileEmailCapture() {
                             layout
                             layoutId="success-content"
                         >
-                            <div className="text-left text-foreground-secondary text-base xs:text-lg font-light w-full px-2">
-                                Thanks, an email to use Onlook has been sent to you
+                            <Icons.Check className="size-8" />
+                            <div className="text-foreground-secondary text-base xs:text-lg font-light w-full px-2">
+                                Thanks, an email to use Onlook has been sent to you!
                             </div>
                         </motion.div>
                     ) : (
@@ -321,6 +386,7 @@ export function MobileEmailCapture() {
                                         Email
                                     </label>
                                     <Input
+                                        ref={emailInputRef}
                                         id="email"
                                         type="email"
                                         placeholder="Enter your email"
