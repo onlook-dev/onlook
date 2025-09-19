@@ -101,7 +101,7 @@ export const CollapsibleCodeBlock = observer(({
                                 style={{ overflow: 'hidden' }}
                             >
                                 <div className="border-t">
-                                    <CodeBlock code={content} language="js" copyable={false} className="text-xs overflow-x-auto" />
+                                    <CodeBlock code={content} language="jsx" className="text-xs overflow-x-auto" />
                                     <div className="flex justify-end gap-1.5 p-1 border-t">                                        <Button
                                         size="sm"
                                         variant="ghost"

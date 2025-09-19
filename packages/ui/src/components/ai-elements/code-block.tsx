@@ -1,103 +1,143 @@
-import { cva, type VariantProps } from 'class-variance-authority';
-import * as React from 'react';
+'use client';
 
+import { CheckIcon, CopyIcon } from 'lucide-react';
+import type { ComponentProps, HTMLAttributes, ReactNode } from 'react';
+import { createContext, useContext, useState } from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { cn } from '../../utils';
+import { Button } from '../button';
 
-const codeBlockVariants = cva('relative rounded-lg border bg-muted/50 font-mono text-sm', {
-    variants: {
-        size: {
-            sm: 'p-2 text-xs',
-            default: 'p-4 text-sm',
-            lg: 'p-6 text-base',
-        },
-    },
-    defaultVariants: {
-        size: 'default',
-    },
+type CodeBlockContextType = {
+    code: string;
+};
+
+const CodeBlockContext = createContext<CodeBlockContextType>({
+    code: '',
 });
 
-interface CodeBlockProps
-    extends React.ComponentProps<'pre'>,
-        VariantProps<typeof codeBlockVariants> {
-    code?: string;
-    language?: string;
-    filename?: string;
-    copyable?: boolean;
-    hideHeader?: boolean;
-}
+export type CodeBlockProps = HTMLAttributes<HTMLDivElement> & {
+    code: string;
+    language: string;
+    showLineNumbers?: boolean;
+    children?: ReactNode;
+};
 
-function CodeBlock({
-    className,
-    size,
+export const CodeBlock = ({
     code,
     language,
-    filename,
-    copyable = true,
+    showLineNumbers = false,
+    className,
     children,
-    hideHeader = true,
     ...props
-}: CodeBlockProps) {
-    const [copied, setCopied] = React.useState(false);
-
-    const handleCopy = React.useCallback(() => {
-        if (code) {
-            navigator.clipboard.writeText(code);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        }
-    }, [code]);
-
-    return (
-        <div data-slot="ai-code-block" className="relative">
-            {!hideHeader && (filename || language || copyable) && (
-                <div className="flex items-center justify-between rounded-t-lg border border-b-0 bg-muted px-4 py-2">
-                    <div className="flex items-center gap-2">
-                        {filename && <span className="text-sm font-medium">{filename}</span>}
-                        {language && (
-                            <span className="text-xs text-muted-foreground uppercase">
-                                {language}
-                            </span>
-                        )}
-                    </div>
-                    {copyable && code && (
-                        <button
-                            onClick={handleCopy}
-                            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                            {copied ? 'Copied!' : 'Copy'}
-                        </button>
-                    )}
-                </div>
-            )}
-            <pre
-                className={cn(
-                    codeBlockVariants({ size }),
-                    (filename || language || copyable) && 'rounded-t-none',
-                    className,
-                )}
-                {...props}
-            >
-                <code>{code || children}</code>
-            </pre>
-        </div>
-    );
-}
-
-function CodeBlockHeader({ className, ...props }: React.ComponentProps<'div'>) {
-    return (
+}: CodeBlockProps) => (
+    <CodeBlockContext.Provider value={{ code }}>
         <div
-            data-slot="ai-code-block-header"
             className={cn(
-                'flex items-center justify-between rounded-t-lg border border-b-0 bg-muted px-4 py-2',
+                'relative w-full overflow-hidden rounded-md border bg-background text-foreground',
                 className,
             )}
             {...props}
-        />
+        >
+            <div className="relative">
+                <SyntaxHighlighter
+                    className="overflow-hidden dark:hidden"
+                    codeTagProps={{
+                        className: 'font-mono text-xs',
+                    }}
+                    customStyle={{
+                        margin: 0,
+                        padding: '1rem',
+                        fontSize: '0.875rem',
+                        background: 'hsl(var(--background-secondary))',
+                        color: 'hsl(var(--foreground))',
+                    }}
+                    language={language}
+                    lineNumberStyle={{
+                        color: 'hsl(var(--muted-foreground))',
+                        paddingRight: '1rem',
+                        minWidth: '2.5rem',
+                    }}
+                    showLineNumbers={showLineNumbers}
+                    style={oneLight}
+                >
+                    {code}
+                </SyntaxHighlighter>
+                <SyntaxHighlighter
+                    className="hidden overflow-hidden dark:block"
+                    codeTagProps={{
+                        className: 'font-mono text-xs',
+                    }}
+                    customStyle={{
+                        margin: 0,
+                        padding: '1rem',
+                        fontSize: '0.875rem',
+                        background: 'hsl(var(--background-secondary))',
+                        color: 'hsl(var(--foreground))',
+                    }}
+                    language={language}
+                    lineNumberStyle={{
+                        color: 'hsl(var(--muted-foreground))',
+                        paddingRight: '1rem',
+                        minWidth: '2.5rem',
+                    }}
+                    showLineNumbers={showLineNumbers}
+                    style={oneDark}
+                >
+                    {code}
+                </SyntaxHighlighter>
+                {children && (
+                    <div className="absolute top-2 right-2 flex items-center gap-2">{children}</div>
+                )}
+            </div>
+        </div>
+    </CodeBlockContext.Provider>
+);
+
+export type CodeBlockCopyButtonProps = ComponentProps<typeof Button> & {
+    onCopy?: () => void;
+    onError?: (error: Error) => void;
+    timeout?: number;
+};
+
+export const CodeBlockCopyButton = ({
+    onCopy,
+    onError,
+    timeout = 2000,
+    children,
+    className,
+    ...props
+}: CodeBlockCopyButtonProps) => {
+    const [isCopied, setIsCopied] = useState(false);
+    const { code } = useContext(CodeBlockContext);
+
+    const copyToClipboard = async () => {
+        if (typeof window === 'undefined' || !navigator.clipboard.writeText) {
+            onError?.(new Error('Clipboard API not available'));
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(code);
+            setIsCopied(true);
+            onCopy?.();
+            setTimeout(() => setIsCopied(false), timeout);
+        } catch (error) {
+            onError?.(error as Error);
+        }
+    };
+
+    const Icon = isCopied ? CheckIcon : CopyIcon;
+
+    return (
+        <Button
+            className={cn('shrink-0', className)}
+            onClick={copyToClipboard}
+            size="icon"
+            variant="ghost"
+            {...props}
+        >
+            {children ?? <Icon size={14} />}
+        </Button>
     );
-}
-
-function CodeBlockContent({ className, ...props }: React.ComponentProps<'code'>) {
-    return <code data-slot="ai-code-block-content" className={cn('block', className)} {...props} />;
-}
-
-export { CodeBlock, CodeBlockContent, CodeBlockHeader, codeBlockVariants };
+};
