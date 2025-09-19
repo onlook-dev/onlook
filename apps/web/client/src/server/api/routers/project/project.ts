@@ -3,6 +3,7 @@ import { createTRPCRouter, protectedProcedure } from '@/server/api/trpc';
 import { trackEvent } from '@/utils/analytics/server';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { initModel } from '@onlook/ai';
+import { CodeProvider, getStaticCodeProvider } from '@onlook/code-provider';
 import { getSandboxPreviewUrl, STORAGE_BUCKETS } from '@onlook/constants';
 import {
     branches,
@@ -481,48 +482,83 @@ export const projectRouter = createTRPCRouter({
             throw new Error('Source project has no default branch with sandbox to clone');
         }
 
-        return await ctx.db.transaction(async (tx) => {
-            // 1. Fork sandboxes for all branches that have them
-            const port = extractCsbPort(defaultBranch.frames) ?? 3000;
+        // 1. Fork sandboxes for all branches that have them (OUTSIDE transaction)
+        const port = extractCsbPort(defaultBranch.frames) ?? 3000;
+        const branchSandboxMap: Record<string, { sandboxId: string; previewUrl: string }> = {};
+        
+        try {
+            const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
             
-            // Import the sandbox fork function here since it's not exposed
-            const { getStaticCodeProvider } = await import('@onlook/code-provider');
-            const { CodeProvider } = await import('@onlook/code-provider');
-            
-            // Map to store new sandbox IDs for each branch
-            const branchSandboxMap: Record<string, { sandboxId: string; previewUrl: string }> = {};
-            
-            try {
-                const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
-                
-                // Clone sandbox for each branch that has one
-                for (const sourceBranch of sourceBranches) {
-                    if (sourceBranch.sandboxId) {
+            // Clone sandbox for each branch that has one - in parallel with individual error handling
+            const sandboxPromises = sourceBranches
+                .filter(branch => branch.sandboxId)
+                .map(async (sourceBranch) => {
+                    try {
                         const clonedSandbox = await CodesandboxProvider.createProject({
                             source: 'sandbox',
-                            id: sourceBranch.sandboxId,
+                            id: sourceBranch.sandboxId!,
                             title: `${input.name || sourceProject.name} (Clone) - ${sourceBranch.name}`,
                             tags: ['clone', ctx.user.id, sourceBranch.name],
                         });
                         
-                        branchSandboxMap[sourceBranch.id] = {
+                        return {
+                            branchId: sourceBranch.id,
                             sandboxId: clonedSandbox.id,
                             previewUrl: getSandboxPreviewUrl(clonedSandbox.id, port),
+                            success: true,
+                            error: null,
+                        };
+                    } catch (error) {
+                        console.error(`Error cloning sandbox for branch ${sourceBranch.name}:`, error);
+                        return {
+                            branchId: sourceBranch.id,
+                            sandboxId: null,
+                            previewUrl: null,
+                            success: false,
+                            error: error instanceof Error ? error.message : 'Unknown error',
                         };
                     }
-                }
-            } catch (error) {
-                console.error('Error cloning sandboxes:', error);
-                throw new Error('Failed to clone sandboxes');
+                });
+            
+            const sandboxResults = await Promise.all(sandboxPromises);
+            
+            // Check if any successful results exist
+            const successfulResults = sandboxResults.filter(result => result.success);
+            const failedResults = sandboxResults.filter(result => !result.success);
+            
+            if (successfulResults.length === 0) {
+                throw new Error('Failed to clone any sandboxes. All sandbox operations failed.');
             }
             
-            // Get the default branch's new sandbox info for main project creation
-            const defaultBranchSandbox = branchSandboxMap[defaultBranch.id];
-            if (!defaultBranchSandbox) {
-                throw new Error('Failed to create sandbox for default branch');
+            // Log failed operations but continue if at least one succeeded
+            if (failedResults.length > 0) {
+                console.warn(`Failed to clone ${failedResults.length} out of ${sandboxResults.length} sandboxes:`, 
+                    failedResults.map(r => ({ branchId: r.branchId, error: r.error })));
             }
+            
+            // Build the map from successful results
+            for (const result of successfulResults) {
+                if (result.sandboxId && result.previewUrl) {
+                    branchSandboxMap[result.branchId] = {
+                        sandboxId: result.sandboxId,
+                        previewUrl: result.previewUrl,
+                    };
+                }
+            }
+        } catch (error) {
+            console.error('Error cloning sandboxes:', error);
+            throw new Error(`Failed to clone sandboxes: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+        
+        // Get the default branch's new sandbox info for main project creation
+        const defaultBranchSandbox = branchSandboxMap[defaultBranch.id];
+        if (!defaultBranchSandbox) {
+            throw new Error('Failed to create sandbox for default branch');
+        }
 
-            // 2. Create the new project
+        // 2. Now run the database transaction (much faster without external API calls)
+        return await ctx.db.transaction(async (tx) => {
+            // Create the new project
             const clonedProjectData = {
                 name: input.name || `${sourceProject.name} (Clone)`,
                 description: sourceProject.description ? `${sourceProject.description} (Clone)` : 'Cloned project',
@@ -534,7 +570,7 @@ export const projectRouter = createTRPCRouter({
                 throw new Error('Failed to create cloned project in database');
             }
 
-            // 3. Clone all branches from the source project
+            // Clone all branches from the source project
             const clonedBranches: typeof branches.$inferSelect[] = [];
             for (const sourceBranch of sourceBranches) {
                 const branchSandbox = branchSandboxMap[sourceBranch.id];
@@ -556,14 +592,14 @@ export const projectRouter = createTRPCRouter({
                 clonedBranches.push(newBranchData);
             }
 
-            // 4. Create the association in the junction table
+            // Create the association in the junction table
             await tx.insert(userProjects).values({
                 userId: ctx.user.id,
                 projectId: newProject.id,
                 role: ProjectRole.OWNER,
             });
 
-            // 5. Create the canvas (preserve source canvas settings if available)
+            // Create the canvas (preserve source canvas settings if available)
             const newCanvas = sourceCanvas ? {
                 id: crypto.randomUUID(),
                 projectId: newProject.id,
@@ -590,7 +626,7 @@ export const projectRouter = createTRPCRouter({
             });
             await tx.insert(userCanvases).values(newUserCanvas);
 
-            // 6. Clone all frames from all branches with their positions preserved
+            // Clone all frames from all branches with their positions preserved
             for (const sourceBranch of sourceBranches) {
                 const clonedBranch = clonedBranches.find(cb => cb.name === sourceBranch.name);
                 if (!clonedBranch) continue;
@@ -617,7 +653,7 @@ export const projectRouter = createTRPCRouter({
                 }
             }
 
-            // 7. Create the default chat conversation
+            // Create the default chat conversation
             await tx.insert(conversations).values(createDefaultConversation(newProject.id));
 
             trackEvent({
