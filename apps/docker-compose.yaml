@@ -4,6 +4,8 @@ name: onlook-web
 services:
     coderouter:
         container_name: coderouter
+        environment:
+            - DEBUG=*
         build:
             context: ./coderouter
             dockerfile: Dockerfile.dev
@@ -11,6 +13,7 @@ services:
             - '4444:4444'
         volumes:
             - ./coderouter:/app
+            - coderouter_node_modules:/app/node_modules
         command: [/usr/local/bin/bun/bin/bun, dev]
     nginx:
         container_name: nginx
@@ -23,3 +26,5 @@ services:
             - ./nginx/ssl/onlook-internal.crt:/etc/nginx/ssl/onlook-internal.crt:ro
             - ./nginx/ssl/onlook-internal.key:/etc/nginx/ssl/onlook-internal.key:ro
         command: [nginx, '-g', 'daemon off;']
+volumes:
+    coderouter_node_modules:

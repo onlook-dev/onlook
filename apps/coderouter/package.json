@@ -13,6 +13,7 @@
 		"db:migrate": "bun run scripts/migrate.ts"
 	},
 	"dependencies": {
+		"@codesandbox/sdk": "^1.1.6",
 		"@e2b/code-interpreter": "2.0.0",
 		"@hono/zod-openapi": "^1.1.0",
 		"@hono/zod-validator": "^0.2.1",

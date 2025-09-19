@@ -362,6 +362,7 @@ export class CoderouterProvider extends Provider {
     }
 
     async pauseProject(input: PauseProjectInput): Promise<PauseProjectOutput> {
+        await this.api.coderouterApiSandboxPausePost({}, this.requestInitOverrides());
         return {};
     }
 

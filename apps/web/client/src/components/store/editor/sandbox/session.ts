@@ -103,10 +103,7 @@ export class SessionManager {
 
         // Initialize the sessions after creation
         try {
-            await Promise.all([
-                task.initTask(),
-                terminal.initTerminal()
-            ]);
+            await Promise.all([task.initTask(), terminal.initTerminal()]);
         } catch (error) {
             console.error('Failed to initialize terminal sessions:', error);
         }

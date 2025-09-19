@@ -1,3 +1,5 @@
+YOOOOOBLAHHHHHH
+
 # Bun + TypeScript API Starter (Hono + Drizzle)
 
 A batteries-included starter for building an API with **Bun**, **TypeScript**, **Hono**, and **Drizzle ORM**.  
@@ -19,6 +21,7 @@ OpenAPI: http://localhost:3000/openapi.json
 Docs (Swagger UI): http://localhost:3000/docs
 
 ### Scripts
+
 - `bun dev` — run in watch mode
 - `bun start` — production start
 - `bun test` — run all tests with coverage
@@ -30,17 +33,21 @@ Docs (Swagger UI): http://localhost:3000/docs
 - `bun docs` — build TypeDoc to `site/typedoc`
 
 ### Multi-DB
+
 Set `DRIZZLE_DB` to `postgres` | `mysql` | `sqlite` and provide `DATABASE_URL` accordingly.
 SQLite works out-of-the-box (`DATABASE_URL=file:./dev.sqlite`).
 
 ### GitHub Pages (Docs)
+
 The `pages.yml` workflow builds and deploys:
+
 - `/openapi.json` -> `/site/api/openapi.json`
 - Swagger UI -> `/site/api/`
 - TypeDoc -> `/site/typedoc/`
-A small `site/index.html` links to both.
+  A small `site/index.html` links to both.
 
 Enable Pages in **Settings → Pages** (source: GitHub Actions).
 
 ## License
+
 MIT

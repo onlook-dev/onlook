@@ -23,7 +23,7 @@ export class E2BSandbox extends Sandbox<E2BClient> {
     public readonly file: E2BSandboxFile;
     public readonly terminal: E2BSandboxTerminal;
 
-    private _sandboxTimeoutMs: number = 1000 * 60 * 3;
+    private _sandboxTimeoutMs: number = 1000 * 60 * 10;
 
     constructor(protected readonly client: E2BClient) {
         super(client);
