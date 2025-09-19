@@ -18,7 +18,7 @@ export async function getModelFromType(chatType: ChatType) {
         default:
             model = await initModel({
                 provider: LLMProvider.OPENROUTER,
-                model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+                model: OPENROUTER_MODELS.OPEN_AI_GPT_5,
             });
             break;
     }
