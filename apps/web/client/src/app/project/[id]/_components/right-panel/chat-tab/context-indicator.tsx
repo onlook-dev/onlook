@@ -28,14 +28,7 @@ export const ContextIndicator = observer(({ messages, modelId = 'openai:gpt-4' }
     }
 
     const percentage = Math.min(contextTracking.percentage, 100);
-    const isCritical = percentage > 95;
-    const isNearLimit = percentage > 80;
-
-    const colors = isCritical 
-        ? { stroke: '#ef4444', text: 'text-red-600' }
-        : isNearLimit 
-        ? { stroke: '#f59e0b', text: 'text-amber-600' }
-        : { stroke: '#6b7280', text: 'text-gray-500' };
+    const colors = { stroke: '#6b7280', text: 'text-gray-500' };
 
     return (
         <Tooltip>
