@@ -1,21 +1,40 @@
+import { z } from 'zod';
+
 export async function POST(request: Request) {
     try {
         const { name, email, utm_source, utm_medium, utm_campaign, utm_term, utm_content } = await request.json();
 
-        if (!name?.trim() || !email?.trim()) {
-            return new Response(JSON.stringify({ error: 'Name and email are required' }), {
+        // Create Zod schema for validation
+        const emailCaptureSchema = z.object({
+            name: z.string().trim().min(1, 'Name is required'),
+            email: z.string().trim().email('Invalid email format'),
+            utm_source: z.string().optional(),
+            utm_medium: z.string().optional(),
+            utm_campaign: z.string().optional(),
+            utm_term: z.string().optional(),
+            utm_content: z.string().optional(),
+        });
+
+        // Validate input data with Zod
+        const validationResult = emailCaptureSchema.safeParse({
+            name,
+            email,
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            utm_term,
+            utm_content,
+        });
+
+        if (!validationResult.success) {
+            const firstError = validationResult.error.issues[0];
+            return new Response(JSON.stringify({ error: firstError?.message }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email.trim())) {
-            return new Response(JSON.stringify({ error: 'Invalid email format' }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
+        const validatedData = validationResult.data;
 
         const headerName = process.env.N8N_LANDING_FORM_HEADER_NAME;
         const headerValue = process.env.N8N_LANDING_FORM_HEADER_VALUE;
@@ -30,14 +49,14 @@ export async function POST(request: Request) {
         }
 
         const url = new URL(landingFormUrl);
-        url.searchParams.append('name', name.trim());
-        url.searchParams.append('email', email.trim());
+        url.searchParams.append('name', validatedData.name);
+        url.searchParams.append('email', validatedData.email);
 
-        if (utm_source) url.searchParams.append('utm_source', utm_source);
-        if (utm_medium) url.searchParams.append('utm_medium', utm_medium);
-        if (utm_campaign) url.searchParams.append('utm_campaign', utm_campaign);
-        if (utm_term) url.searchParams.append('utm_term', utm_term);
-        if (utm_content) url.searchParams.append('utm_content', utm_content);
+        if (validatedData.utm_source) url.searchParams.append('utm_source', validatedData.utm_source);
+        if (validatedData.utm_medium) url.searchParams.append('utm_medium', validatedData.utm_medium);
+        if (validatedData.utm_campaign) url.searchParams.append('utm_campaign', validatedData.utm_campaign);
+        if (validatedData.utm_term) url.searchParams.append('utm_term', validatedData.utm_term);
+        if (validatedData.utm_content) url.searchParams.append('utm_content', validatedData.utm_content);
 
         // Build auth headers: use custom header if provided
         const authHeaders: Record<string, string> = {};
