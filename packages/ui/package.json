@@ -54,7 +54,6 @@
         "./hooks": "./src/hooks/index.ts"
     },
     "dependencies": {
-        "@ai-sdk/react": "^2.0.45",
         "@ai-sdk/ui-utils": "^1.2.11",
         "@emotion/react": "^11.13.3",
         "@emotion/styled": "^11.13.0",
@@ -88,7 +87,6 @@
         "@radix-ui/react-tooltip": "^1.2.4",
         "@tailwindcss/typography": "^0.5.16",
         "@types/react-syntax-highlighter": "^15.5.13",
-        "ai": "^5.0.15",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "cmdk": "^1.1.1",
