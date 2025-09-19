@@ -1,28 +1,15 @@
 'use client';
 
 import type { SandboxDirectory, SandboxFile } from '@onlook/models';
-import { UnifiedCacheManager } from './unified-cache';
+import { LightningCacheManager } from './lightning-cache';
 
 export class FileCacheManager {
-    private fileCache: UnifiedCacheManager<SandboxFile>;
-    private directoryCache: UnifiedCacheManager<SandboxDirectory>;
+    private fileCache: LightningCacheManager;
+    private directoryCache: LightningCacheManager;
 
     constructor(projectId: string, branchId: string) {
-        this.fileCache = new UnifiedCacheManager({
-            name: `${projectId}-${branchId}-sandbox-files`,
-            maxItems: 500,
-            maxSizeBytes: 50 * 1024 * 1024, // 50MB
-            ttlMs: 1000 * 60 * 30, // 30 minutes
-            persistent: true,
-        });
-
-        this.directoryCache = new UnifiedCacheManager({
-            name: `${projectId}-${branchId}-sandbox-directories`,
-            maxItems: 1000,
-            maxSizeBytes: 5 * 1024 * 1024, // 5MB
-            ttlMs: 1000 * 60 * 60, // 1 hour
-            persistent: true,
-        });
+        this.fileCache = new LightningCacheManager(`${projectId}-${branchId}-sandbox-files`);
+        this.directoryCache = new LightningCacheManager(`${projectId}-${branchId}-sandbox-directories`);
     }
 
     async init(): Promise<void> {
@@ -37,29 +24,29 @@ export class FileCacheManager {
         return this.fileCache.has(filePath);
     }
 
-    getFile(filePath: string): SandboxFile | undefined {
-        return this.fileCache.get(filePath);
+    async getFile(filePath: string): Promise<SandboxFile | undefined> {
+        return await this.fileCache.get(filePath);
     }
 
-    setFile(file: SandboxFile, contentHash?: string): void {
-        this.fileCache.set(file.path, file, contentHash);
+    async setFile(file: SandboxFile, contentHash?: string): Promise<void> {
+        await this.fileCache.set(file.path, file, contentHash);
     }
 
-    deleteFile(filePath: string): boolean {
-        return this.fileCache.delete(filePath);
+    async deleteFile(filePath: string): Promise<boolean> {
+        return await this.fileCache.delete(filePath);
     }
 
     // Directory cache methods
     hasDirectory(dirPath: string): boolean {
-        return this.directoryCache.has(dirPath);
+        return this.directoryCache.hasDirectory(dirPath);
     }
 
-    setDirectory(directory: SandboxDirectory): void {
-        this.directoryCache.set(directory.path, directory);
+    async setDirectory(directory: SandboxDirectory): Promise<void> {
+        await this.directoryCache.setDirectory(directory.path, directory);
     }
 
-    deleteDirectory(dirPath: string): boolean {
-        return this.directoryCache.delete(dirPath);
+    async deleteDirectory(dirPath: string): Promise<boolean> {
+        return await this.directoryCache.deleteDirectory(dirPath);
     }
 
     isFileLoaded(file: SandboxFile): boolean {
@@ -70,14 +57,14 @@ export class FileCacheManager {
         filePath: string,
         readFile: (path: string) => Promise<SandboxFile | null>,
     ): Promise<SandboxFile | null> {
-        const cachedFile = this.getFile(filePath);
+        const cachedFile = await this.getFile(filePath);
         if (cachedFile && cachedFile.content !== null) {
             return cachedFile;
         }
 
         const newFile = await readFile(filePath);
         if (newFile) {
-            this.setFile(newFile);
+            await this.setFile(newFile);
         }
         return newFile;
     }
@@ -96,7 +83,7 @@ export class FileCacheManager {
                     path: filePath,
                     content,
                 } as SandboxFile;
-                this.setFile(newFile);
+                await this.setFile(newFile);
             }
             return writeSuccess;
         } catch (error) {
@@ -105,16 +92,16 @@ export class FileCacheManager {
         }
     }
 
-    rename(oldPath: string, newPath: string): void {
-        const oldFile = this.getFile(oldPath);
+    async rename(oldPath: string, newPath: string): Promise<void> {
+        const oldFile = await this.getFile(oldPath);
         if (oldFile) {
             const newFile = { ...oldFile, path: newPath };
-            this.setFile(newFile);
-            this.deleteFile(oldPath);
+            await this.setFile(newFile);
+            await this.deleteFile(oldPath);
         }
     }
 
-    renameDirectory(oldPath: string, newPath: string): void {
+    async renameDirectory(oldPath: string, newPath: string): Promise<void> {
         // Normalize paths to handle trailing slash edge cases
         const normalizeDir = (path: string): string => {
             if (path === '/' || path === '') return '/';
@@ -139,37 +126,39 @@ export class FileCacheManager {
         const prefix = normalizedOldPath === '/' ? '/' : normalizedOldPath + '/';
 
         // Update all files in the directory
-        for (const [filePath, file] of this.fileCache.entries()) {
+        for (const [filePath] of this.fileCache.entries()) {
             if (filePath.startsWith(prefix)) {
-                const relativePath = filePath.substring(prefix.length);
-                const newFilePath = normalizedNewPath === '/'
-                    ? '/' + relativePath
-                    : normalizedNewPath + '/' + relativePath;
-                const updatedFile = { ...file, path: newFilePath };
-                this.setFile(updatedFile);
-                this.deleteFile(filePath);
+                const file = await this.getFile(filePath);
+                if (file) {
+                    const relativePath = filePath.substring(prefix.length);
+                    const newFilePath = normalizedNewPath === '/'
+                        ? '/' + relativePath
+                        : normalizedNewPath + '/' + relativePath;
+                    const updatedFile = { ...file, path: newFilePath };
+                    await this.setFile(updatedFile);
+                    await this.deleteFile(filePath);
+                }
             }
         }
 
         // Update all nested directories in the directory
-        for (const [dirPath, directory] of this.directoryCache.entries()) {
+        for (const [dirPath] of this.directoryCache.directoryEntries()) {
             if (dirPath.startsWith(prefix)) {
                 const relativePath = dirPath.substring(prefix.length);
                 const newDirPath = normalizedNewPath === '/'
                     ? '/' + relativePath
                     : normalizedNewPath + '/' + relativePath;
-                const updatedDirectory = { ...directory, path: newDirPath };
-                this.setDirectory(updatedDirectory);
-                this.deleteDirectory(dirPath);
+                const updatedDirectory = { type: 'directory' as const, path: newDirPath };
+                await this.setDirectory(updatedDirectory);
+                await this.deleteDirectory(dirPath);
             }
         }
 
         // Update directory entry using normalized paths
-        const directory = this.directoryCache.get(normalizedOldPath);
-        if (directory) {
-            const newDirectory = { ...directory, path: normalizedNewPath };
-            this.setDirectory(newDirectory);
-            this.deleteDirectory(normalizedOldPath);
+        if (this.hasDirectory(normalizedOldPath)) {
+            const newDirectory = { type: 'directory' as const, path: normalizedNewPath };
+            await this.setDirectory(newDirectory);
+            await this.deleteDirectory(normalizedOldPath);
         }
     }
 
@@ -178,10 +167,10 @@ export class FileCacheManager {
     }
 
     listAllDirectories(): string[] {
-        return Array.from(this.directoryCache.keys());
+        return Array.from(this.directoryCache.directoryKeys());
     }
 
-    writeEmptyFile(filePath: string, type: 'binary'): void {
+    async writeEmptyFile(filePath: string, type: 'binary'): Promise<void> {
         if (this.hasFile(filePath)) {
             return;
         }
@@ -191,7 +180,7 @@ export class FileCacheManager {
             path: filePath,
             content: null,
         };
-        this.setFile(emptyFile);
+        await this.setFile(emptyFile);
     }
 
     async clear(): Promise<void> {
@@ -213,6 +202,6 @@ export class FileCacheManager {
     }
 
     get directoryCount(): number {
-        return this.directoryCache.size;
+        return this.directoryCache.directorySize;
     }
 }

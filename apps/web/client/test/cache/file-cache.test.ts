@@ -2,7 +2,22 @@ import type { SandboxDirectory, SandboxFile } from '@onlook/models';
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 import { FileCacheManager } from '../../src/components/store/editor/cache/file-cache';
 
-// Mock localforage
+// Mock Lightning FS and IndexedDB for Node.js testing
+const mockFS = {
+    promises: {
+        readFile: mock(async () => '{}'),
+        writeFile: mock(async () => undefined),
+        unlink: mock(async () => undefined),
+        rmdir: mock(async () => undefined),
+        mkdir: mock(async () => undefined),
+        readdir: mock(async () => []),
+        stat: mock(async () => ({ isDirectory: () => false })),
+    }
+};
+
+mock.module('@isomorphic-git/lightning-fs', () => mock(() => mockFS));
+
+// Mock localforage (for fallback compatibility)
 mock.module('localforage', () => ({
     createInstance: mock(() => ({
         getItem: mock(async () => null),
@@ -18,7 +33,7 @@ describe('FileCacheManager', () => {
     let mockWriteFile: any;
 
     beforeEach(async () => {
-        fileCacheManager = new FileCacheManager();
+        fileCacheManager = new FileCacheManager('test-project', 'test-branch');
         await fileCacheManager.init();
 
         mockReadFile = mock(async (path: string): Promise<SandboxFile | null> => {
@@ -47,46 +62,46 @@ describe('FileCacheManager', () => {
         await fileCacheManager.clear();
     });
 
-    test('should store and retrieve text files', () => {
+    test('should store and retrieve text files', async () => {
         const textFile: SandboxFile = {
             type: 'text',
             path: 'test.tsx',
             content: '<div>Hello World</div>'
         };
 
-        fileCacheManager.setFile(textFile);
-        const retrieved = fileCacheManager.getFile('test.tsx');
+        await fileCacheManager.setFile(textFile);
+        const retrieved = await fileCacheManager.getFile('test.tsx');
 
-        expect(retrieved).toEqual(textFile);
+        expect(retrieved).toMatchObject(textFile);
     });
 
-    test('should store and retrieve binary files', () => {
+    test('should store and retrieve binary files', async () => {
         const binaryFile: SandboxFile = {
             type: 'binary',
             path: 'image.png',
             content: new Uint8Array([1, 2, 3, 4])
         };
 
-        fileCacheManager.setFile(binaryFile);
-        const retrieved = fileCacheManager.getFile('image.png');
+        await fileCacheManager.setFile(binaryFile);
+        const retrieved = await fileCacheManager.getFile('image.png');
 
-        expect(retrieved).toEqual(binaryFile);
+        expect(retrieved).toMatchObject(binaryFile);
     });
 
-    test('should handle files with null content', () => {
+    test('should handle files with null content', async () => {
         const emptyFile: SandboxFile = {
             type: 'text',
             path: 'empty.tsx',
             content: null
         };
 
-        fileCacheManager.setFile(emptyFile);
-        const retrieved = fileCacheManager.getFile('empty.tsx');
+        await fileCacheManager.setFile(emptyFile);
+        const retrieved = await fileCacheManager.getFile('empty.tsx');
 
-        expect(retrieved).toEqual(emptyFile);
+        expect(retrieved).toMatchObject(emptyFile);
     });
 
-    test('should check if file exists', () => {
+    test('should check if file exists', async () => {
         const testFile: SandboxFile = {
             type: 'text',
             path: 'test.tsx',
@@ -95,26 +110,26 @@ describe('FileCacheManager', () => {
 
         expect(fileCacheManager.hasFile('test.tsx')).toBe(false);
 
-        fileCacheManager.setFile(testFile);
+        await fileCacheManager.setFile(testFile);
         expect(fileCacheManager.hasFile('test.tsx')).toBe(true);
     });
 
-    test('should delete files', () => {
+    test('should delete files', async () => {
         const testFile: SandboxFile = {
             type: 'text',
             path: 'test.tsx',
             content: 'content'
         };
 
-        fileCacheManager.setFile(testFile);
+        await fileCacheManager.setFile(testFile);
         expect(fileCacheManager.hasFile('test.tsx')).toBe(true);
 
-        const deleted = fileCacheManager.deleteFile('test.tsx');
+        const deleted = await fileCacheManager.deleteFile('test.tsx');
         expect(deleted).toBe(true);
         expect(fileCacheManager.hasFile('test.tsx')).toBe(false);
     });
 
-    test('should handle directories', () => {
+    test('should handle directories', async () => {
         const directory: SandboxDirectory = {
             type: 'directory',
             path: 'src/components'
@@ -122,10 +137,10 @@ describe('FileCacheManager', () => {
 
         expect(fileCacheManager.hasDirectory('src/components')).toBe(false);
 
-        fileCacheManager.setDirectory(directory);
+        await fileCacheManager.setDirectory(directory);
         expect(fileCacheManager.hasDirectory('src/components')).toBe(true);
 
-        const deleted = fileCacheManager.deleteDirectory('src/components');
+        const deleted = await fileCacheManager.deleteDirectory('src/components');
         expect(deleted).toBe(true);
         expect(fileCacheManager.hasDirectory('src/components')).toBe(false);
     });
@@ -154,7 +169,7 @@ describe('FileCacheManager', () => {
             path: 'cached.tsx',
             content: 'cached content'
         };
-        fileCacheManager.setFile(cachedFile);
+        await fileCacheManager.setFile(cachedFile);
 
         const result1 = await fileCacheManager.readOrFetch('cached.tsx', mockReadFile);
         expect(result1).toEqual(cachedFile);
@@ -188,8 +203,8 @@ describe('FileCacheManager', () => {
         expect(mockWriteFile).toHaveBeenCalledWith('new.tsx', content);
 
         // Verify file was cached
-        const cachedFile = fileCacheManager.getFile('new.tsx');
-        expect(cachedFile).toEqual({
+        const cachedFile = await fileCacheManager.getFile('new.tsx');
+        expect(cachedFile).toMatchObject({
             type: 'text',
             path: 'new.tsx',
             content: content
@@ -204,8 +219,8 @@ describe('FileCacheManager', () => {
         expect(mockWriteFile).toHaveBeenCalledWith('new.png', content);
 
         // Verify file was cached
-        const cachedFile = fileCacheManager.getFile('new.png');
-        expect(cachedFile).toEqual({
+        const cachedFile = await fileCacheManager.getFile('new.png');
+        expect(cachedFile).toMatchObject({
             type: 'binary',
             path: 'new.png',
             content: content
@@ -228,33 +243,33 @@ describe('FileCacheManager', () => {
         console.error = originalConsoleError;
     });
 
-    test('should rename files in cache', () => {
+    test('should rename files in cache', async () => {
         const originalFile: SandboxFile = {
             type: 'text',
             path: 'original.tsx',
             content: 'content'
         };
 
-        fileCacheManager.setFile(originalFile);
-        fileCacheManager.rename('original.tsx', 'renamed.tsx');
+        await fileCacheManager.setFile(originalFile);
+        await fileCacheManager.rename('original.tsx', 'renamed.tsx');
 
         expect(fileCacheManager.hasFile('original.tsx')).toBe(false);
         expect(fileCacheManager.hasFile('renamed.tsx')).toBe(true);
 
-        const renamedFile = fileCacheManager.getFile('renamed.tsx');
-        expect(renamedFile).toEqual({
+        const renamedFile = await fileCacheManager.getFile('renamed.tsx');
+        expect(renamedFile).toMatchObject({
             type: 'text',
             path: 'renamed.tsx',
             content: 'content'
         });
     });
 
-    test('should handle renaming non-existent file', () => {
-        fileCacheManager.rename('nonexistent.tsx', 'new.tsx');
+    test('should handle renaming non-existent file', async () => {
+        await fileCacheManager.rename('nonexistent.tsx', 'new.tsx');
         expect(fileCacheManager.hasFile('new.tsx')).toBe(false);
     });
 
-    test('should rename directories and all contained files', () => {
+    test('should rename directories and all contained files', async () => {
         // Add files in directory
         const file1: SandboxFile = {
             type: 'text',
@@ -272,19 +287,19 @@ describe('FileCacheManager', () => {
             content: 'helper content'
         };
 
-        fileCacheManager.setFile(file1);
-        fileCacheManager.setFile(file2);
-        fileCacheManager.setFile(file3);
+        await fileCacheManager.setFile(file1);
+        await fileCacheManager.setFile(file2);
+        await fileCacheManager.setFile(file3);
 
         // Add directory
         const directory: SandboxDirectory = {
             type: 'directory',
             path: 'src/components'
         };
-        fileCacheManager.setDirectory(directory);
+        await fileCacheManager.setDirectory(directory);
 
         // Rename directory
-        fileCacheManager.renameDirectory('src/components', 'src/ui');
+        await fileCacheManager.renameDirectory('src/components', 'src/ui');
 
         // Check files were moved
         expect(fileCacheManager.hasFile('src/components/Button.tsx')).toBe(false);
@@ -300,22 +315,24 @@ describe('FileCacheManager', () => {
         expect(fileCacheManager.hasDirectory('src/ui')).toBe(true);
 
         // Check file contents and paths were updated
-        const movedFile = fileCacheManager.getFile('src/ui/Button.tsx');
-        expect(movedFile).toEqual({
+        const movedFile = await fileCacheManager.getFile('src/ui/Button.tsx');
+        expect(movedFile).toMatchObject({
             type: 'text',
             path: 'src/ui/Button.tsx',
             content: 'button content'
         });
     });
 
-    test('should list all files', () => {
+    test('should list all files', async () => {
         const files: SandboxFile[] = [
             { type: 'text', path: 'file1.tsx', content: 'content1' },
             { type: 'text', path: 'file2.tsx', content: 'content2' },
             { type: 'binary', path: 'image.png', content: new Uint8Array([1, 2]) }
         ];
 
-        files.forEach(file => fileCacheManager.setFile(file));
+        for (const file of files) {
+            await fileCacheManager.setFile(file);
+        }
 
         const fileList = fileCacheManager.listAllFiles();
         expect(fileList).toHaveLength(3);
@@ -324,14 +341,16 @@ describe('FileCacheManager', () => {
         expect(fileList).toContain('image.png');
     });
 
-    test('should list all directories', () => {
+    test('should list all directories', async () => {
         const directories: SandboxDirectory[] = [
             { type: 'directory', path: 'src' },
             { type: 'directory', path: 'src/components' },
             { type: 'directory', path: 'public' }
         ];
 
-        directories.forEach(dir => fileCacheManager.setDirectory(dir));
+        for (const dir of directories) {
+            await fileCacheManager.setDirectory(dir);
+        }
 
         const dirList = fileCacheManager.listAllDirectories();
         expect(dirList).toHaveLength(3);
@@ -340,36 +359,36 @@ describe('FileCacheManager', () => {
         expect(dirList).toContain('public');
     });
 
-    test('should write empty file to cache', () => {
-        fileCacheManager.writeEmptyFile('empty.png', 'binary');
+    test('should write empty file to cache', async () => {
+        await fileCacheManager.writeEmptyFile('empty.png', 'binary');
 
         expect(fileCacheManager.hasFile('empty.png')).toBe(true);
-        const emptyFile = fileCacheManager.getFile('empty.png');
-        expect(emptyFile).toEqual({
+        const emptyFile = await fileCacheManager.getFile('empty.png');
+        expect(emptyFile).toMatchObject({
             type: 'binary',
             path: 'empty.png',
             content: null
         });
     });
 
-    test('should not overwrite existing file with writeEmptyFile', () => {
+    test('should not overwrite existing file with writeEmptyFile', async () => {
         const existingFile: SandboxFile = {
             type: 'binary',
             path: 'existing.png',
             content: new Uint8Array([1, 2, 3])
         };
 
-        fileCacheManager.setFile(existingFile);
-        fileCacheManager.writeEmptyFile('existing.png', 'binary');
+        await fileCacheManager.setFile(existingFile);
+        await fileCacheManager.writeEmptyFile('existing.png', 'binary');
 
-        const file = fileCacheManager.getFile('existing.png');
-        expect(file).toEqual(existingFile); // Should remain unchanged
+        const file = await fileCacheManager.getFile('existing.png');
+        expect(file).toMatchObject(existingFile); // Should remain unchanged
     });
 
     test('should clear all files and directories', async () => {
         // Add files and directories
-        fileCacheManager.setFile({ type: 'text', path: 'file.tsx', content: 'content' });
-        fileCacheManager.setDirectory({ type: 'directory', path: 'src' });
+        await fileCacheManager.setFile({ type: 'text', path: 'file.tsx', content: 'content' });
+        await fileCacheManager.setDirectory({ type: 'directory', path: 'src' });
 
         expect(fileCacheManager.fileCount).toBe(1);
         expect(fileCacheManager.directoryCount).toBe(1);
@@ -382,25 +401,25 @@ describe('FileCacheManager', () => {
         expect(fileCacheManager.listAllDirectories()).toHaveLength(0);
     });
 
-    test('should track file and directory counts', () => {
+    test('should track file and directory counts', async () => {
         expect(fileCacheManager.fileCount).toBe(0);
         expect(fileCacheManager.directoryCount).toBe(0);
 
-        fileCacheManager.setFile({ type: 'text', path: 'file1.tsx', content: 'content' });
-        fileCacheManager.setFile({ type: 'text', path: 'file2.tsx', content: 'content' });
-        fileCacheManager.setDirectory({ type: 'directory', path: 'src' });
+        await fileCacheManager.setFile({ type: 'text', path: 'file1.tsx', content: 'content' });
+        await fileCacheManager.setFile({ type: 'text', path: 'file2.tsx', content: 'content' });
+        await fileCacheManager.setDirectory({ type: 'directory', path: 'src' });
 
         expect(fileCacheManager.fileCount).toBe(2);
         expect(fileCacheManager.directoryCount).toBe(1);
 
-        fileCacheManager.deleteFile('file1.tsx');
+        await fileCacheManager.deleteFile('file1.tsx');
         expect(fileCacheManager.fileCount).toBe(1);
 
-        fileCacheManager.deleteDirectory('src');
+        await fileCacheManager.deleteDirectory('src');
         expect(fileCacheManager.directoryCount).toBe(0);
     });
 
-    test('should handle content hash with files', () => {
+    test('should handle content hash with files', async () => {
         const testFile: SandboxFile = {
             type: 'text',
             path: 'test.tsx',
@@ -408,14 +427,14 @@ describe('FileCacheManager', () => {
         };
 
         // Set file with content hash
-        fileCacheManager.setFile(testFile, 'hash123');
+        await fileCacheManager.setFile(testFile, 'hash123');
 
         // File should be in cache
         expect(fileCacheManager.hasFile('test.tsx')).toBe(true);
-        expect(fileCacheManager.getFile('test.tsx')).toEqual(testFile);
+        expect(await fileCacheManager.getFile('test.tsx')).toMatchObject(testFile);
     });
 
-    test('should rename nested directories when renaming parent directory', () => {
+    test('should rename nested directories when renaming parent directory', async () => {
         // Add nested directories and files
         const nestedDir1: SandboxDirectory = {
             type: 'directory',
@@ -445,15 +464,15 @@ describe('FileCacheManager', () => {
             content: 'button'
         };
 
-        fileCacheManager.setDirectory(parentDir);
-        fileCacheManager.setDirectory(nestedDir1);
-        fileCacheManager.setDirectory(nestedDir2);
-        fileCacheManager.setDirectory(nestedDir3);
-        fileCacheManager.setDirectory(unrelatedDir);
-        fileCacheManager.setFile(nestedFile);
+        await fileCacheManager.setDirectory(parentDir);
+        await fileCacheManager.setDirectory(nestedDir1);
+        await fileCacheManager.setDirectory(nestedDir2);
+        await fileCacheManager.setDirectory(nestedDir3);
+        await fileCacheManager.setDirectory(unrelatedDir);
+        await fileCacheManager.setFile(nestedFile);
 
         // Rename parent directory
-        fileCacheManager.renameDirectory('src/components', 'src/widgets');
+        await fileCacheManager.renameDirectory('src/components', 'src/widgets');
 
         // Check that all nested directories were renamed
         expect(fileCacheManager.hasDirectory('src/components')).toBe(false);
@@ -473,23 +492,23 @@ describe('FileCacheManager', () => {
         expect(fileCacheManager.hasFile('src/components/ui/Button.tsx')).toBe(false);
         expect(fileCacheManager.hasFile('src/widgets/ui/Button.tsx')).toBe(true);
 
-        const renamedFile = fileCacheManager.getFile('src/widgets/ui/Button.tsx');
+        const renamedFile = await fileCacheManager.getFile('src/widgets/ui/Button.tsx');
         expect(renamedFile?.path).toBe('src/widgets/ui/Button.tsx');
         expect(renamedFile?.content).toBe('button');
     });
 
-    test('should prevent renaming root directory', () => {
-        expect(() => {
-            fileCacheManager.renameDirectory('/', '/new-root');
+    test('should prevent renaming root directory', async () => {
+        await expect(async () => {
+            await fileCacheManager.renameDirectory('/', '/new-root');
         }).toThrow('Cannot rename root directory');
 
-        expect(() => {
-            fileCacheManager.renameDirectory('', '/new-root');
+        await expect(async () => {
+            await fileCacheManager.renameDirectory('', '/new-root');
         }).toThrow('Cannot rename root directory');
 
         // Test with trailing slashes that normalize to root
-        expect(() => {
-            fileCacheManager.renameDirectory('///', '/new-root');
+        await expect(async () => {
+            await fileCacheManager.renameDirectory('///', '/new-root');
         }).toThrow('Cannot rename root directory');
     });
 });
