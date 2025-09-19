@@ -17,7 +17,7 @@ export default function LoginPage() {
     const returnUrl = useSearchParams().get(LocalForageKeys.RETURN_URL);
 
     return (
-        <div className="flex h-screen w-screen" >
+        <div className="flex h-screen w-screen justify-center">
             <div className="flex flex-col justify-between w-full h-full max-w-xl p-16 space-y-8 overflow-auto">
                 <div className="flex items-center space-x-2">
                     <Link href={Routes.HOME} className="hover:opacity-80 transition-opacity">
@@ -62,9 +62,9 @@ export default function LoginPage() {
                     <p>{t(transKeys.welcome.version, { version: '1.0.0' })}</p>
                 </div>
             </div>
-            <div className="hidden w-full lg:block md:block m-6">
+            <div className="hidden w-full md:block m-6">
                 <Image
-                    className="w-full h-full object-cover rounded-xl hidden dark:flex"
+                    className="w-full h-full object-cover rounded-xl"
                     src={backgroundUrl}
                     alt="Onlook dunes dark"
                     width={1000}
