@@ -45,6 +45,7 @@
         "./*": "./src/components/*.tsx",
         "./icons": "./src/components/icons/index.tsx",
         "./color-picker": "./src/components/color-picker/index.tsx",
+        "./ai-elements": "./src/components/ai-elements/index.tsx",
         "./tokens": "./tokens.ts",
         "./tailwind.config": "./tailwind.config.ts",
         "./postcss": "./postcss.config.js",
@@ -53,9 +54,12 @@
         "./hooks": "./src/hooks/index.ts"
     },
     "dependencies": {
+        "@ai-sdk/react": "^2.0.45",
+        "@ai-sdk/ui-utils": "^1.2.11",
         "@emotion/react": "^11.13.3",
         "@emotion/styled": "^11.13.0",
         "@hookform/resolvers": "^5.0.1",
+        "ai": "^5.0.15",
         "@radix-ui/react-accordion": "^1.2.8",
         "@radix-ui/react-alert-dialog": "^1.1.11",
         "@radix-ui/react-aspect-ratio": "^1.1.4",
