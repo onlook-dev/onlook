@@ -28,12 +28,32 @@ export const ContextIndicator = observer(({ messages, modelId = 'openai:gpt-4' }
     }
 
     const percentage = Math.min(contextTracking.percentage, 100);
-    const colors = { stroke: '#6b7280', text: 'text-gray-500' };
+    
+    // Color logic based on percentage thresholds
+    let colors = { stroke: '#6b7280', text: 'text-gray-400', bg: '' };
+    
+    if (percentage >= 90) {
+        colors = { stroke: '#ef4444', text: 'text-red-500', bg: 'bg-red-900' };
+    } else if (percentage >= 85) {
+        colors = { stroke: '#f97316', text: 'text-orange-500', bg: 'bg-orange-900' };
+    } else if (percentage >= 75) {
+        colors = { stroke: '#fbbf24', text: 'text-amber-200', bg: 'bg-amber-900' };
+    } else if (percentage >= 50) {
+        colors = { stroke: '#6b7280', text: 'text-gray-400', bg: '' };
+    }
+    
+    // Format percentage display
+    const displayPercentage = percentage < 50 
+        ? Math.round(percentage).toString() + '%'
+        : percentage.toFixed(1) + '%';
 
     return (
         <Tooltip>
             <TooltipTrigger asChild>
-                <div className="flex items-center gap-1.5 px-1.5 py-1 rounded-md hover:bg-muted/30 transition-colors cursor-pointer shadow-md hover:shadow-lg transition-shadow">
+                <div className={cn(
+                    "flex items-center gap-1.5 px-1.5 py-1 rounded-md hover:bg-muted/30 transition-colors cursor-pointer shadow-md hover:shadow-lg transition-shadow",
+                    colors.bg
+                )}>
                     <div className="relative">
                         <svg width="16" height="16" className="transform -rotate-90">
                             <circle
@@ -59,12 +79,12 @@ export const ContextIndicator = observer(({ messages, modelId = 'openai:gpt-4' }
                             />
                         </svg>
                     </div>
-                    <span className={cn("text-xs font-medium", colors.text)}>
-                        {percentage.toFixed(1)}%
+                    <span className={cn("text-xs font-medium tabular-nums", colors.text)}>
+                        {displayPercentage}
                     </span>
                 </div>
             </TooltipTrigger>
-            <TooltipContent side="top">
+            <TooltipContent side="top" className="hideArrow">
                 {formatTokens(contextTracking.usage.totalTokens)}/{formatTokens(contextTracking.limits.contextWindow)} context used
             </TooltipContent>
         </Tooltip>
