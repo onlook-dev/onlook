@@ -26,6 +26,9 @@ export class LightningFileCacheManager {
             await this.ensureDir(this.basePath);
             await this.ensureDir(this.filesPath);
             await this.ensureDir(this.directoriesPath);
+            
+            // Populate in-memory indices from existing files
+            await this.populateIndices();
         } catch (error) {
             console.error('Error initializing LightningFileCacheManager:', error);
         }
