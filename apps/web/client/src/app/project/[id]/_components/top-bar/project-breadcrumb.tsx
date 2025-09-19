@@ -3,6 +3,15 @@ import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
+import { Routes } from '@/utils/constants';
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -12,13 +21,15 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { Input } from '@onlook/ui/input';
+import { Label } from '@onlook/ui/label';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { redirect, useRouter } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { NewProjectMenu } from './new-project-menu';
 import { RecentProjectsMenu } from './recent-projects';
 
@@ -31,6 +42,7 @@ export const ProjectBreadcrumb = observer(() => {
     const { data: user } = api.user.get.useQuery();
     const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
     const { mutateAsync: createProject } = api.project.create.useMutation();
+    const { mutateAsync: cloneProject } = api.project.clone.useMutation();
     const { setIsAuthModalOpen } = useAuthContext();
 
     const t = useTranslations();
@@ -39,6 +51,21 @@ export const ProjectBreadcrumb = observer(() => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isClosingProject, setIsClosingProject] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
+    
+    // Clone modal state
+    const [showCloneDialog, setShowCloneDialog] = useState(false);
+    const [cloneProjectName, setCloneProjectName] = useState('');
+    const [isCloningCurrentProject, setIsCloningCurrentProject] = useState(false);
+    
+    // Generate default clone name
+    const defaultCloneName = useMemo(() => {
+        if (project?.name) {
+            return `${project.name} (Clone)`;
+        }
+        return 'Cloned Project';
+    }, [project?.name]);
+    
+    const isCloneProjectNameEmpty = useMemo(() => cloneProjectName.length === 0, [cloneProjectName]);
 
     async function handleNavigateToProjects(_route?: 'create' | 'import') {
         try {
@@ -99,6 +126,54 @@ export const ProjectBreadcrumb = observer(() => {
         }
     }
 
+    function handleShowCloneDialog() {
+        setCloneProjectName(defaultCloneName);
+        setShowCloneDialog(true);
+    }
+
+    async function handleCloneCurrentProject() {
+        if (!editorEngine.projectId) {
+            toast.error('No project to clone');
+            return;
+        }
+
+        setIsCloningCurrentProject(true);
+        try {
+            // Capture screenshot of current project before navigation
+            try {
+                editorEngine.screenshot.captureScreenshot();
+            } catch (error) {
+                console.error('Failed to capture screenshot:', error);
+            }
+
+            const clonedProject = await cloneProject({
+                projectId: editorEngine.projectId,
+                name: cloneProjectName.trim(),
+            });
+
+            if (clonedProject) {
+                toast.success('Project cloned successfully');
+                setShowCloneDialog(false);
+                router.push(`${Routes.PROJECT}/${clonedProject.id}`);
+            }
+        } catch (error) {
+            console.error('Error cloning project:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+
+            if (errorMessage.includes('502') || errorMessage.includes('sandbox')) {
+                toast.error('Sandbox service temporarily unavailable', {
+                    description: 'Please try again in a few moments. Our servers may be experiencing high load.',
+                });
+            } else {
+                toast.error('Failed to clone project', {
+                    description: errorMessage,
+                });
+            }
+        } finally {
+            setIsCloningCurrentProject(false);
+        }
+    }
+
     return (
         <div className="mr-1 flex flex-row items-center text-small gap-2">
             <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
@@ -145,7 +220,7 @@ export const ProjectBreadcrumb = observer(() => {
                     <DropdownMenuSeparator />
                     <RecentProjectsMenu />
                     <DropdownMenuSeparator />
-                    <NewProjectMenu />
+                    <NewProjectMenu onShowCloneDialog={handleShowCloneDialog} />
                     <DropdownMenuItem
                         onClick={handleDownloadCode}
                         disabled={isDownloading}
@@ -170,6 +245,57 @@ export const ProjectBreadcrumb = observer(() => {
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
+
+            <AlertDialog open={showCloneDialog} onOpenChange={setShowCloneDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Clone Project</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Create a copy of this project with all branches and settings preserved.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="flex flex-col w-full gap-2">
+                        <Label htmlFor="clone-name">Project Name</Label>
+                        <Input
+                            id="clone-name"
+                            type="text"
+                            placeholder="Enter name for cloned project"
+                            value={cloneProjectName}
+                            onChange={(e) => setCloneProjectName(e.target.value)}
+                        />
+                        <p
+                            className={cn(
+                                'text-xs text-red-500 transition-opacity',
+                                isCloneProjectNameEmpty ? 'opacity-100' : 'opacity-0',
+                            )}
+                        >
+                            Project name can't be empty
+                        </p>
+                    </div>
+                    <AlertDialogFooter>
+                        <Button 
+                            variant="ghost" 
+                            onClick={() => setShowCloneDialog(false)} 
+                            disabled={isCloningCurrentProject}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            disabled={isCloneProjectNameEmpty || isCloningCurrentProject}
+                            onClick={handleCloneCurrentProject}
+                        >
+                            {isCloningCurrentProject ? (
+                                <>
+                                    <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />
+                                    Cloning...
+                                </>
+                            ) : (
+                                'Clone Project'
+                            )}
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 });

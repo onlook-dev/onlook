@@ -20,7 +20,11 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-export const NewProjectMenu = observer(() => {
+interface NewProjectMenuProps {
+    onShowCloneDialog: () => void;
+}
+
+export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuProps) => {
     const editorEngine = useEditorEngine();
     const { data: user } = api.user.get.useQuery();
     const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
@@ -88,45 +92,64 @@ export const NewProjectMenu = observer(() => {
         }
     };
 
+    const handleShowCloneDialog = () => {
+        if (!user?.id) {
+            localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
+            setIsAuthModalOpen(true);
+            return;
+        }
+
+        onShowCloneDialog();
+    };
+
     return (
         <DropdownMenuSub>
-            <DropdownMenuSubTrigger className="cursor-pointer">
-                <div className="flex flex-row center items-center">
-                    <Icons.Plus className="mr-2" />
-                    {t(transKeys.projects.actions.newProject)}
-                </div>
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent className="w-48 ml-2">
-                <DropdownMenuItem
-                    onClick={() => router.push(Routes.HOME)}
-                    className="cursor-pointer"
-                >
-                    <div className="flex flex-row center items-center group">
+                <DropdownMenuSubTrigger className="cursor-pointer">
+                    <div className="flex flex-row center items-center">
                         <Icons.Plus className="mr-2" />
                         {t(transKeys.projects.actions.newProject)}
                     </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                    onClick={handleStartBlankProject}
-                    disabled={isCreatingProject}
-                    className="cursor-pointer"
-                >
-                    <div className="flex flex-row center items-center group">
-                        {isCreatingProject ? (
-                            <Icons.LoadingSpinner className="mr-2 animate-spin" />
-                        ) : (
-                            <Icons.FilePlus className="mr-2" />
-                        )}
-                        {t(transKeys.projects.actions.blankProject)}
-                    </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push(Routes.IMPORT_PROJECT)}>
-                    <div className="flex flex-row center items-center group">
-                        <Icons.Upload className="mr-2" />
-                        {t(transKeys.projects.actions.import)}
-                    </div>
-                </DropdownMenuItem>
-            </DropdownMenuSubContent>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="w-48 ml-2">
+                    <DropdownMenuItem
+                        onClick={() => router.push(Routes.HOME)}
+                        className="cursor-pointer"
+                    >
+                        <div className="flex flex-row center items-center group">
+                            <Icons.Plus className="mr-2" />
+                            {t(transKeys.projects.actions.newProject)}
+                        </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onClick={handleStartBlankProject}
+                        disabled={isCreatingProject}
+                        className="cursor-pointer"
+                    >
+                        <div className="flex flex-row center items-center group">
+                            {isCreatingProject ? (
+                                <Icons.LoadingSpinner className="mr-2 animate-spin" />
+                            ) : (
+                                <Icons.FilePlus className="mr-2" />
+                            )}
+                            {t(transKeys.projects.actions.blankProject)}
+                        </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push(Routes.IMPORT_PROJECT)}>
+                        <div className="flex flex-row center items-center group">
+                            <Icons.Upload className="mr-2" />
+                            {t(transKeys.projects.actions.import)}
+                        </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onClick={handleShowCloneDialog}
+                        className="cursor-pointer"
+                    >
+                        <div className="flex flex-row center items-center group">
+                            <Icons.Copy className="mr-2" />
+                            Clone this project
+                        </div>
+                    </DropdownMenuItem>
+                </DropdownMenuSubContent>
         </DropdownMenuSub>
     );
 });

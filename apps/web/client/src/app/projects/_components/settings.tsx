@@ -32,15 +32,21 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
     const { mutateAsync: updateProject } = api.project.update.useMutation();
     const { mutateAsync: addTag } = api.project.addTag.useMutation();
     const { mutateAsync: removeTag } = api.project.removeTag.useMutation();
+    const { mutateAsync: cloneProject } = api.project.clone.useMutation();
 
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showRenameDialog, setShowRenameDialog] = useState(false);
+    const [showCloneDialog, setShowCloneDialog] = useState(false);
     const [projectName, setProjectName] = useState(project.name);
+    const [cloneProjectName, setCloneProjectName] = useState(`${project.name} (Clone)`);
+    const [isCloningProject, setIsCloningProject] = useState(false);
     const isProjectNameEmpty = useMemo(() => projectName.length === 0, [projectName]);
+    const isCloneProjectNameEmpty = useMemo(() => cloneProjectName.length === 0, [cloneProjectName]);
     const isTemplate = project.metadata.tags.includes(Tags.TEMPLATE) || false;
 
     useEffect(() => {
         setProjectName(project.name);
+        setCloneProjectName(`${project.name} (Clone)`);
     }, [project.name]);
 
     const handleDeleteProject = async () => {
@@ -100,6 +106,40 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
         }
     };
 
+    const handleCloneProject = async () => {
+        setIsCloningProject(true);
+        try {
+            const clonedProject = await cloneProject({
+                projectId: project.id,
+                name: cloneProjectName,
+            });
+
+            // Invalidate and refetch project lists
+            await Promise.all([
+                utils.project.list.invalidate(),
+            ]);
+
+            toast.success('Project cloned successfully');
+            setShowCloneDialog(false);
+            refetch();
+        } catch (error) {
+            console.error('Error cloning project:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            
+            if (errorMessage.includes('502') || errorMessage.includes('sandbox')) {
+                toast.error('Sandbox service temporarily unavailable', {
+                    description: 'Please try again in a few moments. Our servers may be experiencing high load.',
+                });
+            } else {
+                toast.error('Failed to clone project', {
+                    description: errorMessage,
+                });
+            }
+        } finally {
+            setIsCloningProject(false);
+        }
+    };
+
     return (
         <>
             <DropdownMenu>
@@ -126,6 +166,13 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
                     >
                         <Icons.Pencil className="w-4 h-4" />
                         {t(transKeys.projects.actions.renameProject)}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onSelect={() => setShowCloneDialog(true)}
+                        className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
+                    >
+                        <Icons.Copy className="w-4 h-4" />
+                        Clone Project
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={handleTemplateToggle}
@@ -205,6 +252,52 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
                             onClick={handleRenameProject}
                         >
                             {t(transKeys.projects.actions.rename)}
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+            
+            <AlertDialog open={showCloneDialog} onOpenChange={setShowCloneDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Clone Project</AlertDialogTitle>
+                    </AlertDialogHeader>
+                    <div className="flex flex-col w-full gap-2">
+                        <Label htmlFor="clone-name">Project Name</Label>
+                        <Input
+                            id="clone-name"
+                            minLength={0}
+                            type="text"
+                            placeholder="Enter name for cloned project"
+                            value={cloneProjectName || ''}
+                            onInput={(e) => setCloneProjectName(e.currentTarget.value)}
+                        />
+                        <p
+                            className={cn(
+                                'text-xs text-red-500 transition-opacity',
+                                isCloneProjectNameEmpty ? 'opacity-100' : 'opacity-0',
+                            )}
+                        >
+                            Project name can't be empty
+                        </p>
+                    </div>
+                    <AlertDialogFooter>
+                        <Button variant={'ghost'} onClick={() => setShowCloneDialog(false)} disabled={isCloningProject}>
+                            {t(transKeys.projects.actions.cancel)}
+                        </Button>
+                        <Button
+                            disabled={isCloneProjectNameEmpty || isCloningProject}
+                            className="rounded-md text-sm"
+                            onClick={handleCloneProject}
+                        >
+                            {isCloningProject ? (
+                                <>
+                                    <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />
+                                    Cloning...
+                                </>
+                            ) : (
+                                'Clone'
+                            )}
                         </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
