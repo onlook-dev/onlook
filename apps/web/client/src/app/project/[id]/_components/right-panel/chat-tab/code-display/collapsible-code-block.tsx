@@ -1,5 +1,5 @@
-import { api } from '@/trpc/react';
 import { useEditorEngine } from '@/components/store/editor';
+import { api } from '@/trpc/react';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
@@ -49,7 +49,6 @@ export const CollapsibleCodeBlock = observer(({
 
     return (
         <div className="group relative">
-
             <Collapsible open={isOpen} onOpenChange={setIsOpen}>
                 <div
                     className={cn(
@@ -83,16 +82,13 @@ export const CollapsibleCodeBlock = observer(({
                                 >
                                     <span className="truncate flex-1 min-w-0">{getTruncatedFileName(path)}</span>
                                     {(() => {
-                                        const branch = branchId 
+                                        const branch = branchId
                                             ? editorEngine.branches.allBranches.find(b => b.id === branchId)
                                             : editorEngine.branches.activeBranch;
                                         return branch && (
-                                            <>
-                                                
-                                                 <span className="text-foreground-tertiary group-hover:text-foreground-secondary text-mini ml-0.5 flex-shrink-0 truncate max-w-24">
-                                                     {' • '}{branch.name}
-                                                 </span>
-                                            </>
+                                            <span className="text-foreground-tertiary group-hover:text-foreground-secondary text-mini ml-0.5 flex-shrink-0 truncate max-w-24">
+                                                {' • '}{branch.name}
+                                            </span>
                                         );
                                     })()}
                                 </div>

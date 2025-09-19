@@ -51,7 +51,7 @@ export const ChatMessages = observer(({
             let messageNode;
             switch (message.role) {
                 case 'assistant':
-                    messageNode = <AssistantMessage key={message.id} message={message} />;
+                    messageNode = <AssistantMessage key={message.id} message={message} isStreaming={isStreaming} />;
                     break;
                 case 'user':
                     messageNode = (

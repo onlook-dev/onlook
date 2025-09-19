@@ -39,7 +39,7 @@ export const ToolCallDisplay = ({
     const toolName = toolPart.type.split('-')[1];
     const loading = isStream && isLastPart;
 
-    if (isStream && toolPart.state !== 'output-available' && toolPart.state !== 'input-available') {
+    if (isStream || (toolPart.state !== 'output-available' && toolPart.state !== 'input-available')) {
         return (
             <ToolCallSimple
                 toolPart={toolPart}
