@@ -14,6 +14,11 @@ export const BranchesTab = observer(() => {
     const { branches } = editorEngine;
     const [hoveredBranchId, setHoveredBranchId] = useState<string | null>(null);
 
+    const currentGitBranch = branches.activeGitBranch;
+    const visibleBranches = currentGitBranch 
+        ? branches.allBranches.filter(branch => branch.git?.branch === currentGitBranch)
+        : branches.allBranches;
+
     const handleBranchSwitch = async (branchId: string) => {
         if (branchId === branches.activeBranch.id) return;
 
@@ -49,13 +54,18 @@ export const BranchesTab = observer(() => {
             <div className="flex items-center justify-between p-4 border-b">
                 <div className="flex items-center gap-2">
                     <h2 className="text-sm">Branches</h2>
-                    <span className="text-xs text-muted-foreground">({branches.allBranches.length})</span>
+                    <span className="text-xs text-muted-foreground">({visibleBranches.length})</span>
+                    {currentGitBranch && (
+                        <span className="text-xs text-muted-foreground">
+                            • {currentGitBranch}
+                        </span>
+                    )}
                 </div>
             </div>
 
             <div className="flex-1 overflow-auto">
                 <div className="p-2 space-y-1">
-                    {branches.allBranches.map((branch) => {
+                    {visibleBranches.map((branch) => {
                         const isActive = branch.id === branches.activeBranch.id;
                         const isHovered = hoveredBranchId === branch.id;
 

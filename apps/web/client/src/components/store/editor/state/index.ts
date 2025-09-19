@@ -13,6 +13,7 @@ export class StateManager {
     private _canvasScrolling = false;
     hotkeysOpen = false;
     publishOpen = false;
+    githubExportOpen = false;
     leftPanelLocked = false;
     canvasPanning = false;
     isDragSelecting = false;
@@ -47,9 +48,14 @@ export class StateManager {
         this.canvasScrolling = false;
     }, 150);
 
+    setGithubExportOpen(open: boolean) {
+        this.githubExportOpen = open;
+    }
+
     clear() {
         this.hotkeysOpen = false;
         this.publishOpen = false;
+        this.githubExportOpen = false;
         this.branchTab = null;
         this.manageBranchId = null;
         this.resetCanvasScrollingDebounced.cancel();

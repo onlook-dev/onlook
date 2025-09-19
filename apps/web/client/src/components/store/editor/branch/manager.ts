@@ -20,10 +20,19 @@ export class BranchManager {
     private currentBranchId: string | null = null;
     private branchMap = new Map<string, BranchData>();
     private reactionDisposer: (() => void) | null = null;
+    private currentGitBranch: string | null = null; // Track current Git branch context
 
     constructor(editorEngine: EditorEngine) {
         this.editorEngine = editorEngine;
         makeAutoObservable(this);
+    }
+
+    get activeGitBranch(): string | null {
+        return this.currentGitBranch;
+    }
+
+    setGitBranchContext(gitBranch: string): void {
+        this.currentGitBranch = gitBranch;
     }
 
     initBranches(branches: Branch[]): void {
@@ -35,6 +44,11 @@ export class BranchManager {
             error.clear();
         }
         this.branchMap.clear();
+        
+        if (branches.length > 0 && branches[0]?.git?.branch) {
+            this.currentGitBranch = branches[0].git.branch;
+        }
+        
         for (const branch of branches) {
             const errorManager = new ErrorManager(branch);
             const sandboxManager = new SandboxManager(branch, this.editorEngine, errorManager);
@@ -133,6 +147,38 @@ export class BranchManager {
 
     async listBranches(): Promise<Branch[]> {
         return [];
+    }
+
+    async reloadBranchesForGitContext(gitBranch: string): Promise<void> {
+        try {
+            const currentBranches = Array.from(this.branchMap.values());
+            if (currentBranches.length === 0) {
+                throw new Error('No project context available');
+            }
+            const projectId = currentBranches[0]!.branch.projectId;
+
+            const branches = await api.branch.getByProjectId.query({ 
+                projectId, 
+                gitBranch 
+            });
+
+            this.initBranches(branches);
+            await this.init();
+        } catch (error) {
+            console.error('Failed to reload branches for Git context:', error);
+            throw error;
+        }
+    }
+
+    clearGitContext(): void {
+        for (const { sandbox, history, error } of this.branchMap.values()) {
+            sandbox.clear();
+            history.clear();
+            error.clear();
+        }
+        this.branchMap.clear();
+        this.currentBranchId = null;
+        this.currentGitBranch = null;
     }
 
     async forkBranch(branchId: string): Promise<void> {
@@ -278,22 +324,22 @@ export class BranchManager {
                 this.editorEngine.frames.delete(frameState.frame.id);
             }
 
-            // Clean up the sandbox, history, and error manager
             branchData.sandbox.clear();
             branchData.history.clear();
             branchData.error.clear();
-            // Clean up template nodes for this branch
             this.editorEngine.templateNodes.clearBranch(branchId);
-            // Remove from the map
             this.branchMap.delete(branchId);
 
-            // If this was the current branch, switch to default or first available
             if (this.currentBranchId === branchId) {
                 const remainingBranches = Array.from(this.branchMap.values()).map(({ branch }) => branch);
                 this.currentBranchId =
                     remainingBranches.find(b => b.isDefault)?.id
                     ?? remainingBranches[0]?.id
                     ?? null;
+                
+                if (this.currentBranchId === null) {
+                    this.currentGitBranch = null;
+                }
             }
         }
     }

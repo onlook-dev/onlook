@@ -1,12 +1,192 @@
-import { users, type DrizzleDb } from '@onlook/db';
+import { branches, projects, users, type DrizzleDb } from '@onlook/db';
 import {
     createInstallationOctokit,
     generateInstallationUrl
 } from '@onlook/github';
 import { TRPCError } from '@trpc/server';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
+import type { Provider } from '@onlook/code-provider';
+
+async function getProvider({
+    sandboxId,
+    provider = CodeProvider.CodeSandbox,
+}: {
+    sandboxId: string;
+    provider?: CodeProvider;
+}): Promise<Provider> {
+    if (provider === CodeProvider.CodeSandbox) {
+        return createCodeProviderClient(CodeProvider.CodeSandbox, {
+            providerOptions: {
+                codesandbox: {
+                    sandboxId,
+                    initClient: true,
+                },
+            },
+        });
+    } else if (provider === CodeProvider.NodeFs) {
+        return createCodeProviderClient(CodeProvider.NodeFs, {
+            providerOptions: {
+                nodefs: {},
+            },
+        });
+    }
+
+    throw new Error(`Unsupported provider: ${provider}`);
+}
+
+async function getChangedFiles(
+    octokit: any,
+    owner: string,
+    repo: string,
+    baseTreeSha: string,
+    projectFiles: Array<{ path: string; content: string }>
+): Promise<Array<{ path: string; mode: '100644'; type: 'blob'; content: string }>> {
+    const { data: currentTree } = await octokit.rest.git.getTree({
+        owner,
+        repo,
+        tree_sha: baseTreeSha,
+        recursive: 'true',
+    });
+
+    const changedFiles: Array<{ path: string; mode: '100644'; type: 'blob'; content: string }> = [];
+
+    for (const file of projectFiles) {
+        const existingFile = currentTree.tree.find(
+            (treeItem: any) => treeItem.path === file.path && treeItem.type === 'blob'
+        );
+
+        if (existingFile) {
+            try {
+                const { data: existingBlob } = await octokit.rest.git.getBlob({
+                    owner,
+                    repo,
+                    file_sha: existingFile.sha!,
+                });
+                
+                const existingContent = Buffer.from(existingBlob.content, 'base64').toString('utf8');
+                
+                if (existingContent !== file.content) {
+                    changedFiles.push({
+                        path: file.path,
+                        mode: '100644' as const,
+                        type: 'blob' as const,
+                        content: file.content,
+                    });
+                }
+            } catch {
+                changedFiles.push({
+                    path: file.path,
+                    mode: '100644' as const,
+                    type: 'blob' as const,
+                    content: file.content,
+                });
+            }
+        } else {
+            changedFiles.push({
+                path: file.path,
+                mode: '100644' as const,
+                type: 'blob' as const,
+                content: file.content,
+            });
+        }
+    }
+
+    return changedFiles;
+}
+
+async function forkSandbox(sourceSandboxId: string, newBranchName: string): Promise<string> {
+    try {
+        const { getStaticCodeProvider, CodeProvider } = await import('@onlook/code-provider');
+        const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
+        
+        const forkedSandbox = await CodesandboxProvider.createProject({
+            source: 'template',
+            id: sourceSandboxId,
+            title: `${newBranchName}-primary`,
+            tags: ['git-branch', newBranchName],
+        });
+        
+        return forkedSandbox.id;
+    } catch (error) {
+        console.error('Failed to fork sandbox:', error);
+        // Fallback: reuse source sandbox ID if forking fails
+        return sourceSandboxId;
+    }
+}
+
+async function getProjectFiles(projectId: string, db: DrizzleDb, gitBranch?: string): Promise<Array<{ path: string; content: string }>> {
+    let branch;
+    
+    if (gitBranch) {
+        branch = await db.query.branches.findFirst({
+            where: and(
+                eq(branches.projectId, projectId),
+                eq(branches.gitBranch, gitBranch)
+            ),
+        });
+    }
+    
+    if (!branch) {
+        branch = await db.query.branches.findFirst({
+            where: and(
+                eq(branches.projectId, projectId),
+                eq(branches.isDefault, true)
+            ),
+        });
+    }
+
+    if (!branch?.sandboxId) {
+        throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: 'Project has no sandbox',
+        });
+    }
+
+    const provider = await getProvider({ sandboxId: branch.sandboxId });
+    const allFiles: Array<{ path: string; content: string }> = [];
+    const dirsToProcess = ['./'];
+    
+    const EXCLUDED_DIRECTORIES = ['node_modules', '.git', 'dist', 'build', '.next', '.onlook'];
+    const INCLUDED_EXTENSIONS = ['.tsx', '.ts', '.jsx', '.js', '.css', '.scss', '.sass', '.json', '.md', '.html'];
+    
+    while (dirsToProcess.length > 0) {
+        const currentDir = dirsToProcess.shift()!;
+        
+        try {
+            const { files } = await provider.listFiles({ args: { path: currentDir } });
+            
+            for (const entry of files) {
+                const fullPath = currentDir === './' ? entry.name : `${currentDir}/${entry.name}`;
+                
+                if (entry.type === 'directory') {
+                    if (!EXCLUDED_DIRECTORIES.includes(entry.name)) {
+                        dirsToProcess.push(fullPath);
+                    }
+                } else if (entry.type === 'file') {
+                    const hasValidExtension = INCLUDED_EXTENSIONS.some(ext => entry.name.endsWith(ext));
+                    if (hasValidExtension) {
+                        try {
+                            const { file } = await provider.readFile({ args: { path: fullPath } });
+                            allFiles.push({
+                                path: fullPath.startsWith('./') ? fullPath.slice(2) : fullPath,
+                                content: file.toString(),
+                            });
+                        } catch {
+                            // Skip files that can't be read
+                        }
+                    }
+                }
+            }
+        } catch {
+            // Skip directories that can't be listed
+        }
+    }
+    
+    return allFiles;
+}
 
 const getUserGitHubInstallation = async (db: DrizzleDb, userId: string) => {
     const user = await db.query.users.findFirst({
@@ -68,12 +248,17 @@ export const githubRouter = createTRPCRouter({
                     installation_id: parseInt(installationId, 10),
                 });
 
+                // Check if this is an organization installation by checking if login exists (organizations have login, users have login too)
+                // We need to differentiate by looking at the installation target_type or by checking available permissions
+                const account = installation.data.account;
+                
                 // If installed on an organization, return that organization
-                if (installation.data.account && 'type' in installation.data.account && installation.data.account.type === 'Organization') {
+                // GitHub App installations on orgs vs users can be distinguished by installation.data.target_type
+                if (installation.data.target_type === 'Organization' && account) {
                     return [{
-                        id: installation.data.account.id,
-                        login: 'login' in installation.data.account ? installation.data.account.login : (installation.data.account as any).name || '',
-                        avatar_url: installation.data.account.avatar_url,
+                        id: account.id,
+                        login: 'login' in account ? account.login : (account as any).name || '',
+                        avatar_url: account.avatar_url,
                         description: undefined, // Organizations don't have descriptions in this context
                     }];
                 }
@@ -205,7 +390,6 @@ export const githubRouter = createTRPCRouter({
                     .set({ githubInstallationId: input.installationId })
                     .where(eq(users.id, ctx.user.id));
 
-                console.log(`Updated installation ID for user: ${ctx.user.id}`);
 
                 return {
                     success: true,
@@ -217,6 +401,1007 @@ export const githubRouter = createTRPCRouter({
                 throw new TRPCError({
                     code: 'INTERNAL_SERVER_ERROR',
                     message: 'Failed to update GitHub installation',
+                    cause: error,
+                });
+            }
+        }),
+
+    // Repository Creation
+    createRepository: protectedProcedure
+        .input(
+            z.object({
+                name: z.string().min(1, 'Repository name is required'),
+                description: z.string().optional(),
+                private: z.boolean().default(true),
+                owner: z.string().optional(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
+            
+            try {
+                const createParams: any = {
+                    name: input.name,
+                    description: input.description,
+                    private: input.private,
+                    auto_init: true,
+                };
+
+                let repoData;
+                if (input.owner) {
+                    repoData = await octokit.rest.repos.createInOrg({
+                        org: input.owner,
+                        ...createParams,
+                    });
+                } else {
+                    repoData = await octokit.rest.repos.createForAuthenticatedUser(createParams);
+                }
+
+                return {
+                    id: repoData.data.id,
+                    name: repoData.data.name,
+                    full_name: repoData.data.full_name,
+                    description: repoData.data.description,
+                    private: repoData.data.private,
+                    default_branch: repoData.data.default_branch,
+                    clone_url: repoData.data.clone_url,
+                    html_url: repoData.data.html_url,
+                    owner: {
+                        login: repoData.data.owner.login,
+                        avatar_url: repoData.data.owner.avatar_url,
+                    },
+                };
+            } catch (error: any) {
+                
+                if (error.status === 422) {
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: 'Repository name already exists or is invalid',
+                    });
+                }
+                
+                if (error.status === 403) {
+                    throw new TRPCError({
+                        code: 'FORBIDDEN',
+                        message: 'Insufficient permissions to create repository. Please reinstall the GitHub App with "All repositories" access or ensure you have admin rights to the organization.',
+                    });
+                }
+                
+                if (error.status === 404) {
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: 'Organization not found or you don\'t have access to it. Please check the organization name or reinstall the GitHub App.',
+                    });
+                }
+                
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `Failed to create repository: ${error.message}`,
+                    cause: error,
+                });
+            }
+        }),
+
+    // File Operations
+    createOrUpdateFile: protectedProcedure
+        .input(
+            z.object({
+                owner: z.string(),
+                repo: z.string(),
+                path: z.string(),
+                content: z.string(),
+                message: z.string(),
+                branch: z.string().default('main'),
+                sha: z.string().optional(), // Required for updates
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
+            
+            try {
+                const { data } = await octokit.rest.repos.createOrUpdateFileContents({
+                    owner: input.owner,
+                    repo: input.repo,
+                    path: input.path,
+                    message: input.message,
+                    content: Buffer.from(input.content, 'utf8').toString('base64'),
+                    branch: input.branch,
+                    ...(input.sha && { sha: input.sha }),
+                });
+
+                return {
+                    sha: data.content?.sha,
+                    path: data.content?.path,
+                    message: data.commit.message,
+                    html_url: data.content?.html_url,
+                };
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `Failed to create/update file: ${error.message}`,
+                    cause: error,
+                });
+            }
+        }),
+
+    // Batch file operations for project export
+    createOrUpdateFiles: protectedProcedure
+        .input(
+            z.object({
+                owner: z.string(),
+                repo: z.string(),
+                files: z.array(
+                    z.object({
+                        path: z.string(),
+                        content: z.string(),
+                        sha: z.string().optional(),
+                    })
+                ),
+                message: z.string(),
+                branch: z.string().default('main'),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
+            
+            try {
+                // Get the current commit SHA for the branch
+                const { data: refData } = await octokit.rest.git.getRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `heads/${input.branch}`,
+                });
+
+                const baseCommitSha = refData.object.sha;
+
+                // Get base tree SHA
+                const { data: baseCommit } = await octokit.rest.git.getCommit({
+                    owner: input.owner,
+                    repo: input.repo,
+                    commit_sha: baseCommitSha,
+                });
+
+                // Create tree entries for all files
+                const treeEntries = input.files.map(file => ({
+                    path: file.path,
+                    mode: '100644' as const,
+                    type: 'blob' as const,
+                    content: file.content,
+                }));
+
+                // Get the current tree for proper Git operations
+                const { data: currentCommit } = await octokit.rest.git.getCommit({
+                    owner: input.owner,
+                    repo: input.repo,
+                    commit_sha: baseCommitSha,
+                });
+
+                // Create new tree with base_tree for proper Git operations
+                const { data: newTree } = await octokit.rest.git.createTree({
+                    owner: input.owner,
+                    repo: input.repo,
+                    base_tree: currentCommit.tree.sha,
+                    tree: treeEntries,
+                });
+
+                // Create new commit
+                const { data: newCommit } = await octokit.rest.git.createCommit({
+                    owner: input.owner,
+                    repo: input.repo,
+                    message: input.message,
+                    tree: newTree.sha,
+                    parents: [baseCommitSha],
+                });
+
+                // Update branch reference
+                await octokit.rest.git.updateRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `heads/${input.branch}`,
+                    sha: newCommit.sha,
+                });
+
+                return {
+                    commit: {
+                        sha: newCommit.sha,
+                        message: newCommit.message,
+                        html_url: `https://github.com/${input.owner}/${input.repo}/commit/${newCommit.sha}`,
+                    },
+                    filesCount: input.files.length,
+                };
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `Failed to create/update files: ${error.message}`,
+                    cause: error,
+                });
+            }
+        }),
+
+    // Branch Operations
+    getBranches: protectedProcedure
+        .input(
+            z.object({
+                owner: z.string(),
+                repo: z.string(),
+            })
+        )
+        .query(async ({ input, ctx }) => {
+            const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
+            
+            const { data } = await octokit.rest.repos.listBranches({
+                owner: input.owner,
+                repo: input.repo,
+                per_page: 100,
+            });
+
+            return data.map(branch => ({
+                name: branch.name,
+                protected: branch.protected,
+                commit: {
+                    sha: branch.commit.sha,
+                    url: branch.commit.url,
+                },
+            }));
+        }),
+
+    createBranch: protectedProcedure
+        .input(
+            z.object({
+                owner: z.string(),
+                repo: z.string(),
+                branchName: z.string(),
+                fromBranch: z.string().default('main'),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
+            
+            try {
+                // Get the SHA of the source branch
+                const { data: refData } = await octokit.rest.git.getRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `heads/${input.fromBranch}`,
+                });
+
+                // Create new branch
+                const { data: newRef } = await octokit.rest.git.createRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `refs/heads/${input.branchName}`,
+                    sha: refData.object.sha,
+                });
+
+                return {
+                    name: input.branchName,
+                    sha: newRef.object.sha,
+                    ref: newRef.ref,
+                };
+            } catch (error: any) {
+                if (error.status === 422) {
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: 'Branch already exists or invalid branch name',
+                    });
+                }
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `Failed to create branch: ${error.message}`,
+                    cause: error,
+                });
+            }
+        }),
+
+    // Get file content with SHA for updates
+    getFileContent: protectedProcedure
+        .input(
+            z.object({
+                owner: z.string(),
+                repo: z.string(),
+                path: z.string(),
+                ref: z.string().optional(),
+            })
+        )
+        .query(async ({ input, ctx }) => {
+            const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
+            
+            try {
+                const { data } = await octokit.rest.repos.getContent({
+                    owner: input.owner,
+                    repo: input.repo,
+                    path: input.path,
+                    ...(input.ref && { ref: input.ref }),
+                });
+
+                if (Array.isArray(data) || data.type !== 'file') {
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: 'Path does not point to a file',
+                    });
+                }
+
+                return {
+                    content: Buffer.from(data.content, 'base64').toString('utf8'),
+                    sha: data.sha,
+                    path: data.path,
+                    size: data.size,
+                };
+            } catch (error: any) {
+                if (error.status === 404) {
+                    return null; // File doesn't exist
+                }
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `Failed to get file content: ${error.message}`,
+                    cause: error,
+                });
+            }
+        }),
+
+    // Check if project is connected to GitHub repository
+    getProjectRepositoryConnection: protectedProcedure
+        .input(z.object({ projectId: z.string() }))
+        .query(async ({ input, ctx }) => {
+            // Check if the default branch has GitHub repository connection
+            const defaultBranch = await ctx.db.query.branches.findFirst({
+                where: and(
+                    eq(branches.projectId, input.projectId),
+                    eq(branches.isDefault, true)
+                ),
+            });
+
+            if (!defaultBranch || !defaultBranch.gitRepoUrl) {
+                return null; // Not connected
+            }
+
+            // Parse GitHub URL to extract owner and repo
+            const gitUrlMatch = defaultBranch.gitRepoUrl.match(/github\.com[\/:]([^\/]+)\/([^\/\.]+)/);
+            if (!gitUrlMatch) {
+                return null; // Invalid GitHub URL
+            }
+
+            const owner = gitUrlMatch[1];
+            const repo = gitUrlMatch[2];
+            if (!owner || !repo) {
+                return null;
+            }
+
+            return {
+                isConnected: true,
+                repositoryOwner: owner,
+                repositoryName: repo,
+                repositoryUrl: defaultBranch.gitRepoUrl,
+                repositoryId: null, // Not stored in branches table
+                fullName: `${owner}/${repo}`,
+                connectedAt: defaultBranch.updatedAt,
+                branch: defaultBranch.gitBranch || 'main',
+            };
+        }),
+
+    // Project-Repository Connection Management
+    connectProjectToRepository: protectedProcedure
+        .input(
+            z.object({
+                projectId: z.string(),
+                repositoryOwner: z.string(),
+                repositoryName: z.string(),
+                repositoryId: z.number(),
+                branch: z.string().default('main'),
+                githubUrl: z.string(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            try {
+                const now = new Date();
+                
+                // Update the default branch with the git information
+                const defaultBranch = await ctx.db.query.branches.findFirst({
+                    where: and(
+                        eq(branches.projectId, input.projectId),
+                        eq(branches.isDefault, true)
+                    ),
+                });
+
+                if (!defaultBranch) {
+                    throw new TRPCError({
+                        code: 'PRECONDITION_FAILED',
+                        message: 'No default branch found for project',
+                    });
+                }
+
+                await ctx.db.update(branches)
+                    .set({
+                        gitBranch: input.branch,
+                        gitRepoUrl: input.githubUrl,
+                        updatedAt: now,
+                    })
+                    .where(eq(branches.id, defaultBranch.id));
+
+
+                return {
+                    success: true,
+                    connection: {
+                        projectId: input.projectId,
+                        repositoryOwner: input.repositoryOwner,
+                        repositoryName: input.repositoryName,
+                        repositoryId: input.repositoryId,
+                        branch: input.branch,
+                        githubUrl: input.githubUrl,
+                        connectedAt: now.toISOString(),
+                    },
+                };
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Connection failed',
+                    cause: error,
+                });
+            }
+        }),
+
+    // Sync project changes to connected repository
+    syncProjectChanges: protectedProcedure
+        .input(
+            z.object({
+                projectId: z.string(),
+                commitMessage: z.string().default('Update from Onlook'),
+                files: z.array(
+                    z.object({
+                        path: z.string(),
+                        content: z.string(),
+                        sha: z.string().optional(),
+                    })
+                ).optional(), // If not provided, will export current project state
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            // Get the repository connection from default branch
+            const defaultBranch = await ctx.db.query.branches.findFirst({
+                where: and(
+                    eq(branches.projectId, input.projectId),
+                    eq(branches.isDefault, true)
+                ),
+            });
+
+            if (!defaultBranch || !defaultBranch.gitRepoUrl) {
+                throw new TRPCError({
+                    code: 'PRECONDITION_FAILED',
+                    message: 'Project is not connected to a GitHub repository. Please export to GitHub first.',
+                });
+            }
+
+            // Parse GitHub URL to extract owner and repo
+            const gitUrlMatch = defaultBranch.gitRepoUrl.match(/github\.com[\/:]([^\/]+)\/([^\/\.]+)/);
+            if (!gitUrlMatch) {
+                throw new TRPCError({
+                    code: 'PRECONDITION_FAILED',
+                    message: 'Invalid GitHub repository URL format.',
+                });
+            }
+
+            const owner = gitUrlMatch[1];
+            const repo = gitUrlMatch[2];
+            if (!owner || !repo) {
+                throw new TRPCError({
+                    code: 'PRECONDITION_FAILED',
+                    message: 'Could not parse repository owner and name from URL.',
+                });
+            }
+            
+            const branch = defaultBranch.gitBranch || 'main';
+
+            try {
+                const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
+
+                // Use provided files or create sync marker
+                const filesToSync = input.files || [];
+
+                // Use createOrUpdateFiles to sync changes
+                const result = await octokit.rest.repos.createOrUpdateFileContents({
+                    owner,
+                    repo,
+                    path: 'onlook-sync.json',
+                    message: input.commitMessage,
+                    content: Buffer.from(JSON.stringify({
+                        syncedAt: new Date().toISOString(),
+                        filesCount: filesToSync.length,
+                        projectId: input.projectId,
+                    })).toString('base64'),
+                    branch,
+                });
+
+                // Update the commit SHA in our database
+                await ctx.db.update(branches)
+                    .set({
+                        gitCommitSha: result.data.commit.sha,
+                        updatedAt: new Date(),
+                    })
+                    .where(eq(branches.id, defaultBranch.id));
+
+                return {
+                    success: true,
+                    repositoryOwner: owner,
+                    repositoryName: repo,
+                    branch,
+                    commitSha: result.data.commit.sha,
+                    commitUrl: result.data.commit.html_url,
+                    filesCount: filesToSync.length,
+                };
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Sync failed',
+                    cause: error,
+                });
+            }
+        }),
+
+    syncProjectFiles: protectedProcedure
+        .input(
+            z.object({
+                owner: z.string(),
+                repo: z.string(),
+                projectId: z.string(),
+                message: z.string().default('Sync project files from Onlook'),
+                branch: z.string().optional(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            try {
+                const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
+
+                const project = await ctx.db.query.projects.findFirst({
+                    where: eq(projects.id, input.projectId),
+                });
+
+                if (!project) {
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: 'Project not found',
+                    });
+                }
+
+                const branch = input.branch || 'main';
+                const projectFiles = await getProjectFiles(input.projectId, ctx.db, branch);
+                
+                const { data: branchRef } = await octokit.rest.git.getRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `heads/${branch}`,
+                });
+
+                const baseCommitSha = branchRef.object.sha;
+
+                const { data: baseCommit } = await octokit.rest.git.getCommit({
+                    owner: input.owner,
+                    repo: input.repo,
+                    commit_sha: baseCommitSha,
+                });
+
+                const changedFiles = await getChangedFiles(
+                    octokit,
+                    input.owner,
+                    input.repo,
+                    baseCommit.tree.sha,
+                    projectFiles
+                );
+
+                if (changedFiles.length === 0) {
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: 'No changes detected',
+                    });
+                }
+
+                const { data: newTree } = await octokit.rest.git.createTree({
+                    owner: input.owner,
+                    repo: input.repo,
+                    base_tree: baseCommit.tree.sha,
+                    tree: changedFiles,
+                });
+
+                const { data: newCommit } = await octokit.rest.git.createCommit({
+                    owner: input.owner,
+                    repo: input.repo,
+                    message: input.message,
+                    tree: newTree.sha,
+                    parents: [baseCommitSha],
+                });
+
+                await octokit.rest.git.updateRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `heads/${branch}`,
+                    sha: newCommit.sha,
+                });
+
+                return {
+                    success: true,
+                    commitSha: newCommit.sha,
+                    commitUrl: `https://github.com/${input.owner}/${input.repo}/commit/${newCommit.sha}`,
+                    filesCount: changedFiles.length,
+                };
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `Sync failed: ${error.message}`,
+                    cause: error,
+                });
+            }
+        }),
+
+    pushChanges: protectedProcedure
+        .input(
+            z.object({
+                owner: z.string(),
+                repo: z.string(),
+                message: z.string().default('Push changes from Onlook'),
+                branch: z.string().optional(),
+                projectId: z.string(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            try {
+                const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
+
+                const project = await ctx.db.query.projects.findFirst({
+                    where: eq(projects.id, input.projectId),
+                });
+
+                if (!project) {
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: 'Project not found',
+                    });
+                }
+
+                const branch = input.branch || 'main';
+                const projectFiles = await getProjectFiles(input.projectId, ctx.db, branch);
+                
+                const { data: branchRef } = await octokit.rest.git.getRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `heads/${branch}`,
+                });
+
+                const baseCommitSha = branchRef.object.sha;
+
+                const { data: baseCommit } = await octokit.rest.git.getCommit({
+                    owner: input.owner,
+                    repo: input.repo,
+                    commit_sha: baseCommitSha,
+                });
+
+                const changedFiles = await getChangedFiles(
+                    octokit,
+                    input.owner,
+                    input.repo,
+                    baseCommit.tree.sha,
+                    projectFiles
+                );
+
+                if (changedFiles.length === 0) {
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: 'No changes detected',
+                    });
+                }
+
+                const { data: newTree } = await octokit.rest.git.createTree({
+                    owner: input.owner,
+                    repo: input.repo,
+                    base_tree: baseCommit.tree.sha,
+                    tree: changedFiles,
+                });
+
+                const { data: newCommit } = await octokit.rest.git.createCommit({
+                    owner: input.owner,
+                    repo: input.repo,
+                    message: input.message,
+                    tree: newTree.sha,
+                    parents: [baseCommitSha],
+                });
+
+                await octokit.rest.git.updateRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `heads/${branch}`,
+                    sha: newCommit.sha,
+                });
+
+                return {
+                    success: true,
+                    commitSha: newCommit.sha,
+                    commitUrl: `https://github.com/${input.owner}/${input.repo}/commit/${newCommit.sha}`,
+                    filesCount: changedFiles.length,
+                };
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `Push failed: ${error.message}`,
+                    cause: error,
+                });
+            }
+        }),
+
+    switchGitBranch: protectedProcedure
+        .input(
+            z.object({
+                projectId: z.string(),
+                branchName: z.string().max(100).regex(/^[a-zA-Z0-9._/-]+$/, 'Invalid branch name characters'),
+                commitSha: z.string().optional(),
+                currentActiveBranchId: z.string().optional(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            try {
+                // Check if branches already exist for this Git branch
+                const existingBranchesForGitBranch = await ctx.db.query.branches.findMany({
+                    where: and(
+                        eq(branches.projectId, input.projectId),
+                        eq(branches.gitBranch, input.branchName)
+                    ),
+                });
+
+                // Also check for branches with NULL git_branch (for migration compatibility)
+                const nullGitBranches = await ctx.db.query.branches.findMany({
+                    where: and(
+                        eq(branches.projectId, input.projectId),
+                        isNull(branches.gitBranch)
+                    ),
+                });
+
+                if (input.branchName === 'main' && nullGitBranches.length > 0) {
+                    
+                    await ctx.db.update(branches)
+                        .set({ 
+                            gitBranch: 'main',
+                            gitCommitSha: input.commitSha || null,
+                            updatedAt: new Date()
+                        })
+                        .where(and(
+                            eq(branches.projectId, input.projectId),
+                            isNull(branches.gitBranch)
+                        ));
+
+                    return {
+                        success: true,
+                        branchName: input.branchName,
+                        commitSha: input.commitSha,
+                        action: 'migrated',
+                        branchCount: nullGitBranches.length,
+                    };
+                }
+
+                if (existingBranchesForGitBranch.length > 0) {
+                    return {
+                        success: true,
+                        branchName: input.branchName,
+                        commitSha: input.commitSha,
+                        action: 'switched',
+                        branchCount: existingBranchesForGitBranch.length,
+                    };
+                }
+
+                let sourceBranch;
+                
+                if (input.currentActiveBranchId) {
+                    sourceBranch = await ctx.db.query.branches.findFirst({
+                        where: eq(branches.id, input.currentActiveBranchId),
+                    });
+                } else {
+                    sourceBranch = await ctx.db.query.branches.findFirst({
+                        where: and(
+                            eq(branches.projectId, input.projectId),
+                            eq(branches.isDefault, true)
+                        ),
+                    });
+                }
+
+                if (!sourceBranch) {
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: 'No source branch found to fork from',
+                    });
+                }
+
+                const forkedSandboxId = await forkSandbox(sourceBranch.sandboxId, input.branchName);
+
+                const now = new Date();
+                const { v4: uuidv4 } = await import('uuid');
+                const newBranchId = uuidv4();
+                
+                const newBranch = {
+                    id: newBranchId,
+                    name: `${input.branchName}-primary`,
+                    description: `Primary sandbox for Git branch: ${input.branchName}`,
+                    projectId: input.projectId,
+                    sandboxId: forkedSandboxId,
+                    isDefault: false,
+                    gitBranch: input.branchName,
+                    gitCommitSha: input.commitSha || null,
+                    gitRepoUrl: sourceBranch.gitRepoUrl,
+                    createdAt: now,
+                    updatedAt: now,
+                };
+
+                await ctx.db.insert(branches).values(newBranch);
+
+                return {
+                    success: true,
+                    branchName: input.branchName,
+                    commitSha: input.commitSha,
+                    action: 'created',
+                    newBranchId: newBranch.id,
+                    forkedFromSandbox: sourceBranch.sandboxId,
+                };
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `Failed to switch Git branch: ${error.message}`,
+                    cause: error,
+                });
+            }
+        }),
+
+    deleteGitBranch: protectedProcedure
+        .input(
+            z.object({
+                owner: z.string(),
+                repo: z.string(),
+                branchName: z.string().max(100).regex(/^[a-zA-Z0-9._/-]+$/, 'Invalid branch name characters'),
+                projectId: z.string(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            try {
+                const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
+
+                await octokit.rest.git.deleteRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `heads/${input.branchName}`,
+                });
+
+                const deletedBranches = await ctx.db.delete(branches)
+                    .where(and(
+                        eq(branches.projectId, input.projectId),
+                        eq(branches.gitBranch, input.branchName)
+                    ))
+                    .returning();
+
+                return {
+                    success: true,
+                    branchName: input.branchName,
+                    deletedCount: deletedBranches.length,
+                };
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `Failed to delete Git branch: ${error.message}`,
+                    cause: error,
+                });
+            }
+        }),
+
+    pullChanges: protectedProcedure
+        .input(
+            z.object({
+                owner: z.string(),
+                repo: z.string(),
+                projectId: z.string(),
+                branch: z.string().optional(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            try {
+                const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
+
+                const project = await ctx.db.query.projects.findFirst({
+                    where: eq(projects.id, input.projectId),
+                });
+
+                if (!project) {
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: 'Project not found',
+                    });
+                }
+
+                // Get project's sandbox info from default branch
+                const defaultBranch = await ctx.db.query.branches.findFirst({
+                    where: and(
+                        eq(branches.projectId, input.projectId),
+                        eq(branches.isDefault, true)
+                    ),
+                });
+
+                if (!defaultBranch?.sandboxId) {
+                    throw new TRPCError({
+                        code: 'PRECONDITION_FAILED',
+                        message: 'Project has no sandbox',
+                    });
+                }
+
+                const branch = input.branch || defaultBranch.gitBranch || 'main';
+                
+                // Get latest commit SHA from GitHub
+                const { data: branchRef } = await octokit.rest.git.getRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `heads/${branch}`,
+                });
+
+                const latestCommitSha = branchRef.object.sha;
+
+                // Fetch complete file tree from repository
+                const { data: tree } = await octokit.rest.git.getTree({
+                    owner: input.owner,
+                    repo: input.repo,
+                    tree_sha: latestCommitSha,
+                    recursive: 'true',
+                });
+
+                // Only pull source files, exclude build artifacts and deps
+                const INCLUDED_EXTENSIONS = ['.tsx', '.ts', '.jsx', '.js', '.css', '.scss', '.sass', '.json', '.md', '.html'];
+                const EXCLUDED_PATHS = ['node_modules/', '.git/', 'dist/', 'build/', '.next/', '.onlook/'];
+                
+                const provider = await getProvider({ sandboxId: defaultBranch.sandboxId });
+                let updatedFilesCount = 0;
+
+                for (const item of tree.tree) {
+                    if (item.type === 'blob' && item.path) {
+                        // Filter for relevant source files only
+                        const hasValidExtension = INCLUDED_EXTENSIONS.some(ext => item.path!.endsWith(ext));
+                        const isExcluded = EXCLUDED_PATHS.some(path => item.path!.startsWith(path));
+                        
+                        if (hasValidExtension && !isExcluded) {
+                            try {
+                                // Download file content from GitHub
+                                const { data: blob } = await octokit.rest.git.getBlob({
+                                    owner: input.owner,
+                                    repo: input.repo,
+                                    file_sha: item.sha!,
+                                });
+                                
+                                const content = Buffer.from(blob.content, 'base64').toString('utf8');
+                                
+                                // Write to project sandbox
+                                await provider.writeFile({
+                                    args: { 
+                                        path: item.path,
+                                        content 
+                                    }
+                                });
+                                
+                                updatedFilesCount++;
+                            } catch (error) {
+                                // Skip files that can't be written (permissions, etc.)
+                                console.warn(`Failed to update file ${item.path}:`, error);
+                            }
+                        }
+                    }
+                }
+
+                // Track pulled commit SHA for future sync operations
+                await ctx.db.update(branches)
+                    .set({
+                        gitCommitSha: latestCommitSha,
+                        updatedAt: new Date(),
+                    })
+                    .where(eq(branches.id, defaultBranch.id));
+
+                return {
+                    success: true,
+                    commitSha: latestCommitSha,
+                    commitUrl: `https://github.com/${input.owner}/${input.repo}/commit/${latestCommitSha}`,
+                    filesCount: updatedFilesCount,
+                };
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: `Pull failed: ${error.message}`,
                     cause: error,
                 });
             }
