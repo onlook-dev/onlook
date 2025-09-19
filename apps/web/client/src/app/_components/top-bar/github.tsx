@@ -1,7 +1,6 @@
 'use client';
 
 import { Icons } from '@onlook/ui/icons';
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 const DEFAULT_STAR_COUNT = 20550;
@@ -59,7 +58,7 @@ export function GitHubButton() {
     return (
         <a href="https://github.com/onlook-dev/onlook" className="flex items-center gap-1.5 text-small hover:opacity-80" target="_blank" rel="noopener noreferrer">
             <Icons.GitHubLogo className="h-5 w-5" />
-            <span className="transition-all duration-300">{formatted}</span>
+            <span className="transition-all duration-300 hidden sm:block">{formatted}</span>
         </a>
     );
 }
