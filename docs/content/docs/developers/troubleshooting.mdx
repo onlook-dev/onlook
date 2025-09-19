@@ -34,3 +34,17 @@ If you encounter issues such as "Column not found" error, your database may be o
 
 1. Run `bun db:push` to push the schema to the database. If there are conflicts, you can try step 2.
 2. Run `bun db:reset` to fully reset the database and re-run the migrations. WARNING: This will delete all data in the database.
+
+### Testing the Preload Script
+
+If you want to update the preload script and test it with Onlook, follow these steps:
+
+1. Run `cd apps/web/preload`.
+2. Run `bun run build` to compile any changes you have made.
+3. Copy the file from `onlook/client/public/onlook-preload-script.js`.
+4. Go to the Codesandbox (CSB) website and locate the specific VM you want to edit.
+5. In that VM, navigate to `public/onlook-preload-script`.
+6. Manually copy and paste the file from your local IDE to the VM on CSB.
+7. Refresh the frame, and you can test the updated preload script on your current onlook project.
+
+The preload script is injected into the VM when it is created. However, if you want to update the preload script and test any changes, you need to follow the instructions above. When you make the initial prompt, the script is added to the VM. The preload script allows you to make changes such as updating the font size, background color, and other element properties in the VM. It also enables interactions like drawing boxes around elements—basically, anything related to interacting with the VM.
