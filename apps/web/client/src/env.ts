@@ -40,6 +40,9 @@ export const env = createEnv({
         // n8n
         N8N_WEBHOOK_URL: z.string().optional(),
         N8N_API_KEY: z.string().optional(),
+        N8N_LANDING_FORM_URL: z.string().url().optional(),
+        N8N_LANDING_FORM_HEADER_NAME: z.string().optional(),
+        N8N_LANDING_FORM_HEADER_VALUE: z.string().optional(),
 
         // Firecrawl
         FIRECRAWL_API_KEY: z.string().optional(),
@@ -129,6 +132,9 @@ export const env = createEnv({
         // n8n
         N8N_WEBHOOK_URL: process.env.N8N_WEBHOOK_URL,
         N8N_API_KEY: process.env.N8N_API_KEY,
+        N8N_LANDING_FORM_URL: process.env.N8N_LANDING_FORM_URL,
+        N8N_LANDING_FORM_HEADER_NAME: process.env.N8N_LANDING_FORM_HEADER_NAME,
+        N8N_LANDING_FORM_HEADER_VALUE: process.env.N8N_LANDING_FORM_HEADER_VALUE,
 
         // Firecrawl
         FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
