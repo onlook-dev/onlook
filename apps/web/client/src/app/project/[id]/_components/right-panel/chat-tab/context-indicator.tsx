@@ -40,7 +40,7 @@ export const ContextIndicator = observer(({ messages, modelId = 'openai:gpt-4' }
     return (
         <Tooltip>
             <TooltipTrigger asChild>
-                <div className="flex items-center gap-1.5 px-1.5 py-1 rounded-md hover:bg-muted/30 transition-colors cursor-help shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-1.5 px-1.5 py-1 rounded-md hover:bg-muted/30 transition-colors cursor-pointer shadow-md hover:shadow-lg transition-shadow">
                     <div className="relative">
                         <svg width="16" height="16" className="transform -rotate-90">
                             <circle
