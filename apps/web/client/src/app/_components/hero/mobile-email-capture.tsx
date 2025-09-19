@@ -30,6 +30,13 @@ export function MobileEmailCapture() {
     const successTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const measurementTimerRef = useRef<NodeJS.Timeout | null>(null);
     const resizeTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const initialUtmsRef = useRef<{
+        utm_source: string;
+        utm_medium: string;
+        utm_campaign: string;
+        utm_term: string;
+        utm_content: string;
+    } | null>(null);
     const [formData, setFormData] = useState<FormData>({
         name: '',
         email: '',
@@ -44,15 +51,22 @@ export function MobileEmailCapture() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
+        if (typeof window !== 'undefined' && initialUtmsRef.current === null) {
             const urlParams = new URLSearchParams(window.location.search);
-            setFormData(prev => ({
-                ...prev,
+            const utmValues = {
                 utm_source: urlParams.get('utm_source') || '',
                 utm_medium: urlParams.get('utm_medium') || '',
                 utm_campaign: urlParams.get('utm_campaign') || '',
                 utm_term: urlParams.get('utm_term') || '',
                 utm_content: urlParams.get('utm_content') || ''
+            };
+
+            // Cache initial UTM values for the entire session
+            initialUtmsRef.current = utmValues;
+
+            setFormData(prev => ({
+                ...prev,
+                ...utmValues
             }));
         }
     }, []);
@@ -137,11 +151,14 @@ export function MobileEmailCapture() {
                 setFormData({
                     name: '',
                     email: '',
-                    utm_source: '',
-                    utm_medium: '',
-                    utm_campaign: '',
-                    utm_term: '',
-                    utm_content: ''
+                    // Restore UTM values from initial cache instead of clearing
+                    ...(initialUtmsRef.current || {
+                        utm_source: '',
+                        utm_medium: '',
+                        utm_campaign: '',
+                        utm_term: '',
+                        utm_content: ''
+                    })
                 });
                 setShowEmailForm(false);
                 successTimeoutRef.current = null;
@@ -279,11 +296,14 @@ export function MobileEmailCapture() {
             setFormData({
                 name: '',
                 email: '',
-                utm_source: '',
-                utm_medium: '',
-                utm_campaign: '',
-                utm_term: '',
-                utm_content: ''
+                // Restore UTM values from initial cache instead of clearing
+                ...(initialUtmsRef.current || {
+                    utm_source: '',
+                    utm_medium: '',
+                    utm_campaign: '',
+                    utm_term: '',
+                    utm_content: ''
+                })
             });
             setError(null);
             setShowSuccess(false);
@@ -319,7 +339,7 @@ export function MobileEmailCapture() {
                     ref={notificationRef}
                 >
                     <div className="text-center text-base xs:text-lg font-light my-2 text-foreground-secondary px-2">
-                        Onlook doesn't work on mobile yet!
+                        Onlook is optimized for larger screens
                     </div>
                     <Button
                         size="sm"
