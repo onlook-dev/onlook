@@ -1,5 +1,5 @@
+import { env } from '@/env';
 import { z } from 'zod';
-
 export async function POST(request: Request) {
     try {
         const { name, email, utm_source, utm_medium, utm_campaign, utm_term, utm_content } = await request.json();
@@ -36,9 +36,9 @@ export async function POST(request: Request) {
 
         const validatedData = validationResult.data;
 
-        const headerName = process.env.N8N_LANDING_FORM_HEADER_NAME;
-        const headerValue = process.env.N8N_LANDING_FORM_HEADER_VALUE;
-        const landingFormUrl = process.env.N8N_LANDING_FORM_URL;
+        const headerName = env.N8N_LANDING_FORM_HEADER_NAME;
+        const headerValue = env.N8N_LANDING_FORM_HEADER_VALUE;
+        const landingFormUrl = env.N8N_LANDING_FORM_URL;
 
         if (!landingFormUrl) {
             console.error('Missing N8N_LANDING_FORM_URL environment variable');
