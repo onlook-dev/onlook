@@ -12,6 +12,7 @@ import {
 import { assertNever, type ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
+import { countTokensInString } from '@onlook/ai/src/tokens';
 
 export class ChatContext {
     private _context: MessageContext[] = [];
@@ -310,6 +311,30 @@ export class ChatContext {
 
     clearImagesFromContext() {
         this.context = this.context.filter((context) => context.type !== MessageContextType.IMAGE);
+    }
+
+    getContextTokenCount(): number {
+        return this.context.reduce((total, ctx) => {
+            return total + countTokensInString(ctx.content || '');
+        }, 0);
+    }
+
+    getContextSummary(): {
+        totalContexts: number;
+        totalTokens: number;
+        byType: Record<string, number>;
+    } {
+        const summary = {
+            totalContexts: this.context.length,
+            totalTokens: this.getContextTokenCount(),
+            byType: {} as Record<string, number>
+        };
+
+        this.context.forEach(ctx => {
+            summary.byType[ctx.type] = (summary.byType[ctx.type] || 0) + 1;
+        });
+
+        return summary;
     }
 
     clear() {
