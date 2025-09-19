@@ -9,6 +9,7 @@ import { Create } from './create';
 import { CreateError } from './create-error';
 import { HighDemand } from './high-demand';
 import { Import } from './import';
+import { MobileEmailCapture } from './mobile-email-capture';
 import { StartBlank } from './start-blank';
 import { UnicornBackground } from './unicorn-background';
 
@@ -98,16 +99,8 @@ export function Hero() {
                         <StartBlank user={user ?? null} isCreatingProject={isCreatingProject} setIsCreatingProject={setIsCreatingProject} />
                         <Import />
                     </motion.div>
-
                 </div>
-                <motion.div className="hidden text-balance flex-col gap-4 items-center relative z-20 mx-10 text-foreground-secondary bg-foreground-secondary/10 backdrop-blur-lg rounded-lg border-[0.5px] border-foreground-secondary/20 p-4"
-                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, filter: "blur(0px)" }}
-                    transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
-                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
-                >
-                    Onlook isn't designed for Mobile – Please open on a larger screen
-                </motion.div>
+                <MobileEmailCapture />
             </div>
         </div>
     );
