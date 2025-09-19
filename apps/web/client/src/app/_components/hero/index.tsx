@@ -4,6 +4,7 @@ import { api } from '@/trpc/react';
 import { Icons } from '@onlook/ui/icons';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { vujahdayScript } from '../../fonts';
 import { Create } from './create';
 import { CreateError } from './create-error';
 import { HighDemand } from './high-demand';
@@ -11,7 +12,6 @@ import { Import } from './import';
 import { MobileEmailCapture } from './mobile-email-capture';
 import { StartBlank } from './start-blank';
 import { UnicornBackground } from './unicorn-background';
-import { vujahdayScript } from '../../fonts';
 
 export function Hero() {
     const [cardKey, setCardKey] = useState(0);
@@ -99,7 +99,6 @@ export function Hero() {
                         <StartBlank user={user ?? null} isCreatingProject={isCreatingProject} setIsCreatingProject={setIsCreatingProject} />
                         <Import />
                     </motion.div>
-
                 </div>
                 <MobileEmailCapture />
             </div>
