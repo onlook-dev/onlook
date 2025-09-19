@@ -51,7 +51,7 @@ export const ChatMessages = observer(({
             let messageNode;
             switch (message.role) {
                 case 'assistant':
-                    messageNode = <AssistantMessage key={message.id} message={message} />;
+                    messageNode = <AssistantMessage key={message.id} message={message} isStreaming={isStreaming} />;
                     break;
                 case 'user':
                     messageNode = (
@@ -93,6 +93,10 @@ export const ChatMessages = observer(({
             {messages.map((message, index) => renderMessage(message, index))}
             {streamedMessage && <StreamMessage message={streamedMessage} />}
             {error && <ErrorMessage error={error} />}
+            {isStreaming && <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
+                <Icons.LoadingSpinner className="animate-spin" />
+                <p>Thinking ...</p>
+            </div>}
         </ChatMessageList>
     );
 },
