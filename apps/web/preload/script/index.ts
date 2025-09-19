@@ -5,6 +5,9 @@ import { preloadMethods } from './api';
 
 export let penpalParent: PromisifiedPenpalParentMethods | null = null;
 let isConnecting = false;
+let retryCount = 0;
+const maxRetries = 3;
+const baseDelay = 1000;
 
 const createMessageConnection = async () => {
     if (isConnecting || penpalParent) {
@@ -34,6 +37,7 @@ const createMessageConnection = async () => {
         }
         const remote = parent as unknown as PromisifiedPenpalParentMethods;
         penpalParent = remote;
+        retryCount = 0;
         console.log(`${PENPAL_CHILD_CHANNEL} - Penpal connection set`);
     }).finally(() => {
         isConnecting = false;
@@ -47,12 +51,25 @@ const createMessageConnection = async () => {
     return penpalParent;
 }
 
-const reconnect = debounce(() => {
+const reconnect = () => {
     if (isConnecting) return;
-
-    console.log(`${PENPAL_CHILD_CHANNEL} - Reconnecting to penpal parent`);
-    penpalParent = null; // Reset the parent before reconnecting
-    createMessageConnection();
-}, 1000);
+    
+    if (retryCount >= maxRetries) {
+        console.error(`${PENPAL_CHILD_CHANNEL} - Max retries (${maxRetries}) reached, giving up`);
+        retryCount = 0;
+        return;
+    }
+    
+    retryCount += 1;
+    const delay = baseDelay * Math.pow(2, retryCount - 1);
+    
+    console.log(`${PENPAL_CHILD_CHANNEL} - Retrying connection attempt ${retryCount}/${maxRetries} in ${delay}ms`);
+    
+    setTimeout(() => {
+        console.log(`${PENPAL_CHILD_CHANNEL} - Reconnecting to penpal parent`);
+        penpalParent = null;
+        createMessageConnection();
+    }, delay);
+};
 
 createMessageConnection();
