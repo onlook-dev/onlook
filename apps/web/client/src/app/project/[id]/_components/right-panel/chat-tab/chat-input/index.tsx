@@ -22,6 +22,7 @@ import { InputContextPills } from '../context-pills/input-context-pills';
 import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 import { ChatModeToggle } from './chat-mode-toggle';
+import { ContextIndicator } from '../context-indicator';
 
 interface ChatInputProps {
     messages: ChatMessage[];
@@ -349,9 +350,17 @@ export const ChatInput = observer(({
                 }}
             />
             <div className="flex flex-col w-full p-4">
-                <div className="flex flex-row flex-wrap items-center gap-1.5 mb-1">
-                    {/* <ContextWheel /> */}
-                    <InputContextPills />
+                <div className="flex flex-row flex-wrap items-center justify-between gap-1.5 mb-1">
+                    <div className="flex flex-row flex-wrap items-center gap-1.5">
+                        {editorEngine.chat.context.context.length > 0 && (
+                            <ContextIndicator messages={messages} />
+                        )}
+                        {/* <ContextWheel /> */}
+                        <InputContextPills />
+                    </div>
+                    {editorEngine.chat.context.context.length === 0 && (
+                        <ContextIndicator messages={messages} />
+                    )}
                 </div>
                 <Textarea
                     ref={textareaRef}
@@ -369,7 +378,7 @@ export const ChatInput = observer(({
                     onKeyDown={handleKeyDown}
                     onPaste={handlePaste}
                     onCompositionStart={() => setIsComposing(true)}
-                    onCompositionEnd={(e) => {
+                    onCompositionEnd={() => {
                         setIsComposing(false);
                     }}
                     onDragEnter={(e) => {
