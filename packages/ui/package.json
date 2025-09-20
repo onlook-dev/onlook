@@ -113,6 +113,7 @@
         "tailwindcss": "^4.1.0",
         "tailwindcss-animate": "^1.0.7",
         "use-eye-dropper": "^1.6.4",
+        "use-stick-to-bottom": "^1.1.1",
         "vaul": "^1.1.2"
     }
 }
