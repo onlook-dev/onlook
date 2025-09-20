@@ -16,16 +16,13 @@ export function convertToStreamMessages(messages: ChatMessage[]): ModelMessage[]
             lastUserMessageIndex,
             lastAssistantMessageIndex,
         };
-        return toVercelMessageFromOnlook(message, opt);
+        return toStreamMessage(message, opt);
     });
 
     return convertToModelMessages(streamMessages);
 }
 
-export const toVercelMessageFromOnlook = (
-    message: ChatMessage,
-    opt: HydrateMessageOptions,
-): ChatMessage => {
+export const toStreamMessage = (message: ChatMessage, opt: HydrateMessageOptions): ChatMessage => {
     if (message.role === 'assistant') {
         return {
             ...message,
