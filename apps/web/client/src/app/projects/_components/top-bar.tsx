@@ -165,18 +165,21 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
     };
 
     return (
-        <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 px-0 text-small text-foreground-secondary gap-6">
+        <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 text-small text-foreground-secondary gap-6">
             <Link href={Routes.HOME} className="flex items-center justify-start mt-0 py-3">
                 <Icons.OnlookTextLogo className="w-24" viewBox="0 0 139 17" />
             </Link>
 
             {typeof onSearchChange === 'function' ? (
-                <div className="flex-1 flex justify-center">
+                <div className="flex-1 flex justify-center min-w-0">
                     <motion.div
                         ref={searchContainerRef}
-                        className="relative"
+                        className="relative w-full max-w-sm hidden sm:block"
                         initial={false}
-                        animate={isSearchFocused ? { width: 360 } : { width: 260 }}
+                        animate={isSearchFocused ? 
+                            { width: '100%', maxWidth: '360px' } : 
+                            { width: '100%', maxWidth: '260px' }
+                        }
                         transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
                     >
                         <Icons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-tertiary z-10" />
@@ -186,7 +189,7 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                             onChange={(e) => onSearchChange?.(e.currentTarget.value)}
                             onFocus={() => setIsSearchFocused(true)}
                             placeholder="Search projects"
-                            className="pl-9 pr-7 focus-visible:border-transparent focus-visible:ring-0"
+                            className="pl-9 pr-7 focus-visible:border-transparent focus-visible:ring-0 w-full"
                         />
                         {searchQuery && (
                             <button
@@ -257,7 +260,7 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                             )}
                             onSelect={() => {
                                 router.push(Routes.IMPORT_PROJECT);
-                            }}
+            }}
                         >
                             <Icons.Upload className="w-4 h-4 mr-1 text-foreground-secondary group-hover:text-teal-100" />
                             <p className="text-microPlus">{t(transKeys.projects.actions.import)}</p>
