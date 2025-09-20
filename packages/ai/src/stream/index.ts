@@ -26,6 +26,7 @@ export const toStreamMessage = (message: ChatMessage, opt: HydrateMessageOptions
     if (message.role === 'assistant') {
         return {
             ...message,
+            parts: ensureToolCallResults(message.parts),
         };
     } else if (message.role === 'user') {
         const hydratedMessage = getHydratedUserMessage(
@@ -48,4 +49,40 @@ export const extractTextFromParts = (parts: ChatMessage['parts']): string => {
             return '';
         })
         .join('');
+};
+
+export const ensureToolCallResults = (parts: ChatMessage['parts']): ChatMessage['parts'] => {
+    if (!parts) return parts;
+
+    const toolResultIds = new Set<string>();
+
+    // First pass: identify which tool calls already have results
+    parts.forEach((part) => {
+        if (part.type?.startsWith('tool-')) {
+            const toolPart = part as any;
+            if (toolPart.toolCallId && toolPart.state === 'output-available') {
+                toolResultIds.add(toolPart.toolCallId);
+            }
+        }
+    });
+
+    // Second pass: update parts that need stub results
+    return parts.map((part) => {
+        if (part.type?.startsWith('tool-')) {
+            const toolPart = part as any;
+            if (
+                toolPart.toolCallId &&
+                (toolPart.state === 'input-available' || toolPart.state === 'input-streaming') &&
+                !toolResultIds.has(toolPart.toolCallId)
+            ) {
+                // Update existing part to have stub result
+                return {
+                    ...toolPart,
+                    state: 'output-available',
+                    output: 'No tool result returned',
+                };
+            }
+        }
+        return part;
+    });
 };
