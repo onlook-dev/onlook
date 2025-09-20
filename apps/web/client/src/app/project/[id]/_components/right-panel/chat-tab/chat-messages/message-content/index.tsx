@@ -44,7 +44,7 @@ export const MessageContent = observer(
                 );
             } else if (part.type === 'reasoning') {
                 return (
-                    <Reasoning className={cn(
+                    <Reasoning key={part.text} className={cn(
                         "px-2 m-0 items-center gap-2 text-foreground-tertiary",
                         isStream && isLastPart && "bg-gradient-to-l from-white/20 via-white/90 to-white/20 bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer filter drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]"
                     )} isStreaming={isStream}>
