@@ -7,6 +7,7 @@ import {
     type SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS,
     TERMINAL_COMMAND_TOOL_NAME, TERMINAL_COMMAND_TOOL_PARAMETERS, TODO_WRITE_TOOL_NAME,
     type TODO_WRITE_TOOL_PARAMETERS,
+    TYPECHECK_TOOL_NAME,
     WEB_SEARCH_TOOL_NAME,
     type WEB_SEARCH_TOOL_PARAMETERS,
     WRITE_FILE_TOOL_NAME,
@@ -16,6 +17,7 @@ import type { WebSearchResult } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
 import type { ToolUIPart } from 'ai';
+import stripAnsi from 'strip-ansi';
 import { type z } from 'zod';
 import { BashCodeDisplay } from '../../code-display/bash-code-display';
 import { CollapsibleCodeBlock } from '../../code-display/collapsible-code-block';
@@ -225,19 +227,19 @@ export const ToolCallDisplay = ({
         );
     }
 
-    // if (toolName === TYPECHECK_TOOL_NAME) {
-    //     const result = toolPart.output as { success: boolean; error?: string } | null;
-    //     const error = stripAnsi(result?.error || '');
-    //     return (
-    //         <BashCodeDisplay
-    //             key={toolPart.toolCallId}
-    //             content={'bunx tsc --noEmit'}
-    //             isStream={isStream}
-    //             defaultStdOut={(result?.success ? '✅ Typecheck passed!' : result?.error) ?? null}
-    //             defaultStdErr={error ?? null}
-    //         />
-    //     );
-    // }
+    if (toolName === TYPECHECK_TOOL_NAME) {
+        const result = toolPart.output as { success: boolean; error?: string } | null;
+        const error = stripAnsi(result?.error || '');
+        return (
+            <BashCodeDisplay
+                key={toolPart.toolCallId}
+                content={'bunx tsc --noEmit'}
+                isStream={isStream}
+                defaultStdOut={(result?.success ? '✅ Typecheck passed!' : result?.error) ?? null}
+                defaultStdErr={error ?? null}
+            />
+        );
+    }
 
     return (
         <ToolCallSimple
