@@ -109,8 +109,6 @@ export const ToolCallDisplay = ({
                 messageId={messageId}
                 applied={applied}
                 isStream={isStream}
-                originalContent={codeContent}
-                updatedContent={codeContent}
                 branchId={branchId}
             />
         );
@@ -137,8 +135,6 @@ export const ToolCallDisplay = ({
                 messageId={messageId}
                 applied={applied}
                 isStream={isStream}
-                originalContent={codeContent}
-                updatedContent={codeContent}
                 branchId={branchId}
             />
         );
@@ -165,8 +161,6 @@ export const ToolCallDisplay = ({
                 messageId={messageId}
                 applied={applied}
                 isStream={isStream}
-                originalContent={codeContent}
-                updatedContent={codeContent}
                 branchId={branchId}
             />
         );
@@ -193,8 +187,6 @@ export const ToolCallDisplay = ({
                 messageId={messageId}
                 applied={applied}
                 isStream={isStream}
-                originalContent={codeContent}
-                updatedContent={codeContent}
                 branchId={branchId}
             />
         );
@@ -217,7 +209,11 @@ export const ToolCallDisplay = ({
                 {todos.map((todo) => (
                     <div className="flex items-center gap-2 text-sm" key={todo.content}>
                         <div className="flex items-center justify-center w-4 h-4 min-w-4">
-                            {todo.status === 'completed' ? <Icons.SquareCheck className="w-4 h-4" /> : <Icons.Square className="w-4 h-4" />}
+                            {
+                                todo.status === 'completed' ?
+                                    <Icons.SquareCheck className="w-4 h-4" /> :
+                                    <Icons.Square className="w-4 h-4" />
+                            }
                         </div>
                         <p className={cn(
                             todo.status === 'completed' ? 'line-through text-green-500' : '',
