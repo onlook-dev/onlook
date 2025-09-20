@@ -8,6 +8,7 @@ import {
     type PenpalParentMethods,
     type PromisifiedPendpalChildMethods,
 } from '@onlook/penpal';
+import { WebPreview, WebPreviewBody } from '@onlook/ui/ai-elements';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { WindowMessenger, connect } from 'penpal';
@@ -296,22 +297,23 @@ export const FrameComponent = observer(
         }, []);
 
         return (
-            <iframe
-                ref={iframeRef}
-                id={frame.id}
-                className={cn(
-                    'backdrop-blur-sm transition outline outline-4',
-                    isActiveBranch && 'outline-teal-400',
-                    isActiveBranch && !isSelected && 'outline-dashed',
-                    !isActiveBranch && isInDragSelection && 'outline-teal-500',
-                )}
-                src={frame.url}
-                sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
-                allow="geolocation; microphone; camera; midi; encrypted-media"
-                style={{ width: frame.dimension.width, height: frame.dimension.height }}
-                onLoad={setupPenpalConnection}
-                {...props}
-            />
+            <WebPreview>
+                <WebPreviewBody
+                    ref={iframeRef}
+                    id={frame.id}
+                    className={cn(
+                        'backdrop-blur-sm transition outline outline-4',
+                        isActiveBranch && 'outline-teal-400',
+                        isActiveBranch && !isSelected && 'outline-dashed',
+                        !isActiveBranch && isInDragSelection && 'outline-teal-500',
+                    )}
+                    src={frame.url}
+                    sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
+                    allow="geolocation; microphone; camera; midi; encrypted-media"
+                    style={{ width: frame.dimension.width, height: frame.dimension.height }}
+                    onLoad={setupPenpalConnection}
+                    {...props} />
+            </WebPreview>
         );
     }),
 );

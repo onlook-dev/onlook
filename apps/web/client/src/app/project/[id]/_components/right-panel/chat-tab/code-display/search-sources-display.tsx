@@ -34,7 +34,7 @@ export const SearchSourcesDisplay = observer(({
                         />
                         <div className="flex flex-col">
                             <span>Searched web</span>
-                            <span className="text-foreground-tertiary text-xs">
+                            <span className="text-foreground-tertiary text-xs truncate">
                                 {query}
                             </span>
                         </div>
