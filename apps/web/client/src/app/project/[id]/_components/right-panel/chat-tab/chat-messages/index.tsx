@@ -13,7 +13,7 @@ import { Icons } from '@onlook/ui/icons';
 import { assertNever } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { AssistantMessage } from './assistant-message';
 import { ErrorMessage } from './error-message';
 import { UserMessage } from './user-message';
@@ -26,28 +26,13 @@ interface ChatMessagesProps {
 }
 
 export const ChatMessages = observer(({
-    messages: baseMessages,
+    messages,
     onEditMessage,
     isStreaming,
     error,
 }: ChatMessagesProps) => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
-    const { messages, streamedMessage }: { messages: ChatMessage[], streamedMessage: ChatMessage | null } = useMemo(() => {
-        if (isStreaming) {
-            const lastAssistantMessage = baseMessages[baseMessages.length - 1];
-            if (lastAssistantMessage && lastAssistantMessage.role === 'assistant') {
-                return {
-                    messages: baseMessages.slice(0, -1),
-                    streamedMessage: lastAssistantMessage,
-                };
-            }
-        }
-        return {
-            messages: baseMessages,
-            streamedMessage: null,
-        };
-    }, [baseMessages, isStreaming]);
 
     const renderMessage = useCallback(
         (message: ChatMessage, index: number) => {
@@ -92,7 +77,7 @@ export const ChatMessages = observer(({
     return (
         <Conversation className="h-full w-full">
             <ConversationContent className="p-0 m-0">
-                {baseMessages.map((message, index) => renderMessage(message, index))}
+                {messages.map((message, index) => renderMessage(message, index))}
                 {error && <ErrorMessage error={error} />}
                 {isStreaming && <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
                     <Icons.LoadingSpinner className="animate-spin" />
