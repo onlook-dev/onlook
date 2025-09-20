@@ -2,7 +2,7 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import { EditorAttributes } from '@onlook/constants';
-import { EditorMode } from '@onlook/models';
+import { EditorMode, EditorTabValue } from '@onlook/models';
 import { throttle } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -57,9 +57,23 @@ export const Canvas = observer(() => {
                 editorEngine.clearUI();
                 editorEngine.frames.deselectAll();
             }
+            
+            // Switch to chat mode when clicking on empty canvas space during code editing
+            console.log('Canvas click detected in design mode, current tab:', editorEngine.state.rightPanelTab);
+            if (editorEngine.state.rightPanelTab === EditorTabValue.DEV) {
+                console.log('Switching from DEV to CHAT mode');
+                editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
+            }
         } else if (event.button === 0) {
             // Only clear UI for left clicks that don't start drag selection
             editorEngine.clearUI();
+            
+            // Switch to chat mode when clicking on empty canvas space during code editing
+            console.log('Canvas click detected, current tab:', editorEngine.state.rightPanelTab);
+            if (editorEngine.state.rightPanelTab === EditorTabValue.DEV) {
+                console.log('Switching from DEV to CHAT mode');
+                editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
+            }
         }
     };
 

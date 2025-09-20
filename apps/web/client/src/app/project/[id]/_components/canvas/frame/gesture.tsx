@@ -75,11 +75,14 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
                             editorEngine.elements.shiftClick(el);
                         } else {
                             editorEngine.elements.click([el]);
-                            editorEngine.move.startDragPreparation(el, pos, frameData);
+                            // Disabled: editorEngine.move.startDragPreparation(el, pos, frameData);
                         }
                         break;
                     case MouseAction.DOUBLE_CLICK:
-                        editorEngine.text.start(el, frameData.view);
+                        // Open element location in code panel instead of text editing
+                        if (el.oid) {
+                            editorEngine.ide.openCodeBlock(el.oid);
+                        }
                         break;
                 }
             } catch (error) {
@@ -98,8 +101,8 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
                     return;
                 }
 
-                if (editorEngine.move.shouldDrag) {
-                    await editorEngine.move.drag(e, getRelativeMousePosition);
+                if (false) { // Disabled: editorEngine.move.shouldDrag
+                    // Disabled: await editorEngine.move.drag(e, getRelativeMousePosition);
                 } else if (
                     editorEngine.state.editorMode === EditorMode.DESIGN ||
                     ((editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
@@ -213,15 +216,22 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
     }
 
     const handleDragOver = async (e: React.DragEvent<HTMLDivElement>) => {
+        // Disabled drag and drop functionality
         e.preventDefault();
         e.stopPropagation();
-        await handleMouseEvent(e, MouseAction.MOVE);
+        // Disabled: await handleMouseEvent(e, MouseAction.MOVE);
     };
 
     const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+        // Disabled drag and drop functionality
         e.preventDefault();
         e.stopPropagation();
-
+        
+        toast.error("Drag and drop is disabled", {
+            description: "Element dragging has been disabled on this canvas",
+        });
+        
+        /* Disabled: Original drop functionality
         try {
             const propertiesData = e.dataTransfer.getData('application/json');
             if (!propertiesData) {
@@ -253,6 +263,7 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
                 description: error instanceof Error ? error.message : 'Unknown error',
             });
         }
+        */
     };
 
     const gestureScreenClassName = useMemo(() => {
