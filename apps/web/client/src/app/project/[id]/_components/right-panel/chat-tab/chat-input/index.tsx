@@ -351,10 +351,7 @@ export const ChatInput = observer(({
                 }}
             />
             <div className="flex flex-col w-full p-4">
-                <div className="flex flex-row flex-wrap items-center gap-1.5 mb-1">
-                    <ChatContextWindow />
-                    <InputContextPills />
-                </div>
+                <InputContextPills />
                 <Textarea
                     ref={textareaRef}
                     disabled={disabled}
@@ -395,6 +392,7 @@ export const ChatInput = observer(({
                         onChatModeChange={handleChatModeChange}
                         disabled={disabled}
                     />
+                    <ChatContextWindow />
                 </div>
                 <div className="flex flex-row items-center gap-1.5">
                     <ActionButtons
