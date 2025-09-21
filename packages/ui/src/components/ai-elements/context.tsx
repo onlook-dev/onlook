@@ -9,6 +9,8 @@ import { Progress } from '../../components/progress';
 import { cn } from '../../utils';
 
 const PERCENT_MAX = 100;
+const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+const pct = (used: number, max: number) => (max > 0 ? clamp01(used / max) : 0);
 const ICON_RADIUS = 10;
 const ICON_VIEWBOX = 24;
 const ICON_CENTER = 12;
@@ -51,7 +53,7 @@ export const Context = ({ usedTokens, maxTokens, usage, modelId, ...props }: Con
 const ContextIcon = () => {
     const { usedTokens, maxTokens } = useContextValue();
     const circumference = 2 * Math.PI * ICON_RADIUS;
-    const usedPercent = usedTokens / maxTokens;
+    const usedPercent = pct(usedTokens, maxTokens);
     const dashOffset = circumference * (1 - usedPercent);
 
     return (
@@ -93,20 +95,20 @@ export type ContextTriggerProps = ComponentProps<typeof Button>;
 
 export const ContextTrigger = ({ children, ...props }: ContextTriggerProps) => {
     const { usedTokens, maxTokens } = useContextValue();
-    const usedPercent = usedTokens / maxTokens;
+    const usedPercent = pct(usedTokens, maxTokens);
     const renderedPercent = new Intl.NumberFormat('en-US', {
         style: 'percent',
-        maximumFractionDigits: 1,
+        maximumFractionDigits: 0,
     }).format(usedPercent);
 
     return (
         <HoverCardTrigger asChild>
             {children ?? (
                 <Button type="button" variant="ghost" {...props}>
+                    <ContextIcon />
                     <span className="text-xs font-medium text-muted-foreground">
                         {renderedPercent}
                     </span>
-                    <ContextIcon />
                 </Button>
             )}
         </HoverCardTrigger>
@@ -126,7 +128,7 @@ export type ContextContentHeader = ComponentProps<'div'>;
 
 export const ContextContentHeader = ({ children, className, ...props }: ContextContentHeader) => {
     const { usedTokens, maxTokens } = useContextValue();
-    const usedPercent = usedTokens / maxTokens;
+    const usedPercent = pct(usedTokens, maxTokens);
     const displayPct = new Intl.NumberFormat('en-US', {
         style: 'percent',
         maximumFractionDigits: 1,
@@ -149,7 +151,10 @@ export const ContextContentHeader = ({ children, className, ...props }: ContextC
                         </p>
                     </div>
                     <div className="space-y-2">
-                        <Progress className="bg-muted" value={usedPercent * PERCENT_MAX} />
+                        <Progress
+                            className="bg-muted"
+                            value={Math.round(usedPercent * PERCENT_MAX)}
+                        />
                     </div>
                 </>
             )}
