@@ -2,8 +2,8 @@ import type { ChatMessage } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import {
     convertToStreamMessages,
-    extractTextFromParts,
     ensureToolCallResults,
+    extractTextFromParts,
 } from '../../src/stream';
 
 function createMessage(
@@ -334,5 +334,170 @@ describe('ensureToolCallResults', () => {
     test('handles empty parts array', () => {
         const result = ensureToolCallResults([] as any);
         expect(result).toEqual([]);
+    });
+
+    test('leaves error state tool calls unchanged', () => {
+        const parts = [
+            {
+                type: 'tool-divide',
+                toolCallId: 'call_1',
+                state: 'error',
+                input: { a: 10, b: 0 },
+                errorText: 'Division by zero',
+            } as any,
+            {
+                type: 'tool-sum',
+                toolCallId: 'call_2',
+                state: 'input-available',
+                input: { a: 1, b: 2 },
+            } as any,
+        ];
+
+        const result = ensureToolCallResults(parts as any);
+
+        expect(result).toHaveLength(2);
+
+        // Error state should remain unchanged
+        expect(result[0]).toEqual({
+            type: 'tool-divide',
+            toolCallId: 'call_1',
+            state: 'error',
+            input: { a: 10, b: 0 },
+            errorText: 'Division by zero',
+        });
+
+        // Input-available should get stub result
+        expect(result[1]).toEqual({
+            type: 'tool-sum',
+            toolCallId: 'call_2',
+            state: 'output-available',
+            input: { a: 1, b: 2 },
+            output: 'No tool result returned',
+        });
+    });
+
+    test('ignores tool calls without toolCallId', () => {
+        const parts = [
+            {
+                type: 'tool-sum',
+                // Missing toolCallId
+                state: 'input-available',
+                input: { a: 1, b: 2 },
+            } as any,
+            {
+                type: 'tool-multiply',
+                toolCallId: 'call_1',
+                state: 'input-available',
+                input: { x: 3, y: 4 },
+            } as any,
+        ];
+
+        const result = ensureToolCallResults(parts as any);
+
+        expect(result).toHaveLength(2);
+
+        // Part without toolCallId should remain unchanged
+        expect(result[0]).toEqual({
+            type: 'tool-sum',
+            state: 'input-available',
+            input: { a: 1, b: 2 },
+        });
+
+        // Part with toolCallId should get stub result
+        expect(result[1]).toEqual({
+            type: 'tool-multiply',
+            toolCallId: 'call_1',
+            state: 'output-available',
+            input: { x: 3, y: 4 },
+            output: 'No tool result returned',
+        });
+    });
+
+    test('ignores tool calls without state field', () => {
+        const parts = [
+            {
+                type: 'tool-sum',
+                toolCallId: 'call_1',
+                // Missing state field
+                input: { a: 1, b: 2 },
+            } as any,
+            {
+                type: 'tool-multiply',
+                toolCallId: 'call_2',
+                state: 'input-available',
+                input: { x: 3, y: 4 },
+            } as any,
+        ];
+
+        const result = ensureToolCallResults(parts as any);
+
+        expect(result).toHaveLength(2);
+
+        // Part without state should remain unchanged
+        expect(result[0]).toEqual({
+            type: 'tool-sum',
+            toolCallId: 'call_1',
+            input: { a: 1, b: 2 },
+        });
+
+        // Part with proper state should get stub result
+        expect(result[1]).toEqual({
+            type: 'tool-multiply',
+            toolCallId: 'call_2',
+            state: 'output-available',
+            input: { x: 3, y: 4 },
+            output: 'No tool result returned',
+        });
+    });
+
+    test('ignores tool calls with invalid/unknown states', () => {
+        const parts = [
+            {
+                type: 'tool-sum',
+                toolCallId: 'call_1',
+                state: 'unknown-state',
+                input: { a: 1, b: 2 },
+            } as any,
+            {
+                type: 'tool-multiply',
+                toolCallId: 'call_2',
+                state: 'processing', // Another unknown state
+                input: { x: 3, y: 4 },
+            } as any,
+            {
+                type: 'tool-divide',
+                toolCallId: 'call_3',
+                state: 'input-available', // Known state
+                input: { a: 10, b: 2 },
+            } as any,
+        ];
+
+        const result = ensureToolCallResults(parts as any);
+
+        expect(result).toHaveLength(3);
+
+        // Unknown states should remain unchanged
+        expect(result[0]).toEqual({
+            type: 'tool-sum',
+            toolCallId: 'call_1',
+            state: 'unknown-state',
+            input: { a: 1, b: 2 },
+        });
+
+        expect(result[1]).toEqual({
+            type: 'tool-multiply',
+            toolCallId: 'call_2',
+            state: 'processing',
+            input: { x: 3, y: 4 },
+        });
+
+        // Known state should get stub result
+        expect(result[2]).toEqual({
+            type: 'tool-divide',
+            toolCallId: 'call_3',
+            state: 'output-available',
+            input: { a: 10, b: 2 },
+            output: 'No tool result returned',
+        });
     });
 });
