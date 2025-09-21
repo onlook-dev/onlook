@@ -7,7 +7,7 @@ import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import throttle from 'lodash/throttle';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { RightClickMenu } from './right-click';
 
 export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, isResizing: boolean }) => {
@@ -75,13 +75,14 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
                             editorEngine.elements.shiftClick(el);
                         } else {
                             editorEngine.elements.click([el]);
-                            // Disabled: editorEngine.move.startDragPreparation(el, pos, frameData);
                         }
                         break;
                     case MouseAction.DOUBLE_CLICK:
-                        // Open element location in code panel instead of text editing
                         if (el.oid) {
                             editorEngine.ide.openCodeBlock(el.oid);
+                        } else {
+                            toast.error('Cannot find element in code panel');
+                            return;
                         }
                         break;
                 }
@@ -96,14 +97,8 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
     const throttledMouseMove = useMemo(
         () =>
             throttle(async (e: React.MouseEvent<HTMLDivElement>) => {
-                // Skip hover events during drag selection
-                if (editorEngine.state.isDragSelecting) {
-                    return;
-                }
 
-                if (false) { // Disabled: editorEngine.move.shouldDrag
-                    // Disabled: await editorEngine.move.drag(e, getRelativeMousePosition);
-                } else if (
+                if (
                     editorEngine.state.editorMode === EditorMode.DESIGN ||
                     ((editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
                         editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
@@ -123,59 +118,6 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
             throttledMouseMove.cancel();
         };
     }, [throttledMouseMove]);
-
-    // Global event listeners for comprehensive drag termination
-    useEffect(() => {
-        const handleGlobalMouseUp = (e: MouseEvent) => {
-            if (editorEngine.move.shouldDrag || editorEngine.move.isPreparing) {
-                editorEngine.move.cancelDragPreparation();
-                // Create a synthetic React event for consistency
-                const syntheticEvent = {
-                    ...e,
-                    currentTarget: e.target,
-                } as unknown as React.MouseEvent<HTMLDivElement>;
-                void editorEngine.move.end(syntheticEvent);
-            }
-        };
-
-        const handleKeyDown = (e: KeyboardEvent) => {
-            // Terminate drag on Escape key
-            if (e.key === 'Escape' && (editorEngine.move.shouldDrag || editorEngine.move.isPreparing)) {
-                editorEngine.move.cancelDragPreparation();
-                void editorEngine.move.endAllDrag();
-            }
-        };
-
-        const handleVisibilityChange = () => {
-            // Terminate drag when page becomes hidden (e.g., tab switch, minimize)
-            if (document.hidden && (editorEngine.move.shouldDrag || editorEngine.move.isPreparing)) {
-                editorEngine.move.cancelDragPreparation();
-                void editorEngine.move.endAllDrag();
-            }
-        };
-
-        const handleBlur = () => {
-            // Terminate drag when window loses focus
-            if (editorEngine.move.shouldDrag || editorEngine.move.isPreparing) {
-                editorEngine.move.cancelDragPreparation();
-                void editorEngine.move.endAllDrag();
-            }
-        };
-
-        // Add global event listeners
-        document.addEventListener('mouseup', handleGlobalMouseUp, true);
-        document.addEventListener('keydown', handleKeyDown, true);
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('blur', handleBlur);
-
-        return () => {
-            // Clean up event listeners
-            document.removeEventListener('mouseup', handleGlobalMouseUp, true);
-            document.removeEventListener('keydown', handleKeyDown, true);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('blur', handleBlur);
-        };
-    }, [editorEngine.move]);
 
     const handleClick = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
@@ -209,9 +151,6 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
             return;
         }
 
-        editorEngine.move.cancelDragPreparation();
-
-        await editorEngine.move.end(e);
         await editorEngine.insert.end(e, frameData.view);
     }
 
@@ -226,12 +165,11 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
         // Disabled drag and drop functionality
         e.preventDefault();
         e.stopPropagation();
-        
+
         toast.error("Drag and drop is disabled", {
             description: "Element dragging has been disabled on this canvas",
         });
-        
-        /* Disabled: Original drop functionality
+
         try {
             const propertiesData = e.dataTransfer.getData('application/json');
             if (!propertiesData) {
@@ -263,7 +201,6 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
                 description: error instanceof Error ? error.message : 'Unknown error',
             });
         }
-        */
     };
 
     const gestureScreenClassName = useMemo(() => {
@@ -289,13 +226,6 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
                 onClick={handleClick}
                 onMouseOut={handleMouseOut}
                 onMouseLeave={handleMouseUp}
-                onContextMenu={(e) => {
-                    // Terminate drag on right-click
-                    if (editorEngine.move.shouldDrag || editorEngine.move.isPreparing) {
-                        editorEngine.move.cancelDragPreparation();
-                        void editorEngine.move.end(e);
-                    }
-                }}
                 onMouseMove={throttledMouseMove}
                 onMouseDown={handleMouseDown}
                 onMouseUp={handleMouseUp}
