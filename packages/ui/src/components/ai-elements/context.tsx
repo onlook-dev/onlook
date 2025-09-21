@@ -2,7 +2,7 @@
 
 import type { LanguageModelUsage } from 'ai';
 import { type ComponentProps, createContext, useContext } from 'react';
-import { estimateCost, type ModelId } from 'tokenlens';
+import { estimateCost } from 'tokenlens';
 import { Button } from '../../components/button';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '../../components/hover-card';
 import { Progress } from '../../components/progress';
@@ -18,7 +18,7 @@ type ContextSchema = {
     usedTokens: number;
     maxTokens: number;
     usage?: LanguageModelUsage;
-    modelId?: ModelId;
+    modelId?: string;
 };
 
 const ContextContext = createContext<ContextSchema | null>(null);
@@ -103,7 +103,9 @@ export const ContextTrigger = ({ children, ...props }: ContextTriggerProps) => {
         <HoverCardTrigger asChild>
             {children ?? (
                 <Button type="button" variant="ghost" {...props}>
-                    <span className="font-medium text-muted-foreground">{renderedPercent}</span>
+                    <span className="text-xs font-medium text-muted-foreground">
+                        {renderedPercent}
+                    </span>
                     <ContextIcon />
                 </Button>
             )}

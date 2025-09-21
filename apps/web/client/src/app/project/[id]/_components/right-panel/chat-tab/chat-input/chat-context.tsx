@@ -8,10 +8,11 @@ import {
     ContextInputUsage,
     ContextOutputUsage,
     ContextReasoningUsage,
-    ContextTrigger,
+    ContextTrigger
 } from '@onlook/ui/ai-elements/context';
 
 export const ChatContextWindow = () => {
+    const showCost = false;
     return (
         <Context
             maxTokens={128000}
@@ -23,7 +24,6 @@ export const ChatContextWindow = () => {
                 cachedInputTokens: 0,
                 reasoningTokens: 0,
             }}
-            modelId="openai:gpt-4"
         >
             <ContextTrigger />
             <ContextContent>
@@ -34,7 +34,7 @@ export const ChatContextWindow = () => {
                     <ContextReasoningUsage />
                     <ContextCacheUsage />
                 </ContextContentBody>
-                <ContextContentFooter />
+                {showCost && <ContextContentFooter />}
             </ContextContent>
         </Context>
     );
