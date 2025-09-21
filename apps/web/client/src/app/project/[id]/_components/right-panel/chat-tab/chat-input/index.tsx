@@ -7,18 +7,7 @@ import { transKeys } from '@/i18n/keys';
 import type { ChatMessage, ChatSuggestion } from '@onlook/models';
 import { ChatType, EditorTabValue, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
-import {
-    Context,
-    ContextCacheUsage,
-    ContextContent,
-    ContextContentBody,
-    ContextContentFooter,
-    ContextContentHeader,
-    ContextInputUsage,
-    ContextOutputUsage,
-    ContextReasoningUsage,
-    ContextTrigger,
-} from '@onlook/ui/ai-elements/context';
+
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
@@ -33,7 +22,9 @@ import { validateImageLimit } from '../context-pills/helpers';
 import { InputContextPills } from '../context-pills/input-context-pills';
 import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
+import { ChatContextWindow } from './chat-context';
 import { ChatModeToggle } from './chat-mode-toggle';
+
 interface ChatInputProps {
     messages: ChatMessage[];
     suggestions: ChatSuggestion[];
@@ -361,30 +352,7 @@ export const ChatInput = observer(({
             />
             <div className="flex flex-col w-full p-4">
                 <div className="flex flex-row flex-wrap items-center gap-1.5 mb-1">
-                    <Context
-                        maxTokens={128000}
-                        usedTokens={40000}
-                        usage={{
-                            inputTokens: 32000,
-                            outputTokens: 8000,
-                            totalTokens: 40000,
-                            cachedInputTokens: 0,
-                            reasoningTokens: 0,
-                        }}
-                        modelId="openai:gpt-4"
-                    >
-                        <ContextTrigger />
-                        <ContextContent>
-                            <ContextContentHeader />
-                            <ContextContentBody>
-                                <ContextInputUsage />
-                                <ContextOutputUsage />
-                                <ContextReasoningUsage />
-                                <ContextCacheUsage />
-                            </ContextContentBody>
-                            <ContextContentFooter />
-                        </ContextContent>
-                    </Context>
+                    <ChatContextWindow />
                     <InputContextPills />
                 </div>
                 <Textarea
