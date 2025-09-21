@@ -158,17 +158,13 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
         // Disabled drag and drop functionality
         e.preventDefault();
         e.stopPropagation();
-        // Disabled: await handleMouseEvent(e, MouseAction.MOVE);
+        await handleMouseEvent(e, MouseAction.MOVE);
     };
 
     const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
         // Disabled drag and drop functionality
         e.preventDefault();
         e.stopPropagation();
-
-        toast.error("Drag and drop is disabled", {
-            description: "Element dragging has been disabled on this canvas",
-        });
 
         try {
             const propertiesData = e.dataTransfer.getData('application/json');
