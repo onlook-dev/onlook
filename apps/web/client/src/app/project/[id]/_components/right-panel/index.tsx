@@ -79,7 +79,12 @@ export const RightPanel = observer(() => {
                         {selectedTab === EditorTabValue.DEV && <CodeControls />}
                     </TabsList>
                     <ChatHistory isOpen={isChatHistoryOpen} onOpenChange={setIsChatHistoryOpen} />
-                    <TabsContent className="h-full overflow-y-auto" value={EditorTabValue.CHAT}>
+                    <TabsContent
+                        forceMount
+                        className={cn(
+                            "h-full overflow-y-auto",
+                            editorEngine.state.rightPanelTab !== EditorTabValue.CHAT && 'hidden',
+                        )} value={EditorTabValue.CHAT}>
                         {currentConversation && (
                             <ChatTab
                                 conversationId={currentConversation.id}
