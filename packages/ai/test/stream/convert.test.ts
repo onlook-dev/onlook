@@ -2,8 +2,8 @@ import type { ChatMessage } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import {
     convertToStreamMessages,
-    extractTextFromParts,
     ensureToolCallResults,
+    extractTextFromParts,
 } from '../../src/stream';
 
 function createMessage(
