@@ -4,7 +4,7 @@ import { buildLayerTree } from '../../dom';
 import { getDomElement } from '../helpers';
 
 export function moveElement(domId: string, newIndex: number): { domEl: DomElement, newMap: Map<string, LayerNode> | null } | null {
-    const el = getHtmlElement(domId) as HTMLElement | null;
+    const el = getHtmlElement(domId);
     if (!el) {
         console.warn(`Move element not found: ${domId}`);
         return null;
@@ -25,7 +25,7 @@ export function moveElement(domId: string, newIndex: number): { domEl: DomElemen
 }
 
 export function getElementIndex(domId: string): number {
-    const el = getHtmlElement(domId) as HTMLElement | null;
+    const el = getHtmlElement(domId);
     if (!el) {
         console.warn(`Element not found: ${domId}`);
         return -1;

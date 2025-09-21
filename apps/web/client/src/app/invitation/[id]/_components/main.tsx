@@ -2,6 +2,7 @@
 
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
+import { resetTelemetry } from '@/utils/telemetry';
 import { createClient } from '@/utils/supabase/client';
 import { getReturnUrlQueryParam } from '@/utils/url';
 import { Button } from '@onlook/ui/button';
@@ -29,8 +30,10 @@ export function Main({ invitationId }: { invitationId: string }) {
         },
     });
 
-    const handleLogin = async () => {
+    const handleReAuthenticate = async () => {
         const supabase = createClient();
+        // Clear analytics/feedback identities before signing out
+        void resetTelemetry();
         await supabase.auth.signOut();
         const currentUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
         router.push(`${Routes.LOGIN}?${getReturnUrlQueryParam(currentUrl)}`);
@@ -76,7 +79,7 @@ export function Main({ invitationId }: { invitationId: string }) {
                         </Button>
                         <Button
                             type="button"
-                            onClick={handleLogin}
+                            onClick={handleReAuthenticate}
                         >
                             Log in with different account
                         </Button>

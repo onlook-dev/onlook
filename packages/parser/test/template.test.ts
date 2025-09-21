@@ -20,7 +20,14 @@ describe('Template Tests', () => {
                 }
             `;
             const ast = getAstFromContent(code);
-            const mapping = createTemplateNodeMap(ast, 'test.tsx');
+            if (!ast) {
+                throw new Error('Failed to get ast');
+            }
+            const mapping = createTemplateNodeMap({
+                ast,
+                filename: 'test.tsx',
+                branchId: 'test-branch',
+            });
 
             expect(mapping?.get('test-id')).toBeDefined();
             expect(mapping?.get('test-id')?.component).toBe('App');
@@ -37,7 +44,14 @@ describe('Template Tests', () => {
                 }
             `;
             const ast = getAstFromContent(code);
-            const mapping = createTemplateNodeMap(ast, 'test.tsx');
+            if (!ast) {
+                throw new Error('Failed to get ast');
+            }
+            const mapping = createTemplateNodeMap({
+                ast,
+                filename: 'test.tsx',
+                branchId: 'test-branch',
+            });
 
             expect(mapping?.get('child-id')?.component).toBe('Child');
             expect(mapping?.get('parent-id')?.component).toBe('Parent');
@@ -56,7 +70,14 @@ describe('Template Tests', () => {
                 }
             `;
             const ast = getAstFromContent(code);
-            const mapping = createTemplateNodeMap(ast, 'test.tsx');
+            if (!ast) {
+                throw new Error('Failed to get ast');
+            }
+            const mapping = createTemplateNodeMap({
+                ast,
+                filename: 'test.tsx',
+                branchId: 'test-branch',
+            });
 
             expect(mapping?.get('list-item')?.dynamicType).toBe(DynamicType.ARRAY);
         });
@@ -72,7 +93,14 @@ describe('Template Tests', () => {
                 }
             `;
             const ast = getAstFromContent(code);
-            const mapping = createTemplateNodeMap(ast, 'test.tsx');
+            if (!ast) {
+                throw new Error('Failed to get ast');
+            }
+            const mapping = createTemplateNodeMap({
+                ast,
+                filename: 'test.tsx',
+                branchId: 'test-branch',
+            });
 
             expect(mapping?.get('cond-id')?.dynamicType).toBe(DynamicType.CONDITIONAL);
         });
@@ -106,6 +134,9 @@ describe('Template Tests', () => {
                 }
             `;
             const ast = getAstFromContent(code);
+            if (!ast) {
+                throw new Error('Failed to get ast');
+            }
             let rootElement: NodePath<t.JSXElement> | undefined;
 
             // Find the JSX element in the AST
@@ -127,6 +158,9 @@ describe('Template Tests', () => {
                 }
             `;
             const ast = getAstFromContent(code);
+            if (!ast) {
+                throw new Error('Failed to get ast');
+            }
             let bodyElement: NodePath<t.JSXElement> | undefined;
 
             traverse(ast, {
@@ -152,6 +186,9 @@ describe('Template Tests', () => {
                 }
             `;
             const ast = getAstFromContent(code);
+            if (!ast) {
+                throw new Error('Failed to get ast');
+            }
             let conditionalElement: NodePath<t.JSXElement> | undefined;
 
             traverse(ast, {
@@ -178,6 +215,9 @@ describe('Template Tests', () => {
                 }
             `;
             const ast = getAstFromContent(code);
+            if (!ast) {
+                throw new Error('Failed to get ast');
+            }
             let arrayElement: NodePath<t.JSXElement> | undefined;
 
             traverse(ast, {

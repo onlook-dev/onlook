@@ -19,9 +19,18 @@ export const DirectionInput = () => {
         setValue(editorEngine.style.selectedStyle?.styles.computed.flexDirection ?? 'column');
     }, [editorEngine.style.selectedStyle?.styles.computed.flexDirection]);
 
+    // Check if flexbox is active
+    const displayValue = editorEngine.style.selectedStyle?.styles.computed.display;
+    const isFlexboxActive = displayValue === 'flex' || displayValue === 'inline-flex';
+
+    // Don't render if flexbox is not active
+    if (!isFlexboxActive) {
+        return null;
+    }
+
     return (
-        <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground w-24">Direction</span>
+        <div className="flex items-center gap-0">
+            <span className="text-sm text-muted-foreground w-20">Direction</span>
             <InputRadio
                 options={Object.values(directionOptions)}
                 value={value}

@@ -1,4 +1,5 @@
 import { api } from '@/trpc/react';
+import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
@@ -16,6 +17,7 @@ interface CollapsibleCodeBlockProps {
     updatedContent: string;
     applied: boolean;
     isStream?: boolean;
+    branchId?: string;
 }
 
 export const CollapsibleCodeBlock = observer(({
@@ -25,8 +27,10 @@ export const CollapsibleCodeBlock = observer(({
     updatedContent,
     applied,
     isStream,
+    branchId,
 }: CollapsibleCodeBlockProps) => {
     const { data: settings } = api.user.settings.get.useQuery();
+    const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(false);
     const [copied, setCopied] = useState(false);
 
@@ -55,7 +59,7 @@ export const CollapsibleCodeBlock = observer(({
                 >
                     <div
                         className={cn(
-                            'flex items-center justify-between text-foreground-secondary transition-colors',
+                            'flex items-center justify-between text-foreground-secondary',
                             !isOpen && 'group-hover:text-foreground-primary',
                         )}
                     >
@@ -71,14 +75,27 @@ export const CollapsibleCodeBlock = observer(({
                                         )}
                                     />
                                 )}
-                                <span
+                                <div
                                     className={cn(
-                                        'text-small pointer-events-none select-none',
+                                        'text-small pointer-events-none select-none flex items-center min-w-0 overflow-hidden',
                                         isStream && 'text-shimmer',
                                     )}
                                 >
-                                    {getTruncatedFileName(path)}
-                                </span>
+                                    <span className="truncate flex-1 min-w-0">{getTruncatedFileName(path)}</span>
+                                    {(() => {
+                                        const branch = branchId 
+                                            ? editorEngine.branches.allBranches.find(b => b.id === branchId)
+                                            : editorEngine.branches.activeBranch;
+                                        return branch && (
+                                            <>
+                                                
+                                                 <span className="text-foreground-tertiary group-hover:text-foreground-secondary text-mini ml-0.5 flex-shrink-0 truncate max-w-24">
+                                                     {' • '}{branch.name}
+                                                 </span>
+                                            </>
+                                        );
+                                    })()}
+                                </div>
                             </div>
                         </CollapsibleTrigger>
                     </div>

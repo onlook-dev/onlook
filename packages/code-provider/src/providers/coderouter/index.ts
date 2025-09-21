@@ -361,6 +361,13 @@ export class CoderouterProvider extends Provider {
         };
     }
 
+    async createProjectFromGit(input: {
+        repoUrl: string;
+        branch: string;
+    }): Promise<CreateProjectOutput> {
+        throw new Error('Not implemented');
+    }
+
     async pauseProject(input: PauseProjectInput): Promise<PauseProjectOutput> {
         await this.api.coderouterApiSandboxPausePost({}, this.requestInitOverrides());
         return {};

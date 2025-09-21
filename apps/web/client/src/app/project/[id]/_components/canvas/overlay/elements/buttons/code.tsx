@@ -14,7 +14,7 @@ export const OverlayOpenCode = observer(({ isInputting }: { isInputting: boolean
     }
 
     const handleCodeButtonClick = async () => {
-        await editorEngine.code.viewCodeBlock(oid)
+        await editorEngine.ide.openCodeBlock(oid)
     };
 
     return (

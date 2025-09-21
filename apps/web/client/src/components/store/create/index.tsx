@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { CreateManager } from './manager';
 
 const CreateContext = createContext<CreateManager | null>(null);
@@ -12,7 +12,7 @@ export const useCreateManager = () => {
 export const CreateManagerProvider = ({ children }: {
     children: React.ReactNode,
 }) => {
-    const createManager = useMemo(() => new CreateManager(), []);
+    const [createManager] = useState(() => new CreateManager());
 
     return (
         <CreateContext.Provider value={createManager} >

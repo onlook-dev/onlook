@@ -17,7 +17,7 @@ export const ImagesTab = () => {
 
 const ImagesTabContent = observer(() => {
     const editorEngine = useEditorEngine();
-    const isIndexing = editorEngine.sandbox.isIndexing;
+    const isIndexing = editorEngine.activeSandbox.isIndexing;
     const {
         renameOperations: { renameState },
         uploadOperations,

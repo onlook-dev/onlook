@@ -6,6 +6,10 @@ export const Routes = {
     ABOUT: '/about',
     CAREERS: '/careers',
     FEATURES: '/features',
+    FEATURES_AI: '/features/ai',
+    FEATURES_BUILDER: '/features/builder',
+    FEATURES_PROTOTYPE: '/features/prototype',
+
     // Auth
     LOGIN: '/login',
     AUTH_CALLBACK: '/auth/callback',
@@ -16,10 +20,12 @@ export const Routes = {
     PROJECTS: '/projects',
     PROJECT: '/project',
     IMPORT_PROJECT: '/projects/import',
+    IMPORT_GITHUB: '/projects/import/github',
 
     // Callback
     CALLBACK_STRIPE_SUCCESS: '/callback/stripe/success',
     CALLBACK_STRIPE_CANCEL: '/callback/stripe/cancel',
+    CALLBACK_GITHUB_INSTALL: '/callback/github/install',
 } as const;
 
 export const ExternalRoutes = {

@@ -31,7 +31,8 @@ const useCustomDomain = () => {
         setIsLoading(true);
         try {
             await runPublish({
-                projectId: editorEngine.projectId
+                projectId: editorEngine.projectId,
+                sandboxId: editorEngine.branches.activeBranch.sandbox.id
             });
         } catch (error) {
             console.error(error);

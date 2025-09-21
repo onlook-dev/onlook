@@ -1,6 +1,6 @@
-import { env } from '@/env';
-import { CodeProvider, createCodeProviderClient, type Provider } from '@onlook/code-provider';
+import { type Provider } from '@onlook/code-provider';
 import { v4 as uuidv4 } from 'uuid';
+import { getProvider } from '../../project/sandbox';
 
 export async function forkBuildSandbox(
     sandboxId: string,
@@ -8,15 +8,7 @@ export async function forkBuildSandbox(
     deploymentId: string,
 ): Promise<{ provider: Provider; sandboxId: string }> {
     const newSandboxId = uuidv4();
-    const provider = await createCodeProviderClient(CodeProvider.Coderouter, {
-        providerOptions: {
-            coderouter: {
-                url: env.CODEROUTER_HOST_URL,
-                sandboxId: newSandboxId,
-                userId: userId,
-            },
-        },
-    });
+    const provider = await getProvider({ sandboxId: newSandboxId });
 
     const project = await provider.createProject({
         source: 'template',

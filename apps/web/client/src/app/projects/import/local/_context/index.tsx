@@ -136,10 +136,11 @@ export const ProjectCreationProvider = ({
                     coderouter: {
                         sandboxId: forkedSandbox.sandboxId,
                         userId: user.id,
+                        // initClient: true,
+                        // keepActiveWhileConnected: false,
                         getSession: async (_, sandboxId, userId) => {
                             return startSandbox({
                                 sandboxId,
-                                userId,
                             });
                         },
                     }
@@ -165,10 +166,10 @@ export const ProjectCreationProvider = ({
             const project = await createProject({
                 project: {
                     name: projectData.name ?? 'New project',
-                    sandboxId: forkedSandbox.sandboxId,
-                    sandboxUrl: forkedSandbox.previewUrl,
                     description: 'Your new project',
                 },
+                sandboxId: forkedSandbox.sandboxId,
+                sandboxUrl: forkedSandbox.previewUrl,
                 userId: user.id,
             });
             if (!project) {

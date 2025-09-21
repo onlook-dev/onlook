@@ -1,34 +1,18 @@
-import type { MastraMessageContentV2 } from '@mastra/core/agent';
-import type { MastraMessageV2 } from '@mastra/core/memory';
-import type { CodeDiff } from '../../code/index.ts';
+import type { ChatTools } from '@onlook/ai';
+import type { JSONValue, LanguageModelUsage, UIMessage, UIMessagePart } from 'ai';
 import type { MessageCheckpoints } from './checkpoint.ts';
 import type { MessageContext } from './context.ts';
 
-export enum ChatMessageRole {
-    USER = 'user',
-    ASSISTANT = 'assistant',
-}
-export interface ChatMessageContent extends MastraMessageContentV2 {
-    metadata: {
-        vercelId?: string;
-        context: MessageContext[];
-        checkpoints: MessageCheckpoints[];
-    };
-}
-interface BaseChatMessage extends MastraMessageV2 {
-    role: ChatMessageRole;
-    threadId: string;
-    content: ChatMessageContent;
-}
+export type ChatMetadata = {
+    createdAt: Date;
+    conversationId: string;
+    context: MessageContext[];
+    checkpoints: MessageCheckpoints[];
+    finishReason?: string;
+    usage?: LanguageModelUsage;
+};
 
-export interface UserChatMessage extends BaseChatMessage {
-    role: ChatMessageRole.USER;
-}
-
-export interface AssistantChatMessage extends BaseChatMessage {
-    role: ChatMessageRole.ASSISTANT;
-}
-
-export type ChatSnapshot = Record<string, CodeDiff>;
-
-export type ChatMessage = UserChatMessage | AssistantChatMessage;
+export type ChatProviderMetadata = Record<string, Record<string, JSONValue>>;
+export type ChatDataPart = {};
+export type ChatMessagePart = UIMessagePart<ChatDataPart, ChatTools>;
+export type ChatMessage = UIMessage<ChatMetadata, ChatDataPart, ChatTools>;

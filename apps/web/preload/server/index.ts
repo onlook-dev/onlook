@@ -7,7 +7,7 @@ const server = serve({
         const url = new URL(req.url);
         if (url.pathname === "/") {
             try {
-                const resolvedPath = path.resolve(import.meta.dir + "/../dist/index.js")
+                const resolvedPath = path.resolve(import.meta.dir + "/../../client/public/onlook-preload-script.js")
 
                 const file = Bun.file(resolvedPath);
                 return new Response(file, {

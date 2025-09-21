@@ -1,0 +1,26 @@
+node_modules
+.git
+.gitignore
+README.md
+.env
+.env.local
+.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.next
+.vercel
+*.tsbuildinfo
+.DS_Store
+coverage
+.nyc_output
+dist
+build
+.vscode
+.idea
+*.log
+.next
+
+# Parts of the app that does not need to be deployed
+apps/web/backend
+assets

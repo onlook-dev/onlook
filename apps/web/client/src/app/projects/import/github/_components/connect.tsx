@@ -6,10 +6,14 @@ import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { motion } from 'motion/react';
 import { StepContent, StepFooter, StepHeader } from '../../steps';
-import { useImportGithubProject } from '../_context/context';
+import { useImportGithubProject } from '../_context';
 
 export const ConnectGithub = () => {
-    const { prevStep, nextStep } = useImportGithubProject();
+    const {
+        prevStep,
+        nextStep,
+        installation,
+    } = useImportGithubProject();
 
     const itemContent = ({
         title,
@@ -54,24 +58,25 @@ export const ConnectGithub = () => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="w-full"
+                    className="w-full text-sm"
                 >
                     <Separator orientation="horizontal" className="shrink-0 bg-border mb-6" />
                     {itemContent({
-                        title: 'This page will redirect to GitHub',
-                        description: 'Sign in and confirm permissions in GitHub',
-                        icon: <Icons.ExternalLink className="w-5 h-5" />,
+                        title: installation.hasInstallation
+                            ? 'GitHub App already connected'
+                            : 'Install Onlook GitHub App',
+                        description: installation.hasInstallation
+                            ? 'You can access your repositories through the GitHub App'
+                            : 'Get secure repository access with fine-grained permissions',
+                        icon: installation.hasInstallation
+                            ? <Icons.Check className="w-5 h-5 text-green-500" />
+                            : <Icons.GitHubLogo className="w-5 h-5" />,
                     })}
-                    {itemContent({
-                        title: 'You set what Onlook can access',
-                        description: 'Onlook is strictly limited to the permissions you set',
-                        icon: <Icons.Key className="w-5 h-5" />,
-                    })}
-                    {itemContent({
-                        title: 'You’re in control',
-                        description: 'Sign in and confirm permissions in GitHub',
-                        icon: <Icons.LockClosed className="w-5 h-5" />,
-                    })}
+                    {installation.error && (
+                        <div className="mt-4 p-3 bg-red-900 border border-red-800 rounded-md">
+                            <div className="text-red-100 text-sm">{installation.error}</div>
+                        </div>
+                    )}
                     <Separator orientation="horizontal" className="shrink-0 bg-border mt-6" />
                 </motion.div>
             </StepContent>
@@ -79,10 +84,32 @@ export const ConnectGithub = () => {
                 <Button onClick={prevStep} variant="outline">
                     Cancel
                 </Button>
-                <Button className="px-3 py-2" onClick={nextStep}>
-                    <Icons.GitHubLogo className="w-4 h-4 mr-2" />
-                    <span>Continue to GitHub</span>
-                </Button>
+
+                {installation.hasInstallation ? (
+                    <div className="flex gap-2">
+                        <Button
+                            size="icon"
+                            variant="outline"
+                            className="py-2"
+                            onClick={() => installation.redirectToInstallation()}
+                        >
+                            <Icons.Gear className="w-4 h-4" />
+                        </Button>
+                        <Button className="px-3 py-2" onClick={nextStep}>
+                            <Icons.ArrowRight className="w-4 h-4 mr-2" />
+                            <span>Continue</span>
+                        </Button>
+                    </div>
+                ) : (
+                    <Button
+                        className="px-3 py-2"
+                        onClick={() => installation.redirectToInstallation()}
+                        disabled={installation.isChecking}
+                    >
+                        <Icons.GitHubLogo className="w-4 h-4 mr-2" />
+                        <span>Install GitHub App</span>
+                    </Button>
+                )}
             </StepFooter>
         </>
     );

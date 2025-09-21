@@ -1,6 +1,5 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
 import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { SettingsModalWithProjects } from '@/components/ui/settings-modal/with-project';
 import { EditorAttributes } from '@onlook/constants';
@@ -20,7 +19,6 @@ import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
 
 export const Main = observer(() => {
-    const editorEngine = useEditorEngine();
     const router = useRouter();
     const { isProjectReady, error } = useStartProject();
     const leftPanelRef = useRef<HTMLDivElement | null>(null);
@@ -73,15 +71,6 @@ export const Main = observer(() => {
             <div className="h-screen w-screen flex items-center justify-center gap-2">
                 <Icons.LoadingSpinner className="h-6 w-6 animate-spin text-foreground-primary" />
                 <div className="text-xl">Loading project...</div>
-            </div>
-        );
-    }
-
-    if (editorEngine.sandbox.session.isConnecting) {
-        return (
-            <div className="h-screen w-screen flex items-center justify-center gap-2">
-                <Icons.LoadingSpinner className="h-6 w-6 animate-spin text-foreground-primary" />
-                <div className="text-xl">Connecting to sandbox...</div>
             </div>
         );
     }

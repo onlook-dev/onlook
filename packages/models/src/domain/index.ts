@@ -12,7 +12,7 @@ export enum VerificationRequestStatus {
 export interface DomainInfo {
     url: string;
     type: DomainType;
-    publishedAt?: string;
+    publishedAt?: Date;
 }
 
 interface BaseVerificationRecord {

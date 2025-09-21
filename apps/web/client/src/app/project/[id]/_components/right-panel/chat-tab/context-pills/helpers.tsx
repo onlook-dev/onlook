@@ -1,3 +1,4 @@
+import { DefaultSettings } from '@onlook/constants';
 import { MessageContextType, type MessageContext } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
 import { getTruncatedFileName } from '@onlook/ui/utils';
@@ -35,10 +36,28 @@ export function getContextIcon(context: MessageContext) {
         case MessageContextType.PROJECT:
             icon = Icons.Cube;
             break;
+        case MessageContextType.BRANCH:
+            icon = Icons.Branch;
+            break;
         default:
             assertNever(context);
     }
     if (icon) {
         return React.createElement(icon);
     }
+}
+
+export function validateImageLimit(
+    currentImages: MessageContext[],
+    additionalCount: number = 0
+): {
+    success: boolean;
+    errorMessage?: string;
+} {
+    const totalCount = currentImages.length + additionalCount;
+    const maxImages = DefaultSettings.CHAT_SETTINGS.maxImages;
+    if (totalCount > maxImages) {
+        return { success: false, errorMessage: `You can only add up to ${maxImages} images.` };
+    }
+    return { success: true, errorMessage: undefined };
 }

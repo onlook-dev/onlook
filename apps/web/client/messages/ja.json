@@ -182,6 +182,7 @@
                         "emptyState": "編集するウィンドウを選択してください"
                     },
                     "brand": "ブランド",
+                    "branches": "ブランチ",
                     "apps": "アプリ"
                 }
             }
@@ -273,6 +274,7 @@
             "rename": "名前変更",
             "goToAllProjects": "すべてのプロジェクトへ",
             "newProject": "新規プロジェクト",
+            "blankProject": "空白プロジェクト",
             "startFromScratch": "新規作成",
             "importProject": "プロジェクトをインポート",
             "subscriptions": "サブスクリプション",

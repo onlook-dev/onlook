@@ -2,15 +2,11 @@ export interface Project {
     id: string;
     name: string;
     metadata: {
-        createdAt: string;
-        updatedAt: string;
+        createdAt: Date;
+        updatedAt: Date;
         previewImg: PreviewImg | null;
         description: string | null;
-        updatedPreviewImgAt: Date | null;
-    };
-    sandbox: {
-        id: string;
-        url: string;
+        tags: string[];
     };
 }
 
@@ -21,4 +17,5 @@ export interface PreviewImg {
         path: string;
     };
     url?: string;
+    updatedAt: Date | null;
 }

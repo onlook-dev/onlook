@@ -8,4 +8,5 @@ export interface User {
     createdAt: Date;
     updatedAt: Date;
     stripeCustomerId: string | null;
+    githubInstallationId: string | null;
 }

@@ -1,10 +1,10 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
+import type { ChatSuggestion } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { useChatContext } from '../../../_hooks/use-chat';
 
 export interface SuggestionsRef {
     handleTabNavigation: (reverse: boolean) => boolean;
@@ -15,27 +15,26 @@ export const Suggestions = observer(
     forwardRef<
         SuggestionsRef,
         {
+            suggestions: ChatSuggestion[];
+            isStreaming: boolean;
             disabled: boolean;
             inputValue: string;
             setInput: (input: string) => void;
             onSuggestionFocus?: (isFocused: boolean) => void;
         }
-    >(({ disabled, inputValue, setInput, onSuggestionFocus }, ref) => {
+    >(({ suggestions, isStreaming, disabled, inputValue, setInput, onSuggestionFocus }, ref) => {
         const editorEngine = useEditorEngine();
-        const { isWaiting } = useChatContext();
         const { data: settings } = api.user.settings.get.useQuery();
         const [focusedIndex, setFocusedIndex] = useState<number>(-1);
         const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-        const suggestions = editorEngine.chat.suggestions.suggestions;
         const shouldHideSuggestions =
             suggestions.length === 0 ||
-            isWaiting ||
+            isStreaming ||
             !settings?.chat?.showSuggestions ||
             disabled ||
             inputValue.trim().length > 0 ||
-            editorEngine.chat.error.hasError() ||
-            editorEngine.error.errors.length > 0;
+            editorEngine.branches.getAllErrors().length > 0;
 
         const handleTabNavigation = (reverse: boolean) => {
             if (shouldHideSuggestions || suggestions.length === 0) {
@@ -130,7 +129,7 @@ export const Suggestions = observer(
                                 }
                             }}
                         >
-                            <Icons.Lightbulb className="w-4 h-4" />
+                            <Icons.Lightbulb className="w-4 h-4 flex-shrink-0" />
                             {suggestion.title}
                         </motion.button>
                     ))}

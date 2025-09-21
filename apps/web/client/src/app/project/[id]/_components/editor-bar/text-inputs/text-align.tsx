@@ -33,7 +33,7 @@ export const TextAlignSelector = observer(
                     <DropdownMenuTrigger asChild>
                         <ToolbarButton
                             isOpen={isOpen}
-                            className="flex items-center justify-center gap-2 px-2 min-w-10"
+                            className="flex items-center justify-center gap-2 px-2 min-w-9"
                         >
                             {(() => {
                                 switch (textState.textAlign) {

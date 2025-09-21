@@ -1,4 +1,4 @@
-import { getExtensions } from '@/app/project/[id]/_components/right-panel/dev-tab/code-mirror-config';
+import { getExtensions } from '@/app/project/[id]/_components/right-panel/code-tab/code-mirror-config';
 import { SystemTheme } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';
 import { basicSetup } from '@uiw/codemirror-extensions-basic-setup';

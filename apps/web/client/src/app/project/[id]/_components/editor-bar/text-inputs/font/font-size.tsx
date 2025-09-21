@@ -97,7 +97,7 @@ export const FontSizeSelector = () => {
                     <DropdownMenuTrigger asChild>
                         <ToolbarButton
                             isOpen={isOpen}
-                            className="max-w-[40px] min-w-[40px] px-1 w-10"
+                            className="min-w-[40px] px-1 w-11"
                             onClick={handleInputClick}
                         >
                             <input

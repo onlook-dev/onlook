@@ -1,5 +1,5 @@
-import type { TextUIPart, ToolInvocationUIPart } from '@ai-sdk/ui-utils';
 import { type ChatMessage } from '@onlook/models';
+import type { TextUIPart, ToolUIPart } from 'ai';
 import { encode } from 'gpt-tokenizer';
 
 export async function countTokensWithRoles(messages: ChatMessage[]): Promise<number> {
@@ -7,12 +7,12 @@ export async function countTokensWithRoles(messages: ChatMessage[]): Promise<num
     const perReplyExtra = 2; // for assistant reply priming
     let total = 0;
     for (const m of messages) {
-        const content = m.content.parts
+        const content = m.parts
             .map((p) => {
                 if (p.type === 'text') {
                     return (p as TextUIPart).text;
-                } else if (p.type === 'tool-invocation') {
-                    return JSON.stringify((p as ToolInvocationUIPart).toolInvocation);
+                } else if (p.type.startsWith('tool-')) {
+                    return JSON.stringify((p as ToolUIPart).input); // TODO: check if this is correct
                 }
                 return '';
             })

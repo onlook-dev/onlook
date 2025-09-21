@@ -1,5 +1,5 @@
 import { DefaultSettings } from '@onlook/constants';
-import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models';
+import { LeftPanelTabValue, type ActionTarget, type ImageContentData, type InsertImageAction } from '@onlook/models';
 import { convertToBase64, generateNewFolderPath, getBaseName, getMimeType, isImageFile, stripImageFolderPrefix } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -10,15 +10,26 @@ export class ImageManager {
     private _isSelectingImage = false;
     private _selectedImage: ImageContentData | null = null;
     private _previewImage: ImageContentData | null = null;
+    private indexingReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
+    }
 
-        reaction(
-            () => this.editorEngine.sandbox.isIndexing,
-            async (isIndexingFiles) => {
-                if (!isIndexingFiles) {
-                    await this.scanImages();
+    init() {
+        this.indexingReactionDisposer = reaction(
+            () => {
+                return {
+                    isIndexing: this.editorEngine.activeSandbox.isIndexing,
+                    isIndexed: this.editorEngine.activeSandbox.isIndexed,
+                };
+            },
+            (sandboxStatus) => {
+                if (this.editorEngine.state.leftPanelTab !== LeftPanelTabValue.IMAGES) {
+                    return;
+                }
+                if (sandboxStatus.isIndexed && !sandboxStatus.isIndexing) {
+                    this.scanImages();
                 }
             },
         );
@@ -119,7 +130,7 @@ export class ImageManager {
         try {
             const path = `${destinationFolder}/${file.name}`;
             const uint8Array = new Uint8Array(await file.arrayBuffer());
-            await this.editorEngine.sandbox.writeBinaryFile(path, uint8Array);
+            await this.editorEngine.activeSandbox.writeBinaryFile(path, uint8Array);
             await this.scanImages();
         } catch (error) {
             console.error('Error uploading image:', error);
@@ -129,7 +140,7 @@ export class ImageManager {
 
     async delete(originPath: string): Promise<void> {
         try {
-            await this.editorEngine.sandbox.delete(originPath);
+            await this.editorEngine.activeSandbox.delete(originPath);
             await this.scanImages();
         } catch (error) {
             console.error('Error deleting image:', error);
@@ -140,7 +151,7 @@ export class ImageManager {
     async rename(originPath: string, newName: string): Promise<void> {
         try {
             const newPath = generateNewFolderPath(originPath, newName, 'rename');
-            await this.editorEngine.sandbox.rename(originPath, newPath);
+            await this.editorEngine.activeSandbox.rename(originPath, newPath);
             await this.scanImages();
         } catch (error) {
             console.error('Error renaming image:', error);
@@ -180,16 +191,13 @@ export class ImageManager {
     }
 
     async scanImages() {
-        if (this._isScanning) {
-            return;
-        }
-
-        this._isScanning = true;
-
         try {
-            const files = await this.editorEngine.sandbox.listFilesRecursively(
-                DefaultSettings.IMAGE_FOLDER,
-            );
+            if (this._isScanning) {
+                return;
+            }
+            this._isScanning = true;
+
+            const files = this.editorEngine.activeSandbox.files;
             if (!files) {
                 console.error('No files found in image folder');
                 return;
@@ -198,7 +206,7 @@ export class ImageManager {
                 this._imagePaths = [];
                 return;
             }
-            this._imagePaths = files.filter((file: string) => isImageFile(file));
+            this._imagePaths = files.filter((file: string) => file.startsWith(DefaultSettings.IMAGE_FOLDER) && isImageFile(file));
         } catch (error) {
             console.error('Error scanning images:', error);
             this._imagePaths = [];
@@ -208,6 +216,8 @@ export class ImageManager {
     }
 
     clear() {
+        this.indexingReactionDisposer?.();
+        this.indexingReactionDisposer = undefined;
         this._imagePaths = [];
     }
 
@@ -223,7 +233,7 @@ export class ImageManager {
             }
 
             // Read the binary file using the sandbox
-            const file = await this.editorEngine.sandbox.readFile(imagePath);
+            const file = await this.editorEngine.activeSandbox.readFile(imagePath);
             if (!file || file.type === 'text' || !file.content) {
                 console.warn(`Failed to read binary data for ${imagePath}`);
                 return null;

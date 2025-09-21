@@ -1,5 +1,6 @@
+import { LeftPanelTabValue } from '@onlook/models';
 import type { PageMetadata, PageNode } from '@onlook/models/pages';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
 import {
@@ -23,6 +24,25 @@ export class PagesManager {
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
+    }
+
+    init() {
+        reaction(
+            () => {
+                return {
+                    isIndexing: this.editorEngine.activeSandbox.isIndexing,
+                    isIndexed: this.editorEngine.activeSandbox.isIndexed,
+                };
+            },
+            (sandboxStatus) => {
+                if (this.editorEngine.state.leftPanelTab !== LeftPanelTabValue.PAGES) {
+                    return;
+                }
+                if (sandboxStatus.isIndexed && !sandboxStatus.isIndexing) {
+                    this.scanPages();
+                }
+            },
+        );
     }
 
     get tree() {
@@ -120,9 +140,9 @@ export class PagesManager {
                 return;
             }
             this._isScanning = true;
-            if (this.editorEngine?.sandbox?.session?.provider) {
+            if (this.editorEngine.activeSandbox.session.provider) {
                 try {
-                    const realPages = await scanPagesFromSandbox(this.editorEngine.sandbox);
+                    const realPages = await scanPagesFromSandbox(this.editorEngine.activeSandbox);
 
                     this.setPages(realPages);
                     this._isScanning = false;
@@ -157,7 +177,7 @@ export class PagesManager {
         }
 
         try {
-            await createPageInSandbox(this.editorEngine.sandbox, normalizedPath);
+            await createPageInSandbox(this.editorEngine.activeSandbox, normalizedPath);
             await this.scanPages();
             this.editorEngine.posthog.capture('page_create');
         } catch (error) {
@@ -178,7 +198,7 @@ export class PagesManager {
         }
 
         try {
-            await renamePageInSandbox(this.editorEngine.sandbox, oldPath, newName);
+            await renamePageInSandbox(this.editorEngine.activeSandbox, oldPath, newName);
             await this.scanPages();
             this.editorEngine.posthog.capture('page_rename');
         } catch (error) {
@@ -191,7 +211,7 @@ export class PagesManager {
     public async duplicatePage(sourcePath: string, targetPath: string): Promise<void> {
         try {
             await duplicatePageInSandbox(
-                this.editorEngine.sandbox,
+                this.editorEngine.activeSandbox,
                 normalizeRoute(sourcePath),
                 normalizeRoute(targetPath),
             );
@@ -211,7 +231,7 @@ export class PagesManager {
         }
 
         try {
-            await deletePageInSandbox(this.editorEngine.sandbox, normalizedPath, isDir);
+            await deletePageInSandbox(this.editorEngine.activeSandbox, normalizedPath, isDir);
             await this.scanPages();
             this.editorEngine.posthog.capture('page_delete');
         } catch (error) {
@@ -227,7 +247,7 @@ export class PagesManager {
         }
 
         try {
-            await updatePageMetadataInSandbox(this.editorEngine.sandbox, pagePath, metadata);
+            await updatePageMetadataInSandbox(this.editorEngine.activeSandbox, pagePath, metadata);
             await this.scanPages();
         } catch (error) {
             console.error('Failed to update metadata:', error);

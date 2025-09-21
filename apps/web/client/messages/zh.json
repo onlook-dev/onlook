@@ -47,6 +47,7 @@
             "rename": "重命名",
             "goToAllProjects": "查看所有项目",
             "newProject": "新建项目",
+            "blankProject": "空白项目",
             "startFromScratch": "从零开始",
             "importProject": "导入项目",
             "subscriptions": "订阅",
@@ -284,6 +285,7 @@
                         "emptyState": "选择一个窗口以编辑其设置"
                     },
                     "brand": "品牌",
+                    "branches": "分支",
                     "apps": "应用"
                 }
             }

@@ -50,6 +50,7 @@ declare const messages: {
             "rename": "Rename",
             "goToAllProjects": "Go to all Projects",
             "newProject": "New Project",
+            "blankProject": "Blank Project",
             "startFromScratch": "Start from scratch",
             "importProject": "Import a project",
             "subscriptions": "Subscriptions",
@@ -287,6 +288,7 @@ declare const messages: {
                         "emptyState": "Select a window to edit its settings"
                     },
                     "brand": "Brand",
+                    "branches": "Branches",
                     "apps": "Apps"
                 }
             }

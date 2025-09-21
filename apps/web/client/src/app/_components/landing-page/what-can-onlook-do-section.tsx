@@ -286,7 +286,11 @@ export function WhatCanOnlookDoSection() {
             <div className="w-full max-w-6xl mx-auto py-32 px-8 flex flex-col md:flex-row gap-24 md:gap-24">
                 {/* Left Column */}
                 <div className="flex-1 flex flex-col gap-24">
-                    <h2 className="text-foreground-primary text-6xl leading-[1.1] font-light mb-8 max-w-xl">What can<br />Onlook do?</h2>
+                <div className="flex-1">
+                    <h2 className="text-4xl lg:text-5xl font-light text-foreground-primary leading-tight">
+                        <span className="bg-gradient-to-l from-white/20 via-white/90 to-white/20 bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer filter drop-shadow-[0_0_14px_rgba(255,255,255,1)]">AI</span> <span className="text-foreground-tertiary">•</span> <span className="font-mono">Code</span> <span className="text-foreground-tertiary">•</span> <span className="font-['Vujahday_Script'] not-italic text-5xl large:text-6xl">Design</span><br /> Side-by-side-by-side
+                    </h2>
+                </div>
                     <DirectEditingBlock />
                     <ComponentsBlock />
                     <RevisionHistory />

@@ -1,17 +1,38 @@
-import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
-import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
+import type { Usage } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 
-export const ErrorMessage = observer(() => {
-    const editorEngine = useEditorEngine();
-    const stateManager = useStateManager();
-    const { error: chatError } = useChatContext();
+interface ErrorMessageProps {
+    error: Error;
+}
 
-    const usage = editorEngine.chat.error.usage;
-    const error = editorEngine.chat.error.message;
+export const ErrorMessage = observer(({ error: chatError }: ErrorMessageProps) => {
+    const stateManager = useStateManager();
+
+    // Parse error to extract usage and message
+    let usage: Usage | null = null;
+    let errorMessage: string | null = null;
+
+    try {
+        const parsed = JSON.parse(chatError.message) as {
+            code: number;
+            error: string;
+            usage: Usage;
+        };
+        if (parsed && typeof parsed === 'object') {
+            if (parsed.code === 402 && parsed.usage) {
+                usage = parsed.usage;
+                errorMessage = parsed.error || 'Message limit exceeded.';
+            } else {
+                errorMessage = parsed.error || chatError.toString();
+            }
+        }
+    } catch (e) {
+        // Not JSON, use raw error message
+        errorMessage = chatError.message || chatError.toString();
+    }
 
     if (usage) {
         return (
@@ -29,22 +50,14 @@ export const ErrorMessage = observer(() => {
         );
     }
 
-    if (chatError) {
+    if (errorMessage) {
         return (
             <div className="flex w-full flex-row items-center justify-center gap-2 p-2 text-small text-red">
                 <Icons.ExclamationTriangle className="w-6" />
-                <p className="w-5/6 text-wrap overflow-auto">{error}</p>
+                <p className="w-5/6 text-wrap overflow-auto">{errorMessage}</p>
             </div>
         );
     }
 
-    if (error) {
-        return (
-            <div className="flex w-full flex-row items-center justify-center gap-2 p-2 text-small text-red">
-                <Icons.ExclamationTriangle className="w-6" />
-                <p className="w-5/6 text-wrap overflow-auto">{error}</p>
-            </div>
-        );
-    }
     return null;
 });

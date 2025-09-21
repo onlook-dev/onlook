@@ -1,5 +1,6 @@
 import { api } from '@/trpc/client';
 import { DefaultSettings } from '@onlook/constants';
+import { DefaultDesktopFrame } from '@onlook/db';
 import type { Canvas, RectPosition } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
@@ -26,8 +27,8 @@ export class CanvasManager {
         let y = 100;
         const center = false;
         if (center) {
-            x = window.innerWidth / 2 - (DefaultSettings.FRAME_DIMENSION.width * this._scale) / 2;
-            y = window.innerHeight / 2 - (DefaultSettings.FRAME_DIMENSION.height * this._scale) / 2;
+            x = window.innerWidth / 2 - (Number(DefaultDesktopFrame.width) * this._scale) / 2;
+            y = window.innerHeight / 2 - (Number(DefaultDesktopFrame.height) * this._scale) / 2;
         }
 
         return { x, y };

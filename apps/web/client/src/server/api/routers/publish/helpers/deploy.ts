@@ -1,6 +1,5 @@
 import { trackEvent } from '@/utils/analytics/server.ts';
-import { deployments, type Deployment } from '@onlook/db';
-import type { DrizzleDb } from '@onlook/db/src/client';
+import { deployments, type Deployment, type DrizzleDb } from '@onlook/db';
 import {
     DeploymentStatus,
     DeploymentType,
@@ -53,18 +52,29 @@ export const deployFreestyle = async (
     return result;
 }
 
-export async function createDeployment(
-    db: DrizzleDb,
-    projectId: string,
-    type: DeploymentType,
-    userId: string,
-    buildScript?: string,
-    buildFlags?: string,
-    envVars?: Record<string, string>,
-): Promise<Deployment> {
+export async function createDeployment({
+    db,
+    projectId,
+    type,
+    userId,
+    sandboxId,
+    buildScript,
+    buildFlags,
+    envVars,
+}: {
+    db: DrizzleDb;
+    projectId: string;
+    type: DeploymentType;
+    userId: string;
+    sandboxId: string;
+    buildScript?: string;
+    buildFlags?: string;
+    envVars?: Record<string, string>;
+}): Promise<Deployment> {
     const [deployment] = await db.insert(deployments).values({
         id: randomUUID(),
         projectId,
+        sandboxId,
         type,
         buildScript,
         buildFlags,

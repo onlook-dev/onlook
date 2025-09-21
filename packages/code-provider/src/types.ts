@@ -239,6 +239,10 @@ export abstract class Provider {
     abstract ping(): Promise<boolean>;
 
     abstract createProject(input: CreateProjectInput): Promise<CreateProjectOutput>;
+    abstract createProjectFromGit(input: {
+        repoUrl: string;
+        branch: string;
+    }): Promise<CreateProjectOutput>;
     abstract pauseProject(input: PauseProjectInput): Promise<PauseProjectOutput>;
     abstract stopProject(input: StopProjectInput): Promise<StopProjectOutput>;
     abstract listProjects(input: ListProjectsInput): Promise<ListProjectsOutput>;

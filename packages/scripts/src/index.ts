@@ -24,7 +24,10 @@ program
             ),
         );
         try {
+            // First handle backend keys and write to both client and db files
             await promptAndWriteBackendKeys(clientEnvPath, dbEnvPath);
+
+            // Then handle API keys and append to the existing client file
             await promptAndWriteApiKeys(clientEnvPath);
 
             console.log(chalk.green('✅ Environment files created successfully!'));

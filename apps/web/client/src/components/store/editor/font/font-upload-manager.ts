@@ -93,7 +93,7 @@ export class FontUploadManager {
                 );
 
                 const buffer = Buffer.from(fontFile.file.buffer);
-                await this.editorEngine.sandbox.writeBinaryFile(filePath, buffer);
+                await this.editorEngine.activeSandbox.writeBinaryFile(filePath, buffer);
 
                 return {
                     path: `./fonts/${fileName}.${fontFile.file.name.split('.').pop()}`,

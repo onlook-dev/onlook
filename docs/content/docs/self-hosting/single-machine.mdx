@@ -1,0 +1,177 @@
+---
+title: Single Machine
+description: Deploy Onlook on a single VM or machine using standalone build for production
+---
+
+# Single Machine Deployment
+
+Deploy Onlook on a single virtual machine or physical server using the standalone build. This creates a self-contained production deployment without Docker containers, ideal for small teams and simple production setups.
+
+## Prerequisites
+
+**System Requirements:**
+- 4+ CPU cores
+- 8GB+ RAM (16GB recommended)
+- 50GB+ available disk space
+
+**Software Requirements:**
+- [Bun](https://bun.sh) - Package manager and runtime
+- [Node.js](https://nodejs.org/en/download) v20.16.0+ (avoid v20.11.0)
+- [Git](https://git-scm.com/downloads)
+
+## Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/onlook-dev/onlook.git
+cd onlook
+
+# Install dependencies
+bun install
+```
+
+### 2. Setup Environment Variables
+
+Create your environment configuration:
+
+```bash
+# Run interactive environment setup
+bun run setup:env
+```
+
+**Required variables:**
+- **Supabase**: Production database URL and API keys
+- **OpenRouter API Key**: For AI chat features  
+- **CodeSandbox Token**: For development containers
+
+For detailed instructions on obtaining these API keys, see the [development setup guide](/developers/running-locally#3-get-api-keys).
+
+### 3. Start Backend Services
+
+```bash
+bun backend:start
+```
+
+This starts Supabase locally with PostgreSQL database, authentication, and storage. The services will be available at:
+- **Supabase API**: http://127.0.0.1:54321
+- **PostgreSQL**: http://127.0.0.1:54322
+- **Supabase Dashboard**: http://127.0.0.1:54323
+
+### 4. Initialize Database
+
+```bash
+# Push database schema
+bun db:push
+```
+
+### 5. Build and Deploy Standalone Application
+
+```bash
+# Build standalone production deployment
+bun run preview:standalone
+```
+
+This creates a self-contained production build with:
+- **Standalone server**: Independent Node.js server with all dependencies
+- **Static assets**: All static files bundled for production
+- **Optimized build**: Minified and optimized for performance
+- **Production ready**: Configured for production environment
+
+## Verification
+
+Once running, verify your deployment:
+
+- **Main Application**: http://localhost:3000
+- **Supabase Dashboard**: http://localhost:54323
+
+Check all services are running:
+```bash
+# Check application
+curl http://localhost:3000
+
+# Check Supabase API
+curl http://localhost:54321/rest/v1/
+```
+
+## Optional: Production Hardening
+
+### Running in Production
+The standalone build creates a complete production server. You can start it in different ways:
+
+```bash
+# Option 1: Direct command
+bun .next/standalone/apps/web/client/server.js
+
+# Option 2: Use bun script
+bun run start:standalone
+
+# Option 3: With PM2 for process management
+pm2 start .next/standalone/apps/web/client/server.js --name onlook
+```
+
+### Process Management (Recommended)
+
+For production deployments, use a process manager like PM2:
+
+```bash
+# Install PM2 globally
+bun add -g pm2
+
+# Start with PM2
+pm2 start .next/standalone/apps/web/client/server.js --name onlook
+
+# Save PM2 configuration
+pm2 save
+
+# Setup auto-start on boot
+pm2 startup
+```
+
+## Troubleshooting
+
+**Common Issues:**
+
+- **Port conflicts**: Change ports in configuration if 3000, 54321, or 54322 are in use
+- **Build failures**: Run `rm -rf node_modules && bun install` then retry build
+- **Database connection**: Ensure `bun backend:start` completed successfully
+- **Standalone server won't start**: Verify the build completed with `ls -la .next/standalone/apps/web/client/`
+- **Memory issues**: Increase Node.js memory limit with `NODE_OPTIONS="--max-old-space-size=4096"`
+
+**Performance Optimization:**
+- Use PM2 for process management and automatic restarts
+- Configure reverse proxy (Nginx/Apache) for SSL and caching
+- Use SSD storage for better I/O performance
+- Monitor memory usage and restart if needed
+
+## Use Cases
+
+**Ideal for:**
+- Small team production deployments (5-20 users)
+- Single server setups
+- Cost-conscious deployments
+- Simple production environments
+- Organizations avoiding container complexity
+
+**Advantages over Docker:**
+- No container orchestration complexity
+- Direct server access and debugging
+- Lower resource overhead
+- Simpler deployment process
+- Standard system service management
+
+**Advantages over Development Mode:**
+- Production-optimized build
+- Better performance and security
+- Reduced memory footprint
+- Self-contained deployment
+- No development dependencies required
+
+**Considerations:**
+- Single point of failure
+- Manual scaling required
+- Requires system administration knowledge
+- Less portable than containers
+- Manual backup and recovery processes
+
+For high-availability production deployments, consider [Docker Compose](/self-hosting/docker-compose) or [Cloud Deployment](/self-hosting/cloud-deployment) options.

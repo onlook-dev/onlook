@@ -1,10 +1,10 @@
+import type { ListFilesOutputFile } from '@onlook/code-provider';
 import type { PageMetadata, PageNode, SandboxFile } from '@onlook/models';
 import { RouterType } from '@onlook/models';
 import { generate, getAstFromContent, types as t, traverse, type t as T } from '@onlook/parser';
 import { nanoid } from 'nanoid';
 import type { SandboxManager } from '../sandbox';
 import { formatContent } from '../sandbox/helpers';
-import type { ListFilesOutputFile } from '@onlook/code-provider';
 
 const DEFAULT_LAYOUT_CONTENT = `export default function Layout({
     children,
@@ -174,12 +174,16 @@ const extractMetadata = async (content: string): Promise<PageMetadata | undefine
                         for (const prop of declarator.init.properties) {
                             if (t.isObjectProperty(prop) && t.isIdentifier(prop.key)) {
                                 const key = prop.key.name;
-                                if (t.isStringLiteral(prop.value)) {
-                                    (metadata as any)[key] = prop.value.value;
-                                } else if (t.isObjectExpression(prop.value)) {
-                                    (metadata as any)[key] = extractObjectValue(prop.value);
-                                } else if (t.isArrayExpression(prop.value)) {
-                                    (metadata as any)[key] = extractArrayValue(prop.value);
+                                try {
+                                    if (t.isStringLiteral(prop.value)) {
+                                        (metadata as any)[key] = prop.value.value;
+                                    } else if (t.isObjectExpression(prop.value)) {
+                                        (metadata as any)[key] = extractObjectValue(prop.value);
+                                    } else if (t.isArrayExpression(prop.value)) {
+                                        (metadata as any)[key] = extractArrayValue(prop.value);
+                                    }
+                                } catch (error) {
+                                    console.error(`Error extracting metadata:`, error);
                                 }
                             }
                         }
@@ -267,8 +271,8 @@ export const scanAppDirectory = async (
             name: isDynamicRoute
                 ? currentDir
                 : parentPath
-                  ? getBaseName(parentPath)
-                  : ROOT_PAGE_NAME,
+                    ? getBaseName(parentPath)
+                    : ROOT_PAGE_NAME,
             path: cleanPath,
             children,
             isActive: false,

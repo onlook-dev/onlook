@@ -1,4 +1,7 @@
+import { createDefaultProject } from '@/defaults/project';
+import { Tags } from '@onlook/constants';
 import {
+    branches,
     canvases,
     conversations,
     createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas,
@@ -17,14 +20,14 @@ import {
     userCanvases,
     userProjects,
     users,
+    type Branch,
     type Conversation,
     type Message,
     type Price,
     type Product,
-    type Project,
     type RateLimit,
     type Subscription,
-    type User,
+    type User
 } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import {
@@ -35,6 +38,7 @@ import {
 } from '@onlook/models';
 import { PriceKey, ProductType, SubscriptionStatus } from '@onlook/stripe';
 import { v4 as uuidv4 } from 'uuid';
+import { createDefaultBranch } from '../defaults/branch';
 import { SEED_USER } from './constants';
 
 const user0 = {
@@ -49,22 +53,81 @@ const user0 = {
     stripeCustomerId: null,
 } satisfies User;
 
-const project0 = {
+const project0 = createDefaultProject({
+    overrides: {
+        name: 'Preload Script Test',
+    },
+});
+
+const project1 = createDefaultProject({
+    overrides: {
+        name: 'Mock Template (This doesn\'t work)',
+        tags: [Tags.TEMPLATE],
+    },
+});
+
+const branch0 = createDefaultBranch({
+    projectId: project0.id,
+    sandboxId: '123456',
+});
+
+const branch1 = {
     id: uuidv4(),
-    name: 'Preload Script Test',
-    sandboxId: '3f5rf6',
-    sandboxUrl: 'http://localhost:8084',
-    previewImgUrl: null,
-    previewImgPath: null,
-    previewImgBucket: null,
+    projectId: project0.id,
+    name: 'branch1',
+    isDefault: false,
     createdAt: new Date(),
     updatedAt: new Date(),
-    description: 'Test Project Description',
-} satisfies Project;
+    description: 'Secondary branch',
+    gitBranch: null,
+    gitCommitSha: null,
+    gitRepoUrl: null,
+    sandboxId: '123456',
+} satisfies Branch;
+
+const branch2 = {
+    id: uuidv4(),
+    projectId: project1.id,
+    name: 'main',
+    isDefault: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    description: 'Main branch',
+    gitBranch: null,
+    gitCommitSha: null,
+    gitRepoUrl: null,
+    sandboxId: '123456',
+} satisfies Branch;
+
+const branch3 = {
+    id: uuidv4(),
+    projectId: project1.id,
+    name: 'branch1',
+    isDefault: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    description: 'Secondary branch',
+    gitBranch: null,
+    gitCommitSha: null,
+    gitRepoUrl: null,
+    sandboxId: '123456',
+} satisfies Branch;
 
 const canvas0 = createDefaultCanvas(project0.id);
-const frame0 = createDefaultFrame(canvas0.id, project0.sandboxUrl);
+const frame0 = createDefaultFrame({
+    canvasId: canvas0.id,
+    branchId: branch0.id,
+    url: 'http://localhost:8084',
+});
 const userCanvas0 = createDefaultUserCanvas(user0.id, canvas0.id);
+
+const canvas1 = createDefaultCanvas(project1.id);
+const frame1 = createDefaultFrame({
+    canvasId: canvas1.id,
+    branchId: branch2.id,
+    url: 'http://localhost:8084',
+});
+const userCanvas1 = createDefaultUserCanvas(user0.id, canvas1.id);
 
 const conversation0 = {
     id: uuidv4(),
@@ -234,17 +297,23 @@ export const seedDb = async () => {
         await tx.insert(prices).values([price0]);
         await tx.insert(subscriptions).values([subscription0]);
         await tx.insert(rateLimits).values([rateLimit0]);
-        await tx.insert(projects).values([project0]);
+        await tx.insert(projects).values([project0, project1]);
+        await tx.insert(branches).values([branch0, branch1, branch2, branch3]);
         await tx.insert(userProjects).values([
             {
                 userId: user0.id,
                 projectId: project0.id,
                 role: ProjectRole.OWNER,
             },
+            {
+                userId: user0.id,
+                projectId: project1.id,
+                role: ProjectRole.OWNER,
+            },
         ]);
-        await tx.insert(canvases).values([canvas0]);
-        await tx.insert(userCanvases).values([userCanvas0]);
-        await tx.insert(frames).values([frame0]);
+        await tx.insert(canvases).values([canvas0, canvas1]);
+        await tx.insert(userCanvases).values([userCanvas0, userCanvas1]);
+        await tx.insert(frames).values([frame0, frame1]);
         await tx.insert(conversations).values([conversation0]);
         await tx.insert(messages).values([message0, message1, message2, message3, message4]);
     });
@@ -269,6 +338,7 @@ export const resetDb = async () => {
         await tx.delete(conversations);
         await tx.delete(frames);
         await tx.delete(canvases);
+        await tx.delete(branches);
         await tx.delete(userProjects);
         await tx.delete(projects);
         await tx.delete(users);

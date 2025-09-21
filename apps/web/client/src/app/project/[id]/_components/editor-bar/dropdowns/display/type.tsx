@@ -14,8 +14,8 @@ export const TypeInput = memo(() => {
     }, [editorEngine.style.selectedStyle?.styles.computed.display]);
 
     return (
-        <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground w-24"> Type </span>
+        <div className="flex items-center gap-0">
+            <span className="text-sm text-muted-foreground w-20"> Type </span>
             <InputRadio
                 options={Object.values(layoutTypeOptions)}
                 value={value}

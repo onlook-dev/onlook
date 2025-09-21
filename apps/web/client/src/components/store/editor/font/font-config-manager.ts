@@ -16,12 +16,15 @@ import { normalizePath } from '../sandbox/helpers';
 export class FontConfigManager {
     private _fontConfigPath: string | null = null;
     readonly fontImportPath = './fonts';
+    private indexedReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
+    }
 
-        reaction(
-            () => this.editorEngine.sandbox.isIndexed,
+    init() {
+        this.indexedReactionDisposer = reaction(
+            () => this.editorEngine.activeSandbox.isIndexed,
             async (isIndexedFiles) => {
                 if (isIndexedFiles) {
                     await this.updateFontConfigPath();
@@ -60,7 +63,7 @@ export class FontConfigManager {
      * Scan existing fonts declaration in the layout file and move them to the font config file
      */
     async scanExistingFonts(layoutPath: string): Promise<Font[] | undefined> {
-        const sandbox = this.editorEngine.sandbox;
+        const sandbox = this.editorEngine.activeSandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
             return;
@@ -140,7 +143,7 @@ export class FontConfigManager {
                 return false;
             }
 
-            const success = await this.editorEngine.sandbox.writeFile(this.fontConfigPath, code);
+            const success = await this.editorEngine.activeSandbox.writeFile(this.fontConfigPath, code);
 
             if (!success) {
                 throw new Error('Failed to write font configuration');
@@ -181,7 +184,7 @@ export class FontConfigManager {
                     path: this.fontConfigPath,
                 };
 
-                const success = await this.editorEngine.sandbox.writeFile(
+                const success = await this.editorEngine.activeSandbox.writeFile(
                     this.fontConfigPath,
                     code,
                 );
@@ -191,7 +194,7 @@ export class FontConfigManager {
 
                 // Delete font files if this is a custom font
                 if (fontFilesToDelete.length > 0) {
-                    const routerConfig = this.editorEngine.sandbox.routerConfig;
+                    const routerConfig = this.editorEngine.activeSandbox.routerConfig;
                     if (!routerConfig?.basePath) {
                         console.error('Could not get base path');
                         return false;
@@ -199,7 +202,7 @@ export class FontConfigManager {
 
                     await Promise.all(
                         fontFilesToDelete.map((file) =>
-                            this.editorEngine.sandbox.delete(
+                            this.editorEngine.activeSandbox.delete(
                                 normalizePath(routerConfig.basePath + '/' + file),
                             ),
                         ),
@@ -227,13 +230,18 @@ export class FontConfigManager {
         }
         | undefined
     > {
-        const sandbox = this.editorEngine.sandbox;
+        const sandbox = this.editorEngine.activeSandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
             return;
         }
 
         if (!this.fontConfigPath) {
+            return;
+        }
+
+        if (!(await sandbox.fileExists(this.fontConfigPath))) {
+            console.warn('Font config file does not exist', this.fontConfigPath);
             return;
         }
 
@@ -260,7 +268,7 @@ export class FontConfigManager {
      * Ensures the font configuration file exists
      */
     async ensureFontConfigFileExists(): Promise<void> {
-        const sandbox = this.editorEngine.sandbox;
+        const sandbox = this.editorEngine.activeSandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
             return;
@@ -286,7 +294,7 @@ export class FontConfigManager {
      * Updates the font config path based on the detected router configuration
      */
     private async updateFontConfigPath(): Promise<void> {
-        const routerConfig = this.editorEngine.sandbox.routerConfig;
+        const routerConfig = this.editorEngine.activeSandbox.routerConfig;
 
         if (routerConfig) {
             let fontConfigPath: string;
@@ -302,5 +310,11 @@ export class FontConfigManager {
             }
             this.setFontConfigPath(fontConfigPath);
         }
+    }
+
+    clear() {
+        this.indexedReactionDisposer?.();
+        this.indexedReactionDisposer = undefined;
+        this._fontConfigPath = null;
     }
 }

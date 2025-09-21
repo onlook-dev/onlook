@@ -1,7 +1,10 @@
-import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
+'use client';
+
+import type { SendMessage } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
 import { transKeys } from '@/i18n/keys';
+import type { ChatMessage, ChatSuggestion } from '@onlook/models';
 import { ChatType, EditorTabValue, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
@@ -14,26 +17,35 @@ import { compressImageInBrowser } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
+import { validateImageLimit } from '../context-pills/helpers';
 import { InputContextPills } from '../context-pills/input-context-pills';
 import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 import { ChatModeToggle } from './chat-mode-toggle';
 
+interface ChatInputProps {
+    messages: ChatMessage[];
+    suggestions: ChatSuggestion[];
+    isStreaming: boolean;
+    onStop: () => Promise<void>;
+    onSendMessage: SendMessage;
+}
+
 export const ChatInput = observer(({
-    inputValue,
-    setInputValue,
-}: {
-    inputValue: string;
-    setInputValue: React.Dispatch<React.SetStateAction<string>>;
-}) => {
-    const { sendMessage: sendMessageToChat, stop, isWaiting } = useChatContext();
+    messages,
+    suggestions,
+    isStreaming,
+    onStop,
+    onSendMessage,
+}: ChatInputProps) => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isComposing, setIsComposing] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
-    const [chatMode, setChatMode] = useState<ChatType>(ChatType.EDIT);
+    const chatMode = editorEngine.state.chatMode;
+    const [inputValue, setInputValue] = useState('');
 
     const focusInput = () => {
         requestAnimationFrame(() => {
@@ -42,10 +54,10 @@ export const ChatInput = observer(({
     };
 
     useEffect(() => {
-        if (textareaRef.current && !isWaiting) {
+        if (textareaRef.current && !isStreaming) {
             focusInput();
         }
-    }, [editorEngine.chat.conversation.current?.messages]);
+    }, [isStreaming, messages]);
 
     useEffect(() => {
         if (editorEngine.state.rightPanelTab === EditorTabValue.CHAT) {
@@ -55,7 +67,7 @@ export const ChatInput = observer(({
 
     useEffect(() => {
         const focusHandler = () => {
-            if (textareaRef.current && !isWaiting) {
+            if (textareaRef.current && !isStreaming) {
                 focusInput();
             }
         };
@@ -81,7 +93,7 @@ export const ChatInput = observer(({
         return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
     }, []);
 
-    const disabled = isWaiting || editorEngine.chat.context.context.length === 0;
+    const disabled = isStreaming
     const inputEmpty = !inputValue || inputValue.trim().length === 0;
 
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -114,7 +126,7 @@ export const ChatInput = observer(({
             }
 
             if (!inputEmpty) {
-                sendMessage();
+                void sendMessage();
             }
         }
     };
@@ -124,17 +136,13 @@ export const ChatInput = observer(({
             console.warn('Empty message');
             return;
         }
-        if (isWaiting) {
+        if (isStreaming) {
             console.warn('Already waiting for response');
             return;
         }
         const savedInput = inputValue.trim();
         try {
-            const message = chatMode === ChatType.ASK
-                ? await editorEngine.chat.addAskMessage(savedInput)
-                : await editorEngine.chat.addEditMessage(savedInput);
-
-            await sendMessageToChat(chatMode);
+            await onSendMessage(savedInput, chatMode);
             setInputValue('');
         } catch (error) {
             console.error('Error sending message', error);
@@ -160,7 +168,7 @@ export const ChatInput = observer(({
                 if (!file) {
                     continue;
                 }
-                handleImageEvent(file, 'Pasted image');
+                void handleImageEvent(file, 'Pasted image');
                 break;
             }
         }
@@ -177,35 +185,52 @@ export const ChatInput = observer(({
                 if (!file) {
                     continue;
                 }
-                handleImageEvent(file, 'Dropped image');
+                void handleImageEvent(file, 'Dropped image');
                 break;
             }
         }
     };
 
     const handleImageEvent = async (file: File, displayName?: string) => {
+        const currentImages = editorEngine.chat.context.context.filter(
+            ctx => ctx.type === MessageContextType.IMAGE
+        );
+        const { success, errorMessage } = validateImageLimit(currentImages, 1);
+        if (!success) {
+            toast.error(errorMessage);
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = async (event) => {
             const compressedImage = await compressImageInBrowser(file);
-            const base64URL = compressedImage || (event.target?.result as string);
+            const base64URL = compressedImage ?? (event.target?.result as string);
             const contextImage: ImageMessageContext = {
                 type: MessageContextType.IMAGE,
                 content: base64URL,
                 mimeType: file.type,
                 displayName: displayName ?? file.name,
             };
-            editorEngine.chat.context.context.push(contextImage);
+            editorEngine.chat.context.addContexts([contextImage]);
         };
         reader.readAsDataURL(file);
     };
 
     const handleScreenshot = async () => {
         try {
+            const currentImages = editorEngine.chat.context.context.filter(
+                ctx => ctx.type === MessageContextType.IMAGE
+            );
+
+            const { success, errorMessage } = validateImageLimit(currentImages, 1);
+            if (!success) {
+                throw new Error(errorMessage);
+            }
+
             const framesWithViews = editorEngine.frames.getAll().filter(f => !!f.view);
 
             if (framesWithViews.length === 0) {
-                toast.error('No active frame available for screenshot');
-                return;
+                throw new Error('No active frame available for screenshot');
             }
 
             let screenshotData = null;
@@ -218,7 +243,7 @@ export const ChatInput = observer(({
                     }
 
                     const result = await frame.view.captureScreenshot();
-                    if (result && result.data) {
+                    if (result?.data) {
                         screenshotData = result.data;
                         mimeType = result.mimeType || 'image/jpeg';
                         break;
@@ -229,8 +254,7 @@ export const ChatInput = observer(({
             }
 
             if (!screenshotData) {
-                toast.error('Failed to capture screenshot. Please refresh the page and try again.');
-                return;
+                throw new Error('No screenshot data');
             }
 
             const contextImage: ImageMessageContext = {
@@ -239,10 +263,10 @@ export const ChatInput = observer(({
                 mimeType: mimeType,
                 displayName: 'Screenshot',
             };
-            editorEngine.chat.context.context.push(contextImage);
+            editorEngine.chat.context.addContexts([contextImage]);
             toast.success('Screenshot added to chat');
         } catch (error) {
-            toast.error('Failed to capture screenshot. Please try again.');
+            toast.error('Failed to capture screenshot. Error: ' + error);
         }
     };
 
@@ -278,6 +302,10 @@ export const ChatInput = observer(({
         );
     };
 
+    const handleChatModeChange = (mode: ChatType) => {
+        editorEngine.state.chatMode = mode;
+    };
+
     return (
         <div
             className={cn(
@@ -301,6 +329,8 @@ export const ChatInput = observer(({
         >
             <Suggestions
                 ref={suggestionRef}
+                suggestions={suggestions}
+                isStreaming={isStreaming}
                 disabled={disabled}
                 inputValue={inputValue}
                 setInput={(suggestion) => {
@@ -319,7 +349,10 @@ export const ChatInput = observer(({
                 }}
             />
             <div className="flex flex-col w-full p-4">
-                <InputContextPills />
+                <div className="flex flex-row flex-wrap items-center gap-1.5 mb-1">
+                    {/* <ContextWheel /> */}
+                    <InputContextPills />
+                </div>
                 <Textarea
                     ref={textareaRef}
                     disabled={disabled}
@@ -357,7 +390,7 @@ export const ChatInput = observer(({
                 <div className="flex flex-row items-center gap-1.5">
                     <ChatModeToggle
                         chatMode={chatMode}
-                        onChatModeChange={setChatMode}
+                        onChatModeChange={handleChatModeChange}
                         disabled={disabled}
                     />
                 </div>
@@ -367,7 +400,7 @@ export const ChatInput = observer(({
                         handleImageEvent={handleImageEvent}
                         handleScreenshot={handleScreenshot}
                     />
-                    {isWaiting ? (
+                    {isStreaming ? (
                         <Tooltip open={actionTooltipOpen} onOpenChange={setActionTooltipOpen}>
                             <TooltipTrigger asChild>
                                 <Button
@@ -376,7 +409,7 @@ export const ChatInput = observer(({
                                     className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
                                     onClick={() => {
                                         setActionTooltipOpen(false);
-                                        stop();
+                                        void onStop();
                                     }}
                                 >
                                     <Icons.Stop />
@@ -390,7 +423,7 @@ export const ChatInput = observer(({
                             variant={'secondary'}
                             className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
                             disabled={inputEmpty || disabled}
-                            onClick={sendMessage}
+                            onClick={() => void sendMessage()}
                         >
                             <Icons.ArrowRight />
                         </Button>

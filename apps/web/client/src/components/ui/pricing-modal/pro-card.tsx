@@ -17,13 +17,19 @@ export const formatPrice = (cents: number) => `$${Math.round(cents / 100)}/month
 
 const PRO_FEATURES = [
     'Unlimited projects',
-    'Custom domain',
+    'Deploy to a custom domain',
+    'Collaborate with your team',
+    'Turn projects into templates',
 ];
 
 export const ProCard = ({
     delay,
+    isUnauthenticated = false,
+    onSignupClick,
 }: {
     delay: number;
+    isUnauthenticated?: boolean;
+    onSignupClick?: () => void;
 }) => {
     const t = useTranslations();
     const { subscription, isPro, refetchSubscription, setIsCheckingSubscription } = useSubscription();
@@ -152,6 +158,10 @@ export const ProCard = ({
             )
         }
 
+        if (isUnauthenticated) {
+            return "Get Started with Pro";
+        }
+
         if (!isPro) {
             return "Upgrade to Pro Plan";
         }
@@ -165,6 +175,14 @@ export const ProCard = ({
         }
 
         return "Update plan";
+    };
+
+    const handleButtonClick = () => {
+        if (isUnauthenticated && onSignupClick) {
+            onSignupClick();
+        } else {
+            handleCheckout();
+        }
     };
 
     return (
@@ -206,8 +224,8 @@ export const ProCard = ({
                     </Select>
                     <Button
                         className="w-full"
-                        onClick={handleCheckout}
-                        disabled={isCheckingOut || !isNewTierSelected}
+                        onClick={handleButtonClick}
+                        disabled={isCheckingOut || (!isUnauthenticated && !isNewTierSelected)}
                     >
                         {buttonContent()}
                     </Button>

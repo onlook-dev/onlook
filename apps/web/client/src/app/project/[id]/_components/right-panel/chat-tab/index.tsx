@@ -1,21 +1,32 @@
-import { ChatInput } from './chat-input';
-import { ChatMessages } from './chat-messages';
-import { ErrorSection } from './error';
+import { api } from '@/trpc/react';
+import { Icons } from '@onlook/ui/icons';
+import { ChatTabContent } from './chat-tab-content';
 
-export const ChatTab = ({
-    inputValue,
-    setInputValue,
-}: {
-    inputValue: string;
-    setInputValue: React.Dispatch<React.SetStateAction<string>>;
-}) => {
-    return (
-        <div className="flex flex-col h-full justify-end gap-2 pt-2">
-            <div className="h-full flex-1 overflow-y-auto">
-                <ChatMessages />
-            </div>
-            <ErrorSection />
-            <ChatInput inputValue={inputValue} setInputValue={setInputValue} />
+interface ChatTabProps {
+    conversationId: string;
+    projectId: string;
+}
+
+export const ChatTab = ({ conversationId, projectId }: ChatTabProps) => {
+    const { data: initialMessages, isLoading } = api.chat.message.getAll.useQuery(
+        { conversationId: conversationId },
+        { enabled: !!conversationId },
+    );
+
+    if (!initialMessages || isLoading) {
+        return <div className="flex-1 flex items-center justify-center w-full h-full text-foreground-secondary">
+            <Icons.LoadingSpinner className="animate-spin mr-2" />
+            <p>Loading messages...</p>
         </div>
+    }
+
+    return (
+        <ChatTabContent
+            // Used to force re-render the use-chat hook when the conversationId changes
+            key={conversationId}
+            conversationId={conversationId}
+            projectId={projectId}
+            initialMessages={initialMessages}
+        />
     );
 };

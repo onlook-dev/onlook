@@ -70,7 +70,7 @@ export const BashCodeDisplay = observer(
             setStdErr(null);
 
             try {
-                const result = await editorEngine.sandbox.session.runCommand(content, setStdOut);
+                const result = await editorEngine.activeSandbox.session.runCommand(content, setStdOut);
 
                 if (!result) {
                     setStdErr('Failed to execute command: No session available');

@@ -1,4 +1,4 @@
-import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
+import type { IFrameView } from '@/app/project/[id]/_components/canvas/frame/view';
 import type { DomElement, EditTextResult, ElementPosition } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -17,7 +17,11 @@ export class TextEditingManager {
         return this.targetDomEl !== null;
     }
 
-    async start(el: DomElement, frameView: WebFrameView): Promise<void> {
+    get targetElement(): DomElement | null {
+        return this.targetDomEl;
+    }
+
+    async start(el: DomElement, frameView: IFrameView): Promise<void> {
         try {
             const isEditable = (await frameView.isChildTextEditable(el.oid ?? '')) as
                 | boolean
@@ -51,7 +55,7 @@ export class TextEditingManager {
 
             const adjustedRect = adaptRectToCanvas(el.rect, frameView);
             const isComponent = el.instanceId !== null;
-            this.editorEngine.overlay.clear();
+            this.editorEngine.overlay.clearUI();
 
             this.editorEngine.overlay.state.addTextEditor(
                 adjustedRect,
@@ -80,22 +84,21 @@ export class TextEditingManager {
                 throw new Error('No frameView found for text editing');
             }
 
-            const domEl = (await frameData.view.editText(
+            const res = await frameData.view.editText(
                 this.targetDomEl.domId,
                 newContent,
-            )) as DomElement | null;
-            if (!domEl) {
+            );
+            if (!res) {
                 throw new Error('Failed to edit text. No dom element returned');
             }
 
-            await this.handleEditedText(domEl, newContent, frameData.view);
+            await this.handleEditedText(res.domEl, newContent, frameData.view);
         } catch (error) {
             console.error('Error editing text:', error);
         }
     }
 
     async end(): Promise<void> {
-
         try {
             if (!this.targetDomEl) {
                 throw new Error('No target dom element to stop editing');
@@ -123,6 +126,14 @@ export class TextEditingManager {
     }
 
     async clean(): Promise<void> {
+        if (this.targetDomEl) {
+            try {
+                const frameData = this.editorEngine.frames.get(this.targetDomEl.frameId);
+                await frameData?.view?.stopEditingText(this.targetDomEl.domId);
+            } catch (error) {
+                console.error('Error stopping editing text:', error);
+            }
+        }
         this.targetDomEl = null;
         this.editorEngine.overlay.state.removeTextEditor();
         await this.editorEngine.history.commitTransaction();
@@ -132,7 +143,7 @@ export class TextEditingManager {
     private async handleEditedText(
         domEl: DomElement,
         newContent: string,
-        frameView: WebFrameView,
+        frameView: IFrameView,
     ): Promise<void> {
         try {
             await this.editorEngine.history.push({
@@ -148,7 +159,9 @@ export class TextEditingManager {
                 newContent,
             });
             const adjustedRect = adaptRectToCanvas(domEl.rect, frameView);
-            this.editorEngine.overlay.state.updateTextEditor(adjustedRect);
+            this.editorEngine.overlay.state.updateTextEditor(adjustedRect, {
+                content: newContent,
+            });
             await this.editorEngine.overlay.refresh();
         } catch (error) {
             console.error('Error handling edited text:', error);
@@ -179,10 +192,10 @@ export class TextEditingManager {
                 return;
             }
 
-            const domEl = (await frameData.view.getElementByDomId(
+            const domEl = await frameData.view.getElementByDomId(
                 selectedEl.domId,
                 true,
-            )) as DomElement;
+            )
             if (!domEl) {
                 return;
             }
@@ -194,7 +207,7 @@ export class TextEditingManager {
         }
     }
 
-    async editElementAtLoc(pos: ElementPosition, frameView: WebFrameView): Promise<void> {
+    async editElementAtLoc(pos: ElementPosition, frameView: IFrameView): Promise<void> {
         try {
             const el = (await frameView.getElementAtLoc(pos.x, pos.y, true)) as DomElement;
             if (!el) {

@@ -55,7 +55,7 @@ export const AdvancedTypography = () => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className="flex min-w-10 items-center justify-center px-2"
+                        className="flex min-w-9 items-center justify-center px-2"
                     >
                         <Icons.AdvancedTypography className="h-4 w-4" />
                     </ToolbarButton>

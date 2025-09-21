@@ -142,7 +142,7 @@ export const InputImage = observer(() => {
                     <DropdownMenuTrigger asChild>
                         <ToolbarButton
                             isOpen={isOpen}
-                            className="flex w-10 flex-col items-center justify-center gap-0.5 relative"
+                            className="flex w-9 flex-col items-center justify-center gap-0.5 relative"
                             disabled={isUploading}
                         >
                             {isUploading ? (

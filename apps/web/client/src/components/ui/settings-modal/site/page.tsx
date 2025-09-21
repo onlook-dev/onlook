@@ -13,7 +13,7 @@ export const PageTab = ({ metadata, path }: { metadata?: PageMetadata; path: str
     const editorEngine = useEditorEngine();
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
-    const baseUrl = domains?.published?.url ?? domains?.preview?.url ?? project?.sandbox?.url;
+    const baseUrl = domains?.published?.url ?? domains?.preview?.url;
 
     const {
         title,

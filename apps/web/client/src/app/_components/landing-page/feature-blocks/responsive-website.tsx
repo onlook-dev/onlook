@@ -1,6 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Icons } from '@onlook/ui/icons';
-import { Menu, Laptop } from 'lucide-react';
+import { Laptop, Menu } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 
 export function ResponsiveWebsiteBlock() {
     const [websiteWidth, setWebsiteWidth] = useState(400); // Initial width in pixels
@@ -52,7 +51,7 @@ export function ResponsiveWebsiteBlock() {
     useEffect(() => {
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
-        
+
         return () => {
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
@@ -63,7 +62,7 @@ export function ResponsiveWebsiteBlock() {
         <div className="flex flex-col gap-4">
             <div className="w-full h-100 bg-[#2E2C2D] rounded-lg mb-6 relative overflow-hidden" ref={containerRef}>
                 {/* Mini Website Container */}
-                <div 
+                <div
                     className="h-80 bg-[#E5E3DE] rounded-lg border border-[#D1CFC9] shadow-lg absolute left-1/2 top-12 transform -translate-x-1/2"
                     style={{ width: `${websiteWidth}px` }}
                 >
@@ -92,7 +91,7 @@ export function ResponsiveWebsiteBlock() {
                             <h1 className="text-xl font-serif mb-3">Le Fidgette</h1>
                             <p className="text-xs opacity-90 mb-6 text-balance">Creating natural shapes inspired by the natural world.</p>
                         </div>
-                        
+
                         {/* "View Work" Button */}
                         <div className="w-24 bg-[#8E837D] p-2 text-center cursor-pointer hover:bg-opacity-90 transition-opacity mb-12">
                             <p className="text-[10px] text-white font-medium tracking-wider">VIEW WORK</p>
@@ -117,13 +116,13 @@ export function ResponsiveWebsiteBlock() {
                         </div>
                     </div>
                     {/* Responsive Handles */}
-                    <div 
+                    <div
                         className="absolute left-[-16px] top-1/2 transform -translate-y-1/2 p-4 py-20 -m-4 cursor-ew-resize group"
                         onMouseDown={(e) => handleMouseDown(e, 'left')}
                     >
                         <div className="w-1.5 h-20 bg-gray-400 group-hover:bg-gray-500 rounded-full transition-colors duration-200 shadow-lg"></div>
                     </div>
-                    <div 
+                    <div
                         className="absolute right-[-16px] top-1/2 transform -translate-y-1/2 p-4 py-20 -m-4 cursor-ew-resize group"
                         onMouseDown={(e) => handleMouseDown(e, 'right')}
                     >
@@ -131,7 +130,7 @@ export function ResponsiveWebsiteBlock() {
                     </div>
                 </div>
             </div>
-            
+
             <div className="flex flex-row items-start gap-8 w-full">
                 {/* Icon + Title */}
                 <div className="flex flex-col items-start w-1/2">

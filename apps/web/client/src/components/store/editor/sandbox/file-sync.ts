@@ -1,47 +1,41 @@
-import type { SandboxDirectory, SandboxFile } from '@onlook/models';
+import type { SandboxFile } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
+import { FileCacheManager } from '../cache/file-cache';
 import { normalizePath } from './helpers';
 
 export class FileSyncManager {
-    private cache: Map<string, SandboxFile>;
-    private directoryCache: Map<string, SandboxDirectory>;
+    private cacheManager: FileCacheManager;
 
-    constructor() {
-        this.cache = new Map();
-        this.directoryCache = new Map();
+    constructor(projectId: string, branchId: string) {
+        this.cacheManager = new FileCacheManager(projectId, branchId);
         makeAutoObservable(this);
     }
 
+    async init(): Promise<void> {
+        await this.cacheManager.init();
+    }
+
     has(filePath: string) {
-        return this.cache.has(filePath);
+        return this.cacheManager.hasFile(filePath);
     }
 
     hasDirectory(dirPath: string) {
-        return this.directoryCache.has(dirPath);
+        return this.cacheManager.hasDirectory(dirPath);
     }
 
-    async isFileLoaded(file: SandboxFile) {
+    isFileLoaded(file: SandboxFile) {
         return file && file.content !== null;
     }
 
     readCache(filePath: string) {
-        return this.cache.get(filePath);
+        return this.cacheManager.getFile(filePath);
     }
 
     async readOrFetch(
         filePath: string,
         readFile: (path: string) => Promise<SandboxFile | null>,
     ): Promise<SandboxFile | null> {
-        const cachedFile = this.cache.get(filePath);
-        if (cachedFile && cachedFile.content !== null) {
-            return cachedFile;
-        }
-        const newFile = await readFile(filePath);
-        if (!newFile) {
-            return null;
-        }
-        this.updateCache(newFile);
-        return newFile;
+        return await this.cacheManager.readOrFetch(filePath, readFile);
     }
 
     async write(
@@ -49,115 +43,59 @@ export class FileSyncManager {
         content: string | Uint8Array,
         writeFile: (path: string, content: string | Uint8Array) => Promise<boolean>,
     ) {
-        try {
-            const newFile = this.getFileFromContent(filePath, content);
-            this.updateCache(newFile);
-            return await writeFile(filePath, content);
-        } catch (error) {
-            console.error(`Error writing file ${filePath}:`, error);
-            return false;
-        }
+        return await this.cacheManager.write(filePath, content, writeFile);
     }
 
     updateCache(file: SandboxFile): void {
-        this.cache.set(file.path, file);
+        this.cacheManager.setFile(file);
     }
 
     updateDirectoryCache(dirPath: string): void {
-        this.directoryCache.set(dirPath, {
+        this.cacheManager.setDirectory({
             type: 'directory',
             path: dirPath,
         });
     }
 
     deleteDir(dirPath: string) {
-        this.directoryCache.delete(dirPath);
-        this.cache.forEach((file, path) => {
+        this.cacheManager.deleteDirectory(dirPath);
+        // Iterate through cache keys to find files in the directory
+        for (const path of this.cacheManager.listAllFiles()) {
             if (path.startsWith(dirPath + '/')) {
-                this.cache.delete(path);
+                this.cacheManager.deleteFile(path);
             }
-        });
+        }
     }
 
     async delete(path: string) {
-        this.cache.delete(path);
+        this.cacheManager.deleteFile(path);
     }
 
     async rename(oldPath: string, newPath: string) {
         const normalizedOldPath = normalizePath(oldPath);
         const normalizedNewPath = normalizePath(newPath);
-        const oldFile = this.cache.get(normalizedOldPath);
-        if (oldFile) {
-            this.cache.set(normalizedNewPath, oldFile);
-            this.cache.delete(normalizedOldPath);
-        }
+        this.cacheManager.rename(normalizedOldPath, normalizedNewPath);
     }
 
     async renameDir(oldPath: string, newPath: string) {
         const normalizedOldPath = normalizePath(oldPath);
         const normalizedNewPath = normalizePath(newPath);
-
-        // Get all files that are within the old folder path
-        const filesToRename = Array.from(this.cache.entries())
-            .filter(([filePath]) => filePath.startsWith(normalizedOldPath + '/'))
-            .map(([filePath, file]) => ({ oldFilePath: filePath, file }));
-
-        // Rename each file by updating its path in the cache
-        for (const { oldFilePath, file } of filesToRename) {
-            // Calculate the new file path by replacing the old folder path with the new one
-            const relativePath = oldFilePath.substring(normalizedOldPath.length);
-            const newFilePath = normalizedNewPath + relativePath;
-
-            // Update the file's path and move it in the cache
-            const updatedFile = { ...file, path: newFilePath };
-            this.cache.set(newFilePath, updatedFile);
-            this.cache.delete(oldFilePath);
-        }
-        // Update the directory cache
-        this.directoryCache.set(normalizedNewPath, {
-            type: 'directory',
-            path: normalizedNewPath,
-        });
-
-        this.directoryCache.delete(normalizedOldPath);
+        this.cacheManager.renameDirectory(normalizedOldPath, normalizedNewPath);
     }
 
     listAllFiles() {
-        return Array.from(this.cache.keys());
+        return this.cacheManager.listAllFiles();
     }
 
     listAllDirectories() {
-        return Array.from(this.directoryCache.keys());
+        return this.cacheManager.listAllDirectories();
     }
 
     writeEmptyFile(filePath: string, type: 'binary') {
-        if (this.has(filePath)) {
-            return;
-        }
-
-        this.updateCache({
-            type,
-            path: filePath,
-            content: null
-        });
-    }
-
-    getFileFromContent(filePath: string, content: string | Uint8Array) {
-        const type = content instanceof Uint8Array ? 'binary' : 'text';
-        const newFile: SandboxFile = type === 'binary' ? {
-            type,
-            path: filePath,
-            content: content as Uint8Array
-        } : {
-            type,
-            path: filePath,
-            content: content as string
-        };
-        return newFile;
+        this.cacheManager.writeEmptyFile(filePath, type);
     }
 
     async clear() {
-        this.cache.clear();
-        this.cache = new Map();
+        await this.cacheManager.clear();
     }
 }

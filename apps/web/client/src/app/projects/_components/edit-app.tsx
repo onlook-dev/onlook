@@ -3,6 +3,7 @@ import { Routes } from '@/utils/constants';
 import type { Project } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
@@ -38,7 +39,11 @@ export const EditAppButton = observer(({ project, onClick, ...props }: EditAppBu
     return (
         <ButtonMotion
             size="default"
-            className="gap-2 bg-white text-black border border-gray-300 w-auto hover:bg-gray-100 cursor-pointer"
+            className={cn('gap-2 border border-gray-300 w-auto cursor-pointer',
+                isLoading
+                    ? 'bg-gray-200 text-gray-800'
+                    : 'bg-white text-black hover:bg-gray-100'
+            )}
             {...props}
 
             // Prevent consumer from overriding these props

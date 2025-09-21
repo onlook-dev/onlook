@@ -5,7 +5,6 @@ import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
 import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
 import { SettingsTabValue } from '@/components/ui/settings-modal/helpers';
-import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { transKeys } from '@/i18n/keys';
 import { Button } from '@onlook/ui/button';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
@@ -14,29 +13,29 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
-import { useChatContext } from '../../_hooks/use-chat';
+import { useState } from 'react';
 import { Members } from '../members';
+import { BranchDisplay } from './branch';
 import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
 import { PublishButton } from './publish';
 
 export const TopBar = observer(() => {
     const stateManager = useStateManager();
+    const [isMembersPopoverOpen, setIsMembersPopoverOpen] = useState(false);
     const editorEngine = useEditorEngine();
-    const { isWaiting } = useChatContext();
-    const { isEnabled } = useFeatureFlags();
     const t = useTranslations();
 
     const UNDO_REDO_BUTTONS = [
         {
             click: () => editorEngine.action.undo(),
-            isDisabled: !editorEngine.history.canUndo || isWaiting,
+            isDisabled: !editorEngine.history.canUndo || editorEngine.chat.isStreaming,
             hotkey: Hotkey.UNDO,
             icon: <Icons.Reset className="h-4 w-4 mr-1" />,
         },
         {
             click: () => editorEngine.action.redo(),
-            isDisabled: !editorEngine.history.canRedo || isWaiting,
+            isDisabled: !editorEngine.history.canRedo || editorEngine.chat.isStreaming,
             hotkey: Hotkey.REDO,
             icon: <Icons.Reset className="h-4 w-4 mr-1 scale-x-[-1]" />,
         },
@@ -44,15 +43,29 @@ export const TopBar = observer(() => {
 
     return (
         <div className="bg-background-primary/20 backdrop-blur-md flex flex-row h-10 p-0 justify-center items-center">
-            <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
+            <div className="flex flex-row flex-grow basis-0 justify-start items-center">
                 <ProjectBreadcrumb />
+                <BranchDisplay />
             </div>
             <ModeToggle />
-            <div className="flex flex-grow basis-0 justify-end items-center gap-2 mr-2">
-                <Members />
-                <CurrentUserAvatar className="size-7 cursor-pointer hover:opacity-80" />
+            <div className="flex flex-grow basis-0 justify-end items-center gap-1.5 mr-2">
+                <div className="flex items-center group">
+                    <div className={`transition-all duration-200 ${isMembersPopoverOpen ? 'mr-2' : '-mr-2 group-hover:mr-2'}`}>
+                        <Members onPopoverOpenChange={setIsMembersPopoverOpen} />
+                    </div>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="flex items-center">
+                                <CurrentUserAvatar className="size-8 cursor-pointer hover:border-foreground-primary" />
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="mt-1" hideArrow>
+                            <p>Profile</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </div>
                 <motion.div
-                    className="space-x-0 hidden lg:block"
+                    className="space-x-0 hidden lg:block -mr-1"
                     layout
                     transition={{
                         type: 'spring',
@@ -96,7 +109,7 @@ export const TopBar = observer(() => {
                             <Icons.CounterClockwiseClock className="h-4 w-4" />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom">
+                    <TooltipContent side="bottom" className="mt-1" hideArrow>
                         {t(transKeys.editor.toolbar.versionHistory)}
                     </TooltipContent>
                 </Tooltip>

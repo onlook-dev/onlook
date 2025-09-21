@@ -7,7 +7,7 @@ import useResizeObserver from 'use-resize-observer';
 import { ConnectGithub } from './_components/connect';
 import { FinalizingGithubProject } from './_components/finalizing';
 import { SetupGithub } from './_components/setup';
-import { useImportGithubProject } from './_context/context';
+import { useImportGithubProject } from './_context';
 
 const steps = [
     <ConnectGithub />,

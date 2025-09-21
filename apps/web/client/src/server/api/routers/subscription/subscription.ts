@@ -1,5 +1,5 @@
 import { Routes } from '@/utils/constants';
-import { legacySubscriptions, prices, subscriptions, toSubscription, users } from '@onlook/db';
+import { legacySubscriptions, prices, subscriptions, fromDbSubscription, users } from '@onlook/db';
 import { createBillingPortalSession, createCheckoutSession, createCustomer, isTierUpgrade, PriceKey, releaseSubscriptionSchedule, SubscriptionStatus, updateSubscription, updateSubscriptionNextPeriod } from '@onlook/stripe';
 import { and, eq, isNull } from 'drizzle-orm';
 import { headers } from 'next/headers';
@@ -43,7 +43,7 @@ export const subscriptionRouter = createTRPCRouter({
             }) ?? null;
         }
 
-        return toSubscription(subscription, scheduledPrice);
+        return fromDbSubscription(subscription, scheduledPrice);
     }),
     getPriceId: protectedProcedure.input(z.object({
         priceKey: z.nativeEnum(PriceKey),

@@ -1,18 +1,58 @@
-import { DefaultSettings } from '@onlook/constants';
 import type { Frame as DbFrame } from '@onlook/db';
-import { FrameType } from '@onlook/models';
 import { v4 as uuidv4 } from 'uuid';
 
-export const createDefaultFrame = (canvasId: string, url: string, overrides?: Partial<DbFrame>): DbFrame => {
+export enum DefaultFrameType {
+    DESKTOP = 'desktop',
+    MOBILE = 'mobile',
+}
+
+export const DefaultDesktopFrame = {
+    x: '5',
+    y: '0',
+    width: '1536',
+    height: '960',
+} as const;
+
+export const DefaultMobileFrame = {
+    x: '1600',
+    y: '0',
+    width: '440',
+    height: '956',
+} as const;
+
+const DefaultFrame: Record<DefaultFrameType, { x: string; y: string; width: string; height: string }> = {
+    [DefaultFrameType.DESKTOP]: DefaultDesktopFrame,
+    [DefaultFrameType.MOBILE]: DefaultMobileFrame,
+} as const;
+
+export const createDefaultFrame = (
+    {
+        canvasId,
+        branchId,
+        url,
+        type = DefaultFrameType.DESKTOP,
+        overrides,
+    }: {
+        canvasId: string;
+        branchId: string;
+        url: string;
+        type?: DefaultFrameType;
+        overrides?: Partial<DbFrame>
+    },
+): DbFrame => {
+    const defaultFrame = DefaultFrame[type];
     return {
         id: uuidv4(),
         canvasId,
-        type: FrameType.WEB,
+        branchId,
         url,
-        x: DefaultSettings.FRAME_POSITION.x.toString(),
-        y: DefaultSettings.FRAME_POSITION.y.toString(),
-        width: DefaultSettings.FRAME_DIMENSION.width.toString(),
-        height: DefaultSettings.FRAME_DIMENSION.height.toString(),
+        x: defaultFrame.x,
+        y: defaultFrame.y,
+        width: defaultFrame.width,
+        height: defaultFrame.height,
         ...overrides,
+
+        // deprecated
+        type: null,
     };
 };

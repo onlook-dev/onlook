@@ -39,11 +39,19 @@ function insertAttribute(element: T.JSXOpeningElement, attribute: string, classN
     element.attributes.push(newClassNameAttr);
 }
 
-export function updateNodeProp(node: T.JSXElement, key: string, value: any): void {
+export function updateNodeProp(
+    node: T.JSXElement,
+    key: string,
+    value: object | undefined | null,
+): void {
     const openingElement = node.openingElement;
     const existingAttr = openingElement.attributes.find(
         (attr) => t.isJSXAttribute(attr) && attr.name.name === key,
     ) as T.JSXAttribute | undefined;
+
+    if (value === undefined || value === null) {
+        return;
+    }
 
     if (existingAttr) {
         if (typeof value === 'boolean') {

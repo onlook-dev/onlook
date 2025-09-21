@@ -1,27 +1,29 @@
+'use client';
+
+import { useEditorEngine } from '@/components/store/editor';
+import { DefaultSettings } from '@onlook/constants';
 import { type FolderNode } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import { useEffect, useRef, useState, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { DeleteImageModal } from '../delete-modal';
 import { useFolderImages } from '../hooks/use-folder-images';
 import { useImageSearch } from '../hooks/use-image-search';
 import { ImageList } from '../image-list';
+import { MoveImageModal } from '../move-modal';
+import { useFolderContext } from '../providers/folder-provider';
 import { useImagesContext } from '../providers/images-provider';
+import { RenameImageModal } from '../rename-modal';
 import { FolderDropdownMenu } from './folder-dropdown-menu';
 import { FolderList } from './folder-list';
-import { useFolderContext } from '../providers/folder-provider';
-import { DefaultSettings } from '@onlook/constants';
-import { useEditorEngine } from '@/components/store/editor';
-import { DeleteImageModal } from '../delete-modal';
-import { MoveImageModal } from '../move-modal';
-import { RenameImageModal } from '../rename-modal';
-import { FolderRenameModal } from './modal/folder-rename-modal';
+import { FolderCreateModal } from './modal/folder-create-modal';
 import { FolderDeleteModal } from './modal/folder-delete-modal';
 import { FolderMoveModal } from './modal/folder-move-modal';
-import { FolderCreateModal } from './modal/folder-create-modal';
+import { FolderRenameModal } from './modal/folder-rename-modal';
 
 interface FolderPathItem {
     folder: FolderNode;
@@ -44,8 +46,8 @@ const Folder = observer(() => {
     const [childFolders, setChildFolders] = useState<FolderNode[]>([]);
 
     const folders = useMemo(
-        () => editorEngine.sandbox.directories.filter((dir) => dir.startsWith(rootDir.fullPath)),
-        [editorEngine.sandbox.directories, rootDir.fullPath],
+        () => editorEngine.activeSandbox.directories.filter((dir) => dir.startsWith(rootDir.fullPath)),
+        [editorEngine.activeSandbox.directories, rootDir.fullPath],
     );
 
     const { folderImagesState } = useFolderImages(currentFolder);
@@ -206,14 +208,41 @@ const Folder = observer(() => {
                         </button>
                     )}
                 </div>
-                <Button
-                    variant="default"
-                    size="icon"
-                    className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
-                    onClick={() => handleCreateFolder(currentFolder)}
-                >
-                    <Icons.DirectoryPlus className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant={'default'}
+                            size={'icon'}
+                            className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
+                            onClick={() => handleCreateFolder(currentFolder)}
+                            disabled={isAnyOperationLoading}
+                        >
+                            <Icons.DirectoryPlus className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipPortal>
+                        <TooltipContent>
+                            <p>Create a folder</p>
+                        </TooltipContent>
+                    </TooltipPortal>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant={'default'}
+                            size={'icon'}
+                            className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
+                            onClick={() => editorEngine.image.scanImages()}
+                        >
+                            <Icons.Reload className="w-4 h-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipPortal>
+                        <TooltipContent>
+                            <p>Refresh Images</p>
+                        </TooltipContent>
+                    </TooltipPortal>
+                </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
@@ -223,7 +252,7 @@ const Folder = observer(() => {
                             onClick={uploadOperations.handleClickAddButton}
                             disabled={isAnyOperationLoading}
                         >
-                            <Icons.Plus />
+                            <Icons.Plus className="w-4 h-4" />
                         </Button>
                     </TooltipTrigger>
                     <TooltipPortal>
