@@ -342,13 +342,25 @@ export const ContextCacheUsage = ({ className, children, ...props }: ContextCach
     );
 };
 
-const TokensWithCost = ({ tokens, costText }: { tokens?: number; costText?: string }) => (
-    <span>
-        {tokens === undefined
-            ? '—'
-            : new Intl.NumberFormat('en-US', {
-                  notation: 'compact',
-              }).format(tokens)}
-        {costText ? <span className="ml-2 text-muted-foreground">• {costText}</span> : null}
-    </span>
-);
+const TokensWithCost = ({
+    tokens,
+    costText,
+    showCost = false,
+}: {
+    tokens?: number;
+    costText?: string;
+    showCost?: boolean;
+}) => {
+    return (
+        <span>
+            {tokens === undefined
+                ? '—'
+                : new Intl.NumberFormat('en-US', {
+                      notation: 'compact',
+                  }).format(tokens)}
+            {showCost && costText ? (
+                <span className="ml-2 text-muted-foreground">• {costText}</span>
+            ) : null}
+        </span>
+    );
+};
