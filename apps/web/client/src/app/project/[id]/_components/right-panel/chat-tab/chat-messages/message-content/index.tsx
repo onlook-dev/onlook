@@ -1,9 +1,8 @@
 import type { ChatMessage } from '@onlook/models';
-import { Reasoning, ReasoningContent, ReasoningTrigger } from '@onlook/ui/ai-elements';
+import { Reasoning, ReasoningContent, ReasoningTrigger, Response } from '@onlook/ui/ai-elements';
 import { cn } from '@onlook/ui/utils';
 import type { ToolUIPart } from 'ai';
 import { observer } from 'mobx-react-lite';
-import { MarkdownRenderer } from '../markdown-renderer';
 import { ToolCallDisplay } from './tool-call-display';
 
 export const MessageContent = observer(
@@ -22,13 +21,10 @@ export const MessageContent = observer(
             const isLastPart = idx === parts.length - 1;
             if (part.type === 'text') {
                 return (
-                    <MarkdownRenderer
-                        messageId={messageId}
-                        key={part.text}
-                        content={part.text}
-                        applied={applied}
-                        isStream={isStream}
-                    />
+                    <Response key={part.text}>
+                        {part.text}
+                    </Response>
+
                 );
             } else if (part.type.startsWith('tool-')) {
                 const toolPart = part as ToolUIPart;
