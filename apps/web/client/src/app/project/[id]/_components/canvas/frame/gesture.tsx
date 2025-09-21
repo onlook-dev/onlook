@@ -94,23 +94,25 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
         [getRelativeMousePosition, editorEngine],
     );
 
-    const throttledMouseMove = useMemo(
-        () =>
-            throttle(async (e: React.MouseEvent<HTMLDivElement>) => {
-
-                if (
-                    editorEngine.state.editorMode === EditorMode.DESIGN ||
-                    ((editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
-                        editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
-                        editorEngine.state.editorMode === EditorMode.INSERT_IMAGE) &&
-                        !editorEngine.insert.isDrawing)
-                ) {
-                    await handleMouseEvent(e, MouseAction.MOVE);
-                } else if (editorEngine.insert.isDrawing) {
-                    editorEngine.insert.draw(e);
-                }
-            }, 16),
-        [editorEngine, getRelativeMousePosition, handleMouseEvent],
+    const throttledMouseMove = useMemo(() =>
+        throttle(async (e: React.MouseEvent<HTMLDivElement>) => {
+            // Skip hover events during drag selection
+            if (editorEngine.state.isDragSelecting) {
+                return;
+            }
+            if (
+                editorEngine.state.editorMode === EditorMode.DESIGN ||
+                ((editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
+                    editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
+                    editorEngine.state.editorMode === EditorMode.INSERT_IMAGE) &&
+                    !editorEngine.insert.isDrawing)
+            ) {
+                await handleMouseEvent(e, MouseAction.MOVE);
+            } else if (editorEngine.insert.isDrawing) {
+                editorEngine.insert.draw(e);
+            }
+        }, 16),
+        [editorEngine.state.isDragSelecting, editorEngine.state.editorMode, editorEngine.insert.isDrawing, getRelativeMousePosition, handleMouseEvent],
     );
 
     useEffect(() => {
@@ -155,14 +157,12 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
     }
 
     const handleDragOver = async (e: React.DragEvent<HTMLDivElement>) => {
-        // Disabled drag and drop functionality
         e.preventDefault();
         e.stopPropagation();
         await handleMouseEvent(e, MouseAction.MOVE);
     };
 
     const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
-        // Disabled drag and drop functionality
         e.preventDefault();
         e.stopPropagation();
 
