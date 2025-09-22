@@ -138,21 +138,21 @@ export const ChatInput = observer(({
         }
         
         const savedInput = inputValue.trim();
-        setInputValue('');
         
         try {
             if (isStreaming) {
-                // Queue the message if currently streaming
+                // Queue the message if streaming
                 const queuedMessage = editorEngine.chat.queue.enqueue(savedInput, chatMode);
                 console.log('Message queued:', queuedMessage);
             } else {
                 // Send immediately if not streaming
                 await onSendMessage(savedInput, chatMode);
             }
+            // Clear input
+            setInputValue('');
         } catch (error) {
             console.error('Error sending message', error);
             toast.error('Failed to send message. Please try again.');
-            setInputValue(savedInput);
         }
     }
 

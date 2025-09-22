@@ -68,12 +68,13 @@ export class MessageQueue {
             return;
         }
 
+        this._isProcessing = true;
+        
         const nextMessage = this.dequeue();
         if (!nextMessage) {
+            this._isProcessing = false;
             return;
         }
-
-        this._isProcessing = true;
         
         try {
             await this.editorEngine.chat.sendMessage(nextMessage.content, nextMessage.type);
