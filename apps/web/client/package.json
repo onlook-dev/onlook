@@ -67,6 +67,8 @@
         "@vercel/otel": "^1.13.0",
         "@xterm/addon-fit": "^0.10.0",
         "@xterm/xterm": "^5.5.0",
+        "@zenfs/core": "2.4.0",
+        "@zenfs/dom": "1.2.5",
         "ai": "5.0.26",
         "blob-util": "^2.0.2",
         "class-variance-authority": "^0.7.1",
