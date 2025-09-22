@@ -17,7 +17,7 @@ import { cn } from '@onlook/ui/utils';
 import { compressImageInBrowser } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { validateImageLimit } from '../context-pills/helpers';
 import { InputContextPills } from '../context-pills/input-context-pills';
 import { Suggestions, type SuggestionsRef } from '../suggestions';
@@ -48,6 +48,7 @@ export const ChatInput = observer(({
     const [isDragging, setIsDragging] = useState(false);
     const chatMode = editorEngine.state.chatMode;
     const [inputValue, setInputValue] = useState('');
+    const lastAssistantMessage = useMemo(() => messages.findLast(msg => msg.role === 'assistant'), [messages]);
 
     const focusInput = () => {
         requestAnimationFrame(() => {
@@ -308,6 +309,7 @@ export const ChatInput = observer(({
         editorEngine.state.chatMode = mode;
     };
 
+
     return (
         <div
             className={cn(
@@ -392,7 +394,7 @@ export const ChatInput = observer(({
                         onChatModeChange={handleChatModeChange}
                         disabled={disabled}
                     />
-                    <ChatContextWindow />
+                    {lastAssistantMessage?.metadata?.usage && <ChatContextWindow usage={lastAssistantMessage?.metadata?.usage} />}
                 </div>
                 <div className="flex flex-row items-center gap-1.5">
                     <ActionButtons

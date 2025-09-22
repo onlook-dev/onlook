@@ -1,3 +1,4 @@
+import { MODEL_MAX_TOKENS, OPENROUTER_MODELS } from '@onlook/models';
 import {
     Context,
     ContextCacheUsage,
@@ -10,20 +11,25 @@ import {
     ContextReasoningUsage,
     ContextTrigger
 } from '@onlook/ui/ai-elements/context';
+import type { LanguageModelUsage } from 'ai';
+import { useMemo } from 'react';
 
-export const ChatContextWindow = () => {
+export const ChatContextWindow = ({ usage }: { usage: LanguageModelUsage }) => {
     const showCost = false;
+    // Hardcoded for now, but should be dynamic based on the model used
+    const maxTokens = MODEL_MAX_TOKENS[OPENROUTER_MODELS.CLAUDE_4_SONNET];
+    const usedTokens = useMemo(() => {
+        if (!usage) return 0;
+        const input = usage.inputTokens ?? 0;
+        const cached = usage.cachedInputTokens ?? 0;
+        return input + cached;
+    }, [usage]);
+
     return (
         <Context
-            maxTokens={128000}
-            usedTokens={40000}
-            usage={{
-                inputTokens: 32000,
-                outputTokens: 8000,
-                totalTokens: 40000,
-                cachedInputTokens: 0,
-                reasoningTokens: 0,
-            }}
+            maxTokens={maxTokens}
+            usedTokens={usedTokens}
+            usage={usage}
         >
             <ContextTrigger />
             <ContextContent>
