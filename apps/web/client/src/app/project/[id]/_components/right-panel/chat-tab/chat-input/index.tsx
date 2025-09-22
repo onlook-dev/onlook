@@ -144,7 +144,6 @@ export const ChatInput = observer(({
             if (isStreaming) {
                 // Queue the message if currently streaming
                 const queuedMessage = editorEngine.chat.queue.enqueue(savedInput, chatMode);
-                toast.success('Message queued - will send when current response finishes');
                 console.log('Message queued:', queuedMessage);
             } else {
                 // Send immediately if not streaming
