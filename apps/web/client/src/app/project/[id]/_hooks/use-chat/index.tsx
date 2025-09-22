@@ -208,15 +208,20 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 );
             };
 
-            const cleanupContext = async () => {
-                await editorEngine.chat.context.clearImagesFromContext();
+            const cleanupContext = () => {
+                editorEngine.chat.context.clearImagesFromContext();
             };
 
             void cleanupContext();
             void fetchSuggestions();
             void applyCommit();
+            
+            // Process any queued messages
+            setTimeout(() => {
+                void editorEngine.chat.queue.processNext();
+            }, 500);
         }
-    }, [finishReason, conversationId]);
+    }, [finishReason, conversationId, editorEngine.chat.queue, editorEngine.chat.context, editorEngine.versions, setMessages]);
 
     useEffect(() => {
         editorEngine.chat.conversation.setConversationLength(messages.length);
