@@ -97,4 +97,27 @@ describe('TerminalBuffer', () => {
             done();
         }, 10);
     });
+
+    it('should not repeatedly emit error callbacks for existing errors in buffer', (done) => {
+        const buffer = new TerminalBuffer(5);
+        let errorCallbackCount = 0;
+
+        buffer.onError(() => {
+            errorCallbackCount++;
+        });
+
+        // Add an error - should trigger callback once
+        buffer.addLine('Build failed.');
+
+        // Add normal logs - should NOT trigger error callback again
+        buffer.addLine('normal log 1');
+        buffer.addLine('normal log 2');
+        buffer.addLine('another normal message');
+
+        setTimeout(() => {
+            // Should only have been called once for the initial error
+            expect(errorCallbackCount).toBe(1);
+            done();
+        }, 10);
+    });
 });

@@ -139,12 +139,14 @@ export class TerminalBuffer {
         if (this.buffer.length > this.maxLines) {
             this.buffer.shift();
         }
-        // Check for error in the buffer
-        if (this.buffer.some(isErrorMessage)) {
+
+        // Only check for error in the newly added line
+        if (isErrorMessage(rawMessage)) {
             if (this.errorCallback) {
                 this.errorCallback([...this.buffer]);
             }
         }
+
         // Check for success in the buffer
         if (this.buffer.some(isSuccessMessage)) {
             this.clear();
