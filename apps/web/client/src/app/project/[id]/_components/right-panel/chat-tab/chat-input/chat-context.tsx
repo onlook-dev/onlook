@@ -1,3 +1,5 @@
+'use client';
+
 import { MODEL_MAX_TOKENS, OPENROUTER_MODELS } from '@onlook/models';
 import {
     Context,

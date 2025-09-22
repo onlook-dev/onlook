@@ -48,7 +48,7 @@ export const ChatInput = observer(({
     const [isDragging, setIsDragging] = useState(false);
     const chatMode = editorEngine.state.chatMode;
     const [inputValue, setInputValue] = useState('');
-    const lastAssistantMessage = useMemo(() => messages.findLast(msg => msg.role === 'assistant'), [messages]);
+    const lastUsageMessage = useMemo(() => messages.findLast(msg => msg.metadata?.usage), [messages]);
 
     const focusInput = () => {
         requestAnimationFrame(() => {
@@ -394,7 +394,7 @@ export const ChatInput = observer(({
                         onChatModeChange={handleChatModeChange}
                         disabled={disabled}
                     />
-                    {lastAssistantMessage?.metadata?.usage && <ChatContextWindow usage={lastAssistantMessage?.metadata?.usage} />}
+                    {lastUsageMessage?.metadata?.usage && <ChatContextWindow usage={lastUsageMessage?.metadata?.usage} />}
                 </div>
                 <div className="flex flex-row items-center gap-1.5">
                     <ActionButtons
