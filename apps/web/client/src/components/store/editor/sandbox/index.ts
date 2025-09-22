@@ -126,7 +126,7 @@ export class SandboxManager {
     /**
      * Process files in non-blocking batches to avoid blocking the UI thread
      */
-    private async processFilesInBatches(allFilePaths: string[], batchSize: number = 10): Promise<void> {
+    private async processFilesInBatches(allFilePaths: string[], batchSize = 10): Promise<void> {
         for (let i = 0; i < allFilePaths.length; i += batchSize) {
             const batch = allFilePaths.slice(i, i + batchSize);
 
@@ -247,7 +247,7 @@ export class SandboxManager {
         }
     }
 
-    async readFile(path: string, remote: boolean = false): Promise<SandboxFile | null> {
+    async readFile(path: string, remote = false): Promise<SandboxFile | null> {
         const normalizedPath = normalizePath(path);
         if (remote) {
             return this.readRemoteFile(normalizedPath);

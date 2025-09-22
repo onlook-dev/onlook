@@ -1,22 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useOnlookFS } from './useOnlookFS';
 
-// Common text file extensions
-const TEXT_EXTENSIONS = new Set([
-    '.txt', '.md', '.mdx', '.json', '.js', '.jsx', '.ts', '.tsx', 
-    '.css', '.scss', '.sass', '.less', '.html', '.htm', '.xml', 
-    '.svg', '.yml', '.yaml', '.toml', '.env', '.gitignore', 
-    '.eslintrc', '.prettierrc', '.babelrc', '.editorconfig',
-    '.sh', '.bash', '.zsh', '.fish', '.ps1', '.py', '.rb', '.go',
-    '.rs', '.c', '.cpp', '.h', '.hpp', '.java', '.kt', '.swift',
-    '.m', '.mm', '.php', '.lua', '.vim', '.conf', '.ini', '.cfg'
-]);
-
-function isTextFile(path: string): boolean {
-    const ext = path.substring(path.lastIndexOf('.')).toLowerCase();
-    return TEXT_EXTENSIONS.has(ext);
-}
-
 export function useFile(
     projectId: string,
     branchId: string,
@@ -41,10 +25,8 @@ export function useFile(
         setError(null);
 
         try {
-            // Auto-detect if file should be read as text
-            const data = isTextFile(path) 
-                ? await fs.readFile(path, 'utf8')
-                : await fs.readFile(path);
+            // OnlookFS now handles auto-detection of text files
+            const data = await fs.readFile(path);
             setContent(data);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -64,14 +46,11 @@ export function useFile(
         }
 
         // Always watch for changes to this file
-        const watcher = fs.watch(path, (eventType, filename) => {
-            console.log('File watch event:', path, eventType, filename);
+        const cleanup = fs.watchFile(path, () => {
             void readFile();
         });
 
-        return () => {
-            watcher.close();
-        };
+        return cleanup;
     }, [fs, path, readFile]);
 
     const isLoading = loading || isInitializing;

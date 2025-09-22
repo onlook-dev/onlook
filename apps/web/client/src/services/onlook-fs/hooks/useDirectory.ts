@@ -1,20 +1,12 @@
 /** 
  * Hook to read a directory and its subdirectories.
- * 
- * Unfortunately it seems like zenfs doesn't support recursive directory reading, so this hook implements it for the user.
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { useOnlookFS } from './useOnlookFS';
-import type { Stats } from '@zenfs/core';
+import type { FileEntry } from '../types';
 
-export interface FileEntry {
-    name: string;
-    path: string;
-    isDirectory: boolean;
-    stats?: Stats;
-    children?: FileEntry[];
-}
+export { type FileEntry } from '../types';
 
 export function useDirectory(
     projectId: string,
@@ -39,50 +31,10 @@ export function useDirectory(
         setLoading(true);
         setError(null);
 
-        const readDirRecursive = async (dirPath: string): Promise<FileEntry[]> => {
-            const fileNames = await fs.readdir(dirPath);
-            const fileEntries: FileEntry[] = [];
-
-            for (const name of fileNames) {
-                const fullPath = dirPath === '/' ? `/${name}` : `${dirPath}/${name}`;
-                
-                const entry: FileEntry = {
-                    name,
-                    path: fullPath,
-                    isDirectory: false,
-                };
-
-                try {
-                    const stats = await fs.stat(fullPath);
-                    entry.stats = stats;
-                    entry.isDirectory = stats.isDirectory();
-
-                    // Recursively read subdirectories
-                    if (entry.isDirectory) {
-                        entry.children = await readDirRecursive(fullPath);
-                    }
-                } catch (err) {
-                    // Ignore stat errors for individual files
-                    console.warn(`Failed to stat ${fullPath}:`, err);
-                }
-
-                fileEntries.push(entry);
-            }
-
-            // Sort: directories first, then alphabetically
-            fileEntries.sort((a, b) => {
-                if (a.isDirectory !== b.isDirectory) {
-                    return a.isDirectory ? -1 : 1;
-                }
-                return a.name.localeCompare(b.name);
-            });
-
-            return fileEntries;
-        };
-
         try {
-            const entries = await readDirRecursive(path);
-            setEntries(entries);
+            // OnlookFS now provides recursive directory reading
+            const dirEntries = await fs.readDirectory(path);
+            setEntries(dirEntries);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('Unknown error'));
             setEntries([]);
@@ -100,18 +52,14 @@ export function useDirectory(
             return;
         }
 
-        // Watch for changes anywhere in the file system
-        // Since we're reading recursively, any change should trigger a full refresh
-        const watcher = fs.watch('/', (eventType, filename) => {
-            console.log('Directory watch event:', eventType, filename);
+        // Watch the directory recursively for changes
+        const cleanup = fs.watchDirectory(path, () => {
             // Re-read directory tree on any change
             void readDirectory();
         });
 
-        return () => {
-            watcher.close();
-        };
-    }, [fs, readDirectory]);
+        return cleanup;
+    }, [fs, path, readDirectory]);
 
     const isLoading = loading || isInitializing;
     const combinedError = error ?? fsError;

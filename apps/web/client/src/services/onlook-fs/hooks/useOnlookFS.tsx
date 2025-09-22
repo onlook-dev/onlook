@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { OnlookFS } from '../onlook-fs';
 
-// Module-level cache for FS instances
 const fsCache = new Map<string, OnlookFS>();
 
 export function useOnlookFS(projectId: string, branchId: string) {
@@ -26,8 +25,8 @@ export function useOnlookFS(projectId: string, branchId: string) {
                 setIsInitializing(true);
                 setError(null);
 
-                const onlookFS = new OnlookFS();
-                await onlookFS.initialize(projectId, branchId);
+                const onlookFS = new OnlookFS(projectId, branchId);
+                await onlookFS.initialize();
 
                 fsCache.set(key, onlookFS);
                 setFs(onlookFS);
@@ -44,7 +43,17 @@ export function useOnlookFS(projectId: string, branchId: string) {
         void initFS();
     }, [projectId, branchId]);
 
-    // Ensures fs is not null in exported types when not initializing or erroring
+    useEffect(() => {
+        return () => {
+            const key = `${projectId}-${branchId}`;
+            const cachedFS = fsCache.get(key);
+            if (cachedFS) {
+                cachedFS.cleanup();
+                fsCache.delete(key);
+            }
+        };
+    }, [projectId, branchId]);
+
     if (isInitializing) {
         return { fs: null, isInitializing: true, error: null };
     }

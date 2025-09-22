@@ -1,94 +1,463 @@
 /**
- * Wraps ZenFS to provide a more convenient API for managing project branches.
- *
- * The intent is to handle core postprocessing of file writes
- * For example, if a file is a JSX file, we need to process it to add OIDs.
- * We also need to handle the index of the file system.
- *
- * @see https://github.com/zenfs/zenfs
+ * Opinionated wrapper around ZenFS for managing project file systems.
+ * Provides a simpler API with automatic path management and recursive operations.
  */
 
-import { configure, fs } from '@zenfs/core';
-import { IndexedDB } from '@zenfs/dom';
+import type { fs as fsType } from '@zenfs/core';
+import { getFS } from './config';
+import type { FileEntry, FileInfo, FileChangeEvent, WatcherCleanup } from './types';
+
+// Common text file extensions
+const TEXT_EXTENSIONS = new Set([
+    '.txt', '.md', '.json', '.js', '.jsx', '.ts', '.tsx',
+    '.css', '.scss', '.html', '.xml', '.yaml', '.yml',
+    '.env', '.gitignore', '.prettierrc', '.eslintrc',
+    '.svg', '.sh', '.py', '.rb', '.go', '.rust', '.java',
+    '.php', '.c', '.cpp', '.h', '.hpp', '.vue', '.astro'
+]);
 
 export class OnlookFS {
-    private fs: typeof fs | null = null;
+    private fs: typeof fsType | null = null;
+    private basePath: string;
+    private watchers = new Map<string, any[]>();
     private isInitialized = false;
 
-    async initialize(projectId: string, branchId: string): Promise<void> {
+    constructor(private projectId: string, private branchId: string) {
+        this.basePath = `/${projectId}/${branchId}`;
+    }
+
+    async initialize(): Promise<void> {
         if (this.isInitialized) {
             return;
         }
 
-        await configure({
-            mounts: {
-                '/': await IndexedDB.create({
-                    storeName: `onlook-${projectId}-${branchId}`,
-                }),
-            },
-        });
-
-        this.fs = fs;
-
+        this.fs = await getFS();
+        
+        // Ensure base directory exists
+        await this.fs.promises.mkdir(this.basePath, { recursive: true });
+        
         this.isInitialized = true;
     }
 
-    private ensureInitialized(): void {
-        if (!this.fs) {
-            throw new Error('OnlookFS not initialized. Call initialize() first.');
+    /**
+     * Resolve a user path to the full path within the project
+     */
+    private resolvePath(path: string): string {
+        // Normalize path
+        if (!path.startsWith('/')) {
+            path = '/' + path;
         }
+        return this.basePath + path;
     }
 
-    async readFile(path: string): Promise<Buffer>;
-    async readFile(path: string, encoding: 'utf8' | undefined): Promise<string>;
-    async readFile(path: string, encoding?: 'utf8'): Promise<Buffer | string> {
-        this.ensureInitialized();
-        return this.fs!.promises.readFile(path, { encoding });
+    /**
+     * Check if a file should be treated as text based on its extension
+     */
+    private isTextFile(path: string): boolean {
+        const ext = path.substring(path.lastIndexOf('.')).toLowerCase();
+        return TEXT_EXTENSIONS.has(ext);
     }
 
-    async writeFile(path: string, data: string | Buffer): Promise<void> {
-        this.ensureInitialized();
-        return this.fs!.promises.writeFile(path, data);
+    /**
+     * Create a new file with content
+     */
+    async createFile(path: string, content = ''): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+        
+        const fullPath = this.resolvePath(path);
+        
+        // Ensure parent directory exists
+        const dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
+        if (dir) {
+            await this.fs.promises.mkdir(dir, { recursive: true });
+        }
+        
+        // Create the file
+        await this.fs.promises.writeFile(fullPath, content);
     }
 
-    async readdir(path: string): Promise<string[]> {
-        this.ensureInitialized();
-        const entries = await this.fs!.promises.readdir(path);
-        return entries.map((entry) => entry.toString());
+    /**
+     * Read a file - automatically detects text files and returns string
+     */
+    async readFile(path: string): Promise<string | Buffer> {
+        if (!this.fs) throw new Error('File system not initialized');
+        
+        const fullPath = this.resolvePath(path);
+        
+        // Auto-detect text files
+        if (this.isTextFile(path)) {
+            return await this.fs.promises.readFile(fullPath, { encoding: 'utf8' });
+        }
+        
+        return await this.fs.promises.readFile(fullPath);
     }
 
-    async mkdir(path: string, options?: { recursive?: boolean }): Promise<void> {
-        this.ensureInitialized();
-        await this.fs!.promises.mkdir(path, options);
+    /**
+     * Write/update a file
+     */
+    async writeFile(path: string, content: string | Buffer): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+        
+        const fullPath = this.resolvePath(path);
+        
+        // Ensure parent directory exists
+        const dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
+        if (dir) {
+            await this.fs.promises.mkdir(dir, { recursive: true });
+        }
+        
+        await this.fs.promises.writeFile(fullPath, content);
     }
 
-    async unlink(path: string): Promise<void> {
-        this.ensureInitialized();
-        return this.fs!.promises.unlink(path);
+    /**
+     * Delete a file
+     */
+    async deleteFile(path: string): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+        
+        const fullPath = this.resolvePath(path);
+        await this.fs.promises.unlink(fullPath);
     }
 
-    async rename(oldPath: string, newPath: string): Promise<void> {
-        this.ensureInitialized();
-        return this.fs!.promises.rename(oldPath, newPath);
+    /**
+     * Move/rename a file
+     */
+    async moveFile(from: string, to: string): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+        
+        const fromPath = this.resolvePath(from);
+        const toPath = this.resolvePath(to);
+        
+        // Ensure destination directory exists
+        const toDir = toPath.substring(0, toPath.lastIndexOf('/'));
+        if (toDir) {
+            await this.fs.promises.mkdir(toDir, { recursive: true });
+        }
+        
+        await this.fs.promises.rename(fromPath, toPath);
     }
 
-    async stat(path: string) {
-        this.ensureInitialized();
-        return this.fs!.promises.stat(path);
+    /**
+     * Copy a file
+     */
+    async copyFile(from: string, to: string): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+        
+        const content = await this.readFile(from);
+        await this.writeFile(to, content);
     }
 
+    /**
+     * Create a directory (always recursive)
+     */
+    async createDirectory(path: string): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+        
+        const fullPath = this.resolvePath(path);
+        await this.fs.promises.mkdir(fullPath, { recursive: true });
+    }
+
+    /**
+     * Read a directory recursively
+     */
+    async readDirectory(path = '/'): Promise<FileEntry[]> {
+        if (!this.fs) throw new Error('File system not initialized');
+        
+        const fullPath = this.resolvePath(path);
+        
+        const readDirRecursive = async (dirPath: string): Promise<FileEntry[]> => {
+            try {
+                const names = await this.fs!.promises.readdir(dirPath);
+                const entries: FileEntry[] = [];
+                
+                for (const name of names) {
+                    const entryPath = dirPath === '/' ? `/${name}` : `${dirPath}/${name}`;
+                    const stats = await this.fs!.promises.stat(entryPath);
+                    
+                    const entry: FileEntry = {
+                        name,
+                        path: entryPath.substring(this.basePath.length), // Remove base path
+                        isDirectory: stats.isDirectory(),
+                        size: stats.size,
+                        modifiedTime: stats.mtime,
+                    };
+                    
+                    if (entry.isDirectory) {
+                        entry.children = await readDirRecursive(entryPath);
+                    }
+                    
+                    entries.push(entry);
+                }
+                
+                // Sort: directories first, then alphabetically
+                entries.sort((a, b) => {
+                    if (a.isDirectory !== b.isDirectory) {
+                        return a.isDirectory ? -1 : 1;
+                    }
+                    return a.name.localeCompare(b.name);
+                });
+                
+                return entries;
+            } catch (err) {
+                if ((err as any).code === 'ENOENT') {
+                    return [];
+                }
+                throw err;
+            }
+        };
+        
+        return await readDirRecursive(fullPath);
+    }
+
+    /**
+     * Delete a directory recursively
+     */
+    async deleteDirectory(path: string): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+        
+        const fullPath = this.resolvePath(path);
+        
+        const deleteRecursive = async (dirPath: string): Promise<void> => {
+            const entries = await this.fs!.promises.readdir(dirPath);
+            
+            for (const entry of entries) {
+                const entryPath = `${dirPath}/${entry}`;
+                const stats = await this.fs!.promises.stat(entryPath);
+                
+                if (stats.isDirectory()) {
+                    await deleteRecursive(entryPath);
+                } else {
+                    await this.fs!.promises.unlink(entryPath);
+                }
+            }
+            
+            await this.fs!.promises.rmdir(dirPath);
+        };
+        
+        await deleteRecursive(fullPath);
+    }
+
+    /**
+     * Move/rename a directory
+     */
+    async moveDirectory(from: string, to: string): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+        
+        const fromPath = this.resolvePath(from);
+        const toPath = this.resolvePath(to);
+        
+        // Ensure destination parent exists
+        const toDir = toPath.substring(0, toPath.lastIndexOf('/'));
+        if (toDir) {
+            await this.fs.promises.mkdir(toDir, { recursive: true });
+        }
+        
+        await this.fs.promises.rename(fromPath, toPath);
+    }
+
+    /**
+     * Copy a directory recursively
+     */
+    async copyDirectory(from: string, to: string): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+        
+        const fromPath = this.resolvePath(from);
+        const toPath = this.resolvePath(to);
+        
+        const copyRecursive = async (src: string, dest: string): Promise<void> => {
+            const stats = await this.fs!.promises.stat(src);
+            
+            if (stats.isDirectory()) {
+                await this.fs!.promises.mkdir(dest, { recursive: true });
+                const entries = await this.fs!.promises.readdir(src);
+                
+                for (const entry of entries) {
+                    await copyRecursive(`${src}/${entry}`, `${dest}/${entry}`);
+                }
+            } else {
+                const content = await this.fs!.promises.readFile(src);
+                await this.fs!.promises.writeFile(dest, content);
+            }
+        };
+        
+        await copyRecursive(fromPath, toPath);
+    }
+
+    /**
+     * Watch a file for changes
+     */
+    watchFile(path: string, callback: (event: FileChangeEvent) => void): WatcherCleanup {
+        if (!this.fs) throw new Error('File system not initialized');
+        
+        const fullPath = this.resolvePath(path);
+        const watcher = this.fs.watch(fullPath, (eventType, filename) => {
+            callback({
+                type: eventType === 'rename' ? 'rename' : 'update',
+                path,
+            });
+        });
+        
+        // Store watcher for cleanup
+        const watcherList = this.watchers.get(path) || [];
+        watcherList.push(watcher);
+        this.watchers.set(path, watcherList);
+        
+        // Return cleanup function
+        return () => {
+            watcher.close();
+            const list = this.watchers.get(path) || [];
+            const index = list.indexOf(watcher);
+            if (index > -1) {
+                list.splice(index, 1);
+            }
+        };
+    }
+
+    /**
+     * Watch a directory recursively for changes
+     */
+    watchDirectory(path: string, callback: (event: FileChangeEvent) => void): WatcherCleanup {
+        if (!this.fs) throw new Error('File system not initialized');
+        
+        const watchers: any[] = [];
+        const watchedPaths = new Set<string>();
+        
+        const setupWatcher = (dirPath: string) => {
+            if (watchedPaths.has(dirPath)) return;
+            watchedPaths.add(dirPath);
+            
+            const watcher = this.fs!.watch(dirPath, async (eventType, filename) => {
+                if (!filename) return;
+                
+                const relativePath = dirPath.substring(this.basePath.length);
+                const filePath = relativePath === '/' ? `/${filename}` : `${relativePath}/${filename}`;
+                
+                callback({
+                    type: eventType === 'rename' ? 'rename' : 'update',
+                    path: filePath,
+                });
+                
+                // If it's a new directory, start watching it
+                if (eventType === 'rename') {
+                    const fullPath = this.resolvePath(filePath);
+                    try {
+                        const stats = await this.fs!.promises.stat(fullPath);
+                        if (stats.isDirectory() && !watchedPaths.has(fullPath)) {
+                            await setupWatchersRecursive(fullPath);
+                        }
+                    } catch (err) {
+                        // File might have been deleted
+                    }
+                }
+            });
+            
+            watchers.push(watcher);
+        };
+        
+        const setupWatchersRecursive = async (dirPath: string): Promise<void> => {
+            setupWatcher(dirPath);
+            
+            try {
+                const entries = await this.fs!.promises.readdir(dirPath);
+                for (const entry of entries) {
+                    const entryPath = `${dirPath}/${entry}`;
+                    const stats = await this.fs!.promises.stat(entryPath);
+                    if (stats.isDirectory()) {
+                        await setupWatchersRecursive(entryPath);
+                    }
+                }
+            } catch (err) {
+                // Directory might not exist
+            }
+        };
+        
+        const fullPath = this.resolvePath(path);
+        setupWatchersRecursive(fullPath);
+        
+        // Return cleanup function
+        return () => {
+            watchers.forEach(w => w.close());
+        };
+    }
+
+    /**
+     * Check if a file or directory exists
+     */
     async exists(path: string): Promise<boolean> {
-        this.ensureInitialized();
-        return this.fs!.promises.exists(path);
+        if (!this.fs) throw new Error('File system not initialized');
+        
+        const fullPath = this.resolvePath(path);
+        return await this.fs.promises.exists(fullPath);
     }
 
-    async rmdir(path: string): Promise<void> {
-        this.ensureInitialized();
-        return this.fs!.promises.rmdir(path);
+    /**
+     * Get detailed information about a file or directory
+     */
+    async getInfo(path: string): Promise<FileInfo> {
+        if (!this.fs) throw new Error('File system not initialized');
+        
+        const fullPath = this.resolvePath(path);
+        const stats = await this.fs.promises.stat(fullPath);
+        const name = path.substring(path.lastIndexOf('/') + 1);
+        
+        return {
+            path,
+            name,
+            isDirectory: stats.isDirectory(),
+            isFile: stats.isFile(),
+            size: stats.size,
+            createdTime: stats.ctime,
+            modifiedTime: stats.mtime,
+            accessedTime: stats.atime,
+        };
     }
 
-    watch(path: string, callback: (eventType: string, filename: string | null) => void) {
-        this.ensureInitialized();
-        return this.fs!.watch(path, callback);
+    /**
+     * List all files matching a pattern (glob-like)
+     */
+    async listFiles(pattern = '**/*'): Promise<string[]> {
+        if (!this.fs) throw new Error('File system not initialized');
+        
+        const files: string[] = [];
+        
+        const listRecursive = async (dirPath: string): Promise<void> => {
+            try {
+                const entries = await this.fs!.promises.readdir(dirPath);
+                
+                for (const entry of entries) {
+                    const entryPath = `${dirPath}/${entry}`;
+                    const stats = await this.fs!.promises.stat(entryPath);
+                    
+                    if (stats.isFile()) {
+                        const relativePath = entryPath.substring(this.basePath.length);
+                        files.push(relativePath);
+                    } else if (stats.isDirectory()) {
+                        await listRecursive(entryPath);
+                    }
+                }
+            } catch (err) {
+                // Ignore errors
+            }
+        };
+        
+        await listRecursive(this.basePath);
+        
+        // Simple pattern matching (not full glob)
+        if (pattern.includes('*')) {
+            const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+            return files.filter(f => regex.test(f));
+        }
+        
+        return files;
+    }
+
+    /**
+     * Clean up all watchers
+     */
+    cleanup(): void {
+        for (const watchers of this.watchers.values()) {
+            watchers.forEach(w => w.close());
+        }
+        this.watchers.clear();
     }
 }
