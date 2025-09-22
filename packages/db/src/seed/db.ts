@@ -31,7 +31,6 @@ import {
 } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import {
-    ChatMessageRole,
     MessageContextType,
     ProjectRole,
     type MessageContext,
@@ -51,6 +50,7 @@ const user0 = {
     createdAt: new Date(),
     updatedAt: new Date(),
     stripeCustomerId: null,
+    githubInstallationId: null,
 } satisfies User;
 
 const project0 = createDefaultProject({
@@ -156,6 +156,7 @@ const context0 = {
     path: 'src/index.ts',
     displayName: 'index.ts',
     content: 'console.log("Hello, world!");',
+    branchId: branch0.id,
 } satisfies MessageContext;
 
 const context1 = {
@@ -165,6 +166,7 @@ const context1 = {
     content: 'console.log("Hello, world!");',
     start: 0,
     end: 10,
+    branchId: branch0.id,
 } satisfies MessageContext;
 
 const contexts = [context0, context1];
@@ -172,7 +174,7 @@ const contexts = [context0, context1];
 const message0 = {
     id: uuidv4(),
     conversationId: conversation0.id,
-    role: ChatMessageRole.USER,
+    role: 'user',
     content: 'Test message 0',
     commitOid: null,
     createdAt: new Date(),
@@ -186,7 +188,7 @@ const message0 = {
 const message1 = {
     id: uuidv4(),
     conversationId: conversation0.id,
-    role: ChatMessageRole.ASSISTANT,
+    role: 'assistant',
     content: 'Test message 1',
     commitOid: null,
     createdAt: new Date(),
@@ -200,7 +202,7 @@ const message1 = {
 const message2 = {
     id: uuidv4(),
     conversationId: conversation0.id,
-    role: ChatMessageRole.ASSISTANT,
+    role: 'assistant',
     content: 'Test message 2',
     commitOid: null,
     createdAt: new Date(),
@@ -214,7 +216,7 @@ const message2 = {
 const message3 = {
     id: uuidv4(),
     conversationId: conversation0.id,
-    role: ChatMessageRole.USER,
+    role: 'user',
     content: 'Test message 3',
     commitOid: null,
     createdAt: new Date(),
@@ -228,7 +230,7 @@ const message3 = {
 const message4 = {
     id: uuidv4(),
     conversationId: conversation0.id,
-    role: ChatMessageRole.ASSISTANT,
+    role: 'assistant',
     content: 'Test message 4',
     createdAt: new Date(),
     applied: false,

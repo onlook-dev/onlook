@@ -12,7 +12,6 @@ export interface SuggestionsRef {
 }
 
 export const Suggestions = observer(
-    // eslint-disable-next-line react/display-name
     forwardRef<
         SuggestionsRef,
         {

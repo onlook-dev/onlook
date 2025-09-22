@@ -6,7 +6,8 @@ import {
     SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME,
     type SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS,
     TERMINAL_COMMAND_TOOL_NAME, TERMINAL_COMMAND_TOOL_PARAMETERS, TODO_WRITE_TOOL_NAME,
-    type TODO_WRITE_TOOL_PARAMETERS, TYPECHECK_TOOL_NAME,
+    type TODO_WRITE_TOOL_PARAMETERS,
+    TYPECHECK_TOOL_NAME,
     WEB_SEARCH_TOOL_NAME,
     type WEB_SEARCH_TOOL_PARAMETERS,
     WRITE_FILE_TOOL_NAME,
@@ -39,7 +40,7 @@ export const ToolCallDisplay = ({
     const toolName = toolPart.type.split('-')[1];
     const loading = isStream && isLastPart;
 
-    if (isStream && toolPart.state !== 'output-available' && toolPart.state !== 'input-available') {
+    if (isStream || (toolPart.state !== 'output-available' && toolPart.state !== 'input-available')) {
         return (
             <ToolCallSimple
                 toolPart={toolPart}
@@ -109,8 +110,6 @@ export const ToolCallDisplay = ({
                 messageId={messageId}
                 applied={applied}
                 isStream={isStream}
-                originalContent={codeContent}
-                updatedContent={codeContent}
                 branchId={branchId}
             />
         );
@@ -137,8 +136,6 @@ export const ToolCallDisplay = ({
                 messageId={messageId}
                 applied={applied}
                 isStream={isStream}
-                originalContent={codeContent}
-                updatedContent={codeContent}
                 branchId={branchId}
             />
         );
@@ -165,8 +162,6 @@ export const ToolCallDisplay = ({
                 messageId={messageId}
                 applied={applied}
                 isStream={isStream}
-                originalContent={codeContent}
-                updatedContent={codeContent}
                 branchId={branchId}
             />
         );
@@ -193,8 +188,6 @@ export const ToolCallDisplay = ({
                 messageId={messageId}
                 applied={applied}
                 isStream={isStream}
-                originalContent={codeContent}
-                updatedContent={codeContent}
                 branchId={branchId}
             />
         );
@@ -217,7 +210,11 @@ export const ToolCallDisplay = ({
                 {todos.map((todo) => (
                     <div className="flex items-center gap-2 text-sm" key={todo.content}>
                         <div className="flex items-center justify-center w-4 h-4 min-w-4">
-                            {todo.status === 'completed' ? <Icons.SquareCheck className="w-4 h-4" /> : <Icons.Square className="w-4 h-4" />}
+                            {
+                                todo.status === 'completed' ?
+                                    <Icons.SquareCheck className="w-4 h-4" /> :
+                                    <Icons.Square className="w-4 h-4" />
+                            }
                         </div>
                         <p className={cn(
                             todo.status === 'completed' ? 'line-through text-green-500' : '',

@@ -80,10 +80,8 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const sendMessage: SendMessage = useCallback(
         async (content: string, type: ChatType) => {
             posthog.capture('user_send_message', { type });
-
             const context = await editorEngine.chat.context.getContextByChatType(type);
             const newMessage = getUserChatMessageFromString(content, context, conversationId);
-
             setMessages(jsonClone([...messagesRef.current, newMessage]));
 
             void regenerate({
@@ -110,8 +108,6 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const editMessage: EditMessage = useCallback(
         async (messageId: string, newContent: string, chatType: ChatType) => {
             posthog.capture('user_edit_message', { type: ChatType.EDIT });
-
-            console.log('[RERENDER] editMessage');
 
             const messageIndex = messagesRef.current.findIndex((m) => m.id === messageId);
             const message = messagesRef.current[messageIndex];
@@ -230,5 +226,14 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         editorEngine.chat.setChatActions(sendMessage);
     }, [editorEngine.chat, sendMessage]);
 
-    return { status, sendMessage, editMessage, messages, error, stop, isStreaming, suggestions };
+    return {
+        status,
+        sendMessage,
+        editMessage,
+        messages,
+        error,
+        stop,
+        isStreaming,
+        suggestions,
+    };
 }
