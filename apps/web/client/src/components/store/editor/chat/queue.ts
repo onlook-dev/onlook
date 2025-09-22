@@ -18,7 +18,7 @@ export class MessageQueue {
     }
 
     get queue(): QueuedMessage[] {
-        return this._queue;
+        return [...this._queue];
     }
 
     get length(): number {
