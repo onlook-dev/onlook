@@ -5,6 +5,7 @@
     "homepage": "https://onlook.com",
     "license": "Apache-2.0",
     "private": true,
+    "type": "module",
     "author": {
         "name": "Onlook",
         "email": "contact@onlook.com"
@@ -19,8 +20,8 @@
     "scripts": {
         "build": "bun --filter @onlook/web build:client",
         "start": "bun --filter @onlook/web start:client",
-        "dev": "bun --elide-lines 0 --filter @onlook/web dev",
-        "test": "bun --elide-lines 0 --filter '*' test",
+        "dev": "bun --elide-lines=0 --filter @onlook/web dev",
+        "test": "bun --elide-lines=0 --filter '*' test",
         "docs": "bun --filter @onlook/docs dev",
         "backend:start": "bun --filter @onlook/backend start",
         "db:gen": "bun --filter @onlook/db db:gen",
@@ -29,8 +30,8 @@
         "db:migrate": "cd packages/db && bun db:migrate",
         "db:reset": "cd apps/backend && bun run reset",
         "format": "bun --filter '*' format",
-        "lint": "bun --filter @onlook/web-client lint",
-        "typecheck": "cd apps/web/client && bun run typecheck",
+        "lint": "bun --filter '*' lint",
+        "typecheck": "bun --filter '*' typecheck",
         "prepare": "husky",
         "clean": "git clean -xdf node_modules",
         "clean:workspaces": "bun --filter '*' clean",
@@ -49,7 +50,8 @@
         "url": "https://github.com/onlook-dev/onlook/issues"
     },
     "devDependencies": {
-        "husky": "^9.1.6"
+        "husky": "^9.1.6",
+        "@onlook/eslint": "*"
     },
     "packageManager": "bun@1.2.21"
 }

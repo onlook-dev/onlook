@@ -2,6 +2,7 @@
 
 import { LocalForageKeys } from '@/utils/constants';
 import { SignInMethod } from '@onlook/models/auth';
+import { toast } from '@onlook/ui/sonner';
 import localforage from 'localforage';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -34,26 +35,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const handleLogin = async (method: SignInMethod.GITHUB | SignInMethod.GOOGLE, returnUrl: string | null) => {
-        setSigningInMethod(method);
-        if (returnUrl) {
-            await localforage.setItem(LocalForageKeys.RETURN_URL, returnUrl);
-        }
-        await localforage.setItem(LAST_SIGN_IN_METHOD_KEY, method);
-        await login(method);
-        setTimeout(() => {
+        try {
+            setSigningInMethod(method);
+            if (returnUrl) {
+                await localforage.setItem(LocalForageKeys.RETURN_URL, returnUrl);
+            }
+            await localforage.setItem(LAST_SIGN_IN_METHOD_KEY, method);
+            await login(method);
+        } catch (error) {
+            toast.error('Error signing in with password');
+            console.error('Error signing in with password:', error);
+            throw new Error('Error signing in with password');
+        } finally {
             setSigningInMethod(null);
-        }, 5000);
+        }
     };
 
     const handleDevLogin = async (returnUrl: string | null) => {
-        setSigningInMethod(SignInMethod.DEV);
-        if (returnUrl) {
-            await localforage.setItem(LocalForageKeys.RETURN_URL, returnUrl);
-        }
-        await devLogin();
-        setTimeout(() => {
+        try {
+            setSigningInMethod(SignInMethod.DEV);
+            if (returnUrl) {
+                await localforage.setItem(LocalForageKeys.RETURN_URL, returnUrl);
+            }
+            await devLogin();
+        } catch (error) {
+            toast.error('Error signing in with password', {
+                description: error instanceof Error ? error.message : 'Please try again.',
+            });
+            console.error('Error signing in with password:', error);
+            throw new Error('Error signing in with password');
+        } finally {
             setSigningInMethod(null);
-        }, 5000);
+        }
     }
 
     return (

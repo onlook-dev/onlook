@@ -1,5 +1,6 @@
-import { api } from '@/trpc/react';
 import { useEditorEngine } from '@/components/store/editor';
+import { api } from '@/trpc/react';
+import { CodeBlock } from '@onlook/ui/ai-elements';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
@@ -7,14 +8,11 @@ import { cn, getTruncatedFileName } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import { CodeBlock } from './code-block';
 
 interface CollapsibleCodeBlockProps {
     path: string;
     content: string;
     messageId: string;
-    originalContent: string;
-    updatedContent: string;
     applied: boolean;
     isStream?: boolean;
     branchId?: string;
@@ -23,9 +21,6 @@ interface CollapsibleCodeBlockProps {
 export const CollapsibleCodeBlock = observer(({
     path,
     content,
-    messageId,
-    updatedContent,
-    applied,
     isStream,
     branchId,
 }: CollapsibleCodeBlockProps) => {
@@ -35,7 +30,7 @@ export const CollapsibleCodeBlock = observer(({
     const [copied, setCopied] = useState(false);
 
     const copyToClipboard = () => {
-        navigator.clipboard.writeText(updatedContent);
+        navigator.clipboard.writeText(content);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
@@ -49,7 +44,6 @@ export const CollapsibleCodeBlock = observer(({
 
     return (
         <div className="group relative">
-
             <Collapsible open={isOpen} onOpenChange={setIsOpen}>
                 <div
                     className={cn(
@@ -83,16 +77,13 @@ export const CollapsibleCodeBlock = observer(({
                                 >
                                     <span className="truncate flex-1 min-w-0">{getTruncatedFileName(path)}</span>
                                     {(() => {
-                                        const branch = branchId 
+                                        const branch = branchId
                                             ? editorEngine.branches.allBranches.find(b => b.id === branchId)
                                             : editorEngine.branches.activeBranch;
                                         return branch && (
-                                            <>
-                                                
-                                                 <span className="text-foreground-tertiary group-hover:text-foreground-secondary text-mini ml-0.5 flex-shrink-0 truncate max-w-24">
-                                                     {' • '}{branch.name}
-                                                 </span>
-                                            </>
+                                            <span className="text-foreground-tertiary group-hover:text-foreground-secondary text-mini ml-0.5 flex-shrink-0 truncate max-w-24">
+                                                {' • '}{branch.name}
+                                            </span>
                                         );
                                     })()}
                                 </div>
@@ -110,26 +101,25 @@ export const CollapsibleCodeBlock = observer(({
                                 style={{ overflow: 'hidden' }}
                             >
                                 <div className="border-t">
-                                    <CodeBlock code={updatedContent} />
-                                    <div className="flex justify-end gap-1.5 p-1 border-t">
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-7 px-2 text-foreground-secondary hover:text-foreground font-sans select-none"
-                                            onClick={copyToClipboard}
-                                        >
-                                            {copied ? (
-                                                <>
-                                                    <Icons.Check className="h-4 w-4 mr-2" />
-                                                    Copied
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Icons.Copy className="h-4 w-4 mr-2" />
-                                                    Copy
-                                                </>
-                                            )}
-                                        </Button>
+                                    <CodeBlock code={content} language="jsx" className="text-xs overflow-x-auto" />
+                                    <div className="flex justify-end gap-1.5 p-1 border-t">                                        <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 px-2 text-foreground-secondary hover:text-foreground font-sans select-none"
+                                        onClick={copyToClipboard}
+                                    >
+                                        {copied ? (
+                                            <>
+                                                <Icons.Check className="h-4 w-4 mr-2" />
+                                                Copied
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Icons.Copy className="h-4 w-4 mr-2" />
+                                                Copy
+                                            </>
+                                        )}
+                                    </Button>
                                     </div>
                                 </div>
                             </motion.div>

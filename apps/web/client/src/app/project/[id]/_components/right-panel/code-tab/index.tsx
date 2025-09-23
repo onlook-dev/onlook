@@ -161,11 +161,13 @@ export const CodeTab = observer(() => {
 
             // Create the selection and apply it in a single transaction
             const selection = EditorSelection.create([EditorSelection.range(startPos, endPos)]);
+            
             editorView.dispatch({
                 selection,
                 effects: [
-                    EditorView.scrollIntoView(selection.main, {
-                        y: 'start'
+                    EditorView.scrollIntoView(startPos, {
+                        y: 'start',
+                        yMargin: 48 
                     })
                 ],
                 userEvent: 'select.element'
