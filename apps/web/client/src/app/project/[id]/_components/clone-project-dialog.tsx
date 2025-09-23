@@ -31,7 +31,7 @@ export const CloneProjectDialog = observer(({ isOpen, onClose, projectName }: Cl
     const editorEngine = useEditorEngine();
     const router = useRouter();
     const { mutateAsync: cloneProject } = api.project.fork.useMutation();
-    const [cloneProjectName, setCloneProjectName] = useState(`${projectName} (Clone)` || '');
+    const [cloneProjectName, setCloneProjectName] = useState(projectName ? `${projectName} (Clone)` : '');
     const [isCloningCurrentProject, setIsCloningCurrentProject] = useState(false);
 
     // Generate default clone name
