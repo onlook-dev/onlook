@@ -95,6 +95,10 @@ export const userRouter = createTRPCRouter({
             return user ?? null;
         }),
     settings: userSettingsRouter,
+    delete: protectedProcedure.mutation(async ({ ctx }) => {
+        // Delete user in supabase. Changes should propagate to the db automatically.
+        await ctx.supabase.auth.admin.deleteUser(ctx.user.id);
+    }),
 });
 
 function getUserName(authUser: SupabaseUser) {
