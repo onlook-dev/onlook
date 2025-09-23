@@ -3,7 +3,6 @@ import { callUserWebhook } from '@/utils/n8n/webhook';
 import { authUsers, fromDbUser, userInsertSchema, users, type User } from '@onlook/db';
 import { extractNames } from '@onlook/utility';
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -98,15 +97,6 @@ export const userRouter = createTRPCRouter({
     settings: userSettingsRouter,
     delete: protectedProcedure.mutation(async ({ ctx }) => {
         await ctx.db.delete(authUsers).where(eq(authUsers.id, ctx.user.id));
-
-        // Delete user in supabase. Changes should propagate to the db automatically.
-        const { error } = await ctx.supabase.auth.admin.deleteUser(ctx.user.id);
-        if (error) {
-            throw new TRPCError({
-                code: 'INTERNAL_SERVER_ERROR',
-                message: `Failed to delete user: ${error.message}`,
-            });
-        }
     }),
 });
 
