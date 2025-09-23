@@ -8,8 +8,8 @@
         }
     },
     "include": [
-        "src",
-        "test"
+        "script",
+        "server"
     ],
     "exclude": [
         "node_modules"

@@ -1,0 +1,24 @@
+{
+    "name": "@onlook/prettier",
+    "private": true,
+    "version": "0.1.0",
+    "type": "module",
+    "exports": {
+        ".": "./index.js"
+    },
+    "scripts": {
+        "clean": "git clean -xdf .cache .turbo node_modules",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
+        "prettier": "^3.3.3",
+        "prettier-plugin-tailwindcss": "^0.6.11"
+    },
+    "devDependencies": {
+        "@onlook/typescript": "*",
+        "@types/node": "^20.0.0",
+        "typescript": "^5.5.4"
+    },
+    "prettier": "@onlook/prettier"
+}
