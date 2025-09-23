@@ -8,7 +8,7 @@ import {
     AlertDialogContent,
     AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogTitle,
+    AlertDialogTitle
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { DropdownMenuItem } from '@onlook/ui/dropdown-menu';
@@ -70,7 +70,10 @@ export function CloneProject({ project, refetch }: { project: Project; refetch: 
     return (
         <>
             <DropdownMenuItem
-                onSelect={() => setShowCloneDialog(true)}
+                onSelect={(event) => {
+                    event.preventDefault();
+                    setShowCloneDialog(true);
+                }}
                 className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
             >
                 <Icons.Copy className="w-4 h-4" />

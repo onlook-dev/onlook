@@ -4,12 +4,12 @@ import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
 import type { Project } from '@onlook/models';
 import {
-    AlertDialog,
-    AlertDialogContent,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@onlook/ui/alert-dialog';
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@onlook/ui/dialog';
 import { Button } from '@onlook/ui/button';
 import { DropdownMenuItem } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
@@ -64,18 +64,21 @@ export function RenameProject({ project, refetch }: { project: Project; refetch:
     return (
         <>
             <DropdownMenuItem
-                onSelect={() => setShowRenameDialog(true)}
+                onSelect={(event) => {
+                    event.preventDefault();
+                    setShowRenameDialog(true);
+                }}
                 className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
             >
                 <Icons.Pencil className="w-4 h-4" />
                 {t(transKeys.projects.actions.renameProject)}
             </DropdownMenuItem>
 
-            <AlertDialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>{t(transKeys.projects.dialogs.rename.title)}</AlertDialogTitle>
-                    </AlertDialogHeader>
+            <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t(transKeys.projects.dialogs.rename.title)}</DialogTitle>
+                    </DialogHeader>
                     <div className="flex flex-col w-full gap-2">
                         <Label htmlFor="text">{t(transKeys.projects.dialogs.rename.label)}</Label>
                         <Input
@@ -93,7 +96,7 @@ export function RenameProject({ project, refetch }: { project: Project; refetch:
                             {t(transKeys.projects.dialogs.rename.error)}
                         </p>
                     </div>
-                    <AlertDialogFooter>
+                    <DialogFooter>
                         <Button variant={'ghost'} onClick={() => setShowRenameDialog(false)}>
                             {t(transKeys.projects.actions.cancel)}
                         </Button>
@@ -104,9 +107,9 @@ export function RenameProject({ project, refetch }: { project: Project; refetch:
                         >
                             {t(transKeys.projects.actions.rename)}
                         </Button>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

@@ -9,7 +9,7 @@ import {
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogTitle,
+    AlertDialogTitle
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { DropdownMenuItem } from '@onlook/ui/dropdown-menu';
@@ -31,13 +31,15 @@ export function DeleteProject({ project, refetch }: { project: Project; refetch:
     return (
         <>
             <DropdownMenuItem
-                onSelect={() => setShowDeleteDialog(true)}
+                onSelect={(event) => {
+                    event.preventDefault();
+                    setShowDeleteDialog(true);
+                }}
                 className="gap-2 text-red-400 hover:!bg-red-200/80 hover:!text-red-700 dark:text-red-200 dark:hover:!bg-red-800 dark:hover:!text-red-100"
             >
                 <Icons.Trash className="w-4 h-4" />
                 {t(transKeys.projects.actions.deleteProject)}
             </DropdownMenuItem>
-
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                 <AlertDialogContent>
                     <AlertDialogHeader>

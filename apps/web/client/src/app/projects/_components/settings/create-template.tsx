@@ -44,7 +44,7 @@ export function CreateTemplate({ project, refetch }: { project: Project; refetch
             ) : (
                 <Icons.FilePlus className="w-4 h-4" />
             )}
-            {isTemplate ? 'Unmark as template' : 'Create template'}
+            {isTemplate ? 'Unmark as template' : 'Convert to template'}
         </DropdownMenuItem>
     );
 }
