@@ -1,6 +1,5 @@
 'use client';
 
-import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { type ProjectCreateRequest } from '@onlook/db';
@@ -10,7 +9,7 @@ import {
     MessageContextType,
     ProjectCreateRequestStatus,
     type ImageMessageContext,
-    type MessageContext
+    type MessageContext,
 } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { useEffect, useRef, useState } from 'react';
@@ -33,7 +32,6 @@ export const useStartProject = () => {
     const { data: canvasWithFrames, error: canvasError } = api.userCanvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
     const { data: conversations, error: conversationsError } = api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
     const { data: creationRequest, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
-    const { sendMessageToChat } = useChatContext();
     const { mutateAsync: updateCreateRequest } = api.project.createRequest.updateStatus.useMutation({
         onSettled: async () => {
             await apiUtils.project.createRequest.getPendingRequest.invalidate({ projectId: editorEngine.projectId });
@@ -70,17 +68,16 @@ export const useStartProject = () => {
                 updateProjectReadyState({ conversations: true });
             }
         };
-        applyConversations();
-    }, [conversations]);
+        void applyConversations();
+    }, [editorEngine.chat.conversation, conversations]);
 
     useEffect(() => {
         const isProjectReady = Object.values(projectReadyState).every((value) => value);
-        if (creationRequest && processedRequestIdRef.current !== creationRequest.id && isProjectReady) {
-            console.error('Resume create', creationRequest, isProjectReady, processedRequestIdRef.current);
+        if (creationRequest && processedRequestIdRef.current !== creationRequest.id && isProjectReady && editorEngine.chat._sendMessageAction) {
             processedRequestIdRef.current = creationRequest.id;
-            resumeCreate(creationRequest);
+            void resumeCreate(creationRequest);
         }
-    }, [creationRequest, projectReadyState]);
+    }, [creationRequest, projectReadyState, editorEngine.chat._sendMessageAction]);
 
     const resumeCreate = async (creationData: ProjectCreateRequest) => {
         try {
@@ -88,21 +85,35 @@ export const useStartProject = () => {
                 throw new Error('Project ID mismatch');
             }
 
-            const createContext: MessageContext[] = await editorEngine.chat.context.getCreateContext();
-            const imageContexts: ImageMessageContext[] = creationData.context.filter((context) => context.type === CreateRequestContextType.IMAGE).map((context) => ({
-                type: MessageContextType.IMAGE,
-                content: context.content,
-                mimeType: context.mimeType,
-                displayName: 'user image',
-            }));
-            const context: MessageContext[] = [...createContext, ...imageContexts];
-            const prompt = creationData.context.filter((context) => context.type === CreateRequestContextType.PROMPT).map((context) => (context.content)).join('\n');
+            const createContext: MessageContext[] =
+                await editorEngine.chat.context.getCreateContext();
+            const imageContexts: ImageMessageContext[] = creationData.context
+                .filter((context) => context.type === CreateRequestContextType.IMAGE)
+                .map((context) => ({
+                    type: MessageContextType.IMAGE,
+                    content: context.content,
+                    mimeType: context.mimeType,
+                    displayName: 'user image',
+                }));
 
-            await editorEngine.chat.addEditMessage(
-                prompt,
-                context,
+            const context: MessageContext[] = [...createContext, ...imageContexts];
+            editorEngine.chat.context.addContexts(context);
+
+            const prompt = creationData.context
+                .filter((context) => context.type === CreateRequestContextType.PROMPT)
+                .map((context) => context.content)
+                .join('\n');
+
+            const [conversation] = await editorEngine.chat.conversation.getConversations(
+                editorEngine.projectId,
             );
-            sendMessageToChat(ChatType.CREATE);
+
+            if (!conversation) {
+                throw new Error('No conversation found');
+            }
+
+            await editorEngine.chat.conversation.selectConversation(conversation.id);
+            await editorEngine.chat.sendMessage(prompt, ChatType.CREATE);
 
             try {
                 await updateCreateRequest({

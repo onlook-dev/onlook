@@ -75,11 +75,15 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
                             editorEngine.elements.shiftClick(el);
                         } else {
                             editorEngine.elements.click([el]);
-                            editorEngine.move.startDragPreparation(el, pos, frameData);
                         }
                         break;
                     case MouseAction.DOUBLE_CLICK:
-                        editorEngine.text.start(el, frameData.view);
+                        if (el.oid) {
+                            editorEngine.ide.openCodeBlock(el.oid);
+                        } else {
+                            toast.error('Cannot find element in code panel');
+                            return;
+                        }
                         break;
                 }
             } catch (error) {
@@ -90,25 +94,25 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
         [getRelativeMousePosition, editorEngine],
     );
 
-    const throttledMouseMove = useMemo(
-        () =>
-            throttle(async (e: React.MouseEvent<HTMLDivElement>) => {
-
-                if (editorEngine.move.shouldDrag) {
-                    await editorEngine.move.drag(e, getRelativeMousePosition);
-                } else if (
-                    editorEngine.state.editorMode === EditorMode.DESIGN ||
-                    ((editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
-                        editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
-                        editorEngine.state.editorMode === EditorMode.INSERT_IMAGE) &&
-                        !editorEngine.insert.isDrawing)
-                ) {
-                    await handleMouseEvent(e, MouseAction.MOVE);
-                } else if (editorEngine.insert.isDrawing) {
-                    editorEngine.insert.draw(e);
-                }
-            }, 16),
-        [editorEngine, getRelativeMousePosition, handleMouseEvent],
+    const throttledMouseMove = useMemo(() =>
+        throttle(async (e: React.MouseEvent<HTMLDivElement>) => {
+            // Skip hover events during drag selection
+            if (editorEngine.state.isDragSelecting) {
+                return;
+            }
+            if (
+                editorEngine.state.editorMode === EditorMode.DESIGN ||
+                ((editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
+                    editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
+                    editorEngine.state.editorMode === EditorMode.INSERT_IMAGE) &&
+                    !editorEngine.insert.isDrawing)
+            ) {
+                await handleMouseEvent(e, MouseAction.MOVE);
+            } else if (editorEngine.insert.isDrawing) {
+                editorEngine.insert.draw(e);
+            }
+        }, 16),
+        [editorEngine.state.isDragSelecting, editorEngine.state.editorMode, editorEngine.insert.isDrawing, getRelativeMousePosition, handleMouseEvent],
     );
 
     useEffect(() => {
@@ -149,9 +153,6 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
             return;
         }
 
-        editorEngine.move.cancelDragPreparation();
-
-        await editorEngine.move.end(e);
         await editorEngine.insert.end(e, frameData.view);
     }
 

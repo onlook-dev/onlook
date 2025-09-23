@@ -9,7 +9,8 @@ export const env = createEnv({
     server: {
         NODE_ENV: z.enum(['development', 'test', 'production']),
         CSB_API_KEY: z.string(),
-        SUPABASE_DATABASE_URL: z.string().url(),
+        SUPABASE_DATABASE_URL: z.url(),
+        SUPABASE_SERVICE_ROLE_KEY: z.string(),
         RESEND_API_KEY: z.string().optional(),
         FREESTYLE_API_KEY: z.string().optional(),
 
@@ -40,6 +41,9 @@ export const env = createEnv({
         // n8n
         N8N_WEBHOOK_URL: z.string().optional(),
         N8N_API_KEY: z.string().optional(),
+        N8N_LANDING_FORM_URL: z.string().url().optional(),
+        N8N_LANDING_FORM_HEADER_NAME: z.string().optional(),
+        N8N_LANDING_FORM_HEADER_VALUE: z.string().optional(),
 
         // Firecrawl
         FIRECRAWL_API_KEY: z.string().optional(),
@@ -63,7 +67,7 @@ export const env = createEnv({
      * `NEXT_PUBLIC_`.
      */
     client: {
-        NEXT_PUBLIC_SITE_URL: z.string().url().default('http://localhost:3000'),
+        NEXT_PUBLIC_SITE_URL: z.url().default('http://localhost:3000'),
         NEXT_PUBLIC_SUPABASE_URL: z.string(),
         NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
         NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
@@ -86,6 +90,7 @@ export const env = createEnv({
 
         // Supabase
         SUPABASE_DATABASE_URL: process.env.SUPABASE_DATABASE_URL,
+        SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
         NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
         NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
         NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -129,6 +134,9 @@ export const env = createEnv({
         // n8n
         N8N_WEBHOOK_URL: process.env.N8N_WEBHOOK_URL,
         N8N_API_KEY: process.env.N8N_API_KEY,
+        N8N_LANDING_FORM_URL: process.env.N8N_LANDING_FORM_URL,
+        N8N_LANDING_FORM_HEADER_NAME: process.env.N8N_LANDING_FORM_HEADER_NAME,
+        N8N_LANDING_FORM_HEADER_VALUE: process.env.N8N_LANDING_FORM_HEADER_VALUE,
 
         // Firecrawl
         FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,

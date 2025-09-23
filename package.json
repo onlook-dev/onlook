@@ -20,8 +20,8 @@
     "scripts": {
         "build": "bun --filter @onlook/web build:client",
         "start": "bun --filter @onlook/web start:client",
-        "dev": "bun --elide-lines 0 --filter @onlook/web dev",
-        "test": "bun --elide-lines 0 --filter '*' test",
+        "dev": "bun --elide-lines=0 --filter @onlook/web dev",
+        "test": "bun --elide-lines=0 --filter '*' test",
         "docs": "bun --filter @onlook/docs dev",
         "backend:start": "bun --filter @onlook/backend start",
         "db:gen": "bun --filter @onlook/db db:gen",

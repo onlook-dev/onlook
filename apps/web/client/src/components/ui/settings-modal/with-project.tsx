@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import DomainTab from './domain';
 import { SettingsTabValue, type SettingTab } from './helpers';
 import { PreferencesTab } from './preferences-tab';
+import { SubscriptionTab } from './subscription-tab';
 import { ProjectTab } from './project';
 import { SiteTab } from './site';
 import { VersionsTab } from './versions';
@@ -67,6 +68,11 @@ export const SettingsModalWithProjects = observer(() => {
             label: SettingsTabValue.PREFERENCES,
             icon: <Icons.Person className="mr-2 h-4 w-4" />,
             component: <PreferencesTab />,
+        },
+        {
+            label: SettingsTabValue.SUBSCRIPTION,
+            icon: <Icons.CreditCard className="mr-2 h-4 w-4" />,
+            component: <SubscriptionTab />,
         },
     ];
 
@@ -152,9 +158,15 @@ export const SettingsModalWithProjects = observer(() => {
                                     {/* Left navigation - fixed width */}
                                     <div className="flex flex-col overflow-y-scroll select-none">
                                         <div className="shrink-0 w-48 space-y-1 p-5 text-regularPlus">
-                                            <p className="text-muted-foreground text-smallPlus ml-2.5 mt-2 mb-2">
+                                            <p className="text-muted-foreground text-smallPlus ml-2.5 mt-2 mb-0.5">
                                                 Project
                                             </p>
+                                            <div className="flex items-center gap-1.5 ml-2.5 mb-3 text-muted-foreground/80">
+                                                <Icons.Branch className="min-h-3 min-w-3" />
+                                                <span className="text-small truncate max-w-30">
+                                                    {editorEngine.branches.activeBranch.name}
+                                                </span>
+                                            </div>
                                             {projectTabs.map((tab) => (
                                                 <Button
                                                     key={tab.label}

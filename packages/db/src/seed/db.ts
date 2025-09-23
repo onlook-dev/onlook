@@ -31,7 +31,6 @@ import {
 } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import {
-    ChatMessageRole,
     MessageContextType,
     ProjectRole,
     type MessageContext,
@@ -175,7 +174,7 @@ const contexts = [context0, context1];
 const message0 = {
     id: uuidv4(),
     conversationId: conversation0.id,
-    role: ChatMessageRole.USER,
+    role: 'user',
     content: 'Test message 0',
     commitOid: null,
     createdAt: new Date(),
@@ -184,12 +183,13 @@ const message0 = {
     checkpoints: [],
     parts: [{ type: 'text', text: 'Test message 0' }],
     snapshots: null,
+    usage: null,
 } satisfies Message;
 
 const message1 = {
     id: uuidv4(),
     conversationId: conversation0.id,
-    role: ChatMessageRole.ASSISTANT,
+    role: 'assistant',
     content: 'Test message 1',
     commitOid: null,
     createdAt: new Date(),
@@ -198,12 +198,13 @@ const message1 = {
     parts: [{ type: 'text', text: 'Test message 1' }],
     checkpoints: [],
     snapshots: null,
+    usage: null,
 } satisfies Message;
 
 const message2 = {
     id: uuidv4(),
     conversationId: conversation0.id,
-    role: ChatMessageRole.ASSISTANT,
+    role: 'assistant',
     content: 'Test message 2',
     commitOid: null,
     createdAt: new Date(),
@@ -212,12 +213,13 @@ const message2 = {
     parts: [{ type: 'text', text: 'Test message 2' }],
     checkpoints: [],
     snapshots: null,
+    usage: null,
 } satisfies Message;
 
 const message3 = {
     id: uuidv4(),
     conversationId: conversation0.id,
-    role: ChatMessageRole.USER,
+    role: 'user',
     content: 'Test message 3',
     commitOid: null,
     createdAt: new Date(),
@@ -226,12 +228,13 @@ const message3 = {
     parts: [{ type: 'text', text: 'Test message 3' }],
     checkpoints: [],
     snapshots: null,
+    usage: null,
 } satisfies Message;
 
 const message4 = {
     id: uuidv4(),
     conversationId: conversation0.id,
-    role: ChatMessageRole.ASSISTANT,
+    role: 'assistant',
     content: 'Test message 4',
     createdAt: new Date(),
     applied: false,
@@ -240,6 +243,7 @@ const message4 = {
     checkpoints: [],
     snapshots: null,
     commitOid: null,
+    usage: null,
 } satisfies Message;
 
 const product0 = {

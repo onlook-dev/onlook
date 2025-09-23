@@ -15,6 +15,7 @@ export class StateManager {
     publishOpen = false;
     leftPanelLocked = false;
     canvasPanning = false;
+    isDragSelecting = false;
 
     editorMode: EditorMode = EditorMode.DESIGN;
     leftPanelTab: LeftPanelTabValue | null = null;

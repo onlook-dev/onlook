@@ -4,7 +4,6 @@ import {
     DropdownMenuLabel,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
-import { Input } from "@onlook/ui/input";
 import { ScrollArea } from "@onlook/ui/scroll-area";
 import { timeAgo } from "@onlook/utility";
 import { useMemo, useState } from "react";
@@ -35,17 +34,9 @@ export function BranchList({
 
     return (
         <>
-            {showSearch && (
-                <div className="p-2 border-b">
-                    <DropdownMenuLabel>Branches</DropdownMenuLabel>
-                    <Input
-                        placeholder="Search"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-            )}
-
+            <div className="p-1.5 border-b select-none">
+                <DropdownMenuLabel>Branches</DropdownMenuLabel>
+            </div>
             <ScrollArea className="max-h-[300px]">
                 <div className="p-1">
                     {filteredBranches.map((branch) => (
@@ -58,7 +49,7 @@ export function BranchList({
                                 {activeBranch.id === branch.id ? (
                                     <Icons.Check className="h-4 w-4 text-green-600" />
                                 ) : (
-                                    <Icons.Commit className="h-4 w-4 text-muted-foreground" />
+                                    <Icons.Branch className="h-4 w-4 text-muted-foreground" />
                                 )}
                                 <span className="truncate font-medium">{branch.name}</span>
                             </div>

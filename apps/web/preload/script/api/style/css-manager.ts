@@ -15,6 +15,9 @@ class CSSManager {
             [${EditorAttributes.DATA_ONLOOK_EDITING_TEXT}="true"] {
                 opacity: 0;
             }
+            nextjs-portal {
+                display: none;
+            }
         `;
             document.head.appendChild(styleElement);
         } catch (error) {
