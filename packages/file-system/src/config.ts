@@ -10,7 +10,7 @@ export async function getFS(): Promise<typeof fs> {
             mounts: {
                 '/': {
                     backend: IndexedDB,
-                    storeName: 'onlook-fs',
+                    storeName: 'browser-fs',
                 },
             },
         }).catch((err) => {

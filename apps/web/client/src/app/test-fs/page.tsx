@@ -1,7 +1,7 @@
 'use client';
 
-import { useOnlookFS, useFile, useDirectory } from '@/services/onlook-fs/hooks';
-import type { FileEntry, FileChangeEvent } from '@/services/onlook-fs/types';
+import { useFS, useFile, useDirectory } from '@onlook/file-system/hooks';
+import type { FileEntry, FileChangeEvent } from '@onlook/file-system';
 import { useState, useEffect } from 'react';
 import { ContextMenu, type ContextMenuItem } from './components/ContextMenu';
 import { RenameModal } from './components/RenameModal';
@@ -62,8 +62,9 @@ interface EditorProps {
 }
 
 function Editor({ projectId, branchId, path }: EditorProps) {
-    const { fs } = useOnlookFS(projectId, branchId);
-    const { content, loading, error } = useFile(projectId, branchId, path);
+    const rootDir = `/${projectId}/${branchId}`;
+    const { fs } = useFS(rootDir);
+    const { content, loading, error } = useFile(rootDir, path);
     const [editorContent, setEditorContent] = useState('');
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -147,8 +148,9 @@ interface ProjectEditorProps {
 
 function ProjectEditor({ project, color }: ProjectEditorProps) {
     const [selectedFile, setSelectedFile] = useState<string | null>(null);
-    const { fs, isInitializing } = useOnlookFS(project.id, project.branch);
-    const { entries, loading, error } = useDirectory(project.id, project.branch, '/');
+    const rootDir = `/${project.id}/${project.branch}`;
+    const { fs, isInitializing } = useFS(rootDir);
+    const { entries, loading, error } = useDirectory(rootDir, '/');
     const [isSettingUp, setIsSettingUp] = useState(false);
     const [contextMenu, setContextMenu] = useState<{ x: number; y: number; entry: FileEntry } | null>(null);
     const [renameModal, setRenameModal] = useState<{ isOpen: boolean; entry: FileEntry | null }>({ isOpen: false, entry: null });
@@ -451,7 +453,8 @@ dist/
 // Component to show file system watch events
 function WatchEventsLog({ projectId, branchId }: { projectId: string; branchId: string }) {
     const [events, setEvents] = useState<Array<FileChangeEvent & { timestamp: Date }>>([]);
-    const { fs } = useOnlookFS(projectId, branchId);
+    const rootDir = `/${projectId}/${branchId}`;
+    const { fs } = useFS(rootDir);
 
     useEffect(() => {
         if (!fs) return;

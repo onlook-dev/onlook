@@ -1,5 +1,5 @@
 /**
- * Types for the OnlookFS file system
+ * Types for the file system abstraction
  */
 
 export interface FileEntry {

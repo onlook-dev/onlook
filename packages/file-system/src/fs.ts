@@ -1,29 +1,58 @@
 /**
- * Opinionated wrapper around ZenFS for managing project file systems.
- * Provides a simpler API with automatic path management and recursive operations.
+ * Wraps ZenFS to provide a simpler API with automatic path management and recursive operations.
+ *
+ * For each instance of FileSystem, it treats the base path as the root of the file system.
+ * For example, if you do `new FileSystem('/my-project')`, when you call `readFile('/src/index.ts')`,
+ * it will read the file from '/my-project/src/index.ts' under the hood for you.
  */
 
 import type { fs as fsType } from '@zenfs/core';
 import { getFS } from './config';
 import type { FileEntry, FileInfo, FileChangeEvent, WatcherCleanup } from './types';
 
-// Common text file extensions
 const TEXT_EXTENSIONS = new Set([
-    '.txt', '.md', '.json', '.js', '.jsx', '.ts', '.tsx',
-    '.css', '.scss', '.html', '.xml', '.yaml', '.yml',
-    '.env', '.gitignore', '.prettierrc', '.eslintrc',
-    '.svg', '.sh', '.py', '.rb', '.go', '.rust', '.java',
-    '.php', '.c', '.cpp', '.h', '.hpp', '.vue', '.astro'
+    '.txt',
+    '.md',
+    '.json',
+    '.js',
+    '.jsx',
+    '.ts',
+    '.tsx',
+    '.css',
+    '.scss',
+    '.html',
+    '.xml',
+    '.yaml',
+    '.yml',
+    '.env',
+    '.gitignore',
+    '.prettierrc',
+    '.eslintrc',
+    '.svg',
+    '.sh',
+    '.py',
+    '.rb',
+    '.go',
+    '.rust',
+    '.java',
+    '.php',
+    '.c',
+    '.cpp',
+    '.h',
+    '.hpp',
+    '.vue',
+    '.astro',
 ]);
 
-export class OnlookFS {
+export class FileSystem {
     private fs: typeof fsType | null = null;
     private basePath: string;
     private watchers = new Map<string, any[]>();
     private isInitialized = false;
 
-    constructor(private projectId: string, private branchId: string) {
-        this.basePath = `/${projectId}/${branchId}`;
+    constructor(private rootDir: string) {
+        // Ensure rootDir starts with /
+        this.basePath = rootDir.startsWith('/') ? rootDir : `/${rootDir}`;
     }
 
     async initialize(): Promise<void> {
@@ -32,10 +61,10 @@ export class OnlookFS {
         }
 
         this.fs = await getFS();
-        
+
         // Ensure base directory exists
         await this.fs.promises.mkdir(this.basePath, { recursive: true });
-        
+
         this.isInitialized = true;
     }
 
@@ -63,15 +92,15 @@ export class OnlookFS {
      */
     async createFile(path: string, content = ''): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
-        
+
         const fullPath = this.resolvePath(path);
-        
+
         // Ensure parent directory exists
         const dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
         if (dir) {
             await this.fs.promises.mkdir(dir, { recursive: true });
         }
-        
+
         // Create the file
         await this.fs.promises.writeFile(fullPath, content);
     }
@@ -81,14 +110,14 @@ export class OnlookFS {
      */
     async readFile(path: string): Promise<string | Buffer> {
         if (!this.fs) throw new Error('File system not initialized');
-        
+
         const fullPath = this.resolvePath(path);
-        
+
         // Auto-detect text files
         if (this.isTextFile(path)) {
             return await this.fs.promises.readFile(fullPath, { encoding: 'utf8' });
         }
-        
+
         return await this.fs.promises.readFile(fullPath);
     }
 
@@ -97,15 +126,15 @@ export class OnlookFS {
      */
     async writeFile(path: string, content: string | Buffer): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
-        
+
         const fullPath = this.resolvePath(path);
-        
+
         // Ensure parent directory exists
         const dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
         if (dir) {
             await this.fs.promises.mkdir(dir, { recursive: true });
         }
-        
+
         await this.fs.promises.writeFile(fullPath, content);
     }
 
@@ -114,7 +143,7 @@ export class OnlookFS {
      */
     async deleteFile(path: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
-        
+
         const fullPath = this.resolvePath(path);
         await this.fs.promises.unlink(fullPath);
     }
@@ -124,16 +153,16 @@ export class OnlookFS {
      */
     async moveFile(from: string, to: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
-        
+
         const fromPath = this.resolvePath(from);
         const toPath = this.resolvePath(to);
-        
+
         // Ensure destination directory exists
         const toDir = toPath.substring(0, toPath.lastIndexOf('/'));
         if (toDir) {
             await this.fs.promises.mkdir(toDir, { recursive: true });
         }
-        
+
         await this.fs.promises.rename(fromPath, toPath);
     }
 
@@ -142,7 +171,7 @@ export class OnlookFS {
      */
     async copyFile(from: string, to: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
-        
+
         const content = await this.readFile(from);
         await this.writeFile(to, content);
     }
@@ -152,7 +181,7 @@ export class OnlookFS {
      */
     async createDirectory(path: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
-        
+
         const fullPath = this.resolvePath(path);
         await this.fs.promises.mkdir(fullPath, { recursive: true });
     }
@@ -162,18 +191,18 @@ export class OnlookFS {
      */
     async readDirectory(path = '/'): Promise<FileEntry[]> {
         if (!this.fs) throw new Error('File system not initialized');
-        
+
         const fullPath = this.resolvePath(path);
-        
+
         const readDirRecursive = async (dirPath: string): Promise<FileEntry[]> => {
             try {
                 const names = await this.fs!.promises.readdir(dirPath);
                 const entries: FileEntry[] = [];
-                
+
                 for (const name of names) {
                     const entryPath = dirPath === '/' ? `/${name}` : `${dirPath}/${name}`;
                     const stats = await this.fs!.promises.stat(entryPath);
-                    
+
                     const entry: FileEntry = {
                         name,
                         path: entryPath.substring(this.basePath.length), // Remove base path
@@ -181,14 +210,14 @@ export class OnlookFS {
                         size: stats.size,
                         modifiedTime: stats.mtime,
                     };
-                    
+
                     if (entry.isDirectory) {
                         entry.children = await readDirRecursive(entryPath);
                     }
-                    
+
                     entries.push(entry);
                 }
-                
+
                 // Sort: directories first, then alphabetically
                 entries.sort((a, b) => {
                     if (a.isDirectory !== b.isDirectory) {
@@ -196,7 +225,7 @@ export class OnlookFS {
                     }
                     return a.name.localeCompare(b.name);
                 });
-                
+
                 return entries;
             } catch (err) {
                 if ((err as any).code === 'ENOENT') {
@@ -205,7 +234,7 @@ export class OnlookFS {
                 throw err;
             }
         };
-        
+
         return await readDirRecursive(fullPath);
     }
 
@@ -214,26 +243,26 @@ export class OnlookFS {
      */
     async deleteDirectory(path: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
-        
+
         const fullPath = this.resolvePath(path);
-        
+
         const deleteRecursive = async (dirPath: string): Promise<void> => {
             const entries = await this.fs!.promises.readdir(dirPath);
-            
+
             for (const entry of entries) {
                 const entryPath = `${dirPath}/${entry}`;
                 const stats = await this.fs!.promises.stat(entryPath);
-                
+
                 if (stats.isDirectory()) {
                     await deleteRecursive(entryPath);
                 } else {
                     await this.fs!.promises.unlink(entryPath);
                 }
             }
-            
+
             await this.fs!.promises.rmdir(dirPath);
         };
-        
+
         await deleteRecursive(fullPath);
     }
 
@@ -242,16 +271,16 @@ export class OnlookFS {
      */
     async moveDirectory(from: string, to: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
-        
+
         const fromPath = this.resolvePath(from);
         const toPath = this.resolvePath(to);
-        
+
         // Ensure destination parent exists
         const toDir = toPath.substring(0, toPath.lastIndexOf('/'));
         if (toDir) {
             await this.fs.promises.mkdir(toDir, { recursive: true });
         }
-        
+
         await this.fs.promises.rename(fromPath, toPath);
     }
 
@@ -260,17 +289,17 @@ export class OnlookFS {
      */
     async copyDirectory(from: string, to: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
-        
+
         const fromPath = this.resolvePath(from);
         const toPath = this.resolvePath(to);
-        
+
         const copyRecursive = async (src: string, dest: string): Promise<void> => {
             const stats = await this.fs!.promises.stat(src);
-            
+
             if (stats.isDirectory()) {
                 await this.fs!.promises.mkdir(dest, { recursive: true });
                 const entries = await this.fs!.promises.readdir(src);
-                
+
                 for (const entry of entries) {
                     await copyRecursive(`${src}/${entry}`, `${dest}/${entry}`);
                 }
@@ -279,7 +308,7 @@ export class OnlookFS {
                 await this.fs!.promises.writeFile(dest, content);
             }
         };
-        
+
         await copyRecursive(fromPath, toPath);
     }
 
@@ -288,7 +317,7 @@ export class OnlookFS {
      */
     watchFile(path: string, callback: (event: FileChangeEvent) => void): WatcherCleanup {
         if (!this.fs) throw new Error('File system not initialized');
-        
+
         const fullPath = this.resolvePath(path);
         const watcher = this.fs.watch(fullPath, (eventType, filename) => {
             callback({
@@ -296,12 +325,12 @@ export class OnlookFS {
                 path,
             });
         });
-        
+
         // Store watcher for cleanup
         const watcherList = this.watchers.get(path) || [];
         watcherList.push(watcher);
         this.watchers.set(path, watcherList);
-        
+
         // Return cleanup function
         return () => {
             watcher.close();
@@ -318,25 +347,26 @@ export class OnlookFS {
      */
     watchDirectory(path: string, callback: (event: FileChangeEvent) => void): WatcherCleanup {
         if (!this.fs) throw new Error('File system not initialized');
-        
+
         const watchers: any[] = [];
         const watchedPaths = new Set<string>();
-        
+
         const setupWatcher = (dirPath: string) => {
             if (watchedPaths.has(dirPath)) return;
             watchedPaths.add(dirPath);
-            
+
             const watcher = this.fs!.watch(dirPath, async (eventType, filename) => {
                 if (!filename) return;
-                
+
                 const relativePath = dirPath.substring(this.basePath.length);
-                const filePath = relativePath === '/' ? `/${filename}` : `${relativePath}/${filename}`;
-                
+                const filePath =
+                    relativePath === '/' ? `/${filename}` : `${relativePath}/${filename}`;
+
                 callback({
                     type: eventType === 'rename' ? 'rename' : 'update',
                     path: filePath,
                 });
-                
+
                 // If it's a new directory, start watching it
                 if (eventType === 'rename') {
                     const fullPath = this.resolvePath(filePath);
@@ -350,13 +380,13 @@ export class OnlookFS {
                     }
                 }
             });
-            
+
             watchers.push(watcher);
         };
-        
+
         const setupWatchersRecursive = async (dirPath: string): Promise<void> => {
             setupWatcher(dirPath);
-            
+
             try {
                 const entries = await this.fs!.promises.readdir(dirPath);
                 for (const entry of entries) {
@@ -370,13 +400,13 @@ export class OnlookFS {
                 // Directory might not exist
             }
         };
-        
+
         const fullPath = this.resolvePath(path);
         setupWatchersRecursive(fullPath);
-        
+
         // Return cleanup function
         return () => {
-            watchers.forEach(w => w.close());
+            watchers.forEach((w) => w.close());
         };
     }
 
@@ -385,7 +415,7 @@ export class OnlookFS {
      */
     async exists(path: string): Promise<boolean> {
         if (!this.fs) throw new Error('File system not initialized');
-        
+
         const fullPath = this.resolvePath(path);
         return await this.fs.promises.exists(fullPath);
     }
@@ -395,11 +425,11 @@ export class OnlookFS {
      */
     async getInfo(path: string): Promise<FileInfo> {
         if (!this.fs) throw new Error('File system not initialized');
-        
+
         const fullPath = this.resolvePath(path);
         const stats = await this.fs.promises.stat(fullPath);
         const name = path.substring(path.lastIndexOf('/') + 1);
-        
+
         return {
             path,
             name,
@@ -417,17 +447,17 @@ export class OnlookFS {
      */
     async listFiles(pattern = '**/*'): Promise<string[]> {
         if (!this.fs) throw new Error('File system not initialized');
-        
+
         const files: string[] = [];
-        
+
         const listRecursive = async (dirPath: string): Promise<void> => {
             try {
                 const entries = await this.fs!.promises.readdir(dirPath);
-                
+
                 for (const entry of entries) {
                     const entryPath = `${dirPath}/${entry}`;
                     const stats = await this.fs!.promises.stat(entryPath);
-                    
+
                     if (stats.isFile()) {
                         const relativePath = entryPath.substring(this.basePath.length);
                         files.push(relativePath);
@@ -439,15 +469,15 @@ export class OnlookFS {
                 // Ignore errors
             }
         };
-        
+
         await listRecursive(this.basePath);
-        
+
         // Simple pattern matching (not full glob)
         if (pattern.includes('*')) {
             const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
-            return files.filter(f => regex.test(f));
+            return files.filter((f) => regex.test(f));
         }
-        
+
         return files;
     }
 
@@ -456,7 +486,7 @@ export class OnlookFS {
      */
     cleanup(): void {
         for (const watchers of this.watchers.values()) {
-            watchers.forEach(w => w.close());
+            watchers.forEach((w) => w.close());
         }
         this.watchers.clear();
     }
