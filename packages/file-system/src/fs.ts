@@ -10,44 +10,11 @@ import type { fs as fsType } from '@zenfs/core';
 import { getFS } from './config';
 import type { FileChangeEvent, FileEntry, FileInfo } from './types';
 
-const TEXT_EXTENSIONS = new Set([
-    '.txt',
-    '.md',
-    '.json',
-    '.js',
-    '.jsx',
-    '.ts',
-    '.tsx',
-    '.css',
-    '.scss',
-    '.html',
-    '.xml',
-    '.yaml',
-    '.yml',
-    '.env',
-    '.gitignore',
-    '.prettierrc',
-    '.eslintrc',
-    '.svg',
-    '.sh',
-    '.py',
-    '.rb',
-    '.go',
-    '.rust',
-    '.java',
-    '.php',
-    '.c',
-    '.cpp',
-    '.h',
-    '.hpp',
-    '.vue',
-    '.astro',
-]);
-
 export class FileSystem {
     private fs: typeof fsType | null = null;
     private basePath: string;
     private watchers = new Map<string, any[]>();
+    private watcherTimeouts = new Map<string, NodeJS.Timeout>();
     private isInitialized = false;
 
     constructor(private rootDir: string) {
@@ -79,12 +46,35 @@ export class FileSystem {
         return this.basePath + path;
     }
 
-    /**
-     * Check if a file should be treated as text based on its extension
-     */
-    private isTextFile(path: string): boolean {
-        const ext = path.substring(path.lastIndexOf('.')).toLowerCase();
-        return TEXT_EXTENSIONS.has(ext);
+    private isTextContent(buffer: Buffer | Uint8Array): boolean {
+        // Check first 512 bytes for binary content
+        const checkLength = Math.min(512, buffer.length);
+
+        for (let i = 0; i < checkLength; i++) {
+            const byte = buffer[i];
+
+            // Null bytes are a strong indicator of binary content
+            if (byte === 0 || byte === undefined) return false;
+
+            // Check for other control characters (except tab, newline, carriage return)
+            if (byte < 32 && byte !== 9 && byte !== 10 && byte !== 13) {
+                return false;
+            }
+
+            // Check for high bytes (> 127) without valid UTF-8 sequences
+            if (byte > 127) {
+                // Simple check: if we see many high bytes, it's likely binary
+                // A more robust check would validate UTF-8 sequences
+                let highByteCount = 0;
+                for (let j = i; j < Math.min(i + 10, checkLength); j++) {
+                    const currentByte = buffer[j];
+                    if (currentByte !== undefined && currentByte > 127) highByteCount++;
+                }
+                if (highByteCount > 7) return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -106,19 +96,20 @@ export class FileSystem {
     }
 
     /**
-     * Read a file - automatically detects text files and returns string
+     * Read a file - automatically detects text files and returns string in that case. Otherwise, returns buffer.
      */
     async readFile(path: string): Promise<string | Buffer> {
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = this.resolvePath(path);
 
-        // Auto-detect text files
-        if (this.isTextFile(path)) {
-            return await this.fs.promises.readFile(fullPath, { encoding: 'utf8' });
+        // Need to read as buffer first and check content to ensure it's not binary before converting to string
+        const buffer = await this.fs.promises.readFile(fullPath);
+        if (this.isTextContent(buffer)) {
+            return buffer.toString('utf8');
         }
 
-        return await this.fs.promises.readFile(fullPath);
+        return buffer;
     }
 
     /**
@@ -319,11 +310,25 @@ export class FileSystem {
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = this.resolvePath(path);
+        const timeoutKey = `watch-file:${path}`;
+
         const watcher = this.fs.watch(fullPath, (eventType, filename) => {
-            callback({
-                type: eventType === 'rename' ? 'rename' : 'update',
-                path,
-            });
+            // Clear any existing timeout
+            const existingTimeout = this.watcherTimeouts.get(timeoutKey);
+            if (existingTimeout) {
+                clearTimeout(existingTimeout);
+            }
+
+            // Debounce the callback. This is required since the watcher will fire off way before the file is actually written to, resulting in broken states.
+            const timeout = setTimeout(() => {
+                callback({
+                    type: eventType === 'rename' ? 'rename' : 'update',
+                    path,
+                });
+                this.watcherTimeouts.delete(timeoutKey);
+            }, 50);
+
+            this.watcherTimeouts.set(timeoutKey, timeout);
         });
 
         // Store watcher for cleanup
@@ -338,6 +343,13 @@ export class FileSystem {
             const index = list.indexOf(watcher);
             if (index > -1) {
                 list.splice(index, 1);
+            }
+
+            // Clear any pending timeout
+            const timeout = this.watcherTimeouts.get(timeoutKey);
+            if (timeout) {
+                clearTimeout(timeout);
+                this.watcherTimeouts.delete(timeoutKey);
             }
         };
     }
@@ -362,10 +374,22 @@ export class FileSystem {
                 const filePath =
                     relativePath === '/' ? `/${filename}` : `${relativePath}/${filename}`;
 
-                callback({
-                    type: eventType === 'rename' ? 'rename' : 'update',
-                    path: filePath,
-                });
+                const timeoutKey = `watch-dir:${filePath}`;
+
+                const existingTimeout = this.watcherTimeouts.get(timeoutKey);
+                if (existingTimeout) {
+                    clearTimeout(existingTimeout);
+                }
+
+                const timeout = setTimeout(() => {
+                    callback({
+                        type: eventType === 'rename' ? 'rename' : 'update',
+                        path: filePath,
+                    });
+                    this.watcherTimeouts.delete(timeoutKey);
+                }, 50);
+
+                this.watcherTimeouts.set(timeoutKey, timeout);
 
                 // If it's a new directory, start watching it
                 if (eventType === 'rename') {
@@ -481,13 +505,17 @@ export class FileSystem {
         return files;
     }
 
-    /**
-     * Clean up all watchers
-     */
     cleanup(): void {
+        // Clear all watchers
         for (const watchers of this.watchers.values()) {
             watchers.forEach((w) => w.close());
         }
         this.watchers.clear();
+
+        // Clear all pending timeouts
+        for (const timeout of this.watcherTimeouts.values()) {
+            clearTimeout(timeout);
+        }
+        this.watcherTimeouts.clear();
     }
 }
