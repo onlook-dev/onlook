@@ -37,8 +37,8 @@ import { generateText } from 'ai';
 import { and, eq, ne } from 'drizzle-orm';
 import { z } from 'zod';
 import { projectCreateRequestRouter } from './createRequest';
+import { fork } from './fork';
 import { extractCsbPort } from './helper';
-import { forkTemplate } from './template';
 
 export const projectRouter = createTRPCRouter({
     hasAccess: protectedProcedure
@@ -315,7 +315,7 @@ export const projectRouter = createTRPCRouter({
                 return newProject;
             });
         }),
-    forkTemplate,
+    forkTemplate: fork,
     generateName: protectedProcedure
         .input(z.object({
             prompt: z.string(),
@@ -485,10 +485,10 @@ export const projectRouter = createTRPCRouter({
         // 1. Fork sandboxes for all branches that have them (OUTSIDE transaction)
         const port = extractCsbPort(defaultBranch.frames) ?? 3000;
         const branchSandboxMap: Record<string, { sandboxId: string; previewUrl: string }> = {};
-        
+
         try {
             const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
-            
+
             // Clone sandbox for each branch that has one - in parallel with individual error handling
             const sandboxPromises = sourceBranches
                 .filter(branch => branch.sandboxId)
@@ -500,7 +500,7 @@ export const projectRouter = createTRPCRouter({
                             title: `${input.name || sourceProject.name} (Clone) - ${sourceBranch.name}`,
                             tags: ['clone', ctx.user.id, sourceBranch.name],
                         });
-                        
+
                         return {
                             branchId: sourceBranch.id,
                             sandboxId: clonedSandbox.id,
@@ -519,23 +519,23 @@ export const projectRouter = createTRPCRouter({
                         };
                     }
                 });
-            
+
             const sandboxResults = await Promise.all(sandboxPromises);
-            
+
             // Check if any successful results exist
             const successfulResults = sandboxResults.filter(result => result.success);
             const failedResults = sandboxResults.filter(result => !result.success);
-            
+
             if (successfulResults.length === 0) {
                 throw new Error('Failed to clone any sandboxes. All sandbox operations failed.');
             }
-            
+
             // Log failed operations but continue if at least one succeeded
             if (failedResults.length > 0) {
-                console.warn(`Failed to clone ${failedResults.length} out of ${sandboxResults.length} sandboxes:`, 
+                console.warn(`Failed to clone ${failedResults.length} out of ${sandboxResults.length} sandboxes:`,
                     failedResults.map(r => ({ branchId: r.branchId, error: r.error })));
             }
-            
+
             // Build the map from successful results
             for (const result of successfulResults) {
                 if (result.sandboxId && result.previewUrl) {
@@ -549,7 +549,7 @@ export const projectRouter = createTRPCRouter({
             console.error('Error cloning sandboxes:', error);
             throw new Error(`Failed to clone sandboxes: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
-        
+
         // Get the default branch's new sandbox info for main project creation
         const defaultBranchSandbox = branchSandboxMap[defaultBranch.id];
         if (!defaultBranchSandbox) {
@@ -587,7 +587,7 @@ export const projectRouter = createTRPCRouter({
                     createdAt: new Date(),
                     updatedAt: new Date(),
                 };
-                
+
                 await tx.insert(branches).values(newBranchData);
                 clonedBranches.push(newBranchData);
             }
@@ -648,7 +648,7 @@ export const projectRouter = createTRPCRouter({
                         createdAt: new Date(),
                         updatedAt: new Date(),
                     };
-                    
+
                     await tx.insert(frames).values(newFrameData);
                 }
             }

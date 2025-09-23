@@ -92,9 +92,9 @@ export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuPro
         }
     };
 
-    const handleShowCloneDialog = () => {
+    const handleShowCloneDialog = async () => {
         if (!user?.id) {
-            localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
+            await localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
             setIsAuthModalOpen(true);
             return;
         }

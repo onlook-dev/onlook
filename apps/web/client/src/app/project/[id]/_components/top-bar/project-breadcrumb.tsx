@@ -246,56 +246,11 @@ export const ProjectBreadcrumb = observer(() => {
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <AlertDialog open={showCloneDialog} onOpenChange={setShowCloneDialog}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Clone Project</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Create a copy of this project with all branches and settings preserved.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <div className="flex flex-col w-full gap-2">
-                        <Label htmlFor="clone-name">Project Name</Label>
-                        <Input
-                            id="clone-name"
-                            type="text"
-                            placeholder="Enter name for cloned project"
-                            value={cloneProjectName}
-                            onChange={(e) => setCloneProjectName(e.target.value)}
-                        />
-                        <p
-                            className={cn(
-                                'text-xs text-red-500 transition-opacity',
-                                isCloneProjectNameEmpty ? 'opacity-100' : 'opacity-0',
-                            )}
-                        >
-                            Project name can't be empty
-                        </p>
-                    </div>
-                    <AlertDialogFooter>
-                        <Button 
-                            variant="ghost" 
-                            onClick={() => setShowCloneDialog(false)} 
-                            disabled={isCloningCurrentProject}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            disabled={isCloneProjectNameEmpty || isCloningCurrentProject}
-                            onClick={handleCloneCurrentProject}
-                        >
-                            {isCloningCurrentProject ? (
-                                <>
-                                    <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />
-                                    Cloning...
-                                </>
-                            ) : (
-                                'Clone Project'
-                            )}
-                        </Button>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <CloneProjectDialog
+                isOpen={showCloneDialog}
+                onClose={() => setShowCloneDialog(false)}
+                projectName={project?.name}
+            />
         </div>
     );
 });

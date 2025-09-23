@@ -43,7 +43,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             await localforage.setItem(LAST_SIGN_IN_METHOD_KEY, method);
             await login(method);
         } catch (error) {
-            toast.error('Error signing in with password');
+            toast.error('Error signing in with password', {
+                description: error instanceof Error ? error.message : 'Please try again.',
+            });
             console.error('Error signing in with password:', error);
             throw new Error('Error signing in with password');
         } finally {

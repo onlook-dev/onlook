@@ -164,9 +164,9 @@ function createDefaultFramesForDefaultBranch(
     return [desktopFrame, mobileFrame];
 }
 
-export const forkTemplate = protectedProcedure
+export const fork = protectedProcedure
     .input(z.object({
-        projectId: z.string().uuid(),
+        projectId: z.uuid(),
     }))
     .mutation(async ({ ctx, input }) => {
         // 1. Get the source project with canvas, frames, and branches
