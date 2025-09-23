@@ -121,7 +121,7 @@ export const SubscriptionTab = observer(() => {
                                 {isPro && (
                                     <DropdownMenuItem
                                         onClick={() => {
-                                            subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION ? handleUpgradePlan() : handleCancelSubscription();
+                                            subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION ? handleManageBilling() : handleCancelSubscription();
                                         }}
                                         disabled={isLoadingPortal}
                                         className="cursor-pointer text-red-200 hover:text-red-100 group"
