@@ -29,12 +29,11 @@ interface CloneProjectDialogProps {
 
 export const CloneProjectDialog = observer(({ isOpen, onClose, projectName }: CloneProjectDialogProps) => {
     const editorEngine = useEditorEngine();
-    const { mutateAsync: cloneProject } = api.project.clone.useMutation();
     const router = useRouter();
-    
-    const [cloneProjectName, setCloneProjectName] = useState('');
+    const { mutateAsync: cloneProject } = api.project.fork.useMutation();
+    const [cloneProjectName, setCloneProjectName] = useState(`${projectName} (Clone)` || '');
     const [isCloningCurrentProject, setIsCloningCurrentProject] = useState(false);
-    
+
     // Generate default clone name
     const defaultCloneName = useMemo(() => {
         if (projectName) {
@@ -42,7 +41,7 @@ export const CloneProjectDialog = observer(({ isOpen, onClose, projectName }: Cl
         }
         return 'Cloned Project';
     }, [projectName]);
-    
+
     const isCloneProjectNameEmpty = useMemo(() => cloneProjectName.length === 0, [cloneProjectName]);
 
     // Reset the form when dialog opens
@@ -130,9 +129,9 @@ export const CloneProjectDialog = observer(({ isOpen, onClose, projectName }: Cl
                     </p>
                 </div>
                 <AlertDialogFooter>
-                    <Button 
-                        variant="ghost" 
-                        onClick={() => handleOpenChange(false)} 
+                    <Button
+                        variant="ghost"
+                        onClick={() => handleOpenChange(false)}
                         disabled={isCloningCurrentProject}
                     >
                         Cancel

@@ -1,17 +1,7 @@
-import { useAuthContext } from '@/app/auth/auth-context';
 import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
-import { Routes } from '@/utils/constants';
-import {
-    AlertDialog,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -21,15 +11,14 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Input } from '@onlook/ui/input';
-import { Label } from '@onlook/ui/label';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { redirect, useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import { CloneProjectDialog } from '../clone-project-dialog';
 import { NewProjectMenu } from './new-project-menu';
 import { RecentProjectsMenu } from './recent-projects';
 
@@ -37,35 +26,15 @@ export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
     const stateManager = useStateManager();
     const posthog = usePostHog();
-
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: user } = api.user.get.useQuery();
-    const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
-    const { mutateAsync: createProject } = api.project.create.useMutation();
-    const { mutateAsync: cloneProject } = api.project.clone.useMutation();
-    const { setIsAuthModalOpen } = useAuthContext();
-
     const t = useTranslations();
     const closeTimeoutRef = useRef<Timer | null>(null);
-    const router = useRouter();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isClosingProject, setIsClosingProject] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
-    
+
     // Clone modal state
     const [showCloneDialog, setShowCloneDialog] = useState(false);
-    const [cloneProjectName, setCloneProjectName] = useState('');
-    const [isCloningCurrentProject, setIsCloningCurrentProject] = useState(false);
-    
-    // Generate default clone name
-    const defaultCloneName = useMemo(() => {
-        if (project?.name) {
-            return `${project.name} (Clone)`;
-        }
-        return 'Cloned Project';
-    }, [project?.name]);
-    
-    const isCloneProjectNameEmpty = useMemo(() => cloneProjectName.length === 0, [cloneProjectName]);
 
     async function handleNavigateToProjects(_route?: 'create' | 'import') {
         try {
@@ -127,51 +96,7 @@ export const ProjectBreadcrumb = observer(() => {
     }
 
     function handleShowCloneDialog() {
-        setCloneProjectName(defaultCloneName);
         setShowCloneDialog(true);
-    }
-
-    async function handleCloneCurrentProject() {
-        if (!editorEngine.projectId) {
-            toast.error('No project to clone');
-            return;
-        }
-
-        setIsCloningCurrentProject(true);
-        try {
-            // Capture screenshot of current project before navigation
-            try {
-                editorEngine.screenshot.captureScreenshot();
-            } catch (error) {
-                console.error('Failed to capture screenshot:', error);
-            }
-
-            const clonedProject = await cloneProject({
-                projectId: editorEngine.projectId,
-                name: cloneProjectName.trim(),
-            });
-
-            if (clonedProject) {
-                toast.success('Project cloned successfully');
-                setShowCloneDialog(false);
-                router.push(`${Routes.PROJECT}/${clonedProject.id}`);
-            }
-        } catch (error) {
-            console.error('Error cloning project:', error);
-            const errorMessage = error instanceof Error ? error.message : String(error);
-
-            if (errorMessage.includes('502') || errorMessage.includes('sandbox')) {
-                toast.error('Sandbox service temporarily unavailable', {
-                    description: 'Please try again in a few moments. Our servers may be experiencing high load.',
-                });
-            } else {
-                toast.error('Failed to clone project', {
-                    description: errorMessage,
-                });
-            }
-        } finally {
-            setIsCloningCurrentProject(false);
-        }
     }
 
     return (

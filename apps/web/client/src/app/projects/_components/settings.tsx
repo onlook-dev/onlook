@@ -32,7 +32,7 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
     const { mutateAsync: updateProject } = api.project.update.useMutation();
     const { mutateAsync: addTag } = api.project.addTag.useMutation();
     const { mutateAsync: removeTag } = api.project.removeTag.useMutation();
-    const { mutateAsync: cloneProject } = api.project.clone.useMutation();
+    const { mutateAsync: forkProject } = api.project.fork.useMutation();
 
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showRenameDialog, setShowRenameDialog] = useState(false);
@@ -109,7 +109,7 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
     const handleCloneProject = async () => {
         setIsCloningProject(true);
         try {
-            const clonedProject = await cloneProject({
+            const clonedProject = await forkProject({
                 projectId: project.id,
                 name: cloneProjectName,
             });
@@ -125,7 +125,7 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
         } catch (error) {
             console.error('Error cloning project:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
-            
+
             if (errorMessage.includes('502') || errorMessage.includes('sandbox')) {
                 toast.error('Sandbox service temporarily unavailable', {
                     description: 'Please try again in a few moments. Our servers may be experiencing high load.',
@@ -256,7 +256,7 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            
+
             <AlertDialog open={showCloneDialog} onOpenChange={setShowCloneDialog}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
