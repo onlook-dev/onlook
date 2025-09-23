@@ -1,11 +1,12 @@
 import { trackEvent } from '@/utils/analytics/server';
 import { callUserWebhook } from '@/utils/n8n/webhook';
-import { fromDbUser, userInsertSchema, users, type User } from '@onlook/db';
+import { authUsers, fromDbUser, userInsertSchema, users, type User } from '@onlook/db';
 import { extractNames } from '@onlook/utility';
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { adminProcedure, createTRPCRouter, protectedProcedure } from '../../trpc';
+import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { userSettingsRouter } from './user-settings';
 
 export const userRouter = createTRPCRouter({
@@ -95,9 +96,17 @@ export const userRouter = createTRPCRouter({
             return user ?? null;
         }),
     settings: userSettingsRouter,
-    delete: adminProcedure.mutation(async ({ ctx }) => {
+    delete: protectedProcedure.mutation(async ({ ctx }) => {
+        await ctx.db.delete(authUsers).where(eq(authUsers.id, ctx.user.id));
+
         // Delete user in supabase. Changes should propagate to the db automatically.
-        return await ctx.supabase.auth.admin.deleteUser(ctx.user.id);
+        const { error } = await ctx.supabase.auth.admin.deleteUser(ctx.user.id);
+        if (error) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: `Failed to delete user: ${error.message}`,
+            });
+        }
     }),
 });
 

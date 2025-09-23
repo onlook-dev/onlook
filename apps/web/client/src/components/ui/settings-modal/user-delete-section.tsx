@@ -13,13 +13,13 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export const UserDeleteSection = observer(() => {
+    const router = useRouter();
     const { data: user } = api.user.get.useQuery();
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteEmail, setDeleteEmail] = useState('');
     const [deleteConfirmText, setDeleteConfirmText] = useState('');
     const [showFinalDeleteConfirm, setShowFinalDeleteConfirm] = useState(false);
     const { mutateAsync: deleteUser } = api.user.delete.useMutation();
-    const router = useRouter();
 
     const handleDeleteAccount = () => {
         setShowDeleteModal(true);
@@ -31,16 +31,24 @@ export const UserDeleteSection = observer(() => {
     };
 
     const handleFinalDeleteAccount = async () => {
-        await deleteUser();
-        setShowFinalDeleteConfirm(false);
-        // Reset form
-        setDeleteEmail('');
-        setDeleteConfirmText('');
-        handleDeleteSuccess();
+        try {
+            await deleteUser();
+            await handleDeleteSuccess();
+        } catch (error) {
+            toast.error('Failed to delete account');
+            console.error('Failed to delete account', error);
+        }
     };
 
     const handleDeleteSuccess = async () => {
         toast.success('Account deleted successfully');
+
+        // Reset form
+        setShowFinalDeleteConfirm(false);
+        setDeleteEmail('');
+        setDeleteConfirmText('');
+
+        // Sign out
         const supabase = createClient();
         await supabase.auth.signOut();
         router.push(Routes.LOGIN);
@@ -73,7 +81,7 @@ export const UserDeleteSection = observer(() => {
                 <DialogContent className="max-w-lg">
                     <DialogHeader>
                         <DialogTitle>Delete account - are you sure?</DialogTitle>
-                        <DialogDescription className="pt-2">
+                        <DialogDescription asChild className="pt-2">
                             <div className="space-y-2">
                                 <p>Deleting your account will:</p>
                                 <div className="space-y-1 text-sm">

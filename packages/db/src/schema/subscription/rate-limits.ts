@@ -9,10 +9,10 @@ export const rateLimits = pgTable('rate_limits', {
     // Relationships
     userId: uuid('user_id')
         .notNull()
-        .references(() => users.id),
+        .references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     subscriptionId: uuid('subscription_id')
         .notNull()
-        .references(() => subscriptions.id),
+        .references(() => subscriptions.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
 
     // Metadata
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
