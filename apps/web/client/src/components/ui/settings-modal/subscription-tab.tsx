@@ -51,9 +51,11 @@ export const SubscriptionTab = observer(() => {
         setIsManageDropdownOpen(false);
     };
 
-    const handleConfirmCancel = () => {
+    const handleConfirmCancel = async () => {
         // Cancellation logic will be implemented later
         setShowCancelModal(false);
+        setIsLoadingPortal(true);
+        await manageSubscriptionMutation.mutateAsync();
     };
 
     const handleManageBilling = async () => {
@@ -118,7 +120,10 @@ export const SubscriptionTab = observer(() => {
                                 )}
                                 {isPro && (
                                     <DropdownMenuItem
-                                        onClick={handleCancelSubscription}
+                                        onClick={() => {
+                                            subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION ? handleUpgradePlan() : handleCancelSubscription();
+                                        }}
+                                        disabled={isLoadingPortal}
                                         className="cursor-pointer text-red-200 hover:text-red-100 group"
                                     >
                                         <Icons.CrossS className="mr-2 h-4 w-4 text-red-200 group-hover:text-red-100" />
