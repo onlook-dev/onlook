@@ -42,9 +42,11 @@
             "showInExplorer": "탐색기에서 보기",
             "renameProject": "프로젝트 이름 변경",
             "deleteProject": "프로젝트 삭제",
+            "cloneProject": "프로젝트 복제",
             "cancel": "취소",
             "delete": "삭제",
             "rename": "이름 변경",
+            "clone": "복제",
             "goToAllProjects": "모든 프로젝트로 이동",
             "newProject": "새 프로젝트",
             "blankProject": "빈 프로젝트",
@@ -67,6 +69,12 @@
             "rename": {
                 "title": "프로젝트 이름 변경",
                 "label": "프로젝트 이름",
+                "error": "프로젝트 이름은 비워둘 수 없습니다."
+            },
+            "clone": {
+                "title": "프로젝트 복제",
+                "label": "프로젝트 이름",
+                "placeholder": "복제된 프로젝트의 이름을 입력하세요",
                 "error": "프로젝트 이름은 비워둘 수 없습니다."
             }
         },

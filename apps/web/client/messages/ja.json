@@ -269,9 +269,11 @@
             "showInExplorer": "エクスプローラーで表示",
             "renameProject": "プロジェクトの名前変更",
             "deleteProject": "プロジェクトを削除",
+            "cloneProject": "プロジェクトをクローン",
             "cancel": "キャンセル",
             "delete": "削除",
             "rename": "名前変更",
+            "clone": "クローン",
             "goToAllProjects": "すべてのプロジェクトへ",
             "newProject": "新規プロジェクト",
             "blankProject": "空白プロジェクト",
@@ -294,6 +296,12 @@
             "rename": {
                 "title": "プロジェクトの名前変更",
                 "label": "プロジェクト名",
+                "error": "プロジェクト名は空にできません"
+            },
+            "clone": {
+                "title": "プロジェクトをクローン",
+                "label": "プロジェクト名",
+                "placeholder": "クローンプロジェクトの名前を入力",
                 "error": "プロジェクト名は空にできません"
             }
         },

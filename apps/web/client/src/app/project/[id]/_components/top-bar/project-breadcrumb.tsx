@@ -1,4 +1,3 @@
-import { useAuthContext } from '@/app/auth/auth-context';
 import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
 import { transKeys } from '@/i18n/keys';
@@ -16,9 +15,10 @@ import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { redirect, useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
 import { useRef, useState } from 'react';
+import { CloneProjectDialog } from '../clone-project-dialog';
 import { NewProjectMenu } from './new-project-menu';
 import { RecentProjectsMenu } from './recent-projects';
 
@@ -26,19 +26,13 @@ export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
     const stateManager = useStateManager();
     const posthog = usePostHog();
-
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: user } = api.user.get.useQuery();
-    const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
-    const { mutateAsync: createProject } = api.project.create.useMutation();
-    const { setIsAuthModalOpen } = useAuthContext();
-
     const t = useTranslations();
     const closeTimeoutRef = useRef<Timer | null>(null);
-    const router = useRouter();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isClosingProject, setIsClosingProject] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
+    const [showCloneDialog, setShowCloneDialog] = useState(false);
 
     async function handleNavigateToProjects(_route?: 'create' | 'import') {
         try {
@@ -145,7 +139,7 @@ export const ProjectBreadcrumb = observer(() => {
                     <DropdownMenuSeparator />
                     <RecentProjectsMenu />
                     <DropdownMenuSeparator />
-                    <NewProjectMenu />
+                    <NewProjectMenu onShowCloneDialog={setShowCloneDialog} />
                     <DropdownMenuItem
                         onClick={handleDownloadCode}
                         disabled={isDownloading}
@@ -170,6 +164,12 @@ export const ProjectBreadcrumb = observer(() => {
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
+
+            <CloneProjectDialog
+                isOpen={showCloneDialog}
+                onClose={() => setShowCloneDialog(false)}
+                projectName={project?.name}
+            />
         </div>
     );
 });
