@@ -92,9 +92,9 @@ async function forkAllBranches(
 /**
  * Creates new project data from source project
  */
-function createNewProjectData(sourceProject: SourceProjectWithRelations) {
+function createNewProjectData(sourceProject: SourceProjectWithRelations, customName?: string) {
     return {
-        name: `${sourceProject.name} (Copy)`,
+        name: customName || `${sourceProject.name} (Copy)`,
         description: sourceProject.description,
         tags: sourceProject.tags?.filter(tag => tag !== Tags.TEMPLATE) ?? [],
         previewImgUrl: sourceProject.previewImgUrl,
@@ -164,9 +164,10 @@ function createDefaultFramesForDefaultBranch(
     return [desktopFrame, mobileFrame];
 }
 
-export const forkTemplate = protectedProcedure
+export const fork = protectedProcedure
     .input(z.object({
-        projectId: z.string().uuid(),
+        projectId: z.uuid(),
+        name: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
         // 1. Get the source project with canvas, frames, and branches
@@ -196,7 +197,7 @@ export const forkTemplate = protectedProcedure
         );
 
         // 3. Create the new project with forked data
-        const newProjectData = createNewProjectData(sourceProject);
+        const newProjectData = createNewProjectData(sourceProject, input.name);
 
         return await ctx.db.transaction(async (tx) => {
             // Create the new project
