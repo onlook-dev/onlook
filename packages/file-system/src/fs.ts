@@ -8,7 +8,7 @@
 
 import type { fs as fsType } from '@zenfs/core';
 import { getFS } from './config';
-import type { FileEntry, FileInfo, FileChangeEvent, WatcherCleanup } from './types';
+import type { FileChangeEvent, FileEntry, FileInfo } from './types';
 
 const TEXT_EXTENSIONS = new Set([
     '.txt',
@@ -315,7 +315,7 @@ export class FileSystem {
     /**
      * Watch a file for changes
      */
-    watchFile(path: string, callback: (event: FileChangeEvent) => void): WatcherCleanup {
+    watchFile(path: string, callback: (event: FileChangeEvent) => void) {
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = this.resolvePath(path);
@@ -345,7 +345,7 @@ export class FileSystem {
     /**
      * Watch a directory recursively for changes
      */
-    watchDirectory(path: string, callback: (event: FileChangeEvent) => void): WatcherCleanup {
+    watchDirectory(path: string, callback: (event: FileChangeEvent) => void) {
         if (!this.fs) throw new Error('File system not initialized');
 
         const watchers: any[] = [];

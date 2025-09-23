@@ -35,6 +35,7 @@ export function useDirectory(rootDir: string, path: string) {
         setIsLoading(true);
     }, [rootDir, path]);
 
+    // Type guards are used below to ensure that the resultant type is correct
     if (isInitializing || isLoading) {
         return { entries: [], loading: true, error: null };
     }

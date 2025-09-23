@@ -1,7 +1,3 @@
-/**
- * Types for the file system abstraction
- */
-
 export interface FileEntry {
     name: string;
     path: string;
@@ -25,7 +21,5 @@ export interface FileInfo {
 export interface FileChangeEvent {
     type: 'create' | 'update' | 'delete' | 'rename';
     path: string;
-    oldPath?: string; // For rename events
+    oldPath?: string;
 }
-
-export type WatcherCleanup = () => void;

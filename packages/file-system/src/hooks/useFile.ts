@@ -34,6 +34,7 @@ export function useFile(rootDir: string, path: string) {
         setIsLoading(false);
     }, [rootDir, path]);
 
+    // Type guards are used below to ensure that the resultant type is correct
     if (isInitializing || isLoading) {
         return { content: null, loading: true, error: null };
     }

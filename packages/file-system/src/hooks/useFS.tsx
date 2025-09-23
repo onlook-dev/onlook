@@ -31,6 +31,7 @@ export function useFS(rootDir: string) {
         };
     }, [rootDir]);
 
+    // Type guards are used below to ensure that the resultant type is correct
     if (isInitializing) {
         return { fs: null, isInitializing: true, error: null };
     }

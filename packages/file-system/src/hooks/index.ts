@@ -7,4 +7,4 @@ export type { UseDirectoryResult } from './useDirectory';
 export { useFS } from './useFS';
 export type { UseFSResult } from './useFS';
 
-export type { FileEntry, FileInfo, FileChangeEvent, WatcherCleanup } from '../types';
+export type { FileEntry, FileInfo, FileChangeEvent } from '../types';
