@@ -21,7 +21,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 interface NewProjectMenuProps {
-    onShowCloneDialog: () => void;
+    onShowCloneDialog: (open: boolean) => void;
 }
 
 export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuProps) => {
@@ -92,16 +92,6 @@ export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuPro
         }
     };
 
-    const handleShowCloneDialog = async () => {
-        if (!user?.id) {
-            await localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
-            setIsAuthModalOpen(true);
-            return;
-        }
-
-        onShowCloneDialog();
-    };
-
     return (
         <DropdownMenuSub>
             <DropdownMenuSubTrigger className="cursor-pointer">
@@ -141,7 +131,7 @@ export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuPro
                     </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                    onClick={handleShowCloneDialog}
+                    onClick={() => onShowCloneDialog(true)}
                     className="cursor-pointer"
                 >
                     <div className="flex flex-row center items-center group">

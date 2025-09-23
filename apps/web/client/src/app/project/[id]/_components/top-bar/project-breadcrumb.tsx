@@ -32,8 +32,6 @@ export const ProjectBreadcrumb = observer(() => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isClosingProject, setIsClosingProject] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
-
-    // Clone modal state
     const [showCloneDialog, setShowCloneDialog] = useState(false);
 
     async function handleNavigateToProjects(_route?: 'create' | 'import') {
@@ -95,10 +93,6 @@ export const ProjectBreadcrumb = observer(() => {
         }
     }
 
-    function handleShowCloneDialog() {
-        setShowCloneDialog(true);
-    }
-
     return (
         <div className="mr-1 flex flex-row items-center text-small gap-2">
             <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
@@ -145,7 +139,7 @@ export const ProjectBreadcrumb = observer(() => {
                     <DropdownMenuSeparator />
                     <RecentProjectsMenu />
                     <DropdownMenuSeparator />
-                    <NewProjectMenu onShowCloneDialog={handleShowCloneDialog} />
+                    <NewProjectMenu onShowCloneDialog={setShowCloneDialog} />
                     <DropdownMenuItem
                         onClick={handleDownloadCode}
                         disabled={isDownloading}
