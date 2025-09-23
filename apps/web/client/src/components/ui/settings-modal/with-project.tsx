@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import DomainTab from './domain';
 import { SettingsTabValue, type SettingTab } from './helpers';
 import { PreferencesTab } from './preferences-tab';
+import { SubscriptionTab } from './subscription-tab';
 import { ProjectTab } from './project';
 import { SiteTab } from './site';
 import { VersionsTab } from './versions';
@@ -67,6 +68,11 @@ export const SettingsModalWithProjects = observer(() => {
             label: SettingsTabValue.PREFERENCES,
             icon: <Icons.Person className="mr-2 h-4 w-4" />,
             component: <PreferencesTab />,
+        },
+        {
+            label: SettingsTabValue.SUBSCRIPTION,
+            icon: <Icons.CreditCard className="mr-2 h-4 w-4" />,
+            component: <SubscriptionTab />,
         },
     ];
 
