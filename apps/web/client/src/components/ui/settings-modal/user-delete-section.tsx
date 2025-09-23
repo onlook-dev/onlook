@@ -18,7 +18,7 @@ export const UserDeleteSection = observer(() => {
     const [deleteEmail, setDeleteEmail] = useState('');
     const [deleteConfirmText, setDeleteConfirmText] = useState('');
     const [showFinalDeleteConfirm, setShowFinalDeleteConfirm] = useState(false);
-    const { mutate: deleteUser } = api.user.delete.useMutation();
+    const { mutateAsync: deleteUser } = api.user.delete.useMutation();
     const router = useRouter();
 
     const handleDeleteAccount = () => {
@@ -73,16 +73,36 @@ export const UserDeleteSection = observer(() => {
                 <DialogContent className="max-w-lg">
                     <DialogHeader>
                         <DialogTitle>Delete account - are you sure?</DialogTitle>
-                        <DialogDescription className="pt-2 space-y-2">
-                            <p>Deleting your account will:</p>
-                            <ul className="list-disc list-inside space-y-1 text-sm">
-                                <li>Permanently delete your account and prevent you from creating new projects.</li>
-                                <li>Delete all of your projects from Onlook's servers.</li>
-                                <li>You cannot create a new account using the same email address.</li>
-                                <li>This will also permanently delete your chat history and other data associated with your account.</li>
-                                <li>Deleting an account does not automatically cancel your subscription or entitled set of paid features.</li>
-                                <li>This is final and cannot be undone.</li>
-                            </ul>
+                        <DialogDescription className="pt-2">
+                            <div className="space-y-2">
+                                <p>Deleting your account will:</p>
+                                <div className="space-y-1 text-sm">
+                                    <div className="flex items-start gap-2">
+                                        <span className="mt-0.5">•</span>
+                                        <span>Permanently delete your account and prevent you from creating new projects.</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <span className="mt-0.5">•</span>
+                                        <span>Delete all of your projects from Onlook's servers.</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <span className="mt-0.5">•</span>
+                                        <span>You cannot create a new account using the same email address.</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <span className="mt-0.5">•</span>
+                                        <span>This will also permanently delete your chat history and other data associated with your account.</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <span className="mt-0.5">•</span>
+                                        <span>Deleting an account does not automatically cancel your subscription or entitled set of paid features.</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <span className="mt-0.5">•</span>
+                                        <span>This is final and cannot be undone.</span>
+                                    </div>
+                                </div>
+                            </div>
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">

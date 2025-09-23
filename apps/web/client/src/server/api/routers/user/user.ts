@@ -5,7 +5,7 @@ import { extractNames } from '@onlook/utility';
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { adminProcedure, createTRPCRouter, protectedProcedure } from '../../trpc';
 import { userSettingsRouter } from './user-settings';
 
 export const userRouter = createTRPCRouter({
@@ -95,9 +95,9 @@ export const userRouter = createTRPCRouter({
             return user ?? null;
         }),
     settings: userSettingsRouter,
-    delete: protectedProcedure.mutation(async ({ ctx }) => {
+    delete: adminProcedure.mutation(async ({ ctx }) => {
         // Delete user in supabase. Changes should propagate to the db automatically.
-        await ctx.supabase.auth.admin.deleteUser(ctx.user.id);
+        return await ctx.supabase.auth.admin.deleteUser(ctx.user.id);
     }),
 });
 

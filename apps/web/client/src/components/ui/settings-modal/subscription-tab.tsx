@@ -12,11 +12,11 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
+import { toast } from '@onlook/ui/sonner';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useSubscription } from '../pricing-modal/use-subscription';
 import { SubscriptionCancelModal } from './subscription-cancel-modal';
-import { UserDeleteSection } from './user-delete-section';
 
 export const SubscriptionTab = observer(() => {
     const stateManager = useStateManager();
@@ -33,6 +33,7 @@ export const SubscriptionTab = observer(() => {
         },
         onError: (error) => {
             console.error('Failed to create portal session:', error);
+            toast.error('Failed to create portal session');
         },
         onSettled: () => {
             setIsLoadingPortal(false);
@@ -147,19 +148,13 @@ export const SubscriptionTab = observer(() => {
                             {isLoadingPortal ? 'Opening...' : 'Manage'}
                         </Button>
                     </div>
-
-                    <Separator />
-
-                    <UserDeleteSection />
                 </div>
             </div>
-
             <SubscriptionCancelModal
                 open={showCancelModal}
                 onOpenChange={setShowCancelModal}
                 onConfirmCancel={handleConfirmCancel}
             />
-
         </div>
     );
 });
