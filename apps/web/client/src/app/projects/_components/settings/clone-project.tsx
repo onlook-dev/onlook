@@ -27,7 +27,7 @@ export function CloneProject({ project, refetch }: { project: Project; refetch: 
     const [showCloneDialog, setShowCloneDialog] = useState(false);
     const [cloneProjectName, setCloneProjectName] = useState(`${project.name} (Clone)`);
     const [isCloningProject, setIsCloningProject] = useState(false);
-    const isCloneProjectNameEmpty = useMemo(() => cloneProjectName.length === 0, [cloneProjectName]);
+    const isCloneProjectNameEmpty = useMemo(() => cloneProjectName.trim().length === 0, [cloneProjectName]);
 
     useEffect(() => {
         setCloneProjectName(`${project.name} (Clone)`);

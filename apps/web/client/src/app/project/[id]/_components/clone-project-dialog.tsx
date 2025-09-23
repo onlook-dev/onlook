@@ -42,7 +42,7 @@ export const CloneProjectDialog = observer(({ isOpen, onClose, projectName }: Cl
         return 'Cloned Project';
     }, [projectName]);
 
-    const isCloneProjectNameEmpty = useMemo(() => cloneProjectName.length === 0, [cloneProjectName]);
+    const isCloneProjectNameEmpty = useMemo(() => cloneProjectName.trim().length === 0, [cloneProjectName]);
 
     // Reset the form when dialog opens
     const handleOpenChange = (open: boolean) => {
