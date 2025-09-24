@@ -3,7 +3,7 @@
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Input } from '@onlook/ui/input';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 interface FormData {

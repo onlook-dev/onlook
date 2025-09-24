@@ -1,8 +1,7 @@
-import { transKeys } from '@/i18n/keys';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { MotionCard } from '@onlook/ui/motion-card';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 
 const ENTERPRISE_TIER = {
@@ -36,7 +35,7 @@ Looking forward to hearing from you.
 
 Best regards,
 [Your name]`);
-        
+
         window.location.href = `mailto:daniel@onlook.com?subject=${subject}&body=${body}`;
     };
 
