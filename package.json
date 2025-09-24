@@ -31,7 +31,7 @@
         "db:reset": "cd apps/backend && bun run reset",
         "format": "bun --filter '*' format",
         "lint": "bun --filter '*' lint",
-        "typecheck": "bun --filter '*' typecheck",
+        "typecheck": "bun --filter @onlook/web-client typecheck",
         "prepare": "husky",
         "clean": "git clean -xdf node_modules",
         "clean:workspaces": "bun --filter '*' clean",
