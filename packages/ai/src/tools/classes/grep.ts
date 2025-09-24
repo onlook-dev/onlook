@@ -19,7 +19,7 @@ interface GrepResult {
 
 
 export class GrepTool extends ClientTool {
-    static readonly name = 'grep';
+    static readonly toolName = 'grep';
     static readonly description = 'Search for patterns in files using grep';
     static readonly parameters = z.object({
         pattern: z.string().describe('The regular expression pattern to search for in file contents'),

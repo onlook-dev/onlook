@@ -5,7 +5,7 @@ import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class SearchReplaceMultiEditFileTool extends ClientTool {
-    static readonly name = 'search_replace_multi_edit_file';
+    static readonly toolName = 'search_replace_multi_edit_file';
     static readonly description = 'Perform multiple search and replace operations in a file';
     static readonly parameters = z.object({
         file_path: z.string().describe('Absolute path to file'),

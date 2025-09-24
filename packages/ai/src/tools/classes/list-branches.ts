@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { ClientTool } from '../models/client';
 
 export class ListBranchesTool extends ClientTool {
-    static readonly name = 'list_branches';
+    static readonly toolName = 'list_branches';
     static readonly description = 'List all available branches in the project';
     static readonly parameters = z.object({});
     static readonly icon = Icons.Branch;

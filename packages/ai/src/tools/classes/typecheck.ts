@@ -5,7 +5,7 @@ import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class TypecheckTool extends ClientTool {
-    static readonly name = 'typecheck';
+    static readonly toolName = 'typecheck';
     static readonly description = 'Run TypeScript type checking. use to check after code edits, when type changes are suspected.';
     static readonly parameters = z.object({
         branchId: BRANCH_ID_SCHEMA,

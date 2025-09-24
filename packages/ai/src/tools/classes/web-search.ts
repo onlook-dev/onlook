@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { ClientTool } from '../models/client';
 
 export class WebSearchTool extends ClientTool {
-    static readonly name = 'web_search';
+    static readonly toolName = 'web_search';
     static readonly description = 'Search the web for up-to-date information';
     static readonly parameters = z.object({
         query: z.string().min(2).describe('Search query'),

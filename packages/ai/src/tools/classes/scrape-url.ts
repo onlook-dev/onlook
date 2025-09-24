@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { ClientTool } from '../models/client';
 
 export class ScrapeUrlTool extends ClientTool {
-    static readonly name = 'scrape_url';
+    static readonly toolName = 'scrape_url';
     static readonly description = 'Scrape a URL and extract its content in various formats (markdown, HTML, JSON). Can extract clean, LLM-ready content from any website, handling dynamic content and anti-bot mechanisms.';
     static readonly parameters = z.object({
         url: z.url().describe('The URL to scrape. Must be a valid HTTP or HTTPS URL.'),

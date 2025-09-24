@@ -23,9 +23,9 @@ import {
 } from './classes';
 
 // Helper function to convert tool classes to ToolSet
-function createToolSet(toolClasses: Array<{ name: string; getAITool: () => any }>): ToolSet {
+function createToolSet(toolClasses: Array<{ toolName: string; getAITool: () => any }>): ToolSet {
     return toolClasses.reduce((acc, toolClass) => {
-        acc[toolClass.name] = toolClass.getAITool();
+        acc[toolClass.toolName] = toolClass.getAITool();
         return acc;
     }, {} as ToolSet);
 }
@@ -57,7 +57,7 @@ const allToolClasses = [...readOnlyToolClasses, ...editOnlyToolClasses];
 
 export const readOnlyToolset: ToolSet = createToolSet(readOnlyToolClasses);
 export const allToolset: ToolSet = createToolSet(allToolClasses);
-export const TOOLS_MAP = new Map(allToolClasses.map(toolClass => [toolClass.name, toolClass]));
+export const TOOLS_MAP = new Map(allToolClasses.map(toolClass => [toolClass.toolName, toolClass]));
 
 export function getToolClassesFromType(chatType: ChatType) {
     return chatType === ChatType.ASK ? readOnlyToolClasses : allToolClasses

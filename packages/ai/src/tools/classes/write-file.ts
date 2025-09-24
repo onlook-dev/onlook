@@ -5,7 +5,7 @@ import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class WriteFileTool extends ClientTool {
-    static readonly name = 'write_file';
+    static readonly toolName = 'write_file';
     static readonly description = 'Write content to a new file or overwrite an existing file';
     static readonly parameters = z.object({
         file_path: z.string().describe('Path to the file to write'),

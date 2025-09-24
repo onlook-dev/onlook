@@ -22,7 +22,7 @@ export class BashReadTool extends ClientTool {
         'which',
         'whereis',
     ]);
-    static readonly name = 'bash_read';
+    static readonly toolName = 'bash_read';
     static readonly description = 'Execute safe read-only bash commands';
     static readonly parameters = z.object({
         command: z
