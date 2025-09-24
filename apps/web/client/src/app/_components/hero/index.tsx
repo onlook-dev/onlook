@@ -2,7 +2,7 @@
 
 import { api } from '@/trpc/react';
 import { Icons } from '@onlook/ui/icons';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { vujahdayScript } from '../../fonts';
 import { Create } from './create';

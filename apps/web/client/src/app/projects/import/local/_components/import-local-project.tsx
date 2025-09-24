@@ -2,7 +2,7 @@
 
 import { useGetBackground } from '@/hooks/use-get-background';
 import { MotionCard } from '@onlook/ui/motion-card';
-import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
+import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import useResizeObserver from 'use-resize-observer';
 import { useProjectCreation } from '../_context';
 import { FinalizingProject } from './finalizing-project';

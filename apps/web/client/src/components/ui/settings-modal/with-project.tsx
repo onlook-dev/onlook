@@ -1,23 +1,23 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
+import type { PageNode } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { capitalizeFirstLetter } from '@onlook/utility';
-import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
+import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import DomainTab from './domain';
 import { SettingsTabValue, type SettingTab } from './helpers';
 import { PreferencesTab } from './preferences-tab';
-import { SubscriptionTab } from './subscription-tab';
 import { ProjectTab } from './project';
 import { SiteTab } from './site';
-import { VersionsTab } from './versions';
 import { PageTab } from './site/page';
-import type { PageNode } from '@onlook/models';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { SubscriptionTab } from './subscription-tab';
+import { VersionsTab } from './versions';
 
 function TruncatedLabelWithTooltip({ label }: { label: string }) {
     const [isTruncated, setIsTruncated] = useState(false);
@@ -206,8 +206,8 @@ export const SettingsModalWithProjects = observer(() => {
                                                                     : 'text-muted-foreground',
                                                             )}
                                                             onClick={() =>
-                                                                (stateManager.settingsTab =
-                                                                    tab.label)
+                                                            (stateManager.settingsTab =
+                                                                tab.label)
                                                             }
                                                         >
                                                             {tab.icon}
