@@ -170,36 +170,49 @@ export class ChatContext {
         const highlightedContext: HighlightMessageContext[] = [];
         for (const node of selected) {
             const oid = node.oid;
-            if (!oid) {
-                console.error('No oid found for node', node);
-                continue;
+            const instanceId = node.instanceId;
+
+            if (oid) {
+                const context = await this.getHighlightContextById(oid, node.tagName, false);
+                if (context) highlightedContext.push(context);
             }
 
-            const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(oid);
-            if (codeBlock === null) {
-                console.error('No code block found for node', node);
-                continue;
+            if (instanceId) {
+                const context = await this.getHighlightContextById(instanceId, node.tagName, true);
+                if (context) highlightedContext.push(context);
             }
 
-            const templateNode = this.editorEngine.templateNodes.getTemplateNode(oid);
-            if (!templateNode) {
-                console.error('No template node found for node', node);
-                continue;
+            if (!oid && !instanceId) {
+                console.error('No oid or instanceId found for node', node);
             }
-
-            highlightedContext.push({
-                type: MessageContextType.HIGHLIGHT,
-                displayName: node.tagName.toLowerCase(),
-                path: templateNode.path,
-                content: codeBlock,
-                start: templateNode.startTag.start.line,
-                end: templateNode.endTag?.end.line || templateNode.startTag.start.line,
-                oid,
-                branchId: templateNode.branchId,
-            });
         }
 
         return highlightedContext;
+    }
+
+    private async getHighlightContextById(id: string, tagName: string, isInstance: boolean): Promise<HighlightMessageContext | null> {
+        const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(id);
+        if (codeBlock === null) {
+            console.error('No code block found for id', id);
+            return null;
+        }
+
+        const templateNode = this.editorEngine.templateNodes.getTemplateNode(id);
+        if (!templateNode) {
+            console.error('No template node found for id', id);
+            return null;
+        }
+
+        return {
+            type: MessageContextType.HIGHLIGHT,
+            displayName: (isInstance && templateNode.component) ? templateNode.component : tagName.toLowerCase(),
+            path: templateNode.path,
+            content: codeBlock,
+            start: templateNode.startTag.start.line,
+            end: templateNode.endTag?.end.line || templateNode.startTag.start.line,
+            oid: id,
+            branchId: templateNode.branchId,
+        };
     }
 
     // TODO: Enhance with custom rules
