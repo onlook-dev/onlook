@@ -2,9 +2,10 @@
  * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
  * for Docker builds.
  */
-import { NextConfig } from 'next';
+import type { NextConfig } from 'next';
+import type path from 'node:path';
 import createNextIntlPlugin from 'next-intl/plugin';
-import path from 'node:path';
+
 import './src/env';
 
 const nextConfig: NextConfig = {
@@ -21,7 +22,7 @@ if (process.env.NODE_ENV === 'development') {
 
 const withNextIntl = createNextIntlPlugin({
     experimental: {
-        createMessagesDeclaration: './messages/en.json'
-    }
+        createMessagesDeclaration: './messages/en.json',
+    },
 });
 export default withNextIntl(nextConfig);
