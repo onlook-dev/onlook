@@ -31,7 +31,7 @@ export const ToolCallDisplay = ({
         );
     }
 
-    if (toolName === TerminalCommandTool.name) {
+    if (toolName === TerminalCommandTool.toolName) {
         const args = toolPart.input as z.infer<typeof TerminalCommandTool.parameters> | null;
         const result = toolPart.output as { output?: string; error?: string } | null;
         if (!args?.command) {
@@ -53,7 +53,7 @@ export const ToolCallDisplay = ({
         );
     }
 
-    if (toolName === WebSearchTool.name && toolPart.state === 'output-available') {
+    if (toolName === WebSearchTool.toolName && toolPart.state === 'output-available') {
         const searchResult: WebSearchResult | null = toolPart.output as WebSearchResult | null;
         const args = toolPart.input as z.infer<typeof WebSearchTool.parameters>;
         if (args?.query && searchResult?.result && searchResult.result.length > 0) {
@@ -69,7 +69,7 @@ export const ToolCallDisplay = ({
         }
     }
 
-    if (toolName === WriteFileTool.name) {
+    if (toolName === WriteFileTool.toolName) {
         const args = toolPart.input as z.infer<typeof WriteFileTool.parameters> | null;
         const filePath = args?.file_path;
         const codeContent = args?.content;
@@ -94,7 +94,7 @@ export const ToolCallDisplay = ({
         );
     }
 
-    if (toolName === FuzzyEditFileTool.name) {
+    if (toolName === FuzzyEditFileTool.toolName) {
         const args = toolPart.input as z.infer<typeof FuzzyEditFileTool.parameters> | null;
         const filePath = args?.file_path;
         const codeContent = args?.content;
@@ -119,7 +119,7 @@ export const ToolCallDisplay = ({
         );
     }
 
-    if (toolName === SearchReplaceEditTool.name) {
+    if (toolName === SearchReplaceEditTool.toolName) {
         const args = toolPart.input as z.infer<typeof SearchReplaceEditTool.parameters> | null;
         const filePath = args?.file_path;
         const codeContent = args?.new_string;
@@ -144,7 +144,7 @@ export const ToolCallDisplay = ({
         );
     }
 
-    if (toolName === SearchReplaceMultiEditFileTool.name) {
+    if (toolName === SearchReplaceMultiEditFileTool.toolName) {
         const args = toolPart.input as z.infer<typeof SearchReplaceMultiEditFileTool.parameters> | null;
         const filePath = args?.file_path;
         const codeContent = args?.edits?.map((edit) => edit.new_string).join('\n...\n');
@@ -169,7 +169,7 @@ export const ToolCallDisplay = ({
         );
     }
 
-    // if (toolName === TodoWriteTool.name) {
+    // if (toolName === TodoWriteTool.toolName) {
     //     const args = toolPart.input as z.infer<typeof TodoWriteTool.parameters> | null;
     //     const todos = args?.todos;
     //     if (!todos || todos.length === 0) {
@@ -203,7 +203,7 @@ export const ToolCallDisplay = ({
     //     );
     // }
 
-    if (toolName === TypecheckTool.name) {
+    if (toolName === TypecheckTool.toolName) {
         const result = toolPart.output as { success: boolean; error?: string } | null;
         const error = stripAnsi(result?.error || '');
         return (

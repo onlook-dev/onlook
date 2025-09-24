@@ -10,7 +10,7 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
     let output: any = null;
 
     try {
-        const tool = availableTools.find(tool => tool.name === toolName);
+        const tool = availableTools.find(tool => tool.toolName === toolName);
         if (!tool) {
             toast.error(`Tool "${toolName}" not available in ask mode`, {
                 description: `Switch to build mode to use this tool.`,
