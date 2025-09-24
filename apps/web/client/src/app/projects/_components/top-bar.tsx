@@ -174,10 +174,10 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                 <div className="flex-1 flex justify-center min-w-0">
                     <motion.div
                         ref={searchContainerRef}
-                        className="relative w-full max-w-sm hidden sm:block"
+                        className="relative w-full hidden sm:block"
                         initial={false}
-                        animate={isSearchFocused ? 
-                            { width: '100%', maxWidth: '360px' } : 
+                        animate={isSearchFocused ?
+                            { width: '100%', maxWidth: '360px' } :
                             { width: '100%', maxWidth: '260px' }
                         }
                         transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -260,7 +260,7 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                             )}
                             onSelect={() => {
                                 router.push(Routes.IMPORT_PROJECT);
-            }}
+                            }}
                         >
                             <Icons.Upload className="w-4 h-4 mr-1 text-foreground-secondary group-hover:text-teal-100" />
                             <p className="text-microPlus">{t(transKeys.projects.actions.import)}</p>
