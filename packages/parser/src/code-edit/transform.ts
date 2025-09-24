@@ -3,8 +3,8 @@ import { CodeActionType } from '@onlook/models/actions';
 import { type CodeDiffRequest } from '@onlook/models/code';
 import { assertNever } from '@onlook/utility';
 
-import type { NodePath, t as T } from '../packages';
-import { types as t, traverse } from '../packages';
+import type { NodePath, T } from '../packages';
+import { traverse } from '../packages';
 import { groupElementsInNode, ungroupElementsInNode } from './group';
 import { getOidFromJsxElement } from './helpers';
 import { insertImageToNode, removeImageFromNode } from './image';

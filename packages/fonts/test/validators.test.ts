@@ -1,11 +1,11 @@
-import { describe, test, expect } from 'bun:test';
-import { parse, traverse, types as t, type t as T, NodePath } from '@onlook/parser';
+import { NodePath, parse, t, type T, traverse } from '@onlook/parser';
+import { describe, expect, test } from 'bun:test';
 import {
-    isTailwindThemeProperty,
-    hasPropertyName,
-    isValidLocalFontDeclaration,
-    hasLocalFontImport,
     findFontExportDeclaration,
+    hasLocalFontImport,
+    hasPropertyName,
+    isTailwindThemeProperty,
+    isValidLocalFontDeclaration,
     validateGoogleFontSetup,
 } from '../src/helpers/validators';
 

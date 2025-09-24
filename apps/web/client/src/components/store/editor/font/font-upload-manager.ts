@@ -7,7 +7,7 @@ import {
     mergeLocalFontSources,
 } from '@onlook/fonts';
 import type { FontConfig, FontUploadFile } from '@onlook/models';
-import { types as t, type t as T } from '@onlook/parser';
+import { t, type T } from '@onlook/parser';
 import { getFontFileName } from '@onlook/utility';
 import { camelCase } from 'lodash';
 import { makeAutoObservable } from 'mobx';

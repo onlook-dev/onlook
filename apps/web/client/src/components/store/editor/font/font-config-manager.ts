@@ -7,7 +7,7 @@ import {
     validateGoogleFontSetup,
 } from '@onlook/fonts';
 import { RouterType, type CodeDiff, type Font } from '@onlook/models';
-import { generate, getAstFromContent, types as t, type t as T } from '@onlook/parser';
+import { generate, getAstFromContent, t, type T } from '@onlook/parser';
 import { camelCase } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';

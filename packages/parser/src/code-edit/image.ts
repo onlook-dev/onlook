@@ -1,7 +1,6 @@
 import { DefaultSettings } from '@onlook/constants';
 import { type CodeInsertImage, type CodeRemoveImage } from '@onlook/models/actions';
-
-import { type NodePath, type t as T } from '../packages';
+import { type NodePath, type T } from '../packages';
 import { addClassToNode } from './style';
 
 export function insertImageToNode(path: NodePath<T.JSXElement>, action: CodeInsertImage): void {
@@ -20,4 +19,4 @@ function writeImageToFile(action: CodeInsertImage): string | null {
     return null;
 }
 
-export function removeImageFromNode(path: NodePath<T.JSXElement>, action: CodeRemoveImage): void {}
+export function removeImageFromNode(path: NodePath<T.JSXElement>, action: CodeRemoveImage): void { }

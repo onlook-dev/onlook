@@ -9,7 +9,7 @@ import {
     updateTemplateLiteralWithFontClass,
 } from '@onlook/fonts';
 import type { CodeDiff, Font } from '@onlook/models';
-import { generate, getAstFromContent, types as t, traverse, type t as T } from '@onlook/parser';
+import { generate, getAstFromContent, t, type T, traverse } from '@onlook/parser';
 import { camelCase } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';

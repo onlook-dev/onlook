@@ -1,5 +1,5 @@
-import { type UserSettings, type UserSettings } from '@onlook/models';
-
+import { DefaultSettings } from '@onlook/constants';
+import { type UserSettings } from '@onlook/models';
 import { type UserSettings as DbUserSettings } from '../../schema';
 
 export const fromDbUserSettings = (settings: DbUserSettings): UserSettings => {

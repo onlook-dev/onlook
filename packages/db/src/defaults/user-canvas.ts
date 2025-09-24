@@ -1,4 +1,5 @@
-import { type UserCanvas as DbUserCanvas, type UserCanvas as DbUserCanvas } from '@onlook/db';
+import { DefaultSettings } from '@onlook/constants';
+import { type UserCanvas as DbUserCanvas } from '@onlook/db';
 
 export const createDefaultUserCanvas = (
     userId: string,

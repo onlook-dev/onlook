@@ -1,9 +1,9 @@
 import { EditorAttributes } from '@onlook/constants';
 import { createOid } from '@onlook/utility';
 
-import type { NodePath, t as T } from './packages';
 import { isReactFragment } from './helpers';
-import { types as t, traverse } from './packages';
+import type { NodePath, T } from './packages';
+import { t, traverse } from './packages';
 
 export function addOidsToAst(
     ast: T.File,

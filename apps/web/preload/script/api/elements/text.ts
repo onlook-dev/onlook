@@ -1,10 +1,8 @@
-import {
-    type DomElement,
-    type DomElement,
-    type EditTextResult,
-    type EditTextResult,
-    type LayerNode,
-    type LayerNode,
+import { EditorAttributes } from '@onlook/constants';
+import type {
+    DomElement,
+    EditTextResult,
+    LayerNode
 } from '@onlook/models';
 
 import { getHtmlElement } from '../../helpers';

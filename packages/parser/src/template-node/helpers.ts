@@ -6,8 +6,8 @@ import {
     type TemplateTag,
 } from '@onlook/models';
 
-import type { NodePath, t as T } from '../packages';
-import { types as t } from '../packages';
+import type { NodePath, T } from '../packages';
+import { t } from '../packages';
 
 export function createTemplateNode(
     path: NodePath<T.JSXElement>,

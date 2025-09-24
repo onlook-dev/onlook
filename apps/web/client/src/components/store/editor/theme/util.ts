@@ -1,6 +1,6 @@
 import { DEFAULT_COLOR_NAME } from '@onlook/constants';
 import { SystemTheme } from '@onlook/models/assets';
-import { generate, getAstFromContent, parse, traverse, type t as T } from '@onlook/parser';
+import { generate, getAstFromContent, parse, type T, traverse } from '@onlook/parser';
 import { parseHslValue } from '@onlook/utility';
 import type { Root, Rule } from 'postcss';
 import postcss from 'postcss';

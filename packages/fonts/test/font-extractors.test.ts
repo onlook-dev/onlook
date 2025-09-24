@@ -1,12 +1,12 @@
-import { describe, test, expect } from 'bun:test';
+import { parse, T, traverse } from '@onlook/parser';
+import { describe, expect, test } from 'bun:test';
+import path from 'path';
 import {
-    parseFontDeclarations,
     buildFontConfiguration,
     migrateFontsFromLayout,
+    parseFontDeclarations,
 } from '../src/helpers/font-extractors';
 import { runDataDrivenTests } from './test-utils';
-import { parse, traverse, type t as T } from '@onlook/parser';
-import path from 'path';
 
 const __dirname = import.meta.dir;
 

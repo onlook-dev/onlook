@@ -1,5 +1,5 @@
-import type { t as T } from './packages';
-import { types as t } from './packages';
+import type { T } from './packages';
+import { t } from './packages';
 
 export function isReactFragment(openingElement: T.JSXOpeningElement): boolean {
     const name = openingElement.name;

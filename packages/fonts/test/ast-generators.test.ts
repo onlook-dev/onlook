@@ -1,14 +1,13 @@
-import { generate } from '@onlook/parser';
 import type { Font, FontConfig } from '@onlook/models';
-import {
-    generateFontVariableExport,
-    createLocalFontConfig,
-    createFontSrcObjects,
-} from '../src/helpers/ast-generators';
-import { runDataDrivenTests } from './test-utils';
+import { generate, t } from '@onlook/parser';
 import { describe } from 'bun:test';
 import path from 'path';
-import { types as t } from '@onlook/parser';
+import {
+    createFontSrcObjects,
+    createLocalFontConfig,
+    generateFontVariableExport,
+} from '../src/helpers/ast-generators';
+import { runDataDrivenTests } from './test-utils';
 
 const __dirname = import.meta.dir;
 

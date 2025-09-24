@@ -1,6 +1,5 @@
 import { EditorAttributes } from '@onlook/constants';
 import { type DomElement, type ElementPosition } from '@onlook/models';
-
 import { getHtmlElement, isValidHtmlElement } from '../../../helpers';
 import { getOrAssignDomId } from '../../../helpers/ids';
 import { getDomElement, restoreElementStyle } from '../helpers';
@@ -33,13 +32,13 @@ export function startDrag(domId: string): number | null {
     const offset =
         styles.position === 'absolute'
             ? {
-                  x: pos.left,
-                  y: pos.top,
-              }
+                x: pos.left,
+                y: pos.top,
+            }
             : {
-                  x: pos.left - rect.left,
-                  y: pos.top - rect.top,
-              };
+                x: pos.left - rect.left,
+                y: pos.top - rect.top,
+            };
 
     el.setAttribute(
         EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION,
@@ -188,7 +187,7 @@ function prepareElementForDragging(el: HTMLElement) {
     }
 }
 
-function getDragElement(): HTMLElement | undefined {
+function getDragElement(): Element | undefined {
     const el = document.querySelector(`[${EditorAttributes.DATA_ONLOOK_DRAGGING}]`);
     if (!el) {
         return;

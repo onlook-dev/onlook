@@ -1,8 +1,8 @@
 import type { CodeGroup, CodeUngroup } from '@onlook/models/actions';
 import { CodeActionType } from '@onlook/models/actions';
 
-import type { NodePath, t as T } from '../packages';
-import { types as t } from '../packages';
+import type { NodePath, T } from '../packages';
+import { t } from '../packages';
 import { addKeyToElement, getOidFromJsxElement, jsxFilter } from './helpers';
 import { createInsertedElement, insertAtIndex } from './insert';
 import { removeElementAtIndex } from './remove';

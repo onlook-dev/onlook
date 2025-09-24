@@ -1,5 +1,6 @@
-import  { type t as T } from '@onlook/parser';
-import { types as t } from '@onlook/parser';
+import {
+    type T, t
+} from '@onlook/parser';
 
 const FONT_WEIGHT_REGEX =
     /font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)/;

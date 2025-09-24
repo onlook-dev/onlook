@@ -1,6 +1,6 @@
-import { type Font, type Font } from '@onlook/models';
-import { generate, getAstFromContent, types as t, traverse } from '@onlook/parser';
-
+import { type Font } from '@onlook/models';
+import { generate, getAstFromContent, t, traverse, type NodePath, type T } from '@onlook/parser';
+import { createAndInsertImport } from '../utils';
 import { createFontFamilyProperty } from './ast-generators';
 import {
     hasPropertyName,

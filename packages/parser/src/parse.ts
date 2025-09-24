@@ -1,8 +1,6 @@
 import { EditorAttributes } from '@onlook/constants';
-
-import  { type NodePath, type t as T } from './packages';
 import { isReactFragment } from './helpers';
-import { generate, parse, types as t, traverse } from './packages';
+import { generate, parse, t, traverse, type NodePath, type T } from './packages';
 
 export function getAstFromContent(content: string): T.File | null {
     try {

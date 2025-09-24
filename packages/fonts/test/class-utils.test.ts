@@ -1,13 +1,13 @@
+import { generate, parse, t, type T } from '@onlook/parser';
 import { describe, expect, test } from 'bun:test';
 import fs from 'fs';
 import path from 'path';
-import { generate, parse, types as t, type t as T } from '@onlook/parser';
 import {
-    updateJSXExpressionClassNameWithFont,
-    updateStringLiteralClassNameWithFont,
+    createStringLiteralWithFont,
     createTemplateLiteralWithFont,
     removeFontsFromClassName,
-    createStringLiteralWithFont,
+    updateJSXExpressionClassNameWithFont,
+    updateStringLiteralClassNameWithFont,
     updateTemplateLiteralWithFontClass,
 } from '../src';
 import { runDataDrivenTests } from './test-utils';

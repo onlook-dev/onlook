@@ -1,8 +1,10 @@
 import { camelCase } from 'lodash';
 
-import type { t as T } from '@onlook/parser';
 import { type Font, type FontConfig } from '@onlook/models';
-import { types as t } from '@onlook/parser';
+import {
+    t,
+    type T
+} from '@onlook/parser';
 
 /**
  * Creates an AST object expression containing font configuration properties for Google Fonts.

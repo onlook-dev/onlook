@@ -1,7 +1,7 @@
 import { DEPRECATED_PRELOAD_SCRIPT_SRCS, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
 
-import type { t as T } from '../packages';
-import { types as t, traverse } from '../packages';
+import type { T } from '../packages';
+import { t, traverse } from '../packages';
 
 export const injectPreloadScript = (ast: T.File): T.File => {
     const hasScriptImport = isScriptImported(ast);

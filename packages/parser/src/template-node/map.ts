@@ -1,11 +1,11 @@
 import type { TemplateNode } from '@onlook/models';
 import { CoreElementType, DynamicType } from '@onlook/models';
 
-import type { NodePath, t as T } from '../packages';
 import { getOidFromJsxElement } from '../code-edit/helpers';
 import { isReactFragment } from '../helpers';
 import { getExistingOid } from '../ids';
-import { types as t, traverse } from '../packages';
+import type { NodePath, T } from '../packages';
+import { t, traverse } from '../packages';
 import { getAstFromContent } from '../parse';
 import { createTemplateNode } from './helpers';
 
@@ -137,8 +137,8 @@ export function getDynamicTypeInfo(path: NodePath<T.JSXElement>): DynamicType | 
     const dynamicType = isConditionalRoot
         ? DynamicType.CONDITIONAL
         : isArrayMapRoot
-          ? DynamicType.ARRAY
-          : undefined;
+            ? DynamicType.ARRAY
+            : undefined;
 
     return dynamicType ?? null;
 }
@@ -155,8 +155,8 @@ export function getCoreElementInfo(path: NodePath<T.JSXElement>): CoreElementTyp
     const coreElementType = isComponentRoot
         ? CoreElementType.COMPONENT_ROOT
         : isBodyTag
-          ? CoreElementType.BODY_TAG
-          : undefined;
+            ? CoreElementType.BODY_TAG
+            : undefined;
 
     return coreElementType ?? null;
 }

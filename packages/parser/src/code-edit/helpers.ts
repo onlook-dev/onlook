@@ -1,9 +1,7 @@
-import { nanoid } from 'nanoid/non-secure';
-
 import { EditorAttributes } from '@onlook/constants';
-
-import type { GeneratorOptions, t as T } from '../packages';
-import { generate, types as t } from '../packages';
+import { nanoid } from 'nanoid/non-secure';
+import type { GeneratorOptions, T } from '../packages';
+import { generate, t } from '../packages';
 
 export function getOidFromJsxElement(element: T.JSXOpeningElement): string | null {
     const attribute = element.attributes.find(

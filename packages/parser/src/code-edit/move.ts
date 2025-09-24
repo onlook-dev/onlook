@@ -1,6 +1,6 @@
 import { type CodeMove } from '@onlook/models/actions';
 
-import { type NodePath, type t as T } from '../packages';
+import { type NodePath, type T } from '../packages';
 import { addKeyToElement, getOidFromJsxElement, jsxFilter } from './helpers';
 
 export function moveElementInNode(path: NodePath<T.JSXElement>, element: CodeMove): void {

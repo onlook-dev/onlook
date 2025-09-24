@@ -1,8 +1,8 @@
-import { type CheckErrorsResult, type CheckErrorsResult } from '@onlook/models';
+import { type CheckErrorsResult } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { type ParsedError } from '@onlook/utility';
 import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
-
+import { z } from 'zod';
 import { ClientTool } from '../models/client';
 
 export class CheckErrorsTool extends ClientTool {

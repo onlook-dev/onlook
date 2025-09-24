@@ -1,7 +1,9 @@
 import type { Font, RawFont } from '@onlook/models';
-import type { t as T } from '@onlook/parser';
 import { RouterType } from '@onlook/models';
-import { types as t } from '@onlook/parser';
+import {
+    t,
+    type T
+} from '@onlook/parser';
 
 /**
  * Converts a RawFont to a Font
