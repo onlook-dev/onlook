@@ -22,35 +22,45 @@ import {
     WriteFileTool,
 } from './classes';
 
-export const readOnlyTools: ToolSet = {
-    [ListFilesTool.name]: ListFilesTool.getAITool(),
-    [ReadFileTool.name]: ReadFileTool.getAITool(),
-    [BashReadTool.name]: BashReadTool.getAITool(),
-    [OnlookInstructionsTool.name]: OnlookInstructionsTool.getAITool(),
-    [ReadStyleGuideTool.name]: ReadStyleGuideTool.getAITool(),
-    [ListBranchesTool.name]: ListBranchesTool.getAITool(),
-    [ScrapeUrlTool.name]: ScrapeUrlTool.getAITool(),
-    [WebSearchTool.name]: WebSearchTool.getAITool(),
-    [GlobTool.name]: GlobTool.getAITool(),
-    [GrepTool.name]: GrepTool.getAITool(),
-    [TypecheckTool.name]: TypecheckTool.getAITool(),
-    [CheckErrorsTool.name]: CheckErrorsTool.getAITool(),
-};
-
-export const editTools: ToolSet = {
-    ...readOnlyTools,
-    [SearchReplaceEditTool.name]: SearchReplaceEditTool.getAITool(),
-    [SearchReplaceMultiEditFileTool.name]: SearchReplaceMultiEditFileTool.getAITool(),
-    [FuzzyEditFileTool.name]: FuzzyEditFileTool.getAITool(),
-    [WriteFileTool.name]: WriteFileTool.getAITool(),
-    [BashEditTool.name]: BashEditTool.getAITool(),
-    [SandboxTool.name]: SandboxTool.getAITool(),
-    [TerminalCommandTool.name]: TerminalCommandTool.getAITool(),
-};
-
-export type ChatTools = InferUITools<typeof editTools>;
-
-export function getToolSetFromType(chatType: ChatType) {
-    return chatType === ChatType.ASK ? readOnlyTools : editTools;
+// Helper function to convert tool classes to ToolSet
+function createToolSet(toolClasses: Array<{ name: string; getAITool: () => any }>): ToolSet {
+    return toolClasses.reduce((acc, toolClass) => {
+        acc[toolClass.name] = toolClass.getAITool();
+        return acc;
+    }, {} as ToolSet);
 }
 
+const readOnlyToolClasses = [
+    ListFilesTool,
+    ReadFileTool,
+    BashReadTool,
+    OnlookInstructionsTool,
+    ReadStyleGuideTool,
+    ListBranchesTool,
+    ScrapeUrlTool,
+    WebSearchTool,
+    GlobTool,
+    GrepTool,
+    TypecheckTool,
+    CheckErrorsTool,
+];
+
+const editOnlyToolClasses = [
+    SearchReplaceEditTool,
+    SearchReplaceMultiEditFileTool,
+    FuzzyEditFileTool,
+    WriteFileTool,
+    BashEditTool,
+    SandboxTool,
+    TerminalCommandTool,
+];
+
+export const readOnlyTools: ToolSet = createToolSet(readOnlyToolClasses);
+export const allTools: ToolSet = createToolSet([...readOnlyToolClasses, ...editOnlyToolClasses]);
+export function getToolSetFromType(chatType: ChatType) {
+    return chatType === ChatType.ASK ? readOnlyTools : allTools;
+}
+export function getToolClassesFromType(chatType: ChatType) {
+    return chatType === ChatType.ASK ? readOnlyToolClasses : [...readOnlyToolClasses, ...editOnlyToolClasses];
+}
+export type ChatTools = InferUITools<typeof allTools>;

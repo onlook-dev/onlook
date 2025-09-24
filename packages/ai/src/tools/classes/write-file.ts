@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
-export class WriteFileTool implements ClientTool {
+export class WriteFileTool extends ClientTool {
     static readonly name = 'write_file';
     static readonly description = 'Write content to a new file or overwrite an existing file';
     static readonly parameters = z.object({

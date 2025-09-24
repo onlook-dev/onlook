@@ -1,9 +1,9 @@
 import { Icons } from '@onlook/ui/icons';
+import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
 import { ClientTool } from '../models/client';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 
-export class ScrapeUrlTool implements ClientTool {
+export class ScrapeUrlTool extends ClientTool {
     static readonly name = 'scrape_url';
     static readonly description = 'Scrape a URL and extract its content in various formats (markdown, HTML, JSON). Can extract clean, LLM-ready content from any website, handling dynamic content and anti-bot mechanisms.';
     static readonly parameters = z.object({

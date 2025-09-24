@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
-export class SearchReplaceEditTool implements ClientTool {
+export class SearchReplaceEditTool extends ClientTool {
     static readonly name = 'search_replace_edit_file';
     static readonly description = 'Performs exact string replacements in files. The edit will FAIL if `old_string` is not unique in the file. Either provide a larger string with more surrounding context to make it unique or use `replace_all` to change every instance of `old_string`.'
     static readonly parameters = z.object({

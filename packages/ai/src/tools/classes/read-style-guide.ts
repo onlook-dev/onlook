@@ -3,7 +3,7 @@ import type { EditorEngine } from '@onlook/web-client/src/components/store/edito
 import { z } from 'zod';
 import { ClientTool } from '../models/client';
 
-export class ReadStyleGuideTool implements ClientTool {
+export class ReadStyleGuideTool extends ClientTool {
     static readonly name = 'read_style_guide';
     static readonly description = 'Read the project style guide and coding conventions';
     static readonly parameters = z.object({});

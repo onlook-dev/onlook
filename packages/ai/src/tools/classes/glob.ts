@@ -15,7 +15,7 @@ interface GlobResult {
     method: 'bash' | 'sh' | 'find';
 }
 
-export class GlobTool implements ClientTool {
+export class GlobTool extends ClientTool {
     static readonly name = 'glob';
     static readonly description = 'Search for files using glob patterns';
     static readonly parameters = z.object({

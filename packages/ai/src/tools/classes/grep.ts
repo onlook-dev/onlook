@@ -18,7 +18,7 @@ interface GrepResult {
 }
 
 
-export class GrepTool implements ClientTool {
+export class GrepTool extends ClientTool {
     static readonly name = 'grep';
     static readonly description = 'Search for patterns in files using grep';
     static readonly parameters = z.object({

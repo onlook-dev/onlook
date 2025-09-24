@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
-export class SandboxTool implements ClientTool {
+export class SandboxTool extends ClientTool {
     static readonly ALLOWED_SANDBOX_COMMANDS = z.enum(['restart_dev_server', 'read_dev_server_logs']);
     static readonly name = 'sandbox';
     static readonly description = 'Execute commands in a sandboxed environment';

@@ -4,13 +4,13 @@ import { ONLOOK_INSTRUCTIONS } from 'src/prompt/onlook';
 import { z } from 'zod';
 import { ClientTool } from '../models/client';
 
-export class OnlookInstructionsTool implements ClientTool {
+export class OnlookInstructionsTool extends ClientTool {
     static readonly name = 'onlook_instructions';
     static readonly description = 'Get Onlook-specific instructions and guidelines';
     static readonly parameters = z.object({});
     static readonly icon = Icons.OnlookLogo;
 
-    async handle(input: z.infer<typeof OnlookInstructionsTool.parameters>, editorEngine: EditorEngine): Promise<string> {
+    async handle(_input: z.infer<typeof OnlookInstructionsTool.parameters>, _editorEngine: EditorEngine): Promise<string> {
         return ONLOOK_INSTRUCTIONS;
     }
 

@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
-export class BashReadTool implements ClientTool {
+export class BashReadTool extends ClientTool {
     static readonly ALLOWED_BASH_READ_COMMANDS = z.enum([
         'ls',
         'cat',

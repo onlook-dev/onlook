@@ -5,7 +5,7 @@ import type { EditorEngine } from '@onlook/web-client/src/components/store/edito
 import { z } from 'zod';
 import { ClientTool } from '../models/client';
 
-export class ListBranchesTool implements ClientTool {
+export class ListBranchesTool extends ClientTool {
     static readonly name = 'list_branches';
     static readonly description = 'List all available branches in the project';
     static readonly parameters = z.object({});

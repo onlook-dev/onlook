@@ -5,7 +5,7 @@ import { ClientTool } from '../models/client';
 import { isCommandAvailable, resolvePath, safeRunCommand } from '../shared/helpers/files';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
-export class ReadFileTool implements ClientTool {
+export class ReadFileTool extends ClientTool {
     static readonly name = 'read_file';
     static readonly description = "Reads a file from the local filesystem. You can access any file directly by using this tool. By default, it reads up to 2000 lines starting from the beginning of the file. You can optionally specify a line offset and limit (especially handy for long files), but it's recommended to read the whole file by not providing these parameters. Results are returned using cat -n format, with line numbers starting at 1. Supports fuzzy path matching when exact paths are not found.";
     static readonly parameters = z.object({

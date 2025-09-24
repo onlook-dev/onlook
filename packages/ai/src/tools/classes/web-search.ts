@@ -4,7 +4,7 @@ import type { EditorEngine } from '@onlook/web-client/src/components/store/edito
 import { z } from 'zod';
 import { ClientTool } from '../models/client';
 
-export class WebSearchTool implements ClientTool {
+export class WebSearchTool extends ClientTool {
     static readonly name = 'web_search';
     static readonly description = 'Search the web for up-to-date information';
     static readonly parameters = z.object({

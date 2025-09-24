@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
-export class BashEditTool implements ClientTool {
+export class BashEditTool extends ClientTool {
     static readonly ALLOWED_BASH_EDIT_COMMANDS = z.enum([
         'mkdir',
         'rm',
