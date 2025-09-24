@@ -341,7 +341,7 @@ describe('addOidsToAst', () => {
                                 node.openingElement.attributes.push(invalidOidAttr);
                             }
                             elementCount++;
-                            
+
                             if (node.children) {
                                 node.children.forEach(traverse);
                             }
@@ -357,11 +357,11 @@ describe('addOidsToAst', () => {
             expect(modified).toBe(true); // Should modify to add missing OIDs and fix invalid ones
             expect(result).toContain('data-oid="valid-oid"'); // Should preserve valid OID
             expect(result).not.toContain('data-oid={456}'); // Should not contain invalid expression
-            
+
             // Should have 3 elements total with valid string OIDs
             const oidMatches = result.match(/data-oid="([^"]*)"/g);
             expect(oidMatches).toHaveLength(3);
-            
+
             const oidValues = oidMatches?.map((match) => match.match(/data-oid="([^"]*)"/)?.[1]) || [];
             expect(oidValues.every(oid => typeof oid === 'string' && oid.length > 0)).toBe(true);
         });
@@ -395,7 +395,7 @@ describe('addOidsToAst', () => {
                                 node.openingElement.attributes.push(invalidOidAttr);
                             }
                             elementCount++;
-                            
+
                             if (node.children) {
                                 node.children.forEach(traverse);
                             }
@@ -420,8 +420,250 @@ describe('addOidsToAst', () => {
             const uniqueOids = new Set(oidValues);
 
             expect(uniqueOids.size).toBe(3); // All OIDs should be unique
-            expect(oidValues.every(oid => !globalOids.has(oid))).toBe(true); // Should not conflict with global OIDs
+            expect(oidValues.every((oid) => oid && !globalOids.has(oid))).toBe(true); // Should not conflict with global OIDs
             expect(result).not.toContain('data-oid={999}'); // Should not contain invalid expressions
+        });
+
+        test('should remove all multiple oid attributes and create a single new one', async () => {
+            const ast = getAstFromContent('<div>Content</div>');
+            if (!ast) throw new Error('Failed to parse input code');
+
+            // Manually add multiple oid attributes to the same element
+            ast.program.body.forEach((statement) => {
+                if (statement.type === 'ExpressionStatement' && statement.expression.type === 'JSXElement') {
+                    const openingElement = statement.expression.openingElement;
+                    
+                    // Add first valid oid
+                    const firstOidAttr = {
+                        type: 'JSXAttribute',
+                        name: {
+                            type: 'JSXIdentifier',
+                            name: 'data-oid',
+                        },
+                        value: {
+                            type: 'StringLiteral',
+                            value: 'first-oid',
+                        },
+                    };
+                    
+                    // Add second valid oid
+                    const secondOidAttr = {
+                        type: 'JSXAttribute',
+                        name: {
+                            type: 'JSXIdentifier',
+                            name: 'data-oid',
+                        },
+                        value: {
+                            type: 'StringLiteral',
+                            value: 'second-oid',
+                        },
+                    };
+
+                    openingElement.attributes.push(firstOidAttr as any, secondOidAttr as any);
+                }
+            });
+
+            const { ast: astWithIds, modified } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, '<div>Content</div>');
+
+            expect(modified).toBe(true); // Should modify to remove duplicates
+            expect(result).not.toContain('data-oid="first-oid"'); // Should not contain original oids
+            expect(result).not.toContain('data-oid="second-oid"'); // Should not contain original oids
+            
+            // Should have exactly one oid attribute
+            const oidMatches = result.match(/data-oid="([^"]*)"/g);
+            expect(oidMatches).toHaveLength(1);
+            
+            // Should have a new valid 7-character OID
+            const oidValue = oidMatches?.[0]?.match(/data-oid="([^"]*)"/)?.[1];
+            expect(oidValue).toBeDefined();
+            expect(oidValue?.length).toBe(7);
+        });
+
+        test('should handle mix of valid and invalid multiple oids', async () => {
+            const ast = getAstFromContent('<div>Content</div>');
+            if (!ast) throw new Error('Failed to parse input code');
+
+            // Add multiple oid attributes with mix of valid and invalid values
+            ast.program.body.forEach((statement) => {
+                if (statement.type === 'ExpressionStatement' && statement.expression.type === 'JSXElement') {
+                    const openingElement = statement.expression.openingElement;
+                    
+                    // Add valid string oid
+                    const validOidAttr = {
+                        type: 'JSXAttribute',
+                        name: {
+                            type: 'JSXIdentifier',
+                            name: 'data-oid',
+                        },
+                        value: {
+                            type: 'StringLiteral',
+                            value: 'valid-oid',
+                        },
+                    };
+                    
+                    // Add invalid numeric oid
+                    const invalidOidAttr = {
+                        type: 'JSXAttribute',
+                        name: {
+                            type: 'JSXIdentifier',
+                            name: 'data-oid',
+                        },
+                        value: {
+                            type: 'JSXExpressionContainer',
+                            expression: {
+                                type: 'Literal',
+                                value: 123,
+                                raw: '123',
+                            },
+                        },
+                    };
+
+                    openingElement.attributes.push(validOidAttr as any, invalidOidAttr as any);
+                }
+            });
+
+            const { ast: astWithIds, modified } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, '<div>Content</div>');
+
+            expect(modified).toBe(true); // Should modify to remove all and create new
+            expect(result).not.toContain('data-oid="valid-oid"'); // Should not contain original valid oid
+            expect(result).not.toContain('data-oid={123}'); // Should not contain invalid expression
+            
+            // Should have exactly one oid attribute
+            const oidMatches = result.match(/data-oid="([^"]*)"/g);
+            expect(oidMatches).toHaveLength(1);
+            
+            // Should have a new valid OID
+            const oidValue = oidMatches?.[0]?.match(/data-oid="([^"]*)"/)?.[1];
+            expect(oidValue).toBeDefined();
+            expect(typeof oidValue).toBe('string');
+            expect(oidValue?.length).toBe(7);
+        });
+
+        test('should handle multiple elements each with multiple oids', async () => {
+            const ast = getAstFromContent('<div><span>First</span><p>Second</p></div>');
+            if (!ast) throw new Error('Failed to parse input code');
+
+            // Add multiple oids to each child element
+            let elementCount = 0;
+            ast.program.body.forEach((statement) => {
+                if (statement.type === 'ExpressionStatement' && statement.expression.type === 'JSXElement') {
+                    const traverse = (node: any) => {
+                        if (node.type === 'JSXElement') {
+                            if (elementCount === 1) { // First child (span)
+                                const oid1 = {
+                                    type: 'JSXAttribute',
+                                    name: { type: 'JSXIdentifier', name: 'data-oid' },
+                                    value: { type: 'StringLiteral', value: 'span-oid-1' },
+                                };
+                                const oid2 = {
+                                    type: 'JSXAttribute',
+                                    name: { type: 'JSXIdentifier', name: 'data-oid' },
+                                    value: { type: 'StringLiteral', value: 'span-oid-2' },
+                                };
+                                node.openingElement.attributes.push(oid1, oid2);
+                            } else if (elementCount === 2) { // Second child (p)
+                                const oid1 = {
+                                    type: 'JSXAttribute',
+                                    name: { type: 'JSXIdentifier', name: 'data-oid' },
+                                    value: { type: 'StringLiteral', value: 'p-oid-1' },
+                                };
+                                const oid2 = {
+                                    type: 'JSXAttribute',
+                                    name: { type: 'JSXIdentifier', name: 'data-oid' },
+                                    value: { type: 'StringLiteral', value: 'p-oid-2' },
+                                };
+                                node.openingElement.attributes.push(oid1, oid2);
+                            }
+                            elementCount++;
+                            
+                            if (node.children) {
+                                node.children.forEach(traverse);
+                            }
+                        }
+                    };
+                    traverse(statement.expression);
+                }
+            });
+
+            const { ast: astWithIds, modified } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, '<div><span>First</span><p>Second</p></div>');
+
+            expect(modified).toBe(true); // Should modify all elements
+
+            // Should not contain any of the original oids
+            expect(result).not.toContain('span-oid-1');
+            expect(result).not.toContain('span-oid-2');
+            expect(result).not.toContain('p-oid-1');
+            expect(result).not.toContain('p-oid-2');
+            
+            // Should have exactly 3 oid attributes (wrapper + 2 children)
+            const oidMatches = result.match(/data-oid="([^"]*)"/g);
+            expect(oidMatches).toHaveLength(3);
+            
+            // All oids should be unique
+            const oidValues = oidMatches?.map((match) => match.match(/data-oid="([^"]*)"/)?.[1]) || [];
+            const uniqueOids = new Set(oidValues);
+            expect(uniqueOids.size).toBe(3);
+            
+            // All oids should be valid 7-character strings
+            expect(oidValues.every(oid => oid && oid.length === 7)).toBe(true);
+        });
+
+        test('should actually remove multiple oids from the generated code', async () => {
+            // Start with code that has multiple data-oid attributes
+            const inputContent = `<div data-oid="first-oid" data-oid="second-oid">Content</div>`;
+            const ast = getAstFromContent(inputContent);
+            if (!ast) throw new Error('Failed to parse input code');
+
+            const { ast: astWithIds, modified } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, inputContent);
+
+            expect(modified).toBe(true);
+            
+            // Verify the original duplicate oids are completely gone
+            expect(result).not.toContain('data-oid="first-oid"');
+            expect(result).not.toContain('data-oid="second-oid"');
+            
+            // Should have exactly one data-oid attribute
+            const oidCount = (result.match(/data-oid=/g) || []).length;
+            expect(oidCount).toBe(1);
+            
+            // Verify it has a new valid oid
+            const oidMatch = result.match(/data-oid="([^"]*)"/);
+            expect(oidMatch).not.toBeNull();
+            expect(oidMatch![1]).toHaveLength(7);
+        });
+
+        test('should remove multiple oids but preserve single valid oids', async () => {
+            const inputContent = `
+                <div data-oid="div1" data-oid="div2">
+                    <span data-oid="span1" data-oid="span2" data-oid="span3">Text</span>
+                    <p data-oid="p1">Paragraph</p>
+                </div>
+            `;
+            const ast = getAstFromContent(inputContent);
+            if (!ast) throw new Error('Failed to parse input code');
+
+            const { ast: astWithIds, modified } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, inputContent);
+
+            expect(modified).toBe(true);
+            
+            // Multiple oids should be removed and replaced
+            expect(result).not.toContain('data-oid="div1"');
+            expect(result).not.toContain('data-oid="div2"');
+            expect(result).not.toContain('data-oid="span1"');
+            expect(result).not.toContain('data-oid="span2"');
+            expect(result).not.toContain('data-oid="span3"');
+            
+            // Single valid oid should be preserved (no conflicts in this test)
+            expect(result).toContain('data-oid="p1"');
+            
+            // Should have exactly 3 data-oid attributes (one per element)
+            const oidCount = (result.match(/data-oid=/g) || []).length;
+            expect(oidCount).toBe(3);
         });
     });
 });

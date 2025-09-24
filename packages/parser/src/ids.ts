@@ -20,14 +20,17 @@ export function addOidsToAst(
                 return;
             }
             const attributes = path.node.attributes;
-            const existingOid = getExistingOid(attributes);
+            const allOids = getAllExistingOids(attributes);
 
-            if (existingOid) {
-                const { value, index, shouldRemove } = existingOid;
+            if (allOids.indices.length > 0) {
+                // If there are multiple oids or any invalid oids, remove all and create a new one
+                if (allOids.hasMultiple || allOids.hasInvalid) {
+                    // Remove all oid attributes (in reverse order to maintain indices)
+                    allOids.indices.sort((a, b) => b - a).forEach(index => {
+                        attributes.splice(index, 1);
+                    });
 
-                if (shouldRemove) {
-                    // Remove invalid oid attribute and create a new valid one
-                    attributes.splice(index, 1);
+                    // Create a new unique OID
                     let newOid: string;
                     do {
                         newOid = createOid();
@@ -41,31 +44,36 @@ export function addOidsToAst(
                     localOids.add(newOid);
                     modified = true;
                 } else {
-                    // If the element already has a valid oid, check if it conflicts with other branches or local duplicates
-                    const oidOwnerBranch = branchOidMap.get(value);
+                    // Single valid oid - check if it conflicts with other branches or local duplicates
+                    const value = allOids.values[0];
+                    const index = allOids.indices[0];
+                    
+                    if (value && index !== undefined) {
+                        const oidOwnerBranch = branchOidMap.get(value);
 
-                    // Replace OID if:
-                    // 1. It exists globally AND belongs to a different branch, OR
-                    // 2. It's already used elsewhere in this same AST
-                    if (
-                        (globalOids.has(value) &&
-                            oidOwnerBranch &&
-                            oidOwnerBranch !== currentBranchId) ||
-                        localOids.has(value)
-                    ) {
-                        // Generate a new unique OID that doesn't conflict globally or locally
-                        let newOid: string;
-                        do {
-                            newOid = createOid();
-                        } while (globalOids.has(newOid) || localOids.has(newOid));
+                        // Replace OID if:
+                        // 1. It exists globally AND belongs to a different branch, OR
+                        // 2. It's already used elsewhere in this same AST
+                        if (
+                            (globalOids.has(value) &&
+                                oidOwnerBranch &&
+                                oidOwnerBranch !== currentBranchId) ||
+                            localOids.has(value)
+                        ) {
+                            // Generate a new unique OID that doesn't conflict globally or locally
+                            let newOid: string;
+                            do {
+                                newOid = createOid();
+                            } while (globalOids.has(newOid) || localOids.has(newOid));
 
-                        const attr = attributes[index] as T.JSXAttribute;
-                        attr.value = t.stringLiteral(newOid);
-                        localOids.add(newOid);
-                        modified = true;
-                    } else {
-                        // Keep existing OID and track it locally for future duplicate detection
-                        localOids.add(value);
+                            const attr = attributes[index] as T.JSXAttribute;
+                            attr.value = t.stringLiteral(newOid);
+                            localOids.add(newOid);
+                            modified = true;
+                        } else {
+                            // Keep existing OID and track it locally for future duplicate detection
+                            localOids.add(value);
+                        }
                     }
                 }
             } else {
@@ -86,6 +94,35 @@ export function addOidsToAst(
         },
     });
     return { ast, modified };
+}
+
+export function getAllExistingOids(
+    attributes: (T.JSXAttribute | T.JSXSpreadAttribute)[],
+): { indices: number[]; values: string[]; hasMultiple: boolean; hasInvalid: boolean } {
+    const oidIndices: number[] = [];
+    const oidValues: string[] = [];
+    let hasInvalid = false;
+
+    attributes.forEach((attr, index) => {
+        if (t.isJSXAttribute(attr) && attr.name.name === EditorAttributes.DATA_ONLOOK_ID) {
+            oidIndices.push(index);
+            
+            const existingAttrValue = attr.value;
+            if (!existingAttrValue || !t.isStringLiteral(existingAttrValue)) {
+                hasInvalid = true;
+                oidValues.push('');
+            } else {
+                oidValues.push(existingAttrValue.value);
+            }
+        }
+    });
+
+    return {
+        indices: oidIndices,
+        values: oidValues,
+        hasMultiple: oidIndices.length > 1,
+        hasInvalid,
+    };
 }
 
 export function getExistingOid(
