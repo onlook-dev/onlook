@@ -1,7 +1,9 @@
-import { EditorAttributes } from '@onlook/constants';
 import type { CodeInsert, PasteParams } from '@onlook/models';
+import { EditorAttributes } from '@onlook/constants';
 import { assertNever } from '@onlook/utility';
-import { type NodePath, type t as T, types as t } from '../packages';
+
+import type { NodePath, T } from '../packages';
+import { t } from '../packages';
 import { getAstFromCodeblock } from '../parse';
 import { addKeyToElement, addParamToElement, jsxFilter } from './helpers';
 

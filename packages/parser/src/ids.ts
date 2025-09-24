@@ -1,12 +1,14 @@
 import { EditorAttributes } from '@onlook/constants';
 import { createOid } from '@onlook/utility';
+
+import type { NodePath, T } from './packages';
 import { isReactFragment } from './helpers';
-import { type NodePath, type t as T, types as t, traverse } from './packages';
+import { t, traverse } from './packages';
 
 export function addOidsToAst(
     ast: T.File,
-    globalOids: Set<string> = new Set(),
-    branchOidMap: Map<string, string> = new Map(),
+    globalOids = new Set<string>(),
+    branchOidMap = new Map<string, string>(),
     currentBranchId?: string,
 ): { ast: T.File; modified: boolean } {
     let modified = false;
