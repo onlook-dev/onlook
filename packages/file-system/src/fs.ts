@@ -8,7 +8,7 @@
 
 import type ZenFS from '@zenfs/core';
 import { getFS } from './config';
-import type { FileChangeEvent, FileEntry, FileInfo } from './types';
+import { type FileChangeEvent, type FileEntry, type FileInfo } from './types';
 
 export class FileSystem {
     private fs: typeof ZenFS | null = null;
@@ -17,7 +17,7 @@ export class FileSystem {
     private watcherTimeouts = new Map<string, NodeJS.Timeout>();
     private isInitialized = false;
 
-    constructor(private rootDir: string) {
+    constructor(rootDir: string) {
         // Ensure rootDir starts with /
         this.basePath = rootDir.startsWith('/') ? rootDir : `/${rootDir}`;
     }
@@ -43,10 +43,15 @@ export class FileSystem {
         if (!path.startsWith('/')) {
             path = '/' + path;
         }
-        return this.basePath + path;
+
+        // Ensure basePath doesn't end with / and path starts with /
+        // to avoid double slashes when concatenating
+        const base = this.basePath.endsWith('/') ? this.basePath.slice(0, -1) : this.basePath;
+
+        return base + path;
     }
 
-    private isTextContent(buffer: Buffer | Uint8Array): boolean {
+    private isTextContent(buffer: Uint8Array): boolean {
         // Check first 512 bytes for binary content
         const checkLength = Math.min(512, buffer.length);
 
@@ -96,9 +101,9 @@ export class FileSystem {
     }
 
     /**
-     * Read a file - automatically detects text files and returns string in that case. Otherwise, returns buffer.
+     * Read a file - automatically detects text files and returns string in that case. Otherwise, returns Uint8Array.
      */
-    async readFile(path: string): Promise<string | Buffer> {
+    async readFile(path: string): Promise<string | Uint8Array> {
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = this.resolvePath(path);
@@ -112,10 +117,7 @@ export class FileSystem {
         return buffer;
     }
 
-    /**
-     * Write/update a file
-     */
-    async writeFile(path: string, content: string | Buffer): Promise<void> {
+    async writeFile(path: string, content: string | Uint8Array): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = this.resolvePath(path);
@@ -129,19 +131,19 @@ export class FileSystem {
         await this.fs.promises.writeFile(fullPath, content);
     }
 
-    /**
-     * Delete a file
-     */
+    async writeFiles(files: Array<{ path: string; content: string | Uint8Array }>): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+
+        await Promise.all(files.map(({ path, content }) => this.writeFile(path, content)));
+    }
+
     async deleteFile(path: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = this.resolvePath(path);
-        await this.fs.promises.unlink(fullPath);
+        await this.fs.promises.rm(fullPath);
     }
 
-    /**
-     * Move/rename a file
-     */
     async moveFile(from: string, to: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
 
@@ -157,9 +159,6 @@ export class FileSystem {
         await this.fs.promises.rename(fromPath, toPath);
     }
 
-    /**
-     * Copy a file
-     */
     async copyFile(from: string, to: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
 
@@ -167,9 +166,6 @@ export class FileSystem {
         await this.writeFile(to, content);
     }
 
-    /**
-     * Create a directory (always recursive)
-     */
     async createDirectory(path: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
 
@@ -177,9 +173,6 @@ export class FileSystem {
         await this.fs.promises.mkdir(fullPath, { recursive: true });
     }
 
-    /**
-     * Read a directory recursively
-     */
     async readDirectory(path = '/'): Promise<FileEntry[]> {
         if (!this.fs) throw new Error('File system not initialized');
 
@@ -198,7 +191,7 @@ export class FileSystem {
                         name,
                         path: entryPath.substring(this.basePath.length), // Remove base path
                         isDirectory: stats.isDirectory(),
-                        size: stats.size,
+                        size: Number(stats.size), // Convert BigInt to number
                         modifiedTime: stats.mtime,
                     };
 
@@ -229,37 +222,29 @@ export class FileSystem {
         return await readDirRecursive(fullPath);
     }
 
-    /**
-     * Delete a directory recursively
-     */
     async deleteDirectory(path: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = this.resolvePath(path);
-
-        const deleteRecursive = async (dirPath: string): Promise<void> => {
-            const entries = await this.fs!.promises.readdir(dirPath);
-
-            for (const entry of entries) {
-                const entryPath = `${dirPath}/${entry}`;
-                const stats = await this.fs!.promises.stat(entryPath);
-
-                if (stats.isDirectory()) {
-                    await deleteRecursive(entryPath);
-                } else {
-                    await this.fs!.promises.unlink(entryPath);
-                }
-            }
-
-            await this.fs!.promises.rmdir(dirPath);
-        };
-
-        await deleteRecursive(fullPath);
+        console.log('Deleting directory', fullPath);
+        await this.fs.promises.rm(fullPath, { recursive: true });
     }
 
     /**
-     * Move/rename a directory
+     * Clears all contents of a directory. If no directory is specified,
+     * clears all contents of the root directory (but keeps the root itself).
+     * This provides a clean slate for the file system.
      */
+    async clearDirectory(directory = ''): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+
+        await this.deleteDirectory(directory);
+
+        await this.createDirectory(directory);
+
+        this.cleanup();
+    }
+
     async moveDirectory(from: string, to: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
 
@@ -275,9 +260,6 @@ export class FileSystem {
         await this.fs.promises.rename(fromPath, toPath);
     }
 
-    /**
-     * Copy a directory recursively
-     */
     async copyDirectory(from: string, to: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
 
@@ -303,9 +285,6 @@ export class FileSystem {
         await copyRecursive(fromPath, toPath);
     }
 
-    /**
-     * Watch a file for changes
-     */
     watchFile(path: string, callback: (event: FileChangeEvent) => void) {
         if (!this.fs) throw new Error('File system not initialized');
 
@@ -354,9 +333,6 @@ export class FileSystem {
         };
     }
 
-    /**
-     * Watch a directory recursively for changes
-     */
     watchDirectory(path: string, callback: (event: FileChangeEvent) => void) {
         if (!this.fs) throw new Error('File system not initialized');
 
@@ -434,9 +410,6 @@ export class FileSystem {
         };
     }
 
-    /**
-     * Check if a file or directory exists
-     */
     async exists(path: string): Promise<boolean> {
         if (!this.fs) throw new Error('File system not initialized');
 
@@ -444,9 +417,6 @@ export class FileSystem {
         return await this.fs.promises.exists(fullPath);
     }
 
-    /**
-     * Get detailed information about a file or directory
-     */
     async getInfo(path: string): Promise<FileInfo> {
         if (!this.fs) throw new Error('File system not initialized');
 
@@ -459,16 +429,13 @@ export class FileSystem {
             name,
             isDirectory: stats.isDirectory(),
             isFile: stats.isFile(),
-            size: stats.size,
+            size: Number(stats.size),
             createdTime: stats.ctime,
             modifiedTime: stats.mtime,
             accessedTime: stats.atime,
         };
     }
 
-    /**
-     * List all files matching a pattern (glob-like)
-     */
     async listFiles(pattern = '**/*'): Promise<string[]> {
         if (!this.fs) throw new Error('File system not initialized');
 
