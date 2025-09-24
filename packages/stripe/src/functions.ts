@@ -1,7 +1,7 @@
 import type Stripe from 'stripe';
 
+import type { Price } from './types';
 import { createStripeClient } from './client';
-import { type Price } from './types';
 
 export const createCustomer = async ({ name, email }: { name: string; email: string }) => {
     const stripe = createStripeClient();

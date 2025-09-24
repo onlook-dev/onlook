@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises';
 import path from 'path';
-import  { type Sharp } from 'sharp';
+import type { Sharp } from 'sharp';
 import sharp from 'sharp';
 
-import { type CompressionOptions, type CompressionResult, type SupportedFormat } from './types';
+import type { CompressionOptions, CompressionResult, SupportedFormat } from './types';
 
 export async function compressImageServer(
     input: string | Buffer,

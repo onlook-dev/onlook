@@ -1,5 +1,5 @@
+import type { WindowMetadata } from '@onlook/models';
 import { DEVICE_OPTIONS, Orientation, Theme } from '@onlook/constants';
-import { type WindowMetadata } from '@onlook/models';
 
 export const computeWindowMetadata = (width: string, height: string): WindowMetadata => {
     const numericWidth = Number(width);

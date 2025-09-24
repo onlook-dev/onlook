@@ -1,4 +1,4 @@
-import { type SandboxFile } from '@onlook/models';
+import type { SandboxFile } from '@onlook/models';
 
 /**
  * Please note that `args` should only contain primitive types so it can be serialized to JSON.

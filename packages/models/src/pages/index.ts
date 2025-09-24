@@ -1,4 +1,4 @@
-import { type OGImage, type OpenGraph } from './opengraph';
+import type { OGImage, OpenGraph } from './opengraph';
 
 export type { OGImage };
 

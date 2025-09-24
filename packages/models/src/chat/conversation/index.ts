@@ -1,4 +1,4 @@
-import { type ChatSuggestion } from '../suggestion';
+import type { ChatSuggestion } from '../suggestion';
 
 export interface ChatConversation {
     id: string;

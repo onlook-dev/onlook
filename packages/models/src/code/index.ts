@@ -1,4 +1,4 @@
-import { type CodeAction } from '../actions/code';
+import type { CodeAction } from '../actions/code';
 
 export interface CodeDiffRequest {
     oid: string;

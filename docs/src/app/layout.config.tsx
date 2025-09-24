@@ -1,4 +1,4 @@
-import { type BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
+import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 
 import { Icons } from '@onlook/ui/icons';
 

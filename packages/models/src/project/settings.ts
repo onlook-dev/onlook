@@ -1,4 +1,4 @@
-import { type Commands } from './command';
+import type { Commands } from './command';
 
 export interface ProjectSettings {
     commands: Commands;

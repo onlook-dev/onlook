@@ -1,6 +1,6 @@
 import './global.css';
 
-import { type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Geist } from 'next/font/google';
 import Script from 'next/script';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';

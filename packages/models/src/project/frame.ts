@@ -1,6 +1,6 @@
-import { type Orientation, type Theme } from '@onlook/constants';
+import type { Orientation, Theme } from '@onlook/constants';
 
-import { type RectDimension, type RectPosition } from './rect';
+import type { RectDimension, RectPosition } from './rect';
 
 export interface Frame {
     // IDs

@@ -1,4 +1,4 @@
-import { type SandboxTemplate } from '@onlook/models';
+import type { SandboxTemplate } from '@onlook/models';
 
 export enum Templates {
     BLANK = 'BLANK',

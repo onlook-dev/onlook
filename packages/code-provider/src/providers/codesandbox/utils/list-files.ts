@@ -1,6 +1,5 @@
-import { type WebSocketSession } from '@codesandbox/sdk';
-
-import { type ListFilesInput, type ListFilesOutput } from '../../../types';
+import type { ListFilesInput, ListFilesOutput } from '../../../types';
+import type { WebSocketSession } from '@codesandbox/sdk';
 
 export async function listFiles(
     client: WebSocketSession,

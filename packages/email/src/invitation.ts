@@ -2,9 +2,9 @@ import { render } from '@react-email/components';
 
 import { SUPPORT_EMAIL } from '@onlook/constants';
 
-import  { type InviteUserEmailProps } from './templates';
+import type { InviteUserEmailProps } from './templates';
+import type { SendEmailParams } from './types/send-email';
 import { InviteUserEmail } from './templates';
-import { type SendEmailParams } from './types/send-email';
 
 export const sendInvitationEmail = async (...params: SendEmailParams<InviteUserEmailProps>) => {
     const [client, inviteParams, { dryRun = false } = {}] = params;

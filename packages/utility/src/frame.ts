@@ -1,4 +1,4 @@
-import { type Frame } from '@onlook/models';
+import type { Frame } from '@onlook/models';
 
 export function calculateNonOverlappingPosition(
     proposedFrame: Frame,

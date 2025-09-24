@@ -1,4 +1,4 @@
-import { type CoreElementType, type DynamicType } from './layers';
+import type { CoreElementType, DynamicType } from './layers';
 
 export interface TemplateNode {
     path: string;

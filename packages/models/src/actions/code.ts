@@ -1,11 +1,6 @@
-import {
-    type GroupContainer,
-    type InsertImageAction,
-    type PasteParams,
-    type RemoveImageAction,
-} from './action';
-import { type ActionLocation, type IndexActionLocation } from './location';
-import { type ActionTarget } from './target';
+import type { GroupContainer, InsertImageAction, PasteParams, RemoveImageAction } from './action';
+import type { ActionLocation, IndexActionLocation } from './location';
+import type { ActionTarget } from './target';
 
 export enum CodeActionType {
     MOVE = 'move',

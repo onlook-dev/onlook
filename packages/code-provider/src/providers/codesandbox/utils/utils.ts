@@ -1,7 +1,7 @@
-import { type WebSocketSession } from '@codesandbox/sdk';
-
-import { type SandboxFile } from '@onlook/models';
+import type { SandboxFile } from '@onlook/models';
 import { isImageFile } from '@onlook/utility';
+
+import type { WebSocketSession } from '@codesandbox/sdk';
 
 export function getFileFromContent(filePath: string, content: string | Uint8Array) {
     const type = content instanceof Uint8Array ? 'binary' : 'text';

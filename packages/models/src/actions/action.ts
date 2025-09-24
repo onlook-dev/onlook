@@ -1,6 +1,6 @@
-import { type CodeDiff } from '../code';
-import { type ActionLocation, type IndexActionLocation } from './location';
-import { type ActionTarget, type StyleActionTarget } from './target';
+import type { CodeDiff } from '../code';
+import type { ActionLocation, IndexActionLocation } from './location';
+import type { ActionTarget, StyleActionTarget } from './target';
 
 interface BaseActionElement {
     domId: string;
