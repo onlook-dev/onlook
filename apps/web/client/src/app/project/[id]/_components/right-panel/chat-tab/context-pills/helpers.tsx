@@ -1,9 +1,12 @@
+import React from 'react';
+
+import type { MessageContext } from '@onlook/models/chat';
 import { DefaultSettings } from '@onlook/constants';
-import { MessageContextType, type MessageContext } from '@onlook/models/chat';
+import { MessageContextType } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
 import { getTruncatedFileName } from '@onlook/ui/utils';
 import { assertNever } from '@onlook/utility';
-import React from 'react';
+
 import { NodeIcon } from '../../../left-panel/layers-tab/tree/node-icon';
 
 export function getTruncatedName(context: MessageContext) {
@@ -49,7 +52,7 @@ export function getContextIcon(context: MessageContext) {
 
 export function validateImageLimit(
     currentImages: MessageContext[],
-    additionalCount: number = 0
+    additionalCount = 0,
 ): {
     success: boolean;
     errorMessage?: string;

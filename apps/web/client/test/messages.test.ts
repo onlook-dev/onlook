@@ -1,6 +1,6 @@
-import { describe, expect, test } from 'bun:test';
 import { readdir } from 'fs/promises';
 import path from 'path';
+import { describe, expect, test } from 'bun:test';
 
 // Path to locales directory
 const LOCALES_DIR = path.join(import.meta.dir, '../messages');

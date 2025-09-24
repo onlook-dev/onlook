@@ -1,5 +1,6 @@
-import { useEditorEngine } from '@/components/store/editor';
 import { useEffect } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { Versions } from './versions';
 
 export const VersionsTab = () => {
@@ -10,7 +11,7 @@ export const VersionsTab = () => {
     }, []);
 
     return (
-        <div className="flex flex-col h-full relative text-sm">
+        <div className="relative flex h-full flex-col text-sm">
             <Versions />
         </div>
     );

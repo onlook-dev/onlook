@@ -1,9 +1,9 @@
-import {
-    projectCreateRequests
-} from '@onlook/db';
-import { ProjectCreateRequestStatus } from '@onlook/models';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
+
+import { projectCreateRequests } from '@onlook/db';
+import { ProjectCreateRequestStatus } from '@onlook/models';
+
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const projectCreateRequestRouter = createTRPCRouter({
@@ -19,15 +19,19 @@ export const projectCreateRequestRouter = createTRPCRouter({
             return request ?? null;
         }),
     updateStatus: protectedProcedure
-        .input(z.object({
-            projectId: z.string(),
-            status: z.nativeEnum(ProjectCreateRequestStatus),
-        }))
+        .input(
+            z.object({
+                projectId: z.string(),
+                status: z.nativeEnum(ProjectCreateRequestStatus),
+            }),
+        )
         .mutation(async ({ ctx, input }) => {
-            await ctx.db.update(projectCreateRequests).set({
-                status: input.status,
-            }).where(
-                eq(projectCreateRequests.projectId, input.projectId),
-            ).returning();
+            await ctx.db
+                .update(projectCreateRequests)
+                .set({
+                    status: input.status,
+                })
+                .where(eq(projectCreateRequests.projectId, input.projectId))
+                .returning();
         }),
 });

@@ -2,12 +2,14 @@
 
 import '@xterm/xterm/css/xterm.css';
 
-import { useEditorEngine } from '@/components/store/editor';
-import { cn } from '@onlook/ui/utils';
-import { type ITheme } from '@xterm/xterm';
+import { memo, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTheme } from 'next-themes';
-import { memo, useEffect, useRef } from 'react';
+
+import { cn } from '@onlook/ui/utils';
+
+import type { ITheme } from '@xterm/xterm';
+import { useEditorEngine } from '@/components/store/editor';
 
 interface TerminalProps {
     hidden: boolean;
@@ -43,84 +45,91 @@ const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
     DARK: {}, // Use default dark theme
 };
 
-export const Terminal = memo(observer(({ hidden = false, terminalSessionId, branchId, isActive = true }: TerminalProps) => {
-    const editorEngine = useEditorEngine();
+export const Terminal = memo(
+    observer(({ hidden = false, terminalSessionId, branchId, isActive = true }: TerminalProps) => {
+        const editorEngine = useEditorEngine();
 
-    // Get terminal session from the appropriate branch's sandbox
-    const terminalSession =
-        branchId
-            ? editorEngine.branches.getSandboxById(branchId)?.session?.getTerminalSession(terminalSessionId)
+        // Get terminal session from the appropriate branch's sandbox
+        const terminalSession = branchId
+            ? editorEngine.branches
+                  .getSandboxById(branchId)
+                  ?.session?.getTerminalSession(terminalSessionId)
             : editorEngine.activeSandbox?.session?.getTerminalSession(terminalSessionId);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const { theme } = useTheme();
+        const containerRef = useRef<HTMLDivElement>(null);
+        const { theme } = useTheme();
 
-    // Mount xterm to DOM
-    useEffect(() => {
-        if (hidden || !isActive || !containerRef.current || !terminalSession?.xterm) return;
-        // Only open if not already attached
-        if (!terminalSession.xterm.element || terminalSession.xterm.element.parentElement !== containerRef.current) {
-            terminalSession.xterm.open(containerRef.current);
-            // Ensure proper sizing after opening
-            setTimeout(() => {
-                if (terminalSession?.fitAddon && containerRef.current && !hidden && isActive) {
-                    terminalSession.fitAddon.fit();
-                }
-            }, 100);
-        }
-        return () => {
-            // Detach xterm from DOM on unmount (but do not dispose)
+        // Mount xterm to DOM
+        useEffect(() => {
+            if (hidden || !isActive || !containerRef.current || !terminalSession?.xterm) return;
+            // Only open if not already attached
             if (
-                terminalSession?.xterm?.element &&
-                containerRef.current &&
-                terminalSession?.xterm?.element?.parentElement === containerRef.current
+                !terminalSession.xterm.element ||
+                terminalSession.xterm.element.parentElement !== containerRef.current
             ) {
-                containerRef.current.innerHTML = '';
+                terminalSession.xterm.open(containerRef.current);
+                // Ensure proper sizing after opening
+                setTimeout(() => {
+                    if (terminalSession?.fitAddon && containerRef.current && !hidden && isActive) {
+                        terminalSession.fitAddon.fit();
+                    }
+                }, 100);
             }
-        };
-    }, [terminalSessionId, terminalSession, branchId, hidden, isActive]);
-
-    useEffect(() => {
-        if (terminalSession?.xterm) {
-            terminalSession.xterm.options.theme = theme === 'light' ? TERMINAL_THEME.LIGHT : TERMINAL_THEME.DARK;
-        }
-    }, [theme, terminalSession]);
-
-    useEffect(() => {
-        if (!hidden && isActive && terminalSession?.xterm) {
-            setTimeout(() => {
-                terminalSession.xterm?.focus();
-                // Fit terminal when it becomes visible
-                if (terminalSession.fitAddon) {
-                    terminalSession.fitAddon.fit();
+            return () => {
+                // Detach xterm from DOM on unmount (but do not dispose)
+                if (
+                    terminalSession?.xterm?.element &&
+                    containerRef.current &&
+                    terminalSession?.xterm?.element?.parentElement === containerRef.current
+                ) {
+                    containerRef.current.innerHTML = '';
                 }
-            }, 100);
-        }
-    }, [hidden, isActive, terminalSession]);
+            };
+        }, [terminalSessionId, terminalSession, branchId, hidden, isActive]);
 
-    // Handle container resize
-    useEffect(() => {
-        if (!containerRef.current || !terminalSession?.fitAddon || hidden || !isActive) return;
-
-        const resizeObserver = new ResizeObserver(() => {
-            if (!hidden && isActive) {
-                terminalSession.fitAddon?.fit();
+        useEffect(() => {
+            if (terminalSession?.xterm) {
+                terminalSession.xterm.options.theme =
+                    theme === 'light' ? TERMINAL_THEME.LIGHT : TERMINAL_THEME.DARK;
             }
-        });
+        }, [theme, terminalSession]);
 
-        resizeObserver.observe(containerRef.current);
+        useEffect(() => {
+            if (!hidden && isActive && terminalSession?.xterm) {
+                setTimeout(() => {
+                    terminalSession.xterm?.focus();
+                    // Fit terminal when it becomes visible
+                    if (terminalSession.fitAddon) {
+                        terminalSession.fitAddon.fit();
+                    }
+                }, 100);
+            }
+        }, [hidden, isActive, terminalSession]);
 
-        return () => {
-            resizeObserver.disconnect();
-        };
-    }, [terminalSession, hidden, isActive]);
+        // Handle container resize
+        useEffect(() => {
+            if (!containerRef.current || !terminalSession?.fitAddon || hidden || !isActive) return;
 
-    return (
-        <div
-            ref={containerRef}
-            className={cn(
-                'h-full w-full p-2 transition-opacity duration-200',
-                hidden ? 'opacity-0' : 'opacity-100 delay-300',
-            )}
-        />
-    );
-}));
+            const resizeObserver = new ResizeObserver(() => {
+                if (!hidden && isActive) {
+                    terminalSession.fitAddon?.fit();
+                }
+            });
+
+            resizeObserver.observe(containerRef.current);
+
+            return () => {
+                resizeObserver.disconnect();
+            };
+        }, [terminalSession, hidden, isActive]);
+
+        return (
+            <div
+                ref={containerRef}
+                className={cn(
+                    'h-full w-full p-2 transition-opacity duration-200',
+                    hidden ? 'opacity-0' : 'opacity-100 delay-300',
+                )}
+            />
+        );
+    }),
+);

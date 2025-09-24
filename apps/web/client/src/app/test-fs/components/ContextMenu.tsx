@@ -41,7 +41,7 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
     return (
         <div
             ref={menuRef}
-            className="fixed bg-gray-800 border border-gray-700 rounded-md shadow-lg py-1 z-50"
+            className="fixed z-50 rounded-md border border-gray-700 bg-gray-800 py-1 shadow-lg"
             style={{ left: x, top: y }}
         >
             {items.map((item, index) => (
@@ -51,10 +51,7 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
                         item.onClick();
                         onClose();
                     }}
-                    className={`
-                        w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition-colors
-                        ${item.destructive ? 'text-red-400 hover:text-red-300' : 'text-gray-200'}
-                    `}
+                    className={`w-full px-4 py-2 text-left text-sm transition-colors hover:bg-gray-700 ${item.destructive ? 'text-red-400 hover:text-red-300' : 'text-gray-200'} `}
                 >
                     {item.label}
                 </button>

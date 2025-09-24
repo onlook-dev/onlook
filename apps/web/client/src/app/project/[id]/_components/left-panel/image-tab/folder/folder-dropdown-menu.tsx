@@ -1,7 +1,9 @@
-import { DropdownMenu } from '@onlook/ui/dropdown-menu';
+import { memo, useCallback, useMemo, useState } from 'react';
 
+import type { FolderNode } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {
+    DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
@@ -12,9 +14,8 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import { memo, useCallback, useMemo, useState } from 'react';
+
 import { FolderDropdown } from '../folder-dropdown/folder-dropdown';
-import type { FolderNode } from '@onlook/models';
 import { useFolderContext } from '../providers/folder-provider';
 
 export const FolderDropdownMenu = memo(
@@ -33,7 +34,8 @@ export const FolderDropdownMenu = memo(
     }) => {
         const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
-        const { handleRenameFolder, handleDeleteFolder, handleMoveToFolder, moveState } = useFolderContext();
+        const { handleRenameFolder, handleDeleteFolder, handleMoveToFolder, moveState } =
+            useFolderContext();
 
         const handleOpenChange = useCallback(
             (isOpen: boolean) => {
@@ -58,7 +60,7 @@ export const FolderDropdownMenu = memo(
         return (
             <div
                 className={cn(
-                    'group-hover:opacity-100 transition-opacity duration-300',
+                    'transition-opacity duration-300 group-hover:opacity-100',
                     isVisible ? 'opacity-100' : 'opacity-0',
                 )}
                 onClick={(e) => e.stopPropagation()}
@@ -69,16 +71,16 @@ export const FolderDropdownMenu = memo(
                             size="icon"
                             variant={'ghost'}
                             className={cn(
-                                'bg-background p-1 inline-flex items-center justify-center h-auto w-auto rounded shadow-sm',
+                                'bg-background inline-flex h-auto w-auto items-center justify-center rounded p-1 shadow-sm',
                                 className,
                             )}
                             disabled={isDisabled}
                         >
-                            <Icons.DotsHorizontal className="text-foreground dark:text-white w-4 h-4" />
+                            <Icons.DotsHorizontal className="text-foreground h-4 w-4 dark:text-white" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
-                        className="rounded-md bg-background"
+                        className="bg-background rounded-md"
                         align="start"
                         side="right"
                         onClick={(e) => e.stopPropagation()}
@@ -90,11 +92,11 @@ export const FolderDropdownMenu = memo(
                                     handleRenameFolder(folder);
                                 }}
                                 variant={'ghost'}
-                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
+                                className="hover:bg-background-secondary focus:bg-background-secondary group w-full rounded-sm"
                                 disabled={isDisabled}
                             >
-                                <span className="flex w-full text-smallPlus items-center">
-                                    <Icons.Pencil className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                <span className="text-smallPlus flex w-full items-center">
+                                    <Icons.Pencil className="text-foreground-secondary group-hover:text-foreground-active mr-2 h-4 w-4" />
                                     <span>Rename</span>
                                 </span>
                             </Button>
@@ -102,15 +104,15 @@ export const FolderDropdownMenu = memo(
                         <DropdownMenuItem asChild>
                             <Button
                                 variant={'ghost'}
-                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
+                                className="hover:bg-background-secondary focus:bg-background-secondary group w-full rounded-sm"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     handleDeleteFolder(folder);
                                 }}
                                 disabled={isDisabled}
                             >
-                                <span className="flex w-full text-smallPlus items-center">
-                                    <Icons.Trash className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                <span className="text-smallPlus flex w-full items-center">
+                                    <Icons.Trash className="text-foreground-secondary group-hover:text-foreground-active mr-2 h-4 w-4" />
                                     <span>Delete</span>
                                 </span>
                             </Button>
@@ -123,8 +125,8 @@ export const FolderDropdownMenu = memo(
                                         disabled={isDisabled}
                                         className="hover:bg-background-secondary focus:bg-background-secondary rounded-sm"
                                     >
-                                        <span className="flex w-full text-smallPlus items-center">
-                                            <Icons.MoveToFolder className="mr-2 h-4 w-4 text-foreground-secondary" />
+                                        <span className="text-smallPlus flex w-full items-center">
+                                            <Icons.MoveToFolder className="text-foreground-secondary mr-2 h-4 w-4" />
                                             <span>Move to Folder</span>
                                         </span>
                                     </DropdownMenuSubTrigger>

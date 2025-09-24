@@ -1,9 +1,10 @@
+import { useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { AnimatePresence, motion } from 'motion/react';
+
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
-import { AnimatePresence, motion } from 'motion/react';
-import { useState } from 'react';
 
 interface SearchResult {
     title: string;
@@ -15,26 +16,23 @@ interface SearchSourcesDisplayProps {
     results: SearchResult[];
 }
 
-export const SearchSourcesDisplay = observer(({
-    query,
-    results,
-}: SearchSourcesDisplayProps) => {
+export const SearchSourcesDisplay = observer(({ query, results }: SearchSourcesDisplayProps) => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
         <div className="overflow-hidden">
             <Collapsible open={isOpen} onOpenChange={setIsOpen}>
                 <CollapsibleTrigger asChild>
-                    <div className="flex items-center p-1 cursor-pointer gap-2 text-sm text-foreground-secondary">
+                    <div className="text-foreground-secondary flex cursor-pointer items-center gap-2 p-1 text-sm">
                         <Icons.ChevronDown
                             className={cn(
-                                "min-w-4 h-4 w-4 text-foreground-tertiary transition-transform duration-200",
-                                isOpen && "rotate-180"
+                                'text-foreground-tertiary h-4 w-4 min-w-4 transition-transform duration-200',
+                                isOpen && 'rotate-180',
                             )}
                         />
                         <div className="flex flex-col">
                             <span>Searched web</span>
-                            <span className="text-foreground-tertiary text-xs truncate">
+                            <span className="text-foreground-tertiary truncate text-xs">
                                 {query}
                             </span>
                         </div>
@@ -49,7 +47,7 @@ export const SearchSourcesDisplay = observer(({
                                 exit={{ height: 0, opacity: 0 }}
                                 transition={{
                                     height: { duration: 0.2 },
-                                    opacity: { duration: 0.15 }
+                                    opacity: { duration: 0.15 },
                                 }}
                                 className="overflow-hidden"
                             >
@@ -61,13 +59,19 @@ export const SearchSourcesDisplay = observer(({
                                                     href={result.url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="block px-2 py-1 rounded hover:bg-background-secondary/50 transition-colors"
+                                                    className="hover:bg-background-secondary/50 block rounded px-2 py-1 transition-colors"
                                                 >
                                                     <div className="flex items-center text-xs">
-                                                        <span className="text-foreground-secondary hover:text-foreground font-medium truncate flex-shrink-0" style={{ minWidth: '120px', maxWidth: '70%' }}>
+                                                        <span
+                                                            className="text-foreground-secondary hover:text-foreground flex-shrink-0 truncate font-medium"
+                                                            style={{
+                                                                minWidth: '120px',
+                                                                maxWidth: '70%',
+                                                            }}
+                                                        >
                                                             {result.title}
                                                         </span>
-                                                        <span className="pl-1 text-foreground-tertiary truncate flex-1 min-w-0">
+                                                        <span className="text-foreground-tertiary min-w-0 flex-1 truncate pl-1">
                                                             {result.url}
                                                         </span>
                                                     </div>

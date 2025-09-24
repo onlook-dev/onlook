@@ -1,11 +1,12 @@
-"use client";
+'use client';
 
-import { env } from "@/env";
-import { api } from "@/trpc/react";
-import { usePathname } from "next/navigation";
-import posthog from "posthog-js";
-import { PostHogProvider as PHProvider } from "posthog-js/react";
-import { useEffect } from "react";
+import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import posthog from 'posthog-js';
+import { PostHogProvider as PHProvider } from 'posthog-js/react';
+
+import { env } from '@/env';
+import { api } from '@/trpc/react';
 
 // TelemetryProvider
 // Unified initialization and identity management for analytics/feedback tools.
@@ -26,26 +27,26 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
             try {
                 posthog.init(env.NEXT_PUBLIC_POSTHOG_KEY, {
                     api_host: env.NEXT_PUBLIC_POSTHOG_HOST,
-                    capture_pageview: "history_change",
+                    capture_pageview: 'history_change',
                     capture_pageleave: true,
                     capture_exceptions: true,
                 });
             } catch (e) {
-                console.warn("PostHog init failed", e);
+                console.warn('PostHog init failed', e);
             }
         } else {
-            console.warn("PostHog key is not set, skipping initialization");
+            console.warn('PostHog key is not set, skipping initialization');
         }
 
         if (env.NEXT_PUBLIC_GLEAP_API_KEY) {
             (async () => {
                 try {
                     // Dynamic import to avoid hard dependency when not installed
-                    const mod = await import("gleap");
+                    const mod = await import('gleap');
                     gleapSingleton = mod.default ?? mod;
                     gleapSingleton.initialize(env.NEXT_PUBLIC_GLEAP_API_KEY);
                 } catch (e) {
-                    console.warn("Gleap init failed (is dependency installed?)", e);
+                    console.warn('Gleap init failed (is dependency installed?)', e);
                 }
             })();
         }
@@ -55,7 +56,8 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         try {
             if (user) {
-                const fullName = user.displayName || [user.firstName, user.lastName].filter(Boolean).join(" ");
+                const fullName =
+                    user.displayName || [user.firstName, user.lastName].filter(Boolean).join(' ');
                 posthog.identify(
                     user.id,
                     {
@@ -79,15 +81,17 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
                 posthog.reset();
             }
         } catch (e) {
-            console.error("PostHog identify/reset error:", e);
+            console.error('PostHog identify/reset error:', e);
         }
 
         if (!env.NEXT_PUBLIC_GLEAP_API_KEY) return;
         (async () => {
             try {
-                const Gleap = gleapSingleton ?? (await import("gleap")).default;
+                const Gleap = gleapSingleton ?? (await import('gleap')).default;
                 if (user) {
-                    const name = user.displayName || [user.firstName, user.lastName].filter(Boolean).join(" ");
+                    const name =
+                        user.displayName ||
+                        [user.firstName, user.lastName].filter(Boolean).join(' ');
                     Gleap.identify(user.id, {
                         name,
                         email: user.email,
@@ -114,7 +118,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         if (!env.NEXT_PUBLIC_GLEAP_API_KEY) return;
         (async () => {
             try {
-                const Gleap = gleapSingleton ?? (await import("gleap")).default;
+                const Gleap = gleapSingleton ?? (await import('gleap')).default;
                 if (Gleap?.getInstance?.()?.softReInitialize) {
                     Gleap?.getInstance()?.softReInitialize();
                 }

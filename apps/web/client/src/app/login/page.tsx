@@ -1,13 +1,15 @@
 'use client';
 
-import { useGetBackground } from '@/hooks/use-get-background';
-import { transKeys } from '@/i18n/keys';
-import { LocalForageKeys, Routes } from '@/utils/constants';
-import { Icons } from '@onlook/ui/icons';
-import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+
+import { Icons } from '@onlook/ui/icons';
+
+import { useGetBackground } from '@/hooks/use-get-background';
+import { transKeys } from '@/i18n/keys';
+import { LocalForageKeys, Routes } from '@/utils/constants';
 import { DevLoginButton, GithubLoginButton, GoogleLoginButton } from '../_components/login-button';
 
 export default function LoginPage() {
@@ -18,22 +20,20 @@ export default function LoginPage() {
 
     return (
         <div className="flex h-screen w-screen justify-center">
-            <div className="flex flex-col justify-between w-full h-full max-w-xl p-16 space-y-8 overflow-auto">
+            <div className="flex h-full w-full max-w-xl flex-col justify-between space-y-8 overflow-auto p-16">
                 <div className="flex items-center space-x-2">
-                    <Link href={Routes.HOME} className="hover:opacity-80 transition-opacity">
+                    <Link href={Routes.HOME} className="transition-opacity hover:opacity-80">
                         <Icons.OnlookTextLogo viewBox="0 0 139 17" />
                     </Link>
                 </div>
                 <div className="space-y-8">
                     <div className="space-y-4">
-                        <h1 className="text-title1 leading-tight">
-                            {t(transKeys.welcome.title)}
-                        </h1>
+                        <h1 className="text-title1 leading-tight">{t(transKeys.welcome.title)}</h1>
                         <p className="text-foreground-onlook text-regular">
                             {t(transKeys.welcome.description)}
                         </p>
                     </div>
-                    <div className="space-y-2 md:space-y-0 md:space-x-2 flex flex-col md:flex-row">
+                    <div className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
                         <GithubLoginButton returnUrl={returnUrl} />
                         <GoogleLoginButton returnUrl={returnUrl} />
                     </div>
@@ -43,28 +43,27 @@ export default function LoginPage() {
                         <Link
                             href="https://onlook.com/privacy-policy"
                             target="_blank"
-                            className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
+                            className="text-gray-300 underline transition-colors duration-200 hover:text-gray-50"
                         >
                             {t(transKeys.welcome.terms.privacy)}
-                        </Link>
-                        {' '}
+                        </Link>{' '}
                         {t(transKeys.welcome.terms.and)}{' '}
                         <Link
                             href="https://onlook.com/terms-of-service"
                             target="_blank"
-                            className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
+                            className="text-gray-300 underline transition-colors duration-200 hover:text-gray-50"
                         >
                             {t(transKeys.welcome.terms.tos)}
                         </Link>
                     </p>
                 </div>
-                <div className="flex flex-row space-x-1 text-small text-gray-600">
+                <div className="text-small flex flex-row space-x-1 text-gray-600">
                     <p>{t(transKeys.welcome.version, { version: '1.0.0' })}</p>
                 </div>
             </div>
-            <div className="hidden w-full md:block m-6">
+            <div className="m-6 hidden w-full md:block">
                 <Image
-                    className="w-full h-full object-cover rounded-xl"
+                    className="h-full w-full rounded-xl object-cover"
                     src={backgroundUrl}
                     alt="Onlook dunes dark"
                     width={1000}

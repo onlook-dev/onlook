@@ -1,8 +1,9 @@
-import { api } from '@/trpc/client';
 import { isAfter, subMinutes } from 'date-fns';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
+
 import type { EditorEngine } from '../engine';
+import { api } from '@/trpc/client';
 
 export class ScreenshotManager {
     _lastScreenshotTime: Date | null = null;
@@ -21,10 +22,7 @@ export class ScreenshotManager {
     }
 
     // 10 second debounce
-    captureScreenshot = debounce(
-        this.debouncedCaptureScreenshot,
-        10000,
-    );
+    captureScreenshot = debounce(this.debouncedCaptureScreenshot, 10000);
 
     private async debouncedCaptureScreenshot() {
         if (this.isCapturing) {
@@ -39,8 +37,10 @@ export class ScreenshotManager {
                     return;
                 }
             }
-            const result = await api.project.captureScreenshot.mutate({ projectId: this.editorEngine.projectId });
-            if (!result || !result.success) {
+            const result = await api.project.captureScreenshot.mutate({
+                projectId: this.editorEngine.projectId,
+            });
+            if (!result?.success) {
                 throw new Error('Failed to capture screenshot');
             }
             this.lastScreenshotAt = new Date();

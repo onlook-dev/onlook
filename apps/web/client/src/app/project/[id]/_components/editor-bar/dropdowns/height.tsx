@@ -1,43 +1,43 @@
 'use client';
 
+import { observer } from 'mobx-react-lite';
+
 import { Button } from '@onlook/ui/button';
-import { ToolbarButton } from '../toolbar-button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { LayoutMode } from '@onlook/utility';
-import { observer } from 'mobx-react-lite';
+
 import { useDimensionControl } from '../hooks/use-dimension-control';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { InputDropdown } from '../inputs/input-dropdown';
+import { ToolbarButton } from '../toolbar-button';
 
 export const Height = observer(() => {
     const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } =
         useDimensionControl('height');
 
     const { isOpen, onOpenChange } = useDropdownControl({
-        id: 'height-dropdown'
+        id: 'height-dropdown',
     });
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
-            <HoverOnlyTooltip content="Height" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
+            <HoverOnlyTooltip
+                content="Height"
+                side="bottom"
+                className="mt-1"
+                hideArrow
+                disabled={isOpen}
+            >
                 <DropdownMenuTrigger asChild>
-                    <ToolbarButton
-                        isOpen={isOpen}
-                        className="flex items-center gap-1"
-                    >
+                    <ToolbarButton isOpen={isOpen} className="flex items-center gap-1">
                         <Icons.Height className="h-4 min-h-4 w-4 min-w-4" />
-                        <span className="text-small">
-                            {dimensionState.height.value}
-                        </span>
+                        <span className="text-small">{dimensionState.height.value}</span>
                     </ToolbarButton>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
-            <DropdownMenuContent
-                align="start"
-                className="mt-1 w-[280px] space-y-3 rounded-lg p-3"
-            >
+            <DropdownMenuContent align="start" className="mt-1 w-[280px] space-y-3 rounded-lg p-3">
                 <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                         <span className="text-muted-white text-sm">Height</span>

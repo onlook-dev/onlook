@@ -1,9 +1,11 @@
-import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/code-tab/code-mirror-config';
-import { EditorTabValue } from '@onlook/models';
-import { convertToBase64 } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
+
+import { EditorTabValue } from '@onlook/models';
+import { convertToBase64 } from '@onlook/utility';
+
 import type { EditorEngine } from '../engine';
+import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/code-tab/code-mirror-config';
 
 export interface EditorFile {
     id: string;
@@ -27,7 +29,7 @@ export class IDEManager {
     openedFiles: EditorFile[] = [];
     activeFile: EditorFile | null = null;
     highlightRange: CodeRange | null = null;
-    searchTerm: string = '';
+    searchTerm = '';
     isLoading = false;
     isFilesLoading = false;
     isFilesVisible = true;
@@ -64,7 +66,11 @@ export class IDEManager {
         }
     }
 
-    async openFile(filePath: string, searchTerm?: string, toggleTab: boolean = true): Promise<EditorFile | null> {
+    async openFile(
+        filePath: string,
+        searchTerm?: string,
+        toggleTab = true,
+    ): Promise<EditorFile | null> {
         if (toggleTab) {
             this.editorEngine.state.rightPanelTab = EditorTabValue.DEV;
         }
@@ -74,7 +80,7 @@ export class IDEManager {
         }
         this.isLoading = true;
         try {
-            let content = "";
+            let content = '';
             let isBinary = false;
 
             const foundFile = await this.editorEngine.activeSandbox.readFile(filePath);
@@ -83,7 +89,7 @@ export class IDEManager {
             }
 
             if (foundFile.type === 'binary') {
-                let binaryContent = foundFile.content;
+                const binaryContent = foundFile.content;
                 if (!binaryContent) {
                     return null;
                 }
@@ -113,7 +119,7 @@ export class IDEManager {
                 savedContent: content || '',
                 language,
                 isDirty: false,
-                isBinary
+                isBinary,
             };
             this.openedFiles.push(file);
             this.activeFile = file;
@@ -184,7 +190,11 @@ export class IDEManager {
                 file.isDirty = false;
                 file.savedContent = file.content;
             }
-            this.activeFile = { ...this.activeFile, isDirty: false, savedContent: file?.content || '' };
+            this.activeFile = {
+                ...this.activeFile,
+                isDirty: false,
+                savedContent: file?.content || '',
+            };
         } catch (error) {
             console.error('Error saving file:', error);
         } finally {
@@ -282,7 +292,7 @@ export class IDEManager {
             return;
         }
         try {
-            const path = (this.openedFiles.find((f) => f.id === id))?.path;
+            const path = this.openedFiles.find((f) => f.id === id)?.path;
             if (!path) {
                 console.error('No path found');
                 return;

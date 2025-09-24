@@ -1,5 +1,5 @@
-import { type TemplateNode, type TemplateTag } from '@onlook/models';
-import { beforeEach, describe, expect, mock, spyOn, test } from 'bun:test';
+import type { TemplateNode, TemplateNode, TemplateTag, TemplateTag } from '@onlook/models';
+
 import type { EditorEngine } from '../../src/components/store/editor/engine';
 import { TemplateNodeManager } from '../../src/components/store/editor/template-nodes/index';
 
@@ -10,8 +10,11 @@ mock.module('@onlook/parser', () => ({
     getAstFromContent: mock(() => ({})),
     getContentFromAst: mock(async () => 'processed content'),
     getContentFromTemplateNode: mock(async () => 'template content'),
-    getTemplateNodeChild: mock(async () => ({ instanceId: 'test-instance', component: 'TestComponent' })),
-    injectPreloadScript: mock(() => { }),
+    getTemplateNodeChild: mock(async () => ({
+        instanceId: 'test-instance',
+        component: 'TestComponent',
+    })),
+    injectPreloadScript: mock(() => {}),
 }));
 
 // Mock utility functions
@@ -68,7 +71,7 @@ describe('TemplateNodeManager', () => {
     };
 
     test('processFileForMapping should process file and store template nodes by branch', async () => {
-        // Arrange  
+        // Arrange
         const branchId = 'test-branch';
         const filePath = 'test.tsx';
         const fileContent = '<div>Test content</div>';
@@ -91,7 +94,7 @@ describe('TemplateNodeManager', () => {
     test('getTemplateNode should return node from global map', () => {
         // Arrange
         const templateNode = createMockTemplateNode('test-oid', 'TestComponent');
-        manager['templateNodes'].set('test-oid', templateNode);
+        manager.templateNodes.set('test-oid', templateNode);
 
         // Act
         const result = manager.getTemplateNode('test-oid');
@@ -112,7 +115,7 @@ describe('TemplateNodeManager', () => {
         // Arrange
         const branchId = 'test-branch';
         const templateNode = createMockTemplateNode('test-oid', 'TestComponent');
-        manager['templateNodes'].set('test-oid', templateNode);
+        manager.templateNodes.set('test-oid', templateNode);
 
         // Act
         const result = manager.getTemplateNodeByBranch(branchId, 'test-oid');
@@ -125,7 +128,7 @@ describe('TemplateNodeManager', () => {
         // Arrange
         const templateNode = createMockTemplateNode('test-oid', 'TestComponent');
         templateNode.branchId = 'different-branch';
-        manager['templateNodes'].set('test-oid', templateNode);
+        manager.templateNodes.set('test-oid', templateNode);
 
         // Act
         const result = manager.getTemplateNodeByBranch('test-branch', 'test-oid');
@@ -141,8 +144,8 @@ describe('TemplateNodeManager', () => {
         const templateNode2 = createMockTemplateNode('test-oid-2', 'TestComponent2');
         templateNode2.branchId = 'different-branch';
 
-        manager['templateNodes'].set('test-oid-1', templateNode1);
-        manager['templateNodes'].set('test-oid-2', templateNode2);
+        manager.templateNodes.set('test-oid-1', templateNode1);
+        manager.templateNodes.set('test-oid-2', templateNode2);
 
         // Act
         manager.clearBranch(branchId);
@@ -159,8 +162,8 @@ describe('TemplateNodeManager', () => {
         const templateNode2 = createMockTemplateNode('oid-2', 'Component2');
         templateNode2.branchId = 'branch-2';
 
-        manager['templateNodes'].set('oid-1', templateNode1);
-        manager['templateNodes'].set('oid-2', templateNode2);
+        manager.templateNodes.set('oid-1', templateNode1);
+        manager.templateNodes.set('oid-2', templateNode2);
 
         // Act
         manager.clear();
@@ -168,13 +171,13 @@ describe('TemplateNodeManager', () => {
         // Assert
         expect(manager.getTemplateNode('oid-1')).toBeNull();
         expect(manager.getTemplateNode('oid-2')).toBeNull();
-        expect(manager['templateNodes'].size).toBe(0);
+        expect(manager.templateNodes.size).toBe(0);
     });
 
     test('getCodeBlock should get template node and read file content', async () => {
         // Arrange
         const templateNode = createMockTemplateNode('test-oid', 'TestComponent');
-        manager['templateNodes'].set('test-oid', templateNode);
+        manager.templateNodes.set('test-oid', templateNode);
 
         // Act
         const result = await manager.getCodeBlock('test-oid');
@@ -195,9 +198,11 @@ describe('TemplateNodeManager', () => {
         // Arrange
         const templateNode = createMockTemplateNode('test-oid', 'TestComponent');
         const childTemplateNode = createMockTemplateNode('child-oid', 'ChildComponent');
-        manager['templateNodes'].set('test-oid', templateNode);
+        manager.templateNodes.set('test-oid', templateNode);
 
-        const getCodeBlockSpy = spyOn(manager, 'getCodeBlock').mockResolvedValue('code block content');
+        const getCodeBlockSpy = spyOn(manager, 'getCodeBlock').mockResolvedValue(
+            'code block content',
+        );
 
         // Act
         const result = await manager.getTemplateNodeChild('test-oid', childTemplateNode, 0);
@@ -211,8 +216,8 @@ describe('TemplateNodeManager', () => {
         // Arrange
         const templateNode1 = createMockTemplateNode('oid-1', 'Component1');
         const templateNode2 = createMockTemplateNode('oid-2', 'Component2');
-        manager['templateNodes'].set('oid-1', templateNode1);
-        manager['templateNodes'].set('oid-2', templateNode2);
+        manager.templateNodes.set('oid-1', templateNode1);
+        manager.templateNodes.set('oid-2', templateNode2);
 
         // Act
         const result = manager.getAllOids();
@@ -227,8 +232,8 @@ describe('TemplateNodeManager', () => {
         templateNode1.branchId = 'branch-1';
         const templateNode2 = createMockTemplateNode('oid-2', 'Component2');
         templateNode2.branchId = 'branch-2';
-        manager['templateNodes'].set('oid-1', templateNode1);
-        manager['templateNodes'].set('oid-2', templateNode2);
+        manager.templateNodes.set('oid-1', templateNode1);
+        manager.templateNodes.set('oid-2', templateNode2);
 
         // Act
         const result = manager.getBranchOidMap();
@@ -240,7 +245,7 @@ describe('TemplateNodeManager', () => {
     });
 
     test('processFileForMapping should preserve existing OIDs from same branch on multiple calls', async () => {
-        // Arrange  
+        // Arrange
         const branchId = 'test-branch';
         const filePath = 'test.tsx';
         const fileContent = '<div>Test content</div>';
@@ -271,12 +276,12 @@ describe('TemplateNodeManager', () => {
             expect.anything(), // ast
             expect.any(Set), // globalOids
             expect.any(Map), // branchOidMap
-            branchId // currentBranchId
+            branchId, // currentBranchId
         );
     });
 
     test('should use cache for identical file content', async () => {
-        // Arrange  
+        // Arrange
         const branchId = 'test-branch';
         const filePath = 'test.tsx';
         const fileContent = '<div>Test content</div>';
@@ -299,7 +304,7 @@ describe('TemplateNodeManager', () => {
     });
 
     test('should invalidate cache when file content changes', async () => {
-        // Arrange  
+        // Arrange
         const branchId = 'test-branch';
         const filePath = 'test.tsx';
         const originalContent = '<div>Original content</div>';
@@ -323,7 +328,7 @@ describe('TemplateNodeManager', () => {
     });
 
     test('should handle clear operation', async () => {
-        // Arrange  
+        // Arrange
         const branchId = 'test-branch';
         const filePath = 'test.tsx';
         const fileContent = '<div>Test content</div>';
@@ -339,7 +344,7 @@ describe('TemplateNodeManager', () => {
     });
 
     test('should handle large files efficiently', async () => {
-        // Arrange  
+        // Arrange
         const branchId = 'test-branch';
         const filePath = 'large.tsx';
         const largeContent = '<div>' + 'x'.repeat(2000000) + '</div>'; // 2MB+ content
@@ -355,7 +360,7 @@ describe('TemplateNodeManager', () => {
     });
 
     test('should maintain separate caches for different branches', async () => {
-        // Arrange  
+        // Arrange
         const branch1Id = 'branch-1';
         const branch2Id = 'branch-2';
         const filePath = 'test.tsx';

@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
 import type { KeyboardEvent } from 'react';
-import { debounce } from "lodash";
+import { useEffect, useMemo, useState } from 'react';
+import { debounce } from 'lodash';
 
 export const useInputControl = (value: number, onChange?: (value: number) => void) => {
     const [localValue, setLocalValue] = useState<string>(String(value));
@@ -36,10 +36,11 @@ export const useInputControl = (value: number, onChange?: (value: number) => voi
     };
 
     const debouncedOnChange = useMemo(
-        () => debounce((newValue: number) => {
-            onChange?.(newValue);
-        }, 500),
-        [onChange]
+        () =>
+            debounce((newValue: number) => {
+                onChange?.(newValue);
+            }, 500),
+        [onChange],
     );
 
     useEffect(() => {
@@ -49,4 +50,4 @@ export const useInputControl = (value: number, onChange?: (value: number) => voi
     }, [debouncedOnChange]);
 
     return { localValue, handleKeyDown, handleChange };
-}
+};

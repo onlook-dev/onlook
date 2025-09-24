@@ -1,5 +1,5 @@
-import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
 
 const createDark = '/assets/dunes-create-dark.png';
 const createLight = '/assets/dunes-create-light.png';

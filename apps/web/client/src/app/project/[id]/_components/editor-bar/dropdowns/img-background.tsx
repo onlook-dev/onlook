@@ -6,9 +6,9 @@ export const ImageBackground = () => {
     return (
         <Button
             variant="ghost"
-            className="flex items-center justify-center px-2 flex-col gap-0.5 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:bg-background-tertiary/20 active:text-white active:border active:border-border"
+            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border active:bg-background-tertiary/20 active:border-border flex cursor-pointer flex-col items-center justify-center gap-0.5 rounded-lg border px-2 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border active:text-white"
         >
-            <div className="h-5 w-5 rounded-sm relative">
+            <div className="relative h-5 w-5 rounded-sm">
                 <div
                     className="absolute inset-0 rounded-sm"
                     style={{

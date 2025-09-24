@@ -1,7 +1,8 @@
 'use client';
 
-import { api } from '@/trpc/react';
 import { useEffect, useState } from 'react';
+
+import { api } from '@/trpc/react';
 
 export interface GitHubAppInstallation {
     hasInstallation: boolean;
@@ -15,7 +16,12 @@ export interface GitHubAppInstallation {
 
 export const useGitHubAppInstallation: () => GitHubAppInstallation = () => {
     const generateInstallationUrl = api.github.generateInstallationUrl.useMutation();
-    const { data: installationId, refetch: checkInstallation, isFetching: isChecking, error: checkInstallationError } = api.github.checkGitHubAppInstallation.useQuery(undefined, {
+    const {
+        data: installationId,
+        refetch: checkInstallation,
+        isFetching: isChecking,
+        error: checkInstallationError,
+    } = api.github.checkGitHubAppInstallation.useQuery(undefined, {
         refetchOnWindowFocus: true,
     });
     const [error, setError] = useState<string | null>(null);

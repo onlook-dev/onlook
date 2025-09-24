@@ -1,10 +1,13 @@
 'use client';
 
-import { useAuthContext } from '@/app/auth/auth-context';
-import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
-import { transKeys } from '@/i18n/keys';
-import { api } from '@/trpc/react';
-import { LocalForageKeys, Routes } from '@/utils/constants';
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import localforage from 'localforage';
+import { motion } from 'motion/react';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
+
 import { SandboxTemplates, Templates } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import {
@@ -16,13 +19,12 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { cn } from '@onlook/ui/utils';
-import localforage from 'localforage';
-import { motion } from 'motion/react';
-import { useTranslations } from 'next-intl';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
+
+import { useAuthContext } from '@/app/auth/auth-context';
+import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
+import { transKeys } from '@/i18n/keys';
+import { api } from '@/trpc/react';
+import { LocalForageKeys, Routes } from '@/utils/constants';
 
 const RECENT_SEARCHES_KEY = 'onlook_recent_searches';
 const RECENT_COLORS_KEY = 'onlook_recent_colors';
@@ -65,16 +67,16 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
     useEffect(() => {
         const loadRecentSearches = async () => {
             try {
-                const rs = await localforage.getItem<string[]>(RECENT_SEARCHES_KEY) ?? []
+                const rs = (await localforage.getItem<string[]>(RECENT_SEARCHES_KEY)) ?? [];
                 if (Array.isArray(rs)) setRecentSearches(rs.slice(0, 6));
-            } catch { }
+            } catch {}
         };
         loadRecentSearches();
         const loadRecentColors = async () => {
             try {
-                const rc = await localforage.getItem<string[]>(RECENT_COLORS_KEY) ?? []
+                const rc = (await localforage.getItem<string[]>(RECENT_COLORS_KEY)) ?? [];
                 if (Array.isArray(rc)) setRecentColors(rc.slice(0, 10));
-            } catch { }
+            } catch {}
         };
         loadRecentColors();
     }, []);
@@ -85,15 +87,13 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
         if (!q) return;
         const timer = setTimeout(async () => {
             try {
-                const recentSearches = (await localforage.getItem<string[]>(RECENT_SEARCHES_KEY)) ?? []
-                const rs = new Set<string>([
-                    q,
-                    ...recentSearches,
-                ]);
+                const recentSearches =
+                    (await localforage.getItem<string[]>(RECENT_SEARCHES_KEY)) ?? [];
+                const rs = new Set<string>([q, ...recentSearches]);
                 const arr = Array.from(rs).slice(0, 8);
                 localforage.setItem(RECENT_SEARCHES_KEY, arr);
                 setRecentSearches(arr);
-            } catch { }
+            } catch {}
         }, 600);
         return () => clearTimeout(timer);
     }, [searchQuery]);
@@ -152,7 +152,8 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
 
             if (errorMessage.includes('502') || errorMessage.includes('sandbox')) {
                 toast.error('Sandbox service temporarily unavailable', {
-                    description: 'Please try again in a few moments. Our servers may be experiencing high load.',
+                    description:
+                        'Please try again in a few moments. Our servers may be experiencing high load.',
                 });
             } else {
                 toast.error('Failed to create project', {
@@ -165,13 +166,13 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
     };
 
     return (
-        <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 px-0 text-small text-foreground-secondary gap-6">
-            <Link href={Routes.HOME} className="flex items-center justify-start mt-0 py-3">
+        <div className="text-small text-foreground-secondary mx-auto flex w-full max-w-6xl items-center justify-between gap-6 p-4 px-0">
+            <Link href={Routes.HOME} className="mt-0 flex items-center justify-start py-3">
                 <Icons.OnlookTextLogo className="w-24" viewBox="0 0 139 17" />
             </Link>
 
             {typeof onSearchChange === 'function' ? (
-                <div className="flex-1 flex justify-center">
+                <div className="flex flex-1 justify-center">
                     <motion.div
                         ref={searchContainerRef}
                         className="relative"
@@ -179,19 +180,19 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                         animate={isSearchFocused ? { width: 360 } : { width: 260 }}
                         transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
                     >
-                        <Icons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-tertiary z-10" />
+                        <Icons.MagnifyingGlass className="text-foreground-tertiary absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2" />
                         <Input
                             ref={searchInputRef}
                             value={searchQuery ?? ''}
                             onChange={(e) => onSearchChange?.(e.currentTarget.value)}
                             onFocus={() => setIsSearchFocused(true)}
                             placeholder="Search projects"
-                            className="pl-9 pr-7 focus-visible:border-transparent focus-visible:ring-0"
+                            className="pr-7 pl-9 focus-visible:border-transparent focus-visible:ring-0"
                         />
                         {searchQuery && (
                             <button
                                 onClick={() => onSearchChange?.('')}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground-tertiary hover:text-foreground"
+                                className="text-foreground-tertiary hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2"
                                 aria-label="Clear search"
                             >
                                 <Icons.CrossS className="h-4 w-4" />
@@ -203,11 +204,11 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                 <div className="flex-1" />
             )}
 
-            <div className="flex justify-end gap-3 mt-0 items-center">
+            <div className="mt-0 flex items-center justify-end gap-3">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
-                            className="text-sm focus:outline-none cursor-pointer py-[0.4rem] h-8"
+                            className="h-8 cursor-pointer py-[0.4rem] text-sm focus:outline-none"
                             variant="default"
                         >
                             Create <Icons.ChevronDown />
@@ -220,13 +221,13 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                                 'hover:bg-blue-100 hover:text-blue-900',
                                 'dark:focus:bg-blue-900 dark:focus:text-blue-100',
                                 'dark:hover:bg-blue-900 dark:hover:text-blue-100',
-                                'cursor-pointer select-none group',
+                                'group cursor-pointer select-none',
                             )}
                             onSelect={() => {
                                 router.push(Routes.HOME);
                             }}
                         >
-                            <Icons.Plus className="w-4 h-4 mr-1 text-foreground-secondary group-hover:text-blue-100" />
+                            <Icons.Plus className="text-foreground-secondary mr-1 h-4 w-4 group-hover:text-blue-100" />
                             {t(transKeys.projects.actions.newProject)}
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -235,15 +236,15 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                                 'hover:bg-blue-100 hover:text-blue-900',
                                 'dark:focus:bg-blue-900 dark:focus:text-blue-100',
                                 'dark:hover:bg-blue-900 dark:hover:text-blue-100',
-                                'cursor-pointer select-none group',
+                                'group cursor-pointer select-none',
                             )}
                             onSelect={handleStartBlankProject}
                             disabled={isCreatingProject}
                         >
                             {isCreatingProject ? (
-                                <Icons.LoadingSpinner className="w-4 h-4 mr-1 animate-spin text-foreground-secondary group-hover:text-blue-100" />
+                                <Icons.LoadingSpinner className="text-foreground-secondary mr-1 h-4 w-4 animate-spin group-hover:text-blue-100" />
                             ) : (
-                                <Icons.FilePlus className="w-4 h-4 mr-1 text-foreground-secondary group-hover:text-blue-100" />
+                                <Icons.FilePlus className="text-foreground-secondary mr-1 h-4 w-4 group-hover:text-blue-100" />
                             )}
                             {t(transKeys.projects.actions.blankProject)}
                         </DropdownMenuItem>
@@ -253,18 +254,18 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                                 'hover:bg-teal-100 hover:text-teal-900',
                                 'dark:focus:bg-teal-900 dark:focus:text-teal-100',
                                 'dark:hover:bg-teal-900 dark:hover:text-teal-100',
-                                'cursor-pointer select-none group',
+                                'group cursor-pointer select-none',
                             )}
                             onSelect={() => {
                                 router.push(Routes.IMPORT_PROJECT);
                             }}
                         >
-                            <Icons.Upload className="w-4 h-4 mr-1 text-foreground-secondary group-hover:text-teal-100" />
+                            <Icons.Upload className="text-foreground-secondary mr-1 h-4 w-4 group-hover:text-teal-100" />
                             <p className="text-microPlus">{t(transKeys.projects.actions.import)}</p>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                <CurrentUserAvatar className="w-8 h-8" />
+                <CurrentUserAvatar className="h-8 w-8" />
             </div>
         </div>
     );

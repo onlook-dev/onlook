@@ -12,7 +12,4 @@ export interface DomProcessedData {
 
 export interface WindowResizedData {}
 
-export type AutonomousEventData = 
-    | WindowMutatedData 
-    | DomProcessedData 
-    | WindowResizedData; 
+export type AutonomousEventData = WindowMutatedData | DomProcessedData | WindowResizedData;

@@ -1,14 +1,17 @@
-import type { EditMessage } from '@/app/project/[id]/_hooks/use-chat';
-import { useEditorEngine } from '@/components/store/editor';
-import { ChatType, MessageCheckpointType, type ChatMessage } from '@onlook/models';
+import React, { useEffect, useRef, useState } from 'react';
+import { nanoid } from 'nanoid';
+
+import type { ChatMessage } from '@onlook/models';
+import { ChatType, MessageCheckpointType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { nanoid } from 'nanoid';
-import React, { useEffect, useRef, useState } from 'react';
+
+import type { EditMessage } from '@/app/project/[id]/_hooks/use-chat';
+import { useEditorEngine } from '@/components/store/editor';
 import { SentContextPill } from '../context-pills/sent-context-pill';
 import { MessageContent } from './message-content';
 
@@ -18,13 +21,15 @@ interface UserMessageProps {
 }
 
 export const getUserMessageContent = (message: ChatMessage) => {
-    return message.parts.map((part) => {
-        if (part.type === 'text') {
-            return part.text;
-        }
-        return '';
-    }).join('');
-}
+    return message.parts
+        .map((part) => {
+            if (part.type === 'text') {
+                return part.text;
+            }
+            return '';
+        })
+        .join('');
+};
 
 export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
@@ -81,23 +86,17 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
     };
 
     const handleRetry = async () => {
-        toast.promise(
-            onEditMessage(message.id, getUserMessageContent(message), ChatType.EDIT),
-            {
-                error: 'Failed to resubmit message',
-            }
-        )
+        toast.promise(onEditMessage(message.id, getUserMessageContent(message), ChatType.EDIT), {
+            error: 'Failed to resubmit message',
+        });
     };
 
     const sendMessage = async (newContent: string) => {
-        toast.promise(
-            onEditMessage(message.id, newContent, ChatType.EDIT),
-            {
-                loading: 'Editing message...',
-                success: 'Message resubmitted successfully',
-                error: 'Failed to resubmit message',
-            }
-        )
+        toast.promise(onEditMessage(message.id, newContent, ChatType.EDIT), {
+            loading: 'Editing message...',
+            success: 'Message resubmitted successfully',
+            error: 'Failed to resubmit message',
+        });
     };
 
     const handleRestoreCheckpoint = async () => {
@@ -131,7 +130,7 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
                     ref={textareaRef}
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
-                    className="text-small border-none resize-none px-0 mt-[-8px]"
+                    className="text-small mt-[-8px] resize-none border-none px-0"
                     rows={2}
                     onKeyDown={handleKeyDown}
                     onCompositionStart={() => setIsComposing(true)}
@@ -151,7 +150,7 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
 
     function renderButtons() {
         return (
-            <div className="absolute right-2 top-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 bg-background-primary">
+            <div className="bg-background-primary absolute top-2 right-2 z-10 flex gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
@@ -207,12 +206,12 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
     }
 
     return (
-        <div className="relative group w-full flex flex-row justify-end px-2" key={message.id}>
-            <div className="w-[90%] flex flex-col ml-8 p-2 rounded-lg shadow-sm rounded-br-none border-[0.5px] bg-background-primary relative">
+        <div className="group relative flex w-full flex-row justify-end px-2" key={message.id}>
+            <div className="bg-background-primary relative ml-8 flex w-[90%] flex-col rounded-lg rounded-br-none border-[0.5px] p-2 shadow-sm">
                 {!isEditing && renderButtons()}
-                <div className="h-6 relative">
-                    <div className="absolute top-1 left-0 right-0 flex flex-row justify-start items-center w-full overflow-auto pr-16">
-                        <div className="flex flex-row gap-3 text-micro text-foreground-secondary">
+                <div className="relative h-6">
+                    <div className="absolute top-1 right-0 left-0 flex w-full flex-row items-center justify-start overflow-auto pr-16">
+                        <div className="text-micro text-foreground-secondary flex flex-row gap-3">
                             {message.metadata?.context?.map((context) => (
                                 <SentContextPill key={nanoid()} context={context} />
                             ))}
@@ -233,12 +232,12 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
                 </div>
             </div>
             {commitOid && (
-                <div className="absolute left-2 top-1/2 -translate-y-1/2">
+                <div className="absolute top-1/2 left-2 -translate-y-1/2">
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <button
                                 className={cn(
-                                    'text-xs opacity-0 group-hover:opacity-100 hover:opacity-80 rounded-md p-2',
+                                    'rounded-md p-2 text-xs opacity-0 group-hover:opacity-100 hover:opacity-80',
                                     isRestoring ? 'opacity-100' : 'opacity-0',
                                 )}
                                 onClick={handleRestoreCheckpoint}

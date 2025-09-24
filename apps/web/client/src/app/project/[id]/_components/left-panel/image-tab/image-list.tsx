@@ -1,11 +1,13 @@
 import React, { memo } from 'react';
+
 import type { ImageContentData } from '@onlook/models';
-import { ImageItem } from './image-item';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { useImagesContext } from './providers/images-provider';
-import { useImageDragDrop } from './hooks/use-image-drag-drop';
 import { cn } from '@onlook/ui/utils';
+
+import { useImageDragDrop } from './hooks/use-image-drag-drop';
+import { ImageItem } from './image-item';
+import { useImagesContext } from './providers/images-provider';
 
 interface ImageListProps {
     images: ImageContentData[];
@@ -15,45 +17,45 @@ interface ImageListProps {
 export const ImageList = memo(({ images, currentFolder }: ImageListProps) => {
     const { uploadOperations, error } = useImagesContext();
     const { handleClickAddButton, handleUploadFile, uploadState } = uploadOperations;
-    
+
     const { handleDragEnter, handleDragLeave, handleDragOver, handleDrop, isDragging } =
         useImageDragDrop(currentFolder);
 
     return (
         <div
-            className="flex flex-col gap-2 h-full"
+            className="flex h-full flex-col gap-2"
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
         >
-            <p className="text-sm text-gray-200 font-medium">Images</p>
+            <p className="text-sm font-medium text-gray-200">Images</p>
             <div className={cn(isDragging && 'cursor-copy bg-teal-500/40', 'h-full')}>
                 {uploadState.isUploading && (
-                    <div className="mb-2 px-3 py-2 text-sm text-blue-600 bg-blue-50 dark:bg-blue-950/50 rounded-md flex items-center gap-2">
-                        <Icons.Reload className="w-4 h-4 animate-spin" />
+                    <div className="mb-2 flex items-center gap-2 rounded-md bg-blue-50 px-3 py-2 text-sm text-blue-600 dark:bg-blue-950/50">
+                        <Icons.Reload className="h-4 w-4 animate-spin" />
                         Uploading image...
                     </div>
                 )}
                 {error && (
-                    <div className="mb-2 px-3 py-2 text-sm text-red-600 bg-red-50 dark:bg-red-950/50 rounded-md flex items-center gap-2">
-                        <Icons.ExclamationTriangle className="w-4 h-4" />
+                    <div className="mb-2 flex items-center gap-2 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/50">
+                        <Icons.ExclamationTriangle className="h-4 w-4" />
                         {error}
                     </div>
                 )}
                 {images.length === 0 && (
-                    <div className="h-full w-full flex items-center justify-center text-center opacity-70">
+                    <div className="flex h-full w-full items-center justify-center text-center opacity-70">
                         <Button
                             onClick={handleClickAddButton}
                             variant={'default'}
-                            className="p-2.5 w-full h-fit gap-2 bg-gray-800 hover:bg-gray-700 text-white font-normal"
+                            className="h-fit w-full gap-2 bg-gray-800 p-2.5 font-normal text-white hover:bg-gray-700"
                         >
                             <Icons.Plus />
                             <span>Add an Image</span>
                         </Button>
                     </div>
                 )}
-                <div className="w-full grid grid-cols-2 gap-3 p-0 overflow-y-auto">
+                <div className="grid w-full grid-cols-2 gap-3 overflow-y-auto p-0">
                     <input
                         type="file"
                         accept="image/*"

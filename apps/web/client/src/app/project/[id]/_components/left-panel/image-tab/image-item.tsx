@@ -1,24 +1,22 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { EditorTabValue, type ImageContentData, type FolderNode } from '@onlook/models';
-import { cn } from '@onlook/ui/utils';
 import { useCallback, useMemo } from 'react';
+import { observer } from 'mobx-react-lite';
+
+import type { FolderNode, ImageContentData } from '@onlook/models';
+import { EditorTabValue } from '@onlook/models';
+import { Icons } from '@onlook/ui/icons/index';
+import { cn } from '@onlook/ui/utils';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { useImageDragDrop } from './hooks/use-image-drag-drop';
 import { ImageDropdownMenu } from './image-dropdown-menu';
 import { useImagesContext } from './providers/images-provider';
-import { Icons } from '@onlook/ui/icons/index';
-import { observer } from 'mobx-react-lite';
 
 export const ImageItem = observer(({ image }: { image: ImageContentData }) => {
     const editorEngine = useEditorEngine();
     const { onImageDragStart, onImageDragEnd, onImageMouseDown, onImageMouseUp } =
         useImageDragDrop();
-    const {
-        renameOperations,
-        deleteOperations,
-        moveOperations,
-        isOperating,
-    } = useImagesContext();
-    
+    const { renameOperations, deleteOperations, moveOperations, isOperating } = useImagesContext();
+
     const selectedImage = editorEngine.image.selectedImage;
     const isSelectingImage = editorEngine.image.isSelectingImage;
     const previewImage = editorEngine.image.previewImage;
@@ -130,7 +128,7 @@ export const ImageItem = observer(({ image }: { image: ImageContentData }) => {
 
     return (
         <div
-            className={cn('relative group w-full', isDisabled && 'opacity-50 pointer-events-none')}
+            className={cn('group relative w-full', isDisabled && 'pointer-events-none opacity-50')}
             draggable={!isDisabled}
             onDragStart={handleDragStart}
             onDragEnd={onImageDragEnd}
@@ -142,22 +140,23 @@ export const ImageItem = observer(({ image }: { image: ImageContentData }) => {
         >
             <div
                 className={cn(
-                    'w-full aspect-square flex flex-col justify-center rounded-lg overflow-hidden items-center cursor-move border-[0.5px] border-border',
-                    isSelected && 'border-2 border-red-500 p-1.5 rounded-xl cursor-pointer',
-                    previewImage?.originPath === image.originPath && 'border-2 border-red-500 p-1.5 rounded-xl cursor-pointer',
+                    'border-border flex aspect-square w-full cursor-move flex-col items-center justify-center overflow-hidden rounded-lg border-[0.5px]',
+                    isSelected && 'cursor-pointer rounded-xl border-2 border-red-500 p-1.5',
+                    previewImage?.originPath === image.originPath &&
+                        'cursor-pointer rounded-xl border-2 border-red-500 p-1.5',
                 )}
             >
                 <img
-                    className="w-full h-full object-cover rounded-lg"
+                    className="h-full w-full rounded-lg object-cover"
                     src={image.content}
                     alt={image.fileName}
                 />
             </div>
-            <span className="text-xs block w-full text-center truncate mt-1">
+            <span className="mt-1 block w-full truncate text-center text-xs">
                 {isImageRenaming ? (
                     <input
                         type="text"
-                        className="w-full p-1 text-center bg-background-active rounded "
+                        className="bg-background-active w-full rounded p-1 text-center"
                         defaultValue={defaultValue}
                         autoFocus
                         onBlur={handleRenameBlur}
@@ -181,11 +180,10 @@ export const ImageItem = observer(({ image }: { image: ImageContentData }) => {
                 />
             )}
             {isSelected && (
-                <div className="bg-black-85 rounded-lg absolute bottom-7.5 right-2.5 p-1">
-                    <Icons.CheckCircled className="w-3 h-3" />
+                <div className="bg-black-85 absolute right-2.5 bottom-7.5 rounded-lg p-1">
+                    <Icons.CheckCircled className="h-3 w-3" />
                 </div>
             )}
         </div>
     );
 });
-

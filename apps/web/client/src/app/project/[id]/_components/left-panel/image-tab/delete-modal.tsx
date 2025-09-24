@@ -1,4 +1,3 @@
-import { useEditorEngine } from '@/components/store/editor';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -9,6 +8,8 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { useImagesContext } from './providers/images-provider';
 
 export const DeleteImageModal = () => {
@@ -39,7 +40,11 @@ export const DeleteImageModal = () => {
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <Button variant={'ghost'} onClick={handleClose} disabled={deleteState.isLoading}>
+                    <Button
+                        variant={'ghost'}
+                        onClick={handleClose}
+                        disabled={deleteState.isLoading}
+                    >
                         Cancel
                     </Button>
                     <Button
@@ -50,7 +55,7 @@ export const DeleteImageModal = () => {
                     >
                         {deleteState.isLoading ? (
                             <>
-                                <Icons.LoadingSpinner className="w-4 h-4 animate-spin mr-2" />
+                                <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />
                                 Deleting
                             </>
                         ) : (
@@ -61,4 +66,4 @@ export const DeleteImageModal = () => {
             </AlertDialogContent>
         </AlertDialog>
     );
-}
+};

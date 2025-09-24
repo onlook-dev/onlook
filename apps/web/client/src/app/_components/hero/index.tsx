@@ -1,9 +1,11 @@
 'use client';
 
-import { api } from '@/trpc/react';
-import { Icons } from '@onlook/ui/icons';
-import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
+import { motion } from 'motion/react';
+
+import { Icons } from '@onlook/ui/icons';
+
+import { api } from '@/trpc/react';
 import { vujahdayScript } from '../../fonts';
 import { Create } from './create';
 import { CreateError } from './create-error';
@@ -31,72 +33,87 @@ export function Hero() {
     }, []);
 
     return (
-        <div className="w-full h-full flex flex-col items-center text-lg text-center relative">
+        <div className="relative flex h-full w-full flex-col items-center text-center text-lg">
             <UnicornBackground />
-            <div className="w-full h-full flex flex-col items-center justify-center mb-42 gap-10 pt-12">
-                <div className="flex flex-col gap-3 items-center relative z-20 pt-8 pb-2">
+            <div className="mb-42 flex h-full w-full flex-col items-center justify-center gap-10 pt-12">
+                <div className="relative z-20 flex flex-col items-center gap-3 pt-8 pb-2">
                     {!isShortScreen && (
                         <motion.div
-                            className="flex flex-col gap-3 items-center relative z-20 pt-4 pb-2 mb-6"
+                            className="relative z-20 mb-6 flex flex-col items-center gap-3 pt-4 pb-2"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6, delay: 1.2, ease: "easeOut" }}
+                            transition={{ duration: 0.6, delay: 1.2, ease: 'easeOut' }}
                         >
                             <a
                                 href="https://www.ycombinator.com/companies/onlook/jobs/e4gHv1n-founding-engineer-fullstack"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-3 py-1.5 hover:bg-foreground-secondary/20 backdrop-blur-sm border border-foreground-secondary/20 rounded-full text-xs text-foreground-secondary transition-all duration-200 hover:scale-102"
+                                className="hover:bg-foreground-secondary/20 border-foreground-secondary/20 text-foreground-secondary inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs backdrop-blur-sm transition-all duration-200 hover:scale-102"
                             >
                                 We're hiring engineers
-                                <Icons.ArrowRight className="w-4 h-4" />
+                                <Icons.ArrowRight className="h-4 w-4" />
                             </a>
-
                         </motion.div>
                     )}
                     <motion.h1
-                        className="text-6xl font-light leading-tight text-center !leading-[0.9]"
-                        initial={{ opacity: 0, filter: "blur(4px)" }}
-                        animate={{ opacity: 1, filter: "blur(0px)" }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                        style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                        className="text-center text-6xl !leading-[0.9] leading-tight font-light"
+                        initial={{ opacity: 0, filter: 'blur(4px)' }}
+                        animate={{ opacity: 1, filter: 'blur(0px)' }}
+                        transition={{ duration: 0.6, ease: 'easeOut' }}
+                        style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                     >
-                        Cursor for<br />
-                        <span className={`italic font-normal ${vujahdayScript.className} text-[4.6rem] ml-1 leading-[1.0]`}>Designers</span>
+                        Cursor for
+                        <br />
+                        <span
+                            className={`font-normal italic ${vujahdayScript.className} ml-1 text-[4.6rem] leading-[1.0]`}
+                        >
+                            Designers
+                        </span>
                     </motion.h1>
                     <motion.p
-                        className="text-lg text-foreground-secondary max-w-xl text-center mt-2 text-balance"
-                        initial={{ opacity: 0, filter: "blur(4px)" }}
-                        animate={{ opacity: 1, filter: "blur(0px)" }}
-                        transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
-                        style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                        className="text-foreground-secondary mt-2 max-w-xl text-center text-lg text-balance"
+                        initial={{ opacity: 0, filter: 'blur(4px)' }}
+                        animate={{ opacity: 1, filter: 'blur(0px)' }}
+                        transition={{ duration: 0.6, delay: 0.15, ease: 'easeOut' }}
+                        style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                     >
-                        Onlook is a next-generation visual code editor<br />
-                        that lets designers and product managers craft<br />
+                        Onlook is a next-generation visual code editor
+                        <br />
+                        that lets designers and product managers craft
+                        <br />
                         web experiences with AI
                     </motion.p>
                     <HighDemand />
                     <CreateError />
                 </div>
-                <div className="sm:flex hidden flex-col gap-4 items-center relative z-20">
+                <div className="relative z-20 hidden flex-col items-center gap-4 sm:flex">
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+                        transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
                         onAnimationComplete={() => {
-                            setCardKey(prev => prev + 1);
+                            setCardKey((prev) => prev + 1);
                         }}
                     >
-                        <Create user={user ?? null} cardKey={cardKey} isCreatingProject={isCreatingProject} setIsCreatingProject={setIsCreatingProject} />
+                        <Create
+                            user={user ?? null}
+                            cardKey={cardKey}
+                            isCreatingProject={isCreatingProject}
+                            setIsCreatingProject={setIsCreatingProject}
+                        />
                     </motion.div>
                     <motion.div
-                        className="flex gap-12 mt-0"
-                        initial={{ opacity: 0, filter: "blur(4px)" }}
-                        animate={{ opacity: 1, filter: "blur(0px)" }}
-                        transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
-                        style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                        className="mt-0 flex gap-12"
+                        initial={{ opacity: 0, filter: 'blur(4px)' }}
+                        animate={{ opacity: 1, filter: 'blur(0px)' }}
+                        transition={{ duration: 0.6, delay: 0.6, ease: 'easeOut' }}
+                        style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                     >
-                        <StartBlank user={user ?? null} isCreatingProject={isCreatingProject} setIsCreatingProject={setIsCreatingProject} />
+                        <StartBlank
+                            user={user ?? null}
+                            isCreatingProject={isCreatingProject}
+                            setIsCreatingProject={setIsCreatingProject}
+                        />
                         <Import />
                     </motion.div>
                 </div>

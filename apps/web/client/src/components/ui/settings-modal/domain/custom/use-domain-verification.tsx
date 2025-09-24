@@ -1,9 +1,13 @@
+import type { ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { toast } from 'sonner';
+
+import type { CustomDomainVerification } from '@onlook/db/src/schema/domain/custom/verification';
+import type { DomainInfo } from '@onlook/models';
+import { VerificationRequestStatus } from '@onlook/models';
+
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
-import type { CustomDomainVerification } from '@onlook/db/src/schema/domain/custom/verification';
-import { VerificationRequestStatus, type DomainInfo } from '@onlook/models';
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { toast } from 'sonner';
 
 export enum VerificationState {
     INPUTTING_DOMAIN = 'inputting_domain',
@@ -29,7 +33,9 @@ interface DomainVerificationContextType {
     removeVerifiedDomain: (domain: string) => Promise<void>;
 }
 
-const DomainVerificationContext = createContext<DomainVerificationContextType | undefined>(undefined);
+const DomainVerificationContext = createContext<DomainVerificationContextType | undefined>(
+    undefined,
+);
 
 export const DomainVerificationProvider = ({ children }: { children: ReactNode }) => {
     const editorEngine = useEditorEngine();
@@ -37,13 +43,17 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
     const [verificationState, setVerificationState] = useState(VerificationState.INPUTTING_DOMAIN);
     const [error, setError] = useState<string | null>(null);
 
-    const { data: customDomain, refetch: refetchCustomDomain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: verification, refetch: refetchVerification } = api.domain.verification.getActive.useQuery({ projectId: editorEngine.projectId });
+    const { data: customDomain, refetch: refetchCustomDomain } = api.domain.custom.get.useQuery({
+        projectId: editorEngine.projectId,
+    });
+    const { data: verification, refetch: refetchVerification } =
+        api.domain.verification.getActive.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: createDomainVerification } = api.domain.verification.create.useMutation();
     const { mutateAsync: removeDomainVerification } = api.domain.verification.remove.useMutation();
     const { mutateAsync: verifyDomain } = api.domain.verification.verify.useMutation();
     const { data: ownedDomains = [] } = api.domain.custom.getOwnedDomains.useQuery();
-    const { mutateAsync: verifyOwnedDomain } = api.domain.verification.verifyOwnedDomain.useMutation();
+    const { mutateAsync: verifyOwnedDomain } =
+        api.domain.verification.verifyOwnedDomain.useMutation();
     const { mutateAsync: removeProjectCustomDomain } = api.domain.custom.remove.useMutation();
     const [domainInput, setDomainInput] = useState(verification?.fullDomain ?? '');
 
@@ -78,7 +88,9 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
             await refetchVerification();
             setError(null);
         } catch (error) {
-            setError(error instanceof Error ? error.message : 'Failed to create domain verification');
+            setError(
+                error instanceof Error ? error.message : 'Failed to create domain verification',
+            );
         }
     };
 
@@ -95,7 +107,9 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
             setVerificationState(VerificationState.INPUTTING_DOMAIN);
             setError(null);
         } catch (error) {
-            setError(error instanceof Error ? error.message : 'Failed to remove verification request');
+            setError(
+                error instanceof Error ? error.message : 'Failed to remove verification request',
+            );
         }
     };
 
@@ -105,20 +119,14 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
                 setError('No verification request to verify');
                 return;
             }
-            const {
-                success,
-                failureReason,
-            } = await verifyDomain({
+            const { success, failureReason } = await verifyDomain({
                 verificationId: verification.id,
             });
             if (!success || failureReason) {
                 setError(failureReason ?? 'Failed to verify domain');
                 return;
             }
-            await Promise.all([
-                refetchVerification(),
-                refetchCustomDomain(),
-            ]);
+            await Promise.all([refetchVerification(), refetchCustomDomain()]);
             setVerificationState(VerificationState.VERIFIED);
             toast.success('Domain verified');
             setError(null);
@@ -130,10 +138,7 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
     const reuseDomain = async (domain: string) => {
         try {
             setError(null);
-            const {
-                success,
-                failureReason,
-            } = await verifyOwnedDomain({
+            const { success, failureReason } = await verifyOwnedDomain({
                 fullDomain: domain,
                 projectId: editorEngine.projectId,
             });
@@ -168,20 +173,22 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
     };
 
     return (
-        <DomainVerificationContext.Provider value={{
-            domainInput,
-            setDomainInput,
-            createVerificationRequest,
-            removeVerificationRequest,
-            verifyVerificationRequest,
-            customDomain: customDomain ?? null,
-            verification: verification ?? null,
-            verificationState,
-            error,
-            ownedDomains,
-            reuseDomain,
-            removeVerifiedDomain,
-        }}>
+        <DomainVerificationContext.Provider
+            value={{
+                domainInput,
+                setDomainInput,
+                createVerificationRequest,
+                removeVerificationRequest,
+                verifyVerificationRequest,
+                customDomain: customDomain ?? null,
+                verification: verification ?? null,
+                verificationState,
+                error,
+                ownedDomains,
+                reuseDomain,
+                removeVerifiedDomain,
+            }}
+        >
             {children}
         </DomainVerificationContext.Provider>
     );

@@ -1,25 +1,28 @@
+import path from 'path';
+import { env } from 'process';
+import { makeAutoObservable, reaction } from 'mobx';
+
 import type {
     ListFilesOutputFile,
     Provider,
     ProviderFileWatcher,
     WatchEvent,
 } from '@onlook/code-provider';
+import type { Branch, SandboxFile } from '@onlook/models';
 import {
     EXCLUDED_SYNC_DIRECTORIES,
     NEXT_JS_FILE_EXTENSIONS,
     PRELOAD_SCRIPT_SRC,
 } from '@onlook/constants';
-import { RouterType, type Branch, type SandboxFile } from '@onlook/models';
+import { RouterType } from '@onlook/models';
 import {
     getBaseName,
     getDirName,
     isImageFile,
     isRootLayoutFile,
-    isSubdirectory
+    isSubdirectory,
 } from '@onlook/utility';
-import { makeAutoObservable, reaction } from 'mobx';
-import path from 'path';
-import { env } from 'process';
+
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
 import { detectRouterTypeInSandbox } from '../pages/helper';
@@ -47,12 +50,9 @@ export class SandboxManager {
     constructor(
         private branch: Branch,
         private readonly editorEngine: EditorEngine,
-        private readonly errorManager: ErrorManager
+        private readonly errorManager: ErrorManager,
     ) {
-        this.session = new SessionManager(
-            this.branch,
-            this.errorManager
-        );
+        this.session = new SessionManager(this.branch, this.errorManager);
         this.fileSync = new FileSyncManager(this.branch.projectId, this.branch.id);
         makeAutoObservable(this);
     }
@@ -87,7 +87,9 @@ export class SandboxManager {
     }
 
     async index(force = false) {
-        console.log(`[SandboxManager] Starting indexing for ${this.branch.projectId}/${this.branch.id}, force: ${force}`);
+        console.log(
+            `[SandboxManager] Starting indexing for ${this.branch.projectId}/${this.branch.id}, force: ${force}`,
+        );
 
         if (this._isIndexing || (this._isIndexed && !force)) {
             return;
@@ -145,7 +147,10 @@ export class SandboxManager {
                         await this.processFileForMapping(cachedFile);
                     }
                 } else {
-                    const file = await this.fileSync.readOrFetch(filePath, this.readRemoteFile.bind(this));
+                    const file = await this.fileSync.readOrFetch(
+                        filePath,
+                        this.readRemoteFile.bind(this),
+                    );
                     if (file && this.isJsxFile(filePath)) {
                         await this.processFileForMapping(file);
                     }
@@ -156,7 +161,7 @@ export class SandboxManager {
 
             // Yield control to the event loop after each batch
             if (i + batchSize < allFilePaths.length) {
-                await new Promise(resolve => setTimeout(resolve, 1));
+                await new Promise((resolve) => setTimeout(resolve, 1));
             }
         }
     }
@@ -589,12 +594,13 @@ export class SandboxManager {
                 }
             }
 
-            const { modified, newContent } = await this.editorEngine.templateNodes.processFileForMapping(
-                this.branch.id,
-                file.path,
-                file.content,
-                this.routerConfig?.type,
-            );
+            const { modified, newContent } =
+                await this.editorEngine.templateNodes.processFileForMapping(
+                    this.branch.id,
+                    file.path,
+                    file.content,
+                    this.routerConfig?.type,
+                );
 
             if (modified && file.content !== newContent) {
                 await this.writeFile(file.path, newContent);
@@ -603,7 +609,6 @@ export class SandboxManager {
             console.error(`Error processing file ${file.path}:`, error);
         }
     }
-
 
     async fileExists(path: string): Promise<boolean> {
         const normalizedPath = normalizePath(path);

@@ -1,7 +1,14 @@
 'use client';
 
 import { Button } from '@onlook/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@onlook/ui/dialog';
 
 interface SubscriptionCancelModalProps {
     open: boolean;
@@ -9,17 +16,22 @@ interface SubscriptionCancelModalProps {
     onConfirmCancel: () => void;
 }
 
-export const SubscriptionCancelModal = ({ open, onOpenChange, onConfirmCancel }: SubscriptionCancelModalProps) => {
+export const SubscriptionCancelModal = ({
+    open,
+    onOpenChange,
+    onConfirmCancel,
+}: SubscriptionCancelModalProps) => {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
                     <DialogTitle>Cancel Subscription</DialogTitle>
                     <DialogDescription className="pt-2">
-                        Are you sure you want to cancel your subscription? You'll lose access to all premium features at the end of your current billing period.
+                        Are you sure you want to cancel your subscription? You'll lose access to all
+                        premium features at the end of your current billing period.
                     </DialogDescription>
                 </DialogHeader>
-                <DialogFooter className="flex-col sm:flex-row gap-3 sm:gap-2">
+                <DialogFooter className="flex-col gap-3 sm:flex-row sm:gap-2">
                     <Button
                         variant="outline"
                         onClick={() => onOpenChange(false)}
@@ -30,7 +42,7 @@ export const SubscriptionCancelModal = ({ open, onOpenChange, onConfirmCancel }:
                     <Button
                         variant="outline"
                         onClick={onConfirmCancel}
-                        className="order-1 sm:order-2 text-red-200 hover:text-red-100 hover:bg-red-500/10 border-red-200 hover:border-red-100"
+                        className="order-1 border-red-200 text-red-200 hover:border-red-100 hover:bg-red-500/10 hover:text-red-100 sm:order-2"
                     >
                         Cancel Subscription
                     </Button>

@@ -1,6 +1,7 @@
-import type { DomElementStyles, RectDimensions } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
+
+import type { DomElementStyles, RectDimensions } from '@onlook/models';
 
 export interface MeasurementState {
     fromRect: RectDimensions;
@@ -121,34 +122,37 @@ export class OverlayState {
         this.textEditor = { rect, content, styles, onChange, onStop, isComponent };
     };
 
-    updateTextEditor = (rect: RectDimensions, {
-        content,
-        styles,
-    }: {
-        content?: string;
-        styles?: Record<string, string>;
-    }) => {
+    updateTextEditor = (
+        rect: RectDimensions,
+        {
+            content,
+            styles,
+        }: {
+            content?: string;
+            styles?: Record<string, string>;
+        },
+    ) => {
         if (!this.textEditor) return;
-        
+
         const newContent = content ?? this.textEditor.content;
         const newStyles = styles ?? this.textEditor.styles;
-        
+
         // Only update if something actually changed
-        const rectChanged = 
+        const rectChanged =
             rect.top !== this.textEditor.rect.top ||
             rect.left !== this.textEditor.rect.left ||
             rect.width !== this.textEditor.rect.width ||
             rect.height !== this.textEditor.rect.height;
-        
+
         const contentChanged = newContent !== this.textEditor.content;
         const stylesChanged = JSON.stringify(newStyles) !== JSON.stringify(this.textEditor.styles);
-        
+
         if (rectChanged || contentChanged || stylesChanged) {
             this.textEditor = {
                 ...this.textEditor,
                 rect,
                 content: newContent,
-                styles: newStyles
+                styles: newStyles,
             };
         }
     };

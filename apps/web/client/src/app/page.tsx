@@ -17,7 +17,7 @@ export default function Main() {
     return (
         <CreateManagerProvider>
             <WebsiteLayout showFooter={true}>
-                <div className="w-screen h-screen flex items-center justify-center" id="hero">
+                <div className="flex h-screen w-screen items-center justify-center" id="hero">
                     <Hero />
                 </div>
                 <ResponsiveMockupSection />
@@ -31,7 +31,7 @@ export default function Main() {
                 <AuthModal />
                 <NonProjectSettingsModal />
                 <SubscriptionModal />
-            </WebsiteLayout >
+            </WebsiteLayout>
         </CreateManagerProvider>
     );
 }

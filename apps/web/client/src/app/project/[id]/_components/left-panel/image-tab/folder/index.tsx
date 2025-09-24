@@ -1,15 +1,17 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
+import type { FolderNode } from '@onlook/models';
 import { DefaultSettings } from '@onlook/constants';
-import { type FolderNode } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { DeleteImageModal } from '../delete-modal';
 import { useFolderImages } from '../hooks/use-folder-images';
 import { useImageSearch } from '../hooks/use-image-search';
@@ -46,7 +48,10 @@ const Folder = observer(() => {
     const [childFolders, setChildFolders] = useState<FolderNode[]>([]);
 
     const folders = useMemo(
-        () => editorEngine.activeSandbox.directories.filter((dir) => dir.startsWith(rootDir.fullPath)),
+        () =>
+            editorEngine.activeSandbox.directories.filter((dir) =>
+                dir.startsWith(rootDir.fullPath),
+            ),
         [editorEngine.activeSandbox.directories, rootDir.fullPath],
     );
 
@@ -126,7 +131,7 @@ const Folder = observer(() => {
     const showCreateButton = !!currentFolder && currentFolder === rootDir;
 
     return (
-        <div className="flex flex-col gap-2 h-full">
+        <div className="flex h-full flex-col gap-2">
             {/* Navigation Header */}
             {canGoBack && (
                 <>
@@ -136,27 +141,27 @@ const Folder = observer(() => {
                             size="icon"
                             onClick={handleGoBack}
                             disabled={!canGoBack}
-                            className="h-8 w-8 relative z-10"
+                            className="relative z-10 h-8 w-8"
                         >
                             <Icons.ArrowLeft className="h-4 w-4" />
                         </Button>
 
                         {/* Breadcrumbs Container with Fade Gradient */}
-                        <div className="relative flex-1 min-w-0">
+                        <div className="relative min-w-0 flex-1">
                             {/* Fade Gradient Overlay */}
-                            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background-primary to-transparent z-10 pointer-events-none" />
+                            <div className="from-background-primary pointer-events-none absolute top-0 bottom-0 left-0 z-10 w-8 bg-gradient-to-r to-transparent" />
 
                             {/* Breadcrumbs */}
                             <div
                                 ref={breadcrumbsRef}
-                                className="flex items-center gap-1 text-sm text-gray-200 overflow-x-auto scrollbar-hide scroll-smooth"
+                                className="scrollbar-hide flex items-center gap-1 overflow-x-auto scroll-smooth text-sm text-gray-200"
                             >
                                 {folderPath.map((pathItem, index) => (
                                     <div key={index} className="flex items-center gap-1">
                                         <Icons.ChevronRight className="h-3 w-3 text-gray-400" />
                                         <button
                                             onClick={() => handleBreadcrumbClick(index)}
-                                            className="hover:text-white transition-colors whitespace-nowrap"
+                                            className="whitespace-nowrap transition-colors hover:text-white"
                                         >
                                             {pathItem.name}
                                         </button>
@@ -166,7 +171,7 @@ const Folder = observer(() => {
                                 {currentFolder && currentFolder !== rootDir && (
                                     <div className="flex items-center gap-1">
                                         <Icons.ChevronRight className="h-3 w-3 text-gray-400" />
-                                        <span className="font-medium text-white whitespace-nowrap">
+                                        <span className="font-medium whitespace-nowrap text-white">
                                             {currentFolder.name}
                                         </span>
                                     </div>
@@ -186,11 +191,11 @@ const Folder = observer(() => {
                     <Separator />
                 </>
             )}
-            <div className="flex flex-row items-center gap-2 m-0">
+            <div className="m-0 flex flex-row items-center gap-2">
                 <div className="relative min-w-0 flex-1">
                     <Input
                         ref={inputRef}
-                        className="h-8 text-xs pr-8 w-full"
+                        className="h-8 w-full pr-8 text-xs"
                         placeholder="Search images"
                         value={search}
                         onChange={handleSearchChange}
@@ -200,11 +205,11 @@ const Folder = observer(() => {
 
                     {search && (
                         <button
-                            className="absolute right-[1px] top-[1px] bottom-[1px] aspect-square hover:bg-background-onlook active:bg-transparent flex items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] group disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="hover:bg-background-onlook group absolute top-[1px] right-[1px] bottom-[1px] flex aspect-square items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] active:bg-transparent disabled:cursor-not-allowed disabled:opacity-50"
                             onClick={handleSearchClear}
                             disabled={isAnyOperationLoading}
                         >
-                            <Icons.CrossS className="h-3 w-3 text-foreground-primary/50 group-hover:text-foreground-primary" />
+                            <Icons.CrossS className="text-foreground-primary/50 group-hover:text-foreground-primary h-3 w-3" />
                         </button>
                     )}
                 </div>
@@ -213,7 +218,7 @@ const Folder = observer(() => {
                         <Button
                             variant={'default'}
                             size={'icon'}
-                            className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
+                            className="text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook h-fit w-fit border p-2"
                             onClick={() => handleCreateFolder(currentFolder)}
                             disabled={isAnyOperationLoading}
                         >
@@ -231,10 +236,10 @@ const Folder = observer(() => {
                         <Button
                             variant={'default'}
                             size={'icon'}
-                            className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
+                            className="text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook h-fit w-fit border p-2"
                             onClick={() => editorEngine.image.scanImages()}
                         >
-                            <Icons.Reload className="w-4 h-4" />
+                            <Icons.Reload className="h-4 w-4" />
                         </Button>
                     </TooltipTrigger>
                     <TooltipPortal>
@@ -248,11 +253,11 @@ const Folder = observer(() => {
                         <Button
                             variant={'default'}
                             size={'icon'}
-                            className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
+                            className="text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook h-fit w-fit border p-2"
                             onClick={uploadOperations.handleClickAddButton}
                             disabled={isAnyOperationLoading}
                         >
-                            <Icons.Plus className="w-4 h-4" />
+                            <Icons.Plus className="h-4 w-4" />
                         </Button>
                     </TooltipTrigger>
                     <TooltipPortal>
@@ -274,9 +279,9 @@ const Folder = observer(() => {
 
             {/* Images Section */}
             {folderImagesState.isLoading ? (
-                <div className="flex items-center justify-center h-32 text-xs text-foreground-primary/50">
+                <div className="text-foreground-primary/50 flex h-32 items-center justify-center text-xs">
                     <div className="flex items-center gap-2">
-                        <Icons.Reload className="w-4 h-4 animate-spin" />
+                        <Icons.Reload className="h-4 w-4 animate-spin" />
                         Loading images...
                     </div>
                 </div>

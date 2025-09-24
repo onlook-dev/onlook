@@ -1,5 +1,8 @@
 'use client';
 
+import type { LanguageModelUsage } from 'ai';
+import { useMemo } from 'react';
+
 import { MODEL_MAX_TOKENS, OPENROUTER_MODELS } from '@onlook/models';
 import {
     Context,
@@ -11,10 +14,8 @@ import {
     ContextInputUsage,
     ContextOutputUsage,
     ContextReasoningUsage,
-    ContextTrigger
+    ContextTrigger,
 } from '@onlook/ui/ai-elements/context';
-import type { LanguageModelUsage } from 'ai';
-import { useMemo } from 'react';
 
 export const ChatContextWindow = ({ usage }: { usage: LanguageModelUsage }) => {
     const showCost = false;
@@ -28,11 +29,7 @@ export const ChatContextWindow = ({ usage }: { usage: LanguageModelUsage }) => {
     }, [usage]);
 
     return (
-        <Context
-            maxTokens={maxTokens}
-            usedTokens={usedTokens}
-            usage={usage}
-        >
+        <Context maxTokens={maxTokens} usedTokens={usedTokens} usage={usage}>
             <ContextTrigger />
             <ContextContent>
                 <ContextContentHeader />

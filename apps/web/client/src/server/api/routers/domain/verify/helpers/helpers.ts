@@ -1,10 +1,16 @@
-import { customDomains, customDomainVerification, userProjects, type CustomDomain, type DrizzleDb } from '@onlook/db';
-import { VerificationRequestStatus } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
 import { parse } from 'tldts';
 
-export const ensureUserOwnsDomain = async (db: DrizzleDb, userId: string, domain: string): Promise<boolean> => {
+import type { CustomDomain, DrizzleDb } from '@onlook/db';
+import { customDomains, customDomainVerification, userProjects } from '@onlook/db';
+import { VerificationRequestStatus } from '@onlook/models';
+
+export const ensureUserOwnsDomain = async (
+    db: DrizzleDb,
+    userId: string,
+    domain: string,
+): Promise<boolean> => {
     const foundUserProjects = await db.query.userProjects.findMany({
         where: eq(userProjects.userId, userId),
         with: {
@@ -12,17 +18,20 @@ export const ensureUserOwnsDomain = async (db: DrizzleDb, userId: string, domain
                 with: {
                     projectCustomDomains: true,
                 },
-            }
+            },
         },
     });
 
-    const ownedDomains = foundUserProjects.flatMap(
-        userProject => userProject.project.projectCustomDomains.map(domain => domain.fullDomain),
+    const ownedDomains = foundUserProjects.flatMap((userProject) =>
+        userProject.project.projectCustomDomains.map((domain) => domain.fullDomain),
     );
     return ownedDomains.includes(domain);
 };
 
-export const getCustomDomain = async (db: DrizzleDb, domain: string): Promise<{ customDomain: CustomDomain, subdomain: string | null }> => {
+export const getCustomDomain = async (
+    db: DrizzleDb,
+    domain: string,
+): Promise<{ customDomain: CustomDomain; subdomain: string | null }> => {
     const parsedDomain = parse(domain);
     if (!parsedDomain.domain) {
         throw new TRPCError({
@@ -62,7 +71,7 @@ export const getCustomDomain = async (db: DrizzleDb, domain: string): Promise<{ 
     }
 
     return { customDomain, subdomain };
-}
+};
 
 export const getVerification = async (db: DrizzleDb, projectId: string, customDomainId: string) => {
     const verification = await db.query.customDomainVerification.findFirst({
@@ -73,4 +82,4 @@ export const getVerification = async (db: DrizzleDb, projectId: string, customDo
         ),
     });
     return verification;
-}
+};

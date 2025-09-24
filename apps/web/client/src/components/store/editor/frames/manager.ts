@@ -1,12 +1,14 @@
-import type { IFrameView } from '@/app/project/[id]/_components/canvas/frame/view';
-import { api } from '@/trpc/client';
-import { toDbFrame, toDbPartialFrame } from '@onlook/db';
-import { type Frame } from '@onlook/models';
-import { calculateNonOverlappingPosition } from '@onlook/utility';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
+
+import type { Frame } from '@onlook/models';
+import { toDbFrame, toDbPartialFrame } from '@onlook/db';
+import { calculateNonOverlappingPosition } from '@onlook/utility';
+
 import type { EditorEngine } from '../engine';
+import type { IFrameView } from '@/app/project/[id]/_components/canvas/frame/view';
+import { api } from '@/trpc/client';
 import { roundDimensions } from './dimension';
 import { FrameNavigationManager } from './navigation';
 
@@ -52,7 +54,9 @@ export class FramesManager {
     }
 
     getByBranchId(branchId: string): FrameData[] {
-        return Array.from(this._frameIdToData.values()).filter((w) => w.frame.branchId === branchId);
+        return Array.from(this._frameIdToData.values()).filter(
+            (w) => w.frame.branchId === branchId,
+        );
     }
 
     get(id: string): FrameData | null {
@@ -199,9 +203,7 @@ export class FramesManager {
     }
 
     async create(frame: Frame) {
-        const success = await api.frame.create.mutate(
-            toDbFrame(roundDimensions(frame)),
-        );
+        const success = await api.frame.create.mutate(toDbFrame(roundDimensions(frame)));
 
         if (success) {
             this._frameIdToData.set(frame.id, { frame, view: null, selected: false });
@@ -218,7 +220,7 @@ export class FramesManager {
         }
 
         const frame = frameData.frame;
-        const allFrames = this.getAll().map(frameData => frameData.frame);
+        const allFrames = this.getAll().map((frameData) => frameData.frame);
 
         const proposedFrame: Frame = {
             ...frame,
@@ -276,7 +278,9 @@ export class FramesManager {
             // Check if any selected frame is the last frame in its branch
             for (const selectedFrame of selectedFrames) {
                 const branchId = selectedFrame.frame.branchId;
-                const framesInBranch = this.getAll().filter(frameData => frameData.frame.branchId === branchId);
+                const framesInBranch = this.getAll().filter(
+                    (frameData) => frameData.frame.branchId === branchId,
+                );
                 if (framesInBranch.length <= 1) {
                     return false; // Cannot delete if this is the last frame in the branch
                 }
@@ -293,7 +297,7 @@ export class FramesManager {
     }
 
     calculateNonOverlappingPosition(proposedFrame: Frame): { x: number; y: number } {
-        const allFrames = this.getAll().map(frameData => frameData.frame);
+        const allFrames = this.getAll().map((frameData) => frameData.frame);
         return calculateNonOverlappingPosition(proposedFrame, allFrames);
     }
 

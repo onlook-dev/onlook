@@ -1,8 +1,9 @@
 'use client';
 
-import { Button } from '@onlook/ui/button';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+import { Button } from '@onlook/ui/button';
 
 interface CTASectionProps {
     href?: string;
@@ -12,7 +13,13 @@ interface CTASectionProps {
     showSubtext?: boolean;
 }
 
-export function CTASection({ href, onClick, ctaText = "Craft a website\nfor free today", buttonText = "Get Started", showSubtext = true }: CTASectionProps = {}) {
+export function CTASection({
+    href,
+    onClick,
+    ctaText = 'Craft a website\nfor free today',
+    buttonText = 'Get Started',
+    showSubtext = true,
+}: CTASectionProps = {}) {
     const router = useRouter();
 
     const handleGetStartedClick = () => {
@@ -30,9 +37,9 @@ export function CTASection({ href, onClick, ctaText = "Craft a website\nfor free
             // Default behavior: scroll to hero section on homepage
             const heroSection = document.getElementById('hero');
             if (heroSection) {
-                heroSection.scrollIntoView({ 
+                heroSection.scrollIntoView({
                     behavior: 'smooth',
-                    block: 'start'
+                    block: 'start',
                 });
             }
         }
@@ -44,9 +51,9 @@ export function CTASection({ href, onClick, ctaText = "Craft a website\nfor free
     };
 
     return (
-        <div className="w-full max-w-6xl mx-auto py-32 px-8 flex flex-col items-right gap-24">
-            <div className="flex-1 flex flex-col items-end justify-center text-right">
-                <h2 className="text-foreground-primary text-5xl md:text-6xl leading-[1.05] font-light mb-8 max-w-4xl text-balance">
+        <div className="items-right mx-auto flex w-full max-w-6xl flex-col gap-24 px-8 py-32">
+            <div className="flex flex-1 flex-col items-end justify-center text-right">
+                <h2 className="text-foreground-primary mb-8 max-w-4xl text-5xl leading-[1.05] font-light text-balance md:text-6xl">
                     {ctaText.split('\n').map((line, index) => (
                         <span key={index}>
                             {line}
@@ -54,22 +61,23 @@ export function CTASection({ href, onClick, ctaText = "Craft a website\nfor free
                         </span>
                     ))}
                 </h2>
-                <div className="flex flex-row items-center justify-end gap-3 w-full">
-                    <Button 
-                        variant="secondary" 
-                        size="lg" 
-                        className="p-6 cursor-pointer hover:bg-foreground-primary hover:text-background-primary transition-colors"
+                <div className="flex w-full flex-row items-center justify-end gap-3">
+                    <Button
+                        variant="secondary"
+                        size="lg"
+                        className="hover:bg-foreground-primary hover:text-background-primary cursor-pointer p-6 transition-colors"
                         onClick={href === '/' ? handleHomepageNavigation : handleGetStartedClick}
                     >
                         {buttonText}
                     </Button>
                     {showSubtext && (
-                        <span className="text-foreground-tertiary text-regular text-left ml-0 ">
-                            No credit card required.<br /> Cancel anytime.
+                        <span className="text-foreground-tertiary text-regular ml-0 text-left">
+                            No credit card required.
+                            <br /> Cancel anytime.
                         </span>
                     )}
                 </div>
             </div>
         </div>
     );
-}  
+}

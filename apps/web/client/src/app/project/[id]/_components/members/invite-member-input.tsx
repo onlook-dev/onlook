@@ -1,9 +1,11 @@
-import { api } from '@/trpc/react';
+import { useState } from 'react';
+
 import { ProjectRole } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Input } from '@onlook/ui/input';
 import { toast } from '@onlook/ui/sonner';
-import { useState } from 'react';
+
+import { api } from '@/trpc/react';
 
 export const InviteMemberInput = ({ projectId }: { projectId: string }) => {
     const apiUtils = api.useUtils();
@@ -39,10 +41,10 @@ export const InviteMemberInput = ({ projectId }: { projectId: string }) => {
 
     return (
         <form
-            className="flex items-center gap-2 p-3 border-b justify-between"
+            className="flex items-center justify-between gap-2 border-b p-3"
             onSubmit={handleSubmit}
         >
-            <div className="flex flex-1 items-center gap-2 relative">
+            <div className="relative flex flex-1 items-center gap-2">
                 <Input
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}

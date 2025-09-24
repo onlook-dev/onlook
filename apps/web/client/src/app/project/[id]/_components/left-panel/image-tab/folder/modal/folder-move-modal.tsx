@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react-lite';
+
 import {
     AlertDialog,
     AlertDialogContent,
@@ -8,7 +10,7 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
+
 import { useFolderContext } from '../../providers/folder-provider';
 
 export const FolderMoveModal = observer(() => {
@@ -30,15 +32,19 @@ export const FolderMoveModal = observer(() => {
     const targetFolder = moveState.targetFolder;
 
     return (
-        <AlertDialog open={!!(moveState.folderToMove && moveState.targetFolder)} onOpenChange={handleClose}>
+        <AlertDialog
+            open={!!(moveState.folderToMove && moveState.targetFolder)}
+            onOpenChange={handleClose}
+        >
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Move Folder</AlertDialogTitle>
                     <AlertDialogDescription>
                         {folder && targetFolder && (
                             <>
-                                Are you sure you want to move &quot;{folder.name}&quot; to &quot;{targetFolder.name || 'root'}&quot; folder?
-                                <span className="block mt-2 text-sm">
+                                Are you sure you want to move &quot;{folder.name}&quot; to &quot;
+                                {targetFolder.name || 'root'}&quot; folder?
+                                <span className="mt-2 block text-sm">
                                     This will move the folder to the selected folder location.
                                 </span>
                             </>
@@ -46,11 +52,7 @@ export const FolderMoveModal = observer(() => {
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <Button 
-                        variant={'ghost'} 
-                        onClick={handleClose} 
-                        disabled={moveState.isLoading}
-                    >
+                    <Button variant={'ghost'} onClick={handleClose} disabled={moveState.isLoading}>
                         Cancel
                     </Button>
                     <Button
@@ -61,7 +63,7 @@ export const FolderMoveModal = observer(() => {
                     >
                         {moveState.isLoading ? (
                             <>
-                                <Icons.Reload className="w-4 h-4 animate-spin mr-2" />
+                                <Icons.Reload className="mr-2 h-4 w-4 animate-spin" />
                                 Moving...
                             </>
                         ) : (
@@ -72,4 +74,4 @@ export const FolderMoveModal = observer(() => {
             </AlertDialogContent>
         </AlertDialog>
     );
-}); 
+});

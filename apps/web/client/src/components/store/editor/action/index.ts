@@ -1,25 +1,27 @@
+import { cloneDeep, debounce } from 'lodash';
+
 import type { DomElement, LayerNode } from '@onlook/models';
-import { EditorMode } from '@onlook/models';
-import {
-    type Action,
-    type EditTextAction,
-    type GroupElementsAction,
-    type InsertElementAction,
-    type InsertImageAction,
-    type MoveElementAction,
-    type RemoveElementAction,
-    type RemoveImageAction,
-    type UngroupElementsAction,
-    type UpdateStyleAction,
+import type {
+    Action,
+    EditTextAction,
+    GroupElementsAction,
+    InsertElementAction,
+    InsertImageAction,
+    MoveElementAction,
+    RemoveElementAction,
+    RemoveImageAction,
+    UngroupElementsAction,
+    UpdateStyleAction,
 } from '@onlook/models/actions';
+import { EditorMode } from '@onlook/models';
 import { StyleChangeType } from '@onlook/models/style';
 import { assertNever } from '@onlook/utility';
-import { cloneDeep, debounce } from 'lodash';
+
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
 
 export class ActionManager {
-    constructor(private editorEngine: EditorEngine) { }
+    constructor(private editorEngine: EditorEngine) {}
 
     async run(action: Action) {
         await this.editorEngine.history.push(action);
@@ -214,11 +216,7 @@ export class ActionManager {
             return;
         }
 
-        const result = await frameData.view.groupElements(
-            parent,
-            container,
-            children,
-        );
+        const result = await frameData.view.groupElements(parent, container, children);
 
         if (!result) {
             console.error('Failed to group elements');
@@ -285,5 +283,5 @@ export class ActionManager {
         }
     }
 
-    clear() { }
+    clear() {}
 }

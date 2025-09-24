@@ -1,7 +1,16 @@
+import type { ToolSet } from 'ai';
+import { generateObject, NoSuchToolError } from 'ai';
+
+import type { ModelConfig } from '@onlook/models';
+import {
+    getAskModeSystemPrompt,
+    getCreatePageSystemPrompt,
+    getSystemPrompt,
+    initModel,
+} from '@onlook/ai';
+import { ChatType, LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
+
 import type { ToolCall } from '@ai-sdk/provider-utils';
-import { getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
-import { ChatType, LLMProvider, OPENROUTER_MODELS, type ModelConfig } from '@onlook/models';
-import { generateObject, NoSuchToolError, type ToolSet } from 'ai';
 
 export async function getModelFromType(chatType: ChatType) {
     let model: ModelConfig;
@@ -43,8 +52,15 @@ export function getSystemPromptFromType(chatType: ChatType) {
     return systemPrompt;
 }
 
-
-export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: ToolCall<string, unknown>, tools: ToolSet, error: Error }) => {
+export const repairToolCall = async ({
+    toolCall,
+    tools,
+    error,
+}: {
+    toolCall: ToolCall<string, unknown>;
+    tools: ToolSet;
+    error: Error;
+}) => {
     if (NoSuchToolError.isInstance(error)) {
         throw new Error(
             `Tool "${toolCall.toolName}" not found. Available tools: ${Object.keys(tools).join(', ')}`,
@@ -70,7 +86,7 @@ export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: Too
         schema: tool.inputSchema,
         prompt: [
             `The model tried to call the tool "${toolCall.toolName}"` +
-            ` with the following arguments:`,
+                ` with the following arguments:`,
             JSON.stringify(toolCall.input),
             `The tool accepts the following schema:`,
             JSON.stringify(tool?.inputSchema),
@@ -84,7 +100,7 @@ export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: Too
         toolName: toolCall.toolName,
         input: JSON.stringify(repairedArgs),
     };
-}
+};
 
 export function errorHandler(error: unknown) {
     try {

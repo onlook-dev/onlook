@@ -9,14 +9,14 @@ const createMockMutation = (returnValue?: any) => ({
     mutate: mock(async (params?: any) => {
         // console.log('Mock TRPC mutation called with:', params);
         return returnValue || true;
-    })
+    }),
 });
 
 const createMockQuery = (returnValue?: any) => ({
     query: mock(async (params?: any) => {
         // console.log('Mock TRPC query called with:', params);
         return returnValue || null;
-    })
+    }),
 });
 
 // Mock TRPC client to prevent network calls during tests - must be first
@@ -33,9 +33,9 @@ mock.module('@/trpc/client', () => ({
                     updatedAt: new Date(),
                     isDefault: false,
                     git: null,
-                    sandbox: { id: 'mock-sandbox-id' }
+                    sandbox: { id: 'mock-sandbox-id' },
                 },
-                frames: []
+                frames: [],
             }),
             update: createMockMutation(true),
             delete: createMockMutation(true),
@@ -49,50 +49,50 @@ mock.module('@/trpc/client', () => ({
                 updatedAt: new Date(),
                 isDefault: false,
                 git: null,
-                sandbox: { id: 'mock-sandbox-id' }
-            })
+                sandbox: { id: 'mock-sandbox-id' },
+            }),
         },
         project: {
             get: createMockQuery({
                 id: 'mock-project-id',
                 name: 'Mock Project',
                 createdAt: new Date(),
-                updatedAt: new Date()
-            })
+                updatedAt: new Date(),
+            }),
         },
         sandbox: {
             init: createMockMutation({
                 id: 'mock-sandbox-id',
-                status: 'ready'
+                status: 'ready',
             }),
             status: createMockQuery({ status: 'ready' }),
             start: createMockMutation({
                 id: 'mock-sandbox-id',
                 status: 'ready',
-                url: 'http://localhost:3000'
+                url: 'http://localhost:3000',
             }),
             stop: createMockMutation(true),
             restart: createMockMutation({
                 id: 'mock-sandbox-id',
                 status: 'ready',
-                url: 'http://localhost:3000'
+                url: 'http://localhost:3000',
             }),
-            hibernate: createMockMutation(true)
-        }
-    }
+            hibernate: createMockMutation(true),
+        },
+    },
 }));
 
 // Also mock the TRPC React Query hooks
 mock.module('@trpc/react-query', () => ({
     createTRPCReact: mock(() => ({
         useQuery: mock(() => ({ data: null, isLoading: false, error: null })),
-        useMutation: mock(() => ({ 
-            mutate: mock(() => {}), 
+        useMutation: mock(() => ({
+            mutate: mock(() => {}),
             mutateAsync: mock(async () => true),
-            isLoading: false, 
-            error: null 
-        }))
-    }))
+            isLoading: false,
+            error: null,
+        })),
+    })),
 }));
 
 // Mock toast to avoid UI dependencies
@@ -102,8 +102,8 @@ mock.module('@onlook/ui/sonner', () => ({
         error: mock(() => {}),
         info: mock(() => {}),
         warning: mock(() => {}),
-        promise: mock(() => {})
-    }
+        promise: mock(() => {}),
+    },
 }));
 
 // Mock MobX to avoid strict mode issues in tests
@@ -113,7 +113,7 @@ mock.module('mobx', () => ({
     runInAction: mock((fn: any) => fn()),
     action: mock((fn: any) => fn),
     observable: mock((obj: any) => obj),
-    computed: mock((fn: any) => ({ get: fn }))
+    computed: mock((fn: any) => ({ get: fn })),
 }));
 
 // Mock localforage to avoid browser storage dependencies
@@ -121,5 +121,5 @@ mock.module('localforage', () => ({
     getItem: mock(async () => null),
     setItem: mock(async () => undefined),
     removeItem: mock(async () => undefined),
-    clear: mock(async () => undefined)
+    clear: mock(async () => undefined),
 }));

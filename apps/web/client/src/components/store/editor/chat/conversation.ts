@@ -1,8 +1,10 @@
-import { api } from '@/trpc/client';
-import { type ChatConversation } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { toast } from 'sonner';
+
+import type { ChatConversation } from '@onlook/models';
+
 import type { EditorEngine } from '../engine';
+import { api } from '@/trpc/client';
 
 interface CurrentConversation extends ChatConversation {
     messageCount: number;
@@ -122,7 +124,7 @@ export class ConversationManager {
             console.error('Error generating conversation title. No title returned.');
             return;
         }
-        // Update local active conversation 
+        // Update local active conversation
         this.current = {
             ...this.current,
             title,

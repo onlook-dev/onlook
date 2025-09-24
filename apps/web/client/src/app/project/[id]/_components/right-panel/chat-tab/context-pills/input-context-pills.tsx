@@ -1,9 +1,11 @@
-import { useEditorEngine } from '@/components/store/editor';
-import type { MessageContext } from '@onlook/models/chat';
-import { MessageContextType } from '@onlook/models/chat';
+import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
-import { useMemo } from 'react';
+
+import type { MessageContext } from '@onlook/models/chat';
+import { MessageContextType } from '@onlook/models/chat';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { DraftContextPill } from './draft-context-pill';
 import { DraftImagePill } from './draft-image-pill';
 

@@ -1,3 +1,7 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { debounce } from 'lodash';
+
+import type { Icons } from '@onlook/ui/icons';
 import { UNITS } from '@onlook/constants';
 import {
     DropdownMenu,
@@ -5,9 +9,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
-import { Icons } from '@onlook/ui/icons';
-import { debounce } from 'lodash';
-import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface InputRangeProps {
     value: number;
@@ -30,10 +31,11 @@ export const InputRange = ({
 
     // Create debounced onChange handler
     const debouncedOnChange = useMemo(
-        () => debounce((newValue: number) => {
-            onChange?.(newValue);
-        }, 500),
-        [onChange]
+        () =>
+            debounce((newValue: number) => {
+                onChange?.(newValue);
+            }, 500),
+        [onChange],
     );
 
     // Cleanup debounce on unmount
@@ -71,7 +73,7 @@ export const InputRange = ({
             const direction = e.key === 'ArrowUp' ? 1 : -1;
             const currentValue = Number(localValue);
             if (!isNaN(currentValue)) {
-                const newValue = currentValue + (step * direction);
+                const newValue = currentValue + step * direction;
                 setLocalValue(String(newValue));
                 debouncedOnChange(newValue);
             }
@@ -106,7 +108,7 @@ export const InputRange = ({
 
     return (
         <div className="flex items-center gap-2">
-            <div className="flex-1 flex items-center gap-2">
+            <div className="flex flex-1 items-center gap-2">
                 <input
                     ref={rangeRef}
                     type="range"
@@ -119,14 +121,9 @@ export const InputRange = ({
                         debouncedOnChange(newValue);
                     }}
                     onMouseDown={handleMouseDown}
-                    className="flex-1 h-3 bg-background-tertiary/50 rounded-full appearance-none cursor-pointer relative
-                        [&::-webkit-slider-runnable-track]:bg-background-tertiary/50 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:h-3
-                        [&::-moz-range-track]:bg-background-tertiary/50 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:h-3
-                        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:mt-[-2px] [&::-webkit-slider-thumb]:cursor-grab hover:[&::-webkit-slider-thumb]:bg-white/90 active:[&::-webkit-slider-thumb]:cursor-grabbing
-                        [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-grab hover:[&::-moz-range-thumb]:bg-white/90 active:[&::-moz-range-thumb]:cursor-grabbing
-                        [&::-ms-thumb]:appearance-none [&::-ms-thumb]:w-4 [&::-ms-thumb]:h-4 [&::-ms-thumb]:rounded-full [&::-ms-thumb]:bg-white [&::-ms-thumb]:cursor-grab hover:[&::-ms-thumb]:bg-white/90 active:[&::-ms-thumb]:cursor-grabbing"
+                    className="bg-background-tertiary/50 [&::-webkit-slider-runnable-track]:bg-background-tertiary/50 [&::-moz-range-track]:bg-background-tertiary/50 relative h-3 flex-1 cursor-pointer appearance-none rounded-full [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-white hover:[&::-moz-range-thumb]:bg-white/90 active:[&::-moz-range-thumb]:cursor-grabbing [&::-moz-range-track]:h-3 [&::-moz-range-track]:rounded-full [&::-ms-thumb]:h-4 [&::-ms-thumb]:w-4 [&::-ms-thumb]:cursor-grab [&::-ms-thumb]:appearance-none [&::-ms-thumb]:rounded-full [&::-ms-thumb]:bg-white hover:[&::-ms-thumb]:bg-white/90 active:[&::-ms-thumb]:cursor-grabbing [&::-webkit-slider-runnable-track]:h-3 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-thumb]:mt-[-2px] [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white hover:[&::-webkit-slider-thumb]:bg-white/90 active:[&::-webkit-slider-thumb]:cursor-grabbing"
                 />
-                <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px]">
+                <div className="bg-background-tertiary/50 flex h-[36px] items-center justify-between rounded-md px-3">
                     <input
                         type="text"
                         inputMode="decimal"
@@ -135,19 +132,19 @@ export const InputRange = ({
                         onChange={handleChange}
                         onBlur={handleBlur}
                         onKeyDown={handleKeyDown}
-                        className="min-w-[40px] max-w-[40px] bg-transparent text-sm text-white focus:outline-none uppercase input-range-text"
+                        className="input-range-text max-w-[40px] min-w-[40px] bg-transparent text-sm text-white uppercase focus:outline-none"
                     />
 
                     <DropdownMenu modal={false}>
-                        <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer">
+                        <DropdownMenuTrigger className="text-muted-foreground cursor-pointer text-[12px] focus:outline-none">
                             {unit === 'px' ? '' : unit}
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="min-w-0 w-[64px]">
+                        <DropdownMenuContent align="start" className="w-[64px] min-w-0">
                             {UNITS.map((unitOption: string) => (
                                 <DropdownMenuItem
                                     key={unitOption}
                                     onClick={() => onUnitChange?.(unitOption)}
-                                    className="text-[12px] text-center px-2"
+                                    className="px-2 text-center text-[12px]"
                                 >
                                     {unitOption.toUpperCase()}
                                 </DropdownMenuItem>

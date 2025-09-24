@@ -1,4 +1,7 @@
-import { useEditorEngine } from '@/components/store/editor';
+import { useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { motion } from 'motion/react';
+
 import type { PageNode } from '@onlook/models/pages';
 import {
     ContextMenu,
@@ -9,9 +12,8 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
-import { motion } from 'motion/react';
-import { useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { PageModal } from '../../page-tab/page-modal';
 
 interface PageTreeNodeProps {
@@ -123,14 +125,14 @@ export const PageTreeNode: React.FC<PageTreeNodeProps> = observer(({ node, style
                     <div
                         style={style}
                         className={cn(
-                            'flex items-center h-6 cursor-pointer rounded hover:bg-background-hover',
-                            isActive && 'hover:bg-red-500/90 bg-red-500 text-white',
+                            'hover:bg-background-hover flex h-6 cursor-pointer items-center rounded',
+                            isActive && 'bg-red-500 text-white hover:bg-red-500/90',
                         )}
                         onClick={handleClick}
                     >
-                        <span className="w-4 h-4 flex-none relative">
+                        <span className="relative h-4 w-4 flex-none">
                             {hasChildren && (
-                                <div className="w-4 h-4 flex items-center justify-center absolute z-50">
+                                <div className="absolute z-50 flex h-4 w-4 items-center justify-center">
                                     <motion.div
                                         initial={false}
                                         animate={{ rotate: node.isOpen ? 90 : 0 }}
@@ -142,9 +144,9 @@ export const PageTreeNode: React.FC<PageTreeNodeProps> = observer(({ node, style
                         </span>
                         {!node.data.isRoot &&
                             (hasChildren ? (
-                                <Icons.Directory className="w-4 h-4 mr-2" />
+                                <Icons.Directory className="mr-2 h-4 w-4" />
                             ) : (
-                                <Icons.File className="w-4 h-4 mr-2" />
+                                <Icons.File className="mr-2 h-4 w-4" />
                             ))}
                         <span>{node.data.name}</span>
                     </div>

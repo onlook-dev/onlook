@@ -1,7 +1,10 @@
-import { type MessageContext, MessageContextType } from '@onlook/models/chat';
-import { Icons } from '@onlook/ui/icons';
-import { motion } from 'motion/react';
 import React from 'react';
+import { motion } from 'motion/react';
+
+import type { MessageContext } from '@onlook/models/chat';
+import { MessageContextType } from '@onlook/models/chat';
+import { Icons } from '@onlook/ui/icons';
+
 import { getTruncatedName } from './helpers';
 
 export const DraftImagePill = React.forwardRef<
@@ -29,22 +32,22 @@ export const DraftImagePill = React.forwardRef<
                     ease: 'easeOut',
                 },
             }}
-            className="group relative flex flex-row items-center gap-1 justify-center border bg-background-tertiary rounded-md h-7"
+            className="group bg-background-tertiary relative flex h-7 flex-row items-center justify-center gap-1 rounded-md border"
             key={context.displayName}
             ref={ref}
         >
             {/* Left side: Image thumbnail */}
-            <div className="w-7 h-7 flex items-center justify-center overflow-hidden relative">
+            <div className="relative flex h-7 w-7 items-center justify-center overflow-hidden">
                 <img
                     src={context.content}
                     alt={context.displayName}
-                    className="w-full h-full object-cover rounded-l-md"
+                    className="h-full w-full rounded-l-md object-cover"
                 />
-                <div className="absolute inset-0 border-l-[1px] border-y-[1px] rounded-l-md border-white/10 pointer-events-none" />
+                <div className="pointer-events-none absolute inset-0 rounded-l-md border-y-[1px] border-l-[1px] border-white/10" />
             </div>
 
             {/* Right side: Filename */}
-            <span className="text-xs overflow-hidden whitespace-nowrap text-ellipsis max-w-[100px] pr-1">
+            <span className="max-w-[100px] overflow-hidden pr-1 text-xs text-ellipsis whitespace-nowrap">
                 {getTruncatedName(context)}
             </span>
 
@@ -55,9 +58,9 @@ export const DraftImagePill = React.forwardRef<
                     e.stopPropagation();
                     onRemove();
                 }}
-                className="absolute -top-1.5 -right-1.5 w-6 h-6 p-1 rounded-full bg-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                className="bg-primary absolute -top-1.5 -right-1.5 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full p-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
             >
-                <Icons.CrossL className="w-2.5 h-2.5 text-primary-foreground" />
+                <Icons.CrossL className="text-primary-foreground h-2.5 w-2.5" />
             </button>
         </motion.span>
     );

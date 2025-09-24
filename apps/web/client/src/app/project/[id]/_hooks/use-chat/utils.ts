@@ -1,17 +1,22 @@
-import { api } from "@/trpc/client";
-import type { GitCommit } from "@onlook/git";
-import { type ChatMessage, MessageCheckpointType, type MessageContext } from "@onlook/models";
 import { v4 as uuidv4 } from 'uuid';
+
+import type { GitCommit } from '@onlook/git';
+import type { ChatMessage, MessageContext } from '@onlook/models';
+import { MessageCheckpointType } from '@onlook/models';
+
+import { api } from '@/trpc/client';
 
 export const prepareMessagesForSuggestions = (messages: ChatMessage[]) => {
     return messages.slice(-5).map((message) => ({
         role: message.role,
-        content: message.parts.map((p) => {
-            if (p.type === 'text') {
-                return p.text;
-            }
-            return '';
-        }).join(''),
+        content: message.parts
+            .map((p) => {
+                if (p.type === 'text') {
+                    return p.text;
+                }
+                return '';
+            })
+            .join(''),
     }));
 };
 
@@ -31,16 +36,20 @@ export const getUserChatMessageFromString = (
             createdAt: new Date(),
             conversationId,
         },
-    }
-}
+    };
+};
 
-
-export const attachCommitToUserMessage = (commit: GitCommit, message: ChatMessage, conversationId: string) => {
+export const attachCommitToUserMessage = (
+    commit: GitCommit,
+    message: ChatMessage,
+    conversationId: string,
+) => {
     // Vercel converts createdAt to a string, which our API doesn't accept.
-    const oldCheckpoints = message.metadata?.checkpoints.map((checkpoint) => ({
-        ...checkpoint,
-        createdAt: new Date(checkpoint.createdAt),
-    })) ?? [];
+    const oldCheckpoints =
+        message.metadata?.checkpoints.map((checkpoint) => ({
+            ...checkpoint,
+            createdAt: new Date(checkpoint.createdAt),
+        })) ?? [];
     const newCheckpoints = [
         ...oldCheckpoints,
         {
@@ -63,6 +72,6 @@ export const attachCommitToUserMessage = (commit: GitCommit, message: ChatMessag
         messageId: message.id,
         checkpoints: newCheckpoints,
     });
-    
+
     return message;
-}
+};

@@ -1,14 +1,27 @@
-import { Icons } from '@onlook/ui/icons';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
-function VersionRow({ title, subtitle, children, selected, onClick }: { title: string, subtitle: string, children?: React.ReactNode, selected?: boolean, onClick?: () => void }) {
+import { Icons } from '@onlook/ui/icons';
+
+function VersionRow({
+    title,
+    subtitle,
+    children,
+    selected,
+    onClick,
+}: {
+    title: string;
+    subtitle: string;
+    children?: React.ReactNode;
+    selected?: boolean;
+    onClick?: () => void;
+}) {
     return (
         <div
-            className={`flex flex-row items-center justify-between px-4 py-3 cursor-pointer transition-colors ${selected ? 'bg-background-onlook/90' : 'bg-transparent'} hover:bg-background-onlook/90`}
+            className={`flex cursor-pointer flex-row items-center justify-between px-4 py-3 transition-colors ${selected ? 'bg-background-onlook/90' : 'bg-transparent'} hover:bg-background-onlook/90`}
             onClick={onClick}
         >
             <div>
-                <div className="text-foreground-primary text-mini font-medium mb-1">{title}</div>
+                <div className="text-foreground-primary text-mini mb-1 font-medium">{title}</div>
                 <div className="text-foreground-tertiary text-mini font-light">{subtitle}</div>
             </div>
             {children && <div className="flex flex-row gap-1">{children}</div>}
@@ -23,7 +36,7 @@ export function RevisionHistory() {
     const [isAnimating, setIsAnimating] = useState(false);
     const [isFading, setIsFading] = useState(false);
     const [lastUserInteraction, setLastUserInteraction] = useState(Date.now());
-    
+
     // Demo colors for carousel
     const demoColors = [
         'bg-gradient-to-br from-gray-400 to-gray-700',
@@ -31,7 +44,7 @@ export function RevisionHistory() {
         'bg-gradient-to-br from-gray-400 to-gray-700',
         'bg-gradient-to-br from-gray-400 to-gray-700',
     ];
-    
+
     // Demo images for carousel (null if no image)
     const demoImages = [
         '/assets/site-version-1.png',
@@ -39,7 +52,7 @@ export function RevisionHistory() {
         '/assets/site-version-3.png',
         '/assets/site-version-4.png',
     ];
-    
+
     // Version data for Today section
     const todayVersions = [
         { title: 'New typography and layout', subtitle: 'Alessandro · 3h ago' },
@@ -63,7 +76,7 @@ export function RevisionHistory() {
         const timer = setTimeout(() => {
             setDisplayedImageIdx(selectedVersionIdx);
         }, 230); // 0.23 second delay
-        
+
         return () => clearTimeout(timer);
     }, [selectedVersionIdx]);
 
@@ -88,14 +101,16 @@ export function RevisionHistory() {
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6 relative overflow-hidden">
+            <div className="bg-background-onlook/80 relative mb-6 h-100 w-full overflow-hidden rounded-lg">
                 {/* Versions mockup */}
-                <div className="w-100 h-100 rounded-xl overflow-hidden absolute right-[-150px] top-10 flex flex-col items-center justify-start bg-black/85 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20 shadow-lg z-40">
-                    <p className="text-foreground-primary text-regular font-light w-full text-left px-4 py-3 border-b-[0.5px] border-foreground-primary/20">Versions</p>
-                    <div className="w-full h-full overflow-y-auto px-0 py-2 flex flex-col gap-2">
+                <div className="border-foreground-primary/20 absolute top-10 right-[-150px] z-40 flex h-100 w-100 flex-col items-center justify-start overflow-hidden rounded-xl border-[0.5px] bg-black/85 shadow-lg backdrop-blur-2xl">
+                    <p className="text-foreground-primary text-regular border-foreground-primary/20 w-full border-b-[0.5px] px-4 py-3 text-left font-light">
+                        Versions
+                    </p>
+                    <div className="flex h-full w-full flex-col gap-2 overflow-y-auto px-0 py-2">
                         {/* Today */}
-                        <div className="text-foreground-secondary text-xs mt-1 px-4">Today</div>
-                        <div className="flex flex-col gap-0 mb-2 border-b-[0.5px] border-foreground-primary/20 pb-2">
+                        <div className="text-foreground-secondary mt-1 px-4 text-xs">Today</div>
+                        <div className="border-foreground-primary/20 mb-2 flex flex-col gap-0 border-b-[0.5px] pb-2">
                             {todayVersions.map((v, idx) => (
                                 <VersionRow
                                     key={v.title}
@@ -107,33 +122,39 @@ export function RevisionHistory() {
                             ))}
                         </div>
                         {/* Yesterday */}
-                        <div className="text-foreground-secondary text-xs mt-2 px-4">Yesterday</div>
+                        <div className="text-foreground-secondary mt-2 px-4 text-xs">Yesterday</div>
                     </div>
                 </div>
                 {/* Demo Sites with image and color background */}
-                <div 
+                <div
                     key={selectedVersionIdx}
-                    className={`w-100 h-100 rounded-sm overflow-hidden absolute left-7 top-20 flex flex-col items-center justify-start border-[0.5px] border-foreground-primary/20 shadow-lg z-10 transition-all duration-200 ease-in-out relative ${demoColors[selectedVersionIdx]} transform ${isAnimating ? 'scale-95' : 'scale-100'} ${isFading ? 'opacity-50' : 'opacity-100'}`}
+                    className={`border-foreground-primary/20 absolute relative top-20 left-7 z-10 flex h-100 w-100 flex-col items-center justify-start overflow-hidden rounded-sm border-[0.5px] shadow-lg transition-all duration-200 ease-in-out ${demoColors[selectedVersionIdx]} transform ${isAnimating ? 'scale-95' : 'scale-100'} ${isFading ? 'opacity-50' : 'opacity-100'}`}
                 >
                     {demoImages[displayedImageIdx] && (
                         <img
                             src={demoImages[displayedImageIdx]}
                             alt="Site version preview"
-                            className={`absolute inset-0 w-full h-full object-cover transition-all duration-200 ease-in-out ${isFading ? 'opacity-0' : 'opacity-100'}`}
+                            className={`absolute inset-0 h-full w-full object-cover transition-all duration-200 ease-in-out ${isFading ? 'opacity-0' : 'opacity-100'}`}
                             style={{ zIndex: 2 }}
                         />
                     )}
                 </div>
             </div>
-            <div className="flex flex-row items-start gap-8 w-full">
+            <div className="flex w-full flex-row items-start gap-8">
                 {/* Icon + Title */}
-                <div className="flex flex-col items-start w-1/2">
-                    <div className="mb-2"><Icons.CounterClockwiseClock className="w-6 h-6 text-foreground-primary" /></div>
-                    <span className="text-foreground-primary text-largePlus font-light">Revision history</span>
+                <div className="flex w-1/2 flex-col items-start">
+                    <div className="mb-2">
+                        <Icons.CounterClockwiseClock className="text-foreground-primary h-6 w-6" />
+                    </div>
+                    <span className="text-foreground-primary text-largePlus font-light">
+                        Revision history
+                    </span>
                 </div>
                 {/* Description */}
-                <p className="text-foreground-secondary text-regular text-balance w-1/2">Never lose your progress – revert when you need to</p>
+                <p className="text-foreground-secondary text-regular w-1/2 text-balance">
+                    Never lose your progress – revert when you need to
+                </p>
             </div>
         </div>
     );
-} 
+}

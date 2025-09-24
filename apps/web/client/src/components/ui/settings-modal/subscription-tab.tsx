@@ -1,7 +1,8 @@
 'use client';
 
-import { useStateManager } from '@/components/store/state';
-import { api } from '@/trpc/react';
+import { useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
 import { ScheduledSubscriptionAction } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import {
@@ -13,8 +14,9 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { toast } from '@onlook/ui/sonner';
-import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+
+import { useStateManager } from '@/components/store/state';
+import { api } from '@/trpc/react';
 import { useSubscription } from '../pricing-modal/use-subscription';
 import { SubscriptionCancelModal } from './subscription-cancel-modal';
 
@@ -37,7 +39,7 @@ export const SubscriptionTab = observer(() => {
         },
         onSettled: () => {
             setIsLoadingPortal(false);
-        }
+        },
     });
 
     const handleUpgradePlan = () => {
@@ -82,17 +84,30 @@ export const SubscriptionTab = observer(() => {
                             <p className="text-regularPlus font-medium">Current Plan</p>
                             <p className="text-small text-muted-foreground">
                                 {isPro ? (
-                                    subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION ? (
-                                        <>Pro plan (cancelling on {subscription.scheduledChange.scheduledChangeAt.toLocaleDateString()})</>
+                                    subscription?.scheduledChange?.scheduledAction ===
+                                    ScheduledSubscriptionAction.CANCELLATION ? (
+                                        <>
+                                            Pro plan (cancelling on{' '}
+                                            {subscription.scheduledChange.scheduledChangeAt.toLocaleDateString()}
+                                            )
+                                        </>
                                     ) : (
-                                        <>Pro plan - {subscription?.price?.monthlyMessageLimit || 'Unlimited'} messages per month</>
+                                        <>
+                                            Pro plan -{' '}
+                                            {subscription?.price?.monthlyMessageLimit ||
+                                                'Unlimited'}{' '}
+                                            messages per month
+                                        </>
                                     )
                                 ) : (
                                     'You are currently on the Free plan'
                                 )}
                             </p>
                         </div>
-                        <DropdownMenu open={isManageDropdownOpen} onOpenChange={setIsManageDropdownOpen}>
+                        <DropdownMenu
+                            open={isManageDropdownOpen}
+                            onOpenChange={setIsManageDropdownOpen}
+                        >
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="sm">
                                     Manage
@@ -109,25 +124,33 @@ export const SubscriptionTab = observer(() => {
                                         Upgrade plan
                                     </DropdownMenuItem>
                                 )}
-                                {isPro && subscription?.scheduledChange?.scheduledAction !== ScheduledSubscriptionAction.CANCELLATION && (
-                                    <DropdownMenuItem
-                                        onClick={handleUpgradePlan}
-                                        className="cursor-pointer"
-                                    >
-                                        <Icons.Sparkles className="mr-2 h-4 w-4" />
-                                        Change plan
-                                    </DropdownMenuItem>
-                                )}
+                                {isPro &&
+                                    subscription?.scheduledChange?.scheduledAction !==
+                                        ScheduledSubscriptionAction.CANCELLATION && (
+                                        <DropdownMenuItem
+                                            onClick={handleUpgradePlan}
+                                            className="cursor-pointer"
+                                        >
+                                            <Icons.Sparkles className="mr-2 h-4 w-4" />
+                                            Change plan
+                                        </DropdownMenuItem>
+                                    )}
                                 {isPro && (
                                     <DropdownMenuItem
                                         onClick={() => {
-                                            subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION ? handleManageBilling() : handleCancelSubscription();
+                                            subscription?.scheduledChange?.scheduledAction ===
+                                            ScheduledSubscriptionAction.CANCELLATION
+                                                ? handleManageBilling()
+                                                : handleCancelSubscription();
                                         }}
                                         disabled={isLoadingPortal}
-                                        className="cursor-pointer text-red-200 hover:text-red-100 group"
+                                        className="group cursor-pointer text-red-200 hover:text-red-100"
                                     >
                                         <Icons.CrossS className="mr-2 h-4 w-4 text-red-200 group-hover:text-red-100" />
-                                        {subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION ? 'Reactivate subscription' : 'Cancel subscription'}
+                                        {subscription?.scheduledChange?.scheduledAction ===
+                                        ScheduledSubscriptionAction.CANCELLATION
+                                            ? 'Reactivate subscription'
+                                            : 'Cancel subscription'}
                                     </DropdownMenuItem>
                                 )}
                             </DropdownMenuContent>

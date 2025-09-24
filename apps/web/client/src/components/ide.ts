@@ -1,6 +1,6 @@
 import type { TemplateNode } from '@onlook/models';
-import { IdeType } from '@onlook/models/ide';
 import type { Icons } from '@onlook/ui/icons';
+import { IdeType } from '@onlook/models/ide';
 import { assertNever } from '@onlook/utility';
 
 export class IDE {
@@ -15,7 +15,7 @@ export class IDE {
         public readonly type: IdeType,
         public readonly command: string,
         public readonly icon: keyof typeof Icons,
-    ) { }
+    ) {}
 
     toString() {
         return this.displayName;

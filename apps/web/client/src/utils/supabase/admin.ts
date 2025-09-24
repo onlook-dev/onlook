@@ -1,5 +1,6 @@
-import { env } from '@/env';
 import { createClient } from '@supabase/supabase-js';
+
+import { env } from '@/env';
 
 /**
  * Admin Supabase client with service role key
@@ -7,14 +8,10 @@ import { createClient } from '@supabase/supabase-js';
  * Use with extreme caution and only in admin procedures
  */
 export const createAdminClient = () => {
-    return createClient(
-        env.NEXT_PUBLIC_SUPABASE_URL,
-        env.SUPABASE_SERVICE_ROLE_KEY,
-        {
-            auth: {
-                autoRefreshToken: false,
-                persistSession: false,
-            },
-        }
-    );
+    return createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+        },
+    });
 };

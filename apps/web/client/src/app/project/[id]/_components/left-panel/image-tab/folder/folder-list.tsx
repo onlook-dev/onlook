@@ -1,13 +1,15 @@
+import { memo } from 'react';
+
+import type { FolderNode } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { memo } from 'react';
+
+import { useFolderContext } from '../providers/folder-provider';
 import FolderTab from './folder-tab';
+import { FolderCreateModal } from './modal/folder-create-modal';
 import { FolderDeleteModal } from './modal/folder-delete-modal';
 import { FolderMoveModal } from './modal/folder-move-modal';
 import { FolderRenameModal } from './modal/folder-rename-modal';
-import type { FolderNode } from '@onlook/models';
-import { useFolderContext } from '../providers/folder-provider';
-import { FolderCreateModal } from './modal/folder-create-modal';
 
 interface FolderListProps {
     childFolders: FolderNode[];
@@ -26,9 +28,9 @@ export const FolderList = memo(
         }
 
         return (
-            <div className="flex flex-col gap-2 max-h-[30vh]">
-                <p className="text-sm text-gray-200 font-medium">Folders</p>
-                <div className="flex flex-col space-y-1 flex-1 overflow-y-auto">
+            <div className="flex max-h-[30vh] flex-col gap-2">
+                <p className="text-sm font-medium text-gray-200">Folders</p>
+                <div className="flex flex-1 flex-col space-y-1 overflow-y-auto">
                     {childFolders.map((item, index) => (
                         <FolderTab
                             key={item.fullPath || index}
@@ -45,7 +47,7 @@ export const FolderList = memo(
                     <Button
                         variant="default"
                         size="icon"
-                        className="p-2.5 w-full h-fit gap-2 bg-gray-800 hover:bg-gray-700 text-white font-normal"
+                        className="h-fit w-full gap-2 bg-gray-800 p-2.5 font-normal text-white hover:bg-gray-700"
                         onClick={() => handleCreateFolder(folder)}
                         disabled={isOperating}
                     >

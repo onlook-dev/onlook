@@ -1,7 +1,8 @@
+import type { RowRendererProps } from 'react-arborist';
+import { forwardRef } from 'react';
+
 import type { FileNode } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';
-import { forwardRef } from 'react';
-import type { RowRendererProps } from 'react-arborist';
 
 export const FileTreeRow = forwardRef<
     HTMLDivElement,
@@ -12,16 +13,18 @@ export const FileTreeRow = forwardRef<
             ref={ref}
             {...attrs}
             className={cn(
-                'outline-none h-6 cursor-pointer min-w-0 w-auto rounded',
+                'h-6 w-auto min-w-0 cursor-pointer rounded outline-none',
                 'text-foreground-onlook/70',
-                attrs['aria-selected'] ? [
-                    'bg-red-500/90 dark:bg-red-500/90',
-                    'text-primary dark:text-primary',
-                    'hover:bg-red-500/90 dark:hover:bg-red-500/90',
-                ] : [
-                    isHighlighted && 'bg-background-onlook text-foreground-primary',
-                    'hover:text-foreground-primary hover:bg-background-onlook',
-                ],
+                attrs['aria-selected']
+                    ? [
+                          'bg-red-500/90 dark:bg-red-500/90',
+                          'text-primary dark:text-primary',
+                          'hover:bg-red-500/90 dark:hover:bg-red-500/90',
+                      ]
+                    : [
+                          isHighlighted && 'bg-background-onlook text-foreground-primary',
+                          'hover:text-foreground-primary hover:bg-background-onlook',
+                      ],
             )}
         >
             {children}

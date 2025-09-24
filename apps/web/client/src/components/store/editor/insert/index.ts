@@ -1,5 +1,5 @@
-import type { IFrameView } from '@/app/project/[id]/_components/canvas/frame/view';
-import { DefaultSettings, EditorAttributes } from '@onlook/constants';
+import type React from 'react';
+
 import type {
     DomElement,
     DropElementProperties,
@@ -7,28 +7,30 @@ import type {
     ImageContentData,
     RectDimensions,
 } from '@onlook/models';
-import { EditorMode } from '@onlook/models';
-import {
-    type ActionElement,
-    type ActionLocation,
-    type ActionTarget,
-    type InsertElementAction,
-    type RemoveElementAction,
-    type UpdateStyleAction,
+import type {
+    ActionElement,
+    ActionLocation,
+    ActionTarget,
+    InsertElementAction,
+    RemoveElementAction,
+    UpdateStyleAction,
 } from '@onlook/models/actions';
+import { DefaultSettings, EditorAttributes } from '@onlook/constants';
+import { EditorMode } from '@onlook/models';
 import { StyleChangeType } from '@onlook/models/style';
 import { colors } from '@onlook/ui/tokens';
 import { canHaveBackgroundImage, createDomId, createOid, urlToRelativePath } from '@onlook/utility';
-import type React from 'react';
+
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
+import type { IFrameView } from '@/app/project/[id]/_components/canvas/frame/view';
 import { getRelativeMousePositionToFrameView } from '../overlay/utils';
 
 export class InsertManager {
     isDrawing = false;
     private drawOrigin: ElementPosition | undefined;
 
-    constructor(private editorEngine: EditorEngine) { }
+    constructor(private editorEngine: EditorEngine) {}
 
     getDefaultProperties(mode: EditorMode): DropElementProperties {
         switch (mode) {
@@ -173,14 +175,14 @@ export class InsertManager {
         const styles: Record<string, string> =
             mode === EditorMode.INSERT_TEXT
                 ? {
-                    width: `${width}px`,
-                    height: `${height}px`,
-                }
+                      width: `${width}px`,
+                      height: `${height}px`,
+                  }
                 : {
-                    width: `${width}px`,
-                    height: `${height}px`,
-                    backgroundColor: colors.blue[100],
-                };
+                      width: `${width}px`,
+                      height: `${height}px`,
+                      backgroundColor: colors.blue[100],
+                  };
 
         const actionElement: ActionElement = {
             domId,
@@ -219,7 +221,7 @@ export class InsertManager {
         frame: FrameData,
         dropPosition: { x: number; y: number },
         imageData: ImageContentData,
-        altKey: boolean = false,
+        altKey = false,
     ) {
         if (!frame.view) {
             console.error('No frame view found');

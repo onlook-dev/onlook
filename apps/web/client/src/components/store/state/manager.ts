@@ -1,5 +1,6 @@
-import { SettingsTabValue } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
+
+import { SettingsTabValue } from '@onlook/models';
 
 export class StateManager {
     isSubscriptionModalOpen = false;

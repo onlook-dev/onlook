@@ -5,17 +5,17 @@ import UnicornScene from 'unicornstudio-react/next';
 
 export function UnicornBackground() {
     return (
-        <div className="absolute inset-0 w-full h-screen overflow-hidden">
+        <div className="absolute inset-0 h-screen w-full overflow-hidden">
             <motion.div
-                className="absolute inset-0 w-full h-[calc(100vh+80px)] z-0"
+                className="absolute inset-0 z-0 h-[calc(100vh+80px)] w-full"
                 style={{
                     pointerEvents: 'none',
-                    willChange: "opacity",
-                    transform: "translateZ(0)"
+                    willChange: 'opacity',
+                    transform: 'translateZ(0)',
                 }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, ease: "easeOut", delay: 1 }}
+                transition={{ duration: 0.8, ease: 'easeOut', delay: 1 }}
             >
                 <UnicornScene
                     projectId="Gr1LmwbKSeJOXhpYEdit"

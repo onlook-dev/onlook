@@ -1,14 +1,17 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
-import { EditorMode, type DomElement } from '@onlook/models';
-import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
+
+import type { DomElement } from '@onlook/models';
+import { EditorMode } from '@onlook/models';
+import { cn } from '@onlook/ui/utils';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { DivSelected } from './div-selected';
+import { FrameSelected } from './frame-selected';
 import { DropdownManagerProvider } from './hooks/use-dropdown-manager';
 import { TextSelected } from './text-selected';
-import { FrameSelected } from './frame-selected';
 
 enum TAG_CATEGORIES {
     TEXT = 'text',
@@ -97,8 +100,10 @@ export const EditorBar = observer(({ availableWidth }: { availableWidth?: number
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 className={cn(
-                    'flex flex-col border-[0.5px] border-border p-1 px-1 bg-background rounded-xl backdrop-blur drop-shadow-xl z-50 overflow-hidden',
-                    editorEngine.state.editorMode === EditorMode.PREVIEW && !windowSelected && 'hidden',
+                    'border-border bg-background z-50 flex flex-col overflow-hidden rounded-xl border-[0.5px] p-1 px-1 drop-shadow-xl backdrop-blur',
+                    editorEngine.state.editorMode === EditorMode.PREVIEW &&
+                        !windowSelected &&
+                        'hidden',
                 )}
                 transition={{
                     type: 'spring',

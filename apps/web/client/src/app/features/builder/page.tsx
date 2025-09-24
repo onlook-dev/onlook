@@ -5,10 +5,10 @@ import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
 import { BuilderFeaturesHero } from '../../_components/hero/builder-features-hero';
 import { BuilderBenefitsSection } from '../../_components/landing-page/builder-benefits-section';
-import { CTASection } from '../../_components/landing-page/cta-section';
-import { FAQSection } from '../../_components/landing-page/faq-section';
 import { BuilderFeaturesGridSection } from '../../_components/landing-page/builder-features-grid-section';
 import { BuilderFeaturesIntroSection } from '../../_components/landing-page/builder-features-intro-section';
+import { CTASection } from '../../_components/landing-page/cta-section';
+import { FAQSection } from '../../_components/landing-page/faq-section';
 import { ResponsiveMockupSection } from '../../_components/landing-page/responsive-mockup-section';
 import { WebsiteLayout } from '../../_components/website-layout';
 
@@ -27,11 +27,11 @@ const builderFaqs = [
     },
     {
         question: 'Is Onlook free to use?',
-        answer: 'Onlook is free for your first prompt, but you\'re limited by the number of messages you can send. Please see our Pricing page for more details.',
+        answer: "Onlook is free for your first prompt, but you're limited by the number of messages you can send. Please see our Pricing page for more details.",
     },
     {
         question: 'What is the difference between Onlook and other design tools?',
-        answer: 'Onlook is a visual editor for code. It allows you to create and style your own creations with code as the source of truth. While it is best suited for creating websites, it can be used for anything visual – presentations, mockups, and more. Because Onlook uses code as the source of truth, the types of designs you can create are unconstrained by Onlook\'s interface.',
+        answer: "Onlook is a visual editor for code. It allows you to create and style your own creations with code as the source of truth. While it is best suited for creating websites, it can be used for anything visual – presentations, mockups, and more. Because Onlook uses code as the source of truth, the types of designs you can create are unconstrained by Onlook's interface.",
     },
     {
         question: 'Why is Onlook open-source?',
@@ -43,7 +43,7 @@ export default function BuilderFeaturesPage() {
     return (
         <CreateManagerProvider>
             <WebsiteLayout showFooter={true}>
-                <div className="w-screen h-screen flex items-center justify-center" id="hero">
+                <div className="flex h-screen w-screen items-center justify-center" id="hero">
                     <BuilderFeaturesHero />
                 </div>
                 <ResponsiveMockupSection />

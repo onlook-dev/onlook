@@ -1,5 +1,17 @@
-import { protectedProcedure } from '@/server/api/trpc';
-import { trackEvent } from '@/utils/analytics/server';
+import { eq } from 'drizzle-orm';
+import { v4 as uuidv4 } from 'uuid';
+import { z } from 'zod';
+
+import type {
+    Branch,
+    Branch,
+    Canvas,
+    Canvas,
+    Frame as DbFrame,
+    Frame as DbFrame,
+    Project,
+    Project,
+} from '@onlook/db';
 import { CodeProvider, getStaticCodeProvider } from '@onlook/code-provider';
 import { getSandboxPreviewUrl, Tags } from '@onlook/constants';
 import {
@@ -13,15 +25,11 @@ import {
     projects,
     userCanvases,
     userProjects,
-    type Branch,
-    type Canvas,
-    type Frame as DbFrame,
-    type Project
 } from '@onlook/db';
 import { ProjectRole } from '@onlook/models';
-import { eq } from 'drizzle-orm';
-import { v4 as uuidv4 } from 'uuid';
-import { z } from 'zod';
+
+import { protectedProcedure } from '@/server/api/trpc';
+import { trackEvent } from '@/utils/analytics/server';
 
 type ForkedBranch = {
     newBranch: Branch;
@@ -39,7 +47,9 @@ type SourceProjectWithRelations = Project & {
 /**
  * Validates that the source project exists and has branches
  */
-function validateSourceProject(sourceProject: SourceProjectWithRelations | undefined): asserts sourceProject is SourceProjectWithRelations {
+function validateSourceProject(
+    sourceProject: SourceProjectWithRelations | undefined,
+): asserts sourceProject is SourceProjectWithRelations {
     if (!sourceProject) {
         throw new Error('Source project not found');
     }
@@ -54,7 +64,7 @@ function validateSourceProject(sourceProject: SourceProjectWithRelations | undef
  */
 async function forkAllBranches(
     sourceBranches: Branch[],
-    sourceProjectName: string
+    sourceProjectName: string,
 ): Promise<Map<string, ForkedBranch>> {
     const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
     const branchMapping = new Map<string, ForkedBranch>();
@@ -96,7 +106,7 @@ function createNewProjectData(sourceProject: SourceProjectWithRelations, customN
     return {
         name: customName || `${sourceProject.name} (Copy)`,
         description: sourceProject.description,
-        tags: sourceProject.tags?.filter(tag => tag !== Tags.TEMPLATE) ?? [],
+        tags: sourceProject.tags?.filter((tag) => tag !== Tags.TEMPLATE) ?? [],
         previewImgUrl: sourceProject.previewImgUrl,
         previewImgPath: sourceProject.previewImgPath,
         previewImgBucket: sourceProject.previewImgBucket,
@@ -111,7 +121,7 @@ function createNewProjectData(sourceProject: SourceProjectWithRelations, customN
 function createMappedFrames(
     sourceFrames: (DbFrame & { branch?: Branch | null })[],
     newCanvasId: string,
-    branchMapping: Map<string, ForkedBranch>
+    branchMapping: Map<string, ForkedBranch>,
 ): DbFrame[] {
     const newFrames: DbFrame[] = [];
 
@@ -138,10 +148,11 @@ function createMappedFrames(
  */
 function createDefaultFramesForDefaultBranch(
     canvasId: string,
-    branchMapping: Map<string, ForkedBranch>
+    branchMapping: Map<string, ForkedBranch>,
 ): DbFrame[] {
-    const defaultBranchMap = Array.from(branchMapping.values())
-        .find(({ newBranch }) => newBranch.isDefault);
+    const defaultBranchMap = Array.from(branchMapping.values()).find(
+        ({ newBranch }) => newBranch.isDefault,
+    );
 
     if (!defaultBranchMap) {
         return [];
@@ -165,13 +176,15 @@ function createDefaultFramesForDefaultBranch(
 }
 
 export const fork = protectedProcedure
-    .input(z.object({
-        projectId: z.uuid(),
-        name: z.string().optional(),
-    }))
+    .input(
+        z.object({
+            projectId: z.uuid(),
+            name: z.string().optional(),
+        }),
+    )
     .mutation(async ({ ctx, input }) => {
         // 1. Get the source project with canvas, frames, and branches
-        const sourceProject = await ctx.db.query.projects.findFirst({
+        const sourceProject = (await ctx.db.query.projects.findFirst({
             where: eq(projects.id, input.projectId),
             with: {
                 canvas: {
@@ -186,15 +199,12 @@ export const fork = protectedProcedure
                 },
                 branches: true,
             },
-        }) as SourceProjectWithRelations | undefined;
+        })) as SourceProjectWithRelations | undefined;
 
         validateSourceProject(sourceProject);
 
         // 2. Fork all branches and create sandbox projects
-        const branchMapping = await forkAllBranches(
-            sourceProject.branches,
-            sourceProject.name
-        );
+        const branchMapping = await forkAllBranches(sourceProject.branches, sourceProject.name);
 
         // 3. Create the new project with forked data
         const newProjectData = createNewProjectData(sourceProject, input.name);
@@ -226,7 +236,7 @@ export const fork = protectedProcedure
                 // Create new canvas
                 const newCanvas: Canvas = {
                     id: uuidv4(),
-                    projectId: newProject.id
+                    projectId: newProject.id,
                 };
                 await tx.insert(canvases).values(newCanvas);
 
@@ -243,7 +253,7 @@ export const fork = protectedProcedure
                     const newFrames = createMappedFrames(
                         sourceCanvas.frames,
                         newCanvas.id,
-                        branchMapping
+                        branchMapping,
                     );
 
                     if (newFrames.length > 0) {
@@ -253,7 +263,7 @@ export const fork = protectedProcedure
                     // Create default frames for default branch only
                     const defaultFrames = createDefaultFramesForDefaultBranch(
                         newCanvas.id,
-                        branchMapping
+                        branchMapping,
                     );
 
                     if (defaultFrames.length > 0) {
@@ -275,7 +285,7 @@ export const fork = protectedProcedure
                 // Create default frames for the default branch
                 const defaultFrames = createDefaultFramesForDefaultBranch(
                     newCanvas.id,
-                    branchMapping
+                    branchMapping,
                 );
 
                 if (defaultFrames.length > 0) {
@@ -284,8 +294,9 @@ export const fork = protectedProcedure
             }
 
             // Track the fork event
-            const allSandboxIds = Array.from(branchMapping.values())
-                .map(({ newBranch }) => newBranch.sandboxId);
+            const allSandboxIds = Array.from(branchMapping.values()).map(
+                ({ newBranch }) => newBranch.sandboxId,
+            );
 
             trackEvent({
                 distinctId: ctx.user.id,

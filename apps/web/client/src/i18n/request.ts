@@ -1,6 +1,7 @@
-import { Language } from '@onlook/constants';
-import { getRequestConfig } from 'next-intl/server';
 import { cookies, headers } from 'next/headers';
+import { getRequestConfig } from 'next-intl/server';
+
+import { Language } from '@onlook/constants';
 
 export default getRequestConfig(async () => {
     const locale = await getLanguage();

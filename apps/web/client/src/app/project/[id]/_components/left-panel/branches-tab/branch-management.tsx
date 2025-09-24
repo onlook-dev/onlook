@@ -1,13 +1,15 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { api } from '@/trpc/client';
+import { useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { toast } from 'sonner';
+
 import type { Branch } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { timeAgo } from '@onlook/utility/src/time';
-import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
-import { toast } from 'sonner';
+
+import { useEditorEngine } from '@/components/store/editor';
+import { api } from '@/trpc/client';
 
 interface BranchManagementProps {
     branch: Branch;
@@ -75,14 +77,14 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
             // If this is the active branch, switch to a different one first
             if (isActiveBranch) {
                 const allBranches = editorEngine.branches.allBranches;
-                const otherBranches = allBranches.filter(b => b.id !== branch.id);
+                const otherBranches = allBranches.filter((b) => b.id !== branch.id);
 
                 if (otherBranches.length === 0) {
                     throw new Error('Cannot delete the last remaining branch');
                 }
 
                 // Find the default branch, or use the first available branch
-                const targetBranch = otherBranches.find(b => b.isDefault) || otherBranches[0];
+                const targetBranch = otherBranches.find((b) => b.isDefault) || otherBranches[0];
 
                 if (!targetBranch) {
                     throw new Error('No target branch available for switching');
@@ -121,8 +123,8 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
     };
 
     return (
-        <div className="flex flex-col h-full text-xs text-active flex-grow w-full p-0">
-            <div className="flex items-center justify-start border-b border-border py-3 pr-2.5 pl-3 gap-2">
+        <div className="text-active flex h-full w-full flex-grow flex-col p-0 text-xs">
+            <div className="border-border flex items-center justify-start gap-2 border-b py-3 pr-2.5 pl-3">
                 <Button
                     variant="ghost"
                     size="icon"
@@ -134,12 +136,12 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
                 <h2 className="text-foreground text-sm font-normal">Branch Settings</h2>
             </div>
 
-            <div className="p-4 border-b border-border space-y-4">
+            <div className="border-border space-y-4 border-b p-4">
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                        <label className="text-sm text-foreground">Name</label>
+                        <label className="text-foreground text-sm">Name</label>
                         {isActiveBranch && (
-                            <span className="text-xs bg-teal-800 text-teal-200 px-2 py-1 rounded">
+                            <span className="rounded bg-teal-800 px-2 py-1 text-xs text-teal-200">
                                 Active
                             </span>
                         )}
@@ -155,20 +157,22 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
                         />
                     ) : (
                         <div
-                            className="flex items-start justify-between p-2 bg-background-secondary rounded-md cursor-pointer hover:bg-background-secondary/70 border"
+                            className="bg-background-secondary hover:bg-background-secondary/70 flex cursor-pointer items-start justify-between rounded-md border p-2"
                             onClick={() => setIsRenaming(true)}
                         >
-                            <span className="font-medium break-words min-w-0 flex-1 mr-2 leading-tight">{branch.name}</span>
-                            <Icons.Pencil className="w-3 h-3 text-muted-foreground flex-shrink-0 mt-0.5" />
+                            <span className="mr-2 min-w-0 flex-1 leading-tight font-medium break-words">
+                                {branch.name}
+                            </span>
+                            <Icons.Pencil className="text-muted-foreground mt-0.5 h-3 w-3 flex-shrink-0" />
                         </div>
                     )}
                 </div>
             </div>
 
-            <div className="flex-1 p-4 space-y-3">
+            <div className="flex-1 space-y-3 p-4">
                 <div className="space-y-2">
-                    <h3 className="text-sm text-foreground">Actions</h3>
-                    <div className="flex flex-col items-center gap-2 w-full">
+                    <h3 className="text-foreground text-sm">Actions</h3>
+                    <div className="flex w-full flex-col items-center gap-2">
                         <Button
                             variant="outline"
                             className="w-full"
@@ -177,12 +181,12 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
                         >
                             {isForking ? (
                                 <div className="flex items-center gap-2">
-                                    <Icons.LoadingSpinner className="w-4 h-4" />
+                                    <Icons.LoadingSpinner className="h-4 w-4" />
                                     <span>Forking...</span>
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2">
-                                    <Icons.Branch className="w-4 h-4" />
+                                    <Icons.Branch className="h-4 w-4" />
                                     <span>Fork</span>
                                 </div>
                             )}
@@ -195,18 +199,18 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
                             disabled={isDeleting || isOnlyBranch}
                             title={
                                 isOnlyBranch
-                                    ? "Cannot delete the last remaining branch"
-                                    : "Delete branch"
+                                    ? 'Cannot delete the last remaining branch'
+                                    : 'Delete branch'
                             }
                         >
                             {isDeleting ? (
                                 <div className="flex items-center gap-2">
-                                    <Icons.LoadingSpinner className="w-4 h-4" />
+                                    <Icons.LoadingSpinner className="h-4 w-4" />
                                     <span>Deleting...</span>
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2 text-red-400">
-                                    <Icons.Trash className="w-4 h-4" />
+                                    <Icons.Trash className="h-4 w-4" />
                                     <span>Delete</span>
                                 </div>
                             )}
@@ -214,9 +218,9 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
                     </div>
                 </div>
 
-                <div className="pt-4 border-t border-border">
+                <div className="border-border border-t pt-4">
                     <div className="space-y-2">
-                        <div className="text-xs text-foreground-tertiary/80 space-y-1">
+                        <div className="text-foreground-tertiary/80 space-y-1 text-xs">
                             <div>Created {timeAgo(branch.createdAt)} ago</div>
                             <div>Last modified {timeAgo(branch.updatedAt)} ago</div>
                         </div>

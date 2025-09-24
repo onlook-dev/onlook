@@ -1,11 +1,13 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
-import { EditorAttributes } from '@onlook/constants';
-import { EditorMode, EditorTabValue } from '@onlook/models';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { throttle } from 'lodash';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import { EditorAttributes } from '@onlook/constants';
+import { EditorMode, EditorTabValue } from '@onlook/models';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { Frames } from './frames';
 import { HotkeysArea } from './hotkeys';
 import { Overlay } from './overlay';
@@ -71,16 +73,19 @@ export const Canvas = observer(() => {
         }
     };
 
-    const updateFramesInSelection = useCallback((start: { x: number; y: number }, end: { x: number; y: number }) => {
-        const intersectingFrameIds = getFramesInSelection(
-            editorEngine,
-            start,
-            end,
-            position,
-            scale
-        );
-        setFramesInSelection(new Set(intersectingFrameIds));
-    }, [position, scale, editorEngine]);
+    const updateFramesInSelection = useCallback(
+        (start: { x: number; y: number }, end: { x: number; y: number }) => {
+            const intersectingFrameIds = getFramesInSelection(
+                editorEngine,
+                start,
+                end,
+                position,
+                scale,
+            );
+            setFramesInSelection(new Set(intersectingFrameIds));
+        },
+        [position, scale, editorEngine],
+    );
 
     const handleCanvasMouseMove = useCallback(
         throttle((event: React.MouseEvent<HTMLDivElement>) => {
@@ -96,7 +101,7 @@ export const Canvas = observer(() => {
             // Update frames in selection for visual feedback
             updateFramesInSelection(dragSelectStart, { x, y });
         }, 16), // ~60fps
-        [isDragSelecting, dragSelectStart, updateFramesInSelection]
+        [isDragSelecting, dragSelectStart, updateFramesInSelection],
     );
 
     const handleCanvasMouseUp = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -243,14 +248,14 @@ export const Canvas = observer(() => {
                         dragSelectStart,
                         dragSelectEnd,
                         position,
-                        scale
+                        scale,
                     );
 
                     // Select the frames if any were found in the selection
                     if (selectedFrames.length > 0) {
                         editorEngine.frames.select(
-                            selectedFrames.map(fd => fd.frame),
-                            event.shiftKey // multiselect if shift is held
+                            selectedFrames.map((fd) => fd.frame),
+                            event.shiftKey, // multiselect if shift is held
                         );
                     }
                 } catch (error) {
@@ -272,7 +277,7 @@ export const Canvas = observer(() => {
         <HotkeysArea>
             <div
                 ref={containerRef}
-                className="overflow-hidden bg-background-onlook flex flex-grow relative"
+                className="bg-background-onlook relative flex flex-grow overflow-hidden"
                 onMouseDown={handleCanvasMouseDown}
                 onMouseMove={handleCanvasMouseMove}
                 onMouseUp={handleCanvasMouseUp}

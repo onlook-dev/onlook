@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { sanitizeCommitMessage, escapeShellString, prepareCommitMessage } from './index';
+
+import { escapeShellString, prepareCommitMessage, sanitizeCommitMessage } from './index';
 
 describe('Git utilities', () => {
     describe('sanitizeCommitMessage', () => {
@@ -24,7 +25,8 @@ describe('Git utilities', () => {
         });
 
         it('should handle multiline messages', () => {
-            const multilineMessage = 'Fix critical bug\n\nThis fixes a critical issue with user authentication';
+            const multilineMessage =
+                'Fix critical bug\n\nThis fixes a critical issue with user authentication';
             const result = sanitizeCommitMessage(multilineMessage);
             expect(result).toContain('Fix critical bug');
             expect(result).toContain('This fixes a critical issue');
@@ -37,7 +39,8 @@ describe('Git utilities', () => {
         });
 
         it('should truncate at word boundaries', () => {
-            const message = 'This is a very long commit message that should be truncated at word boundaries';
+            const message =
+                'This is a very long commit message that should be truncated at word boundaries';
             const result = sanitizeCommitMessage(message);
             expect(result.endsWith('...')).toBe(true);
             // Should not end with a partial word
@@ -61,7 +64,7 @@ describe('Git utilities', () => {
 
         it('should quote unsafe strings', () => {
             expect(escapeShellString('hello world')).toBe("'hello world'");
-            expect(escapeShellString('hello "world"')).toBe("'hello \"world\"'");
+            expect(escapeShellString('hello "world"')).toBe('\'hello "world"\'');
         });
 
         it('should handle single quotes correctly', () => {

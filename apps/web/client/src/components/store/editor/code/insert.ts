@@ -1,8 +1,14 @@
+import type {
+    ActionElement,
+    ActionLocation,
+    CodeInsert,
+    PasteParams,
+} from '@onlook/models/actions';
 import { EditorAttributes } from '@onlook/constants';
-import type { ActionElement, ActionLocation, PasteParams } from '@onlook/models/actions';
-import { CodeActionType, type CodeInsert } from '@onlook/models/actions';
+import { CodeActionType } from '@onlook/models/actions';
 import { StyleChangeType } from '@onlook/models/style';
 import { customTwMerge } from '@onlook/utility';
+
 import { getTailwindClasses } from './tailwind';
 
 export function getInsertedElement(
@@ -21,14 +27,14 @@ export function getInsertedElement(
     const newClasses = getTailwindClasses(actionElement.oid, styles);
     const attributes = {
         className: customTwMerge(
-            actionElement.attributes['className'],
-            actionElement.attributes['class'],
+            actionElement.attributes.className,
+            actionElement.attributes.class,
             newClasses,
         ),
         [EditorAttributes.DATA_ONLOOK_ID]: actionElement.oid,
         ...(actionElement.tagName.toLowerCase() === 'img' && {
-            src: actionElement.attributes['src'],
-            alt: actionElement.attributes['alt'],
+            src: actionElement.attributes.src,
+            alt: actionElement.attributes.alt,
         }),
     };
 

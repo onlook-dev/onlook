@@ -1,10 +1,13 @@
 'use client';
 
+import { v4 as uuidv4 } from 'uuid';
+
 import type { Provider, ProviderTask, ProviderTerminal } from '@onlook/code-provider';
+
+import type { ErrorManager } from '../error';
 import type { FitAddon } from '@xterm/addon-fit';
 import type { Terminal } from '@xterm/xterm';
-import { v4 as uuidv4 } from 'uuid';
-import type { ErrorManager } from '../error';
+
 // Dynamic imports to avoid SSR issues
 let FitAddonClass: typeof FitAddon | null = null;
 let TerminalClass: typeof Terminal | null = null;
@@ -61,7 +64,7 @@ export class CLISessionImpl implements CLISession {
             try {
                 const [fitAddonModule, xtermModule] = await Promise.all([
                     import('@xterm/addon-fit'),
-                    import('@xterm/xterm')
+                    import('@xterm/xterm'),
                 ]);
                 FitAddonClass = fitAddonModule.FitAddon;
                 TerminalClass = xtermModule.Terminal;
@@ -106,10 +109,14 @@ export class CLISessionImpl implements CLISession {
             await terminal.open();
 
             // Set initial terminal size and environment
-            if (this.xterm.cols && this.xterm.rows && 'resize' in terminal && typeof terminal.resize === 'function') {
+            if (
+                this.xterm.cols &&
+                this.xterm.rows &&
+                'resize' in terminal &&
+                typeof terminal.resize === 'function'
+            ) {
                 terminal.resize(this.xterm.cols, this.xterm.rows);
             }
-
         } catch (error) {
             console.error('Failed to initialize terminal:', error);
             this.terminal = null;

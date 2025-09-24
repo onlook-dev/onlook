@@ -1,16 +1,25 @@
 'use client';
 
-import { api } from '@/trpc/react';
-import { Routes } from '@/utils/constants';
-import { createClient } from '@/utils/supabase/client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { observer } from 'mobx-react-lite';
+
 import { Button } from '@onlook/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@onlook/ui/dialog';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { toast } from '@onlook/ui/sonner';
-import { observer } from 'mobx-react-lite';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+
+import { api } from '@/trpc/react';
+import { Routes } from '@/utils/constants';
+import { createClient } from '@/utils/supabase/client';
 
 export const UserDeleteSection = observer(() => {
     const router = useRouter();
@@ -70,7 +79,7 @@ export const UserDeleteSection = observer(() => {
                     variant="outline"
                     size="sm"
                     onClick={handleDeleteAccount}
-                    className="text-red-200 hover:text-red-100 border-red-200 hover:border-red-100 hover:bg-red-500/10"
+                    className="border-red-200 text-red-200 hover:border-red-100 hover:bg-red-500/10 hover:text-red-100"
                 >
                     Delete
                 </Button>
@@ -87,23 +96,37 @@ export const UserDeleteSection = observer(() => {
                                 <div className="space-y-1 text-sm">
                                     <div className="flex items-start gap-2">
                                         <span className="mt-0.5">•</span>
-                                        <span>Permanently delete your account and prevent you from creating new projects.</span>
+                                        <span>
+                                            Permanently delete your account and prevent you from
+                                            creating new projects.
+                                        </span>
                                     </div>
                                     <div className="flex items-start gap-2">
                                         <span className="mt-0.5">•</span>
-                                        <span>Delete all of your projects from Onlook's servers.</span>
+                                        <span>
+                                            Delete all of your projects from Onlook's servers.
+                                        </span>
                                     </div>
                                     <div className="flex items-start gap-2">
                                         <span className="mt-0.5">•</span>
-                                        <span>You cannot create a new account using the same email address.</span>
+                                        <span>
+                                            You cannot create a new account using the same email
+                                            address.
+                                        </span>
                                     </div>
                                     <div className="flex items-start gap-2">
                                         <span className="mt-0.5">•</span>
-                                        <span>This will also permanently delete your chat history and other data associated with your account.</span>
+                                        <span>
+                                            This will also permanently delete your chat history and
+                                            other data associated with your account.
+                                        </span>
                                     </div>
                                     <div className="flex items-start gap-2">
                                         <span className="mt-0.5">•</span>
-                                        <span>Deleting an account does not automatically cancel your subscription or entitled set of paid features.</span>
+                                        <span>
+                                            Deleting an account does not automatically cancel your
+                                            subscription or entitled set of paid features.
+                                        </span>
                                     </div>
                                     <div className="flex items-start gap-2">
                                         <span className="mt-0.5">•</span>
@@ -126,7 +149,9 @@ export const UserDeleteSection = observer(() => {
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="delete-confirm">To proceed, type "DELETE" in the input field below:</Label>
+                            <Label htmlFor="delete-confirm">
+                                To proceed, type "DELETE" in the input field below:
+                            </Label>
                             <Input
                                 id="delete-confirm"
                                 value={deleteConfirmText}
@@ -136,7 +161,7 @@ export const UserDeleteSection = observer(() => {
                             />
                         </div>
                     </div>
-                    <DialogFooter className="flex-col sm:flex-row gap-3 sm:gap-2">
+                    <DialogFooter className="flex-col gap-3 sm:flex-row sm:gap-2">
                         <Button
                             variant="outline"
                             onClick={() => {
@@ -151,7 +176,7 @@ export const UserDeleteSection = observer(() => {
                         <Button
                             onClick={handleDeleteConfirm}
                             disabled={!canProceedWithDelete}
-                            className="order-1 sm:order-2 bg-red-600 hover:bg-red-700 text-white disabled:bg-gray-300 disabled:text-gray-500"
+                            className="order-1 bg-red-600 text-white hover:bg-red-700 disabled:bg-gray-300 disabled:text-gray-500 sm:order-2"
                         >
                             {canProceedWithDelete ? 'Delete Account' : 'Locked'}
                         </Button>
@@ -165,10 +190,11 @@ export const UserDeleteSection = observer(() => {
                     <DialogHeader>
                         <DialogTitle>Final confirmation</DialogTitle>
                         <DialogDescription className="pt-2">
-                            This is your last chance to cancel. Are you absolutely sure you want to permanently delete your account and all associated data?
+                            This is your last chance to cancel. Are you absolutely sure you want to
+                            permanently delete your account and all associated data?
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter className="flex-col sm:flex-row gap-3 sm:gap-2">
+                    <DialogFooter className="flex-col gap-3 sm:flex-row sm:gap-2">
                         <Button
                             variant="outline"
                             onClick={() => {
@@ -182,7 +208,7 @@ export const UserDeleteSection = observer(() => {
                         </Button>
                         <Button
                             onClick={handleFinalDeleteAccount}
-                            className="order-1 sm:order-2 bg-red-600 hover:bg-red-700 text-white"
+                            className="order-1 bg-red-600 text-white hover:bg-red-700 sm:order-2"
                         >
                             Yes, Delete My Account
                         </Button>

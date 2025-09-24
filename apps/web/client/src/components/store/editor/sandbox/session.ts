@@ -1,9 +1,13 @@
-import { api } from '@/trpc/client';
-import { CodeProvider, createCodeProviderClient, type Provider } from '@onlook/code-provider';
-import type { Branch } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
+
+import type { Provider } from '@onlook/code-provider';
+import type { Branch } from '@onlook/models';
+import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
+
 import type { ErrorManager } from '../error';
-import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
+import type { CLISession, TerminalSession } from './terminal';
+import { api } from '@/trpc/client';
+import { CLISessionImpl, CLISessionType } from './terminal';
 
 export class SessionManager {
     provider: Provider | null = null;
@@ -13,7 +17,7 @@ export class SessionManager {
 
     constructor(
         private readonly branch: Branch,
-        private readonly errorManager: ErrorManager
+        private readonly errorManager: ErrorManager,
     ) {
         this.start(this.branch.sandbox.id);
         makeAutoObservable(this);
@@ -78,12 +82,7 @@ export class SessionManager {
     }
 
     async createTerminalSessions(provider: Provider) {
-        const task = new CLISessionImpl(
-            'server',
-            CLISessionType.TASK,
-            provider,
-            this.errorManager,
-        );
+        const task = new CLISessionImpl('server', CLISessionType.TASK, provider, this.errorManager);
         this.terminalSessions.set(task.id, task);
         const terminal = new CLISessionImpl(
             'terminal',
@@ -97,10 +96,7 @@ export class SessionManager {
 
         // Initialize the sessions after creation
         try {
-            await Promise.all([
-                task.initTask(),
-                terminal.initTerminal()
-            ]);
+            await Promise.all([task.initTask(), terminal.initTerminal()]);
         } catch (error) {
             console.error('Failed to initialize terminal sessions:', error);
         }
@@ -165,7 +161,7 @@ export class SessionManager {
     async runCommand(
         command: string,
         streamCallback?: (output: string) => void,
-        ignoreError: boolean = false,
+        ignoreError = false,
     ): Promise<{
         output: string;
         success: boolean;
@@ -175,10 +171,10 @@ export class SessionManager {
             if (!this.provider) {
                 throw new Error('No provider found in runCommand');
             }
-            
+
             // Append error suppression if ignoreError is true
             const finalCommand = ignoreError ? `${command} 2>/dev/null || true` : command;
-            
+
             streamCallback?.(finalCommand + '\n');
             const { output } = await this.provider.runCommand({ args: { command: finalCommand } });
             streamCallback?.(output);

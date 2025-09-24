@@ -1,5 +1,5 @@
-import { Laptop, Menu } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
+import { Laptop, Menu } from 'lucide-react';
 
 export function ResponsiveWebsiteBlock() {
     const [websiteWidth, setWebsiteWidth] = useState(400); // Initial width in pixels
@@ -60,20 +60,23 @@ export function ResponsiveWebsiteBlock() {
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="w-full h-100 bg-[#2E2C2D] rounded-lg mb-6 relative overflow-hidden" ref={containerRef}>
+            <div
+                className="relative mb-6 h-100 w-full overflow-hidden rounded-lg bg-[#2E2C2D]"
+                ref={containerRef}
+            >
                 {/* Mini Website Container */}
                 <div
-                    className="h-80 bg-[#E5E3DE] rounded-lg border border-[#D1CFC9] shadow-lg absolute left-1/2 top-12 transform -translate-x-1/2"
+                    className="absolute top-12 left-1/2 h-80 -translate-x-1/2 transform rounded-lg border border-[#D1CFC9] bg-[#E5E3DE] shadow-lg"
                     style={{ width: `${websiteWidth}px` }}
                 >
                     {/* Browser Header */}
-                    <div className="w-full h-8 bg-[#E5E3DE] rounded-t-lg flex items-center justify-between px-3 select-none border-b border-[#D1CFC9]">
+                    <div className="flex h-8 w-full items-center justify-between rounded-t-lg border-b border-[#D1CFC9] bg-[#E5E3DE] px-3 select-none">
                         <div className="flex items-center gap-2">
                             <h2 className="font-serif text-xs text-[#3C342F] uppercase">Ceramix</h2>
                         </div>
-                        <div className="flex items-center gap-4 text-[#3C342F] text-[10px]">
+                        <div className="flex items-center gap-4 text-[10px] text-[#3C342F]">
                             {isMobileWidth ? (
-                                <Menu className="w-5 h-5 text-[#3C342F]" />
+                                <Menu className="h-5 w-5 text-[#3C342F]" />
                             ) : (
                                 <>
                                     <span className="cursor-pointer hover:opacity-70">Shop</span>
@@ -85,65 +88,84 @@ export function ResponsiveWebsiteBlock() {
                     </div>
 
                     {/* Website Content */}
-                    <div className="w-full h-full bg-[#E5E3DE] overflow-hidden select-none flex flex-col items-center justify-start p-4 pt-8">
+                    <div className="flex h-full w-full flex-col items-center justify-start overflow-hidden bg-[#E5E3DE] p-4 pt-8 select-none">
                         {/* Hero Content */}
                         <div className="text-center text-[#3C342F]">
-                            <h1 className="text-xl font-serif mb-3">Le Fidgette</h1>
-                            <p className="text-xs opacity-90 mb-6 text-balance">Creating natural shapes inspired by the natural world.</p>
+                            <h1 className="mb-3 font-serif text-xl">Le Fidgette</h1>
+                            <p className="mb-6 text-xs text-balance opacity-90">
+                                Creating natural shapes inspired by the natural world.
+                            </p>
                         </div>
 
                         {/* "View Work" Button */}
-                        <div className="w-24 bg-[#8E837D] p-2 text-center cursor-pointer hover:bg-opacity-90 transition-opacity mb-12">
-                            <p className="text-[10px] text-white font-medium tracking-wider">VIEW WORK</p>
+                        <div className="hover:bg-opacity-90 mb-12 w-24 cursor-pointer bg-[#8E837D] p-2 text-center transition-opacity">
+                            <p className="text-[10px] font-medium tracking-wider text-white">
+                                VIEW WORK
+                            </p>
                         </div>
                         {/* Three-column minimalist text */}
-                        <div className={`grid w-full text-[#3C342F] ${isMobileWidth ? 'grid-cols-1 gap-4' : 'grid-cols-3 gap-8 max-w-120'}`}>
+                        <div
+                            className={`grid w-full text-[#3C342F] ${isMobileWidth ? 'grid-cols-1 gap-4' : 'max-w-120 grid-cols-3 gap-8'}`}
+                        >
                             <div className={`${isMobileWidth ? 'text-center' : 'text-left'}`}>
-                                <div className="w-4 h-4 bg-[#D1CFC9] mb-2"></div>
-                                <h3 className="font-serif text-xs font-semibold mb-1">Artisanal Quality</h3>
+                                <div className="mb-2 h-4 w-4 bg-[#D1CFC9]"></div>
+                                <h3 className="mb-1 font-serif text-xs font-semibold">
+                                    Artisanal Quality
+                                </h3>
                                 <p className="text-[11px] opacity-80">Hand-thrown with passion.</p>
                             </div>
                             <div className={`${isMobileWidth ? 'text-center' : 'text-left'}`}>
-                                <div className="w-4 h-4 bg-[#D1CFC9] mb-2"></div>
-                                <h3 className="font-serif text-xs font-semibold mb-1">Earthy Tones</h3>
-                                <p className="text-[11px] opacity-80">Inspired by nature's palette.</p>
+                                <div className="mb-2 h-4 w-4 bg-[#D1CFC9]"></div>
+                                <h3 className="mb-1 font-serif text-xs font-semibold">
+                                    Earthy Tones
+                                </h3>
+                                <p className="text-[11px] opacity-80">
+                                    Inspired by nature's palette.
+                                </p>
                             </div>
                             <div className={`${isMobileWidth ? 'text-center' : 'text-left'}`}>
-                                <div className="w-4 h-4 bg-[#D1CFC9] mb-2"></div>
-                                <h3 className="font-serif text-xs font-semibold mb-1">Lasting Beauty</h3>
-                                <p className="text-[11px] opacity-80">Functional art for your home.</p>
+                                <div className="mb-2 h-4 w-4 bg-[#D1CFC9]"></div>
+                                <h3 className="mb-1 font-serif text-xs font-semibold">
+                                    Lasting Beauty
+                                </h3>
+                                <p className="text-[11px] opacity-80">
+                                    Functional art for your home.
+                                </p>
                             </div>
                         </div>
                     </div>
                     {/* Responsive Handles */}
                     <div
-                        className="absolute left-[-16px] top-1/2 transform -translate-y-1/2 p-4 py-20 -m-4 cursor-ew-resize group"
+                        className="group absolute top-1/2 left-[-16px] -m-4 -translate-y-1/2 transform cursor-ew-resize p-4 py-20"
                         onMouseDown={(e) => handleMouseDown(e, 'left')}
                     >
-                        <div className="w-1.5 h-20 bg-gray-400 group-hover:bg-gray-500 rounded-full transition-colors duration-200 shadow-lg"></div>
+                        <div className="h-20 w-1.5 rounded-full bg-gray-400 shadow-lg transition-colors duration-200 group-hover:bg-gray-500"></div>
                     </div>
                     <div
-                        className="absolute right-[-16px] top-1/2 transform -translate-y-1/2 p-4 py-20 -m-4 cursor-ew-resize group"
+                        className="group absolute top-1/2 right-[-16px] -m-4 -translate-y-1/2 transform cursor-ew-resize p-4 py-20"
                         onMouseDown={(e) => handleMouseDown(e, 'right')}
                     >
-                        <div className="w-1.5 h-20 bg-gray-400 group-hover:bg-gray-500 rounded-full transition-colors duration-200 shadow-lg"></div>
+                        <div className="h-20 w-1.5 rounded-full bg-gray-400 shadow-lg transition-colors duration-200 group-hover:bg-gray-500"></div>
                     </div>
                 </div>
             </div>
 
-            <div className="flex flex-row items-start gap-8 w-full">
+            <div className="flex w-full flex-row items-start gap-8">
                 {/* Icon + Title */}
-                <div className="flex flex-col items-start w-1/2">
+                <div className="flex w-1/2 flex-col items-start">
                     <div className="mb-2">
-                        <Laptop className="w-6 h-6 text-foreground-primary" />
+                        <Laptop className="text-foreground-primary h-6 w-6" />
                     </div>
-                    <span className="text-foreground-primary text-largePlus font-light">Instantly responsive</span>
+                    <span className="text-foreground-primary text-largePlus font-light">
+                        Instantly responsive
+                    </span>
                 </div>
                 {/* Description */}
-                <p className="text-foreground-secondary text-regular text-balance w-1/2">
-                    Craft sites that look great on laptops, tablets, and phones with minimal adjustments.
+                <p className="text-foreground-secondary text-regular w-1/2 text-balance">
+                    Craft sites that look great on laptops, tablets, and phones with minimal
+                    adjustments.
                 </p>
             </div>
         </div>
     );
-} 
+}

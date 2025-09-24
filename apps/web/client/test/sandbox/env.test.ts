@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+
 import { parseEnvContent } from '../../src/server/api/routers/publish/helpers/env';
 
 describe('parseEnvContent', () => {
@@ -14,7 +15,7 @@ PORT=3000
         expect(result).toEqual({
             API_KEY: 'abc123',
             DATABASE_URL: 'postgres://localhost:5432/db',
-            PORT: '3000'
+            PORT: '3000',
         });
     });
 
@@ -30,7 +31,7 @@ DATABASE_URL=postgres://localhost:5432/db
 
         expect(result).toEqual({
             API_KEY: 'abc123',
-            DATABASE_URL: 'postgres://localhost:5432/db'
+            DATABASE_URL: 'postgres://localhost:5432/db',
         });
     });
 
@@ -46,7 +47,7 @@ PORT=3000`;
         expect(result).toEqual({
             API_KEY: 'abc123',
             DATABASE_URL: 'postgres://localhost:5432/db',
-            PORT: '3000'
+            PORT: '3000',
         });
     });
 
@@ -62,7 +63,7 @@ COMPLEX_VALUE="value with spaces and symbols!@#"
         expect(result).toEqual({
             API_KEY: 'abc123',
             MESSAGE: 'Hello, World!',
-            COMPLEX_VALUE: 'value with spaces and symbols!@#'
+            COMPLEX_VALUE: 'value with spaces and symbols!@#',
         });
     });
 
@@ -78,7 +79,7 @@ COMPLEX_VALUE='value with spaces and symbols!@#'
         expect(result).toEqual({
             API_KEY: 'abc123',
             MESSAGE: 'Hello, World!',
-            COMPLEX_VALUE: 'value with spaces and symbols!@#'
+            COMPLEX_VALUE: 'value with spaces and symbols!@#',
         });
     });
 
@@ -94,7 +95,7 @@ UNQUOTED_VALUE=simple
         expect(result).toEqual({
             API_KEY: 'abc123',
             MESSAGE: 'Hello, World!',
-            UNQUOTED_VALUE: 'simple'
+            UNQUOTED_VALUE: 'simple',
         });
     });
 
@@ -110,7 +111,7 @@ UNQUOTED_VALUE=simple
         expect(result).toEqual({
             API_KEY: 'abc123',
             DATABASE_URL: 'postgres://localhost:5432/db',
-            PORT: '3000'
+            PORT: '3000',
         });
     });
 
@@ -128,7 +129,7 @@ EMPTY_SINGLE=''
             API_KEY: '',
             DATABASE_URL: 'postgres://localhost:5432/db',
             EMPTY_VALUE: '',
-            EMPTY_SINGLE: ''
+            EMPTY_SINGLE: '',
         });
     });
 
@@ -146,7 +147,7 @@ PORT=3000
         expect(result).toEqual({
             API_KEY: 'abc123',
             DATABASE_URL: 'postgres://localhost:5432/db',
-            PORT: '3000'
+            PORT: '3000',
         });
     });
 
@@ -162,7 +163,7 @@ DATABASE_URL=postgres://localhost:5432/db
 
         expect(result).toEqual({
             API_KEY: 'abc123',
-            DATABASE_URL: 'postgres://localhost:5432/db'
+            DATABASE_URL: 'postgres://localhost:5432/db',
         });
     });
 
@@ -177,8 +178,9 @@ COMPLEX_URL=https://example.com?param1=value1&param2=value2
 
         expect(result).toEqual({
             API_KEY: 'abc123',
-            JWT_SECRET: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
-            COMPLEX_URL: 'https://example.com?param1=value1&param2=value2'
+            JWT_SECRET:
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+            COMPLEX_URL: 'https://example.com?param1=value1&param2=value2',
         });
     });
 
@@ -220,7 +222,7 @@ URL_WITH_PARAMS=https://api.example.com/v1?key=value&other=param
             QUOTED_EMPTY: '',
             JWT_SECRET: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
             URL_WITH_PARAMS: 'https://api.example.com/v1?key=value&other=param',
-            PADDED_KEY: 'padded_value'
+            PADDED_KEY: 'padded_value',
         });
     });
 
@@ -255,7 +257,7 @@ PARTIAL_QUOTE_END=value"
             MISMATCHED_QUOTES_1: '"value\'',
             MISMATCHED_QUOTES_2: '\'value"',
             PARTIAL_QUOTE_START: '"value',
-            PARTIAL_QUOTE_END: 'value"'
+            PARTIAL_QUOTE_END: 'value"',
         });
     });
 
@@ -271,7 +273,7 @@ JSON_VALUE='{"key": "value", "number": 123}'
         expect(result).toEqual({
             SPECIAL_CHARS: '!@#$%^&*()',
             UNICODE_VALUE: 'héllo wörld 🌍',
-            JSON_VALUE: '{"key": "value", "number": 123}'
+            JSON_VALUE: '{"key": "value", "number": 123}',
         });
     });
 });

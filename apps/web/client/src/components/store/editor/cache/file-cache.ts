@@ -1,6 +1,7 @@
 'use client';
 
 import type { SandboxDirectory, SandboxFile } from '@onlook/models';
+
 import { UnifiedCacheManager } from './unified-cache';
 
 export class FileCacheManager {
@@ -26,10 +27,7 @@ export class FileCacheManager {
     }
 
     async init(): Promise<void> {
-        await Promise.all([
-            this.fileCache.init(),
-            this.directoryCache.init(),
-        ]);
+        await Promise.all([this.fileCache.init(), this.directoryCache.init()]);
     }
 
     // File cache methods
@@ -142,9 +140,10 @@ export class FileCacheManager {
         for (const [filePath, file] of this.fileCache.entries()) {
             if (filePath.startsWith(prefix)) {
                 const relativePath = filePath.substring(prefix.length);
-                const newFilePath = normalizedNewPath === '/'
-                    ? '/' + relativePath
-                    : normalizedNewPath + '/' + relativePath;
+                const newFilePath =
+                    normalizedNewPath === '/'
+                        ? '/' + relativePath
+                        : normalizedNewPath + '/' + relativePath;
                 const updatedFile = { ...file, path: newFilePath };
                 this.setFile(updatedFile);
                 this.deleteFile(filePath);
@@ -155,9 +154,10 @@ export class FileCacheManager {
         for (const [dirPath, directory] of this.directoryCache.entries()) {
             if (dirPath.startsWith(prefix)) {
                 const relativePath = dirPath.substring(prefix.length);
-                const newDirPath = normalizedNewPath === '/'
-                    ? '/' + relativePath
-                    : normalizedNewPath + '/' + relativePath;
+                const newDirPath =
+                    normalizedNewPath === '/'
+                        ? '/' + relativePath
+                        : normalizedNewPath + '/' + relativePath;
                 const updatedDirectory = { ...directory, path: newDirPath };
                 this.setDirectory(updatedDirectory);
                 this.deleteDirectory(dirPath);

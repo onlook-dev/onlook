@@ -1,11 +1,9 @@
-import {
-    projectSettings,
-    projectSettingsInsertSchema,
-    fromDbProjectSettings
-} from '@onlook/db';
 import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
+
+import { fromDbProjectSettings, projectSettings, projectSettingsInsertSchema } from '@onlook/db';
+
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const settingsRouter = createTRPCRouter({

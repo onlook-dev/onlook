@@ -1,7 +1,17 @@
-import { DefaultSettings } from '@onlook/constants';
-import { LeftPanelTabValue, type ActionTarget, type ImageContentData, type InsertImageAction } from '@onlook/models';
-import { convertToBase64, generateNewFolderPath, getBaseName, getMimeType, isImageFile, stripImageFolderPrefix } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
+
+import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models';
+import { DefaultSettings } from '@onlook/constants';
+import { LeftPanelTabValue } from '@onlook/models';
+import {
+    convertToBase64,
+    generateNewFolderPath,
+    getBaseName,
+    getMimeType,
+    isImageFile,
+    stripImageFolderPrefix,
+} from '@onlook/utility';
+
 import type { EditorEngine } from '../engine';
 
 export class ImageManager {
@@ -206,7 +216,10 @@ export class ImageManager {
                 this._imagePaths = [];
                 return;
             }
-            this._imagePaths = files.filter((file: string) => file.startsWith(DefaultSettings.IMAGE_FOLDER) && isImageFile(file));
+            this._imagePaths = files.filter(
+                (file: string) =>
+                    file.startsWith(DefaultSettings.IMAGE_FOLDER) && isImageFile(file),
+            );
         } catch (error) {
             console.error('Error scanning images:', error);
             this._imagePaths = [];

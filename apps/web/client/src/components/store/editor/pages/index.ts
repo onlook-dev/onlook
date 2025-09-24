@@ -1,6 +1,8 @@
-import { LeftPanelTabValue } from '@onlook/models';
-import type { PageMetadata, PageNode } from '@onlook/models/pages';
 import { makeAutoObservable, reaction } from 'mobx';
+
+import type { PageMetadata, PageNode } from '@onlook/models/pages';
+import { LeftPanelTabValue } from '@onlook/models';
+
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
 import {

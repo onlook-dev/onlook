@@ -1,7 +1,8 @@
+import type { RowRendererProps } from 'react-arborist';
+import { forwardRef } from 'react';
+
 import type { PageNode } from '@onlook/models/pages';
 import { cn } from '@onlook/ui/utils';
-import { forwardRef } from 'react';
-import type { RowRendererProps } from 'react-arborist';
 
 export const PageTreeRow = forwardRef<
     HTMLDivElement,
@@ -12,7 +13,7 @@ export const PageTreeRow = forwardRef<
             ref={ref}
             {...attrs}
             className={cn(
-                'outline-none h-6 cursor-pointer w-full rounded',
+                'h-6 w-full cursor-pointer rounded outline-none',
                 'text-foreground-onlook/70',
                 !attrs['aria-selected'] && [
                     isHighlighted && 'bg-background-onlook text-foreground-primary',

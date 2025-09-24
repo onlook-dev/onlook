@@ -1,6 +1,8 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { DropdownMenu, DropdownMenuContent } from '@onlook/ui/dropdown-menu';
 import { observer } from 'mobx-react-lite';
+
+import { DropdownMenu, DropdownMenuContent } from '@onlook/ui/dropdown-menu';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { PublishDropdown } from './dropdown';
 import { TriggerButton } from './trigger-button';
 

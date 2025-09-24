@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
 import {
     AlertDialog,
     AlertDialogContent,
@@ -7,15 +10,15 @@ import {
     AlertDialogTitle,
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
-import { Input } from '@onlook/ui/input';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { Input } from '@onlook/ui/input';
 import { cn } from '@onlook/ui/utils';
+
 import { useFolderContext } from '../../providers/folder-provider';
 
 export const FolderCreateModal = observer(() => {
-    const { createState, handleCreateFolderInputChange, onCreateFolder, handleCreateModalToggle } = useFolderContext();
+    const { createState, handleCreateFolderInputChange, onCreateFolder, handleCreateModalToggle } =
+        useFolderContext();
     const [inputValue, setInputValue] = useState(createState.newFolderName);
 
     useEffect(() => {
@@ -65,7 +68,7 @@ export const FolderCreateModal = observer(() => {
                         Enter a name for the new folder {getLocationText()}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
-                
+
                 <div className="py-4">
                     <Input
                         value={inputValue}
@@ -73,32 +76,32 @@ export const FolderCreateModal = observer(() => {
                         onKeyDown={handleKeyDown}
                         placeholder="Folder name"
                         className={cn(
-                            createState.error && 'border-red-500 focus-visible:ring-red-500'
+                            createState.error && 'border-red-500 focus-visible:ring-red-500',
                         )}
                         disabled={createState.isLoading}
                         autoFocus
                     />
                     {createState.error && (
-                        <p className="text-sm text-red-500 mt-2">{createState.error}</p>
+                        <p className="mt-2 text-sm text-red-500">{createState.error}</p>
                     )}
                 </div>
 
                 <AlertDialogFooter>
-                    <Button 
-                        variant={'ghost'} 
-                        onClick={handleClose} 
+                    <Button
+                        variant={'ghost'}
+                        onClick={handleClose}
                         disabled={createState.isLoading}
                     >
                         Cancel
                     </Button>
-                    <Button 
-                        variant={'default'} 
-                        onClick={handleCreate} 
+                    <Button
+                        variant={'default'}
+                        onClick={handleCreate}
                         disabled={createState.isLoading || !inputValue.trim()}
                     >
                         {createState.isLoading ? (
                             <>
-                                <Icons.Reload className="w-4 h-4 animate-spin mr-2" />
+                                <Icons.Reload className="mr-2 h-4 w-4 animate-spin" />
                                 Creating...
                             </>
                         ) : (
@@ -109,4 +112,4 @@ export const FolderCreateModal = observer(() => {
             </AlertDialogContent>
         </AlertDialog>
     );
-}); 
+});

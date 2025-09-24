@@ -1,17 +1,19 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
+import { useMemo } from 'react';
+import { observer } from 'mobx-react-lite';
+
 import { Button } from '@onlook/ui/button';
-import { ToolbarButton } from '../toolbar-button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
-import { useMemo } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { useBoxControl } from '../hooks/use-box-control';
 import { useColorUpdate } from '../hooks/use-color-update';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { ColorPickerContent } from '../inputs/color-picker';
+import { ToolbarButton } from '../toolbar-button';
 
 export const BorderColor = observer(() => {
     const editorEngine = useEditorEngine();
@@ -47,9 +49,9 @@ export const BorderColor = observer(() => {
                         isOpen={isOpen}
                         className="flex min-w-9 flex-col items-center justify-center gap-0.5"
                     >
-                        <Icons.PencilIcon className="h-4 w-4 min-h-4 min-w-4" />
+                        <Icons.PencilIcon className="h-4 min-h-4 w-4 min-w-4" />
                         <div
-                            className="w-6 rounded-full bg-current border-[0.5px] border-border"
+                            className="border-border w-6 rounded-full border-[0.5px] bg-current"
                             style={{ backgroundColor: colorHex, height: '4px' }}
                         />
                     </ToolbarButton>
@@ -58,7 +60,7 @@ export const BorderColor = observer(() => {
             <DropdownMenuContent
                 align="start"
                 side="bottom"
-                className="w-[224px] mt-1 p-0 rounded-lg overflow-hidden shadow-xl backdrop-blur-lg"
+                className="mt-1 w-[224px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
             >
                 <ColorPickerContent
                     color={tempColor}

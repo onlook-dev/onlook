@@ -1,7 +1,8 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
 import { observer } from 'mobx-react-lite';
+
+import { useEditorEngine } from '@/components/store/editor';
 
 const SNAP_VISUAL_CONFIG = {
     TOP_BAR_HEIGHT: 28,
@@ -21,7 +22,7 @@ export const SnapGuidelines = observer(() => {
 
     return (
         <div
-            className="absolute inset-0 pointer-events-none"
+            className="pointer-events-none absolute inset-0"
             style={{
                 transform: `translate(${canvasPosition.x}px, ${canvasPosition.y}px) scale(${scale})`,
                 transformOrigin: '0 0',
@@ -29,8 +30,10 @@ export const SnapGuidelines = observer(() => {
         >
             {snapLines.map((line) => {
                 if (line.orientation === 'horizontal') {
-                    const visualOffset = (SNAP_VISUAL_CONFIG.TOP_BAR_HEIGHT + SNAP_VISUAL_CONFIG.TOP_BAR_MARGIN) / scale;
-                    
+                    const visualOffset =
+                        (SNAP_VISUAL_CONFIG.TOP_BAR_HEIGHT + SNAP_VISUAL_CONFIG.TOP_BAR_MARGIN) /
+                        scale;
+
                     return (
                         <div
                             key={line.id}

@@ -1,31 +1,33 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
 
+import { SandboxManager } from '../../src/components/store/editor/sandbox';
+
 // CRITICAL: Mock TRPC client BEFORE any other imports
 mock.module('@/trpc/client', () => ({
     api: {
         sandbox: {
             start: {
-                mutate: mock(async () => ({ id: 'mock-sandbox', status: 'ready' }))
+                mutate: mock(async () => ({ id: 'mock-sandbox', status: 'ready' })),
             },
             hibernate: {
-                mutate: mock(async () => true)
-            }
+                mutate: mock(async () => true),
+            },
         },
         branch: {
             fork: { mutate: mock(async () => ({ branch: { id: 'mock-branch' }, frames: [] })) },
             update: { mutate: mock(async () => true) },
-            delete: { mutate: mock(async () => true) }
-        }
-    }
+            delete: { mutate: mock(async () => true) },
+        },
+    },
 }));
 
 // Mock toast
 mock.module('@onlook/ui/sonner', () => ({
     toast: {
-        success: mock(() => { }),
-        error: mock(() => { }),
-        info: mock(() => { })
-    }
+        success: mock(() => {}),
+        error: mock(() => {}),
+        info: mock(() => {}),
+    },
 }));
 
 // Setup mocks before imports
@@ -38,20 +40,18 @@ const mockRemoveItem = mock<(key: string) => Promise<any>>(async () => undefined
 const mockReadOrFetch = mock(async (path: string) => ({
     type: 'text' as const,
     path,
-    content: '<div>Mocked Content</div>'
+    content: '<div>Mocked Content</div>',
 }));
 const mockWrite = mock(async (path: string, content: string) => true);
 const mockClear = mock(async () => undefined);
 
 // Mock MobX to avoid strict mode issues
 mock.module('mobx', () => ({
-    makeAutoObservable: mock(() => { }),
-    reaction: mock(() => () => { }),
+    makeAutoObservable: mock(() => {}),
+    reaction: mock(() => () => {}),
     runInAction: mock((fn: any) => fn()),
     action: mock((fn: any) => fn),
 }));
-
-import { SandboxManager } from '../../src/components/store/editor/sandbox';
 
 describe('SandboxManager', () => {
     let sandboxManager: SandboxManager;
@@ -89,7 +89,7 @@ describe('SandboxManager', () => {
                 modified: false,
             }),
             createTemplateNodeMap: () => new Map(),
-            injectPreloadScript: mock(() => { }),
+            injectPreloadScript: mock(() => {}),
         }));
 
         // Mock utility functions
@@ -114,7 +114,7 @@ describe('SandboxManager', () => {
             readOrFetch: mock(async () => ({
                 type: 'text' as const,
                 path: 'file1.tsx',
-                content: '<div>Mocked Content</div>'
+                content: '<div>Mocked Content</div>',
             })),
             write: mock(async () => true),
             clear: mock(async () => undefined),
@@ -125,7 +125,7 @@ describe('SandboxManager', () => {
             onEvent: mock((callback: any) => {
                 mockWatcher.callback = callback;
             }),
-            dispose: mock(() => { }),
+            dispose: mock(() => {}),
             callback: null,
         };
 
@@ -150,30 +150,32 @@ describe('SandboxManager', () => {
                 }),
                 watch: mock(async () => mockWatcher),
             },
-            disconnect: mock(async () => { }),
+            disconnect: mock(async () => {}),
         };
 
         // Create mock EditorEngine
         mockEditorEngine = {
             // Add any required properties/methods that EditorEngine needs
             screenshot: {
-                captureScreenshot: mock(async () => { }),
+                captureScreenshot: mock(async () => {}),
             },
             preloadScript: {
-                ensurePreloadScriptFile: mock(async () => { }),
+                ensurePreloadScriptFile: mock(async () => {}),
             },
             templateNodes: {
-                processFileForMapping: mock(async () => ({ newContent: '<div id="123">Modified Component</div>' })),
+                processFileForMapping: mock(async () => ({
+                    newContent: '<div id="123">Modified Component</div>',
+                })),
             },
         };
 
         mockErrorManager = {
-            addError: mock(() => { }),
-            clear: mock(() => { }),
+            addError: mock(() => {}),
+            clear: mock(() => {}),
             errors: [],
             buffer: {
-                onError: mock(() => { }),
-                onSuccess: mock(() => { }),
+                onError: mock(() => {}),
+                onSuccess: mock(() => {}),
             },
         };
 
@@ -211,7 +213,7 @@ describe('SandboxManager', () => {
         expect(content).toEqual({
             type: 'text',
             path: 'file1.tsx',
-            content: '<div>Mocked Content</div>'
+            content: '<div>Mocked Content</div>',
         });
         expect(mockFileSync.readOrFetch).toHaveBeenCalledWith('file1.tsx', expect.any(Function));
     });
@@ -243,7 +245,7 @@ describe('SandboxManager', () => {
                 readdir: mock(async () => []),
                 watch: mock(async () => mockWatcher),
             },
-            disconnect: mock(async () => { }),
+            disconnect: mock(async () => {}),
         };
 
         const errorManager = new SandboxManager(mockBranch, mockEditorEngine, mockErrorManager);
@@ -287,7 +289,7 @@ describe('SandboxManager', () => {
                         return {
                             type: 'text' as const,
                             path: 'cached.tsx',
-                            content: '<div>Cached</div>'
+                            content: '<div>Cached</div>',
                         };
                     }
                     return await readCallback(path);
@@ -321,7 +323,7 @@ describe('SandboxManager', () => {
             return {
                 type: 'text' as const,
                 path,
-                content: '<div>From Filesystem</div>'
+                content: '<div>From Filesystem</div>',
             };
         });
 
@@ -341,7 +343,7 @@ describe('SandboxManager', () => {
         expect(cachedContent).toEqual({
             type: 'text',
             path: 'cached.tsx',
-            content: '<div>Cached</div>'
+            content: '<div>Cached</div>',
         });
         expect(mockReadFile).not.toHaveBeenCalled();
 
@@ -349,7 +351,7 @@ describe('SandboxManager', () => {
         expect(uncachedContent).toEqual({
             type: 'text',
             path: 'uncached.tsx',
-            content: '<div>From Filesystem</div>'
+            content: '<div>From Filesystem</div>',
         });
         expect(mockReadFile).toHaveBeenCalledWith('uncached.tsx');
 

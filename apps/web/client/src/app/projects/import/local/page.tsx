@@ -1,12 +1,14 @@
 'use client';
 
-import { useGetBackground } from '@/hooks/use-get-background';
-import { Routes } from '@/utils/constants';
+import Link from 'next/link';
+import { AnimatePresence, motion, MotionConfig } from 'motion/react';
+import useResizeObserver from 'use-resize-observer';
+
 import { Icons } from '@onlook/ui/icons';
 import { MotionCard } from '@onlook/ui/motion-card';
-import { AnimatePresence, motion, MotionConfig } from 'motion/react';
-import Link from 'next/link';
-import useResizeObserver from 'use-resize-observer';
+
+import { useGetBackground } from '@/hooks/use-get-background';
+import { Routes } from '@/utils/constants';
 import { CancelButton } from '../cancel-button';
 import { FinalizingProject } from './_components/finalizing-project';
 import { NewSelectFolder } from './_components/select-folder';
@@ -30,7 +32,7 @@ const Page = () => {
     const backgroundUrl = useGetBackground('create');
     return (
         <div
-            className="w-screen h-screen flex flex-col"
+            className="flex h-screen w-screen flex-col"
             style={{
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
@@ -43,14 +45,14 @@ const Page = () => {
                 </Link>
                 <CancelButton />
             </div>
-            <div className="relative w-full h-full flex items-center justify-center">
+            <div className="relative flex h-full w-full items-center justify-center">
                 <div className="relative z-10">
                     <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
                         <MotionCard
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
-                            className="w-[30rem] min-h-[12rem] overflow-hidden p-0 border border-primary/20 rounded-lg shadow-lg !bg-background"
+                            className="border-primary/20 !bg-background min-h-[12rem] w-[30rem] overflow-hidden rounded-lg border p-0 shadow-lg"
                         >
                             <motion.div ref={ref} layout="position" className="flex flex-col">
                                 <AnimatePresence

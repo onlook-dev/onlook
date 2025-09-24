@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 export const usePanelMeasurements = (
     leftPanelRef: React.RefObject<HTMLDivElement | null>,
-    rightPanelRef: React.RefObject<HTMLDivElement | null>
+    rightPanelRef: React.RefObject<HTMLDivElement | null>,
 ) => {
     const [toolbarLeft, setToolbarLeft] = useState<number>(0);
     const [toolbarRight, setToolbarRight] = useState<number>(0);
@@ -53,7 +53,7 @@ export const usePanelMeasurements = (
 
             // Also observe all child elements that might affect width
             const children = element.querySelectorAll('*');
-            children.forEach(child => {
+            children.forEach((child) => {
                 if (child instanceof HTMLElement) {
                     observer.observe(child);
                 }
@@ -75,10 +75,15 @@ export const usePanelMeasurements = (
         // Polling fallback to catch any missed changes
         const pollInterval = setInterval(() => {
             const currentLeft = leftPanelRef.current?.getBoundingClientRect().right ?? 0;
-            const currentRight = window.innerWidth - (rightPanelRef.current?.getBoundingClientRect().left ?? window.innerWidth);
+            const currentRight =
+                window.innerWidth -
+                (rightPanelRef.current?.getBoundingClientRect().left ?? window.innerWidth);
 
             // Use refs for comparison to avoid dependency on state values
-            if (Math.abs(currentLeft - toolbarLeftRef.current) > 1 || Math.abs(currentRight - toolbarRightRef.current) > 1) {
+            if (
+                Math.abs(currentLeft - toolbarLeftRef.current) > 1 ||
+                Math.abs(currentRight - toolbarRightRef.current) > 1
+            ) {
                 measure();
             }
         }, 100);
@@ -95,7 +100,7 @@ export const usePanelMeasurements = (
                 childList: true,
                 subtree: true,
                 attributes: true,
-                attributeFilter: ['class', 'style', 'width']
+                attributeFilter: ['class', 'style', 'width'],
             });
 
             return observer;
@@ -112,8 +117,8 @@ export const usePanelMeasurements = (
         return () => {
             cancelAnimationFrame(rafId);
             window.removeEventListener('resize', handleResize);
-            observers.forEach(observer => observer.disconnect());
-            mutationObservers.forEach(observer => observer.disconnect());
+            observers.forEach((observer) => observer.disconnect());
+            mutationObservers.forEach((observer) => observer.disconnect());
             clearInterval(pollInterval);
         };
     }, [measure]); // Only depend on measure callback, not the state values

@@ -1,15 +1,20 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
 
+// Import global test setup
+import '../setup';
+
+import { BranchManager } from '../../src/components/store/editor/branch/manager';
+
 // CRITICAL: Mock TRPC client BEFORE any other imports
 mock.module('@/trpc/client', () => ({
     api: {
         sandbox: {
             start: {
-                mutate: mock(async () => ({ id: 'mock-sandbox', status: 'ready' }))
+                mutate: mock(async () => ({ id: 'mock-sandbox', status: 'ready' })),
             },
             hibernate: {
-                mutate: mock(async () => true)
-            }
+                mutate: mock(async () => true),
+            },
         },
         branch: {
             fork: {
@@ -23,32 +28,29 @@ mock.module('@/trpc/client', () => ({
                         updatedAt: new Date(),
                         isDefault: false,
                         git: null,
-                        sandbox: { id: 'mock-sandbox-id' }
+                        sandbox: { id: 'mock-sandbox-id' },
                     },
-                    frames: []
-                }))
+                    frames: [],
+                })),
             },
             update: {
-                mutate: mock(async () => true)
+                mutate: mock(async () => true),
             },
-            delete: { mutate: mock(async () => true) }
-        }
-    }
+            delete: { mutate: mock(async () => true) },
+        },
+    },
 }));
 
 // Mock toast
 mock.module('@onlook/ui/sonner', () => ({
     toast: {
-        success: mock(() => { }),
-        error: mock(() => { }),
-        info: mock(() => { }),
-        loading: mock(() => { }),
-        dismiss: mock(() => { })
-    }
+        success: mock(() => {}),
+        error: mock(() => {}),
+        info: mock(() => {}),
+        loading: mock(() => {}),
+        dismiss: mock(() => {}),
+    },
 }));
-
-// Import global test setup
-import '../setup';
 
 // Mock parser functions
 mock.module('@onlook/parser', () => ({
@@ -59,10 +61,8 @@ mock.module('@onlook/parser', () => ({
         modified: false,
     }),
     createTemplateNodeMap: () => new Map(),
-    injectPreloadScript: mock(() => { }),
+    injectPreloadScript: mock(() => {}),
 }));
-
-import { BranchManager } from '../../src/components/store/editor/branch/manager';
 
 describe('BranchManager', () => {
     let branchManager: BranchManager;
@@ -92,17 +92,17 @@ describe('BranchManager', () => {
         mockEditorEngine = {
             frames: {
                 getAll: mock(() => []),
-                register: mock(() => { }),
-                select: mock(() => { }),
-                clear: mock(() => { }),
-                applyFrames: mock(() => { }),
-                selected: [] // Add the selected property that forkBranch is trying to access
+                register: mock(() => {}),
+                select: mock(() => {}),
+                clear: mock(() => {}),
+                applyFrames: mock(() => {}),
+                selected: [], // Add the selected property that forkBranch is trying to access
             },
             screenshot: {
-                captureScreenshot: mock(async () => { }),
+                captureScreenshot: mock(async () => {}),
             },
             preloadScript: {
-                ensurePreloadScriptFile: mock(async () => { }),
+                ensurePreloadScriptFile: mock(async () => {}),
             },
         };
 
@@ -111,7 +111,7 @@ describe('BranchManager', () => {
             id: 'test-project-id',
             name: 'Test Project',
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
         };
 
         // Create mock initial branch
@@ -176,7 +176,7 @@ describe('BranchManager', () => {
             const finalBranchCount = branchManager.allBranches.length;
             expect(finalBranchCount).toBe(initialBranchCount + 1);
 
-            const newBranch = branchManager.allBranches.find(b => b.name === 'New Fork');
+            const newBranch = branchManager.allBranches.find((b) => b.name === 'New Fork');
             expect(newBranch).toBeTruthy();
             expect(newBranch?.id).toBe('mock-branch');
         } catch (error) {
@@ -184,7 +184,7 @@ describe('BranchManager', () => {
                 error: error?.message,
                 stack: error?.stack,
                 initialBranches: branchManager.allBranches.length,
-                currentBranch: branchManager.activeBranch?.id
+                currentBranch: branchManager.activeBranch?.id,
             });
             throw error;
         }
@@ -199,7 +199,7 @@ describe('BranchManager', () => {
 
             await branchManager.updateBranch('initial-branch-id', {
                 name: 'Updated Main',
-                description: 'Updated description'
+                description: 'Updated description',
             });
 
             // Check that the branch was updated
@@ -211,7 +211,7 @@ describe('BranchManager', () => {
                 error: error?.message,
                 stack: error?.stack,
                 branchExists: !!branchManager.getBranchById('initial-branch-id'),
-                currentBranch: branchManager.activeBranch?.id
+                currentBranch: branchManager.activeBranch?.id,
             });
             throw error;
         }

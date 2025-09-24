@@ -1,7 +1,10 @@
-import { SystemTheme } from '@onlook/models';
 import { useTheme } from 'next-themes';
 import CodeMirrorMerge from 'react-codemirror-merge';
+
+import { SystemTheme } from '@onlook/models';
+
 import { getExtensions } from '../../code-tab/code-mirror-config';
+
 interface CodeDiffProps {
     originalCode: string;
     modifiedCode: string;

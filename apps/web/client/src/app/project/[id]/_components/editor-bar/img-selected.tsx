@@ -1,6 +1,7 @@
 'use client';
 
 import React, { memo } from 'react';
+
 import { Border } from './dropdowns/border';
 import { ColorBackground } from './dropdowns/color-background';
 import { Height } from './dropdowns/height';
@@ -43,7 +44,7 @@ const MUST_EXTEND_GROUPS = [
         label: 'Dimensions',
         components: [<Width />, <Height />],
     },
-]
+];
 
 export const ImgSelected = memo(({ availableWidth = 0 }: { availableWidth?: number }) => {
     const { isOpen, onOpenChange } = useDropdownControl({
@@ -55,7 +56,7 @@ export const ImgSelected = memo(({ availableWidth = 0 }: { availableWidth?: numb
     const overflowGroups = [...IMG_SELECTED_GROUPS.slice(visibleCount), ...MUST_EXTEND_GROUPS];
 
     return (
-        <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden">
+        <div className="flex w-full items-center justify-center gap-0.5 overflow-hidden">
             {visibleGroups.map((group, groupIdx) => (
                 <React.Fragment key={group.key}>
                     {groupIdx > 0 && <InputSeparator />}

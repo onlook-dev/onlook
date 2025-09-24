@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { type ImageContentData } from '@onlook/models';
+
+import type { ImageContentData } from '@onlook/models';
+
 import { useEditorEngine } from '@/components/store/editor';
 
 interface DeleteState {
@@ -36,7 +38,12 @@ export const useImageDelete = () => {
                 });
             } catch (error) {
                 console.error('Image delete error:', error);
-                setDeleteState((prev) => ({ ...prev, imageToDelete: null, isLoading: false, error: 'Failed to delete image' }));
+                setDeleteState((prev) => ({
+                    ...prev,
+                    imageToDelete: null,
+                    isLoading: false,
+                    error: 'Failed to delete image',
+                }));
             }
         }
     }, [deleteState.imageToDelete, editorEngine.image]);
@@ -48,7 +55,6 @@ export const useImageDelete = () => {
             error: null,
         });
     }, []);
-
 
     useEffect(() => {
         if (deleteState.error) {
@@ -66,4 +72,4 @@ export const useImageDelete = () => {
         onDeleteImage,
         handleDeleteModalToggle,
     };
-}; 
+};

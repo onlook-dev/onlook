@@ -1,20 +1,24 @@
+import { asc, eq, inArray } from 'drizzle-orm';
+import { z } from 'zod';
+
 import {
     conversations,
     fromDbMessage,
     messageInsertSchema,
     messages,
-    messageUpdateSchema
+    messageUpdateSchema,
 } from '@onlook/db';
 import { MessageCheckpointType } from '@onlook/models';
-import { asc, eq, inArray } from 'drizzle-orm';
-import { z } from 'zod';
+
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const messageRouter = createTRPCRouter({
     getAll: protectedProcedure
-        .input(z.object({
-            conversationId: z.string(),
-        }))
+        .input(
+            z.object({
+                conversationId: z.string(),
+            }),
+        )
         .query(async ({ ctx, input }) => {
             const result = await ctx.db.query.messages.findMany({
                 where: eq(messages.conversationId, input.conversationId),
@@ -23,9 +27,11 @@ export const messageRouter = createTRPCRouter({
             return result.map((message) => fromDbMessage(message));
         }),
     upsert: protectedProcedure
-        .input(z.object({
-            message: messageInsertSchema
-        }))
+        .input(
+            z.object({
+                message: messageInsertSchema,
+            }),
+        )
         .mutation(async ({ ctx, input }) => {
             const conversationId = input.message.conversationId;
             if (conversationId) {
@@ -48,41 +54,57 @@ export const messageRouter = createTRPCRouter({
                 });
         }),
     upsertMany: protectedProcedure
-        .input(z.object({
-            messages: messageInsertSchema.array(),
-        }))
+        .input(
+            z.object({
+                messages: messageInsertSchema.array(),
+            }),
+        )
         .mutation(async ({ ctx, input }) => {
             const normalizedMessages = input.messages.map(normalizeMessage);
             await ctx.db.insert(messages).values(normalizedMessages);
         }),
     update: protectedProcedure
-        .input(z.object({
-            messageId: z.string(),
-            message: messageUpdateSchema
-        }))
+        .input(
+            z.object({
+                messageId: z.string(),
+                message: messageUpdateSchema,
+            }),
+        )
         .mutation(async ({ ctx, input }) => {
-            await ctx.db.update(messages).set({
-                ...input.message,
-            }).where(eq(messages.id, input.messageId));
+            await ctx.db
+                .update(messages)
+                .set({
+                    ...input.message,
+                })
+                .where(eq(messages.id, input.messageId));
         }),
     updateCheckpoints: protectedProcedure
-        .input(z.object({
-            messageId: z.string(),
-            checkpoints: z.array(z.object({
-                type: z.enum(MessageCheckpointType),
-                oid: z.string(),
-                createdAt: z.date(),
-            })),
-        }))
+        .input(
+            z.object({
+                messageId: z.string(),
+                checkpoints: z.array(
+                    z.object({
+                        type: z.enum(MessageCheckpointType),
+                        oid: z.string(),
+                        createdAt: z.date(),
+                    }),
+                ),
+            }),
+        )
         .mutation(async ({ ctx, input }) => {
-            await ctx.db.update(messages).set({
-                checkpoints: input.checkpoints,
-            }).where(eq(messages.id, input.messageId));
+            await ctx.db
+                .update(messages)
+                .set({
+                    checkpoints: input.checkpoints,
+                })
+                .where(eq(messages.id, input.messageId));
         }),
     delete: protectedProcedure
-        .input(z.object({
-            messageIds: z.array(z.string()),
-        }))
+        .input(
+            z.object({
+                messageIds: z.array(z.string()),
+            }),
+        )
         .mutation(async ({ ctx, input }) => {
             await ctx.db.delete(messages).where(inArray(messages.id, input.messageIds));
         }),
@@ -93,10 +115,12 @@ export const messageRouter = createTRPCRouter({
     // 2) Edit a previous message (requires deleting all messages following the edited message and inserting new ones)
     // Tool calls are supported in both cases by the fact that they result in new messages being added.
     replaceConversationMessages: protectedProcedure
-        .input(z.object({
-            conversationId: z.string(),
-            messages: messageInsertSchema.array(),
-        }))
+        .input(
+            z.object({
+                conversationId: z.string(),
+                messages: messageInsertSchema.array(),
+            }),
+        )
         .mutation(async ({ ctx, input }) => {
             await ctx.db.transaction(async (tx) => {
                 await tx.delete(messages).where(eq(messages.conversationId, input.conversationId));
@@ -106,16 +130,20 @@ export const messageRouter = createTRPCRouter({
                     await tx.insert(messages).values(normalizedMessages);
                 }
 
-                await tx.update(conversations).set({
-                    updatedAt: new Date()
-                }).where(eq(conversations.id, input.conversationId));
+                await tx
+                    .update(conversations)
+                    .set({
+                        updatedAt: new Date(),
+                    })
+                    .where(eq(conversations.id, input.conversationId));
             });
         }),
-})
+});
 
 const normalizeMessage = (message: z.infer<typeof messageInsertSchema>) => {
     return {
         ...message,
-        createdAt: typeof message.createdAt === 'string' ? new Date(message.createdAt) : message.createdAt,
+        createdAt:
+            typeof message.createdAt === 'string' ? new Date(message.createdAt) : message.createdAt,
     };
 };

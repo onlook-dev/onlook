@@ -1,3 +1,5 @@
+import { makeAutoObservable } from 'mobx';
+
 import type { DomElement } from '@onlook/models';
 import type {
     ActionElement,
@@ -6,7 +8,7 @@ import type {
     InsertElementAction,
 } from '@onlook/models/actions';
 import { createDomId, createOid } from '@onlook/utility';
-import { makeAutoObservable } from 'mobx';
+
 import type { EditorEngine } from '../engine';
 import { getCleanedElement } from '../history/helpers';
 
@@ -42,9 +44,9 @@ export class CopyManager {
             return;
         }
 
-        const targetEl: ActionElement | null = (await frameData.view.getActionElement(
+        const targetEl: ActionElement | null = await frameData.view.getActionElement(
             selectedEl.domId,
-        ));
+        );
 
         if (!targetEl) {
             console.error('Failed to copy element');

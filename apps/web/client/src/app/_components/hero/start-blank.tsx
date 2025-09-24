@@ -1,23 +1,25 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import localforage from 'localforage';
+import { toast } from 'sonner';
+
+import type { User } from '@onlook/models';
+import { SandboxTemplates, Templates } from '@onlook/constants';
+import { Icons } from '@onlook/ui/icons/index';
+
 import { useAuthContext } from '@/app/auth/auth-context';
 import { api } from '@/trpc/react';
 import { LocalForageKeys, Routes } from '@/utils/constants';
-import { SandboxTemplates, Templates } from '@onlook/constants';
-import type { User } from '@onlook/models';
-import { Icons } from '@onlook/ui/icons/index';
-import localforage from 'localforage';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 
 export function StartBlank({
     user,
     isCreatingProject,
     setIsCreatingProject,
 }: {
-    user: User | null,
-    isCreatingProject: boolean,
-    setIsCreatingProject: (isCreatingProject: boolean) => void,
+    user: User | null;
+    isCreatingProject: boolean;
+    setIsCreatingProject: (isCreatingProject: boolean) => void;
 }) {
     const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
     const { mutateAsync: createProject } = api.project.create.useMutation();
@@ -63,7 +65,8 @@ export function StartBlank({
 
             if (errorMessage.includes('502') || errorMessage.includes('sandbox')) {
                 toast.error('Sandbox service temporarily unavailable', {
-                    description: 'Please try again in a few moments. Our servers may be experiencing high load.',
+                    description:
+                        'Please try again in a few moments. Our servers may be experiencing high load.',
                 });
             } else {
                 toast.error('Failed to create project', {
@@ -79,14 +82,14 @@ export function StartBlank({
         <button
             onClick={handleStartBlankProject}
             disabled={isCreatingProject}
-            className="text-sm text-foreground-secondary hover:text-foreground transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-foreground-secondary"
+            className="text-foreground-secondary hover:text-foreground disabled:hover:text-foreground-secondary flex items-center gap-2 text-sm transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50"
         >
             {isCreatingProject ? (
-                <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
+                <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
             ) : (
-                <Icons.File className="w-4 h-4" />
+                <Icons.File className="h-4 w-4" />
             )}
             Start a Blank Project
         </button>
-    )
+    );
 }

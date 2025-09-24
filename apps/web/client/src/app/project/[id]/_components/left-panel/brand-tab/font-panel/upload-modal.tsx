@@ -1,3 +1,6 @@
+import { useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
 import {
     AlertDialog,
     AlertDialogContent,
@@ -6,11 +9,10 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
-import { useState, useRef } from 'react';
+import { extractFontParts } from '@onlook/utility';
+
 import type { FontFile } from './font-files';
 import FontFiles from './font-files';
-import { extractFontParts } from '@onlook/utility';
 
 interface UploadModalProps {
     isOpen: boolean;
@@ -121,12 +123,12 @@ const UploadModal = observer(
 
         return (
             <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-                <AlertDialogContent className="max-w-2xl bg-background-onlook/20 p-0 max-h-[80vh] gap-0">
+                <AlertDialogContent className="bg-background-onlook/20 max-h-[80vh] max-w-2xl gap-0 p-0">
                     <div className="relative flex flex-col">
                         {/* Loading overlay */}
                         {isUploading && (
                             <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
-                                <Icons.LoadingSpinner className="w-4 h-4 mr-2 animate-spin" />
+                                <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />
                                 <span className="text-primary text-base font-medium">
                                     Uploading...
                                 </span>
@@ -160,16 +162,16 @@ const UploadModal = observer(
                             </Button>
                         </div>
 
-                        <div className="flex flex-col px-6 pb-0 mb-0 flex-1 min-h-0">
+                        <div className="mb-0 flex min-h-0 flex-1 flex-col px-6 pb-0">
                             <div
-                                className="flex flex-col items-center justify-center p-8 border border-dashed border-white/20 rounded-lg bg-black/20 cursor-pointer mb-6"
+                                className="mb-6 flex cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-white/20 bg-black/20 p-8"
                                 onClick={() => fileInputRef.current?.click()}
                                 onDrop={handleDrop}
                                 onDragOver={handleDragOver}
                             >
-                                <div className="w-10 h-10 flex items-center justify-center rounded-md bg-black/30 border border-white/10 mb-4">
+                                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-md border border-white/10 bg-black/30">
                                     <svg
-                                        className="h-5 w-5 text-primary"
+                                        className="text-primary h-5 w-5"
                                         viewBox="0 0 24 24"
                                         fill="none"
                                         xmlns="http://www.w3.org/2000/svg"
@@ -195,10 +197,10 @@ const UploadModal = observer(
                                         />
                                     </svg>
                                 </div>
-                                <p className="text-primary text-center mb-1">
+                                <p className="text-primary mb-1 text-center">
                                     Click to upload or drag and drop
                                 </p>
-                                <p className="text-sm text-muted-foreground text-center">
+                                <p className="text-muted-foreground text-center text-sm">
                                     For maximum browser support, upload in
                                     <br />
                                     TTF, OTF, EOT and WOFF formats.
@@ -222,7 +224,7 @@ const UploadModal = observer(
                         </div>
 
                         {fontFiles.length > 0 && (
-                            <AlertDialogFooter className="sm:justify-end border-t px-6 pb-4 pt-4 mt-0 space-x-2">
+                            <AlertDialogFooter className="mt-0 space-x-2 border-t px-6 pt-4 pb-4 sm:justify-end">
                                 <Button
                                     variant="ghost"
                                     onClick={handleCancel}
@@ -239,7 +241,7 @@ const UploadModal = observer(
                                 >
                                     {isUploading ? (
                                         <>
-                                            <Icons.LoadingSpinner className="w-4 h-4 mr-2 animate-spin" />
+                                            <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />
                                             Uploading...
                                         </>
                                     ) : (

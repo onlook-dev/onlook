@@ -1,8 +1,11 @@
-import { env } from '@/env';
 import { z } from 'zod';
+
+import { env } from '@/env';
+
 export async function POST(request: Request) {
     try {
-        const { name, email, utm_source, utm_medium, utm_campaign, utm_term, utm_content } = await request.json();
+        const { name, email, utm_source, utm_medium, utm_campaign, utm_term, utm_content } =
+            await request.json();
 
         // Create Zod schema for validation
         const emailCaptureSchema = z.object({
@@ -30,7 +33,7 @@ export async function POST(request: Request) {
             const firstError = validationResult.error.issues[0];
             return new Response(JSON.stringify({ error: firstError?.message }), {
                 status: 400,
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json' },
             });
         }
 
@@ -44,7 +47,7 @@ export async function POST(request: Request) {
             console.error('Missing N8N_LANDING_FORM_URL environment variable');
             return new Response(JSON.stringify({ error: 'Server configuration error' }), {
                 status: 500,
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json' },
             });
         }
 
@@ -52,11 +55,15 @@ export async function POST(request: Request) {
         url.searchParams.append('name', validatedData.name);
         url.searchParams.append('email', validatedData.email);
 
-        if (validatedData.utm_source) url.searchParams.append('utm_source', validatedData.utm_source);
-        if (validatedData.utm_medium) url.searchParams.append('utm_medium', validatedData.utm_medium);
-        if (validatedData.utm_campaign) url.searchParams.append('utm_campaign', validatedData.utm_campaign);
+        if (validatedData.utm_source)
+            url.searchParams.append('utm_source', validatedData.utm_source);
+        if (validatedData.utm_medium)
+            url.searchParams.append('utm_medium', validatedData.utm_medium);
+        if (validatedData.utm_campaign)
+            url.searchParams.append('utm_campaign', validatedData.utm_campaign);
         if (validatedData.utm_term) url.searchParams.append('utm_term', validatedData.utm_term);
-        if (validatedData.utm_content) url.searchParams.append('utm_content', validatedData.utm_content);
+        if (validatedData.utm_content)
+            url.searchParams.append('utm_content', validatedData.utm_content);
 
         // Build auth headers: use custom header if provided
         const authHeaders: Record<string, string> = {};
@@ -75,14 +82,13 @@ export async function POST(request: Request) {
 
         return new Response(JSON.stringify({ success: true }), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
         });
-
     } catch (error) {
         console.error('Email capture webhook failed:', error);
         return new Response(JSON.stringify({ error: 'Failed to submit form' }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
         });
     }
 }

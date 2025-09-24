@@ -1,11 +1,13 @@
 'use client';
 
+import { motion } from 'motion/react';
+
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { ProgressWithInterval } from '@onlook/ui/progress-with-interval';
-import { motion } from 'motion/react';
-import { StepContent, StepFooter, StepHeader } from '../../steps';
+
 import { useImportGithubProject } from '../_context';
+import { StepContent, StepFooter, StepHeader } from '../../steps';
 
 export const FinalizingGithubProject = () => {
     const { repositoryImport, retry, cancel } = useImportGithubProject();
@@ -25,7 +27,7 @@ export const FinalizingGithubProject = () => {
                     className="w-full"
                 >
                     {repositoryImport.error ? (
-                        <div className="w-full h-full flex items-center justify-center">
+                        <div className="flex h-full w-full items-center justify-center">
                             <p>{repositoryImport.error}</p>
                         </div>
                     ) : (

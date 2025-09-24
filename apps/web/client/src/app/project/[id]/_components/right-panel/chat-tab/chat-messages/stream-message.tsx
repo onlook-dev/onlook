@@ -1,9 +1,10 @@
-import { type ChatMessage } from '@onlook/models';
+import type { ChatMessage } from '@onlook/models';
+
 import { MessageContent } from './message-content';
 
 export const StreamMessage = ({ message }: { message: ChatMessage }) => {
     return (
-        <div className="px-4 pt-2 text-small content-start flex flex-col text-wrap gap-2">
+        <div className="text-small flex flex-col content-start gap-2 px-4 pt-2 text-wrap">
             <MessageContent
                 messageId={message.id}
                 parts={message.parts}

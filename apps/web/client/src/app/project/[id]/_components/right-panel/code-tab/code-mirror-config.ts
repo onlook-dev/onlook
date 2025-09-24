@@ -8,8 +8,19 @@ import { bracketMatching, HighlightStyle, syntaxHighlighting } from '@codemirror
 import { lintGutter } from '@codemirror/lint';
 import { highlightSelectionMatches } from '@codemirror/search';
 import { StateEffect, StateField } from '@codemirror/state';
-import { Decoration, type DecorationSet, drawSelection, EditorView, highlightActiveLine, highlightActiveLineGutter, highlightSpecialChars, keymap, lineNumbers } from '@codemirror/view';
+import {
+    Decoration,
+    drawSelection,
+    EditorView,
+    highlightActiveLine,
+    highlightActiveLineGutter,
+    highlightSpecialChars,
+    keymap,
+    lineNumbers,
+} from '@codemirror/view';
 import { tags } from '@lezer/highlight';
+
+import type { DecorationSet } from '@codemirror/view';
 
 // Custom colors for CodeMirror
 const customColors = {
@@ -17,8 +28,8 @@ const customColors = {
     purple: '#C478FF',
     blue: '#3FA4FF',
     green: '#1AC69C',
-    pink: '#FF32C6'
-}
+    pink: '#FF32C6',
+};
 
 // Basic theme for CodeMirror
 export const basicTheme = {
@@ -35,96 +46,99 @@ export const basicTheme = {
 };
 
 //dark theme for code editor
-export const customDarkTheme = EditorView.theme({
-    '&': {
-        color: '#ffffff',
-        backgroundColor: '#000000',
-        fontSize: '13px',
-        userSelect: 'none !important',
+export const customDarkTheme = EditorView.theme(
+    {
+        '&': {
+            color: '#ffffff',
+            backgroundColor: '#000000',
+            fontSize: '13px',
+            userSelect: 'none !important',
+        },
+        '.cm-content': {
+            padding: '10px 0',
+            lineHeight: '1.5',
+            caretColor: customColors.blue,
+            backgroundColor: '#000000',
+            userSelect: 'text !important',
+        },
+        '.cm-focused': {
+            outline: 'none',
+        },
+        '&.cm-focused .cm-cursor': {
+            borderLeftColor: customColors.blue,
+            borderLeftWidth: '2px',
+        },
+        '&.cm-focused .cm-selectionBackground, ::selection': {
+            backgroundColor: 'rgba(63, 164, 255, 0.2)',
+        },
+        '&.cm-editor.cm-focused .cm-selectionBackground': {
+            backgroundColor: `${customColors.green}33 !important`,
+        },
+        '&.cm-editor .cm-selectionBackground': {
+            backgroundColor: `${customColors.green}33 !important`,
+        },
+        '&.cm-editor .cm-content ::selection': {
+            backgroundColor: `${customColors.green}33 !important`,
+        },
+        '.cm-line ::selection': {
+            backgroundColor: `${customColors.green}33 !important`,
+        },
+        '::selection': {
+            backgroundColor: `${customColors.green}33 !important`,
+        },
+        '.cm-selectionBackground': {
+            backgroundColor: 'rgba(63, 164, 255, 0.2)',
+        },
+        '.cm-gutters': {
+            backgroundColor: '#0a0a0a !important',
+            color: '#6b7280 !important',
+            border: 'none !important',
+            borderRight: '1px solid #1f2937 !important',
+        },
+        '.cm-gutterElement': {
+            color: '#6b7280',
+        },
+        '.cm-lineNumbers .cm-gutterElement': {
+            color: '#6b7280',
+            fontSize: '12px',
+        },
+        '.cm-activeLine': {
+            backgroundColor: 'rgba(255, 255, 255, 0.02)',
+        },
+        '.cm-activeLineGutter': {
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        },
+        '.cm-foldPlaceholder': {
+            backgroundColor: '#1f2937',
+            border: '1px solid #374151',
+            color: customColors.blue,
+        },
+        // Scrollbar styling
+        '.cm-scroller::-webkit-scrollbar': {
+            width: '8px',
+            height: '8px',
+        },
+        '.cm-scroller::-webkit-scrollbar-track': {
+            backgroundColor: '#0a0a0a',
+        },
+        '.cm-scroller::-webkit-scrollbar-thumb': {
+            backgroundColor: '#374151',
+            borderRadius: '4px',
+        },
+        '.cm-scroller::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: '#4b5563',
+        },
+        '.cm-search-highlight': {
+            backgroundColor: 'rgba(26, 198, 156, 0.3)',
+            borderRadius: '2px',
+        },
     },
-    '.cm-content': {
-        padding: '10px 0',
-        lineHeight: '1.5',
-        caretColor: customColors.blue,
-        backgroundColor: '#000000',
-        userSelect: 'text !important',
-    },
-    '.cm-focused': {
-        outline: 'none',
-    },
-    '&.cm-focused .cm-cursor': {
-        borderLeftColor: customColors.blue,
-        borderLeftWidth: '2px'
-    },
-    '&.cm-focused .cm-selectionBackground, ::selection': {
-        backgroundColor: 'rgba(63, 164, 255, 0.2)',
-    },
-    '&.cm-editor.cm-focused .cm-selectionBackground': {
-        backgroundColor: `${customColors.green}33 !important`,
-    },
-    '&.cm-editor .cm-selectionBackground': {
-        backgroundColor: `${customColors.green}33 !important`,
-    },
-    '&.cm-editor .cm-content ::selection': {
-        backgroundColor: `${customColors.green}33 !important`,
-    },
-    '.cm-line ::selection': {
-        backgroundColor: `${customColors.green}33 !important`,
-    },
-    '::selection': {
-        backgroundColor: `${customColors.green}33 !important`,
-    },
-    '.cm-selectionBackground': {
-        backgroundColor: 'rgba(63, 164, 255, 0.2)',
-    },
-    '.cm-gutters': {
-        backgroundColor: '#0a0a0a !important',
-        color: '#6b7280 !important',
-        border: 'none !important',
-        borderRight: '1px solid #1f2937 !important'
-    },
-    '.cm-gutterElement': {
-        color: '#6b7280'
-    },
-    '.cm-lineNumbers .cm-gutterElement': {
-        color: '#6b7280',
-        fontSize: '12px'
-    },
-    '.cm-activeLine': {
-        backgroundColor: 'rgba(255, 255, 255, 0.02)'
-    },
-    '.cm-activeLineGutter': {
-        backgroundColor: 'rgba(255, 255, 255, 0.05)'
-    },
-    '.cm-foldPlaceholder': {
-        backgroundColor: '#1f2937',
-        border: '1px solid #374151',
-        color: customColors.blue
-    },
-    // Scrollbar styling
-    '.cm-scroller::-webkit-scrollbar': {
-        width: '8px',
-        height: '8px'
-    },
-    '.cm-scroller::-webkit-scrollbar-track': {
-        backgroundColor: '#0a0a0a'
-    },
-    '.cm-scroller::-webkit-scrollbar-thumb': {
-        backgroundColor: '#374151',
-        borderRadius: '4px'
-    },
-    '.cm-scroller::-webkit-scrollbar-thumb:hover': {
-        backgroundColor: '#4b5563'
-    },
-    '.cm-search-highlight': {
-        backgroundColor: 'rgba(26, 198, 156, 0.3)',
-        borderRadius: '2px'
-    },
-}, { dark: true });
+    { dark: true },
+);
 
 // Custom syntax highlighting with the specified colors
 export const customDarkHighlightStyle = HighlightStyle.define([
-    // Keywords (if, for, function, etc.) - Pink 
+    // Keywords (if, for, function, etc.) - Pink
     { tag: tags.keyword, color: customColors.pink, fontWeight: 'bold' },
     { tag: tags.controlKeyword, color: customColors.pink, fontWeight: 'bold' },
     { tag: tags.operatorKeyword, color: customColors.pink },
@@ -141,7 +155,6 @@ export const customDarkHighlightStyle = HighlightStyle.define([
     // Functions - purple and methods - pink
     { tag: tags.function(tags.variableName), color: customColors.purple },
     { tag: tags.function(tags.propertyName), color: customColors.pink },
-
 
     // Variables-purple and properties - Green
     { tag: tags.variableName, color: customColors.purple },
@@ -173,7 +186,7 @@ export const customDarkHighlightStyle = HighlightStyle.define([
     { tag: tags.unit, color: customColors.pink },
 
     // Invalid/Error
-    { tag: tags.invalid, color: '#ef4444', textDecoration: 'underline' }
+    { tag: tags.invalid, color: '#ef4444', textDecoration: 'underline' },
 ]);
 
 const searchHighlightEffect = StateEffect.define<{ term: string }>();
@@ -186,7 +199,7 @@ const searchHighlightField = StateField.define<DecorationSet>({
     update(decorations, tr) {
         decorations = decorations.map(tr.changes);
 
-        for (let effect of tr.effects) {
+        for (const effect of tr.effects) {
             if (effect.is(searchHighlightEffect)) {
                 const { term } = effect.value;
                 if (!term || term.length < 2) {
@@ -205,8 +218,8 @@ const searchHighlightField = StateField.define<DecorationSet>({
                     const to = index + term.length;
                     newDecorations.push(
                         Decoration.mark({
-                            class: 'cm-search-highlight'
-                        }).range(from, to)
+                            class: 'cm-search-highlight',
+                        }).range(from, to),
                     );
                     index = to;
                 }
@@ -219,7 +232,7 @@ const searchHighlightField = StateField.define<DecorationSet>({
 
         return decorations;
     },
-    provide: f => EditorView.decorations.from(f)
+    provide: (f) => EditorView.decorations.from(f),
 });
 
 export function createSearchHighlight(term: string) {
@@ -242,8 +255,8 @@ export function scrollToFirstMatch(view: EditorView, term: string): boolean {
         const pos = firstMatch;
         view.dispatch({
             effects: EditorView.scrollIntoView(pos, {
-                y: 'center'
-            })
+                y: 'center',
+            }),
         });
         return true;
     }
@@ -274,7 +287,7 @@ export const getBasicSetup = (saveFile: () => void) => {
         ]),
 
         customDarkTheme,
-        syntaxHighlighting(customDarkHighlightStyle)
+        syntaxHighlighting(customDarkHighlightStyle),
     ];
 
     return baseExtensions;

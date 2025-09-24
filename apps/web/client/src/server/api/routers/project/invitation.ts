@@ -1,22 +1,24 @@
-import { env } from '@/env';
-import {
-    authUsers,
-    createDefaultUserCanvas,
-    projectInvitationInsertSchema,
-    projectInvitations,
-    fromDbUser,
-    userCanvases,
-    userProjects,
-    users,
-} from '@onlook/db';
-import { constructInvitationLink, getResendClient, sendInvitationEmail } from '@onlook/email';
-import { ProjectRole } from '@onlook/models';
-import { isFreeEmail } from '@onlook/utility';
 import { TRPCError } from '@trpc/server';
 import { addDays, isAfter } from 'date-fns';
 import { and, eq, ilike, isNull } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
+
+import type { ProjectRole } from '@onlook/models';
+import {
+    authUsers,
+    createDefaultUserCanvas,
+    fromDbUser,
+    projectInvitationInsertSchema,
+    projectInvitations,
+    userCanvases,
+    userProjects,
+    users,
+} from '@onlook/db';
+import { constructInvitationLink, getResendClient, sendInvitationEmail } from '@onlook/email';
+import { isFreeEmail } from '@onlook/utility';
+
+import { env } from '@/env';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const invitationRouter = createTRPCRouter({
@@ -48,35 +50,37 @@ export const invitationRouter = createTRPCRouter({
             inviter: fromDbUser(invitation.inviter),
         };
     }),
-    getWithoutToken: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
-        const invitation = await ctx.db.query.projectInvitations.findFirst({
-            where: eq(projectInvitations.id, input.id),
-            with: {
-                inviter: true,
-            },
-        });
-
-        if (!invitation) {
-            throw new TRPCError({
-                code: 'NOT_FOUND',
-                message: 'Invitation not found',
+    getWithoutToken: protectedProcedure
+        .input(z.object({ id: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const invitation = await ctx.db.query.projectInvitations.findFirst({
+                where: eq(projectInvitations.id, input.id),
+                with: {
+                    inviter: true,
+                },
             });
-        }
 
-        if (!invitation.inviter) {
-            throw new TRPCError({
-                code: 'NOT_FOUND',
-                message: 'Inviter not found',
-            });
-        }
+            if (!invitation) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: 'Invitation not found',
+                });
+            }
 
-        return {
-            ...invitation,
-            token: null,
-            // @ts-expect-error - Drizzle is not typed correctly
-            inviter: fromDbUser(invitation.inviter),
-        };
-    }),
+            if (!invitation.inviter) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: 'Inviter not found',
+                });
+            }
+
+            return {
+                ...invitation,
+                token: null,
+                // @ts-expect-error - Drizzle is not typed correctly
+                inviter: fromDbUser(invitation.inviter),
+            };
+        }),
     list: protectedProcedure
         .input(
             z.object({
@@ -116,40 +120,39 @@ export const invitationRouter = createTRPCRouter({
                 });
             }
 
-            const [invitation] = await ctx.db
-                .transaction(async (tx) => {
-                    const existingUser = await tx
-                        .select()
-                        .from(userProjects)
-                        .innerJoin(authUsers, eq(authUsers.id, userProjects.userId))
-                        .where(
-                            and(
-                                eq(userProjects.projectId, input.projectId),
-                                eq(authUsers.email, input.inviteeEmail),
-                            ),
-                        )
-                        .limit(1);
+            const [invitation] = await ctx.db.transaction(async (tx) => {
+                const existingUser = await tx
+                    .select()
+                    .from(userProjects)
+                    .innerJoin(authUsers, eq(authUsers.id, userProjects.userId))
+                    .where(
+                        and(
+                            eq(userProjects.projectId, input.projectId),
+                            eq(authUsers.email, input.inviteeEmail),
+                        ),
+                    )
+                    .limit(1);
 
-                    if (existingUser.length > 0) {
-                        throw new TRPCError({
-                            code: 'CONFLICT',
-                            message: 'User is already a member of the project',
-                        });
-                    }
+                if (existingUser.length > 0) {
+                    throw new TRPCError({
+                        code: 'CONFLICT',
+                        message: 'User is already a member of the project',
+                    });
+                }
 
-                    return await tx
-                        .insert(projectInvitations)
-                        .values([
-                            {
-                                ...input,
-                                role: input.role as ProjectRole,
-                                token: uuidv4(),
-                                inviterId: ctx.user.id,
-                                expiresAt: addDays(new Date(), 7),
-                            },
-                        ])
-                        .returning();
-                })
+                return await tx
+                    .insert(projectInvitations)
+                    .values([
+                        {
+                            ...input,
+                            role: input.role as ProjectRole,
+                            token: uuidv4(),
+                            inviterId: ctx.user.id,
+                            expiresAt: addDays(new Date(), 7),
+                        },
+                    ])
+                    .returning();
+            });
 
             if (invitation) {
                 if (!env.RESEND_API_KEY) {

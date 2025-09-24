@@ -1,5 +1,7 @@
-import type { SandboxFile } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
+
+import type { SandboxFile } from '@onlook/models';
+
 import { FileCacheManager } from '../cache/file-cache';
 import { normalizePath } from './helpers';
 

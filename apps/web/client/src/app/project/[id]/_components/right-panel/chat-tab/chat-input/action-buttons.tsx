@@ -1,5 +1,10 @@
 import { Button } from '@onlook/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
@@ -13,7 +18,6 @@ export const ActionButtons = ({
     handleImageEvent: (file: File, fileName: string) => Promise<void>;
     handleScreenshot: () => Promise<void>;
 }) => {
-
     const handleOpenFileDialog = (e: React.MouseEvent) => {
         e.preventDefault();
         const inputElement = document.createElement('input');
@@ -40,7 +44,7 @@ export const ActionButtons = ({
                         <Button
                             variant={'ghost'}
                             size={'icon'}
-                            className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent cursor-pointer"
+                            className="text-foreground-tertiary group h-9 w-9 cursor-pointer hover:bg-transparent"
                             disabled={disabled}
                             onMouseDown={(e) => {
                                 e.currentTarget.blur();
@@ -48,7 +52,7 @@ export const ActionButtons = ({
                         >
                             <Icons.Image
                                 className={cn(
-                                    'w-5 h-5',
+                                    'h-5 w-5',
                                     disabled
                                         ? 'text-foreground-tertiary'
                                         : 'group-hover:text-foreground',

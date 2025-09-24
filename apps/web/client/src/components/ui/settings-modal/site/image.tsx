@@ -1,7 +1,3 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { DefaultSettings } from '@onlook/constants';
-import { Button } from '@onlook/ui/button';
-import { urlToRelativePath } from '@onlook/utility/src/image';
 import React, {
     forwardRef,
     useCallback,
@@ -10,6 +6,12 @@ import React, {
     useRef,
     useState,
 } from 'react';
+
+import { DefaultSettings } from '@onlook/constants';
+import { Button } from '@onlook/ui/button';
+import { urlToRelativePath } from '@onlook/utility/src/image';
+
+import { useEditorEngine } from '@/components/store/editor';
 
 export interface ImagePickerRef {
     reset: () => void;
@@ -120,8 +122,7 @@ const ImagePicker = forwardRef<
     return (
         <div className="flex flex-col gap-2 p-2 text-xs">
             <div
-                className={`group h-32 w-60 bg-background-secondary rounded flex items-center justify-center p-4 
-                    ${isDragging ? 'border-2 border-dashed border-primary' : ''}`}
+                className={`group bg-background-secondary flex h-32 w-60 items-center justify-center rounded p-4 ${isDragging ? 'border-primary border-2 border-dashed' : ''}`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
@@ -151,7 +152,7 @@ export const UploadButton: React.FC<{ onButtonClick: (e: React.MouseEvent) => vo
 }) => (
     <Button
         variant="secondary"
-        className="flex items-center gap-2 px-4 py-0 backdrop-blur-sm rounded border border-foreground-tertiary/20 opacity-0 group-hover:opacity-90 transition-opacity"
+        className="border-foreground-tertiary/20 flex items-center gap-2 rounded border px-4 py-0 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-90"
         type="button"
         onClick={onButtonClick}
     >

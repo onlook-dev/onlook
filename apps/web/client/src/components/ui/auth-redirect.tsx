@@ -1,10 +1,11 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import localforage from 'localforage';
+
 import { LocalForageKeys, Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/client';
-import localforage from 'localforage';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 
 export const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
     const supabase = createClient();

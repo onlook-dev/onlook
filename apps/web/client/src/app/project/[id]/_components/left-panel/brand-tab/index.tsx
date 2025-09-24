@@ -1,23 +1,20 @@
-import { useEditorEngine } from '@/components/store/editor';
+import { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
 import { BrandTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
-import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
 import ColorPanel from './color-panel';
 import FontPanel from './font-panel';
 import SystemFont from './font-panel/system-font';
-
-
 
 interface ColorSquareProps {
     color: string;
 }
 
 const ColorSquare = ({ color }: ColorSquareProps) => (
-    <div
-        className="w-full aspect-square cursor-pointer"
-        style={{ backgroundColor: color }}
-    />
+    <div className="aspect-square w-full cursor-pointer" style={{ backgroundColor: color }} />
 );
 
 export const BrandTab = observer(() => {
@@ -42,20 +39,28 @@ export const BrandTab = observer(() => {
             const projectColors: string[] = [];
 
             // Add colors from custom color groups (user-defined in Tailwind config)
-            Object.values(colorGroups).forEach(group => {
-                group.forEach(color => {
+            Object.values(colorGroups).forEach((group) => {
+                group.forEach((color) => {
                     // Get the default/500 color from each custom color group
-                    if (color.name === '500' || color.name === 'default' || color.name === 'DEFAULT') {
+                    if (
+                        color.name === '500' ||
+                        color.name === 'default' ||
+                        color.name === 'DEFAULT'
+                    ) {
                         projectColors.push(color.lightColor);
                     }
                 });
             });
 
             // Add colors from default color groups (standard Tailwind colors)
-            Object.values(colorDefaults).forEach(group => {
-                group.forEach(color => {
+            Object.values(colorDefaults).forEach((group) => {
+                group.forEach((color) => {
                     // Get the default/500 color from each default color group
-                    if (color.name === '500' || color.name === 'default' || color.name === 'DEFAULT') {
+                    if (
+                        color.name === '500' ||
+                        color.name === 'default' ||
+                        color.name === 'DEFAULT'
+                    ) {
                         projectColors.push(color.lightColor);
                     }
                 });
@@ -83,20 +88,28 @@ export const BrandTab = observer(() => {
                         const projectColors: string[] = [];
 
                         // Add colors from custom color groups (user-defined in Tailwind config)
-                        Object.values(colorGroups).forEach(group => {
-                            group.forEach(color => {
+                        Object.values(colorGroups).forEach((group) => {
+                            group.forEach((color) => {
                                 // Get the default/500 color from each custom color group
-                                if (color.name === '500' || color.name === 'default' || color.name === 'DEFAULT') {
+                                if (
+                                    color.name === '500' ||
+                                    color.name === 'default' ||
+                                    color.name === 'DEFAULT'
+                                ) {
                                     projectColors.push(color.lightColor);
                                 }
                             });
                         });
 
                         // Add colors from default color groups (standard Tailwind colors)
-                        Object.values(colorDefaults).forEach(group => {
-                            group.forEach(color => {
+                        Object.values(colorDefaults).forEach((group) => {
+                            group.forEach((color) => {
                                 // Get the default/500 color from each default color group
-                                if (color.name === '500' || color.name === 'default' || color.name === 'DEFAULT') {
+                                if (
+                                    color.name === '500' ||
+                                    color.name === 'default' ||
+                                    color.name === 'DEFAULT'
+                                ) {
                                     projectColors.push(color.lightColor);
                                 }
                             });
@@ -113,8 +126,8 @@ export const BrandTab = observer(() => {
         // Listen for file changes in the sandbox
         const unsubscribe = editorEngine.activeSandbox.fileEventBus.subscribe('*', (event) => {
             // Check if any of the changed files are Tailwind config files
-            const isTailwindConfigChange = event.paths.some(path =>
-                path.includes('tailwind.config') || path.includes('globals.css')
+            const isTailwindConfigChange = event.paths.some(
+                (path) => path.includes('tailwind.config') || path.includes('globals.css'),
             );
 
             if (isTailwindConfigChange && event.paths[0]) {
@@ -138,36 +151,34 @@ export const BrandTab = observer(() => {
     }
 
     return (
-        <div className="flex flex-col h-full text-xs text-active flex-grow w-full p-0">
+        <div className="text-active flex h-full w-full flex-grow flex-col p-0 text-xs">
             {/* Brand Palette Section */}
-            <div className="flex flex-col gap-3 px-4 pt-4 pb-6 border-b border-border">
+            <div className="border-border flex flex-col gap-3 border-b px-4 pt-4 pb-6">
                 <div className="flex flex-col gap-2">
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                         <span className="text-sm">Brand Colors</span>
                     </div>
 
                     <div
-                        className="grid grid-cols-12 gap-0 rounded-lg overflow-hidden h-[40px] max-h-[40px] bg-background-onlook border-[0.5px] border-white/50 hover:border-[0.5px] hover:border-white cursor-pointer hover:border-transparent transition-all duration-200"
+                        className="bg-background-onlook grid h-[40px] max-h-[40px] cursor-pointer grid-cols-12 gap-0 overflow-hidden rounded-lg border-[0.5px] border-white/50 transition-all duration-200 hover:border-[0.5px] hover:border-transparent hover:border-white"
                         onClick={() => (editorEngine.state.brandTab = BrandTabValue.COLORS)}
                     >
-                        {brandColors.length > 0 ? (
-                            brandColors.map((color, index) => (
-                                <ColorSquare key={`brand-color-${index}`} color={color} />
-                            ))
-                        ) : (
-                            Array.from({ length: 12 }, (_, index) => (
-                                <div
-                                    key={`loading-color-${index}`}
-                                    className="w-full h-full bg-gradient-to-r from-gray-300 via-gray-400 to-gray-300 bg-[length:200%_100%] animate-shimmer"
-                                />
-                            ))
-                        )}
+                        {brandColors.length > 0
+                            ? brandColors.map((color, index) => (
+                                  <ColorSquare key={`brand-color-${index}`} color={color} />
+                              ))
+                            : Array.from({ length: 12 }, (_, index) => (
+                                  <div
+                                      key={`loading-color-${index}`}
+                                      className="animate-shimmer h-full w-full bg-gradient-to-r from-gray-300 via-gray-400 to-gray-300 bg-[length:200%_100%]"
+                                  />
+                              ))}
                     </div>
                 </div>
 
                 <Button
                     variant="ghost"
-                    className="w-full h-10 text-sm text-muted-foreground hover:text-foreground bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
+                    className="text-muted-foreground hover:text-foreground bg-background-secondary hover:bg-background-secondary/70 h-10 w-full rounded-lg border border-white/5 text-sm"
                     onClick={() => (editorEngine.state.brandTab = BrandTabValue.COLORS)}
                 >
                     Manage brand colors
@@ -177,14 +188,14 @@ export const BrandTab = observer(() => {
             {/* Site Fonts Section */}
             <div className="flex flex-col gap-1.5 px-4 pt-5 pb-6">
                 <div className="flex flex-col">
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                         <span className="text-sm">Site Fonts</span>
                     </div>
                     <SystemFont />
                 </div>
                 <Button
                     variant="ghost"
-                    className="w-full h-10 text-sm text-muted-foreground hover:text-foreground bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
+                    className="text-muted-foreground hover:text-foreground bg-background-secondary hover:bg-background-secondary/70 h-10 w-full rounded-lg border border-white/5 text-sm"
                     onClick={() => (editorEngine.state.brandTab = BrandTabValue.FONTS)}
                 >
                     Manage site fonts

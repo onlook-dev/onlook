@@ -1,13 +1,20 @@
 'use client';
 
-import { useEditorEngine } from "@/components/store/editor";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@onlook/ui/dropdown-menu";
-import { Input } from "@onlook/ui/input";
-import { observer } from "mobx-react-lite";
-import { useEffect, useRef, useState } from "react";
-import { useDropdownControl } from "../hooks/use-dropdown-manager";
-import { HoverOnlyTooltip } from "../hover-tooltip";
-import { ToolbarButton } from "../toolbar-button";
+import { useEffect, useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
+import { Input } from '@onlook/ui/input';
+
+import { useEditorEngine } from '@/components/store/editor';
+import { useDropdownControl } from '../hooks/use-dropdown-manager';
+import { HoverOnlyTooltip } from '../hover-tooltip';
+import { ToolbarButton } from '../toolbar-button';
 
 const OPACITY_PRESETS = [100, 80, 75, 50, 25, 10, 0];
 
@@ -22,7 +29,10 @@ const useOpacityControl = () => {
             const element = selectedElements[0];
             const currentOpacity = element.styles?.defined?.opacity;
             // Convert opacity from decimal to percentage (e.g., 0.5 -> 50)
-            const opacityPercentage = (currentOpacity !== undefined && currentOpacity !== null) ? Math.round(parseFloat(currentOpacity) * 100) : 100;
+            const opacityPercentage =
+                currentOpacity !== undefined && currentOpacity !== null
+                    ? Math.round(parseFloat(currentOpacity) * 100)
+                    : 100;
             setOpacity(opacityPercentage);
         } else {
             setOpacity(100);
@@ -33,7 +43,9 @@ const useOpacityControl = () => {
         setOpacity(value);
         // Convert percentage to decimal (e.g., 50 -> 0.5)
         const opacityDecimal = value / 100;
-        const action = editorEngine.style.getUpdateStyleAction({ opacity: opacityDecimal.toString() });
+        const action = editorEngine.style.getUpdateStyleAction({
+            opacity: opacityDecimal.toString(),
+        });
         void editorEngine.action.updateStyle(action);
     };
 
@@ -45,7 +57,7 @@ export const Opacity = observer(() => {
     const inputRef = useRef<HTMLInputElement>(null);
 
     const { isOpen, onOpenChange } = useDropdownControl({
-        id: 'opacity-dropdown'
+        id: 'opacity-dropdown',
     });
 
     const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,7 +75,13 @@ export const Opacity = observer(() => {
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
-            <HoverOnlyTooltip content="Layer Opacity" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
+            <HoverOnlyTooltip
+                content="Layer Opacity"
+                side="bottom"
+                className="mt-1"
+                hideArrow
+                disabled={isOpen}
+            >
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
@@ -79,26 +97,31 @@ export const Opacity = observer(() => {
                             value={opacity}
                             onChange={onInputChange}
                             onClick={(e) => e.stopPropagation()}
-                            className="px-1 w-8 text-left data-[state=open]:text-white text-small focus:text-foreground-primary focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none !bg-transparent border-none group-hover:text-foreground-primary focus:ring-0 focus:outline-none text-muted-foreground !hide-spin-buttons no-focus-ring [appearance:textfield] group-hover:text-foreground-primary transition-colors duration-150 hover"
+                            className="text-small focus:text-foreground-primary group-hover:text-foreground-primary text-muted-foreground !hide-spin-buttons no-focus-ring group-hover:text-foreground-primary hover w-8 [appearance:textfield] border-none !bg-transparent px-1 text-left transition-colors duration-150 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none data-[state=open]:text-white"
                             aria-label="Opacity percentage"
                         />
                         <span
                             onClick={(e) => e.stopPropagation()}
-                            className="pr-2 text-muted-foreground text-xs bg-transparent">
+                            className="text-muted-foreground bg-transparent pr-2 text-xs"
+                        >
                             %
                         </span>
                     </ToolbarButton>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
-            <DropdownMenuContent align="center" className="mt-1 w-[70px] min-w-[40px] rounded-lg p-1 text-foreground-tertiary">
+            <DropdownMenuContent
+                align="center"
+                className="text-foreground-tertiary mt-1 w-[70px] min-w-[40px] rounded-lg p-1"
+            >
                 {OPACITY_PRESETS.map((preset) => (
                     <DropdownMenuItem
                         key={preset}
                         onClick={() => handleOpacityChange(preset)}
-                        className={`cursor-pointer text-left text-foreground-tertiary data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-small data-[highlighted]:text-foreground-primary ${preset === opacity
-                            ? 'bg-transparent border-border border text-foreground-primary hover:bg-background-primary'
-                            : ''
-                            }`}
+                        className={`text-foreground-tertiary data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border text-small data-[highlighted]:text-foreground-primary cursor-pointer justify-center rounded-md border px-2 py-1 text-left ${
+                            preset === opacity
+                                ? 'border-border text-foreground-primary hover:bg-background-primary border bg-transparent'
+                                : ''
+                        }`}
                     >
                         {preset}%
                     </DropdownMenuItem>

@@ -1,9 +1,12 @@
-import { useEditorEngine } from '@/components/store/editor';
-import type { LayerNode } from '@onlook/models/element';
-import { observer } from 'mobx-react-lite';
+import type { NodeApi, TreeApi } from 'react-arborist';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { type NodeApi, Tree, type TreeApi } from 'react-arborist';
+import { observer } from 'mobx-react-lite';
+import { Tree } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
+
+import type { LayerNode } from '@onlook/models/element';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { RightClickMenu } from '../../right-click-menu';
 import { TreeNode } from './tree/tree-node';
 import { TreeRow } from './tree/tree-row';
@@ -131,7 +134,7 @@ export const LayersTab = observer(() => {
     return (
         <div
             ref={ref}
-            className="flex h-full w-full overflow-hidden text-xs text-active p-3"
+            className="text-active flex h-full w-full overflow-hidden p-3 text-xs"
             onMouseOver={() => setTreeHovered(true)}
             onMouseLeave={handleMouseLeaveTree}
         >

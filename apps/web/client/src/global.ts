@@ -1,5 +1,6 @@
-import { Language } from '@onlook/constants';
-import messages from '../messages/en.json';
+import type { Language } from '@onlook/constants';
+
+import type messages from '../messages/en.json';
 
 declare module 'next-intl' {
     interface AppConfig {

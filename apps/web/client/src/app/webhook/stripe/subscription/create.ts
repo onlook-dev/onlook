@@ -1,10 +1,12 @@
-import { trackEvent } from '@/utils/analytics/server';
+import type Stripe from 'stripe';
+import { eq } from 'drizzle-orm';
+import { v4 as uuid } from 'uuid';
+
 import { prices, rateLimits, subscriptions, users } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { SubscriptionStatus } from '@onlook/stripe';
-import { eq } from 'drizzle-orm';
-import Stripe from 'stripe';
-import { v4 as uuid } from 'uuid';
+
+import { trackEvent } from '@/utils/analytics/server';
 import { extractIdsFromEvent } from './helpers';
 
 export const handleSubscriptionCreated = async (
@@ -99,9 +101,9 @@ export const handleSubscriptionCreated = async (
             productId: price.productId,
             $set: {
                 subscription_created_at: new Date(),
-            }
-        }
-    })
+            },
+        },
+    });
 
     console.log('Checkout session completed: ', sub, rateLimit);
     return new Response(JSON.stringify({ ok: true }), { status: 200 });

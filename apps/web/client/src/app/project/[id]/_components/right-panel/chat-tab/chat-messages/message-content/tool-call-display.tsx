@@ -1,8 +1,18 @@
-import { FuzzyEditFileTool, SearchReplaceEditTool, SearchReplaceMultiEditFileTool, TerminalCommandTool, TypecheckTool, WebSearchTool, WriteFileTool } from '@onlook/ai';
-import type { WebSearchResult } from '@onlook/models';
 import type { ToolUIPart } from 'ai';
+import type { z } from 'zod';
 import stripAnsi from 'strip-ansi';
-import { type z } from 'zod';
+
+import type { WebSearchResult } from '@onlook/models';
+import {
+    FuzzyEditFileTool,
+    SearchReplaceEditTool,
+    SearchReplaceMultiEditFileTool,
+    TerminalCommandTool,
+    TypecheckTool,
+    WebSearchTool,
+    WriteFileTool,
+} from '@onlook/ai';
+
 import { BashCodeDisplay } from '../../code-display/bash-code-display';
 import { CollapsibleCodeBlock } from '../../code-display/collapsible-code-block';
 import { SearchSourcesDisplay } from '../../code-display/search-sources-display';
@@ -12,43 +22,39 @@ export const ToolCallDisplay = ({
     messageId,
     toolPart,
     isStream,
-    applied
+    applied,
 }: {
-    messageId: string,
-    toolPart: ToolUIPart,
-    isStream: boolean,
-    applied: boolean
+    messageId: string;
+    toolPart: ToolUIPart;
+    isStream: boolean;
+    applied: boolean;
 }) => {
     const toolName = toolPart.type.split('-')[1];
 
-    if (isStream || (toolPart.state !== 'output-available' && toolPart.state !== 'input-available')) {
-        return (
-            <ToolCallSimple
-                toolPart={toolPart}
-                key={toolPart.toolCallId}
-                loading={true}
-            />
-        );
+    if (
+        isStream ||
+        (toolPart.state !== 'output-available' && toolPart.state !== 'input-available')
+    ) {
+        return <ToolCallSimple toolPart={toolPart} key={toolPart.toolCallId} loading={true} />;
     }
 
     if (toolName === TerminalCommandTool.toolName) {
         const args = toolPart.input as z.infer<typeof TerminalCommandTool.parameters> | null;
         const result = toolPart.output as { output?: string; error?: string } | null;
         if (!args?.command) {
-            return (
-                <ToolCallSimple
-                    toolPart={toolPart}
-                    key={toolPart.toolCallId}
-                />
-            );
+            return <ToolCallSimple toolPart={toolPart} key={toolPart.toolCallId} />;
         }
         return (
             <BashCodeDisplay
                 key={toolPart.toolCallId}
                 content={args.command}
                 isStream={isStream}
-                defaultStdOut={toolPart.state === 'output-available' ? result?.output ?? null : null}
-                defaultStdErr={toolPart.state === 'output-available' ? result?.error ?? null : null}
+                defaultStdOut={
+                    toolPart.state === 'output-available' ? (result?.output ?? null) : null
+                }
+                defaultStdErr={
+                    toolPart.state === 'output-available' ? (result?.error ?? null) : null
+                }
             />
         );
     }
@@ -60,10 +66,18 @@ export const ToolCallDisplay = ({
             return (
                 <SearchSourcesDisplay
                     query={String(args.query)}
-                    results={Array.isArray(searchResult.result) ? (searchResult.result as unknown[]).map((result: unknown) => ({
-                        title: String((result as { title?: string; url?: string }).title ?? (result as { url?: string }).url ?? ''),
-                        url: String((result as { url?: string }).url ?? '')
-                    })) : []}
+                    results={
+                        Array.isArray(searchResult.result)
+                            ? (searchResult.result as unknown[]).map((result: unknown) => ({
+                                  title: String(
+                                      (result as { title?: string; url?: string }).title ??
+                                          (result as { url?: string }).url ??
+                                          '',
+                                  ),
+                                  url: String((result as { url?: string }).url ?? ''),
+                              }))
+                            : []
+                    }
                 />
             );
         }
@@ -75,12 +89,7 @@ export const ToolCallDisplay = ({
         const codeContent = args?.content;
         const branchId = args?.branchId;
         if (!filePath || !codeContent) {
-            return (
-                <ToolCallSimple
-                    toolPart={toolPart}
-                    key={toolPart.toolCallId}
-                />
-            );
+            return <ToolCallSimple toolPart={toolPart} key={toolPart.toolCallId} />;
         }
         return (
             <CollapsibleCodeBlock
@@ -100,12 +109,7 @@ export const ToolCallDisplay = ({
         const codeContent = args?.content;
         const branchId = args?.branchId;
         if (!filePath || !codeContent) {
-            return (
-                <ToolCallSimple
-                    toolPart={toolPart}
-                    key={toolPart.toolCallId}
-                />
-            );
+            return <ToolCallSimple toolPart={toolPart} key={toolPart.toolCallId} />;
         }
         return (
             <CollapsibleCodeBlock
@@ -125,12 +129,7 @@ export const ToolCallDisplay = ({
         const codeContent = args?.new_string;
         const branchId = args?.branchId;
         if (!filePath || !codeContent) {
-            return (
-                <ToolCallSimple
-                    toolPart={toolPart}
-                    key={toolPart.toolCallId}
-                />
-            );
+            return <ToolCallSimple toolPart={toolPart} key={toolPart.toolCallId} />;
         }
         return (
             <CollapsibleCodeBlock
@@ -145,17 +144,14 @@ export const ToolCallDisplay = ({
     }
 
     if (toolName === SearchReplaceMultiEditFileTool.toolName) {
-        const args = toolPart.input as z.infer<typeof SearchReplaceMultiEditFileTool.parameters> | null;
+        const args = toolPart.input as z.infer<
+            typeof SearchReplaceMultiEditFileTool.parameters
+        > | null;
         const filePath = args?.file_path;
         const codeContent = args?.edits?.map((edit) => edit.new_string).join('\n...\n');
         const branchId = args?.branchId;
         if (!filePath || !codeContent) {
-            return (
-                <ToolCallSimple
-                    toolPart={toolPart}
-                    key={toolPart.toolCallId}
-                />
-            );
+            return <ToolCallSimple toolPart={toolPart} key={toolPart.toolCallId} />;
         }
         return (
             <CollapsibleCodeBlock
@@ -217,10 +213,5 @@ export const ToolCallDisplay = ({
         );
     }
 
-    return (
-        <ToolCallSimple
-            toolPart={toolPart}
-            key={toolPart.toolCallId}
-        />
-    );
-}
+    return <ToolCallSimple toolPart={toolPart} key={toolPart.toolCallId} />;
+};

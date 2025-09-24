@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react-lite';
+
 import {
     AlertDialog,
     AlertDialogContent,
@@ -8,11 +10,17 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
+
 import { useFolderContext } from '../../providers/folder-provider';
 
 export const FolderDeleteModal = observer(() => {
-    const { deleteState, handleDeleteModalToggle, onDeleteFolder, getChildFolders, getImagesInFolder } = useFolderContext();
+    const {
+        deleteState,
+        handleDeleteModalToggle,
+        onDeleteFolder,
+        getChildFolders,
+        getImagesInFolder,
+    } = useFolderContext();
 
     const handleDelete = async () => {
         if (!deleteState.isLoading) {
@@ -26,7 +34,6 @@ export const FolderDeleteModal = observer(() => {
         }
     };
 
-
     const folder = deleteState.folderToDelete;
     const totalItems = folder ? getImagesInFolder(folder).length : 0;
     const hasSubfolders = folder ? getChildFolders(folder).length > 0 : false;
@@ -39,14 +46,16 @@ export const FolderDeleteModal = observer(() => {
                     <AlertDialogDescription>
                         {folder && (
                             <>
-                                Are you sure you want to delete the folder &quot;{folder.name}&quot;?
+                                Are you sure you want to delete the folder &quot;{folder.name}
+                                &quot;?
                                 {totalItems > 0 && (
-                                    <span className="block mt-2 text-red-600">
-                                        This will permanently delete {totalItems} image{totalItems !== 1 ? 's' : ''} 
+                                    <span className="mt-2 block text-red-600">
+                                        This will permanently delete {totalItems} image
+                                        {totalItems !== 1 ? 's' : ''}
                                         {hasSubfolders && ' and all subfolders'}.
                                     </span>
                                 )}
-                                <span className="block mt-2 text-sm">
+                                <span className="mt-2 block text-sm">
                                     This action cannot be undone.
                                 </span>
                             </>
@@ -54,21 +63,21 @@ export const FolderDeleteModal = observer(() => {
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <Button 
-                        variant={'ghost'} 
-                        onClick={handleClose} 
+                    <Button
+                        variant={'ghost'}
+                        onClick={handleClose}
                         disabled={deleteState.isLoading}
                     >
                         Cancel
                     </Button>
-                    <Button 
-                        variant={'destructive'} 
-                        onClick={handleDelete} 
+                    <Button
+                        variant={'destructive'}
+                        onClick={handleDelete}
                         disabled={deleteState.isLoading}
                     >
                         {deleteState.isLoading ? (
                             <>
-                                <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
+                                <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
                                 Deleting
                             </>
                         ) : (

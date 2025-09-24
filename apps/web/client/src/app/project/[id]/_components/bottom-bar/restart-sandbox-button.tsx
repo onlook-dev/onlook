@@ -1,18 +1,16 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useRef, useState } from 'react';
 
-export const RestartSandboxButton = observer(({
-    className,
-}: {
-    className?: string;
-}) => {
+import { useEditorEngine } from '@/components/store/editor';
+
+export const RestartSandboxButton = observer(({ className }: { className?: string }) => {
     const editorEngine = useEditorEngine();
     const branches = editorEngine.branches;
     const [restarting, setRestarting] = useState(false);
@@ -106,7 +104,7 @@ export const RestartSandboxButton = observer(({
                 // Wait 5 seconds before refreshing webviews to avoid 502 errors
                 setTimeout(() => {
                     const frames = editorEngine.frames.getByBranchId(activeBranch.id);
-                    frames.forEach(frame => {
+                    frames.forEach((frame) => {
                         try {
                             editorEngine.frames.reloadView(frame.frame.id);
                         } catch (frameError) {
@@ -137,28 +135,29 @@ export const RestartSandboxButton = observer(({
                     onClick={handleRestartSandbox}
                     disabled={disabled}
                     className={cn(
-                        "h-9 w-9 flex items-center justify-center rounded-md border border-transparent transition-colors",
+                        'flex h-9 w-9 items-center justify-center rounded-md border border-transparent transition-colors',
                         hasSandboxError
-                            ? "bg-amber-900 text-amber-200 hover:bg-amber-800 hover:text-amber-100"
+                            ? 'bg-amber-900 text-amber-200 hover:bg-amber-800 hover:text-amber-100'
                             : restarting
-                                ? "text-foreground-tertiary bg-accent/30"
-                                : !disabled
-                                    ? "hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50"
-                                    : "text-foreground-disabled cursor-not-allowed opacity-50",
-                        className
+                              ? 'text-foreground-tertiary bg-accent/30'
+                              : !disabled
+                                ? 'hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50'
+                                : 'text-foreground-disabled cursor-not-allowed opacity-50',
+                        className,
                     )}
                 >
                     {restarting ? (
                         <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
                     ) : (
-                        <Icons.RestartSandbox className={cn(
-                            "h-4 w-4",
-                            hasSandboxError && "text-amber-200"
-                        )} />
+                        <Icons.RestartSandbox
+                            className={cn('h-4 w-4', hasSandboxError && 'text-amber-200')}
+                        />
                     )}
                 </button>
             </TooltipTrigger>
-            <TooltipContent sideOffset={5} hideArrow>Restart Sandbox</TooltipContent>
+            <TooltipContent sideOffset={5} hideArrow>
+                Restart Sandbox
+            </TooltipContent>
         </Tooltip>
     );
 });

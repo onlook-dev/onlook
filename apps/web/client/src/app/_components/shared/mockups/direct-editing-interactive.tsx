@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+
 import { Icons } from '@onlook/ui/icons';
+
 import { Illustrations } from '../../landing-page/illustrations';
 
 function DraggableElement({
@@ -16,23 +18,23 @@ function DraggableElement({
     initialSize = { width: 100, height: 100 },
     ...rest
 }: {
-    elementId: string,
-    selectedElement: string | null,
-    setSelectedElement: (id: string) => void,
-    draggedElement: string | null,
-    setDraggedElement: (id: string | null) => void,
-    dragOffset: { x: number, y: number },
-    setDragOffset: (offset: { x: number, y: number }) => void,
-    children: React.ReactNode,
-    style?: React.CSSProperties,
-    outlineColor?: string,
-    initialSize?: { width: number, height: number },
-    [key: string]: any
+    elementId: string;
+    selectedElement: string | null;
+    setSelectedElement: (id: string) => void;
+    draggedElement: string | null;
+    setDraggedElement: (id: string | null) => void;
+    dragOffset: { x: number; y: number };
+    setDragOffset: (offset: { x: number; y: number }) => void;
+    children: React.ReactNode;
+    style?: React.CSSProperties;
+    outlineColor?: string;
+    initialSize?: { width: number; height: number };
+    [key: string]: any;
 }) {
     const isSelected = selectedElement === elementId;
-    const [size, setSize] = React.useState<{ width: number; height: number }>({ 
-        width: initialSize.width, 
-        height: initialSize.height 
+    const [size, setSize] = React.useState<{ width: number; height: number }>({
+        width: initialSize.width,
+        height: initialSize.height,
     });
     const [isResizing, setIsResizing] = React.useState(false);
     type Corner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
@@ -80,15 +82,13 @@ function DraggableElement({
             const dx = e.clientX - resizeOrigin.mouseX;
             const dy = e.clientY - resizeOrigin.mouseY;
             let scaleDelta;
-            if (
-                resizeOrigin.corner === 'top-left' || resizeOrigin.corner === 'bottom-right'
-            ) {
+            if (resizeOrigin.corner === 'top-left' || resizeOrigin.corner === 'bottom-right') {
                 scaleDelta = Math.max(dx, dy);
             } else {
                 scaleDelta = Math.max(-dx, dy);
             }
-            let newWidth = Math.max(24, resizeOrigin.width + scaleDelta);
-            let newHeight = Math.max(24, newWidth / aspectRatioRef.current);
+            const newWidth = Math.max(24, resizeOrigin.width + scaleDelta);
+            const newHeight = Math.max(24, newWidth / aspectRatioRef.current);
             setSize({ width: newWidth, height: newHeight });
         };
         const handleMouseUp = () => {
@@ -107,7 +107,7 @@ function DraggableElement({
     return (
         <div
             ref={elementRef}
-            className="absolute cursor-grab select-none draggable-text"
+            className="draggable-text absolute cursor-grab select-none"
             data-element-id={elementId}
             style={{
                 zIndex: 1,
@@ -130,10 +130,10 @@ function DraggableElement({
                 setSelectedElement(elementId);
                 const element = e.currentTarget as HTMLDivElement;
                 const rect = element.getBoundingClientRect();
-                const canvasRect = (element.closest('.canvas-container') as HTMLDivElement).getBoundingClientRect();
+                const canvasRect = element.closest('.canvas-container')!.getBoundingClientRect();
                 setDragOffset({
                     x: e.clientX - rect.left,
-                    y: e.clientY - rect.top
+                    y: e.clientY - rect.top,
                 });
                 element.style.opacity = '0.8';
                 element.style.cursor = 'grabbing';
@@ -148,7 +148,15 @@ function DraggableElement({
             }}
             {...rest}
         >
-            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
                 {children}
             </div>
             {isSelected && (
@@ -230,22 +238,22 @@ export function DirectEditingInteractive() {
 
     const handleMouseMove = (e: MouseEvent) => {
         if (!draggedElement) return;
-        
-        const canvas = document.querySelector('.canvas-container') as HTMLDivElement;
+
+        const canvas = document.querySelector('.canvas-container')!;
         const canvasRect = canvas.getBoundingClientRect();
-        const element = document.querySelector(`[data-element-id="${draggedElement}"]`) as HTMLDivElement;
-        
+        const element = document.querySelector(`[data-element-id="${draggedElement}"]`)!;
+
         if (!element) return;
-        
+
         const newX = e.clientX - canvasRect.left - dragOffset.x;
         const newY = e.clientY - canvasRect.top - dragOffset.y;
-        
+
         const maxX = canvasRect.width - element.offsetWidth;
         const maxY = canvasRect.height - element.offsetHeight;
-        
+
         const constrainedX = Math.max(0, Math.min(newX, maxX));
         const constrainedY = Math.max(0, Math.min(newY, maxY));
-        
+
         element.style.left = `${constrainedX}px`;
         element.style.top = `${constrainedY}px`;
         element.style.transform = 'none';
@@ -253,7 +261,7 @@ export function DirectEditingInteractive() {
 
     const handleMouseUp = () => {
         if (draggedElement) {
-            const element = document.querySelector(`[data-element-id="${draggedElement}"]`) as HTMLDivElement;
+            const element = document.querySelector(`[data-element-id="${draggedElement}"]`)!;
             if (element) {
                 element.style.opacity = '1';
                 element.style.cursor = 'grab';
@@ -265,7 +273,7 @@ export function DirectEditingInteractive() {
     const handleClickOutside = (e: MouseEvent) => {
         const target = e.target as HTMLElement;
         const canvasContainer = target.closest('.canvas-container');
-        
+
         if (!canvasContainer && !target.closest('.draggable-text')) {
         }
     };
@@ -274,7 +282,7 @@ export function DirectEditingInteractive() {
         document.addEventListener('mousedown', handleClickOutside);
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
-        
+
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
             document.removeEventListener('mousemove', handleMouseMove);
@@ -283,21 +291,21 @@ export function DirectEditingInteractive() {
     }, [draggedElement, dragOffset]);
 
     return (
-        <div className="w-full h-100 bg-background-onlook/80 rounded-lg overflow-hidden">
-            <div className="w-90 h-100 bg-[#0A484D] rounded-lg relative left-1/2 top-60 transform -translate-x-1/2 -translate-y-1/2 canvas-container text-[#F0EFE3]">
-                <div className="w-full h-8 border-b border-[#F0EFE3]/50 px-2 flex flex-row items-center justify-between">
+        <div className="bg-background-onlook/80 h-100 w-full overflow-hidden rounded-lg">
+            <div className="canvas-container relative top-60 left-1/2 h-100 w-90 -translate-x-1/2 -translate-y-1/2 transform rounded-lg bg-[#0A484D] text-[#F0EFE3]">
+                <div className="flex h-8 w-full flex-row items-center justify-between border-b border-[#F0EFE3]/50 px-2">
                     <div className="flex flex-row items-center gap-1 select-none">
-                        <Illustrations.VinoLogo className="w-4 h-4" />
-                        <Illustrations.VinoWordmark className="w-12 h-12" />
+                        <Illustrations.VinoLogo className="h-4 w-4" />
+                        <Illustrations.VinoWordmark className="h-12 w-12" />
                     </div>
                     <div className="flex flex-row items-center gap-2">
-                        <Illustrations.VinoMenu className="w-4 h-4" />
-                        <Illustrations.VinoContact className="w-12 h-12" />
+                        <Illustrations.VinoMenu className="h-4 w-4" />
+                        <Illustrations.VinoContact className="h-12 w-12" />
                     </div>
                 </div>
-                <div className="w-full h-full flex flex-row items-top mt-8 justify-center">
-                    <div className="w-fit h-fit">
-                        <Illustrations.VinoHeadline className="w-50 h-fit" />
+                <div className="items-top mt-8 flex h-full w-full flex-row justify-center">
+                    <div className="h-fit w-fit">
+                        <Illustrations.VinoHeadline className="h-fit w-50" />
                     </div>
                     <div className="grid gap-2">
                         <DraggableElement
@@ -320,7 +328,13 @@ export function DirectEditingInteractive() {
                             setDraggedElement={setDraggedElement}
                             dragOffset={dragOffset}
                             setDragOffset={setDragOffset}
-                            style={{ top: '190px', left: '50px', width: 60, height: 100, transform: 'rotate(-10deg)' }}
+                            style={{
+                                top: '190px',
+                                left: '50px',
+                                width: 60,
+                                height: 100,
+                                transform: 'rotate(-10deg)',
+                            }}
                         >
                             <Illustrations.VinoBottle />
                         </DraggableElement>
@@ -344,7 +358,13 @@ export function DirectEditingInteractive() {
                             setDraggedElement={setDraggedElement}
                             dragOffset={dragOffset}
                             setDragOffset={setDragOffset}
-                            style={{ top: '280px', left: '15px', width: 40, height: 80, transform: 'rotate(-20deg)' }}
+                            style={{
+                                top: '280px',
+                                left: '15px',
+                                width: 40,
+                                height: 80,
+                                transform: 'rotate(-20deg)',
+                            }}
                         >
                             <Illustrations.VinoGlass />
                         </DraggableElement>
@@ -404,7 +424,13 @@ export function DirectEditingInteractive() {
                             setDraggedElement={setDraggedElement}
                             dragOffset={dragOffset}
                             setDragOffset={setDragOffset}
-                            style={{ top: '290px', right: '165px', width: 40, height:60, transform: 'rotate(180deg)' }}
+                            style={{
+                                top: '290px',
+                                right: '165px',
+                                width: 40,
+                                height: 60,
+                                transform: 'rotate(180deg)',
+                            }}
                         >
                             <Illustrations.VinoSpoon />
                         </DraggableElement>
@@ -416,7 +442,13 @@ export function DirectEditingInteractive() {
                             setDraggedElement={setDraggedElement}
                             dragOffset={dragOffset}
                             setDragOffset={setDragOffset}
-                            style={{ top: '260px', right: '60px', width: 70, height: 30, transform: 'rotate(-140deg)' }}
+                            style={{
+                                top: '260px',
+                                right: '60px',
+                                width: 70,
+                                height: 30,
+                                transform: 'rotate(-140deg)',
+                            }}
                         >
                             <Illustrations.VinoFork />
                         </DraggableElement>
@@ -464,7 +496,13 @@ export function DirectEditingInteractive() {
                             setDraggedElement={setDraggedElement}
                             dragOffset={dragOffset}
                             setDragOffset={setDragOffset}
-                            style={{ top: '180px', right: '70px', width: 50, height: 70, transform: 'rotate(-10deg)' }}
+                            style={{
+                                top: '180px',
+                                right: '70px',
+                                width: 50,
+                                height: 70,
+                                transform: 'rotate(-10deg)',
+                            }}
                         >
                             <Illustrations.VinoGlass2 />
                         </DraggableElement>

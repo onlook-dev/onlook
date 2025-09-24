@@ -1,8 +1,10 @@
-import { useEditorEngine } from '@/components/store/editor';
+import { useEffect, useState } from 'react';
+import { camelCase } from 'lodash';
+
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { toNormalCase } from '@onlook/utility';
-import { camelCase } from 'lodash';
-import { useEffect, useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
 
 interface ColorNameInputProps {
     initialName: string;
@@ -98,16 +100,16 @@ export const ColorNameInput = ({
                     onChange={handleChange}
                     onKeyDown={handleKeyDown}
                     onBlur={() => onBlur?.(inputValue)}
-                    className={`text-sm font-normal w-full rounded-md border ${
+                    className={`w-full rounded-md border text-sm font-normal ${
                         error ? 'border-red-500' : 'border-white/10'
-                    } bg-background-secondary px-2 py-1 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    } bg-background-secondary px-2 py-1 ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
                     placeholder="Enter color name"
                     autoFocus={autoFocus}
                     disabled={disabled}
                 />
             </TooltipTrigger>
             <TooltipPortal>
-                <TooltipContent side="top" className="text-white bg-red-500 max-w-xs">
+                <TooltipContent side="top" className="max-w-xs bg-red-500 text-white">
                     {error}
                 </TooltipContent>
             </TooltipPortal>

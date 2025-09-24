@@ -1,10 +1,12 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import localforage from 'localforage';
+
+import { Icons } from '@onlook/ui/icons/index';
+
 import { api } from '@/trpc/react';
 import { LocalForageKeys, Routes } from '@/utils/constants';
-import { Icons } from '@onlook/ui/icons/index';
-import localforage from 'localforage';
-import { useRouter } from 'next/navigation';
 import { useAuthContext } from '../../auth/auth-context';
 
 export function Import() {
@@ -27,10 +29,10 @@ export function Import() {
     return (
         <button
             onClick={handleImportProject}
-            className="text-sm text-foreground-secondary hover:text-foreground transition-colors duration-200 flex items-center gap-2"
+            className="text-foreground-secondary hover:text-foreground flex items-center gap-2 text-sm transition-colors duration-200"
         >
-            <Icons.Upload className="w-4 h-4" />
+            <Icons.Upload className="h-4 w-4" />
             Import a Next.js App
         </button>
-    )
+    );
 }

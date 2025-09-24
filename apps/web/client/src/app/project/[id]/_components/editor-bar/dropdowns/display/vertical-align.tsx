@@ -1,8 +1,10 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
+import { Icons } from '@onlook/ui/icons';
+
 import type { CssValue } from '.';
+import { useEditorEngine } from '@/components/store/editor';
 import { InputRadio } from '../../inputs/input-radio';
 
 const verticalAlignOptions: Record<string, CssValue> = {
@@ -49,7 +51,7 @@ export const VerticalAlignInput = observer(() => {
 
     return (
         <div className="flex items-center gap-0">
-            <span className="text-sm text-muted-foreground w-20">Vertical</span>
+            <span className="text-muted-foreground w-20 text-sm">Vertical</span>
             <InputRadio
                 options={Object.values(verticalAlignOptions)}
                 value={value}

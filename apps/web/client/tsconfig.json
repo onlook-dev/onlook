@@ -4,25 +4,11 @@
         "baseUrl": ".",
         "allowArbitraryExtensions": true,
         "paths": {
-            "@/*": [
-                "./src/*"
-            ],
-            "/*": [
-                "./*"
-            ],
-            "~/*": [
-                "./src/*"
-            ]
+            "@/*": ["./src/*"],
+            "/*": ["./*"],
+            "~/*": ["./src/*"]
         }
     },
-    "include": [
-        "src",
-        "tests",
-        ".next/types/**/*.ts",
-        "messages/en.d.json.ts"
-    ],
-    "exclude": [
-        "node_modules",
-        ".next"
-    ]
+    "include": ["src", "test", ".next/types/**/*.ts", "messages/en.d.json.ts"],
+    "exclude": ["node_modules", ".next"]
 }

@@ -1,10 +1,11 @@
 import path from 'path';
 
 function generatePascalCaseName(fileName: string, extension: string): string {
-    const baseName = path.basename(fileName, extension)
+    const baseName = path
+        .basename(fileName, extension)
         .split(/[-_]/)
-        .filter(word => word.length > 0) // Filter out empty words
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .filter((word) => word.length > 0) // Filter out empty words
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join('');
 
     return baseName || 'Component';
@@ -56,7 +57,10 @@ export defaultfunction ${functionName}(options?: ${functionName}Options): void {
 
     // CSS Stylesheet
     '.css': (fileName: string) => {
-        const className = path.basename(fileName, '.css').toLowerCase().replace(/[^a-z0-9]/g, '-');
+        const className = path
+            .basename(fileName, '.css')
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, '-');
 
         return `
 .${className} {
@@ -75,7 +79,10 @@ export defaultfunction ${functionName}(options?: ${functionName}Options): void {
 
     // SCSS Stylesheet
     '.scss': (fileName: string) => {
-        const className = path.basename(fileName, '.scss').toLowerCase().replace(/[^a-z0-9]/g, '-');
+        const className = path
+            .basename(fileName, '.scss')
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, '-');
 
         return `.${className} {
     // Add your styles here
@@ -103,9 +110,10 @@ export defaultfunction ${functionName}(options?: ${functionName}Options): void {
 
     // Markdown Documentation
     '.md': (fileName: string) => {
-        const title = path.basename(fileName, '.md')
+        const title = path
+            .basename(fileName, '.md')
             .split(/[-_]/)
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
             .join(' ');
 
         return `# ${title}
@@ -136,9 +144,10 @@ console.log('Hello, ${title}!');
 
     // HTML Document
     '.html': (fileName: string) => {
-        const title = path.basename(fileName, '.html')
+        const title = path
+            .basename(fileName, '.html')
             .split(/[-_]/)
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
             .join(' ');
 
         return `<!DOCTYPE html>

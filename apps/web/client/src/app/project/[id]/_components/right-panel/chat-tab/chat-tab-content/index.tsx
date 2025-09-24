@@ -1,4 +1,5 @@
-import { type ChatMessage } from '@onlook/models';
+import type { ChatMessage } from '@onlook/models';
+
 import { useChat } from '../../../../_hooks/use-chat';
 import { ChatInput } from '../chat-input';
 import { ChatMessages } from '../chat-messages';
@@ -22,7 +23,7 @@ export const ChatTabContent = ({
     });
 
     return (
-        <div className="flex flex-col h-full justify-end gap-2 pt-2">
+        <div className="flex h-full flex-col justify-end gap-2 pt-2">
             <div className="h-full flex-1 overflow-y-auto">
                 <ChatMessages
                     messages={messages}

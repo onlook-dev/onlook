@@ -1,4 +1,6 @@
-import { useEditorEngine } from '@/components/store/editor';
+import type { CSSProperties } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
 import {
     getAutolayoutStyles,
     LayoutMode,
@@ -6,8 +8,8 @@ import {
     parseModeAndValue,
     stringToParsedValue,
 } from '@onlook/utility';
-import type { CSSProperties } from 'react';
-import { useEffect, useState, useCallback } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
 
 type DimensionType = 'width' | 'height';
 type DimensionProperty<T extends DimensionType> = T | `min${Capitalize<T>}` | `max${Capitalize<T>}`;
@@ -68,7 +70,8 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
         const { num: minNum, unit: minUnit } = stringToParsedValue(minDimensionValue);
 
         const defaultState = createDefaultState(dimension);
-        const capitalized = (dimension.charAt(0).toUpperCase() + dimension.slice(1)) as Capitalize<T>;
+        const capitalized = (dimension.charAt(0).toUpperCase() +
+            dimension.slice(1)) as Capitalize<T>;
 
         const getDropdownValue = (value: string) => {
             const { mode } = parseModeAndValue(value);
@@ -115,47 +118,56 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
         setDimensionState(getInitialState());
     }, [getInitialState]);
 
-    const handleDimensionChange = useCallback((property: DimensionProperty<T>, value: number) => {
-        const parsedValue =  value;
-        const currentState = dimensionState[property];
+    const handleDimensionChange = useCallback(
+        (property: DimensionProperty<T>, value: number) => {
+            const parsedValue = value;
+            const currentState = dimensionState[property];
 
-        if (!currentState) return;
+            if (!currentState) return;
 
-        editorEngine.style.update(property, `${parsedValue}${currentState.unit}`);
-    }, [dimensionState, editorEngine.style]);
+            editorEngine.style.update(property, `${parsedValue}${currentState.unit}`);
+        },
+        [dimensionState, editorEngine.style],
+    );
 
-    const handleUnitChange = useCallback((property: DimensionProperty<T>, unit: string) => {
-        const currentState = dimensionState[property];
+    const handleUnitChange = useCallback(
+        (property: DimensionProperty<T>, unit: string) => {
+            const currentState = dimensionState[property];
 
-        if (!currentState) return;
+            if (!currentState) return;
 
-        if (currentState.num !== undefined) {
-            editorEngine.style.update(property, `${currentState.num}${unit}`);
-        }
-    }, [dimensionState, editorEngine.style]);
+            if (currentState.num !== undefined) {
+                editorEngine.style.update(property, `${currentState.num}${unit}`);
+            }
+        },
+        [dimensionState, editorEngine.style],
+    );
 
-    const handleLayoutChange = useCallback((property: DimensionProperty<T>, value: string) => {
-        const { layoutValue } = parseModeAndValue(value);
-        const selectedStyle = editorEngine.style.selectedStyle;
-        if (!selectedStyle) {
-            console.error('No style record found');
-            return;
-        }
+    const handleLayoutChange = useCallback(
+        (property: DimensionProperty<T>, value: string) => {
+            const { layoutValue } = parseModeAndValue(value);
+            const selectedStyle = editorEngine.style.selectedStyle;
+            if (!selectedStyle) {
+                console.error('No style record found');
+                return;
+            }
 
-        const newLayoutValue = getAutolayoutStyles(
-            LayoutProperty[property as keyof typeof LayoutProperty],
-            LayoutMode[value as keyof typeof LayoutMode],
-            layoutValue,
-            selectedStyle.rect,
-            selectedStyle.parentRect,
-        );
+            const newLayoutValue = getAutolayoutStyles(
+                LayoutProperty[property as keyof typeof LayoutProperty],
+                LayoutMode[value as keyof typeof LayoutMode],
+                layoutValue,
+                selectedStyle.rect,
+                selectedStyle.parentRect,
+            );
 
-        const { num, unit } = stringToParsedValue(newLayoutValue);
+            const { num, unit } = stringToParsedValue(newLayoutValue);
 
-        if (num !== undefined) {
-            editorEngine.style.update(property, `${num}${unit}`);
-        }
-    }, [editorEngine.style]);
+            if (num !== undefined) {
+                editorEngine.style.update(property, `${num}${unit}`);
+            }
+        },
+        [editorEngine.style],
+    );
 
     return {
         dimensionState,

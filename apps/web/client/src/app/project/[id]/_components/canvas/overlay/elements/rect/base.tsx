@@ -1,7 +1,8 @@
-import { EditorAttributes } from '@onlook/constants';
-import type { RectDimensions } from '@onlook/models';
-import { colors } from '@onlook/ui/tokens';
 import React from 'react';
+
+import type { RectDimensions } from '@onlook/models';
+import { EditorAttributes } from '@onlook/constants';
+import { colors } from '@onlook/ui/tokens';
 
 export interface RectProps extends RectDimensions {
     isComponent?: boolean;

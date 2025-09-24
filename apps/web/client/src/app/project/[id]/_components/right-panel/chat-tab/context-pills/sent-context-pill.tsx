@@ -1,10 +1,11 @@
-import { type MessageContext } from '@onlook/models/chat';
+import type { MessageContext } from '@onlook/models/chat';
+
 import { getContextIcon, getTruncatedName } from './helpers';
 
 export function SentContextPill({ context }: { context: MessageContext }) {
     return (
         <span
-            className="flex flex-row gap-0.5 text-xs items-center select-none"
+            className="flex flex-row items-center gap-0.5 text-xs select-none"
             key={context.displayName}
         >
             {getContextIcon(context)}

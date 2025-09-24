@@ -1,10 +1,11 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import localforage from 'localforage';
+
 import { LocalForageKeys } from '@/utils/constants';
 import { sanitizeReturnUrl } from '@/utils/url';
-import localforage from 'localforage';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 
 export default function AuthRedirect() {
     const router = useRouter();
@@ -22,9 +23,9 @@ export default function AuthRedirect() {
     return (
         <div className="flex h-screen w-screen items-center justify-center">
             <div className="text-center">
-                <h1 className="text-2xl font-semibold mb-4">Redirecting...</h1>
+                <h1 className="mb-4 text-2xl font-semibold">Redirecting...</h1>
                 <p className="text-foreground-secondary">Please wait while we redirect you back.</p>
             </div>
         </div>
     );
-} 
+}

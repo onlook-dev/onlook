@@ -8,12 +8,12 @@ export function HighlightText({ text, searchQuery }: { text: string; searchQuery
         <>
             {parts.map((part, index) =>
                 part.toLowerCase() === searchQuery.toLowerCase() ? (
-                    <span key={index} className="font-medium text-foreground">
+                    <span key={index} className="text-foreground font-medium">
                         {part}
                     </span>
                 ) : (
                     part
-                )
+                ),
             )}
         </>
     );

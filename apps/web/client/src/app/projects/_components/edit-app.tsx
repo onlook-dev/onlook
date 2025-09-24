@@ -1,16 +1,18 @@
-import { transKeys } from '@/i18n/keys';
-import { Routes } from '@/utils/constants';
+import type { ComponentProps } from 'react';
+import { useState } from 'react';
+import { redirect } from 'next/navigation';
+import { observer } from 'mobx-react-lite';
+import { motion } from 'motion/react';
+import { useTranslations } from 'next-intl';
+import { usePostHog } from 'posthog-js/react';
+
 import type { Project } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
-import { motion } from 'motion/react';
-import { useTranslations } from 'next-intl';
-import { redirect } from 'next/navigation';
-import { usePostHog } from 'posthog-js/react';
-import type { ComponentProps } from 'react';
-import { useState } from 'react';
+
+import { transKeys } from '@/i18n/keys';
+import { Routes } from '@/utils/constants';
 
 const ButtonMotion = motion.create(Button);
 
@@ -39,19 +41,17 @@ export const EditAppButton = observer(({ project, onClick, ...props }: EditAppBu
     return (
         <ButtonMotion
             size="default"
-            className={cn('gap-2 border border-gray-300 w-auto cursor-pointer',
-                isLoading
-                    ? 'bg-gray-200 text-gray-800'
-                    : 'bg-white text-black hover:bg-gray-100'
+            className={cn(
+                'w-auto cursor-pointer gap-2 border border-gray-300',
+                isLoading ? 'bg-gray-200 text-gray-800' : 'bg-white text-black hover:bg-gray-100',
             )}
             {...props}
-
             // Prevent consumer from overriding these props
             onClick={handleClick}
             disabled={isLoading}
         >
             {isLoading ? (
-                <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
+                <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
             ) : (
                 <Icons.PencilPaper />
             )}

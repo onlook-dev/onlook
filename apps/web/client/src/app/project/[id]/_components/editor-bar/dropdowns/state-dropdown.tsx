@@ -14,14 +14,14 @@ export const StateDropdown = () => {
                 <Button
                     variant="ghost"
                     size="toolbar"
-                    className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
+                    className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                 >
-                    <Icons.StateCursor className="h-4 w-4 min-h-4 min-w-4" />
+                    <Icons.StateCursor className="h-4 min-h-4 w-4 min-w-4" />
                     <span className="text-sm">State</span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="min-w-[120px] mt-1 p-1 rounded-lg">
-                <DropdownMenuItem className="flex items-center px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white">
+            <DropdownMenuContent align="start" className="mt-1 min-w-[120px] rounded-lg p-1">
+                <DropdownMenuItem className="text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border flex items-center rounded-md border px-2 py-1.5 text-sm data-[highlighted]:text-white">
                     Default
                 </DropdownMenuItem>
             </DropdownMenuContent>

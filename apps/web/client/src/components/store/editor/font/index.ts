@@ -1,9 +1,12 @@
 'use client';
 
-import { LeftPanelTabValue, type CodeDiff, type FontUploadFile } from '@onlook/models';
-import type { Font } from '@onlook/models/assets';
-import { generate } from '@onlook/parser';
 import { makeAutoObservable, reaction } from 'mobx';
+
+import type { CodeDiff, FontUploadFile } from '@onlook/models';
+import type { Font } from '@onlook/models/assets';
+import { LeftPanelTabValue } from '@onlook/models';
+import { generate } from '@onlook/parser';
+
 import type { EditorEngine } from '../engine';
 import type { FileEvent } from '../sandbox/file-event-bus';
 import { FontConfigManager } from './font-config-manager';

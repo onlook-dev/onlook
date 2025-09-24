@@ -26,7 +26,7 @@ export function getFramesInSelection(
     dragStart: { x: number; y: number },
     dragEnd: { x: number; y: number },
     canvasPosition: CanvasPosition,
-    canvasScale: number
+    canvasScale: number,
 ): string[] {
     const selectionRect = {
         left: Math.min(dragStart.x, dragEnd.x),
@@ -34,7 +34,7 @@ export function getFramesInSelection(
         right: Math.max(dragStart.x, dragEnd.x),
         bottom: Math.max(dragStart.y, dragEnd.y),
     };
-    
+
     // Convert selection rect to canvas coordinates
     const canvasSelectionRect = {
         left: (selectionRect.left - canvasPosition.x) / canvasScale,
@@ -42,18 +42,18 @@ export function getFramesInSelection(
         right: (selectionRect.right - canvasPosition.x) / canvasScale,
         bottom: (selectionRect.bottom - canvasPosition.y) / canvasScale,
     };
-    
+
     // Find all frames that intersect with the selection rectangle
     const allFrames = editorEngine.frames.getAll();
     const intersectingFrameIds: string[] = [];
-    
-    allFrames.forEach(frameData => {
+
+    allFrames.forEach((frameData) => {
         const frame = frameData.frame;
         const frameLeft = frame.position.x;
         const frameTop = frame.position.y;
         const frameRight = frame.position.x + frame.dimension.width;
         const frameBottom = frame.position.y + frame.dimension.height;
-        
+
         // Check if frame intersects with selection rectangle
         const intersects = !(
             frameLeft > canvasSelectionRect.right ||
@@ -61,12 +61,12 @@ export function getFramesInSelection(
             frameTop > canvasSelectionRect.bottom ||
             frameBottom < canvasSelectionRect.top
         );
-        
+
         if (intersects) {
             intersectingFrameIds.push(frame.id);
         }
     });
-    
+
     return intersectingFrameIds;
 }
 
@@ -84,18 +84,16 @@ export function getSelectedFrameData(
     dragStart: { x: number; y: number },
     dragEnd: { x: number; y: number },
     canvasPosition: CanvasPosition,
-    canvasScale: number
+    canvasScale: number,
 ) {
     const intersectingFrameIds = getFramesInSelection(
         editorEngine,
         dragStart,
         dragEnd,
         canvasPosition,
-        canvasScale
+        canvasScale,
     );
-    
+
     const allFrames = editorEngine.frames.getAll();
-    return allFrames.filter(frameData => 
-        intersectingFrameIds.includes(frameData.frame.id)
-    );
+    return allFrames.filter((frameData) => intersectingFrameIds.includes(frameData.frame.id));
 }

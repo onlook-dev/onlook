@@ -1,8 +1,10 @@
 'use client';
 
-import type { Frame, LayerNode } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
+
+import type { Frame, LayerNode } from '@onlook/models';
+
 import type { EditorEngine } from '../engine';
 
 export class FrameEventManager {
@@ -111,7 +113,10 @@ export class FrameEventManager {
         }
     }
 
-    async handleDomProcessed(frameId: string, data: { layerMap: Record<string, LayerNode>; rootNode: LayerNode }): Promise<void> {
+    async handleDomProcessed(
+        frameId: string,
+        data: { layerMap: Record<string, LayerNode>; rootNode: LayerNode },
+    ): Promise<void> {
         try {
             const layerMapConverted = new Map(Object.entries(data.layerMap));
 
@@ -143,10 +148,12 @@ export class FrameEventManager {
                 } catch {
                     return null;
                 }
-            })
+            }),
         );
 
-        const validElements = stillValidElements.filter((el): el is typeof selectedElements[0] => el !== null);
+        const validElements = stillValidElements.filter(
+            (el): el is (typeof selectedElements)[0] => el !== null,
+        );
         if (validElements.length !== selectedElements.length) {
             this.editorEngine.elements.click(validElements);
         }
@@ -156,4 +163,4 @@ export class FrameEventManager {
         this.viewportReactionDisposer?.();
         this.viewportReactionDisposer = undefined;
     }
-} 
+}

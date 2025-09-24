@@ -1,9 +1,10 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
-import { transKeys } from '@/i18n/keys';
-import { api } from '@/trpc/react';
-import { Routes } from '@/utils/constants';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { observer } from 'mobx-react-lite';
+import { useTranslations } from 'next-intl';
+
 import {
     DropdownMenuItem,
     DropdownMenuSeparator,
@@ -12,10 +13,11 @@ import {
     DropdownMenuSubTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
-import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
+import { transKeys } from '@/i18n/keys';
+import { api } from '@/trpc/react';
+import { Routes } from '@/utils/constants';
 
 export const RecentProjectsMenu = observer(() => {
     const editorEngine = useEditorEngine();
@@ -29,9 +31,7 @@ export const RecentProjectsMenu = observer(() => {
         excludeProjectId: currentProjectId,
     });
 
-    const recentProjects = projects
-        ?.filter(project => project.id !== currentProjectId)
-        || [];
+    const recentProjects = projects?.filter((project) => project.id !== currentProjectId) || [];
 
     const handleProjectClick = async (projectId: string) => {
         setLoadingProjectId(projectId);
@@ -42,15 +42,15 @@ export const RecentProjectsMenu = observer(() => {
         return (
             <DropdownMenuSub>
                 <DropdownMenuSubTrigger className="cursor-pointer">
-                    <div className="flex flex-row center items-center">
+                    <div className="center flex flex-row items-center">
                         <Icons.Cube className="mr-2" />
                         {t(transKeys.projects.actions.recentProjects)}
                     </div>
                 </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent className='ml-2'>
+                <DropdownMenuSubContent className="ml-2">
                     <DropdownMenuItem disabled>
-                        <div className="flex flex-row center items-center">
-                            <Icons.LoadingSpinner className="mr-2 w-4 h-4 animate-spin" />
+                        <div className="center flex flex-row items-center">
+                            <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />
                             Loading...
                         </div>
                     </DropdownMenuItem>
@@ -63,21 +63,24 @@ export const RecentProjectsMenu = observer(() => {
         return (
             <DropdownMenuSub>
                 <DropdownMenuSubTrigger className="cursor-pointer">
-                    <div className="flex flex-row center items-center">
+                    <div className="center flex flex-row items-center">
                         <Icons.Cube className="mr-2" />
                         {t(transKeys.projects.actions.recentProjects)}
                     </div>
                 </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent className='ml-2'>
+                <DropdownMenuSubContent className="ml-2">
                     <DropdownMenuItem disabled>
-                        <div className="flex flex-row center items-center text-muted-foreground">
+                        <div className="center text-muted-foreground flex flex-row items-center">
                             <Icons.Cube className="mr-2" />
                             {t(transKeys.projects.select.empty)}
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => router.push(Routes.PROJECTS)} className="cursor-pointer">
-                        <div className="flex flex-row center items-center">
+                    <DropdownMenuItem
+                        onClick={() => router.push(Routes.PROJECTS)}
+                        className="cursor-pointer"
+                    >
+                        <div className="center flex flex-row items-center">
                             <Icons.Tokens className="mr-2" />
                             {t(transKeys.projects.actions.goToAllProjects)}
                         </div>
@@ -90,12 +93,12 @@ export const RecentProjectsMenu = observer(() => {
     return (
         <DropdownMenuSub>
             <DropdownMenuSubTrigger className="cursor-pointer">
-                <div className="flex flex-row center items-center">
+                <div className="center flex flex-row items-center">
                     <Icons.Cube className="mr-2" />
                     {t(transKeys.projects.actions.recentProjects)}
                 </div>
             </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent className="w-48 ml-2">
+            <DropdownMenuSubContent className="ml-2 w-48">
                 {recentProjects.map((project) => (
                     <DropdownMenuItem
                         key={project.id}
@@ -103,15 +106,13 @@ export const RecentProjectsMenu = observer(() => {
                         disabled={loadingProjectId === project.id}
                         className="cursor-pointer"
                     >
-                        <div className="flex flex-row center items-center group">
+                        <div className="center group flex flex-row items-center">
                             {loadingProjectId === project.id ? (
-                                <Icons.LoadingSpinner className="mr-2 w-4 h-4 animate-spin" />
+                                <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />
                             ) : (
                                 <Icons.Cube className="mr-2" />
                             )}
-                            <span className="truncate max-w-[120px]">
-                                {project.name}
-                            </span>
+                            <span className="max-w-[120px] truncate">{project.name}</span>
                         </div>
                     </DropdownMenuItem>
                 ))}

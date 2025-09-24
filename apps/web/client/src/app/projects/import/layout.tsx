@@ -1,7 +1,8 @@
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+
 import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
-import { type Metadata } from 'next';
-import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
     title: 'Onlook',

@@ -1,28 +1,23 @@
-import { trackEvent } from '@/utils/analytics/server.ts';
-import { deployments, type Deployment, type DrizzleDb } from '@onlook/db';
-import {
-    DeploymentStatus,
-    DeploymentType,
-    HostingProvider
-} from '@onlook/models';
-import { TRPCError } from '@trpc/server';
 import { randomUUID } from 'crypto';
-import {
-    type FreestyleFile,
-} from 'freestyle-sandboxes';
+import type { FreestyleFile } from 'freestyle-sandboxes';
+import { TRPCError } from '@trpc/server';
+
+import type { Deployment, DrizzleDb } from '@onlook/db';
+import type { DeploymentType } from '@onlook/models';
+import { DeploymentStatus, HostingProvider } from '@onlook/models';
+
+import { trackEvent } from '@/utils/analytics/server.ts';
 import { HostingProviderFactory } from '../../domain/hosting-factory.ts';
 
-export const deployFreestyle = async (
-    {
-        files,
-        urls,
-        envVars,
-    }: {
-        files: Record<string, FreestyleFile>,
-        urls: string[],
-        envVars?: Record<string, string>,
-    }
-): Promise<{
+export const deployFreestyle = async ({
+    files,
+    urls,
+    envVars,
+}: {
+    files: Record<string, FreestyleFile>;
+    urls: string[];
+    envVars?: Record<string, string>;
+}): Promise<{
     success: boolean;
     message?: string;
 }> => {
@@ -32,7 +27,7 @@ export const deployFreestyle = async (
     for (const [path, file] of Object.entries(files)) {
         deploymentFiles[path] = {
             content: file.content,
-            encoding: (file.encoding === 'base64' ? 'base64' : 'utf-8')
+            encoding: file.encoding === 'base64' ? 'base64' : 'utf-8',
         };
     }
 
@@ -50,7 +45,7 @@ export const deployFreestyle = async (
     }
 
     return result;
-}
+};
 
 export async function createDeployment({
     db,
@@ -71,19 +66,22 @@ export async function createDeployment({
     buildFlags?: string;
     envVars?: Record<string, string>;
 }): Promise<Deployment> {
-    const [deployment] = await db.insert(deployments).values({
-        id: randomUUID(),
-        projectId,
-        sandboxId,
-        type,
-        buildScript,
-        buildFlags,
-        envVars,
-        status: DeploymentStatus.PENDING,
-        requestedBy: userId,
-        message: 'Creating deployment...',
-        progress: 0,
-    }).returning();
+    const [deployment] = await db
+        .insert(deployments)
+        .values({
+            id: randomUUID(),
+            projectId,
+            sandboxId,
+            type,
+            buildScript,
+            buildFlags,
+            envVars,
+            status: DeploymentStatus.PENDING,
+            requestedBy: userId,
+            message: 'Creating deployment...',
+            progress: 0,
+        })
+        .returning();
 
     if (!deployment) {
         throw new TRPCError({

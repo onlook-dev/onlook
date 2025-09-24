@@ -1,14 +1,16 @@
 'use client';
 
-import { useStateManager } from '@/components/store/state';
-import { useGetBackground } from '@/hooks/use-get-background';
-import { transKeys } from '@/i18n/keys';
-import { ProductType, ScheduledSubscriptionAction } from '@onlook/stripe';
-import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { useTranslations } from 'next-intl';
+
+import { ProductType, ScheduledSubscriptionAction } from '@onlook/stripe';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
+
+import { useStateManager } from '@/components/store/state';
+import { useGetBackground } from '@/hooks/use-get-background';
+import { transKeys } from '@/i18n/keys';
 import { FreeCard } from './free-card';
 import { ProCard } from './pro-card';
 import { useSubscription } from './use-subscription';
@@ -21,20 +23,23 @@ export const SubscriptionModal = observer(() => {
 
     const getSubscriptionChangeMessage = () => {
         let message = '';
-        if (subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.PRICE_CHANGE && subscription.scheduledChange.price) {
+        if (
+            subscription?.scheduledChange?.scheduledAction ===
+                ScheduledSubscriptionAction.PRICE_CHANGE &&
+            subscription.scheduledChange.price
+        ) {
             message = `Your ${subscription.scheduledChange.price.monthlyMessageLimit} messages a month plan starts on ${subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
-        } else if (subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION) {
+        } else if (
+            subscription?.scheduledChange?.scheduledAction ===
+            ScheduledSubscriptionAction.CANCELLATION
+        ) {
             message = `Your subscription will end on ${subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
         }
 
         if (message) {
-            return (
-                <div className="text-foreground-secondary/80 text-balance">
-                    {message}
-                </div>
-            );
+            return <div className="text-foreground-secondary/80 text-balance">{message}</div>;
         }
-    }
+    };
 
     return (
         <AnimatePresence>
@@ -47,18 +52,18 @@ export const SubscriptionModal = observer(() => {
                     transition={{ duration: 0.2 }}
                 >
                     <div
-                        className="relative w-full h-full flex items-center justify-center"
+                        className="relative flex h-full w-full items-center justify-center"
                         style={{
                             backgroundImage: `url(${backgroundUrl})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                         }}
                     >
-                        <div className="absolute inset-0 bg-background/50" />
+                        <div className="bg-background/50 absolute inset-0" />
                         <Button
                             variant="ghost"
-                            onClick={() => state.isSubscriptionModalOpen = false}
-                            className="fixed top-8 right-10 text-foreground-secondary"
+                            onClick={() => (state.isSubscriptionModalOpen = false)}
+                            className="text-foreground-secondary fixed top-8 right-10"
                         >
                             <Icons.CrossL className="h-4 w-4" />
                         </Button>
@@ -66,29 +71,24 @@ export const SubscriptionModal = observer(() => {
                             <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
                                 <motion.div className="flex flex-col items-center gap-3">
                                     <motion.div
-                                        className="flex flex-col gap-2 text-center mb-4"
+                                        className="mb-4 flex flex-col gap-2 text-center"
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.05 }}
                                     >
-                                        <div className="flex flex-col gap-2 w-[46rem] items-start">
+                                        <div className="flex w-[46rem] flex-col items-start gap-2">
                                             <h1 className="text-title2 text-foreground-primary">
                                                 {subscription?.product.type === ProductType.PRO
                                                     ? t(transKeys.pricing.titles.proMember)
-                                                    : t(transKeys.pricing.titles.choosePlan)
-                                                }
-                                            </h1 >
+                                                    : t(transKeys.pricing.titles.choosePlan)}
+                                            </h1>
                                             {getSubscriptionChangeMessage()}
-                                        </div >
+                                        </div>
                                     </motion.div>
                                     <div className="flex gap-4">
-                                        <FreeCard
-                                            delay={0.1}
-                                        />
-                                        <ProCard
-                                            delay={0.2}
-                                        />
-                                    </div >
+                                        <FreeCard delay={0.1} />
+                                        <ProCard delay={0.2} />
+                                    </div>
                                     <motion.div
                                         className="flex flex-col gap-2 text-center"
                                         initial={{ opacity: 0, y: 5 }}

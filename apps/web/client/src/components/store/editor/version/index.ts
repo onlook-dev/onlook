@@ -1,8 +1,10 @@
-import { sanitizeCommitMessage } from '@/utils/git';
-import { type GitCommit } from '@onlook/git';
-import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
+
+import type { GitCommit } from '@onlook/git';
+import { toast } from '@onlook/ui/sonner';
+
 import type { EditorEngine } from '../engine';
+import { sanitizeCommitMessage } from '@/utils/git';
 import { GitManager } from './git';
 
 export enum CreateCommitFailureReason {
@@ -125,7 +127,7 @@ export class VersionsManager {
                 message: sanitizedMessage,
             });
 
-            const latestCommit = commits.length > 0 ? commits[0] ?? null : null;
+            const latestCommit = commits.length > 0 ? (commits[0] ?? null) : null;
             return {
                 success: true,
                 commit: latestCommit,
@@ -322,5 +324,5 @@ export class VersionsManager {
         toast.success('Latest backup bookmarked!');
     };
 
-    dispose() { }
+    dispose() {}
 }

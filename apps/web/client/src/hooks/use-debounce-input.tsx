@@ -1,10 +1,10 @@
-import { debounce } from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { debounce } from 'lodash';
 
 export const useDebouncedInput = (
     initialValue: string,
     onChange: (value: string) => void,
-    delay: number = 500,
+    delay = 500,
 ) => {
     const [localValue, setLocalValue] = useState(initialValue);
 

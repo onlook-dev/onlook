@@ -1,5 +1,7 @@
-import type { RectDimension, RectPosition } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
+
+import type { RectDimension, RectPosition } from '@onlook/models';
+
 import type { EditorEngine } from '../engine';
 import type { SnapBounds, SnapConfig, SnapFrame, SnapLine, SnapTarget } from './types';
 import { SnapLineType } from './types';
@@ -43,9 +45,10 @@ export class SnapManager {
     }
 
     private getSnapFrames(excludeFrameId?: string): SnapFrame[] {
-        return this.editorEngine.frames.getAll()
-            .filter(frameData => frameData.frame.id !== excludeFrameId)
-            .map(frameData => {
+        return this.editorEngine.frames
+            .getAll()
+            .filter((frameData) => frameData.frame.id !== excludeFrameId)
+            .map((frameData) => {
                 const frame = frameData.frame;
                 return {
                     id: frame.id,
@@ -67,12 +70,16 @@ export class SnapManager {
 
         const dragBounds = this.createSnapBounds(currentPosition, dimension);
         const otherFrames = this.getSnapFrames(dragFrameId);
-        
+
         if (otherFrames.length === 0) {
             return null;
         }
 
-        const snapCandidates: Array<{ position: RectPosition; lines: SnapLine[]; distance: number }> = [];
+        const snapCandidates: Array<{
+            position: RectPosition;
+            lines: SnapLine[];
+            distance: number;
+        }> = [];
 
         for (const otherFrame of otherFrames) {
             const candidates = this.calculateSnapCandidates(dragBounds, otherFrame);
@@ -106,8 +113,9 @@ export class SnapManager {
         dragBounds: SnapBounds,
         otherFrame: SnapFrame,
     ): Array<{ position: RectPosition; lines: SnapLine[]; distance: number }> {
-        const candidates: Array<{ position: RectPosition; lines: SnapLine[]; distance: number }> = [];
-        
+        const candidates: Array<{ position: RectPosition; lines: SnapLine[]; distance: number }> =
+            [];
+
         const edgeAlignments = [
             {
                 type: SnapLineType.EDGE_LEFT,
@@ -173,16 +181,22 @@ export class SnapManager {
 
         for (const alignment of edgeAlignments) {
             const distance = Math.abs(alignment.dragOffset - alignment.targetValue);
-            
+
             if (distance <= this.config.threshold) {
                 const offset = alignment.targetValue - alignment.dragOffset;
-                const newPosition = alignment.orientation === 'horizontal' 
-                    ? { x: dragBounds.left, y: dragBounds.top + offset }
-                    : { x: dragBounds.left + offset, y: dragBounds.top };
+                const newPosition =
+                    alignment.orientation === 'horizontal'
+                        ? { x: dragBounds.left, y: dragBounds.top + offset }
+                        : { x: dragBounds.left + offset, y: dragBounds.top };
 
-                const snapLine = this.createSnapLine(alignment.type, alignment.orientation, alignment.targetValue, otherFrame, dragBounds);
-                
-                
+                const snapLine = this.createSnapLine(
+                    alignment.type,
+                    alignment.orientation,
+                    alignment.targetValue,
+                    otherFrame,
+                    dragBounds,
+                );
+
                 candidates.push({
                     position: newPosition,
                     lines: [snapLine],
@@ -209,7 +223,8 @@ export class SnapManager {
             end = Math.max(dragBounds.right, otherFrame.bounds.right) + SNAP_CONFIG.LINE_EXTENSION;
         } else {
             start = Math.min(dragBounds.top, otherFrame.bounds.top) - SNAP_CONFIG.LINE_EXTENSION;
-            end = Math.max(dragBounds.bottom, otherFrame.bounds.bottom) + SNAP_CONFIG.LINE_EXTENSION;
+            end =
+                Math.max(dragBounds.bottom, otherFrame.bounds.bottom) + SNAP_CONFIG.LINE_EXTENSION;
         }
 
         return {

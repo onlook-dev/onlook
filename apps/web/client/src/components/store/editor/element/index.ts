@@ -1,7 +1,9 @@
+import { makeAutoObservable } from 'mobx';
+
 import type { CoreElementType, DomElement, DynamicType } from '@onlook/models';
 import type { RemoveElementAction } from '@onlook/models/actions';
 import { toast } from '@onlook/ui/sonner';
-import { makeAutoObservable } from 'mobx';
+
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
 import { adaptRectToCanvas } from '../overlay/utils';

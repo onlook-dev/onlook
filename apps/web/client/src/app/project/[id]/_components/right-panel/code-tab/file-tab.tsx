@@ -1,6 +1,7 @@
+import React from 'react';
+
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import React from 'react';
 
 export interface FileTabProps {
     filename: string;
@@ -20,46 +21,50 @@ export const FileTab: React.FC<FileTabProps> = ({
     'data-active': dataActive,
 }) => {
     return (
-        <div className="h-full pl-3 pr-3 relative group" data-active={dataActive}>
-            <div className="absolute right-0 h-[50%] w-[0.5px] bg-foreground/10 top-1/2 -translate-y-1/2"></div>
-            <div className="flex items-center h-full relative">
+        <div className="group relative h-full pr-3 pl-3" data-active={dataActive}>
+            <div className="bg-foreground/10 absolute top-1/2 right-0 h-[50%] w-[0.5px] -translate-y-1/2"></div>
+            <div className="relative flex h-full items-center">
                 <button
                     className={cn(
-                        'text-sm h-full flex items-center focus:outline-none max-w-[150px]',
+                        'flex h-full max-w-[150px] items-center text-sm focus:outline-none',
                         isActive
-                            ? isDirty 
+                            ? isDirty
                                 ? 'text-teal-300'
                                 : 'text-foreground'
                             : isDirty
-                                ? 'text-teal-500'
-                                : 'text-foreground-secondary/50',
+                              ? 'text-teal-500'
+                              : 'text-foreground-secondary/50',
                     )}
                     onClick={onClick}
                 >
                     <span className="truncate">{filename}</span>
                     {isDirty && (
-                        <span className={cn(
-                            "ml-1 flex-shrink-0",
-                            isActive ? "text-teal-300" : "text-teal-500"
-                        )}>
+                        <span
+                            className={cn(
+                                'ml-1 flex-shrink-0',
+                                isActive ? 'text-teal-300' : 'text-teal-500',
+                            )}
+                        >
                             ●
                         </span>
                     )}
                     {isActive && (
-                        <div className={cn(
-                            "absolute bottom-0 left-0 w-full h-[2px]",
-                            isDirty ? "bg-teal-300" : "bg-foreground-hover"
-                        )}></div>
+                        <div
+                            className={cn(
+                                'absolute bottom-0 left-0 h-[2px] w-full',
+                                isDirty ? 'bg-teal-300' : 'bg-foreground-hover',
+                            )}
+                        ></div>
                     )}
                     {!isActive && (
-                        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-foreground-tertiary/50 opacity-0 group-hover:opacity-100"></div>
+                        <div className="bg-foreground-tertiary/50 absolute bottom-0 left-0 h-[2px] w-full opacity-0 group-hover:opacity-100"></div>
                     )}
                 </button>
-                <div className="absolute right-[-3px] top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity group-hover:bg-background-primary rounded-md">
+                <div className="group-hover:bg-background-primary absolute top-1/2 right-[-3px] z-10 -translate-y-1/2 rounded-md opacity-0 transition-opacity group-hover:opacity-100">
                     <button
                         className={cn(
-                            "cursor-pointer p-1.5 flex-shrink-0 hover:text-foreground-hover hover:bg-secondary hover:rounded-md",
-                            isActive ? "text-foreground-secondary" : "text-foreground-primary"
+                            'hover:text-foreground-hover hover:bg-secondary flex-shrink-0 cursor-pointer p-1.5 hover:rounded-md',
+                            isActive ? 'text-foreground-secondary' : 'text-foreground-primary',
                         )}
                         onClick={(e) => {
                             e.stopPropagation();

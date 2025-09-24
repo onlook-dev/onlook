@@ -1,19 +1,19 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { SystemTheme } from '@onlook/models/assets';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import type { TailwindColor } from '@onlook/models/style';
-import {
-    ColorPicker,
-    Gradient,
-    type GradientState
-} from '@onlook/ui/color-picker';
+import type { GradientState } from '@onlook/ui/color-picker';
+import type { Palette } from '@onlook/utility';
+import { SystemTheme } from '@onlook/models/assets';
+import { ColorPicker, Gradient } from '@onlook/ui/color-picker';
 import { parseGradientFromCSS } from '@onlook/ui/color-picker/Gradient';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { cn } from '@onlook/ui/utils';
-import { Color, toNormalCase, type Palette } from '@onlook/utility';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Color, toNormalCase } from '@onlook/utility';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { useGradientUpdate } from '../hooks/use-gradient-update';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { hasGradient } from '../utils/gradient';
@@ -47,16 +47,16 @@ const ColorGroup = ({
     }, [expanded]);
 
     return (
-        <div className="w-full group">
+        <div className="group w-full">
             <button
                 aria-label={`Toggle ${expanded ? 'closed' : 'open'}`}
-                className="sticky top-0 z-10 bg-background rounded flex items-center p-1 w-full"
+                className="bg-background sticky top-0 z-10 flex w-full items-center rounded p-1"
                 onClick={() => setExpanded(!expanded)}
             >
-                <div className="flex items-center gap-1 flex-1">
+                <div className="flex flex-1 items-center gap-1">
                     <span className="text-xs font-normal capitalize">{toNormalCase(name)}</span>
                     {isDefault && (
-                        <span className="ml-2 text-xs text-muted-foreground">Default</span>
+                        <span className="text-muted-foreground ml-2 text-xs">Default</span>
                     )}
                 </div>
                 {expanded ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
@@ -71,19 +71,18 @@ const ColorGroup = ({
                         <div
                             key={color.name}
                             ref={isSelected ? selectedRef : undefined}
-                            className={`flex items-center gap-1.5 rounded-md p-1 hover:bg-background-secondary hover:cursor-pointer 
-                                ${isSelected ? 'bg-background-tertiary' : ''}`}
+                            className={`hover:bg-background-secondary flex items-center gap-1.5 rounded-md p-1 hover:cursor-pointer ${isSelected ? 'bg-background-tertiary' : ''}`}
                             onClick={() => onColorSelect(color)}
                         >
                             <div
-                                className="w-5 h-5 rounded-sm"
+                                className="h-5 w-5 rounded-sm"
                                 style={{ backgroundColor: color.lightColor }}
                             />
-                            <span className="text-xs font-normal truncate max-w-32">
+                            <span className="max-w-32 truncate text-xs font-normal">
                                 {toNormalCase(color.name)}
                             </span>
                             {isSelected && (
-                                <Icons.CheckCircled className="ml-auto text-primary w-4 h-4" />
+                                <Icons.CheckCircled className="text-primary ml-auto h-4 w-4" />
                             )}
                         </div>
                     );
@@ -137,7 +136,6 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     const [activeTab, setActiveTab] = useState<TabValue>(
         isCreatingNewColor ? TabValue.CUSTOM : TabValue.BRAND,
     );
-
 
     const isColorRemoved = (colorToCheck: Color) => colorToCheck.isEqual(Color.from('transparent'));
 
@@ -380,7 +378,13 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             setGradientState(defaultGradient);
             setSelectedStopId('stop-1');
         }
-    }, [editorEngine.elements.selected, editorEngine.style.selectedStyle?.styles.computed.backgroundImage, backgroundImage, parseGradientFromCSS, onChange]);
+    }, [
+        editorEngine.elements.selected,
+        editorEngine.style.selectedStyle?.styles.computed.backgroundImage,
+        backgroundImage,
+        parseGradientFromCSS,
+        onChange,
+    ]);
 
     useEffect(() => {
         (async () => {
@@ -482,46 +486,49 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         [gradientState.stops, onChange],
     );
 
-    const applyPresetGradient = useCallback((preset: PresetGradient) => {
-        try {
-            let angle = 0;
-            if (preset.type === 'linear') {
-                angle = parseInt((/(\d+)deg/.exec(preset.css))?.[1] ?? '90');
-            }
+    const applyPresetGradient = useCallback(
+        (preset: PresetGradient) => {
+            try {
+                let angle = 0;
+                if (preset.type === 'linear') {
+                    angle = parseInt(/(\d+)deg/.exec(preset.css)?.[1] ?? '90');
+                }
 
-            const newGradientState: GradientState = {
-                type: preset.type,
-                angle: angle,
-                stops: preset.stops.map((stop, index) => ({
-                    id: `stop-${index + 1}`,
-                    color: stop.color,
-                    position: stop.position,
-                    opacity: stop.opacity ?? 100,
-                })),
-            };
-            setGradientState(newGradientState);
-            setSelectedStopId('stop-1');
-            handleGradientChange(newGradientState);
+                const newGradientState: GradientState = {
+                    type: preset.type,
+                    angle: angle,
+                    stops: preset.stops.map((stop, index) => ({
+                        id: `stop-${index + 1}`,
+                        color: stop.color,
+                        position: stop.position,
+                        opacity: stop.opacity ?? 100,
+                    })),
+                };
+                setGradientState(newGradientState);
+                setSelectedStopId('stop-1');
+                handleGradientChange(newGradientState);
 
-            const firstStop = newGradientState.stops[0];
-            if (firstStop) {
-                onChange(Color.from(firstStop.color));
+                const firstStop = newGradientState.stops[0];
+                if (firstStop) {
+                    onChange(Color.from(firstStop.color));
+                }
+            } catch (error) {
+                console.error('Error applying preset gradient:', error);
             }
-        } catch (error) {
-            console.error('Error applying preset gradient:', error);
-        }
-    }, [handleGradientChange, onChange]);
+        },
+        [handleGradientChange, onChange],
+    );
 
     function renderPalette() {
         const colors = Object.keys(palette.colors);
         return (
             <div className="px-0.5 py-1">
                 {viewMode === 'grid' ? (
-                    <div className="grid grid-cols-7 gap-1.5 p-1 text-center justify-between">
+                    <div className="grid grid-cols-7 justify-between gap-1.5 p-1 text-center">
                         {colors.map((level) => (
                             <div
                                 key={level}
-                                className="w-6 h-6 content-center cursor-pointer rounded border-[0.5px] border-foreground-tertiary/50"
+                                className="border-foreground-tertiary/50 h-6 w-6 cursor-pointer content-center rounded border-[0.5px]"
                                 style={{ backgroundColor: palette.colors[Number.parseInt(level)] }}
                                 onClick={() => {
                                     if (hasGradient(backgroundImage)) {
@@ -540,7 +547,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                     <div className="flex flex-col">
                         {colors.map((level) => (
                             <div
-                                className="gap-2 hover:bg-background-secondary p-1 flex align-center cursor-pointer rounded-md group"
+                                className="hover:bg-background-secondary align-center group flex cursor-pointer gap-2 rounded-md p-1"
                                 key={level}
                                 onClick={() => {
                                     if (hasGradient(backgroundImage)) {
@@ -555,7 +562,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                             >
                                 <div
                                     key={level}
-                                    className="w-5 h-5 content-center rounded border-[0.5px] border-foreground-tertiary/50"
+                                    className="border-foreground-tertiary/50 h-5 w-5 content-center rounded border-[0.5px]"
                                     style={{
                                         backgroundColor: palette.colors[Number.parseInt(level)],
                                     }}
@@ -577,11 +584,11 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         return (
             <div className="px-0.5 py-1">
                 {viewMode === 'grid' ? (
-                    <div className="grid grid-cols-7 gap-1.5 p-1 text-center justify-between">
+                    <div className="grid grid-cols-7 justify-between gap-1.5 p-1 text-center">
                         {presetGradients.map((preset) => (
                             <div
                                 key={preset.id}
-                                className="w-6 h-6 content-center cursor-pointer rounded border-[0.5px] border-foreground-tertiary/50"
+                                className="border-foreground-tertiary/50 h-6 w-6 cursor-pointer content-center rounded border-[0.5px]"
                                 style={{ background: preset.css }}
                                 onClick={() => applyPresetGradient(preset)}
                             />
@@ -591,13 +598,13 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                     <div className="flex flex-col">
                         {presetGradients.map((preset) => (
                             <div
-                                className="gap-2 hover:bg-background-secondary p-1 flex align-center cursor-pointer rounded-md group"
+                                className="hover:bg-background-secondary align-center group flex cursor-pointer gap-2 rounded-md p-1"
                                 key={preset.id}
                                 onClick={() => applyPresetGradient(preset)}
                             >
                                 <div
                                     key={preset.id}
-                                    className="w-5 h-5 content-center rounded border-[0.5px] border-foreground-tertiary/50"
+                                    className="border-foreground-tertiary/50 h-5 w-5 content-center rounded border-[0.5px]"
                                     style={{ background: preset.css }}
                                 />
                                 <div className="text-small text-foreground-secondary group-hover:text-foreground-primary">
@@ -612,32 +619,32 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     }
 
     return (
-        <div className="flex flex-col justify-between items-center">
+        <div className="flex flex-col items-center justify-between">
             <Tabs
                 value={activeTab}
                 onValueChange={(value) => setActiveTab(value as TabValue)}
                 className="w-full"
             >
                 {!isCreatingNewColor && (
-                    <TabsList className="bg-transparent px-2 m-0 gap-2 justify-between w-full">
+                    <TabsList className="m-0 w-full justify-between gap-2 bg-transparent px-2">
                         <div className="flex gap-1">
                             <TabsTrigger
                                 value={TabValue.BRAND}
-                                className="flex items-center justify-center px-1.5 py-1 text-xs rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
+                                className="hover:bg-background-secondary hover:text-foreground-primary flex items-center justify-center rounded-md bg-transparent px-1.5 py-1 text-xs transition-colors"
                             >
                                 Brand
                             </TabsTrigger>
 
                             <TabsTrigger
                                 value={TabValue.CUSTOM}
-                                className="flex items-center justify-center px-1.5 py-1 text-xs rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
+                                className="hover:bg-background-secondary hover:text-foreground-primary flex items-center justify-center rounded-md bg-transparent px-1.5 py-1 text-xs transition-colors"
                             >
                                 Custom
                             </TabsTrigger>
                             {!hideGradient && (
                                 <TabsTrigger
                                     value={TabValue.GRADIENT}
-                                    className="flex items-center justify-center px-1.5 py-1 text-xs rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
+                                    className="hover:bg-background-secondary hover:text-foreground-primary flex items-center justify-center rounded-md bg-transparent px-1.5 py-1 text-xs transition-colors"
                                 >
                                     Gradient
                                 </TabsTrigger>
@@ -653,10 +660,10 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                             >
                                 <button
                                     className={cn(
-                                        'p-1 rounded transition-colors',
+                                        'rounded p-1 transition-colors',
                                         isColorRemoved(color)
                                             ? 'bg-background-secondary'
-                                            : 'hover:bg-background-tertiary'
+                                            : 'hover:bg-background-tertiary',
                                     )}
                                     onClick={handleRemoveColor}
                                 >
@@ -665,7 +672,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                                             'h-4 w-4',
                                             isColorRemoved(color)
                                                 ? 'text-foreground-primary'
-                                                : 'text-foreground-tertiary'
+                                                : 'text-foreground-tertiary',
                                         )}
                                     />
                                 </button>
@@ -675,30 +682,30 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                 )}
 
                 {!isCreatingNewColor && (
-                    <TabsContent value={TabValue.BRAND} className="p-0 m-0 text-xs">
-                        <div className="border-b border-t">
+                    <TabsContent value={TabValue.BRAND} className="m-0 p-0 text-xs">
+                        <div className="border-t border-b">
                             <div className="relative">
-                                <Icons.MagnifyingGlass className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                                <Icons.MagnifyingGlass className="text-muted-foreground absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 transform" />
                                 <Input
                                     ref={inputRef}
                                     type="text"
                                     placeholder="Search colors"
-                                    className="text-xs pl-7 pr-8 rounded-none border-none"
+                                    className="rounded-none border-none pr-8 pl-7 text-xs"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     onKeyDown={handleKeyDown}
                                 />
                                 {searchQuery && (
                                     <button
-                                        className="absolute right-[1px] top-[1px] bottom-[1px] aspect-square hover:bg-background-onlook active:bg-transparent flex items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] group"
+                                        className="hover:bg-background-onlook group absolute top-[1px] right-[1px] bottom-[1px] flex aspect-square items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] active:bg-transparent"
                                         onClick={() => setSearchQuery('')}
                                     >
-                                        <Icons.CrossS className="h-3 w-3 text-foreground-primary/50 group-hover:text-foreground-primary" />
+                                        <Icons.CrossS className="text-foreground-primary/50 group-hover:text-foreground-primary h-3 w-3" />
                                     </button>
                                 )}
                             </div>
                         </div>
-                        <div className="flex flex-col gap-1 overflow-y-auto max-h-96 px-2 mt-2">
+                        <div className="mt-2 flex max-h-96 flex-col gap-1 overflow-y-auto px-2">
                             {filteredColorGroups.map(([name, colors]) => (
                                 <ColorGroup
                                     key={name}
@@ -722,7 +729,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                     </TabsContent>
                 )}
 
-                <TabsContent value={TabValue.CUSTOM} className="p-0 m-0">
+                <TabsContent value={TabValue.CUSTOM} className="m-0 p-0">
                     <ColorPicker
                         color={color}
                         onChange={onChange}
@@ -735,7 +742,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                         }}
                     />
                     <Separator />
-                    <div className="flex flex-row items-center justify-between w-full px-2 py-1">
+                    <div className="flex w-full flex-row items-center justify-between px-2 py-1">
                         <span className="text-foreground-secondary text-small">{palette.name}</span>
                         <button
                             aria-label={`Toggle ${viewMode === 'grid' ? 'list' : 'grid'} mode`}
@@ -743,48 +750,49 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                             onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
                         >
                             {viewMode === 'grid' ? (
-                                <Icons.ViewGrid className="w-3 h-3" />
+                                <Icons.ViewGrid className="h-3 w-3" />
                             ) : (
-                                <Icons.ViewHorizontal className="w-3 h-3" />
+                                <Icons.ViewHorizontal className="h-3 w-3" />
                             )}
                         </button>
                     </div>
                     <Separator />
-                    <div className="h-28 px-1 overflow-hidden overflow-y-auto">
+                    <div className="h-28 overflow-hidden overflow-y-auto px-1">
                         {renderPalette()}
                     </div>
                 </TabsContent>
                 {!isCreatingNewColor && (
-                    <TabsContent value={TabValue.GRADIENT} className="p-0 m-0">
+                    <TabsContent value={TabValue.GRADIENT} className="m-0 p-0">
                         <Gradient
                             gradient={gradientState}
                             onGradientChange={handleGradientChange}
                             onStopColorChange={handleStopColorChange}
                             onStopSelect={handleStopSelect}
                             selectedStopId={selectedStopId}
-                            className="border-b border-border"
+                            className="border-border border-b"
                             showPresets={false}
                         />
 
-                        <div className="flex flex-row items-center justify-between w-full px-2 py-1">
+                        <div className="flex w-full flex-row items-center justify-between px-2 py-1">
                             <span className="text-foreground-secondary text-small">Presets</span>
                             <button
-                                className={`px-1 py-1 text-xs transition-colors w-6 h-6 flex items-center justify-center rounded ${viewMode === 'grid'
-                                    ? 'text-foreground-secondary hover:text-foreground-primary hover:bg-background-hover'
-                                    : 'text-foreground-primary bg-background-secondary'
-                                    }`}
+                                className={`flex h-6 w-6 items-center justify-center rounded px-1 py-1 text-xs transition-colors ${
+                                    viewMode === 'grid'
+                                        ? 'text-foreground-secondary hover:text-foreground-primary hover:bg-background-hover'
+                                        : 'text-foreground-primary bg-background-secondary'
+                                }`}
                                 onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
                                 title="Toggle view mode"
                             >
                                 {viewMode === 'grid' ? (
-                                    <Icons.ViewGrid className="w-3 h-3" />
+                                    <Icons.ViewGrid className="h-3 w-3" />
                                 ) : (
-                                    <Icons.ViewHorizontal className="w-3 h-3" />
+                                    <Icons.ViewHorizontal className="h-3 w-3" />
                                 )}
                             </button>
                         </div>
                         <Separator />
-                        <div className="h-28 px-1 overflow-hidden overflow-y-auto">
+                        <div className="h-28 overflow-hidden overflow-y-auto px-1">
                             {renderPresets()}
                         </div>
                     </TabsContent>

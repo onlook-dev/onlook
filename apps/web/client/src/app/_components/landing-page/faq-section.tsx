@@ -1,6 +1,8 @@
-import { Routes } from '@/utils/constants';
-import { Icons } from '@onlook/ui/icons';
 import React from 'react';
+
+import { Icons } from '@onlook/ui/icons';
+
+import { Routes } from '@/utils/constants';
 import { ButtonLink } from '../button-link';
 import { FAQDropdown } from './faq-dropdown';
 
@@ -42,16 +44,16 @@ const defaultFaqs = [
 
 export function FAQSection({
     faqs = defaultFaqs,
-    title = "Frequently\nasked questions",
-    buttonText = "Read our FAQs",
+    title = 'Frequently\nasked questions',
+    buttonText = 'Read our FAQs',
     buttonHref = Routes.FAQ,
-    className = ""
+    className = '',
 }: FAQSectionProps) {
     return (
-        <div className={`w-full py-48 px-8 bg-background-onlook/80 ${className}`} id="faq">
-            <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start gap-24 md:gap-12">
-                <div className="flex-1 flex flex-col items-start">
-                    <h3 className="text-foreground-primary text-5xl md:text-6xl leading-[1.1] font-light mb-12 mt-4 max-w-3xl text-balance">
+        <div className={`bg-background-onlook/80 w-full px-8 py-48 ${className}`} id="faq">
+            <div className="mx-auto flex max-w-6xl flex-col items-start gap-24 md:flex-row md:gap-12">
+                <div className="flex flex-1 flex-col items-start">
+                    <h3 className="text-foreground-primary mt-4 mb-12 max-w-3xl text-5xl leading-[1.1] font-light text-balance md:text-6xl">
                         {title.split('\n').map((line, index) => (
                             <React.Fragment key={index}>
                                 {line}
@@ -59,12 +61,17 @@ export function FAQSection({
                             </React.Fragment>
                         ))}
                     </h3>
-                    <ButtonLink href={buttonHref} rightIcon={<Icons.ArrowRight className="w-5 h-5" />}>{buttonText}</ButtonLink>
+                    <ButtonLink
+                        href={buttonHref}
+                        rightIcon={<Icons.ArrowRight className="h-5 w-5" />}
+                    >
+                        {buttonText}
+                    </ButtonLink>
                 </div>
-                <div className="flex-1 flex flex-col gap-6">
+                <div className="flex flex-1 flex-col gap-6">
                     <FAQDropdown faqs={faqs} />
                 </div>
             </div>
         </div>
     );
-}    
+}

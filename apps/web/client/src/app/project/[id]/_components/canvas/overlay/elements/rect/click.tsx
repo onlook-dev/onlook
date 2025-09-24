@@ -1,7 +1,9 @@
-import { adaptValueToCanvas } from '@/components/store/editor/overlay/utils';
+import { nanoid } from 'nanoid';
+
 import type { DomElementStyles, RectDimensions } from '@onlook/models';
 import { colors } from '@onlook/ui/tokens';
-import { nanoid } from 'nanoid';
+
+import { adaptValueToCanvas } from '@/components/store/editor/overlay/utils';
 import { BaseRect } from './base';
 import { ResizeHandles } from './resize';
 
@@ -115,7 +117,7 @@ export const ClickRect = ({
         const checkMarginAuto = (side: string) => {
             const marginSide = styles?.defined?.[`margin-${side}`];
             const margin = styles?.defined?.margin;
-            const isMarginNumber = marginSide && /^\d+/.test(marginSide)
+            const isMarginNumber = marginSide && /^\d+/.test(marginSide);
 
             if (isMarginNumber) {
                 return false;

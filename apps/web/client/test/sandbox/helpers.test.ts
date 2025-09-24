@@ -1,5 +1,6 @@
-import { describe, expect, mock, test } from 'bun:test';
 import path from 'path';
+import { describe, expect, mock, test } from 'bun:test';
+
 import { normalizePath } from '../../src/components/store/editor/sandbox/helpers';
 
 // Store original path functions

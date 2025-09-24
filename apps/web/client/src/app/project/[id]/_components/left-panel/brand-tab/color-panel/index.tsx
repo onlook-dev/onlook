@@ -1,11 +1,13 @@
-import { useEditorEngine } from '@/components/store/editor';
+import { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
+import type { Color } from '@onlook/utility';
 import { SystemTheme } from '@onlook/models/assets';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import type { Color } from '@onlook/utility';
-import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { ColorNameInput } from './color-name-input';
 import { BrandPalletGroup } from './color-pallet-group';
 
@@ -77,7 +79,7 @@ const ColorPanel = observer(() => {
 
     return (
         <div className="text-active flex h-full w-full flex-grow flex-col overflow-y-auto p-0 text-xs">
-            <div className="border-border bg-background fixed top-0 right-0 left-0 z-10 flex items-center justify-start border-b py-1.5 pr-2.5 pl-3 gap-2">
+            <div className="border-border bg-background fixed top-0 right-0 left-0 z-10 flex items-center justify-start gap-2 border-b py-1.5 pr-2.5 pl-3">
                 <Button
                     variant="ghost"
                     size="icon"

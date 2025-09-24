@@ -1,8 +1,9 @@
+import { NextResponse } from 'next/server';
+import { api } from '~/trpc/server';
+
 import { trackEvent } from '@/utils/analytics/server';
 import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
-import { NextResponse } from 'next/server';
-import { api } from '~/trpc/server';
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
@@ -30,15 +31,17 @@ export async function GET(request: Request) {
                     avatar_url: data.user.user_metadata.avatar_url,
                     $set_once: {
                         signup_date: new Date().toISOString(),
-                    }
-                }
+                    },
+                },
             });
 
             const forwardedHost = request.headers.get('x-forwarded-host');
             // Redirect to the redirect page which will handle the return URL
             if (forwardedHost) {
                 const forwardedProto = request.headers.get('x-forwarded-proto') || 'https';
-                return NextResponse.redirect(`${forwardedProto}://${forwardedHost}${Routes.AUTH_REDIRECT}`);
+                return NextResponse.redirect(
+                    `${forwardedProto}://${forwardedHost}${Routes.AUTH_REDIRECT}`,
+                );
             } else {
                 return NextResponse.redirect(`${origin}${Routes.AUTH_REDIRECT}`);
             }

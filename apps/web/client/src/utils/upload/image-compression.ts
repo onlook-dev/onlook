@@ -38,7 +38,7 @@ export function canCompressFile(file: File): boolean {
 export async function compressImage(
     file: File,
     options: CompressionOptions = {},
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
 ): Promise<CompressionResult> {
     const opts = { ...DEFAULT_OPTIONS, ...options };
 
@@ -107,8 +107,9 @@ export async function compressImage(
                                 // Create compressed file
                                 const compressedFile = new File(
                                     [blob],
-                                    file.name.replace(/\.[^/.]+$/, '') + getExtensionForFormat(opts.format),
-                                    { type: opts.format }
+                                    file.name.replace(/\.[^/.]+$/, '') +
+                                        getExtensionForFormat(opts.format),
+                                    { type: opts.format },
                                 );
 
                                 onProgress?.(100);
@@ -121,7 +122,7 @@ export async function compressImage(
                                 });
                             },
                             opts.format,
-                            quality
+                            quality,
                         );
                     };
 
@@ -146,7 +147,7 @@ export async function compressImage(
 export async function compressMultipleImages(
     files: File[],
     options: CompressionOptions = {},
-    onProgress?: (fileIndex: number, fileProgress: number, totalProgress: number) => void
+    onProgress?: (fileIndex: number, fileProgress: number, totalProgress: number) => void,
 ): Promise<CompressionResult[]> {
     const results: CompressionResult[] = [];
 

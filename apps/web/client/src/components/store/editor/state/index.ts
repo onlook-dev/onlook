@@ -1,13 +1,8 @@
-import {
-    type BrandTabValue,
-    type BranchTabValue,
-    EditorMode,
-    EditorTabValue,
-    type LeftPanelTabValue,
-    ChatType
-} from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
+
+import type { BranchTabValue, BrandTabValue, LeftPanelTabValue } from '@onlook/models';
+import { ChatType, EditorMode, EditorTabValue } from '@onlook/models';
 
 export class StateManager {
     private _canvasScrolling = false;
@@ -23,7 +18,7 @@ export class StateManager {
     brandTab: BrandTabValue | null = null;
     branchTab: BranchTabValue | null = null;
     manageBranchId: string | null = null;
-    
+
     chatMode: ChatType = ChatType.EDIT;
 
     constructor() {
@@ -36,7 +31,7 @@ export class StateManager {
     }
 
     get shouldHideOverlay() {
-        return this._canvasScrolling || this.canvasPanning
+        return this._canvasScrolling || this.canvasPanning;
     }
 
     private resetCanvasScrolling() {

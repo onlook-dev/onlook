@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
 import {
     AlertDialog,
     AlertDialogContent,
@@ -7,11 +10,10 @@ import {
     AlertDialogTitle,
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
-import { Input } from '@onlook/ui/input';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { Input } from '@onlook/ui/input';
 import { cn } from '@onlook/ui/utils';
+
 import { useFolderContext } from '../../providers/folder-provider';
 
 export const FolderRenameModal = observer(() => {
@@ -72,7 +74,7 @@ export const FolderRenameModal = observer(() => {
                         autoFocus
                     />
                     {renameState.error && (
-                        <p className="text-sm text-red-500 mt-2">{renameState.error}</p>
+                        <p className="mt-2 text-sm text-red-500">{renameState.error}</p>
                     )}
                 </div>
 
@@ -91,7 +93,7 @@ export const FolderRenameModal = observer(() => {
                     >
                         {renameState.isLoading ? (
                             <>
-                                <Icons.Reload className="w-4 h-4 animate-spin mr-2" />
+                                <Icons.Reload className="mr-2 h-4 w-4 animate-spin" />
                                 Renaming...
                             </>
                         ) : (

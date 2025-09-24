@@ -1,15 +1,33 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { DEVICE_OPTIONS, Orientation } from '@onlook/constants';
+import { useEffect, useMemo, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
 import type { WindowMetadata } from '@onlook/models';
+import { DEVICE_OPTIONS, Orientation } from '@onlook/constants';
 import { Icons } from '@onlook/ui/icons/index';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger } from '@onlook/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectSeparator,
+    SelectTrigger,
+} from '@onlook/ui/select';
 import { cn } from '@onlook/ui/utils';
 import { computeWindowMetadata, getDeviceType } from '@onlook/utility';
-import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 
-const DeviceIcon = ({ deviceType, orientation, className }: { deviceType: string, orientation: Orientation, className?: string }) => {
+const DeviceIcon = ({
+    deviceType,
+    orientation,
+    className,
+}: {
+    deviceType: string;
+    orientation: Orientation;
+    className?: string;
+}) => {
     const iconClassName = `h-3.5 w-3.5 min-h-3.5 min-w-3.5 ${className || ''}`;
     switch (deviceType) {
         case 'Phone':
@@ -25,7 +43,13 @@ const DeviceIcon = ({ deviceType, orientation, className }: { deviceType: string
     }
 };
 
-const CustomIcon = ({ orientation, className }: { orientation: Orientation, className?: string }) => {
+const CustomIcon = ({
+    orientation,
+    className,
+}: {
+    orientation: Orientation;
+    className?: string;
+}) => {
     const iconClassName = `h-3.5 w-3.5 min-h-3.5 min-w-3.5 ${className || ''}`;
     return orientation === Orientation.Landscape ? (
         <Icons.Landscape className={iconClassName} />
@@ -41,12 +65,17 @@ export const DeviceSelector = observer(() => {
     const [metadata, setMetadata] = useState<WindowMetadata>(() =>
         computeWindowMetadata(
             frameData?.frame.dimension.width.toString() ?? '0',
-            frameData?.frame.dimension.height.toString() ?? '0'
-        )
+            frameData?.frame.dimension.height.toString() ?? '0',
+        ),
     );
 
     useEffect(() => {
-        setMetadata(computeWindowMetadata(frameData?.frame.dimension.width.toString() ?? '0', frameData?.frame.dimension.height.toString() ?? '0'));
+        setMetadata(
+            computeWindowMetadata(
+                frameData?.frame.dimension.width.toString() ?? '0',
+                frameData?.frame.dimension.height.toString() ?? '0',
+            ),
+        );
     }, [frameData?.frame.dimension.width, frameData?.frame.dimension.height]);
 
     if (!frameData) return null;
@@ -76,10 +105,11 @@ export const DeviceSelector = observer(() => {
         ) {
             const [w, h] = DEVICE_OPTIONS[category][deviceName].split('x').map(Number);
             if (typeof w === 'number' && !isNaN(w) && typeof h === 'number' && !isNaN(h)) {
-
                 const roundedWidth = Math.round(w);
                 const roundedHeight = Math.round(h);
-                editorEngine.frames.updateAndSaveToStorage(frameData.frame.id, { dimension: { width: roundedWidth, height: roundedHeight } });
+                editorEngine.frames.updateAndSaveToStorage(frameData.frame.id, {
+                    dimension: { width: roundedWidth, height: roundedHeight },
+                });
             }
         }
     };
@@ -87,8 +117,15 @@ export const DeviceSelector = observer(() => {
     return (
         <Select value={device} onValueChange={handleDeviceChange} onOpenChange={setIsOpen}>
             <HoverOnlyTooltip content="Device" side="bottom" sideOffset={10} disabled={isOpen}>
-                <SelectTrigger size="sm" className="group flex items-center gap-2 text-muted-foreground dark:bg-transparent border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none">
-                    <DeviceIcon deviceType={deviceType} orientation={metadata.orientation} className="group-hover:text-foreground-primary" />
+                <SelectTrigger
+                    size="sm"
+                    className="group text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border flex cursor-pointer items-center gap-2 rounded-lg border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none dark:bg-transparent"
+                >
+                    <DeviceIcon
+                        deviceType={deviceType}
+                        orientation={metadata.orientation}
+                        className="group-hover:text-foreground-primary"
+                    />
                     <span className="text-smallPlus">{deviceType}</span>
                 </SelectTrigger>
             </HoverOnlyTooltip>
@@ -101,12 +138,22 @@ export const DeviceSelector = observer(() => {
                                 key={`${category}:${name}`}
                                 value={`${category}:${name}`}
                                 className={cn(
-                                    'text-xs flex items-center cursor-pointer',
-                                    device === `${category}:${name}` && 'bg-background-tertiary/50 text-foreground-primary'
+                                    'flex cursor-pointer items-center text-xs',
+                                    device === `${category}:${name}` &&
+                                        'bg-background-tertiary/50 text-foreground-primary',
                                 )}
                             >
-                                <DeviceIcon deviceType={category} orientation={metadata.orientation} className={`${device === `${category}:${name}` ? 'text-foreground-primary' : 'text-foreground-onlook'}`} />
-                                {name} <span className={`text-micro ${device === `${category}:${name}` ? 'text-foreground-primary' : 'text-foreground-tertiary'}`}>{dimensions.replace('x', '×')}</span>
+                                <DeviceIcon
+                                    deviceType={category}
+                                    orientation={metadata.orientation}
+                                    className={`${device === `${category}:${name}` ? 'text-foreground-primary' : 'text-foreground-onlook'}`}
+                                />
+                                {name}{' '}
+                                <span
+                                    className={`text-micro ${device === `${category}:${name}` ? 'text-foreground-primary' : 'text-foreground-tertiary'}`}
+                                >
+                                    {dimensions.replace('x', '×')}
+                                </span>
                             </SelectItem>
                         ))}
                         <SelectSeparator />
@@ -115,4 +162,4 @@ export const DeviceSelector = observer(() => {
             </SelectContent>
         </Select>
     );
-}); 
+});

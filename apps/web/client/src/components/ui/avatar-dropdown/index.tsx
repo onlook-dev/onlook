@@ -1,11 +1,8 @@
 'use client';
 
-import { useStateManager } from '@/components/store/state';
-import { api } from '@/trpc/react';
-import { Routes } from '@/utils/constants';
-import { createClient } from '@/utils/supabase/client';
-import { openFeedbackWidget, resetTelemetry } from '@/utils/telemetry';
-import { getReturnUrlQueryParam } from '@/utils/url';
+import { useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar';
 import {
     DropdownMenu,
@@ -16,10 +13,15 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { getInitials } from '@onlook/utility';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
-import { UsageSection } from './plans';
+
+import { useStateManager } from '@/components/store/state';
+import { api } from '@/trpc/react';
+import { Routes } from '@/utils/constants';
+import { createClient } from '@/utils/supabase/client';
+import { openFeedbackWidget, resetTelemetry } from '@/utils/telemetry';
+import { getReturnUrlQueryParam } from '@/utils/url';
 import { SettingsTabValue } from '../settings-modal/helpers';
+import { UsageSection } from './plans';
 
 export const CurrentUserAvatar = ({ className }: { className?: string }) => {
     const stateManager = useStateManager();
@@ -91,7 +93,9 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
             <DropdownMenuContent className="w-72 p-0">
                 <div className="flex items-center gap-2 p-3 select-none">
                     <div className="flex flex-col">
-                        <span className="text-smallPlus">{user?.firstName ?? user?.displayName}</span>
+                        <span className="text-smallPlus">
+                            {user?.firstName ?? user?.displayName}
+                        </span>
                         <span className="text-mini text-foreground-secondary">{user?.email}</span>
                     </div>
                 </div>
@@ -107,7 +111,7 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
                                 className="cursor-pointer"
                                 onClick={button.onClick}
                             >
-                                <div className="flex flex-row center items-center group">
+                                <div className="center group flex flex-row items-center">
                                     <IconComponent className="mr-2" />
                                     {button.label}
                                 </div>

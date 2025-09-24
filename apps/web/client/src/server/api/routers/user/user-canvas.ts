@@ -1,15 +1,17 @@
+import { and, eq } from 'drizzle-orm';
+import { z } from 'zod';
+
+import type { UserCanvas, UserCanvas } from '@onlook/db';
 import {
     canvases,
     createDefaultUserCanvas,
-    projects,
     fromDbCanvas,
     fromDbFrame,
+    projects,
     userCanvases,
     userCanvasUpdateSchema,
-    type UserCanvas
 } from '@onlook/db';
-import { and, eq } from 'drizzle-orm';
-import { z } from 'zod';
+
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const userCanvasRouter = createTRPCRouter({
@@ -54,18 +56,22 @@ export const userCanvasRouter = createTRPCRouter({
             if (!dbCanvas) {
                 return null;
             }
-            const userCanvas: UserCanvas = dbCanvas.userCanvases[0] ?? createDefaultUserCanvas(ctx.user.id, dbCanvas.id);
+            const userCanvas: UserCanvas =
+                dbCanvas.userCanvases[0] ?? createDefaultUserCanvas(ctx.user.id, dbCanvas.id);
             return {
                 userCanvas: fromDbCanvas(userCanvas),
                 frames: dbCanvas.frames.map(fromDbFrame),
             };
         }),
-    update: protectedProcedure.input(
-        z.object({
-            projectId: z.string(),
-            canvasId: z.string(),
-            canvas: userCanvasUpdateSchema,
-        })).mutation(async ({ ctx, input }) => {
+    update: protectedProcedure
+        .input(
+            z.object({
+                projectId: z.string(),
+                canvasId: z.string(),
+                canvas: userCanvasUpdateSchema,
+            }),
+        )
+        .mutation(async ({ ctx, input }) => {
             try {
                 await ctx.db
                     .update(userCanvases)
@@ -76,9 +82,12 @@ export const userCanvasRouter = createTRPCRouter({
                             eq(userCanvases.userId, ctx.user.id),
                         ),
                     );
-                await ctx.db.update(projects).set({
-                    updatedAt: new Date(),
-                }).where(eq(projects.id, input.projectId));
+                await ctx.db
+                    .update(projects)
+                    .set({
+                        updatedAt: new Date(),
+                    })
+                    .where(eq(projects.id, input.projectId));
                 return true;
             } catch (error) {
                 console.error('Error updating user canvas', error);

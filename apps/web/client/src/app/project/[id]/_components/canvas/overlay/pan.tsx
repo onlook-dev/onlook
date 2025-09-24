@@ -1,7 +1,9 @@
-import { useEditorEngine } from '@/components/store/editor';
+import { observer } from 'mobx-react-lite';
+
 import { EditorMode } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
+
+import { useEditorEngine } from '@/components/store/editor';
 
 interface PanOverlayProps {
     clampPosition: (position: { x: number; y: number }) => { x: number; y: number };
@@ -36,8 +38,8 @@ export const PanOverlay = observer(({ clampPosition }: PanOverlayProps) => {
     return (
         <div
             className={cn(
-                'absolute w-full h-full cursor-grab',
-                editorEngine.state.editorMode === EditorMode.PAN ? 'visible ' : 'hidden',
+                'absolute h-full w-full cursor-grab',
+                editorEngine.state.editorMode === EditorMode.PAN ? 'visible' : 'hidden',
                 editorEngine.state.canvasPanning ? 'cursor-grabbing' : 'cursor-grab',
             )}
             onMouseDown={startPan}

@@ -1,6 +1,7 @@
+import type { AppRouter } from '~/server/api/root';
 import { createTRPCClient } from '@trpc/client';
-import { type inferRouterInputs, type inferRouterOutputs } from '@trpc/server';
-import { type AppRouter } from '~/server/api/root';
+
+import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
 import { links } from './helpers';
 
 /**

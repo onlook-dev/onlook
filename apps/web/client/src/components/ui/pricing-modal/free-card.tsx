@@ -1,14 +1,23 @@
-import { transKeys } from '@/i18n/keys';
-import { api } from '@/trpc/react';
+import { useState } from 'react';
+import { motion } from 'motion/react';
+import { useTranslations } from 'next-intl';
+
 import { ScheduledSubscriptionAction } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { MotionCard } from '@onlook/ui/motion-card';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@onlook/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@onlook/ui/select';
 import { toast } from '@onlook/ui/sonner';
-import { motion } from 'motion/react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+
+import { transKeys } from '@/i18n/keys';
+import { api } from '@/trpc/react';
 import { useSubscription } from './use-subscription';
 
 const FREE_TIER = {
@@ -21,12 +30,10 @@ const FREE_TIER = {
         '5 AI chat messages a day',
         '15 AI messages a month',
         'Unlimited styling and code editing',
-        'Limited to 1 screenshot per chat'
+        'Limited to 1 screenshot per chat',
     ],
     defaultSelectValue: 'daily',
-    selectValues: [
-        { value: 'daily', label: '5 Daily Messages' },
-    ],
+    selectValues: [{ value: 'daily', label: '5 Daily Messages' }],
 };
 
 export const FreeCard = ({
@@ -43,7 +50,8 @@ export const FreeCard = ({
     const { mutateAsync: manageSubscription } = api.subscription.manageSubscription.useMutation();
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const isFree = !isPro;
-    const isScheduledCancellation = subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION;
+    const isScheduledCancellation =
+        subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION;
 
     const handleDowngradeToFree = async () => {
         try {
@@ -70,26 +78,26 @@ export const FreeCard = ({
         if (isCheckingOut) {
             return (
                 <div className="flex items-center gap-2">
-                    <Icons.Shadow className="w-4 h-4 animate-spin" />
+                    <Icons.Shadow className="h-4 w-4 animate-spin" />
                     <span>{t(transKeys.pricing.loading.checkingPayment)}</span>
                 </div>
-            )
+            );
         }
 
         if (isUnauthenticated) {
-            return "Get Started Free";
+            return 'Get Started Free';
         }
 
         if (isScheduledCancellation) {
-            return `Pro plan ends on ${subscription?.scheduledChange?.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
+            return `Pro plan ends on ${subscription?.scheduledChange?.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
         }
 
         if (isFree) {
             return t(transKeys.pricing.buttons.currentPlan);
         }
 
-        return "Downgrade to Free Plan";
-    }
+        return 'Downgrade to Free Plan';
+    };
 
     const handleButtonClick = () => {
         if (isUnauthenticated && onSignupClick) {
@@ -106,19 +114,18 @@ export const FreeCard = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay }}
         >
-            <motion.div className="p-6 flex flex-col h-full">
+            <motion.div className="flex h-full flex-col p-6">
                 <div className="space-y-1">
                     <h2 className="text-title2">{FREE_TIER.name}</h2>
                     <p className="text-foreground-onlook text-largePlus">{FREE_TIER.price}</p>
                 </div>
-                <div className="border-[0.5px] border-border-primary -mx-6 my-6" />
-                <p className="text-foreground-primary text-title3 text-balance">{FREE_TIER.description}</p>
-                <div className="border-[0.5px] border-border-primary -mx-6 my-6" />
-                <div className="flex flex-col gap-2 mb-6">
-                    <Select
-                        value={FREE_TIER.defaultSelectValue}
-                        disabled={true}
-                    >
+                <div className="border-border-primary -mx-6 my-6 border-[0.5px]" />
+                <p className="text-foreground-primary text-title3 text-balance">
+                    {FREE_TIER.description}
+                </p>
+                <div className="border-border-primary -mx-6 my-6 border-[0.5px]" />
+                <div className="mb-6 flex flex-col gap-2">
+                    <Select value={FREE_TIER.defaultSelectValue} disabled={true}>
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select a plan" />
                         </SelectTrigger>
@@ -136,18 +143,21 @@ export const FreeCard = ({
                         className="w-full"
                         variant="outline"
                         onClick={handleButtonClick}
-                        disabled={isCheckingOut || (!isUnauthenticated && (isFree || isScheduledCancellation))}
+                        disabled={
+                            isCheckingOut ||
+                            (!isUnauthenticated && (isFree || isScheduledCancellation))
+                        }
                     >
                         {buttonContent()}
                     </Button>
                 </div>
-                <div className="flex flex-col gap-2 h-42">
+                <div className="flex h-42 flex-col gap-2">
                     {FREE_TIER.features.map((feature) => (
                         <div
                             key={feature}
-                            className="flex items-center gap-3 text-sm text-foreground-secondary/80"
+                            className="text-foreground-secondary/80 flex items-center gap-3 text-sm"
                         >
-                            <Icons.CheckCircled className="w-5 h-5 text-foreground-secondary/80" />
+                            <Icons.CheckCircled className="text-foreground-secondary/80 h-5 w-5" />
                             <span>{feature}</span>
                         </div>
                     ))}

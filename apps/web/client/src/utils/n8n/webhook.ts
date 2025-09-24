@@ -20,7 +20,7 @@ export async function callUserWebhook(user: {
             method: 'POST',
             headers: {
                 'n8n-api-key': API_KEY,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 email: user.email,

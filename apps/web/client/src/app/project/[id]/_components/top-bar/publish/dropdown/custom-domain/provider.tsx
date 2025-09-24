@@ -1,17 +1,21 @@
+import { createContext, useContext, useState } from 'react';
+
+import { DeploymentType, SettingsTabValue } from '@onlook/models';
+import { ProductType } from '@onlook/stripe';
+
 import { useEditorEngine } from '@/components/store/editor';
 import { useHostingType } from '@/components/store/hosting';
 import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
-import { DeploymentType, SettingsTabValue } from '@onlook/models';
-import { ProductType } from '@onlook/stripe';
-import { createContext, useContext, useState } from 'react';
 
 const useCustomDomain = () => {
     const editorEngine = useEditorEngine();
     const stateManager = useStateManager();
     const [isLoading, setIsLoading] = useState(false);
     const { data: subscription } = api.subscription.get.useQuery();
-    const { data: customDomain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: customDomain } = api.domain.custom.get.useQuery({
+        projectId: editorEngine.projectId,
+    });
     const { deployment, publish: runPublish, isDeploying } = useHostingType(DeploymentType.CUSTOM);
 
     const product = subscription?.product;
@@ -32,7 +36,7 @@ const useCustomDomain = () => {
         try {
             await runPublish({
                 projectId: editorEngine.projectId,
-                sandboxId: editorEngine.branches.activeBranch.sandbox.id
+                sandboxId: editorEngine.branches.activeBranch.sandbox.id,
             });
         } catch (error) {
             console.error(error);
@@ -58,17 +62,15 @@ const useCustomDomain = () => {
         isPro,
         openCustomDomain,
         isLoading,
-    }
-}
+    };
+};
 
 const CustomDomainContext = createContext<ReturnType<typeof useCustomDomain> | null>(null);
 
 export const CustomDomainProvider = ({ children }: { children: React.ReactNode }) => {
     const value = useCustomDomain();
-    return <CustomDomainContext.Provider value={value}>
-        {children}
-    </CustomDomainContext.Provider>
-}
+    return <CustomDomainContext.Provider value={value}>{children}</CustomDomainContext.Provider>;
+};
 
 export const useCustomDomainContext = () => {
     const context = useContext(CustomDomainContext);
@@ -76,4 +78,4 @@ export const useCustomDomainContext = () => {
         throw new Error('useCustomDomainContext must be used within a CustomDomainProvider');
     }
     return context;
-}
+};

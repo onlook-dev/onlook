@@ -1,3 +1,8 @@
+import { camelCase } from 'lodash';
+import { makeAutoObservable, reaction } from 'mobx';
+
+import type { CodeDiff, Font } from '@onlook/models';
+import type { T } from '@onlook/parser';
 import {
     addGoogleFontSpecifier,
     generateFontVariableExport,
@@ -6,10 +11,9 @@ import {
     removeFontDeclaration,
     validateGoogleFontSetup,
 } from '@onlook/fonts';
-import { RouterType, type CodeDiff, type Font } from '@onlook/models';
-import { generate, getAstFromContent, t, type T } from '@onlook/parser';
-import { camelCase } from 'lodash';
-import { makeAutoObservable, reaction } from 'mobx';
+import { RouterType } from '@onlook/models';
+import { generate, getAstFromContent, t } from '@onlook/parser';
+
 import type { EditorEngine } from '../engine';
 import { normalizePath } from '../sandbox/helpers';
 
@@ -143,7 +147,10 @@ export class FontConfigManager {
                 return false;
             }
 
-            const success = await this.editorEngine.activeSandbox.writeFile(this.fontConfigPath, code);
+            const success = await this.editorEngine.activeSandbox.writeFile(
+                this.fontConfigPath,
+                code,
+            );
 
             if (!success) {
                 throw new Error('Failed to write font configuration');
@@ -225,9 +232,9 @@ export class FontConfigManager {
      */
     async readFontConfigFile(): Promise<
         | {
-            ast: T.File;
-            content: string;
-        }
+              ast: T.File;
+              content: string;
+          }
         | undefined
     > {
         const sandbox = this.editorEngine.activeSandbox;

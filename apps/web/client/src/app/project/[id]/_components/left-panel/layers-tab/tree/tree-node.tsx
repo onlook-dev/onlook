@@ -1,13 +1,15 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { MouseAction } from '@onlook/models/editor';
+import type { NodeApi } from 'react-arborist';
+import { memo, useCallback, useMemo, useRef } from 'react';
+import { observer } from 'mobx-react-lite';
+import { motion } from 'motion/react';
+
 import type { DomElement, LayerNode } from '@onlook/models/element';
+import { MouseAction } from '@onlook/models/editor';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
-import { motion } from 'motion/react';
-import { memo, useCallback, useMemo, useRef } from 'react';
-import type { NodeApi } from 'react-arborist';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { NodeIcon } from './node-icon';
 
 const isComponentAncestor = (node: NodeApi<LayerNode>): boolean => {
@@ -48,7 +50,7 @@ const VisibilityButton = memo(
         <button
             onClick={onClick}
             style={{ position: 'absolute', right: '4px' }}
-            className="w-4 h-4"
+            className="h-4 w-4"
         >
             {isVisible ? <Icons.EyeOpen /> : <Icons.EyeClosed />}
         </button>
@@ -170,7 +172,7 @@ export const TreeNode = memo(
 
             const nodeClassName = useMemo(
                 () =>
-                    cn('flex flex-row items-center h-6 cursor-pointer w-full pr-1', {
+                    cn('flex h-6 w-full cursor-pointer flex-row items-center pr-1', {
                         'text-purple-600 dark:text-purple-300':
                             isComponentAncestor(node) && !node.data.instanceId && !hovered,
                         'text-purple-500 dark:text-purple-200':
@@ -192,21 +194,17 @@ export const TreeNode = memo(
                         'bg-[#FA003C] dark:bg-[#FA003C]/90': selected,
                         'bg-[#FA003C]/10 dark:bg-[#FA003C]/10': isParentSelected,
                         'bg-[#FA003C]/20 dark:bg-[#FA003C]/20': hovered && isParentSelected,
-                        'text-purple-100 dark:text-purple-100':
-                            node.data.instanceId && selected,
-                        'text-purple-500 dark:text-purple-300':
-                            node.data.instanceId && !selected,
+                        'text-purple-100 dark:text-purple-100': node.data.instanceId && selected,
+                        'text-purple-500 dark:text-purple-300': node.data.instanceId && !selected,
                         'text-purple-800 dark:text-purple-200':
                             node.data.instanceId && !selected && hovered,
-                        'bg-purple-700/70 dark:bg-purple-500/50':
-                            node.data.instanceId && selected,
+                        'bg-purple-700/70 dark:bg-purple-500/50': node.data.instanceId && selected,
                         'bg-purple-400/30 dark:bg-purple-900/60':
                             node.data.instanceId && !selected && hovered && !isParentSelected,
-                        'bg-purple-300/30 dark:bg-purple-900/30':
-                            isParentSelected?.data.instanceId,
+                        'bg-purple-300/30 dark:bg-purple-900/30': isParentSelected?.data.instanceId,
                         'bg-purple-300/50 dark:bg-purple-900/50':
                             hovered && isParentSelected?.data.instanceId,
-                        'text-white dark:text-primary':
+                        'dark:text-primary text-white':
                             (!node.data.instanceId && selected) || isWindowSelected,
                         'bg-teal-500': isWindowSelected,
                     }),
@@ -243,10 +241,10 @@ export const TreeNode = memo(
                     (node.data.component
                         ? node.data.component
                         : ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(
-                            node.data.tagName.toLowerCase(),
-                        )
-                            ? ''
-                            : node.data.tagName.toLowerCase()) +
+                                node.data.tagName.toLowerCase(),
+                            )
+                          ? ''
+                          : node.data.tagName.toLowerCase()) +
                     ' ' +
                     node.data.textContent
                 );
@@ -263,10 +261,10 @@ export const TreeNode = memo(
                                 onMouseOver={(e) => handleHoverNode(e)}
                                 className={nodeClassName}
                             >
-                                <span className="w-4 h-4 flex-none relative">
+                                <span className="relative h-4 w-4 flex-none">
                                     {!node.isLeaf && (
                                         <div
-                                            className="w-4 h-4 flex items-center justify-center absolute z-50"
+                                            className="absolute z-50 flex h-4 w-4 items-center justify-center"
                                             onMouseDown={(e) => {
                                                 node.select();
                                                 sendMouseEvent(
@@ -291,43 +289,43 @@ export const TreeNode = memo(
                                 {node.data.instanceId ? (
                                     <Icons.Component
                                         className={cn(
-                                            'w-3 h-3 ml-1 mb-[1px] mr-1.5 flex-none',
+                                            'mr-1.5 mb-[1px] ml-1 h-3 w-3 flex-none',
                                             hovered && !selected
-                                                ? 'text-purple-600 dark:text-purple-200 '
+                                                ? 'text-purple-600 dark:text-purple-200'
                                                 : selected
-                                                    ? 'text-purple-100 dark:text-purple-100'
-                                                    : 'text-purple-500 dark:text-purple-300',
+                                                  ? 'text-purple-100 dark:text-purple-100'
+                                                  : 'text-purple-500 dark:text-purple-300',
                                         )}
                                     />
                                 ) : (
                                     <NodeIcon
-                                        iconClass={cn('w-3 h-3 ml-1 mr-2 flex-none', {
-                                            'fill-white dark:fill-primary':
+                                        iconClass={cn('mr-2 ml-1 h-3 w-3 flex-none', {
+                                            'dark:fill-primary fill-white':
                                                 !node.data.instanceId && selected,
-                                            '[&_path]:!fill-purple-400 [&_path]:!dark:fill-purple-300':
+                                            '[&_path]:!dark:fill-purple-300 [&_path]:!fill-purple-400':
                                                 isComponentAncestor(node) &&
                                                 !node.data.instanceId &&
                                                 !selected &&
                                                 !hovered &&
                                                 !isText,
-                                            '[&_path]:!fill-purple-300 [&_path]:!dark:fill-purple-200':
+                                            '[&_path]:!dark:fill-purple-200 [&_path]:!fill-purple-300':
                                                 isComponentAncestor(node) &&
                                                 !node.data.instanceId &&
                                                 !selected &&
                                                 hovered &&
                                                 !isText,
-                                            '[&_path]:!fill-white [&_path]:!dark:fill-primary':
+                                            '[&_path]:!dark:fill-primary [&_path]:!fill-white':
                                                 isComponentAncestor(node) &&
                                                 !node.data.instanceId &&
                                                 selected,
                                             '[&_.letter]:!fill-foreground/50 [&_.level]:!fill-foreground dark:[&_.letter]:!fill-foreground/50 dark:[&_.level]:!fill-foreground':
                                                 !isComponentAncestor(node) && !selected && isText,
-                                            '[&_.letter]:!fill-purple-400/50 [&_.level]:!fill-purple-400 dark:[&_.letter]:!fill-purple-300/50 dark:[&_.level]:!fill-purple-300':
+                                            '[&_.letter]:!fill-purple-400/50 dark:[&_.letter]:!fill-purple-300/50 [&_.level]:!fill-purple-400 dark:[&_.level]:!fill-purple-300':
                                                 isComponentAncestor(node) &&
                                                 !selected &&
                                                 !hovered &&
                                                 isText,
-                                            '[&_.letter]:!fill-purple-300/50 [&_.level]:!fill-purple-300 dark:[&_.letter]:!fill-purple-200/50 dark:[&_.level]:!fill-purple-200':
+                                            '[&_.letter]:!fill-purple-300/50 dark:[&_.letter]:!fill-purple-200/50 [&_.level]:!fill-purple-300 dark:[&_.level]:!fill-purple-200':
                                                 isComponentAncestor(node) &&
                                                 !selected &&
                                                 hovered &&
@@ -338,13 +336,13 @@ export const TreeNode = memo(
                                 )}
                                 <span
                                     className={cn(
-                                        'truncate space',
+                                        'space truncate',
                                         node.data.instanceId
                                             ? selected
                                                 ? 'text-purple-100 dark:text-purple-100'
                                                 : hovered
-                                                    ? 'text-purple-600 dark:text-purple-200'
-                                                    : 'text-purple-500 dark:text-purple-300'
+                                                  ? 'text-purple-600 dark:text-purple-200'
+                                                  : 'text-purple-500 dark:text-purple-300'
                                             : '',
                                         !node.data.isVisible && 'opacity-80',
                                         selected && 'mr-5',

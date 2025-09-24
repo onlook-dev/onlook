@@ -1,15 +1,17 @@
+import { useEffect, useRef } from 'react';
+import { observer } from 'mobx-react-lite';
+import { EditorState, Selection, TextSelection } from 'prosemirror-state';
+import { EditorView } from 'prosemirror-view';
+
+import { EditorAttributes } from '@onlook/constants';
+import { colors } from '@onlook/ui/tokens';
+
 import { useEditorEngine } from '@/components/store/editor';
 import {
     applyStylesToEditor,
     createEditorPlugins,
     schema,
 } from '@/components/store/editor/overlay/prosemirror';
-import { EditorAttributes } from '@onlook/constants';
-import { colors } from '@onlook/ui/tokens';
-import { observer } from 'mobx-react-lite';
-import { EditorState, Selection, TextSelection } from 'prosemirror-state';
-import { EditorView } from 'prosemirror-view';
-import { useEffect, useRef } from 'react';
 
 const contentHelpers = {
     // Convert content with newlines to ProseMirror nodes
@@ -44,7 +46,7 @@ const contentHelpers = {
             }
         });
         return content;
-    }
+    },
 };
 
 export const TextEditor = observer(() => {
@@ -72,7 +74,10 @@ export const TextEditor = observer(() => {
 
         const state = EditorState.create({
             schema,
-            plugins: createEditorPlugins(() => onStopRef.current?.(), () => onStopRef.current?.()),
+            plugins: createEditorPlugins(
+                () => onStopRef.current?.(),
+                () => onStopRef.current?.(),
+            ),
         });
 
         const view = new EditorView(editorRef.current, {
@@ -136,13 +141,18 @@ export const TextEditor = observer(() => {
                 const nodes = contentHelpers.createNodesFromContent(content);
                 const paragraph = schema.node('paragraph', null, nodes);
                 const newDoc = schema.node('doc', null, [paragraph]);
-                const tr = view.state.tr.replaceWith(0, view.state.doc.content.size, newDoc.content);
+                const tr = view.state.tr.replaceWith(
+                    0,
+                    view.state.doc.content.size,
+                    newDoc.content,
+                );
 
                 // Try to preserve cursor position if possible
                 const targetPos = Math.min(selection.from, tr.doc.content.size);
-                const newSelection = targetPos < tr.doc.content.size
-                    ? Selection.near(tr.doc.resolve(targetPos))
-                    : Selection.atEnd(tr.doc);
+                const newSelection =
+                    targetPos < tr.doc.content.size
+                        ? Selection.near(tr.doc.resolve(targetPos))
+                        : Selection.atEnd(tr.doc);
                 tr.setSelection(newSelection);
 
                 view.dispatch(tr);

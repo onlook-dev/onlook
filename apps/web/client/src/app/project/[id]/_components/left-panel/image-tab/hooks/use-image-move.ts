@@ -1,7 +1,9 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { type FolderNode, type ImageContentData } from '@onlook/models';
-import { ensureImageFolderPrefix, generateNewFolderPath } from '@onlook/utility';
 import { useCallback, useEffect, useState } from 'react';
+
+import type { FolderNode, ImageContentData } from '@onlook/models';
+import { ensureImageFolderPrefix, generateNewFolderPath } from '@onlook/utility';
+
+import { useEditorEngine } from '@/components/store/editor';
 
 interface MoveImageState {
     targetFolder: FolderNode | null;

@@ -1,3 +1,7 @@
+import { useState } from 'react';
+import { TooltipArrow } from '@radix-ui/react-tooltip';
+import { camelCase } from 'lodash';
+
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -9,9 +13,6 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { TooltipArrow } from '@radix-ui/react-tooltip';
-import { camelCase } from 'lodash';
-import { useState } from 'react';
 
 interface FontVariantProps {
     name: string;
@@ -21,7 +22,7 @@ interface FontVariantProps {
 const FontVariant = ({ name }: FontVariantProps) => {
     const fontVariant = `font-${camelCase(name).toLowerCase()}`;
 
-    return <div className={cn('text-sm text-muted-foreground', fontVariant)}>{name}</div>;
+    return <div className={cn('text-muted-foreground text-sm', fontVariant)}>{name}</div>;
 };
 
 export interface FontFamilyProps {
@@ -52,33 +53,33 @@ export const FontFamily = ({
     };
 
     return (
-        <div className="w-full group">
-            <div className="flex justify-between items-center py-3">
+        <div className="group w-full">
+            <div className="flex items-center justify-between py-3">
                 <div
-                    className="flex flex-1 items-center cursor-pointer max-w-52"
+                    className="flex max-w-52 flex-1 cursor-pointer items-center"
                     onClick={() => setExpanded(!expanded)}
                 >
                     <Icons.ChevronRight
-                        className={`h-4 w-4 mr-2 transition-transform ${expanded ? 'rotate-90' : ''}`}
+                        className={`mr-2 h-4 w-4 transition-transform ${expanded ? 'rotate-90' : ''}`}
                     />
 
                     <span
-                        className={`text-sm truncate transition-opacity duration-200`}
+                        className={`truncate text-sm transition-opacity duration-200`}
                         style={{ fontFamily: name }}
                     >
                         {name}
                     </span>
 
                     {isDefault && (
-                        <span className="ml-2 text-xs text-muted-foreground">(Default)</span>
+                        <span className="text-muted-foreground ml-2 text-xs">(Default)</span>
                     )}
                 </div>
-                <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-100">
+                <div className="flex items-center opacity-0 transition-opacity duration-100 group-hover:opacity-100">
                     {showAddButton && onAddFont && (
                         <Button
                             variant="secondary"
                             size="sm"
-                            className="h-7 pl-2 pr-1.5 rounded-md bg-background-secondary"
+                            className="bg-background-secondary h-7 rounded-md pr-1.5 pl-2"
                             onClick={() => onAddFont()}
                         >
                             Add <Icons.Plus className="ml-1 h-3 w-3" />
@@ -90,16 +91,16 @@ export const FontFamily = ({
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-7 w-7 rounded-md hover:bg-background-secondary"
+                                    className="hover:bg-background-secondary h-7 w-7 rounded-md"
                                 >
-                                    <Icons.DotsHorizontal className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                                    <Icons.DotsHorizontal className="text-muted-foreground hover:text-foreground h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="min-w-fit">
                                 <DropdownMenuCheckboxItem
                                     checked={isDefault}
                                     onCheckedChange={handleToggleDefault}
-                                    className="flex items-center pr-2 cursor-pointer"
+                                    className="flex cursor-pointer items-center pr-2"
                                 >
                                     <span>Set as default font</span>
                                 </DropdownMenuCheckboxItem>
@@ -107,7 +108,7 @@ export const FontFamily = ({
                                     className="flex items-center"
                                     onClick={() => onRemoveFont?.()}
                                 >
-                                    <Icons.Trash className="h-4 w-4 mr-2" />
+                                    <Icons.Trash className="mr-2 h-4 w-4" />
                                     <span>Remove</span>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -118,7 +119,7 @@ export const FontFamily = ({
 
             {expanded && variants.length > 0 && (
                 <div
-                    className="pl-7 flex flex-col gap-2 pb-6"
+                    className="flex flex-col gap-2 pb-6 pl-7"
                     style={{
                         fontFamily: name,
                     }}

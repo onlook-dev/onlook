@@ -1,5 +1,6 @@
-import type { EditorEngine } from '@/components/store/editor/engine';
 import type { Frame } from '@onlook/models';
+
+import type { EditorEngine } from '@/components/store/editor/engine';
 
 export interface MouseMoveHandlerOptions {
     editorEngine: EditorEngine;
@@ -9,7 +10,7 @@ export interface MouseMoveHandlerOptions {
 
 export function createMouseMoveHandler(
     startEvent: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    options: MouseMoveHandlerOptions
+    options: MouseMoveHandlerOptions,
 ) {
     const { editorEngine, selectedFrames, clearElements } = options;
 
@@ -22,16 +23,16 @@ export function createMouseMoveHandler(
     let isDragActive = false;
 
     // Store initial positions for all selected frames
-    const initialFramePositions = selectedFrames.map(frame => ({
+    const initialFramePositions = selectedFrames.map((frame) => ({
         id: frame.id,
         startPosition: { x: frame.position.x, y: frame.position.y },
-        dimension: frame.dimension
+        dimension: frame.dimension,
     }));
 
     const handleMove = async (e: MouseEvent) => {
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
-        
+
         // Check deadzone - only start dragging after 5px movement
         if (!isDragActive) {
             if (dx * dx + dy * dy <= 25) {
@@ -47,17 +48,22 @@ export function createMouseMoveHandler(
 
         // Update all selected frames
         for (const frameData of initialFramePositions) {
-            let newPosition = {
+            const newPosition = {
                 x: frameData.startPosition.x + deltaX,
                 y: frameData.startPosition.y + deltaY,
             };
 
             // Apply snapping if enabled (only for the primary frame to avoid conflicts)
-            if (editorEngine.snap.config.enabled && !e.ctrlKey && !e.metaKey && frameData === initialFramePositions[0]) {
+            if (
+                editorEngine.snap.config.enabled &&
+                !e.ctrlKey &&
+                !e.metaKey &&
+                frameData === initialFramePositions[0]
+            ) {
                 const snapTarget = editorEngine.snap.calculateSnapTarget(
                     frameData.id,
                     newPosition,
-                    frameData.dimension
+                    frameData.dimension,
                 );
 
                 if (snapTarget) {
@@ -70,7 +76,9 @@ export function createMouseMoveHandler(
                             x: otherFrameData.startPosition.x + deltaX + snapDeltaX,
                             y: otherFrameData.startPosition.y + deltaY + snapDeltaY,
                         };
-                        editorEngine.frames.updateAndSaveToStorage(otherFrameData.id, { position: adjustedPosition });
+                        editorEngine.frames.updateAndSaveToStorage(otherFrameData.id, {
+                            position: adjustedPosition,
+                        });
                     }
 
                     editorEngine.snap.showSnapLines(snapTarget.snapLines);

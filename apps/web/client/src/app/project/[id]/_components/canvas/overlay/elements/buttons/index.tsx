@@ -1,8 +1,10 @@
+import { useEffect, useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
+import { EditorMode } from '@onlook/models';
+
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
-import { EditorMode } from '@onlook/models';
-import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
 import { OverlayChatInput } from './chat';
 import { OverlayOpenCode } from './code';
 import { DEFAULT_INPUT_STATE } from './helpers';
@@ -28,20 +30,15 @@ export const OverlayButtons = observer(() => {
     }, [domId]);
 
     const chatPosition = {
-        x: domId
-            ? (document.getElementById(domId)?.getBoundingClientRect().left ?? 0)
-            : 0,
-        y: domId
-            ? (document.getElementById(domId)?.getBoundingClientRect().bottom ?? 0)
-            : 0,
+        x: domId ? (document.getElementById(domId)?.getBoundingClientRect().left ?? 0) : 0,
+        y: domId ? (document.getElementById(domId)?.getBoundingClientRect().bottom ?? 0) : 0,
     };
 
     useEffect(() => {
         prevChatPositionRef.current = chatPosition;
     }, [chatPosition.x, chatPosition.y]);
 
-    const animationClass =
-        'origin-center opacity-0 -translate-y-2 transition-all duration-200';
+    const animationClass = 'origin-center opacity-0 -translate-y-2 transition-all duration-200';
 
     useEffect(() => {
         if (domId) {
@@ -65,7 +62,10 @@ export const OverlayButtons = observer(() => {
 
     const containerStyle: React.CSSProperties = {
         position: 'fixed',
-        top: Math.max(EDITOR_HEADER_HEIGHT + MARGIN, selectedRect.top - (CHAT_BUTTON_HEIGHT + MARGIN)),
+        top: Math.max(
+            EDITOR_HEADER_HEIGHT + MARGIN,
+            selectedRect.top - (CHAT_BUTTON_HEIGHT + MARGIN),
+        ),
         left: selectedRect.left + selectedRect.width / 2,
         transform: 'translate(-50%, 0)',
         transformOrigin: 'center center',

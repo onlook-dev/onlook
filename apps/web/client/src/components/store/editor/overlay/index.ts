@@ -1,6 +1,8 @@
-import type { DomElement, DomElementStyles, RectDimensions } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
+
+import type { DomElement, DomElementStyles, RectDimensions } from '@onlook/models';
+
 import type { EditorEngine } from '../engine';
 import { OverlayState } from './state';
 import { adaptRectToCanvas } from './utils';
@@ -69,7 +71,7 @@ export class OverlayManager {
                     if (el) {
                         const adaptedRect = adaptRectToCanvas(el.rect, frameData.view);
                         this.state.updateTextEditor(adaptedRect, {
-                            styles: el.styles?.computed
+                            styles: el.styles?.computed,
                         });
                     }
                 } catch {

@@ -1,7 +1,8 @@
-import { convertRawFont, FAMILIES } from '@onlook/fonts';
-import type { Font, RawFont } from '@onlook/models';
 import * as FlexSearch from 'flexsearch';
 import { makeAutoObservable } from 'mobx';
+
+import type { Font, RawFont } from '@onlook/models';
+import { convertRawFont, FAMILIES } from '@onlook/fonts';
 
 export class FontSearchManager {
     private _systemFonts: Font[] = [];
@@ -195,4 +196,4 @@ export class FontSearchManager {
     get hasMoreFonts(): boolean {
         return this._currentFontIndex < this._allFontFamilies.length;
     }
-} 
+}

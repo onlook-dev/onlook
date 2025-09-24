@@ -1,15 +1,17 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
-import { transKeys } from '@/i18n/keys';
+import { useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { useTranslations } from 'next-intl';
+
 import { EditorMode, EditorTabValue } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { ResizablePanel } from '@onlook/ui/resizable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
+import { transKeys } from '@/i18n/keys';
 import { ChatTab } from './chat-tab';
 import { ChatControls } from './chat-tab/controls';
 import { ChatHistory } from './chat-tab/history';
@@ -34,7 +36,7 @@ export const RightPanel = observer(() => {
     return (
         <div
             className={cn(
-                'flex h-full w-full transition-width duration-300 bg-background/95 group/panel border-[0.5px] backdrop-blur-xl shadow rounded-tl-xl',
+                'transition-width bg-background/95 group/panel flex h-full w-full rounded-tl-xl border-[0.5px] shadow backdrop-blur-xl duration-300',
                 editorEngine.state.editorMode === EditorMode.PREVIEW && 'hidden',
             )}
         >
@@ -52,23 +54,23 @@ export const RightPanel = observer(() => {
                     }
                     value={selectedTab}
                 >
-                    <TabsList className="flex flex-row h-10 w-full border-b-1 border-border items-center bg-transparent select-none pr-1 pl-1.5 justify-between">
-                        <div className="flex flex-row items-center gap-2 ">
+                    <TabsList className="border-border flex h-10 w-full flex-row items-center justify-between border-b-1 bg-transparent pr-1 pl-1.5 select-none">
+                        <div className="flex flex-row items-center gap-2">
                             <ChatPanelDropdown
                                 isChatHistoryOpen={isChatHistoryOpen}
                                 setIsChatHistoryOpen={setIsChatHistoryOpen}
                             >
                                 <TabsTrigger
-                                    className="bg-transparent py-2 px-1 text-small hover:text-foreground-hover cursor-pointer"
+                                    className="text-small hover:text-foreground-hover cursor-pointer bg-transparent px-1 py-2"
                                     value={EditorTabValue.CHAT}
                                 >
                                     <Icons.Sparkles className="mr-0.5 mb-0.5 h-4 w-4" />
                                     {t(transKeys.editor.panels.edit.tabs.chat.name)}
-                                    <Icons.ChevronDown className="ml-0.5 h-3 w-3 text-muted-foreground" />
+                                    <Icons.ChevronDown className="text-muted-foreground ml-0.5 h-3 w-3" />
                                 </TabsTrigger>
                             </ChatPanelDropdown>
                             <TabsTrigger
-                                className="bg-transparent py-2 px-1 text-small hover:text-foreground-hover cursor-pointer"
+                                className="text-small hover:text-foreground-hover cursor-pointer bg-transparent px-1 py-2"
                                 value={EditorTabValue.DEV}
                             >
                                 <Icons.Code className="mr-1 h-4 w-4" />
@@ -82,9 +84,11 @@ export const RightPanel = observer(() => {
                     <TabsContent
                         forceMount
                         className={cn(
-                            "h-full overflow-y-auto",
+                            'h-full overflow-y-auto',
                             editorEngine.state.rightPanelTab !== EditorTabValue.CHAT && 'hidden',
-                        )} value={EditorTabValue.CHAT}>
+                        )}
+                        value={EditorTabValue.CHAT}
+                    >
                         {currentConversation && (
                             <ChatTab
                                 conversationId={currentConversation.id}

@@ -1,9 +1,11 @@
 'use client';
 
-import { useGetBackground } from '@/hooks/use-get-background';
-import { MotionCard } from '@onlook/ui/motion-card';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import useResizeObserver from 'use-resize-observer';
+
+import { MotionCard } from '@onlook/ui/motion-card';
+
+import { useGetBackground } from '@/hooks/use-get-background';
 import { useProjectCreation } from '../_context';
 import { FinalizingProject } from './finalizing-project';
 import { NewSelectFolder } from './select-folder';
@@ -26,7 +28,7 @@ export const ImportLocalProject = () => {
     const backgroundUrl = useGetBackground('create');
     return (
         <div
-            className="relative w-full h-full flex items-center justify-center"
+            className="relative flex h-full w-full items-center justify-center"
             style={{
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
@@ -39,7 +41,7 @@ export const ImportLocalProject = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 20 }}
-                        className="w-[30rem] min-h-[12rem] bg-background/80 overflow-hidden p-0 border border-primary/20 rounded-lg shadow-lg"
+                        className="bg-background/80 border-primary/20 min-h-[12rem] w-[30rem] overflow-hidden rounded-lg border p-0 shadow-lg"
                     >
                         <motion.div ref={ref} layout="position" className="flex flex-col">
                             <AnimatePresence mode="popLayout" initial={false} custom={direction}>

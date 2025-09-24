@@ -1,18 +1,24 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
-import { api } from '@/trpc/react';
-import { type ProjectCreateRequest } from '@onlook/db';
+import { useEffect, useRef, useState } from 'react';
+
+import type { ProjectCreateRequest } from '@onlook/db';
+import type {
+    ImageMessageContext,
+    ImageMessageContext,
+    MessageContext,
+    MessageContext,
+} from '@onlook/models';
 import {
     ChatType,
     CreateRequestContextType,
     MessageContextType,
     ProjectCreateRequestStatus,
-    type ImageMessageContext,
-    type MessageContext,
 } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
-import { useEffect, useRef, useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
+import { api } from '@/trpc/react';
 import { useTabActive } from '../_hooks/use-tab-active';
 
 interface ProjectReadyState {
@@ -29,14 +35,22 @@ export const useStartProject = () => {
     const { tabState } = useTabActive();
     const apiUtils = api.useUtils();
     const { data: user, error: userError } = api.user.get.useQuery();
-    const { data: canvasWithFrames, error: canvasError } = api.userCanvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
-    const { data: conversations, error: conversationsError } = api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
-    const { data: creationRequest, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
-    const { mutateAsync: updateCreateRequest } = api.project.createRequest.updateStatus.useMutation({
-        onSettled: async () => {
-            await apiUtils.project.createRequest.getPendingRequest.invalidate({ projectId: editorEngine.projectId });
-        },
+    const { data: canvasWithFrames, error: canvasError } = api.userCanvas.getWithFrames.useQuery({
+        projectId: editorEngine.projectId,
     });
+    const { data: conversations, error: conversationsError } =
+        api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
+    const { data: creationRequest, error: creationRequestError } =
+        api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
+    const { mutateAsync: updateCreateRequest } = api.project.createRequest.updateStatus.useMutation(
+        {
+            onSettled: async () => {
+                await apiUtils.project.createRequest.getPendingRequest.invalidate({
+                    projectId: editorEngine.projectId,
+                });
+            },
+        },
+    );
     const [projectReadyState, setProjectReadyState] = useState<ProjectReadyState>({
         canvas: false,
         conversations: false,
@@ -73,7 +87,12 @@ export const useStartProject = () => {
 
     useEffect(() => {
         const isProjectReady = Object.values(projectReadyState).every((value) => value);
-        if (creationRequest && processedRequestIdRef.current !== creationRequest.id && isProjectReady && editorEngine.chat._sendMessageAction) {
+        if (
+            creationRequest &&
+            processedRequestIdRef.current !== creationRequest.id &&
+            isProjectReady &&
+            editorEngine.chat._sendMessageAction
+        ) {
             processedRequestIdRef.current = creationRequest.id;
             void resumeCreate(creationRequest);
         }
@@ -142,8 +161,14 @@ export const useStartProject = () => {
     }, [tabState]);
 
     useEffect(() => {
-        setError(userError?.message ?? canvasError?.message ?? conversationsError?.message ?? creationRequestError?.message ?? null);
+        setError(
+            userError?.message ??
+                canvasError?.message ??
+                conversationsError?.message ??
+                creationRequestError?.message ??
+                null,
+        );
     }, [userError, canvasError, conversationsError, creationRequestError]);
 
     return { isProjectReady: Object.values(projectReadyState).every((value) => value), error };
-}
+};

@@ -1,7 +1,9 @@
-import { env } from '@/env';
-import { createTRPCRouter, protectedProcedure } from '@/server/api/trpc';
-import { trackEvent } from '@/utils/analytics/server';
 import FirecrawlApp from '@mendable/firecrawl-js';
+import { generateText } from 'ai';
+import { and, eq, ne } from 'drizzle-orm';
+import { z } from 'zod';
+
+import type { Canvas, Canvas, UserCanvas, UserCanvas } from '@onlook/db';
 import { initModel } from '@onlook/ai';
 import { getSandboxPreviewUrl, STORAGE_BUCKETS } from '@onlook/constants';
 import {
@@ -26,15 +28,19 @@ import {
     toDbPreviewImg,
     userCanvases,
     userProjects,
-    type Canvas,
-    type UserCanvas
 } from '@onlook/db';
 import { compressImageServer } from '@onlook/image-server';
-import { LLMProvider, OPENROUTER_MODELS, ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
+import {
+    LLMProvider,
+    OPENROUTER_MODELS,
+    ProjectCreateRequestStatus,
+    ProjectRole,
+} from '@onlook/models';
 import { getScreenshotPath } from '@onlook/utility';
-import { generateText } from 'ai';
-import { and, eq, ne } from 'drizzle-orm';
-import { z } from 'zod';
+
+import { env } from '@/env';
+import { createTRPCRouter, protectedProcedure } from '@/server/api/trpc';
+import { trackEvent } from '@/utils/analytics/server';
 import { projectCreateRequestRouter } from './createRequest';
 import { fork } from './fork';
 import { extractCsbPort } from './helper';
@@ -64,7 +70,10 @@ export const projectRouter = createTRPCRouter({
                 }
 
                 const branch = await ctx.db.query.branches.findFirst({
-                    where: and(eq(branches.projectId, input.projectId), eq(branches.isDefault, true)),
+                    where: and(
+                        eq(branches.projectId, input.projectId),
+                        eq(branches.isDefault, true),
+                    ),
                     with: {
                         frames: true,
                     },
@@ -108,7 +117,9 @@ export const projectRouter = createTRPCRouter({
                     signal: AbortSignal.timeout(10000),
                 });
                 if (!response.ok) {
-                    throw new Error(`Failed to fetch screenshot: ${response.status} ${response.statusText}`);
+                    throw new Error(
+                        `Failed to fetch screenshot: ${response.status} ${response.statusText}`,
+                    );
                 }
 
                 const arrayBuffer = await response.arrayBuffer();
@@ -142,21 +153,18 @@ export const projectRouter = createTRPCRouter({
                     throw new Error('No data returned from storage upload');
                 }
 
-                const {
-                    previewImgUrl,
-                    previewImgPath,
-                    previewImgBucket,
-                    updatedPreviewImgAt,
-                } = toDbPreviewImg({
-                    type: 'storage',
-                    storagePath: {
-                        bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
-                        path: data.path,
-                    },
-                    updatedAt: new Date(),
-                });
+                const { previewImgUrl, previewImgPath, previewImgBucket, updatedPreviewImgAt } =
+                    toDbPreviewImg({
+                        type: 'storage',
+                        storagePath: {
+                            bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
+                            path: data.path,
+                        },
+                        updatedAt: new Date(),
+                    });
 
-                await ctx.db.update(projects)
+                await ctx.db
+                    .update(projects)
                     .set({
                         previewImgUrl,
                         previewImgPath,
@@ -169,26 +177,41 @@ export const projectRouter = createTRPCRouter({
                 return { success: true, path: data.path };
             } catch (error) {
                 console.error('Error capturing project screenshot:', error);
-                return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+                return {
+                    success: false,
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                };
             }
         }),
     list: protectedProcedure
-        .input(z.object({
-            limit: z.number().optional(),
-            excludeProjectId: z.string().optional(),
-        }).optional())
+        .input(
+            z
+                .object({
+                    limit: z.number().optional(),
+                    excludeProjectId: z.string().optional(),
+                })
+                .optional(),
+        )
         .query(async ({ ctx, input }) => {
             const fetchedUserProjects = await ctx.db.query.userProjects.findMany({
-                where: input?.excludeProjectId ? and(
-                    eq(userProjects.userId, ctx.user.id),
-                    ne(userProjects.projectId, input.excludeProjectId),
-                ) : eq(userProjects.userId, ctx.user.id),
+                where: input?.excludeProjectId
+                    ? and(
+                          eq(userProjects.userId, ctx.user.id),
+                          ne(userProjects.projectId, input.excludeProjectId),
+                      )
+                    : eq(userProjects.userId, ctx.user.id),
                 with: {
                     project: true,
                 },
                 limit: input?.limit,
             });
-            return fetchedUserProjects.map((userProject) => fromDbProject(userProject.project)).sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
+            return fetchedUserProjects
+                .map((userProject) => fromDbProject(userProject.project))
+                .sort(
+                    (a, b) =>
+                        new Date(b.metadata.updatedAt).getTime() -
+                        new Date(a.metadata.updatedAt).getTime(),
+                );
         }),
     get: protectedProcedure
         .input(z.object({ projectId: z.string() }))
@@ -200,7 +223,7 @@ export const projectRouter = createTRPCRouter({
                 console.error('project not found');
                 return null;
             }
-            return fromDbProject(project)
+            return fromDbProject(project);
         }),
     getProjectWithCanvas: protectedProcedure
         .input(z.object({ projectId: z.string() }))
@@ -223,7 +246,8 @@ export const projectRouter = createTRPCRouter({
                 return null;
             }
             const canvas: Canvas = project.canvas ?? createDefaultCanvas(project.id);
-            const userCanvas: UserCanvas = project.canvas?.userCanvases[0] ?? createDefaultUserCanvas(ctx.user.id, canvas.id);
+            const userCanvas: UserCanvas =
+                project.canvas?.userCanvases[0] ?? createDefaultUserCanvas(ctx.user.id, canvas.id);
 
             return {
                 project: fromDbProject(project),
@@ -232,17 +256,19 @@ export const projectRouter = createTRPCRouter({
             };
         }),
     create: protectedProcedure
-        .input(z.object({
-            project: projectInsertSchema,
-            userId: z.string(),
-            sandboxId: z.string(),
-            sandboxUrl: z.string(),
-            creationData: projectCreateRequestInsertSchema
-                .omit({
-                    projectId: true,
-                })
-                .optional(),
-        }))
+        .input(
+            z.object({
+                project: projectInsertSchema,
+                userId: z.string(),
+                sandboxId: z.string(),
+                sandboxUrl: z.string(),
+                creationData: projectCreateRequestInsertSchema
+                    .omit({
+                        projectId: true,
+                    })
+                    .optional(),
+            }),
+        )
         .mutation(async ({ ctx, input }) => {
             return await ctx.db.transaction(async (tx) => {
                 // 1. Insert the new project
@@ -316,9 +342,11 @@ export const projectRouter = createTRPCRouter({
         }),
     fork,
     generateName: protectedProcedure
-        .input(z.object({
-            prompt: z.string(),
-        }))
+        .input(
+            z.object({
+                prompt: z.string(),
+            }),
+        )
         .mutation(async ({ ctx, input }): Promise<string> => {
             try {
                 const { model, providerOptions, headers } = await initModel({
@@ -334,15 +362,20 @@ export const projectRouter = createTRPCRouter({
                     providerOptions,
                     maxOutputTokens: 50,
                     experimental_telemetry: {
-                        isEnabled: true, metadata: {
+                        isEnabled: true,
+                        metadata: {
                             userId: ctx.user.id,
                             tags: ['project-name-generation'],
-                        }
+                        },
                     },
                 });
 
                 const generatedName = result.text.trim();
-                if (generatedName && generatedName.length > 0 && generatedName.length <= MAX_NAME_LENGTH) {
+                if (
+                    generatedName &&
+                    generatedName.length > 0 &&
+                    generatedName.length <= MAX_NAME_LENGTH
+                ) {
                     return generatedName;
                 }
 
@@ -372,61 +405,77 @@ export const projectRouter = createTRPCRouter({
             return projects.map((project) => fromDbProject(project.project));
         }),
     update: protectedProcedure.input(projectUpdateSchema).mutation(async ({ ctx, input }) => {
-        const [updatedProject] = await ctx.db.update(projects).set({
-            ...input,
-            updatedAt: new Date(),
-        }).where(
-            eq(projects.id, input.id)
-        ).returning();
+        const [updatedProject] = await ctx.db
+            .update(projects)
+            .set({
+                ...input,
+                updatedAt: new Date(),
+            })
+            .where(eq(projects.id, input.id))
+            .returning();
         if (!updatedProject) {
             throw new Error('Project not found');
         }
         return fromDbProject(updatedProject);
     }),
-    addTag: protectedProcedure.input(z.object({
-        projectId: z.string(),
-        tag: z.string(),
-    })).mutation(async ({ ctx, input }) => {
-        const project = await ctx.db.query.projects.findFirst({
-            where: eq(projects.id, input.projectId),
-        });
+    addTag: protectedProcedure
+        .input(
+            z.object({
+                projectId: z.string(),
+                tag: z.string(),
+            }),
+        )
+        .mutation(async ({ ctx, input }) => {
+            const project = await ctx.db.query.projects.findFirst({
+                where: eq(projects.id, input.projectId),
+            });
 
-        if (!project) {
-            throw new Error('Project not found');
-        }
+            if (!project) {
+                throw new Error('Project not found');
+            }
 
-        const currentTags = project.tags ?? [];
-        const newTags = currentTags.includes(input.tag)
-            ? currentTags
-            : [...currentTags, input.tag];
+            const currentTags = project.tags ?? [];
+            const newTags = currentTags.includes(input.tag)
+                ? currentTags
+                : [...currentTags, input.tag];
 
-        await ctx.db.update(projects).set({
-            tags: newTags,
-            updatedAt: new Date(),
-        }).where(eq(projects.id, input.projectId));
+            await ctx.db
+                .update(projects)
+                .set({
+                    tags: newTags,
+                    updatedAt: new Date(),
+                })
+                .where(eq(projects.id, input.projectId));
 
-        return { success: true, tags: newTags };
-    }),
-    removeTag: protectedProcedure.input(z.object({
-        projectId: z.string(),
-        tag: z.string(),
-    })).mutation(async ({ ctx, input }) => {
-        const project = await ctx.db.query.projects.findFirst({
-            where: eq(projects.id, input.projectId),
-        });
+            return { success: true, tags: newTags };
+        }),
+    removeTag: protectedProcedure
+        .input(
+            z.object({
+                projectId: z.string(),
+                tag: z.string(),
+            }),
+        )
+        .mutation(async ({ ctx, input }) => {
+            const project = await ctx.db.query.projects.findFirst({
+                where: eq(projects.id, input.projectId),
+            });
 
-        if (!project) {
-            throw new Error('Project not found');
-        }
+            if (!project) {
+                throw new Error('Project not found');
+            }
 
-        const currentTags = project.tags ?? [];
-        const newTags = currentTags.filter(tag => tag !== input.tag);
+            const currentTags = project.tags ?? [];
+            const newTags = currentTags.filter((tag) => tag !== input.tag);
 
-        await ctx.db.update(projects).set({
-            tags: newTags,
-            updatedAt: new Date(),
-        }).where(eq(projects.id, input.projectId));
+            await ctx.db
+                .update(projects)
+                .set({
+                    tags: newTags,
+                    updatedAt: new Date(),
+                })
+                .where(eq(projects.id, input.projectId));
 
-        return { success: true, tags: newTags };
-    }),
+            return { success: true, tags: newTags };
+        }),
 });

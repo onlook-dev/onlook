@@ -1,7 +1,14 @@
-import { FREESTYLE_CUSTOM_HOSTNAME } from '@onlook/constants';
-import { customDomainVerification, type CustomDomainVerification, type DrizzleDb } from '@onlook/db';
+import type {
+    HandleVerifyDomainError,
+    HandleVerifyDomainError,
+    HandleVerifyDomainResponse,
+    HandleVerifyDomainResponse,
+} from 'freestyle-sandboxes';
 import { TRPCError } from '@trpc/server';
-import { type HandleVerifyDomainError, type HandleVerifyDomainResponse } from 'freestyle-sandboxes';
+
+import type { CustomDomainVerification, DrizzleDb } from '@onlook/db';
+import { FREESTYLE_CUSTOM_HOSTNAME } from '@onlook/constants';
+
 import { initializeFreestyleSdk } from '../../freestyle';
 import { getARecords } from './records';
 
@@ -13,20 +20,24 @@ export const createDomainVerification = async (
     subdomain: string | null,
 ): Promise<CustomDomainVerification> => {
     const sdk = initializeFreestyleSdk();
-    const { id: freestyleVerificationId, verificationCode } = await sdk.createDomainVerificationRequest(domain);
-    const [verification] = await db.insert(customDomainVerification).values({
-        customDomainId,
-        fullDomain: domain,
-        projectId,
-        freestyleVerificationId,
-        txtRecord: {
-            type: 'TXT',
-            name: FREESTYLE_CUSTOM_HOSTNAME,
-            value: verificationCode,
-            verified: false,
-        },
-        aRecords: getARecords(subdomain),
-    }).returning();
+    const { id: freestyleVerificationId, verificationCode } =
+        await sdk.createDomainVerificationRequest(domain);
+    const [verification] = await db
+        .insert(customDomainVerification)
+        .values({
+            customDomainId,
+            fullDomain: domain,
+            projectId,
+            freestyleVerificationId,
+            txtRecord: {
+                type: 'TXT',
+                name: FREESTYLE_CUSTOM_HOSTNAME,
+                value: verificationCode,
+                verified: false,
+            },
+            aRecords: getARecords(subdomain),
+        })
+        .returning();
     if (!verification) {
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
@@ -34,12 +45,13 @@ export const createDomainVerification = async (
         });
     }
     return verification;
-}
+};
 
 export const verifyFreestyleDomain = async (verificationId: string): Promise<string | null> => {
     try {
         const sdk = initializeFreestyleSdk();
-        const res: HandleVerifyDomainResponse = await sdk.verifyDomainVerificationRequest(verificationId);
+        const res: HandleVerifyDomainResponse =
+            await sdk.verifyDomainVerificationRequest(verificationId);
         if (!res.domain) {
             throw new TRPCError({
                 code: 'INTERNAL_SERVER_ERROR',
@@ -52,12 +64,15 @@ export const verifyFreestyleDomain = async (verificationId: string): Promise<str
         console.error(error);
         return null;
     }
-}
+};
 
-export const verifyFreestyleDomainWithCustomDomain = async (domain: string): Promise<string | null> => {
+export const verifyFreestyleDomainWithCustomDomain = async (
+    domain: string,
+): Promise<string | null> => {
     try {
         const sdk = initializeFreestyleSdk();
-        const res = await sdk.verifyDomain(domain) as HandleVerifyDomainResponse & HandleVerifyDomainError & { domain: string | null, message: string | null };
+        const res = (await sdk.verifyDomain(domain)) as HandleVerifyDomainResponse &
+            HandleVerifyDomainError & { domain: string | null; message: string | null };
         if (!res.domain) {
             throw new TRPCError({
                 code: 'INTERNAL_SERVER_ERROR',
@@ -78,4 +93,4 @@ export const verifyFreestyleDomainWithCustomDomain = async (domain: string): Pro
         console.error(error);
         return null;
     }
-}
+};

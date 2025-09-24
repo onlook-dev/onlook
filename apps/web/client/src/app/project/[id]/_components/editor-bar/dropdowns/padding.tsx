@@ -1,50 +1,49 @@
 'use client';
 
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from "@onlook/ui/dropdown-menu";
-import { Icons } from "@onlook/ui/icons";
-import { observer } from "mobx-react-lite";
-import { useMemo, useState } from "react";
-import { useBoxControl } from "../hooks/use-box-control";
-import { useDropdownControl } from "../hooks/use-dropdown-manager";
-import { HoverOnlyTooltip } from "../hover-tooltip";
-import { InputRange } from "../inputs/input-range";
-import { SpacingInputs } from "../inputs/spacing-inputs";
-import { ToolbarButton } from "../toolbar-button";
+import { useMemo, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
+
+import { useBoxControl } from '../hooks/use-box-control';
+import { useDropdownControl } from '../hooks/use-dropdown-manager';
+import { HoverOnlyTooltip } from '../hover-tooltip';
+import { InputRange } from '../inputs/input-range';
+import { SpacingInputs } from '../inputs/spacing-inputs';
+import { ToolbarButton } from '../toolbar-button';
 
 export enum PaddingTab {
-    ALL = "all",
-    INDIVIDUAL = "individual"
+    ALL = 'all',
+    INDIVIDUAL = 'individual',
 }
 
 export const SIDE_ORDER = ['top', 'right', 'bottom', 'left'] as const; // !!!! DO NOT CHANGE THE ORDER !!!!
 
 const PADDING_ICON_MAP: Record<string, typeof Icons.PaddingEmpty> = {
-    'TRBL': Icons.PaddingFull,
-    'TRB': Icons.PaddingTRB,
-    'TRL': Icons.PaddingTRL,
-    'TBL': Icons.PaddingTBL,
-    'RBL': Icons.PaddingRBL,
-    'TR': Icons.PaddingTR,
-    'TB': Icons.PaddingTB,
-    'TL': Icons.PaddingTL,
-    'RB': Icons.PaddingRB,
-    'RL': Icons.PaddingRL,
-    'BL': Icons.PaddingBL,
-    'T': Icons.PaddingTop,
-    'R': Icons.PaddingRight,
-    'B': Icons.PaddingBottom,
-    'L': Icons.PaddingLeft,
+    TRBL: Icons.PaddingFull,
+    TRB: Icons.PaddingTRB,
+    TRL: Icons.PaddingTRL,
+    TBL: Icons.PaddingTBL,
+    RBL: Icons.PaddingRBL,
+    TR: Icons.PaddingTR,
+    TB: Icons.PaddingTB,
+    TL: Icons.PaddingTL,
+    RB: Icons.PaddingRB,
+    RL: Icons.PaddingRL,
+    BL: Icons.PaddingBL,
+    T: Icons.PaddingTop,
+    R: Icons.PaddingRight,
+    B: Icons.PaddingBottom,
+    L: Icons.PaddingLeft,
 };
 
 export const Padding = observer(() => {
-    const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('padding');
+    const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } =
+        useBoxControl('padding');
 
     const { isOpen, onOpenChange } = useDropdownControl({
-        id: 'padding-dropdown'
+        id: 'padding-dropdown',
     });
 
     const areAllPaddingsEqual = useMemo((): boolean => {
@@ -57,10 +56,17 @@ export const Padding = observer(() => {
 
         const values = Object.values(paddings);
 
-        return values.every(val => val === values[0]);
-    }, [boxState.paddingTop.num, boxState.paddingRight.num, boxState.paddingBottom.num, boxState.paddingLeft.num]);
+        return values.every((val) => val === values[0]);
+    }, [
+        boxState.paddingTop.num,
+        boxState.paddingRight.num,
+        boxState.paddingBottom.num,
+        boxState.paddingLeft.num,
+    ]);
 
-    const [activeTab, setActiveTab] = useState<PaddingTab>(areAllPaddingsEqual ? PaddingTab.ALL : PaddingTab.INDIVIDUAL);
+    const [activeTab, setActiveTab] = useState<PaddingTab>(
+        areAllPaddingsEqual ? PaddingTab.ALL : PaddingTab.INDIVIDUAL,
+    );
 
     const getPaddingIcon = () => {
         const paddings = {
@@ -71,7 +77,7 @@ export const Padding = observer(() => {
         };
 
         const values = Object.values(paddings);
-        const nonZeroValues = values.filter(val => val > 0);
+        const nonZeroValues = values.filter((val) => val > 0);
 
         // All zero
         if (nonZeroValues.length === 0) {
@@ -79,19 +85,18 @@ export const Padding = observer(() => {
         }
 
         // All same non-zero values
-        const allSame = nonZeroValues.length === 4 &&
-            nonZeroValues.every(val => val === nonZeroValues[0]) &&
+        const allSame =
+            nonZeroValues.length === 4 &&
+            nonZeroValues.every((val) => val === nonZeroValues[0]) &&
             nonZeroValues[0] !== 0;
         if (allSame) {
             return Icons.PaddingFull;
         }
 
         // Create a pattern string for active sides in consistent order (T-R-B-L)
-        const activeSides = SIDE_ORDER
-            .filter(side => paddings[side] > 0)
-            .map(side => side.charAt(0).toUpperCase())
+        const activeSides = SIDE_ORDER.filter((side) => paddings[side] > 0)
+            .map((side) => side.charAt(0).toUpperCase())
             .join('');
-
 
         return PADDING_ICON_MAP[activeSides] ?? Icons.PaddingEmpty;
     };
@@ -108,11 +113,13 @@ export const Padding = observer(() => {
         }
 
         // Get all non-zero values
-        const nonZeroValues = [top, right, bottom, left].filter(val => val !== 0);
+        const nonZeroValues = [top, right, bottom, left].filter((val) => val !== 0);
 
         // If all non-zero values are the same
-        if (nonZeroValues.length > 0 && nonZeroValues.every(val => val === nonZeroValues[0])) {
-            return boxState.padding.unit === 'px' ? `${nonZeroValues[0]}` : `${boxState.padding.value}`;
+        if (nonZeroValues.length > 0 && nonZeroValues.every((val) => val === nonZeroValues[0])) {
+            return boxState.padding.unit === 'px'
+                ? `${nonZeroValues[0]}`
+                : `${boxState.padding.value}`;
         }
 
         // If values are different
@@ -128,32 +135,36 @@ export const Padding = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className={`gap-1 flex items-center min-w-9 ${paddingValue ? '!text-foreground-primary [&_*]:!text-foreground-primary' : ''}`}
+                        className={`flex min-w-9 items-center gap-1 ${paddingValue ? '!text-foreground-primary [&_*]:!text-foreground-primary' : ''}`}
                     >
                         <PaddingIcon className="h-4 min-h-4 w-4 min-w-4" />
                         {paddingValue && (
-                            <span className="text-small text-foreground-primary">{paddingValue}</span>
+                            <span className="text-small text-foreground-primary">
+                                {paddingValue}
+                            </span>
                         )}
                     </ToolbarButton>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
-            <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">
-                <div className="flex items-center gap-2 mb-3">
+            <DropdownMenuContent align="start" className="mt-1 w-[280px] rounded-lg p-3">
+                <div className="mb-3 flex items-center gap-2">
                     <button
                         onClick={() => setActiveTab(PaddingTab.ALL)}
-                        className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${activeTab === PaddingTab.ALL
-                            ? 'text-foreground-primary bg-background-active/50'
-                            : 'text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover'
-                            }`}
+                        className={`flex-1 cursor-pointer rounded-md px-4 py-1.5 text-sm transition-colors ${
+                            activeTab === PaddingTab.ALL
+                                ? 'text-foreground-primary bg-background-active/50'
+                                : 'text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover'
+                        }`}
                     >
-                        {areAllPaddingsEqual ? "All sides" : "Mixed"}
+                        {areAllPaddingsEqual ? 'All sides' : 'Mixed'}
                     </button>
                     <button
                         onClick={() => setActiveTab(PaddingTab.INDIVIDUAL)}
-                        className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${activeTab === PaddingTab.INDIVIDUAL
-                            ? 'text-foreground-primary bg-background-active/50'
-                            : 'text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover'
-                            }`}
+                        className={`flex-1 cursor-pointer rounded-md px-4 py-1.5 text-sm transition-colors ${
+                            activeTab === PaddingTab.INDIVIDUAL
+                                ? 'text-foreground-primary bg-background-active/50'
+                                : 'text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover'
+                        }`}
                     >
                         Individual
                     </button>

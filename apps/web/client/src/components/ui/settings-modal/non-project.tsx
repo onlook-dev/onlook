@@ -1,12 +1,15 @@
-import { useStateManager } from '@/components/store/state';
+import { observer } from 'mobx-react-lite';
+import { AnimatePresence, motion } from 'motion/react';
+
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { cn } from '@onlook/ui/utils';
 import { capitalizeFirstLetter } from '@onlook/utility';
-import { observer } from 'mobx-react-lite';
-import { AnimatePresence, motion } from 'motion/react';
-import { SettingsTabValue, type SettingTab } from './helpers';
+
+import type { SettingTab } from './helpers';
+import { useStateManager } from '@/components/store/state';
+import { SettingsTabValue } from './helpers';
 import { PreferencesTab } from './preferences-tab';
 import { SubscriptionTab } from './subscription-tab';
 
@@ -24,7 +27,7 @@ export const NonProjectSettingsModal = observer(() => {
             icon: <Icons.CreditCard className="mr-2 h-4 w-4" />,
             component: <SubscriptionTab />,
         },
-    ]
+    ];
 
     return (
         <AnimatePresence>
@@ -35,7 +38,7 @@ export const NonProjectSettingsModal = observer(() => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
+                        className="bg-background/80 fixed inset-0 z-50 backdrop-blur-sm"
                         onClick={() => (stateManager.isSettingsModalOpen = false)}
                     />
 
@@ -45,12 +48,12 @@ export const NonProjectSettingsModal = observer(() => {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+                        className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center"
                     >
-                        <div className="bg-background border rounded-lg shadow-lg max-w-4xl max-h-screen h-[700px] w-[900px] p-0 pointer-events-auto">
-                            <div className="flex flex-col h-full overflow-hidden">
+                        <div className="bg-background pointer-events-auto h-[700px] max-h-screen w-[900px] max-w-4xl rounded-lg border p-0 shadow-lg">
+                            <div className="flex h-full flex-col overflow-hidden">
                                 {/* Top bar - fixed height */}
-                                <div className="shrink-0 flex items-center p-5 pb-4 ml-1 select-none">
+                                <div className="ml-1 flex shrink-0 items-center p-5 pb-4 select-none">
                                     <h1 className="text-title3">Settings</h1>
                                     <Button
                                         variant="ghost"
@@ -64,11 +67,11 @@ export const NonProjectSettingsModal = observer(() => {
                                 <Separator orientation="horizontal" className="shrink-0" />
 
                                 {/* Main content */}
-                                <div className="flex flex-1 min-h-0 overflow-hidden">
+                                <div className="flex min-h-0 flex-1 overflow-hidden">
                                     {/* Left navigation - fixed width */}
                                     <div className="flex flex-col overflow-y-scroll select-none">
-                                        <div className="shrink-0 w-48 space-y-1 p-5 text-regularPlus">
-                                            <p className="text-muted-foreground text-smallPlus ml-2.5 mt-2 mb-2">
+                                        <div className="text-regularPlus w-48 shrink-0 space-y-1 p-5">
+                                            <p className="text-muted-foreground text-smallPlus mt-2 mb-2 ml-2.5">
                                                 Global Settings
                                             </p>
                                             {tabs.map((tab) => (

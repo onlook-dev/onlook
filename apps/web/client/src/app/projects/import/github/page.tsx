@@ -1,19 +1,17 @@
 'use client';
 
-import { useGetBackground } from '@/hooks/use-get-background';
-import { MotionCard } from '@onlook/ui/motion-card';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import useResizeObserver from 'use-resize-observer';
+
+import { MotionCard } from '@onlook/ui/motion-card';
+
+import { useGetBackground } from '@/hooks/use-get-background';
 import { ConnectGithub } from './_components/connect';
 import { FinalizingGithubProject } from './_components/finalizing';
 import { SetupGithub } from './_components/setup';
 import { useImportGithubProject } from './_context';
 
-const steps = [
-    <ConnectGithub />,
-    <SetupGithub />,
-    <FinalizingGithubProject />
-];
+const steps = [<ConnectGithub />, <SetupGithub />, <FinalizingGithubProject />];
 
 const Page = () => {
     const { currentStep } = useImportGithubProject();
@@ -33,27 +31,27 @@ const Page = () => {
     return (
         <div className="fixed inset-0">
             <div
-                className="relative w-full h-full flex items-center justify-center"
+                className="relative flex h-full w-full items-center justify-center"
                 style={{
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundImage: `url(${backgroundUrl})`,
                 }}
             >
-                <div className="absolute inset-0 bg-background/50" />
+                <div className="bg-background/50 absolute inset-0" />
                 <div className="relative z-10">
                     <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
                         <MotionCard
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
-                            className="w-[30rem] min-h-[12rem] backdrop-blur-md bg-background/30 overflow-hidden p-0"
+                            className="bg-background/30 min-h-[12rem] w-[30rem] overflow-hidden p-0 backdrop-blur-md"
                         >
                             <motion.div ref={ref} layout="position" className="flex flex-col">
                                 <AnimatePresence
                                     mode="popLayout"
                                     initial={false}
-                                // custom={direction}
+                                    // custom={direction}
                                 >
                                     <motion.div
                                         key={currentStep}

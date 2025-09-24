@@ -1,8 +1,9 @@
-import { DeploymentStatus } from "@onlook/models";
-import { timeAgo } from "@onlook/utility";
-import { ActionSection } from "./action";
-import { NoCustomDomain } from "./no-domain";
-import { useCustomDomainContext } from "./provider";
+import { DeploymentStatus } from '@onlook/models';
+import { timeAgo } from '@onlook/utility';
+
+import { ActionSection } from './action';
+import { NoCustomDomain } from './no-domain';
+import { useCustomDomainContext } from './provider';
 
 export const DomainSection = () => {
     const { isPro, customDomain, deployment, isDeploying } = useCustomDomainContext();
@@ -12,15 +13,13 @@ export const DomainSection = () => {
     }
 
     if (!isPro) {
-        return <NoCustomDomain />
+        return <NoCustomDomain />;
     }
 
     return (
         <>
-            <div className="flex items-center w-full">
-                <h3 className="">
-                    Custom Domain
-                </h3>
+            <div className="flex w-full items-center">
+                <h3 className="">Custom Domain</h3>
                 {deployment && deployment?.status === DeploymentStatus.COMPLETED && (
                     <div className="ml-auto flex items-center gap-2">
                         <p className="text-green-300">Live</p>

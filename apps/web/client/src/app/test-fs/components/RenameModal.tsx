@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface RenameModalProps {
     isOpen: boolean;
@@ -8,7 +8,13 @@ interface RenameModalProps {
     onRename: (newName: string) => void;
 }
 
-export function RenameModal({ isOpen, currentName, isDirectory = false, onClose, onRename }: RenameModalProps) {
+export function RenameModal({
+    isOpen,
+    currentName,
+    isDirectory = false,
+    onClose,
+    onRename,
+}: RenameModalProps) {
     const [newName, setNewName] = useState(currentName);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -34,30 +40,32 @@ export function RenameModal({ isOpen, currentName, isDirectory = false, onClose,
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-gray-800 rounded-lg p-6 w-80">
-                <h3 className="text-lg font-semibold mb-4 text-gray-100">Rename {isDirectory ? 'Directory' : 'File'}</h3>
+        <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+            <div className="w-80 rounded-lg bg-gray-800 p-6">
+                <h3 className="mb-4 text-lg font-semibold text-gray-100">
+                    Rename {isDirectory ? 'Directory' : 'File'}
+                </h3>
                 <form onSubmit={handleSubmit}>
                     <input
                         ref={inputRef}
                         type="text"
                         value={newName}
                         onChange={(e) => setNewName(e.target.value)}
-                        className="w-full px-3 py-2 bg-gray-900 text-gray-100 border border-gray-700 rounded focus:outline-none focus:border-blue-500"
+                        className="w-full rounded border border-gray-700 bg-gray-900 px-3 py-2 text-gray-100 focus:border-blue-500 focus:outline-none"
                         placeholder="Enter new name"
                     />
-                    <div className="flex justify-end gap-2 mt-4">
+                    <div className="mt-4 flex justify-end gap-2">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 text-sm text-gray-300 hover:text-gray-100 transition-colors"
+                            className="px-4 py-2 text-sm text-gray-300 transition-colors hover:text-gray-100"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={!newName.trim() || newName === currentName}
-                            className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-500 transition-colors"
+                            className="rounded bg-blue-600 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-500"
                         >
                             Rename
                         </button>

@@ -3,12 +3,12 @@ import { useCallback, useEffect, useState } from 'react';
 // Pre-calculated approximate widths for each group type
 const GROUP_WIDTHS = {
     // Div groups
-    'dimensions': 160, // Width + Height
-    'base': 180, // Color + Border + Radius
-    'layout': 180, // Display + Padding + Margin
-    'typography': 320, // Font Family + Weight + Size
+    dimensions: 160, // Width + Height
+    base: 180, // Color + Border + Radius
+    layout: 180, // Display + Padding + Margin
+    typography: 320, // Font Family + Weight + Size
     'text-color': 40, // Text Color
-    'opacity': 80, // Opacity
+    opacity: 80, // Opacity
 
     // Text groups (wider due to more components)
     'text-typography': 360, // Font Family + Weight + Size + Color + Align + Advanced
@@ -18,7 +18,13 @@ const GROUP_WIDTHS = {
     'text-opacity': 80, // Opacity
 };
 
-export const useMeasureGroup = ({ availableWidth = 0, count = 0 }: { availableWidth?: number, count?: number }) => {
+export const useMeasureGroup = ({
+    availableWidth = 0,
+    count = 0,
+}: {
+    availableWidth?: number;
+    count?: number;
+}) => {
     const [visibleCount, setVisibleCount] = useState(count);
     // Update visible count based on available width
     const updateVisibleCount = useCallback(() => {

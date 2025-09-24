@@ -1,17 +1,16 @@
-import {
-    ProcessedFileType,
-    type NextJsProjectValidation,
-    type ProcessedFile,
-} from '@/app/projects/types';
+import { useCallback, useRef, useState } from 'react';
+import { motion } from 'motion/react';
+
 import { IGNORED_UPLOAD_DIRECTORIES, IGNORED_UPLOAD_FILES } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
 import { isBinaryFile } from '@onlook/utility';
-import { motion } from 'motion/react';
-import { useCallback, useRef, useState } from 'react';
-import { StepContent, StepFooter, StepHeader } from '../../steps';
+
+import type { NextJsProjectValidation, ProcessedFile } from '@/app/projects/types';
+import { ProcessedFileType } from '@/app/projects/types';
 import { useProjectCreation } from '../_context';
+import { StepContent, StepFooter, StepHeader } from '../../steps';
 
 declare module 'react' {
     interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -61,7 +60,7 @@ export const NewSelectFolder = () => {
         const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
         // Find the common root path from all files
-        const allPaths = files.map((file) => (file).webkitRelativePath || file.name);
+        const allPaths = files.map((file) => file.webkitRelativePath || file.name);
 
         if (!allPaths[0]) {
             return processedFiles;
@@ -73,7 +72,7 @@ export const NewSelectFolder = () => {
         for (const file of files) {
             // Get relative path from webkitRelativePath or name
             // Remove the root path from the relative path
-            let relativePath = (file).webkitRelativePath || file.name;
+            let relativePath = file.webkitRelativePath || file.name;
             if (!rootPath) {
                 continue;
             }
@@ -198,7 +197,7 @@ export const NewSelectFolder = () => {
                         if (entry.isFile) {
                             const fileEntry = entry;
                             try {
-                                let file = await new Promise<File>((resolve, reject) => {
+                                const file = await new Promise<File>((resolve, reject) => {
                                     fileEntry.file(resolve, reject);
                                 });
 
@@ -350,16 +349,11 @@ export const NewSelectFolder = () => {
                     className="w-full space-y-4"
                 >
                     <div
-                        className={`
-                            w-full h-20 rounded-lg bg-gray-900 border border-gray rounded-lg m-0
-                            flex flex-col items-center justify-center gap-4
-                            duration-200 cursor-pointer
-                            ${isDragging
+                        className={`border-gray m-0 flex h-20 w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border bg-gray-900 duration-200 ${
+                            isDragging
                                 ? 'border-blue-400 bg-blue-50'
                                 : 'border-gray-300 bg-gray-50 hover:bg-gray-700'
-                            }
-                            ${isUploading ? 'pointer-events-none opacity-50' : ''}
-                        `}
+                        } ${isUploading ? 'pointer-events-none opacity-50' : ''} `}
                         onDrop={handleDrop}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
@@ -368,7 +362,7 @@ export const NewSelectFolder = () => {
                         {isUploading ? (
                             <div className="text-center">
                                 <div className="flex items-center justify-center gap-2">
-                                    <Icons.LoadingSpinner className="w-4 h-4 text-gray-200 animate-spin" />
+                                    <Icons.LoadingSpinner className="h-4 w-4 animate-spin text-gray-200" />
                                     <p className="text-sm font-medium text-gray-200">
                                         Uploading...
                                     </p>
@@ -376,7 +370,7 @@ export const NewSelectFolder = () => {
                             </div>
                         ) : (
                             <div className="flex gap-3">
-                                <Icons.DirectoryOpen className="w-5 h-5 text-gray-200" />
+                                <Icons.DirectoryOpen className="h-5 w-5 text-gray-200" />
                                 <p className="text-sm font-medium text-gray-200">
                                     Click to select your folder
                                 </p>
@@ -404,7 +398,7 @@ export const NewSelectFolder = () => {
                 textColor: 'text-teal-100',
                 subTextColor: 'text-teal-200',
                 icon: (
-                    <Icons.CheckCircled className="w-5 h-5 text-teal-200 group-hover:opacity-0 transition-opacity duration-200" />
+                    <Icons.CheckCircled className="h-5 w-5 text-teal-200 transition-opacity duration-200 group-hover:opacity-0" />
                 ),
                 showError: false,
             },
@@ -414,7 +408,7 @@ export const NewSelectFolder = () => {
                 iconBgColor: 'bg-amber-500',
                 textColor: 'text-amber-100',
                 subTextColor: 'text-amber-200',
-                icon: <Icons.ExclamationTriangle className="w-5 h-5 text-amber-200" />,
+                icon: <Icons.ExclamationTriangle className="h-5 w-5 text-amber-200" />,
                 showError: true,
             },
         };
@@ -427,16 +421,16 @@ export const NewSelectFolder = () => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className={`w-full flex flex-row items-center border p-4 rounded-lg ${config.bgColor} ${config.borderColor} gap-2 group relative`}
+                className={`flex w-full flex-row items-center rounded-lg border p-4 ${config.bgColor} ${config.borderColor} group relative gap-2`}
             >
                 <div
-                    className={`flex flex-col gap-2 w-full ${config.showError ? '' : 'flex-row items-center justify-between'}`}
+                    className={`flex w-full flex-col gap-2 ${config.showError ? '' : 'flex-row items-center justify-between'}`}
                 >
-                    <div className="flex flex-row items-center justify-between w-full gap-3">
+                    <div className="flex w-full flex-row items-center justify-between gap-3">
                         <div className={`p-3 ${config.iconBgColor} rounded-lg`}>
-                            <Icons.Directory className="w-5 h-5" />
+                            <Icons.Directory className="h-5 w-5" />
                         </div>
-                        <div className="flex flex-col gap-1 break-all w-full">
+                        <div className="flex w-full flex-col gap-1 break-all">
                             <p className={`text-regular ${config.textColor}`}>{projectData.name}</p>
                             <p className={`text-mini ${config.subTextColor}`}>
                                 {projectData.folderPath}
@@ -452,12 +446,12 @@ export const NewSelectFolder = () => {
                 </div>
                 {validation?.isValid && (
                     <Button
-                        className={`absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 hover:bg-transparent p-0 size-10 transition-opacity duration-200 ${config.bgColor}`}
+                        className={`absolute top-1/2 right-4 size-10 -translate-y-1/2 p-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:bg-transparent ${config.bgColor}`}
                         variant="ghost"
                         size="icon"
                         onClick={reset}
                     >
-                        <Icons.MinusCircled className="w-5 h-5 text-teal-200" />
+                        <Icons.MinusCircled className="h-5 w-5 text-teal-200" />
                     </Button>
                 )}
             </motion.div>

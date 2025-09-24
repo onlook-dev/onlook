@@ -1,26 +1,36 @@
 'use client';
 
-import { api } from '@/trpc/react';
-import { Routes } from '@/utils/constants';
-import { resetTelemetry } from '@/utils/telemetry';
-import { createClient } from '@/utils/supabase/client';
-import { getReturnUrlQueryParam } from '@/utils/url';
+import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Skeleton } from '@onlook/ui/skeleton';
-import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
+import { api } from '@/trpc/react';
+import { Routes } from '@/utils/constants';
+import { createClient } from '@/utils/supabase/client';
+import { resetTelemetry } from '@/utils/telemetry';
+import { getReturnUrlQueryParam } from '@/utils/url';
 
 export function Main({ invitationId }: { invitationId: string }) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const token = useSearchParams().get('token');
-    const { data: invitation, isLoading: loadingInvitation, error: getInvitationError } = api.invitation.getWithoutToken.useQuery({
+    const {
+        data: invitation,
+        isLoading: loadingInvitation,
+        error: getInvitationError,
+    } = api.invitation.getWithoutToken.useQuery({
         id: invitationId,
     });
 
-    const { mutate: acceptInvitation, isPending: isAcceptingInvitation, error: acceptInvitationError } = api.invitation.accept.useMutation({
+    const {
+        mutate: acceptInvitation,
+        isPending: isAcceptingInvitation,
+        error: acceptInvitationError,
+    } = api.invitation.accept.useMutation({
         onSuccess: () => {
             if (invitation?.projectId) {
                 router.push(`${Routes.PROJECT}/${invitation.projectId}`);
@@ -37,18 +47,18 @@ export function Main({ invitationId }: { invitationId: string }) {
         await supabase.auth.signOut();
         const currentUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
         router.push(`${Routes.LOGIN}?${getReturnUrlQueryParam(currentUrl)}`);
-    }
+    };
 
     const error = getInvitationError || acceptInvitationError;
 
     if (loadingInvitation) {
         return (
-            <div className="flex justify-center w-full h-full">
-                <div className="flex flex-col items-center justify-center w-5/6 md:w-1/2 gap-4">
-                    <Skeleton className="w-full h-10" />
-                    <Skeleton className="w-full h-40" />
+            <div className="flex h-full w-full justify-center">
+                <div className="flex w-5/6 flex-col items-center justify-center gap-4 md:w-1/2">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-40 w-full" />
                     <div className="flex justify-center">
-                        <Skeleton className="w-full h-10 w-20" />
+                        <Skeleton className="h-10 w-20 w-full" />
                     </div>
                 </div>
             </div>
@@ -57,15 +67,13 @@ export function Main({ invitationId }: { invitationId: string }) {
 
     if (error) {
         return (
-            <div className="flex flex-row w-full">
-                <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+            <div className="flex w-full flex-row">
+                <div className="flex h-full w-full flex-col items-center justify-center gap-4">
                     <div className="flex items-center gap-4">
                         <Icons.ExclamationTriangle className="h-6 w-6" />
                         <div className="text-2xl">Error accepting invitation</div>
                     </div>
-                    <div className="text-md">
-                        {error.message}
-                    </div>
+                    <div className="text-md">{error.message}</div>
                     <div className="flex justify-center gap-4">
                         <Button
                             type="button"
@@ -77,10 +85,7 @@ export function Main({ invitationId }: { invitationId: string }) {
                             <Icons.ArrowLeft className="h-4 w-4" />
                             Back to home
                         </Button>
-                        <Button
-                            type="button"
-                            onClick={handleReAuthenticate}
-                        >
+                        <Button type="button" onClick={handleReAuthenticate}>
                             Log in with different account
                         </Button>
                     </div>
@@ -91,8 +96,8 @@ export function Main({ invitationId }: { invitationId: string }) {
 
     if (!invitation || !token) {
         return (
-            <div className="flex flex-row w-full">
-                <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+            <div className="flex w-full flex-row">
+                <div className="flex h-full w-full flex-col items-center justify-center gap-4">
                     <div className="flex items-center gap-4">
                         <Icons.ExclamationTriangle className="h-6 w-6" />
                         <div className="text-xl">Invitation not found</div>
@@ -103,7 +108,7 @@ export function Main({ invitationId }: { invitationId: string }) {
                     <div className="flex justify-center">
                         <Link
                             href="/"
-                            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                            className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-primary inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2"
                         >
                             <Icons.ArrowLeft className="h-4 w-4" />
                             Back to home
@@ -114,11 +119,12 @@ export function Main({ invitationId }: { invitationId: string }) {
         );
     }
 
-    const inviter = invitation.inviter.firstName ?? invitation.inviter.displayName ?? invitation.inviter.email;
+    const inviter =
+        invitation.inviter.firstName ?? invitation.inviter.displayName ?? invitation.inviter.email;
 
     return (
-        <div className="flex flex-row w-full">
-            <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+        <div className="flex w-full flex-row">
+            <div className="flex h-full w-full flex-col items-center justify-center gap-4">
                 <div className="text-xl">Join {inviter} on Onlook</div>
                 <div className="text-md text-foreground-tertiary">
                     {inviter} has invited you to join their project

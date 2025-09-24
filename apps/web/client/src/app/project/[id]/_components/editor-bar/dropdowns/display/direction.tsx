@@ -1,7 +1,9 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { Icons } from '@onlook/ui/icons';
 import { useEffect, useState } from 'react';
+
+import { Icons } from '@onlook/ui/icons';
+
 import type { CssValue } from '.';
+import { useEditorEngine } from '@/components/store/editor';
 import { InputRadio } from '../../inputs/input-radio';
 
 const directionOptions: Record<string, CssValue> = {
@@ -30,7 +32,7 @@ export const DirectionInput = () => {
 
     return (
         <div className="flex items-center gap-0">
-            <span className="text-sm text-muted-foreground w-20">Direction</span>
+            <span className="text-muted-foreground w-20 text-sm">Direction</span>
             <InputRadio
                 options={Object.values(directionOptions)}
                 value={value}

@@ -1,5 +1,6 @@
-import { api } from '@/trpc/react';
 import { Icons } from '@onlook/ui/icons/index';
+
+import { api } from '@/trpc/react';
 import { ChatTabContent } from './chat-tab-content';
 
 interface ChatTabProps {
@@ -15,10 +16,10 @@ export const ChatTab = ({ conversationId, projectId }: ChatTabProps) => {
 
     if (!initialMessages || isLoading) {
         return (
-            <div className="flex-1 flex items-center justify-center w-full h-full text-foreground-secondary" >
-                <Icons.LoadingSpinner className="animate-spin mr-2" />
+            <div className="text-foreground-secondary flex h-full w-full flex-1 items-center justify-center">
+                <Icons.LoadingSpinner className="mr-2 animate-spin" />
                 <p>Loading messages...</p>
-            </div >
+            </div>
         );
     }
 

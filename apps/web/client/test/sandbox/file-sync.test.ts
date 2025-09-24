@@ -1,5 +1,7 @@
-import type { SandboxFile } from '@onlook/models';
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
+
+import type { SandboxFile } from '@onlook/models';
+
 import { FileSyncManager } from '../../src/components/store/editor/sandbox/file-sync';
 
 mock.module('localforage', () => ({
@@ -21,13 +23,13 @@ describe('FileSyncManager', async () => {
                 return {
                     type: 'text',
                     path: 'file1.tsx',
-                    content: '<div>Test Component</div>'
+                    content: '<div>Test Component</div>',
                 };
             } else if (path === 'file2.tsx') {
                 return {
                     type: 'text',
                     path: 'file2.tsx',
-                    content: '<div>Another Component</div>'
+                    content: '<div>Another Component</div>',
                 };
             }
             return null;
@@ -39,10 +41,7 @@ describe('FileSyncManager', async () => {
         });
 
         // Create FileSyncManager instance and initialize
-        fileSyncManager = new FileSyncManager(
-            'test-project-id',
-            'test-branch-id'
-        );
+        fileSyncManager = new FileSyncManager('test-project-id', 'test-branch-id');
         await fileSyncManager.init();
     });
 
@@ -58,7 +57,7 @@ describe('FileSyncManager', async () => {
         const testFile: SandboxFile = {
             type: 'text',
             path: 'file1.tsx',
-            content: '<div>Test Component</div>'
+            content: '<div>Test Component</div>',
         };
         fileSyncManager.updateCache(testFile);
 
@@ -71,7 +70,7 @@ describe('FileSyncManager', async () => {
         const cachedFile: SandboxFile = {
             type: 'text',
             path: 'file1.tsx',
-            content: '<div>Cached Content</div>'
+            content: '<div>Cached Content</div>',
         };
         fileSyncManager.updateCache(cachedFile);
 
@@ -89,7 +88,7 @@ describe('FileSyncManager', async () => {
         expect(content).toEqual({
             type: 'text',
             path: 'file1.tsx',
-            content: '<div>Test Component</div>'
+            content: '<div>Test Component</div>',
         });
         expect(mockReadFile).toHaveBeenCalledWith('file1.tsx');
     });
@@ -108,7 +107,7 @@ describe('FileSyncManager', async () => {
         expect(cachedFile).toEqual({
             type: 'text',
             path: 'file1.tsx',
-            content: newContent
+            content: newContent,
         });
     });
 
@@ -116,7 +115,7 @@ describe('FileSyncManager', async () => {
         const testFile: SandboxFile = {
             type: 'text',
             path: 'file1.tsx',
-            content: '<div>Updated Cache</div>'
+            content: '<div>Updated Cache</div>',
         };
 
         fileSyncManager.updateCache(testFile);
@@ -135,7 +134,7 @@ describe('FileSyncManager', async () => {
         const testFile: SandboxFile = {
             type: 'text',
             path: 'file1.tsx',
-            content: '<div>Test Content</div>'
+            content: '<div>Test Content</div>',
         };
         fileSyncManager.updateCache(testFile);
 
@@ -154,10 +153,10 @@ describe('FileSyncManager', async () => {
         const files: SandboxFile[] = [
             { type: 'text', path: 'file1.tsx', content: '<div>Content 1</div>' },
             { type: 'text', path: 'file2.tsx', content: '<div>Content 2</div>' },
-            { type: 'text', path: 'file3.tsx', content: '<div>Content 3</div>' }
+            { type: 'text', path: 'file3.tsx', content: '<div>Content 3</div>' },
         ];
 
-        files.forEach(file => fileSyncManager.updateCache(file));
+        files.forEach((file) => fileSyncManager.updateCache(file));
 
         // Get list of files
         const fileList = fileSyncManager.listAllFiles();
@@ -173,10 +172,10 @@ describe('FileSyncManager', async () => {
         // Seed the cache with multiple files
         const files: SandboxFile[] = [
             { type: 'text', path: 'file1.tsx', content: '<div>Content 1</div>' },
-            { type: 'text', path: 'file2.tsx', content: '<div>Content 2</div>' }
+            { type: 'text', path: 'file2.tsx', content: '<div>Content 2</div>' },
         ];
 
-        files.forEach(file => fileSyncManager.updateCache(file));
+        files.forEach((file) => fileSyncManager.updateCache(file));
 
         // Verify files are in cache
         expect(fileSyncManager.listAllFiles().length).toBe(2);
@@ -198,12 +197,12 @@ describe('FileSyncManager', async () => {
             files.push({
                 type: 'text',
                 path: `file${i}.tsx`,
-                content: `<div>Content ${i} - ${'x'.repeat(1000)}</div>` // Make files larger
+                content: `<div>Content ${i} - ${'x'.repeat(1000)}</div>`, // Make files larger
             });
         }
 
         // Add files to cache
-        files.forEach(file => testManager.updateCache(file));
+        files.forEach((file) => testManager.updateCache(file));
 
         // The cache should have some files (but may have evicted some due to LRU)
         const cachedFiles = testManager.listAllFiles();
@@ -218,7 +217,7 @@ describe('FileSyncManager', async () => {
             testManager.updateCache({
                 type: 'text',
                 path: `file${i}.tsx`,
-                content: `<div>Content ${i} - ${'x'.repeat(1000)}</div>`
+                content: `<div>Content ${i} - ${'x'.repeat(1000)}</div>`,
             });
         }
 
@@ -234,28 +233,28 @@ describe('FileSyncManager', async () => {
         const smallFile: SandboxFile = {
             type: 'text',
             path: 'small.tsx',
-            content: 'small'
+            content: 'small',
         };
 
         // Large file
         const largeFile: SandboxFile = {
             type: 'text',
             path: 'large.tsx',
-            content: 'large content '.repeat(10000) // ~130KB
+            content: 'large content '.repeat(10000), // ~130KB
         };
 
         // Binary file
         const binaryFile: SandboxFile = {
             type: 'binary',
             path: 'image.png',
-            content: new Uint8Array(1000).fill(1)
+            content: new Uint8Array(1000).fill(1),
         };
 
         // Empty file
         const emptyFile: SandboxFile = {
             type: 'text',
             path: 'empty.tsx',
-            content: null
+            content: null,
         };
 
         // Add all files

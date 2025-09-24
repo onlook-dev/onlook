@@ -7,7 +7,7 @@ export interface FileEvent {
 }
 
 export class FileEventBus {
-    private subscribers: Map<string, Set<(event: FileEvent) => void>> = new Map();
+    private subscribers = new Map<string, Set<(event: FileEvent) => void>>();
     private errorHandler: ((error: Error, event: FileEvent) => void) | null = null;
 
     constructor() {}
@@ -49,7 +49,7 @@ export class FileEventBus {
      */
     publish(event: FileEvent) {
         // Notify specific subscribers
-        this.subscribers.get(event.type)?.forEach(callback => {
+        this.subscribers.get(event.type)?.forEach((callback) => {
             try {
                 callback(event);
             } catch (error) {
@@ -58,7 +58,7 @@ export class FileEventBus {
         });
 
         // Notify wildcard subscribers
-        this.subscribers.get('*')?.forEach(callback => {
+        this.subscribers.get('*')?.forEach((callback) => {
             try {
                 callback(event);
             } catch (error) {
@@ -86,4 +86,4 @@ export class FileEventBus {
             this.subscribers.clear();
         }
     }
-} 
+}

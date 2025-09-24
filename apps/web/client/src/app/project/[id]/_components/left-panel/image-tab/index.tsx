@@ -1,6 +1,8 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
+
+import { Icons } from '@onlook/ui/icons';
+
+import { useEditorEngine } from '@/components/store/editor';
 import Folder from './folder';
 import { FolderProvider } from './providers/folder-provider';
 import { ImagesProvider, useImagesContext } from './providers/images-provider';
@@ -25,22 +27,22 @@ const ImagesTabContent = observer(() => {
 
     if (isIndexing) {
         return (
-            <div className="w-full h-full flex items-center justify-center gap-2">
-                <Icons.Reload className="w-4 h-4 animate-spin" />
+            <div className="flex h-full w-full items-center justify-center gap-2">
+                <Icons.Reload className="h-4 w-4 animate-spin" />
                 Indexing images...
             </div>
         );
     }
 
     return (
-        <div className="w-full h-full flex flex-col gap-2 p-3 overflow-x-hidden">
+        <div className="flex h-full w-full flex-col gap-2 overflow-x-hidden p-3">
             {uploadOperations.uploadState.error && (
-                <div className="mb-2 px-3 py-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-md">
+                <div className="mb-2 rounded-md bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/50">
                     {uploadOperations.uploadState.error}
                 </div>
             )}
             {renameState.error && (
-                <div className="mb-2 px-3 py-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-md">
+                <div className="mb-2 rounded-md bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/50">
                     {renameState.error}
                 </div>
             )}

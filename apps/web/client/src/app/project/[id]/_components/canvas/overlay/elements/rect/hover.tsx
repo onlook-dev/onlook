@@ -1,5 +1,7 @@
-import type { RectDimensions } from '@onlook/models';
 import React from 'react';
+
+import type { RectDimensions } from '@onlook/models';
+
 import { BaseRect } from './base';
 
 interface HoverRectProps {

@@ -1,5 +1,6 @@
-import { useEditorEngine } from '@/components/store/editor';
 import { memo, useEffect, useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { InputRadio } from '../../inputs/input-radio';
 import { layoutTypeOptions } from './index';
 
@@ -15,7 +16,7 @@ export const TypeInput = memo(() => {
 
     return (
         <div className="flex items-center gap-0">
-            <span className="text-sm text-muted-foreground w-20"> Type </span>
+            <span className="text-muted-foreground w-20 text-sm"> Type </span>
             <InputRadio
                 options={Object.values(layoutTypeOptions)}
                 value={value}

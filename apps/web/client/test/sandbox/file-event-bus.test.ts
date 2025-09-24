@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
 
-
-import { FileEventBus } from "../../src/components/store/editor/sandbox/file-event-bus";
 import type { FileEvent } from '../../src/components/store/editor/sandbox/file-event-bus';
+import { FileEventBus } from '../../src/components/store/editor/sandbox/file-event-bus';
 
 describe('FileEventBus', () => {
     let bus: FileEventBus;
@@ -16,7 +15,7 @@ describe('FileEventBus', () => {
         const event: FileEvent = {
             type: 'add',
             paths: ['test.txt'],
-            timestamp: Date.now()
+            timestamp: Date.now(),
         };
 
         bus.subscribe('add', callback);
@@ -30,7 +29,7 @@ describe('FileEventBus', () => {
         const event: FileEvent = {
             type: 'change',
             paths: ['test.txt'],
-            timestamp: Date.now()
+            timestamp: Date.now(),
         };
 
         bus.subscribe('add', callback);
@@ -45,7 +44,7 @@ describe('FileEventBus', () => {
         const event: FileEvent = {
             type: 'add',
             paths: ['test.txt'],
-            timestamp: Date.now()
+            timestamp: Date.now(),
         };
 
         bus.subscribe('add', callback1);
@@ -61,7 +60,7 @@ describe('FileEventBus', () => {
         const event: FileEvent = {
             type: 'add',
             paths: ['test.txt'],
-            timestamp: Date.now()
+            timestamp: Date.now(),
         };
 
         bus.subscribe('*', callback);
@@ -75,7 +74,7 @@ describe('FileEventBus', () => {
         const event: FileEvent = {
             type: 'add',
             paths: ['test.txt'],
-            timestamp: Date.now()
+            timestamp: Date.now(),
         };
 
         const unsubscribe = bus.subscribe('add', callback);
@@ -94,7 +93,7 @@ describe('FileEventBus', () => {
         const event: FileEvent = {
             type: 'add',
             paths: ['test.txt'],
-            timestamp: Date.now()
+            timestamp: Date.now(),
         };
 
         bus.setErrorHandler(errorHandler);
@@ -114,7 +113,7 @@ describe('FileEventBus', () => {
         const event: FileEvent = {
             type: 'add',
             paths: ['test.txt'],
-            timestamp: Date.now()
+            timestamp: Date.now(),
         };
 
         bus.subscribe('add', callback);
@@ -130,7 +129,7 @@ describe('FileEventBus', () => {
         const event: FileEvent = {
             type: 'add',
             paths: ['test.txt'],
-            timestamp: Date.now()
+            timestamp: Date.now(),
         };
 
         bus.subscribe('add', callback1);
@@ -148,7 +147,7 @@ describe('FileEventBus', () => {
         const event: FileEvent = {
             type: 'add',
             paths: ['test.txt'],
-            timestamp: Date.now()
+            timestamp: Date.now(),
         };
 
         bus.subscribe('add', callback1);

@@ -1,7 +1,9 @@
-import type { ReaddirEntry } from '@codesandbox/sdk';
+import { describe, expect, mock, test } from 'bun:test';
+
 import type { PageNode, SandboxFile } from '@onlook/models';
 import { RouterType } from '@onlook/models';
-import { describe, expect, mock, test } from 'bun:test';
+
+import type { ReaddirEntry } from '@codesandbox/sdk';
 import { scanAppDirectory } from '../../src/components/store/editor/pages/helper';
 
 // Mock SandboxManager interface
@@ -22,7 +24,9 @@ interface TestCase {
 }
 
 // Mock data for different directory structures
-const createMockSandboxManager = (directoryStructure: Record<string, ReaddirEntry[]>): MockSandboxManager => {
+const createMockSandboxManager = (
+    directoryStructure: Record<string, ReaddirEntry[]>,
+): MockSandboxManager => {
     const mockReadDir = mock((dir: string) => {
         const entries = directoryStructure[dir];
         if (!entries) {
@@ -38,7 +42,7 @@ const createMockSandboxManager = (directoryStructure: Record<string, ReaddirEntr
                 path,
                 content: `export default function Page() {
     return <div>Test Page</div>;
-}`
+}`,
             });
         }
         if (path.endsWith('layout.tsx')) {
@@ -47,7 +51,7 @@ const createMockSandboxManager = (directoryStructure: Record<string, ReaddirEntr
                 path,
                 content: `export default function Layout({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
-}`
+}`,
             });
         }
         return Promise.resolve(null);
@@ -56,7 +60,7 @@ const createMockSandboxManager = (directoryStructure: Record<string, ReaddirEntr
     return {
         readDir: mockReadDir,
         readFile: mockReadFile,
-        routerConfig: { type: RouterType.APP, basePath: 'app' }
+        routerConfig: { type: RouterType.APP, basePath: 'app' },
     };
 };
 
@@ -66,20 +70,18 @@ const testCases: TestCase[] = [
         input: {
             directory: 'app',
             sandboxManager: createMockSandboxManager({
-                'app': []
-            })
+                app: [],
+            }),
         },
-        expected: []
+        expected: [],
     },
     {
         name: 'single page without layout',
         input: {
             directory: 'app',
             sandboxManager: createMockSandboxManager({
-                'app': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
-                ]
-            })
+                app: [{ name: 'page.tsx', type: 'file', isSymlink: false }],
+            }),
         },
         expected: [
             {
@@ -89,20 +91,20 @@ const testCases: TestCase[] = [
                 children: [],
                 isActive: false,
                 isRoot: true,
-                metadata: {}
-            }
-        ]
+                metadata: {},
+            },
+        ],
     },
     {
         name: 'page with layout',
         input: {
             directory: 'app',
             sandboxManager: createMockSandboxManager({
-                'app': [
+                app: [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: 'layout.tsx', type: 'file', isSymlink: false }
-                ]
-            })
+                    { name: 'layout.tsx', type: 'file', isSymlink: false },
+                ],
+            }),
         },
         expected: [
             {
@@ -112,23 +114,21 @@ const testCases: TestCase[] = [
                 children: [],
                 isActive: false,
                 isRoot: true,
-                metadata: {}
-            }
-        ]
+                metadata: {},
+            },
+        ],
     },
     {
         name: 'nested page structure',
         input: {
             directory: 'app',
             sandboxManager: createMockSandboxManager({
-                'app': [
+                app: [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: 'about', type: 'directory', isSymlink: false }
+                    { name: 'about', type: 'directory', isSymlink: false },
                 ],
-                'app/about': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
-                ]
-            })
+                'app/about': [{ name: 'page.tsx', type: 'file', isSymlink: false }],
+            }),
         },
         expected: [
             {
@@ -143,28 +143,26 @@ const testCases: TestCase[] = [
                         children: [],
                         isActive: false,
                         isRoot: false,
-                        metadata: {}
-                    }
+                        metadata: {},
+                    },
                 ],
                 isActive: false,
                 isRoot: true,
-                metadata: {}
-            }
-        ]
+                metadata: {},
+            },
+        ],
     },
     {
         name: 'dynamic route',
         input: {
             directory: 'app',
             sandboxManager: createMockSandboxManager({
-                'app': [
+                app: [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: '[id]', type: 'directory', isSymlink: false }
+                    { name: '[id]', type: 'directory', isSymlink: false },
                 ],
-                'app/[id]': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
-                ]
-            })
+                'app/[id]': [{ name: 'page.tsx', type: 'file', isSymlink: false }],
+            }),
         },
         expected: [
             {
@@ -179,27 +177,27 @@ const testCases: TestCase[] = [
                         children: [],
                         isActive: false,
                         isRoot: false,
-                        metadata: {}
-                    }
+                        metadata: {},
+                    },
                 ],
                 isActive: false,
                 isRoot: true,
-                metadata: {}
-            }
-        ]
+                metadata: {},
+            },
+        ],
     },
     {
         name: 'ignored directories',
         input: {
             directory: 'app',
             sandboxManager: createMockSandboxManager({
-                'app': [
+                app: [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
                     { name: 'components', type: 'directory', isSymlink: false },
                     { name: 'lib', type: 'directory', isSymlink: false },
-                    { name: 'api', type: 'directory', isSymlink: false }
-                ]
-            })
+                    { name: 'api', type: 'directory', isSymlink: false },
+                ],
+            }),
         },
         expected: [
             {
@@ -209,27 +207,25 @@ const testCases: TestCase[] = [
                 children: [],
                 isActive: false,
                 isRoot: true,
-                metadata: {}
-            }
-        ]
+                metadata: {},
+            },
+        ],
     },
     {
         name: 'deep nested structure',
         input: {
             directory: 'app',
             sandboxManager: createMockSandboxManager({
-                'app': [
+                app: [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: 'blog', type: 'directory', isSymlink: false }
+                    { name: 'blog', type: 'directory', isSymlink: false },
                 ],
                 'app/blog': [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: 'posts', type: 'directory', isSymlink: false }
+                    { name: 'posts', type: 'directory', isSymlink: false },
                 ],
-                'app/blog/posts': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
-                ]
-            })
+                'app/blog/posts': [{ name: 'page.tsx', type: 'file', isSymlink: false }],
+            }),
         },
         expected: [
             {
@@ -249,37 +245,35 @@ const testCases: TestCase[] = [
                                 children: [],
                                 isActive: false,
                                 isRoot: false,
-                                metadata: {}
-                            }
+                                metadata: {},
+                            },
                         ],
                         isActive: false,
                         isRoot: false,
-                        metadata: {}
-                    }
+                        metadata: {},
+                    },
                 ],
                 isActive: false,
                 isRoot: true,
-                metadata: {}
-            }
-        ]
+                metadata: {},
+            },
+        ],
     },
     {
         name: 'slug route with nested structure',
         input: {
             directory: 'app',
             sandboxManager: createMockSandboxManager({
-                'app': [
+                app: [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: 'blog', type: 'directory', isSymlink: false }
+                    { name: 'blog', type: 'directory', isSymlink: false },
                 ],
                 'app/blog': [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: '[slug]', type: 'directory', isSymlink: false }
+                    { name: '[slug]', type: 'directory', isSymlink: false },
                 ],
-                'app/blog/[slug]': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
-                ]
-            })
+                'app/blog/[slug]': [{ name: 'page.tsx', type: 'file', isSymlink: false }],
+            }),
         },
         expected: [
             {
@@ -299,53 +293,51 @@ const testCases: TestCase[] = [
                                 children: [],
                                 isActive: false,
                                 isRoot: false,
-                                metadata: {}
-                            }
+                                metadata: {},
+                            },
                         ],
                         isActive: false,
                         isRoot: false,
-                        metadata: {}
-                    }
+                        metadata: {},
+                    },
                 ],
                 isActive: false,
                 isRoot: true,
-                metadata: {}
-            }
-        ]
+                metadata: {},
+            },
+        ],
     },
     {
         name: 'multiple slug routes',
         input: {
             directory: 'app',
             sandboxManager: createMockSandboxManager({
-                'app': [
+                app: [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
                     { name: 'users', type: 'directory', isSymlink: false },
-                    { name: 'products', type: 'directory', isSymlink: false }
+                    { name: 'products', type: 'directory', isSymlink: false },
                 ],
                 'app/users': [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: '[id]', type: 'directory', isSymlink: false }
+                    { name: '[id]', type: 'directory', isSymlink: false },
                 ],
                 'app/users/[id]': [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: 'profile', type: 'directory', isSymlink: false }
+                    { name: 'profile', type: 'directory', isSymlink: false },
                 ],
-                'app/users/[id]/profile': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
-                ],
+                'app/users/[id]/profile': [{ name: 'page.tsx', type: 'file', isSymlink: false }],
                 'app/products': [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: '[category]', type: 'directory', isSymlink: false }
+                    { name: '[category]', type: 'directory', isSymlink: false },
                 ],
                 'app/products/[category]': [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: '[productId]', type: 'directory', isSymlink: false }
+                    { name: '[productId]', type: 'directory', isSymlink: false },
                 ],
                 'app/products/[category]/[productId]': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
-                ]
-            })
+                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                ],
+            }),
         },
         expected: [
             {
@@ -370,17 +362,17 @@ const testCases: TestCase[] = [
                                         children: [],
                                         isActive: false,
                                         isRoot: false,
-                                        metadata: {}
-                                    }
+                                        metadata: {},
+                                    },
                                 ],
                                 isActive: false,
                                 isRoot: false,
-                                metadata: {}
-                            }
+                                metadata: {},
+                            },
                         ],
                         isActive: false,
                         isRoot: false,
-                        metadata: {}
+                        metadata: {},
                     },
                     {
                         id: expect.any(String),
@@ -399,50 +391,48 @@ const testCases: TestCase[] = [
                                         children: [],
                                         isActive: false,
                                         isRoot: false,
-                                        metadata: {}
-                                    }
+                                        metadata: {},
+                                    },
                                 ],
                                 isActive: false,
                                 isRoot: false,
-                                metadata: {}
-                            }
+                                metadata: {},
+                            },
                         ],
                         isActive: false,
                         isRoot: false,
-                        metadata: {}
-                    }
+                        metadata: {},
+                    },
                 ],
                 isActive: false,
                 isRoot: true,
-                metadata: {}
-            }
-        ]
+                metadata: {},
+            },
+        ],
     },
     {
         name: 'slug route with static nested routes',
         input: {
             directory: 'app',
             sandboxManager: createMockSandboxManager({
-                'app': [
+                app: [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: 'shop', type: 'directory', isSymlink: false }
+                    { name: 'shop', type: 'directory', isSymlink: false },
                 ],
                 'app/shop': [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
                     { name: '[productId]', type: 'directory', isSymlink: false },
-                    { name: 'categories', type: 'directory', isSymlink: false }
+                    { name: 'categories', type: 'directory', isSymlink: false },
                 ],
                 'app/shop/[productId]': [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: 'reviews', type: 'directory', isSymlink: false }
+                    { name: 'reviews', type: 'directory', isSymlink: false },
                 ],
                 'app/shop/[productId]/reviews': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    { name: 'page.tsx', type: 'file', isSymlink: false },
                 ],
-                'app/shop/categories': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
-                ]
-            })
+                'app/shop/categories': [{ name: 'page.tsx', type: 'file', isSymlink: false }],
+            }),
         },
         expected: [
             {
@@ -462,7 +452,7 @@ const testCases: TestCase[] = [
                                 children: [],
                                 isActive: false,
                                 isRoot: false,
-                                metadata: {}
+                                metadata: {},
                             },
                             {
                                 id: expect.any(String),
@@ -476,42 +466,40 @@ const testCases: TestCase[] = [
                                         children: [],
                                         isActive: false,
                                         isRoot: false,
-                                        metadata: {}
-                                    }
+                                        metadata: {},
+                                    },
                                 ],
                                 isActive: false,
                                 isRoot: false,
-                                metadata: {}
-                            }
+                                metadata: {},
+                            },
                         ],
                         isActive: false,
                         isRoot: false,
-                        metadata: {}
-                    }
+                        metadata: {},
+                    },
                 ],
                 isActive: false,
                 isRoot: true,
-                metadata: {}
-            }
-        ]
+                metadata: {},
+            },
+        ],
     },
     {
         name: 'catch-all route with nested structure',
         input: {
             directory: 'app',
             sandboxManager: createMockSandboxManager({
-                'app': [
+                app: [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: 'docs', type: 'directory', isSymlink: false }
+                    { name: 'docs', type: 'directory', isSymlink: false },
                 ],
                 'app/docs': [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: '[...slug]', type: 'directory', isSymlink: false }
+                    { name: '[...slug]', type: 'directory', isSymlink: false },
                 ],
-                'app/docs/[...slug]': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
-                ]
-            })
+                'app/docs/[...slug]': [{ name: 'page.tsx', type: 'file', isSymlink: false }],
+            }),
         },
         expected: [
             {
@@ -531,37 +519,35 @@ const testCases: TestCase[] = [
                                 children: [],
                                 isActive: false,
                                 isRoot: false,
-                                metadata: {}
-                            }
+                                metadata: {},
+                            },
                         ],
                         isActive: false,
                         isRoot: false,
-                        metadata: {}
-                    }
+                        metadata: {},
+                    },
                 ],
                 isActive: false,
                 isRoot: true,
-                metadata: {}
-            }
-        ]
+                metadata: {},
+            },
+        ],
     },
     {
         name: 'optional catch-all route',
         input: {
             directory: 'app',
             sandboxManager: createMockSandboxManager({
-                'app': [
+                app: [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: 'blog', type: 'directory', isSymlink: false }
+                    { name: 'blog', type: 'directory', isSymlink: false },
                 ],
                 'app/blog': [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: '[[...slug]]', type: 'directory', isSymlink: false }
+                    { name: '[[...slug]]', type: 'directory', isSymlink: false },
                 ],
-                'app/blog/[[...slug]]': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
-                ]
-            })
+                'app/blog/[[...slug]]': [{ name: 'page.tsx', type: 'file', isSymlink: false }],
+            }),
         },
         expected: [
             {
@@ -581,53 +567,53 @@ const testCases: TestCase[] = [
                                 children: [],
                                 isActive: false,
                                 isRoot: false,
-                                metadata: {}
-                            }
+                                metadata: {},
+                            },
                         ],
                         isActive: false,
                         isRoot: false,
-                        metadata: {}
-                    }
+                        metadata: {},
+                    },
                 ],
                 isActive: false,
                 isRoot: true,
-                metadata: {}
-            }
-        ]
+                metadata: {},
+            },
+        ],
     },
     {
         name: 'mixed static and dynamic routes',
         input: {
             directory: 'app',
             sandboxManager: createMockSandboxManager({
-                'app': [
+                app: [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: 'dashboard', type: 'directory', isSymlink: false }
+                    { name: 'dashboard', type: 'directory', isSymlink: false },
                 ],
                 'app/dashboard': [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
                     { name: 'settings', type: 'directory', isSymlink: false },
-                    { name: '[userId]', type: 'directory', isSymlink: false }
+                    { name: '[userId]', type: 'directory', isSymlink: false },
                 ],
                 'app/dashboard/settings': [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
                     { name: 'profile', type: 'directory', isSymlink: false },
-                    { name: 'security', type: 'directory', isSymlink: false }
+                    { name: 'security', type: 'directory', isSymlink: false },
                 ],
                 'app/dashboard/settings/profile': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    { name: 'page.tsx', type: 'file', isSymlink: false },
                 ],
                 'app/dashboard/settings/security': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    { name: 'page.tsx', type: 'file', isSymlink: false },
                 ],
                 'app/dashboard/[userId]': [
                     { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: 'analytics', type: 'directory', isSymlink: false }
+                    { name: 'analytics', type: 'directory', isSymlink: false },
                 ],
                 'app/dashboard/[userId]/analytics': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
-                ]
-            })
+                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                ],
+            }),
         },
         expected: [
             {
@@ -652,12 +638,12 @@ const testCases: TestCase[] = [
                                         children: [],
                                         isActive: false,
                                         isRoot: false,
-                                        metadata: {}
-                                    }
+                                        metadata: {},
+                                    },
                                 ],
                                 isActive: false,
                                 isRoot: false,
-                                metadata: {}
+                                metadata: {},
                             },
                             {
                                 id: expect.any(String),
@@ -671,7 +657,7 @@ const testCases: TestCase[] = [
                                         children: [],
                                         isActive: false,
                                         isRoot: false,
-                                        metadata: {}
+                                        metadata: {},
                                     },
                                     {
                                         id: expect.any(String),
@@ -680,41 +666,40 @@ const testCases: TestCase[] = [
                                         children: [],
                                         isActive: false,
                                         isRoot: false,
-                                        metadata: {}
-                                    }
+                                        metadata: {},
+                                    },
                                 ],
                                 isActive: false,
                                 isRoot: false,
-                                metadata: {}
-                            }
+                                metadata: {},
+                            },
                         ],
                         isActive: false,
                         isRoot: false,
-                        metadata: {}
-                    }
+                        metadata: {},
+                    },
                 ],
                 isActive: false,
                 isRoot: true,
-                metadata: {}
-            }
-        ]
-    }
+                metadata: {},
+            },
+        ],
+    },
 ];
 
 describe('scanAppDirectory', () => {
     testCases.forEach(({ name, input, expected }) => {
         test(`should handle ${name}`, async () => {
-            const result = await scanAppDirectory(
-                input.sandboxManager as any,
-                input.directory
-            );
+            const result = await scanAppDirectory(input.sandboxManager as any, input.directory);
 
             // Helper function to sort nodes by path for consistent comparison
             const sortNodes = (nodes: PageNode[]): PageNode[] => {
-                return nodes.sort((a, b) => a.path.localeCompare(b.path)).map(node => ({
-                    ...node,
-                    children: node.children ? sortNodes(node.children) : []
-                }));
+                return nodes
+                    .sort((a, b) => a.path.localeCompare(b.path))
+                    .map((node) => ({
+                        ...node,
+                        children: node.children ? sortNodes(node.children) : [],
+                    }));
             };
 
             const sortedResult = sortNodes(result);
@@ -737,9 +722,7 @@ describe('scanAppDirectory', () => {
 
     test('should handle file read errors gracefully', async () => {
         const mockSandboxManager = createMockSandboxManager({
-            'app': [
-                { name: 'page.tsx', type: 'file', isSymlink: false }
-            ]
+            app: [{ name: 'page.tsx', type: 'file', isSymlink: false }],
         });
         // Override readFile to throw an error
         mockSandboxManager.readFile = mock(() => {
@@ -747,21 +730,21 @@ describe('scanAppDirectory', () => {
         });
 
         // The function should throw an error when file reading fails
-        await expect(scanAppDirectory(mockSandboxManager as any, 'app')).rejects.toThrow('File read error');
+        await expect(scanAppDirectory(mockSandboxManager as any, 'app')).rejects.toThrow(
+            'File read error',
+        );
     });
 
     test('should handle metadata extraction errors', async () => {
         const mockSandboxManager = createMockSandboxManager({
-            'app': [
-                { name: 'page.tsx', type: 'file', isSymlink: false }
-            ]
+            app: [{ name: 'page.tsx', type: 'file', isSymlink: false }],
         });
         // Override readFile to return invalid content
         mockSandboxManager.readFile = mock(() => {
             return Promise.resolve({
                 type: 'text' as const,
                 path: 'app/page.tsx',
-                content: 'invalid syntax {'
+                content: 'invalid syntax {',
             });
         });
 
@@ -769,4 +752,4 @@ describe('scanAppDirectory', () => {
         expect(result).toHaveLength(1);
         expect(result[0].metadata).toEqual({});
     });
-}); 
+});

@@ -1,11 +1,13 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { api } from '@/trpc/react';
-import { DefaultSettings } from '@onlook/constants';
+import { useState } from 'react';
+
 import type { PageMetadata } from '@onlook/models';
+import { DefaultSettings } from '@onlook/constants';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { createSecureUrl } from '@onlook/utility';
-import { useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
+import { api } from '@/trpc/react';
 import { MetadataForm } from './metadata-form';
 import { useMetadataForm } from './use-metadata-form';
 
@@ -44,7 +46,10 @@ export const PageTab = ({ metadata, path }: { metadata?: PageMetadata; path: str
         try {
             const url = createSecureUrl(baseUrl);
             const finalTitle = getFinalTitleMetadata();
-            const siteTitle = typeof finalTitle === 'string' ? finalTitle : finalTitle.absolute ?? finalTitle.default ?? '';
+            const siteTitle =
+                typeof finalTitle === 'string'
+                    ? finalTitle
+                    : (finalTitle.absolute ?? finalTitle.default ?? '');
 
             const updatedMetadata: PageMetadata = {
                 ...metadata,
@@ -107,8 +112,8 @@ export const PageTab = ({ metadata, path }: { metadata?: PageMetadata; path: str
             </div>
             <div className="relative">
                 {editorEngine.pages.isScanning ? (
-                    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center">
-                        <div className="flex items-center gap-3 text-foreground-secondary">
+                    <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm">
+                        <div className="text-foreground-secondary flex items-center gap-3">
                             <Icons.LoadingSpinner className="h-5 w-5 animate-spin" />
                             <span className="text-sm">Fetching metadata...</span>
                         </div>

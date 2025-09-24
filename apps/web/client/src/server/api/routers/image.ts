@@ -1,5 +1,8 @@
-import { compressImageServer, type CompressionOptions, type CompressionResult } from '@onlook/image-server';
 import { z } from 'zod';
+
+import type { CompressionOptions, CompressionResult } from '@onlook/image-server';
+import { compressImageServer } from '@onlook/image-server';
+
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
 type TRPCCompressionResult = Omit<CompressionResult, 'buffer'> & {
@@ -11,18 +14,20 @@ export const imageRouter = createTRPCRouter({
         .input(
             z.object({
                 imageData: z.string(), // base64 encoded image data
-                options: z.object({
-                    quality: z.number().optional(),
-                    width: z.number().optional(),
-                    height: z.number().optional(),
-                    format: z.enum(['jpeg', 'png', 'webp', 'avif', 'auto']).optional(),
-                    progressive: z.boolean().optional(),
-                    mozjpeg: z.boolean().optional(),
-                    effort: z.number().optional(),
-                    compressionLevel: z.number().optional(),
-                    keepAspectRatio: z.boolean().optional(),
-                    withoutEnlargement: z.boolean().optional(),
-                }).optional(),
+                options: z
+                    .object({
+                        quality: z.number().optional(),
+                        width: z.number().optional(),
+                        height: z.number().optional(),
+                        format: z.enum(['jpeg', 'png', 'webp', 'avif', 'auto']).optional(),
+                        progressive: z.boolean().optional(),
+                        mozjpeg: z.boolean().optional(),
+                        effort: z.number().optional(),
+                        compressionLevel: z.number().optional(),
+                        keepAspectRatio: z.boolean().optional(),
+                        withoutEnlargement: z.boolean().optional(),
+                    })
+                    .optional(),
             }),
         )
         .mutation(async ({ input }): Promise<TRPCCompressionResult> => {
@@ -32,7 +37,7 @@ export const imageRouter = createTRPCRouter({
                 const result = await compressImageServer(
                     buffer,
                     undefined, // No output path - return buffer
-                    input.options as CompressionOptions || {}
+                    (input.options as CompressionOptions) || {},
                 );
 
                 // Convert buffer to base64 for client transmission
@@ -54,4 +59,4 @@ export const imageRouter = createTRPCRouter({
                 };
             }
         }),
-}); 
+});

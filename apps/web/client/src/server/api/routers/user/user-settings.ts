@@ -1,5 +1,12 @@
-import { createDefaultUserSettings, fromDbUserSettings, userSettings, userSettingsUpdateSchema } from '@onlook/db';
 import { eq } from 'drizzle-orm';
+
+import {
+    createDefaultUserSettings,
+    fromDbUserSettings,
+    userSettings,
+    userSettingsUpdateSchema,
+} from '@onlook/db';
+
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const userSettingsRouter = createTRPCRouter({
@@ -11,7 +18,7 @@ export const userSettingsRouter = createTRPCRouter({
         return fromDbUserSettings(settings ?? createDefaultUserSettings(user.id));
     }),
     upsert: protectedProcedure.input(userSettingsUpdateSchema).mutation(async ({ ctx, input }) => {
-        const user = ctx.user
+        const user = ctx.user;
 
         const existingSettings = await ctx.db.query.userSettings.findFirst({
             where: eq(userSettings.userId, user.id),
@@ -19,10 +26,17 @@ export const userSettingsRouter = createTRPCRouter({
 
         if (!existingSettings) {
             const newSettings = { ...createDefaultUserSettings(user.id), ...input };
-            const [insertedSettings] = await ctx.db.insert(userSettings).values(newSettings).returning();
+            const [insertedSettings] = await ctx.db
+                .insert(userSettings)
+                .values(newSettings)
+                .returning();
             return fromDbUserSettings(insertedSettings ?? newSettings);
         }
-        const [updatedSettings] = await ctx.db.update(userSettings).set(input).where(eq(userSettings.userId, user.id)).returning();
+        const [updatedSettings] = await ctx.db
+            .update(userSettings)
+            .set(input)
+            .where(eq(userSettings.userId, user.id))
+            .returning();
 
         if (!updatedSettings) {
             throw new Error('Failed to update user settings');

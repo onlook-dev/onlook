@@ -45,14 +45,15 @@ export class Hotkey {
     private constructor(
         public readonly command: string,
         public readonly description: string,
-    ) { }
+    ) {}
 
     toString() {
         return this.command;
     }
 
     get readableCommand() {
-        const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const isMac =
+            typeof navigator !== 'undefined' && navigator.platform.toUpperCase().includes('MAC');
         return this.command
             .replace('mod', isMac ? '⌘' : 'Ctrl')
             .split('+')

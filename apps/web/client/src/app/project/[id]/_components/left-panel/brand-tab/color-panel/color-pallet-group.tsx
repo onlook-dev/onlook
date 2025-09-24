@@ -1,6 +1,7 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { SystemTheme } from '@onlook/models/assets';
+import { useState } from 'react';
+
 import type { TailwindColor } from '@onlook/models/style';
+import { SystemTheme } from '@onlook/models/assets';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -11,7 +12,8 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { Color, generateUniqueName, toNormalCase } from '@onlook/utility';
-import { useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { ColorNameInput } from './color-name-input';
 import { ColorPopover } from './color-popover';
 
@@ -115,8 +117,8 @@ export const BrandPalletGroup = ({
     };
 
     return (
-        <div className="flex flex-col gap-1 group/palette">
-            <div className="flex justify-between items-center">
+        <div className="group/palette flex flex-col gap-1">
+            <div className="flex items-center justify-between">
                 {!isDefaultPalette && isRenaming ? (
                     <ColorNameInput
                         initialName={title}
@@ -141,24 +143,24 @@ export const BrandPalletGroup = ({
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-6 w-6 p-0 hover:bg-transparent opacity-0 group-hover/palette:opacity-100 [&[data-state=open]]:opacity-100 transition-opacity"
+                                className="h-6 w-6 p-0 opacity-0 transition-opacity group-hover/palette:opacity-100 hover:bg-transparent [&[data-state=open]]:opacity-100"
                             >
-                                <Icons.DotsHorizontal className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+                                <Icons.DotsHorizontal className="text-muted-foreground group-hover:text-foreground h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
-                            className="rounded-md bg-background"
+                            className="bg-background rounded-md"
                             align="start"
                             side="bottom"
                         >
                             <DropdownMenuItem asChild>
                                 <Button
                                     variant="ghost"
-                                    className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
+                                    className="hover:bg-background-secondary focus:bg-background-secondary group w-full rounded-sm"
                                     onClick={handleRenameClick}
                                 >
-                                    <span className="flex w-full text-smallPlus items-center">
-                                        <Icons.Pencil className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                    <span className="text-smallPlus flex w-full items-center">
+                                        <Icons.Pencil className="text-foreground-secondary group-hover:text-foreground-active mr-2 h-4 w-4" />
                                         <span>Rename</span>
                                     </span>
                                 </Button>
@@ -166,11 +168,11 @@ export const BrandPalletGroup = ({
                             <DropdownMenuItem asChild>
                                 <Button
                                     variant="ghost"
-                                    className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
+                                    className="hover:bg-background-secondary focus:bg-background-secondary group w-full rounded-sm"
                                     onClick={() => onDelete()}
                                 >
-                                    <span className="flex w-full text-smallPlus items-center">
-                                        <Icons.Trash className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                    <span className="text-smallPlus flex w-full items-center">
+                                        <Icons.Trash className="text-foreground-secondary group-hover:text-foreground-active mr-2 h-4 w-4" />
                                         <span>Delete</span>
                                     </span>
                                 </Button>
@@ -183,7 +185,7 @@ export const BrandPalletGroup = ({
                 <div className="grid grid-cols-6 gap-1">
                     {colors ? (
                         colors.map((color, index) => (
-                            <div key={`${title}-${index}`} className="relative group">
+                            <div key={`${title}-${index}`} className="group relative">
                                 {editingColorIndex === index ? (
                                     <ColorPopover
                                         color={Color.from(getColorValue(color))}
@@ -201,7 +203,7 @@ export const BrandPalletGroup = ({
                                 ) : (
                                     <>
                                         <div
-                                            className="w-full aspect-square rounded-lg cursor-pointer hover:ring-2 hover:ring-border-primary border border-primary/10"
+                                            className="hover:ring-border-primary border-primary/10 aspect-square w-full cursor-pointer rounded-lg border hover:ring-2"
                                             style={{ backgroundColor: getColorValue(color) }}
                                         />
                                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 [&[data-state=open]]:opacity-100">
@@ -210,7 +212,7 @@ export const BrandPalletGroup = ({
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-[85%] w-[85%] p-0 bg-black hover:bg-black rounded-md flex items-center justify-center"
+                                                        className="flex h-[85%] w-[85%] items-center justify-center rounded-md bg-black p-0 hover:bg-black"
                                                     >
                                                         <Tooltip>
                                                             <TooltipTrigger asChild>
@@ -224,7 +226,7 @@ export const BrandPalletGroup = ({
                                                                                 color.name,
                                                                             )}
                                                                         </span>
-                                                                        <span className="text-xs text-background-tertiary">
+                                                                        <span className="text-background-tertiary text-xs">
                                                                             {getColorValue(color)}
                                                                         </span>
                                                                     </div>
@@ -234,23 +236,23 @@ export const BrandPalletGroup = ({
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent
-                                                    className="rounded-md bg-background p-0 ml-1 mt-[-4px] min-w-[140px]"
+                                                    className="bg-background mt-[-4px] ml-1 min-w-[140px] rounded-md p-0"
                                                     align="start"
                                                     side="right"
                                                 >
-                                                    <div className="flex items-start gap-2 px-2.5 py-2 border-b border-border mb-0.5">
+                                                    <div className="border-border mb-0.5 flex items-start gap-2 border-b px-2.5 py-2">
                                                         <div
-                                                            className="w-4 h-4 rounded-sm mt-[2px] hidden"
+                                                            className="mt-[2px] hidden h-4 w-4 rounded-sm"
                                                             style={{
                                                                 backgroundColor:
                                                                     getColorValue(color),
                                                             }}
                                                         />
                                                         <div className="flex flex-col">
-                                                            <span className="text-sm text-foreground">
+                                                            <span className="text-foreground text-sm">
                                                                 {toNormalCase(color.name)}
                                                             </span>
-                                                            <span className="text-xs text-muted-foreground">
+                                                            <span className="text-muted-foreground text-xs">
                                                                 {getColorValue(color)}
                                                             </span>
                                                         </div>
@@ -258,12 +260,12 @@ export const BrandPalletGroup = ({
                                                     <DropdownMenuItem asChild>
                                                         <Button
                                                             variant="ghost"
-                                                            className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                                            className="hover:bg-background-secondary focus:bg-background-secondary group w-full rounded-sm px-2 py-1"
                                                             onClick={() =>
                                                                 setEditingColorIndex(index)
                                                             }
                                                         >
-                                                            <span className="flex w-full text-sm items-center">
+                                                            <span className="flex w-full items-center text-sm">
                                                                 <Icons.Pencil className="mr-2 h-4 w-4" />
                                                                 <span>Edit color</span>
                                                             </span>
@@ -272,12 +274,12 @@ export const BrandPalletGroup = ({
                                                     <DropdownMenuItem asChild>
                                                         <Button
                                                             variant="ghost"
-                                                            className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                                            className="hover:bg-background-secondary focus:bg-background-secondary group w-full rounded-sm px-2 py-1"
                                                             onClick={() =>
                                                                 onDuplicate?.(color.name)
                                                             }
                                                         >
-                                                            <span className="flex w-full text-sm items-center">
+                                                            <span className="flex w-full items-center text-sm">
                                                                 <Icons.Copy className="mr-2 h-4 w-4" />
                                                                 <span>Duplicate</span>
                                                             </span>
@@ -299,10 +301,10 @@ export const BrandPalletGroup = ({
                                                         <DropdownMenuItem asChild>
                                                             <Button
                                                                 variant="ghost"
-                                                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                                                className="hover:bg-background-secondary focus:bg-background-secondary group w-full rounded-sm px-2 py-1"
                                                                 onClick={() => onDelete(color.name)}
                                                             >
-                                                                <span className="flex w-full text-sm items-center">
+                                                                <span className="flex w-full items-center text-sm">
                                                                     <Icons.Trash className="mr-2 h-4 w-4" />
                                                                     <span>Delete</span>
                                                                 </span>
@@ -313,12 +315,12 @@ export const BrandPalletGroup = ({
                                                             <DropdownMenuItem asChild>
                                                                 <Button
                                                                     variant="ghost"
-                                                                    className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                                                    className="hover:bg-background-secondary focus:bg-background-secondary group w-full rounded-sm px-2 py-1"
                                                                     onClick={() =>
                                                                         onDelete(color.name)
                                                                     }
                                                                 >
-                                                                    <span className="flex w-full text-sm items-center">
+                                                                    <span className="flex w-full items-center text-sm">
                                                                         <Icons.Reset className="mr-2 h-4 w-4" />
                                                                         <span>Reset override</span>
                                                                     </span>
@@ -354,7 +356,7 @@ export const BrandPalletGroup = ({
                             onClick={() => setIsAddingNewColor(true)}
                             variant="outline"
                             size="icon"
-                            className="w-full aspect-square rounded-lg border border-dashed flex items-center justify-center bg-transparent hover:bg-transparent"
+                            className="flex aspect-square w-full items-center justify-center rounded-lg border border-dashed bg-transparent hover:bg-transparent"
                         >
                             <Icons.Plus className="h-4 w-4" />
                         </Button>

@@ -1,4 +1,5 @@
 import { Button } from '@onlook/ui/button';
+
 import { useCustomDomainContext } from './provider';
 
 export const NoCustomDomain = () => {
@@ -6,16 +7,16 @@ export const NoCustomDomain = () => {
 
     return (
         <>
-            <div className="flex items-center w-full">
+            <div className="flex w-full items-center">
                 <h3 className="">Custom Domain</h3>
-                <span className="ml-auto rounded-full bg-blue-400 text-white px-1.5 py-0.5 text-xs">
+                <span className="ml-auto rounded-full bg-blue-400 px-1.5 py-0.5 text-xs text-white">
                     PRO
                 </span>
             </div>
 
             <Button
                 onClick={openCustomDomain}
-                className="w-full rounded-md p-3 bg-blue-600 border-blue border hover:bg-blue-700 text-white"
+                className="border-blue w-full rounded-md border bg-blue-600 p-3 text-white hover:bg-blue-700"
             >
                 Link a Custom Domain
             </Button>

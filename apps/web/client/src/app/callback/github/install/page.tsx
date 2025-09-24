@@ -1,13 +1,15 @@
 'use client';
 
-import { api } from '@/trpc/react';
-import { Routes } from '@/utils/constants';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { AnimatePresence, motion } from 'motion/react';
+
 import { Button } from '@onlook/ui/button';
 import { Card, CardContent, CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
-import { AnimatePresence, motion } from 'motion/react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+
+import { api } from '@/trpc/react';
+import { Routes } from '@/utils/constants';
 
 type CallbackState = 'loading' | 'success' | 'error';
 
@@ -24,7 +26,11 @@ export default function GitHubInstallCallbackPage() {
         const setupAction = searchParams.get('setup_action');
         const stateParam = searchParams.get('state');
 
-        console.log('GitHub installation callback:', { installationId, setupAction, state: stateParam });
+        console.log('GitHub installation callback:', {
+            installationId,
+            setupAction,
+            state: stateParam,
+        });
 
         if (!installationId) {
             setState('error');
@@ -67,7 +73,7 @@ export default function GitHubInstallCallbackPage() {
                     setMessage(error.message);
                     console.error('GitHub App installation callback failed:', error);
                 },
-            }
+            },
         );
     }, []);
 
@@ -79,7 +85,7 @@ export default function GitHubInstallCallbackPage() {
         title,
         description,
         isError = false,
-        actions
+        actions,
     }: {
         indicatorColor: string;
         indicatorIcon: React.ComponentType<{ className?: string }>;
@@ -90,32 +96,36 @@ export default function GitHubInstallCallbackPage() {
         isError?: boolean;
         actions?: React.ReactNode;
     }) => (
-        <div className="flex flex-col items-center gap-2 w-full">
+        <div className="flex w-full flex-col items-center gap-2">
             {iconAnimated ? (
                 <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
                 >
-                    <div className={`relative w-16 h-16 rounded-full ${indicatorColor} flex items-center justify-center mb-2`}>
+                    <div
+                        className={`relative h-16 w-16 rounded-full ${indicatorColor} mb-2 flex items-center justify-center`}
+                    >
                         {indicatorAnimated && (
-                            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-white/30 animate-spin" />
+                            <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-white/30" />
                         )}
-                        <IndicatorIcon className="w-8 h-8 text-white" />
+                        <IndicatorIcon className="h-8 w-8 text-white" />
                     </div>
                 </motion.div>
             ) : (
-                <div className={`relative w-16 h-16 rounded-full ${indicatorColor} flex items-center justify-center mb-2`}>
+                <div
+                    className={`relative h-16 w-16 rounded-full ${indicatorColor} mb-2 flex items-center justify-center`}
+                >
                     {indicatorAnimated && (
-                        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-white/30 animate-spin" />
+                        <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-white/30" />
                     )}
-                    <IndicatorIcon className="w-8 h-8 text-white" />
+                    <IndicatorIcon className="h-8 w-8 text-white" />
                 </div>
             )}
-            <CardTitle className="text-xl text-foreground-primary">
-                {title}
-            </CardTitle>
-            <CardDescription className={`max-w-sm ${isError ? 'text-gray-400' : 'text-foreground-secondary/90'}`}>
+            <CardTitle className="text-foreground-primary text-xl">{title}</CardTitle>
+            <CardDescription
+                className={`max-w-sm ${isError ? 'text-gray-400' : 'text-foreground-secondary/90'}`}
+            >
                 {description}
             </CardDescription>
             {actions}
@@ -123,16 +133,16 @@ export default function GitHubInstallCallbackPage() {
     );
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6">
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6">
             <div className="w-full max-w-md">
                 {/* Header - Above Card */}
-                <div className="flex items-center gap-4 mb-8 justify-center">
-                    <div className="p-4 bg-gray-800 rounded-xl">
-                        <Icons.OnlookLogo className="w-8 h-8 text-white" />
+                <div className="mb-8 flex items-center justify-center gap-4">
+                    <div className="rounded-xl bg-gray-800 p-4">
+                        <Icons.OnlookLogo className="h-8 w-8 text-white" />
                     </div>
-                    <Icons.DotsHorizontal className="w-8 h-8 text-gray-400" />
-                    <div className="p-4 bg-gray-800 rounded-xl">
-                        <Icons.GitHubLogo className="w-8 h-8 text-white" />
+                    <Icons.DotsHorizontal className="h-8 w-8 text-gray-400" />
+                    <div className="rounded-xl bg-gray-800 p-4">
+                        <Icons.GitHubLogo className="h-8 w-8 text-white" />
                     </div>
                 </div>
 
@@ -144,7 +154,7 @@ export default function GitHubInstallCallbackPage() {
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
                     >
-                        <Card className="bg-gray-900 border-gray-800 shadow-2xl">
+                        <Card className="border-gray-800 bg-gray-900 shadow-2xl">
                             <CardContent className="p-8">
                                 <div className="flex flex-col items-center text-center">
                                     {/* Loading State */}
@@ -179,7 +189,7 @@ export default function GitHubInstallCallbackPage() {
                                             description={message}
                                             isError={true}
                                             actions={
-                                                <div className="flex flex-col gap-3 w-full">
+                                                <div className="flex w-full flex-col gap-3">
                                                     <Button
                                                         variant="default"
                                                         onClick={() => window.location.reload()}
@@ -189,7 +199,9 @@ export default function GitHubInstallCallbackPage() {
                                                     </Button>
                                                     <Button
                                                         variant="outline"
-                                                        onClick={() => router.push(Routes.IMPORT_GITHUB)}
+                                                        onClick={() =>
+                                                            router.push(Routes.IMPORT_GITHUB)
+                                                        }
                                                         className="w-full"
                                                     >
                                                         Return to Import

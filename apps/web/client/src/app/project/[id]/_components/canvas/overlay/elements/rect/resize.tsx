@@ -1,7 +1,9 @@
+import React from 'react';
+
+import { colors } from '@onlook/ui/tokens';
+
 import { useEditorEngine } from '@/components/store/editor';
 import { adaptValueToCanvas } from '@/components/store/editor/overlay/utils';
-import { colors } from '@onlook/ui/tokens';
-import React from 'react';
 
 enum ResizeHandlePosition {
     TOP = 'top',

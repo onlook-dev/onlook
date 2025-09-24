@@ -1,4 +1,9 @@
+import type { FreestyleFile, FreestyleFile } from 'freestyle-sandboxes';
+import type { z, z } from 'zod';
+
 import type { Provider } from '@onlook/code-provider';
+import type { Deployment, deploymentUpdateSchema } from '@onlook/db';
+import type { FileOperations, FileOperations } from '@onlook/utility';
 import {
     CUSTOM_OUTPUT_DIR,
     DefaultSettings,
@@ -6,7 +11,6 @@ import {
     LOCAL_PRELOAD_SCRIPT_SRC,
     SUPPORTED_LOCK_FILES,
 } from '@onlook/constants';
-import type { Deployment, deploymentUpdateSchema } from '@onlook/db';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
 import { DeploymentStatus } from '@onlook/models';
 import { addNextBuildConfig } from '@onlook/parser';
@@ -17,13 +21,10 @@ import {
     isNullOrUndefined,
     LogTimer,
     updateGitignore,
-    type FileOperations,
 } from '@onlook/utility';
-import { type FreestyleFile } from 'freestyle-sandboxes';
-import type { z } from 'zod';
 
 export class PublishManager {
-    constructor(private readonly provider: Provider) { }
+    constructor(private readonly provider: Provider) {}
 
     private get fileOps(): FileOperations {
         return {

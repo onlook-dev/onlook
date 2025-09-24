@@ -1,8 +1,10 @@
-import { prepareCommitMessage, sanitizeCommitMessage } from '@/utils/git';
-import { SUPPORT_EMAIL } from '@onlook/constants';
-import { type GitCommit } from '@onlook/git';
 import stripAnsi from 'strip-ansi';
+
+import type { GitCommit } from '@onlook/git';
+import { SUPPORT_EMAIL } from '@onlook/constants';
+
 import type { EditorEngine } from '../engine';
+import { prepareCommitMessage, sanitizeCommitMessage } from '@/utils/git';
 
 export const ONLOOK_DISPLAY_NAME_NOTE_REF = 'refs/notes/onlook-display-name';
 
@@ -17,7 +19,7 @@ export interface GitCommandResult {
 }
 
 export class GitManager {
-    constructor(private editorEngine: EditorEngine) { }
+    constructor(private editorEngine: EditorEngine) {}
 
     /**
      * Check if git repository is initialized
@@ -239,7 +241,7 @@ export class GitManager {
     /**
      * Run a git command through the sandbox session
      */
-    private runCommand(command: string, ignoreError: boolean = false): Promise<GitCommandResult> {
+    private runCommand(command: string, ignoreError = false): Promise<GitCommandResult> {
         return this.editorEngine.activeSandbox.session.runCommand(command, undefined, ignoreError);
     }
 
@@ -280,7 +282,7 @@ export class GitManager {
             if (!hash || !authorLine || !dateLine) continue;
 
             // Parse author name and email
-            const authorMatch = authorLine.match(/^(.+?)\s*<(.+?)>$/);
+            const authorMatch = /^(.+?)\s*<(.+?)>$/.exec(authorLine);
             const authorName = authorMatch?.[1]?.trim() || authorLine;
             const authorEmail = authorMatch?.[2]?.trim() || '';
 

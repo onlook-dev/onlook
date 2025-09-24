@@ -1,9 +1,11 @@
 'use client';
 
-import { Routes } from '@/utils/constants';
-import type { GitHubOrganization, GitHubRepository } from '@onlook/github';
-import { useRouter } from 'next/navigation';
 import { createContext, useContext, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+import type { GitHubOrganization, GitHubRepository } from '@onlook/github';
+
+import { Routes } from '@/utils/constants';
 import {
     useGitHubAppInstallation,
     useGitHubData,

@@ -1,6 +1,7 @@
-import { useEditorEngine } from '@/components/store/editor';
 import { useCallback, useEffect, useState } from 'react';
+
 import type { UploadState } from '../providers/types';
+import { useEditorEngine } from '@/components/store/editor';
 
 export const useImageUpload = () => {
     const editorEngine = useEditorEngine();
@@ -18,7 +19,7 @@ export const useImageUpload = () => {
                 setUploadState({ isUploading: false, error: 'Please select a valid image file' });
                 return;
             }
-            try {                
+            try {
                 await editorEngine.image.upload(file, destinationFolder);
                 setUploadState({ isUploading: false, error: null });
             } catch (error) {

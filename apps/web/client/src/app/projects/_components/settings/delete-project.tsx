@@ -1,7 +1,8 @@
 'use client';
 
-import { transKeys } from '@/i18n/keys';
-import { api } from '@/trpc/react';
+import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+
 import type { Project } from '@onlook/models';
 import {
     AlertDialog,
@@ -9,13 +10,14 @@ import {
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogTitle
+    AlertDialogTitle,
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { DropdownMenuItem } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+
+import { transKeys } from '@/i18n/keys';
+import { api } from '@/trpc/react';
 
 export function DeleteProject({ project, refetch }: { project: Project; refetch: () => void }) {
     const t = useTranslations();
@@ -37,13 +39,15 @@ export function DeleteProject({ project, refetch }: { project: Project; refetch:
                 }}
                 className="gap-2 text-red-400 hover:!bg-red-200/80 hover:!text-red-700 dark:text-red-200 dark:hover:!bg-red-800 dark:hover:!text-red-100"
             >
-                <Icons.Trash className="w-4 h-4" />
+                <Icons.Trash className="h-4 w-4" />
                 {t(transKeys.projects.actions.deleteProject)}
             </DropdownMenuItem>
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{t(transKeys.projects.dialogs.delete.title)}</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            {t(transKeys.projects.dialogs.delete.title)}
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
                             {t(transKeys.projects.dialogs.delete.description)}
                         </AlertDialogDescription>

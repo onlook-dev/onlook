@@ -1,7 +1,8 @@
 'use client';
 
-import { Icons } from '@onlook/ui/icons';
 import { useEffect, useState } from 'react';
+
+import { Icons } from '@onlook/ui/icons';
 
 const DEFAULT_STAR_COUNT = 22000;
 const DEFAULT_CONTRIBUTORS_COUNT = 90;
@@ -28,17 +29,23 @@ export function useGitHubStats() {
                 setFormatted(formatStarCount(repoData.stargazers_count));
 
                 // Contributors (use the Link header for pagination)
-                const contribResponse = await fetch('https://api.github.com/repos/onlook-dev/onlook/contributors?per_page=1&anon=true');
+                const contribResponse = await fetch(
+                    'https://api.github.com/repos/onlook-dev/onlook/contributors?per_page=1&anon=true',
+                );
                 const linkHeader = contribResponse.headers.get('Link');
                 if (linkHeader) {
-                    const match = linkHeader.match(/&page=(\d+)>; rel="last"/);
+                    const match = /&page=(\d+)>; rel="last"/.exec(linkHeader);
                     if (match) {
                         setContributors(Number(match[1]));
                     }
                 } else {
                     // fallback: count the single returned contributor
                     const contribData = await contribResponse.json();
-                    setContributors(Array.isArray(contribData) ? contribData.length : DEFAULT_CONTRIBUTORS_COUNT);
+                    setContributors(
+                        Array.isArray(contribData)
+                            ? contribData.length
+                            : DEFAULT_CONTRIBUTORS_COUNT,
+                    );
                 }
             } catch (error) {
                 console.error('Failed to fetch GitHub stats:', error);
@@ -56,9 +63,14 @@ export function useGitHubStats() {
 export function GitHubButton() {
     const { formatted } = useGitHubStats();
     return (
-        <a href="https://github.com/onlook-dev/onlook" className="flex items-center gap-1.5 text-small hover:opacity-80" target="_blank" rel="noopener noreferrer">
+        <a
+            href="https://github.com/onlook-dev/onlook"
+            className="text-small flex items-center gap-1.5 hover:opacity-80"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
             <Icons.GitHubLogo className="h-5 w-5" />
-            <span className="transition-all duration-300 hidden sm:block">{formatted}</span>
+            <span className="hidden transition-all duration-300 sm:block">{formatted}</span>
         </a>
     );
 }

@@ -1,6 +1,8 @@
+import { makeAutoObservable } from 'mobx';
+
 import type { Action } from '@onlook/models/actions';
 import { jsonClone } from '@onlook/utility';
-import { makeAutoObservable } from 'mobx';
+
 import type { EditorEngine } from '../engine';
 import { transformRedoAction, undoAction, updateTransactionActions } from './helpers';
 

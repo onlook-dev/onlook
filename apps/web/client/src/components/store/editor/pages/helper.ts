@@ -1,8 +1,11 @@
+import { nanoid } from 'nanoid';
+
 import type { ListFilesOutputFile } from '@onlook/code-provider';
 import type { PageMetadata, PageNode, SandboxFile } from '@onlook/models';
+import type { T, T } from '@onlook/parser';
 import { RouterType } from '@onlook/models';
-import { generate, getAstFromContent, t, type T, traverse } from '@onlook/parser';
-import { nanoid } from 'nanoid';
+import { generate, getAstFromContent, t, traverse } from '@onlook/parser';
+
 import type { SandboxManager } from '../sandbox';
 import { formatContent } from '../sandbox/helpers';
 
@@ -271,8 +274,8 @@ export const scanAppDirectory = async (
             name: isDynamicRoute
                 ? currentDir
                 : parentPath
-                    ? getBaseName(parentPath)
-                    : ROOT_PAGE_NAME,
+                  ? getBaseName(parentPath)
+                  : ROOT_PAGE_NAME,
             path: cleanPath,
             children,
             isActive: false,

@@ -1,12 +1,23 @@
-import { api } from '@/trpc/server';
-import { trackEvent } from '@/utils/analytics/server';
+import type { NextRequest, NextRequest } from 'next/server';
+import { stepCountIs, streamText } from 'ai';
+import { v4 as uuidv4 } from 'uuid';
+
+import type { ChatMessage, ChatMetadata } from '@onlook/models';
 import { convertToStreamMessages, getToolSetFromType } from '@onlook/ai';
 import { toDbMessage } from '@onlook/db';
-import { ChatType, type ChatMessage, type ChatMetadata } from '@onlook/models';
-import { stepCountIs, streamText } from 'ai';
-import { type NextRequest } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
-import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, incrementUsage, repairToolCall } from './helpers';
+import { ChatType } from '@onlook/models';
+
+import { api } from '@/trpc/server';
+import {
+    checkMessageLimit,
+    decrementUsage,
+    errorHandler,
+    getModelFromType,
+    getSupabaseUser,
+    getSystemPromptFromType,
+    incrementUsage,
+    repairToolCall,
+} from './helpers';
 
 const MAX_STEPS = 20;
 
@@ -14,13 +25,16 @@ export async function POST(req: NextRequest) {
     try {
         const user = await getSupabaseUser(req);
         if (!user) {
-            return new Response(JSON.stringify({
-                error: 'Unauthorized, no user found. Please login again.',
-                code: 401
-            }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' }
-            });
+            return new Response(
+                JSON.stringify({
+                    error: 'Unauthorized, no user found. Please login again.',
+                    code: 401,
+                }),
+                {
+                    status: 401,
+                    headers: { 'Content-Type': 'application/json' },
+                },
+            );
         }
         const usageCheckResult = await checkMessageLimit(req);
         if (usageCheckResult.exceeded) {
@@ -31,36 +45,42 @@ export async function POST(req: NextRequest) {
                     usage: usageCheckResult.usage,
                 },
             });
-            return new Response(JSON.stringify({
-                error: 'Message limit exceeded. Please upgrade to a paid plan.',
-                code: 402,
-                usage: usageCheckResult.usage,
-            }), {
-                status: 402,
-                headers: { 'Content-Type': 'application/json' }
-            });
+            return new Response(
+                JSON.stringify({
+                    error: 'Message limit exceeded. Please upgrade to a paid plan.',
+                    code: 402,
+                    usage: usageCheckResult.usage,
+                }),
+                {
+                    status: 402,
+                    headers: { 'Content-Type': 'application/json' },
+                },
+            );
         }
 
         return streamResponse(req, user.id);
     } catch (error: unknown) {
         console.error('Error in chat', error);
-        return new Response(JSON.stringify({
-            error: error instanceof Error ? error.message : String(error),
-            code: 500,
-        }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-        });
+        return new Response(
+            JSON.stringify({
+                error: error instanceof Error ? error.message : String(error),
+                code: 500,
+            }),
+            {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            },
+        );
     }
 }
 
 export const streamResponse = async (req: NextRequest, userId: string) => {
     const body = await req.json();
     const { messages, chatType, conversationId, projectId } = body as {
-        messages: ChatMessage[],
-        chatType: ChatType,
-        conversationId: string,
-        projectId: string,
+        messages: ChatMessage[];
+        chatType: ChatType;
+        conversationId: string;
+        projectId: string;
     };
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
@@ -120,38 +140,34 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                     const errorMessage = typeof error === 'string' ? error : JSON.stringify(error);
                     throw new Error(errorMessage);
                 }
-            }
-        })
+            },
+        });
 
-        return result.toUIMessageStreamResponse<ChatMessage>(
-            {
-                originalMessages: messages,
-                generateMessageId: () => uuidv4(),
-                messageMetadata: ({ part }) => {
-                    return {
-                        createdAt: new Date(),
-                        conversationId,
-                        context: [],
-                        checkpoints: [],
-                        finishReason: part.type === 'finish-step' ? part.finishReason : undefined,
-                        usage: part.type === 'finish-step' ? part.usage : undefined,
-                    } satisfies ChatMetadata;
-                },
-                onFinish: async ({ messages: finalMessages }) => {
-                    const messagesToStore = finalMessages
-                        .filter(msg =>
-                            (msg.role === 'user' || msg.role === 'assistant')
-                        )
-                        .map(msg => toDbMessage(msg, conversationId));
+        return result.toUIMessageStreamResponse<ChatMessage>({
+            originalMessages: messages,
+            generateMessageId: () => uuidv4(),
+            messageMetadata: ({ part }) => {
+                return {
+                    createdAt: new Date(),
+                    conversationId,
+                    context: [],
+                    checkpoints: [],
+                    finishReason: part.type === 'finish-step' ? part.finishReason : undefined,
+                    usage: part.type === 'finish-step' ? part.usage : undefined,
+                } satisfies ChatMetadata;
+            },
+            onFinish: async ({ messages: finalMessages }) => {
+                const messagesToStore = finalMessages
+                    .filter((msg) => msg.role === 'user' || msg.role === 'assistant')
+                    .map((msg) => toDbMessage(msg, conversationId));
 
-                    await api.chat.message.replaceConversationMessages({
-                        conversationId,
-                        messages: messagesToStore,
-                    });
-                },
-                onError: errorHandler,
-            }
-        );
+                await api.chat.message.replaceConversationMessages({
+                    conversationId,
+                    messages: messagesToStore,
+                });
+            },
+            onError: errorHandler,
+        });
     } catch (error) {
         console.error('Error in streamResponse setup', error);
         // If there was an error setting up the stream and we incremented usage, revert it
@@ -160,4 +176,4 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         }
         throw error;
     }
-}
+};

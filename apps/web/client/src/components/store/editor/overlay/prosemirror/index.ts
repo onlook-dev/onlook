@@ -1,12 +1,14 @@
-import { isColorEmpty } from '@onlook/utility';
+import type { EditorState, Plugin } from 'prosemirror-state';
+import type { EditorView } from 'prosemirror-view';
 import { baseKeymap } from 'prosemirror-commands';
 import { history, redo, undo } from 'prosemirror-history';
 import { keymap } from 'prosemirror-keymap';
 import { Schema } from 'prosemirror-model';
-import { Plugin, EditorState } from 'prosemirror-state';
-import { EditorView } from 'prosemirror-view';
-import { adaptValueToCanvas } from '../utils';
+
+import { isColorEmpty } from '@onlook/utility';
+
 import { ensureFontLoaded } from '@/hooks/use-font-loader';
+import { adaptValueToCanvas } from '../utils';
 
 export const schema = new Schema({
     nodes: {
@@ -30,7 +32,7 @@ export const schema = new Schema({
                 {
                     tag: 'span[style]',
                     getAttrs: (node) => ({
-                        style: (node as HTMLElement).getAttribute('style'),
+                        style: node.getAttribute('style'),
                     }),
                 },
             ],

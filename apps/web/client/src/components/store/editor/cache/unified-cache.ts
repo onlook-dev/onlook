@@ -1,8 +1,10 @@
 'use client';
 
-import { jsonClone } from '@onlook/utility';
 import localforage from 'localforage';
 import { LRUCache } from 'lru-cache';
+
+import { jsonClone } from '@onlook/utility';
+
 import type { CacheConfig, CachedItem, PersistentCacheData, Serializable } from './types';
 
 export class UnifiedCacheManager<T extends Serializable = Serializable> {
@@ -120,9 +122,11 @@ export class UnifiedCacheManager<T extends Serializable = Serializable> {
             for (const [key, item] of data.entries) {
                 this.memoryCache.set(key, item as CachedItem<T>);
             }
-
         } catch (error) {
-            console.warn(`[UnifiedCache:${this.config.name}] Failed to load from persistent storage:`, error);
+            console.warn(
+                `[UnifiedCache:${this.config.name}] Failed to load from persistent storage:`,
+                error,
+            );
         }
     }
 
@@ -137,7 +141,10 @@ export class UnifiedCacheManager<T extends Serializable = Serializable> {
                     const serializedItem = jsonClone(item);
                     entries.push([key, serializedItem]);
                 } catch (serializationError) {
-                    console.warn(`[UnifiedCache:${this.config.name}] Skipping non-serializable item with key: ${key}`, serializationError);
+                    console.warn(
+                        `[UnifiedCache:${this.config.name}] Skipping non-serializable item with key: ${key}`,
+                        serializationError,
+                    );
                     continue;
                 }
             }
@@ -154,7 +161,10 @@ export class UnifiedCacheManager<T extends Serializable = Serializable> {
 
             await this.persistentStore.setItem('cache-data', data);
         } catch (error) {
-            console.warn(`[UnifiedCache:${this.config.name}] Failed to save to persistent storage:`, error);
+            console.warn(
+                `[UnifiedCache:${this.config.name}] Failed to save to persistent storage:`,
+                error,
+            );
         }
     }
 

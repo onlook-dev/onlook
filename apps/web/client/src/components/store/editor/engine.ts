@@ -1,7 +1,11 @@
-import type { Branch } from '@onlook/models';
-import { makeAutoObservable } from 'mobx';
 import type { PostHog } from 'posthog-js';
+import { makeAutoObservable } from 'mobx';
+
+import type { Branch } from '@onlook/models';
+
+import type { SandboxManager } from './sandbox';
 import { ActionManager } from './action';
+import { ApiManager } from './api';
 import { AstManager } from './ast';
 import { BranchManager } from './branch';
 import { CanvasManager } from './canvas';
@@ -20,7 +24,6 @@ import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
 import { PreloadScriptManager } from './preload';
-import { SandboxManager } from './sandbox';
 import { ScreenshotManager } from './screenshot';
 import { SnapManager } from './snap';
 import { StateManager } from './state';
@@ -29,7 +32,6 @@ import { TemplateNodeManager } from './template-nodes';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { VersionsManager } from './version';
-import { ApiManager } from './api';
 
 export class EditorEngine {
     readonly projectId: string;

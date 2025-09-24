@@ -1,6 +1,13 @@
-import type { Action, Branch } from '@onlook/models';
-import { type ParsedError, compareErrors, isErrorMessage, shouldIgnoreMessage, TerminalBuffer } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
+
+import type { Action, Branch } from '@onlook/models';
+import type { ParsedError } from '@onlook/utility';
+import {
+    compareErrors,
+    isErrorMessage,
+    shouldIgnoreMessage,
+    TerminalBuffer,
+} from '@onlook/utility';
 
 export class ErrorManager {
     private _errors: ParsedError[] = [];
@@ -46,7 +53,7 @@ export class ErrorManager {
         }
     }
 
-    addCodeApplicationError(message: string, metadata: Action | Object) {
+    addCodeApplicationError(message: string, metadata: Action | object) {
         const sourceId = 'Write Code Error';
         const content = `Failed to apply code block with error: ${message}. The intended action metadata was: ${JSON.stringify(metadata)}`;
         const error: ParsedError = {

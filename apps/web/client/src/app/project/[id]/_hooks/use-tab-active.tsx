@@ -10,7 +10,7 @@ export function useTabActive() {
         const handleVisibilityChange = () => {
             const isVisible = document.visibilityState === 'visible';
             const previousState = previousStateRef.current;
-            
+
             if (isVisible) {
                 const newState = previousState === 'inactive' ? 'reactivated' : 'active';
                 setTabState(newState);

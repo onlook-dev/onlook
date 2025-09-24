@@ -1,9 +1,11 @@
+import { Fragment, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
 import type { VerificationRecord } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
-import { Fragment, useState } from 'react';
+
 import { useDomainVerification } from './use-domain-verification';
 
 export const DnsRecords = observer(() => {
@@ -19,9 +21,9 @@ export const DnsRecords = observer(() => {
 
     return (
         <div className="grid grid-cols-7 gap-4 rounded-lg border p-4">
-            <div className="text-sm font-medium col-span-1">Type</div>
-            <div className="text-sm font-medium col-span-3">Host</div>
-            <div className="text-sm font-medium col-span-3">Value</div>
+            <div className="col-span-1 text-sm font-medium">Type</div>
+            <div className="col-span-3 text-sm font-medium">Host</div>
+            <div className="col-span-3 text-sm font-medium">Value</div>
 
             {records.map((record, index) => (
                 <Fragment key={`${record.type}-${record.name}-${index}`}>
@@ -51,11 +53,11 @@ function RecordField({
     };
 
     return (
-        <div className={cn('text-sm relative group p-1', className)}>
-            <p className="pr-6 overflow-auto text-ellipsis">{value}</p>
+        <div className={cn('group relative p-1 text-sm', className)}>
+            <p className="overflow-auto pr-6 text-ellipsis">{value}</p>
             {copyable && (
                 <Button
-                    className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity w-8 h-8"
+                    className="absolute top-1/2 right-0 h-8 w-8 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100"
                     variant="ghost"
                     size="icon"
                     onClick={copyToClipboard}

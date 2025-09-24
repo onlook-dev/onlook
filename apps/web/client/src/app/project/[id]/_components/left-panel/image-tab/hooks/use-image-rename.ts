@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { type ImageContentData } from '@onlook/models';
+
+import type { ImageContentData } from '@onlook/models';
+
 import { useEditorEngine } from '@/components/store/editor';
 
 interface RenameState {
@@ -12,7 +14,7 @@ interface RenameState {
 
 export const useImageRename = () => {
     const editorEngine = useEditorEngine();
-    
+
     const [renameState, setRenameState] = useState<RenameState>({
         imageToRename: null,
         originImagePath: null,
@@ -126,4 +128,4 @@ export const useImageRename = () => {
         onRenameImage,
         handleRenameModalToggle,
     };
-}; 
+};

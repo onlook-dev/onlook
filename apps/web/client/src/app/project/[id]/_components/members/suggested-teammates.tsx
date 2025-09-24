@@ -1,8 +1,9 @@
-import { api } from '@/trpc/react';
 import { ProjectRole } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
+
+import { api } from '@/trpc/react';
 
 interface SuggestedTeammateProps {
     projectId: string;
@@ -27,7 +28,7 @@ export const SuggestedTeammates = ({ projectId }: SuggestedTeammateProps) => {
             <Separator />
             <div className="space-y-0.5">
                 <div className="text-sm">Suggested Teammates</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-muted-foreground text-xs">
                     Invite relevant people to collaborate
                 </div>
             </div>

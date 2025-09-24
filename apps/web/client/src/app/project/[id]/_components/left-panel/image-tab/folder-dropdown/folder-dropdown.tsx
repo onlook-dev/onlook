@@ -1,8 +1,10 @@
+import { useState } from 'react';
+
+import type { FolderNode } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { ScrollArea } from '@onlook/ui/scroll-area';
 import { cn } from '@onlook/ui/utils';
-import { useState } from 'react';
-import type { FolderNode } from '@onlook/models';
+
 import { useFolderContext } from '../providers/folder-provider';
 
 interface FolderTreeItemProps {
@@ -56,19 +58,19 @@ const FolderTreeItem = ({
                 {children.length > 0 && (
                     <button
                         onClick={handleToggle}
-                        className="p-1 hover:bg-background-secondary rounded"
+                        className="hover:bg-background-secondary rounded p-1"
                         type="button"
                     >
                         {isExpanded ? (
-                            <Icons.ChevronDown className="w-3 h-3" />
+                            <Icons.ChevronDown className="h-3 w-3" />
                         ) : (
-                            <Icons.ChevronRight className="w-3 h-3" />
+                            <Icons.ChevronRight className="h-3 w-3" />
                         )}
                     </button>
                 )}
                 {children.length === 0 && <div className="w-5" />}
 
-                <Icons.Directory className="w-4 h-4 text-foreground-secondary" />
+                <Icons.Directory className="text-foreground-secondary h-4 w-4" />
                 <span className={cn('text-sm', asMenuContent && 'text-smallPlus')}>
                     {folder.name}
                 </span>

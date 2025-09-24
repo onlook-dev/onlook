@@ -1,13 +1,16 @@
-import { useEditorEngine } from '@/components/store/editor';
+import type { NodeApi, TreeApi } from 'react-arborist';
+import { useMemo, useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { Tree } from 'react-arborist';
+import useResizeObserver from 'use-resize-observer';
+
 import type { PageNode } from '@onlook/models/pages';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import { observer } from 'mobx-react-lite';
-import { useMemo, useRef, useState } from 'react';
-import { type NodeApi, Tree, type TreeApi } from 'react-arborist';
-import useResizeObserver from 'use-resize-observer';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { PageTreeNode } from '../layers-tab/tree/page-tree-node';
 import { PageTreeRow } from '../layers-tab/tree/page-tree-row';
 import { PageModal } from './page-modal';

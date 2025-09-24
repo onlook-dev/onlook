@@ -8,9 +8,7 @@ export interface CacheConfig {
     persistent?: boolean;
 }
 
-export interface Serializable {
-    [key: string]: any;
-}
+export type Serializable = Record<string, any>;
 
 export interface CachedItem<T> {
     data: T;

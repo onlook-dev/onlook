@@ -1,8 +1,9 @@
+import { motion } from 'motion/react';
+import { useTranslations } from 'next-intl';
+
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { MotionCard } from '@onlook/ui/motion-card';
-import { motion } from 'motion/react';
-import { useTranslations } from 'next-intl';
 
 const ENTERPRISE_TIER = {
     name: 'Enterprise',
@@ -18,11 +19,7 @@ const ENTERPRISE_TIER = {
     ],
 };
 
-export const EnterpriseCard = ({
-    delay,
-}: {
-    delay: number;
-}) => {
+export const EnterpriseCard = ({ delay }: { delay: number }) => {
     const t = useTranslations();
 
     const handleContactUs = () => {
@@ -46,29 +43,28 @@ Best regards,
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay }}
         >
-            <motion.div className="p-6 flex flex-col h-full">
+            <motion.div className="flex h-full flex-col p-6">
                 <div className="space-y-1">
                     <h2 className="text-title2">{ENTERPRISE_TIER.name}</h2>
                     <p className="text-foreground-onlook text-largePlus">{ENTERPRISE_TIER.price}</p>
                 </div>
-                <div className="border-[0.5px] border-border-primary -mx-6 my-6" />
-                <p className="text-foreground-primary text-title3 text-balance">{ENTERPRISE_TIER.description}</p>
-                <div className="border-[0.5px] border-border-primary -mx-6 my-6" />
-                <div className="flex flex-col gap-2 mb-6">
-                    <Button
-                        className="w-full"
-                        onClick={handleContactUs}
-                    >
+                <div className="border-border-primary -mx-6 my-6 border-[0.5px]" />
+                <p className="text-foreground-primary text-title3 text-balance">
+                    {ENTERPRISE_TIER.description}
+                </p>
+                <div className="border-border-primary -mx-6 my-6 border-[0.5px]" />
+                <div className="mb-6 flex flex-col gap-2">
+                    <Button className="w-full" onClick={handleContactUs}>
                         Contact Us
                     </Button>
                 </div>
-                <div className="flex flex-col gap-2 h-42">
+                <div className="flex h-42 flex-col gap-2">
                     {ENTERPRISE_TIER.features.map((feature) => (
                         <div
                             key={feature}
-                            className="flex items-center gap-3 text-sm text-foreground-secondary/80"
+                            className="text-foreground-secondary/80 flex items-center gap-3 text-sm"
                         >
-                            <Icons.CheckCircled className="w-5 h-5 text-foreground-secondary/80" />
+                            <Icons.CheckCircled className="text-foreground-secondary/80 h-5 w-5" />
                             <span>{feature}</span>
                         </div>
                     ))}

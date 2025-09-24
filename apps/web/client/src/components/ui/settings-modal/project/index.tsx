@@ -1,6 +1,6 @@
+import { useEffect, useMemo, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 
-import { useEditorEngine } from '@/components/store/editor';
-import { api } from '@/trpc/react';
 import { DefaultSettings } from '@onlook/constants';
 import { toDbProjectSettings } from '@onlook/db';
 import { Button } from '@onlook/ui/button';
@@ -8,15 +8,18 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { toast } from '@onlook/ui/sonner';
-import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
+import { api } from '@/trpc/react';
 
 export const ProjectTab = observer(() => {
     const editorEngine = useEditorEngine();
     const utils = api.useUtils();
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: updateProject } = api.project.update.useMutation();
-    const { data: projectSettings } = api.settings.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: projectSettings } = api.settings.get.useQuery({
+        projectId: editorEngine.projectId,
+    });
     const { mutateAsync: updateProjectSettings } = api.settings.upsert.useMutation();
 
     const installCommand = projectSettings?.commands?.install ?? DefaultSettings.COMMANDS.install;
@@ -29,7 +32,7 @@ export const ProjectTab = observer(() => {
         name: '',
         install: '',
         run: '',
-        build: ''
+        build: '',
     });
     const [isSaving, setIsSaving] = useState(false);
 
@@ -39,7 +42,7 @@ export const ProjectTab = observer(() => {
             name,
             install: installCommand,
             run: runCommand,
-            build: buildCommand
+            build: buildCommand,
         });
     }, [name, installCommand, runCommand, buildCommand]);
 
@@ -70,7 +73,11 @@ export const ProjectTab = observer(() => {
             }
 
             // Update commands if any changed
-            if (formData.install !== installCommand || formData.run !== runCommand || formData.build !== buildCommand) {
+            if (
+                formData.install !== installCommand ||
+                formData.run !== runCommand ||
+                formData.build !== buildCommand
+            ) {
                 await updateProjectSettings({
                     projectId: editorEngine.projectId,
                     settings: toDbProjectSettings(editorEngine.projectId, {
@@ -97,21 +104,21 @@ export const ProjectTab = observer(() => {
             name,
             install: installCommand,
             run: runCommand,
-            build: buildCommand
+            build: buildCommand,
         });
     };
 
     const updateField = (field: keyof typeof formData, value: string) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
+        setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
     return (
-        <div className="text-sm flex flex-col h-full">
-            <div className="flex flex-col gap-4 p-6 pb-24 overflow-y-auto flex-1">
+        <div className="flex h-full flex-col text-sm">
+            <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-6 pb-24">
                 <div className="flex flex-col gap-4">
                     <h2 className="text-lg">Metadata</h2>
                     <div className="space-y-4">
-                        <div className="flex justify-between items-center">
+                        <div className="flex items-center justify-between">
                             <p className="text-muted-foreground">Name</p>
                             <Input
                                 id="name"
@@ -133,7 +140,7 @@ export const ProjectTab = observer(() => {
                         </p>
                     </div>
                     <div className="space-y-4">
-                        <div className="flex justify-between items-center">
+                        <div className="flex items-center justify-between">
                             <p className="text-muted-foreground">Install</p>
                             <Input
                                 id="install"
@@ -143,7 +150,7 @@ export const ProjectTab = observer(() => {
                                 disabled={isSaving}
                             />
                         </div>
-                        <div className="flex justify-between items-center">
+                        <div className="flex items-center justify-between">
                             <p className="text-muted-foreground">Run</p>
                             <Input
                                 id="run"
@@ -153,7 +160,7 @@ export const ProjectTab = observer(() => {
                                 disabled={isSaving}
                             />
                         </div>
-                        <div className="flex justify-between items-center">
+                        <div className="flex items-center justify-between">
                             <p className="text-muted-foreground">Build</p>
                             <Input
                                 id="build"
@@ -168,11 +175,14 @@ export const ProjectTab = observer(() => {
             </div>
 
             {/* Save/Discard buttons matching site tab pattern */}
-            <div className="sticky bottom-0 bg-background border-t border-border/50 p-6" style={{ borderTopWidth: '0.5px' }}>
+            <div
+                className="bg-background border-border/50 sticky bottom-0 border-t p-6"
+                style={{ borderTopWidth: '0.5px' }}
+            >
                 <div className="flex justify-end gap-4">
                     <Button
                         variant="outline"
-                        className="flex items-center gap-2 px-4 py-2 bg-background border border-border/50"
+                        className="bg-background border-border/50 flex items-center gap-2 border px-4 py-2"
                         type="button"
                         onClick={handleDiscard}
                         disabled={!isDirty || isSaving}

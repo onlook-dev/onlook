@@ -1,8 +1,10 @@
 'use client';
 
-import { api as clientApi } from '@/trpc/client';
-import type { GitHubOrganization, GitHubRepository } from '@onlook/github';
 import { useState } from 'react';
+
+import type { GitHubOrganization, GitHubRepository } from '@onlook/github';
+
+import { api as clientApi } from '@/trpc/client';
 
 export const useGitHubData = () => {
     const [organizations, setOrganizations] = useState<GitHubOrganization[]>([]);

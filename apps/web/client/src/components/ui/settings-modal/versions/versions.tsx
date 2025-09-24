@@ -1,11 +1,13 @@
-import { useEditorEngine } from '@/components/store/editor';
+import React, { useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@onlook/ui/accordion';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Separator } from '@onlook/ui/separator';
 import { toast } from '@onlook/ui/sonner';
-import { observer } from 'mobx-react-lite';
-import React, { useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { NoVersions } from './empty-state/version';
 import { VersionRow, VersionRowType } from './version-row';
 
@@ -66,9 +68,7 @@ export const Versions = observer(() => {
         <div className="flex flex-col text-sm">
             <div className="flex flex-row items-center justify-between gap-2 px-6 py-6">
                 <h2 className="text-lg">Versions</h2>
-                {isLoadingCommits && (
-                    <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
-                )}
+                {isLoadingCommits && <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />}
                 {commits && commits.length > 0 ? (
                     <Button
                         variant="outline"

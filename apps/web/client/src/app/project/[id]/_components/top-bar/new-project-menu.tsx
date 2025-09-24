@@ -1,10 +1,11 @@
 'use client';
 
-import { useAuthContext } from '@/app/auth/auth-context';
-import { useEditorEngine } from '@/components/store/editor';
-import { transKeys } from '@/i18n/keys';
-import { api } from '@/trpc/react';
-import { LocalForageKeys, Routes } from '@/utils/constants';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import localforage from 'localforage';
+import { observer } from 'mobx-react-lite';
+import { useTranslations } from 'next-intl';
+
 import { SandboxTemplates, Templates } from '@onlook/constants';
 import {
     DropdownMenuItem,
@@ -14,11 +15,12 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
-import localforage from 'localforage';
-import { observer } from 'mobx-react-lite';
-import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+
+import { useAuthContext } from '@/app/auth/auth-context';
+import { useEditorEngine } from '@/components/store/editor';
+import { transKeys } from '@/i18n/keys';
+import { api } from '@/trpc/react';
+import { LocalForageKeys, Routes } from '@/utils/constants';
 
 interface NewProjectMenuProps {
     onShowCloneDialog: (open: boolean) => void;
@@ -80,7 +82,8 @@ export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuPro
 
             if (errorMessage.includes('502') || errorMessage.includes('sandbox')) {
                 toast.error('Sandbox service temporarily unavailable', {
-                    description: 'Please try again in a few moments. Our servers may be experiencing high load.',
+                    description:
+                        'Please try again in a few moments. Our servers may be experiencing high load.',
                 });
             } else {
                 toast.error('Failed to create project', {
@@ -95,17 +98,17 @@ export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuPro
     return (
         <DropdownMenuSub>
             <DropdownMenuSubTrigger className="cursor-pointer">
-                <div className="flex flex-row center items-center">
+                <div className="center flex flex-row items-center">
                     <Icons.Plus className="mr-2" />
                     {t(transKeys.projects.actions.newProject)}
                 </div>
             </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent className="w-48 ml-2">
+            <DropdownMenuSubContent className="ml-2 w-48">
                 <DropdownMenuItem
                     onClick={() => router.push(Routes.HOME)}
                     className="cursor-pointer"
                 >
-                    <div className="flex flex-row center items-center group">
+                    <div className="center group flex flex-row items-center">
                         <Icons.Plus className="mr-2" />
                         {t(transKeys.projects.actions.newProject)}
                     </div>
@@ -115,7 +118,7 @@ export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuPro
                     disabled={isCreatingProject}
                     className="cursor-pointer"
                 >
-                    <div className="flex flex-row center items-center group">
+                    <div className="center group flex flex-row items-center">
                         {isCreatingProject ? (
                             <Icons.LoadingSpinner className="mr-2 animate-spin" />
                         ) : (
@@ -125,7 +128,7 @@ export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuPro
                     </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push(Routes.IMPORT_PROJECT)}>
-                    <div className="flex flex-row center items-center group">
+                    <div className="center group flex flex-row items-center">
                         <Icons.Upload className="mr-2" />
                         {t(transKeys.projects.actions.import)}
                     </div>
@@ -134,7 +137,7 @@ export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuPro
                     onClick={() => onShowCloneDialog(true)}
                     className="cursor-pointer"
                 >
-                    <div className="flex flex-row center items-center group">
+                    <div className="center group flex flex-row items-center">
                         <Icons.Copy className="mr-2" />
                         Clone this project
                     </div>

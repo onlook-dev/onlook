@@ -1,5 +1,7 @@
-import type { SandboxDirectory, SandboxFile } from '@onlook/models';
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
+
+import type { SandboxDirectory, SandboxFile } from '@onlook/models';
+
 import { FileCacheManager } from '../../src/components/store/editor/cache/file-cache';
 
 // Mock localforage
@@ -26,13 +28,13 @@ describe('FileCacheManager', () => {
                 return {
                     type: 'text',
                     path: 'test.tsx',
-                    content: '<div>Test Component</div>'
+                    content: '<div>Test Component</div>',
                 };
             } else if (path === 'image.png') {
                 return {
                     type: 'binary',
                     path: 'image.png',
-                    content: new Uint8Array([1, 2, 3, 4])
+                    content: new Uint8Array([1, 2, 3, 4]),
                 };
             }
             return null;
@@ -51,7 +53,7 @@ describe('FileCacheManager', () => {
         const textFile: SandboxFile = {
             type: 'text',
             path: 'test.tsx',
-            content: '<div>Hello World</div>'
+            content: '<div>Hello World</div>',
         };
 
         fileCacheManager.setFile(textFile);
@@ -64,7 +66,7 @@ describe('FileCacheManager', () => {
         const binaryFile: SandboxFile = {
             type: 'binary',
             path: 'image.png',
-            content: new Uint8Array([1, 2, 3, 4])
+            content: new Uint8Array([1, 2, 3, 4]),
         };
 
         fileCacheManager.setFile(binaryFile);
@@ -77,7 +79,7 @@ describe('FileCacheManager', () => {
         const emptyFile: SandboxFile = {
             type: 'text',
             path: 'empty.tsx',
-            content: null
+            content: null,
         };
 
         fileCacheManager.setFile(emptyFile);
@@ -90,7 +92,7 @@ describe('FileCacheManager', () => {
         const testFile: SandboxFile = {
             type: 'text',
             path: 'test.tsx',
-            content: 'content'
+            content: 'content',
         };
 
         expect(fileCacheManager.hasFile('test.tsx')).toBe(false);
@@ -103,7 +105,7 @@ describe('FileCacheManager', () => {
         const testFile: SandboxFile = {
             type: 'text',
             path: 'test.tsx',
-            content: 'content'
+            content: 'content',
         };
 
         fileCacheManager.setFile(testFile);
@@ -117,7 +119,7 @@ describe('FileCacheManager', () => {
     test('should handle directories', () => {
         const directory: SandboxDirectory = {
             type: 'directory',
-            path: 'src/components'
+            path: 'src/components',
         };
 
         expect(fileCacheManager.hasDirectory('src/components')).toBe(false);
@@ -134,13 +136,13 @@ describe('FileCacheManager', () => {
         const loadedFile: SandboxFile = {
             type: 'text',
             path: 'loaded.tsx',
-            content: 'content'
+            content: 'content',
         };
 
         const unloadedFile: SandboxFile = {
             type: 'text',
             path: 'unloaded.tsx',
-            content: null
+            content: null,
         };
 
         expect(fileCacheManager.isFileLoaded(loadedFile)).toBe(true);
@@ -152,7 +154,7 @@ describe('FileCacheManager', () => {
         const cachedFile: SandboxFile = {
             type: 'text',
             path: 'cached.tsx',
-            content: 'cached content'
+            content: 'cached content',
         };
         fileCacheManager.setFile(cachedFile);
 
@@ -166,7 +168,7 @@ describe('FileCacheManager', () => {
         expect(result2).toEqual({
             type: 'text',
             path: 'test.tsx',
-            content: '<div>Test Component</div>'
+            content: '<div>Test Component</div>',
         });
         expect(mockReadFile).toHaveBeenCalledWith('test.tsx');
 
@@ -192,7 +194,7 @@ describe('FileCacheManager', () => {
         expect(cachedFile).toEqual({
             type: 'text',
             path: 'new.tsx',
-            content: content
+            content: content,
         });
     });
 
@@ -208,7 +210,7 @@ describe('FileCacheManager', () => {
         expect(cachedFile).toEqual({
             type: 'binary',
             path: 'new.png',
-            content: content
+            content: content,
         });
     });
 
@@ -219,7 +221,7 @@ describe('FileCacheManager', () => {
 
         // Suppress console.error for this test
         const originalConsoleError = console.error;
-        console.error = mock(() => { });
+        console.error = mock(() => {});
 
         const result = await fileCacheManager.write('fail.tsx', 'content', failingWriteFile);
         expect(result).toBe(false);
@@ -232,7 +234,7 @@ describe('FileCacheManager', () => {
         const originalFile: SandboxFile = {
             type: 'text',
             path: 'original.tsx',
-            content: 'content'
+            content: 'content',
         };
 
         fileCacheManager.setFile(originalFile);
@@ -245,7 +247,7 @@ describe('FileCacheManager', () => {
         expect(renamedFile).toEqual({
             type: 'text',
             path: 'renamed.tsx',
-            content: 'content'
+            content: 'content',
         });
     });
 
@@ -259,17 +261,17 @@ describe('FileCacheManager', () => {
         const file1: SandboxFile = {
             type: 'text',
             path: 'src/components/Button.tsx',
-            content: 'button content'
+            content: 'button content',
         };
         const file2: SandboxFile = {
             type: 'text',
             path: 'src/components/Input.tsx',
-            content: 'input content'
+            content: 'input content',
         };
         const file3: SandboxFile = {
             type: 'text',
             path: 'src/utils/helper.ts',
-            content: 'helper content'
+            content: 'helper content',
         };
 
         fileCacheManager.setFile(file1);
@@ -279,7 +281,7 @@ describe('FileCacheManager', () => {
         // Add directory
         const directory: SandboxDirectory = {
             type: 'directory',
-            path: 'src/components'
+            path: 'src/components',
         };
         fileCacheManager.setDirectory(directory);
 
@@ -304,7 +306,7 @@ describe('FileCacheManager', () => {
         expect(movedFile).toEqual({
             type: 'text',
             path: 'src/ui/Button.tsx',
-            content: 'button content'
+            content: 'button content',
         });
     });
 
@@ -312,10 +314,10 @@ describe('FileCacheManager', () => {
         const files: SandboxFile[] = [
             { type: 'text', path: 'file1.tsx', content: 'content1' },
             { type: 'text', path: 'file2.tsx', content: 'content2' },
-            { type: 'binary', path: 'image.png', content: new Uint8Array([1, 2]) }
+            { type: 'binary', path: 'image.png', content: new Uint8Array([1, 2]) },
         ];
 
-        files.forEach(file => fileCacheManager.setFile(file));
+        files.forEach((file) => fileCacheManager.setFile(file));
 
         const fileList = fileCacheManager.listAllFiles();
         expect(fileList).toHaveLength(3);
@@ -328,10 +330,10 @@ describe('FileCacheManager', () => {
         const directories: SandboxDirectory[] = [
             { type: 'directory', path: 'src' },
             { type: 'directory', path: 'src/components' },
-            { type: 'directory', path: 'public' }
+            { type: 'directory', path: 'public' },
         ];
 
-        directories.forEach(dir => fileCacheManager.setDirectory(dir));
+        directories.forEach((dir) => fileCacheManager.setDirectory(dir));
 
         const dirList = fileCacheManager.listAllDirectories();
         expect(dirList).toHaveLength(3);
@@ -348,7 +350,7 @@ describe('FileCacheManager', () => {
         expect(emptyFile).toEqual({
             type: 'binary',
             path: 'empty.png',
-            content: null
+            content: null,
         });
     });
 
@@ -356,7 +358,7 @@ describe('FileCacheManager', () => {
         const existingFile: SandboxFile = {
             type: 'binary',
             path: 'existing.png',
-            content: new Uint8Array([1, 2, 3])
+            content: new Uint8Array([1, 2, 3]),
         };
 
         fileCacheManager.setFile(existingFile);
@@ -404,7 +406,7 @@ describe('FileCacheManager', () => {
         const testFile: SandboxFile = {
             type: 'text',
             path: 'test.tsx',
-            content: 'original content'
+            content: 'original content',
         };
 
         // Set file with content hash
@@ -419,30 +421,30 @@ describe('FileCacheManager', () => {
         // Add nested directories and files
         const nestedDir1: SandboxDirectory = {
             type: 'directory',
-            path: 'src/components/ui'
+            path: 'src/components/ui',
         };
         const nestedDir2: SandboxDirectory = {
             type: 'directory',
-            path: 'src/components/forms'
+            path: 'src/components/forms',
         };
         const nestedDir3: SandboxDirectory = {
             type: 'directory',
-            path: 'src/components/ui/buttons'
+            path: 'src/components/ui/buttons',
         };
         const parentDir: SandboxDirectory = {
             type: 'directory',
-            path: 'src/components'
+            path: 'src/components',
         };
         const unrelatedDir: SandboxDirectory = {
             type: 'directory',
-            path: 'src/utils'
+            path: 'src/utils',
         };
 
         // Add files in nested directories
         const nestedFile: SandboxFile = {
             type: 'text',
             path: 'src/components/ui/Button.tsx',
-            content: 'button'
+            content: 'button',
         };
 
         fileCacheManager.setDirectory(parentDir);

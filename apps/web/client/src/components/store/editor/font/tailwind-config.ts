@@ -1,8 +1,9 @@
-import { DefaultSettings } from '@onlook/constants';
-import { removeFontFromTailwindTheme, addFontToTailwindTheme } from '@onlook/fonts';
 import type { Font } from '@onlook/models';
-import { normalizePath } from '../sandbox/helpers';
+import { DefaultSettings } from '@onlook/constants';
+import { addFontToTailwindTheme, removeFontFromTailwindTheme } from '@onlook/fonts';
+
 import type { SandboxManager } from '../sandbox';
+import { normalizePath } from '../sandbox/helpers';
 
 const tailwindConfigPath = normalizePath(DefaultSettings.TAILWIND_CONFIG);
 

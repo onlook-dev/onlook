@@ -1,12 +1,13 @@
-import type { LayerNode } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
+
+import type { LayerNode } from '@onlook/models';
+
 import type { EditorEngine } from '../engine';
 
 interface LayerMetadata {
     rootNode: LayerNode;
     domIdToLayerNode: Map<string, LayerNode>;
 }
-
 
 export class LayersManager {
     frameIdToLayerMetadata = new Map<string, LayerMetadata>();
@@ -39,11 +40,7 @@ export class LayersManager {
         return this.frameIdToLayerMetadata.get(frameId);
     }
 
-    setMetadata(
-        frameId: string,
-        rootNode: LayerNode,
-        domIdToLayerNode: Map<string, LayerNode>,
-    ) {
+    setMetadata(frameId: string, rootNode: LayerNode, domIdToLayerNode: Map<string, LayerNode>) {
         this.frameIdToLayerMetadata.set(frameId, {
             rootNode: rootNode,
             domIdToLayerNode,

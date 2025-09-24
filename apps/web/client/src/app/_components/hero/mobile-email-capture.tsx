@@ -1,10 +1,11 @@
 'use client';
 
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { motion } from 'motion/react';
+
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Input } from '@onlook/ui/input';
-import { motion } from 'motion/react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 interface FormData {
     name: string;
@@ -44,7 +45,7 @@ export function MobileEmailCapture() {
         utm_medium: '',
         utm_campaign: '',
         utm_term: '',
-        utm_content: ''
+        utm_content: '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
@@ -58,21 +59,21 @@ export function MobileEmailCapture() {
                 utm_medium: urlParams.get('utm_medium') || '',
                 utm_campaign: urlParams.get('utm_campaign') || '',
                 utm_term: urlParams.get('utm_term') || '',
-                utm_content: urlParams.get('utm_content') || ''
+                utm_content: urlParams.get('utm_content') || '',
             };
 
             // Cache initial UTM values for the entire session
             initialUtmsRef.current = utmValues;
 
-            setFormData(prev => ({
+            setFormData((prev) => ({
                 ...prev,
-                ...utmValues
+                ...utmValues,
             }));
         }
     }, []);
 
     const handleInputChange = (field: keyof FormData, value: string) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
+        setFormData((prev) => ({ ...prev, [field]: value }));
         setError(null);
     };
 
@@ -157,13 +158,12 @@ export function MobileEmailCapture() {
                         utm_medium: '',
                         utm_campaign: '',
                         utm_term: '',
-                        utm_content: ''
-                    })
+                        utm_content: '',
+                    }),
                 });
                 setShowEmailForm(false);
                 successTimeoutRef.current = null;
             }, SUCCESS_TIMEOUT);
-
         } catch (error) {
             console.error('Failed to submit email capture form:', error);
 
@@ -302,8 +302,8 @@ export function MobileEmailCapture() {
                     utm_medium: '',
                     utm_campaign: '',
                     utm_term: '',
-                    utm_content: ''
-                })
+                    utm_content: '',
+                }),
             });
             setError(null);
             setShowSuccess(false);
@@ -313,20 +313,20 @@ export function MobileEmailCapture() {
 
     return (
         <motion.div
-            className="sm:hidden text-balance flex flex-col gap-3 items-center relative z-20 mx-4 xs:mx-6 text-foreground-secondary bg-foreground-secondary/10 backdrop-blur-lg rounded-lg border-[0.5px] border-foreground-secondary/20 p-3 xs:p-4 w-full max-w-[calc(100vw-2rem)] xs:max-w-sm select-none"
-            initial={{ opacity: 0, filter: "blur(4px)" }}
+            className="xs:mx-6 text-foreground-secondary bg-foreground-secondary/10 border-foreground-secondary/20 xs:p-4 xs:max-w-sm relative z-20 mx-4 flex w-full max-w-[calc(100vw-2rem)] flex-col items-center gap-3 rounded-lg border-[0.5px] p-3 text-balance backdrop-blur-lg select-none sm:hidden"
+            initial={{ opacity: 0, filter: 'blur(4px)' }}
             animate={{
                 opacity: 1,
-                filter: "blur(0px)",
-                height: containerHeight
+                filter: 'blur(0px)',
+                height: containerHeight,
             }}
             transition={{
                 duration: 0.6,
                 delay: 0.6,
-                ease: "easeOut",
-                height: { duration: 0.4, ease: "easeInOut" }
+                ease: 'easeOut',
+                height: { duration: 0.4, ease: 'easeInOut' },
             }}
-            style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+            style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
         >
             {!showEmailForm ? (
                 <motion.div
@@ -334,17 +334,17 @@ export function MobileEmailCapture() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                    className="flex flex-col gap-3 items-center w-full"
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="flex w-full flex-col items-center gap-3"
                     ref={notificationRef}
                 >
-                    <div className="text-center text-base xs:text-lg font-light my-2 text-foreground-secondary px-2">
+                    <div className="xs:text-lg text-foreground-secondary my-2 px-2 text-center text-base font-light">
                         Onlook is optimized for larger screens
                     </div>
                     <Button
                         size="sm"
                         onClick={handleShowEmailForm}
-                        className="bg-foreground-primary text-background-primary w-full hover:bg-foreground-hover hover:text-background-primary h-auto py-3 text-base xs:text-lg whitespace-normal leading-tight"
+                        className="bg-foreground-primary text-background-primary hover:bg-foreground-hover hover:text-background-primary xs:text-lg h-auto w-full py-3 text-base leading-tight whitespace-normal"
                     >
                         Email me a link for later
                     </Button>
@@ -355,36 +355,39 @@ export function MobileEmailCapture() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                    className="flex flex-col gap-3 items-center w-full"
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="flex w-full flex-col items-center gap-3"
                     ref={formRef}
                 >
                     {showSuccess ? (
                         <motion.div
                             className="flex flex-col items-center justify-center gap-3 py-6"
                             initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
+                            animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.4, ease: "easeInOut" }}
+                            transition={{ duration: 0.4, ease: 'easeInOut' }}
                             layout
                             layoutId="success-content"
                         >
                             <Icons.Check className="size-8" />
-                            <div className="text-foreground-secondary text-base xs:text-lg font-light w-full px-2">
+                            <div className="text-foreground-secondary xs:text-lg w-full px-2 text-base font-light">
                                 Thanks, an email to use Onlook has been sent to you!
                             </div>
                         </motion.div>
                     ) : (
                         <>
-                            <div className="text-left text-foreground-secondary text-sm xs:text-base font-light w-full px-1">
-                                <h3 className="text-sm xs:text-base font-medium text-foreground-primary break-words">
+                            <div className="text-foreground-secondary xs:text-base w-full px-1 text-left text-sm font-light">
+                                <h3 className="xs:text-base text-foreground-primary text-sm font-medium break-words">
                                     Email me a link to Onlook
                                 </h3>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-2 w-full">
+                            <form onSubmit={handleSubmit} className="w-full space-y-2">
                                 <div className="space-y-1 text-left">
-                                    <label htmlFor="name" className="text-xs text-foreground-secondary">
+                                    <label
+                                        htmlFor="name"
+                                        className="text-foreground-secondary text-xs"
+                                    >
                                         Name
                                     </label>
                                     <Input
@@ -397,12 +400,15 @@ export function MobileEmailCapture() {
                                         onKeyDown={handleNameKeyDown}
                                         disabled={isSubmitting}
                                         required
-                                        className="bg-background-primary/50 border-foreground-secondary/20 text-sm h-9 xs:h-10 text-foreground-primary focus:ring-0 focus-visible:ring-0 !ring-0 focus:border-foreground-primary select-text w-full"
+                                        className="bg-background-primary/50 border-foreground-secondary/20 xs:h-10 text-foreground-primary focus:border-foreground-primary h-9 w-full text-sm !ring-0 select-text focus:ring-0 focus-visible:ring-0"
                                     />
                                 </div>
 
                                 <div className="space-y-1 text-left">
-                                    <label htmlFor="email" className="text-xs text-foreground-secondary">
+                                    <label
+                                        htmlFor="email"
+                                        className="text-foreground-secondary text-xs"
+                                    >
                                         Email
                                     </label>
                                     <Input
@@ -415,20 +421,36 @@ export function MobileEmailCapture() {
                                         onKeyDown={handleEmailKeyDown}
                                         disabled={isSubmitting}
                                         required
-                                        className="bg-background-primary/50 border-foreground-secondary/20 text-sm h-9 xs:h-10 text-foreground-primary focus:ring-0 focus-visible:ring-0 !ring-0 focus:border-foreground-primary select-text w-full"
+                                        className="bg-background-primary/50 border-foreground-secondary/20 xs:h-10 text-foreground-primary focus:border-foreground-primary h-9 w-full text-sm !ring-0 select-text focus:ring-0 focus-visible:ring-0"
                                     />
                                 </div>
 
                                 {/* Hidden UTM parameter fields */}
-                                <input type="hidden" name="utm_source" value={formData.utm_source} />
-                                <input type="hidden" name="utm_medium" value={formData.utm_medium} />
-                                <input type="hidden" name="utm_campaign" value={formData.utm_campaign} />
+                                <input
+                                    type="hidden"
+                                    name="utm_source"
+                                    value={formData.utm_source}
+                                />
+                                <input
+                                    type="hidden"
+                                    name="utm_medium"
+                                    value={formData.utm_medium}
+                                />
+                                <input
+                                    type="hidden"
+                                    name="utm_campaign"
+                                    value={formData.utm_campaign}
+                                />
                                 <input type="hidden" name="utm_term" value={formData.utm_term} />
-                                <input type="hidden" name="utm_content" value={formData.utm_content} />
+                                <input
+                                    type="hidden"
+                                    name="utm_content"
+                                    value={formData.utm_content}
+                                />
 
                                 {error && (
                                     <motion.div
-                                        className="text-sm text-red-500 text-center"
+                                        className="text-center text-sm text-red-500"
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         transition={{ duration: 0.2 }}
@@ -437,20 +459,24 @@ export function MobileEmailCapture() {
                                     </motion.div>
                                 )}
 
-                                <div className="pt-1 flex gap-2">
+                                <div className="flex gap-2 pt-1">
                                     <Button
                                         type="button"
                                         variant="outline"
                                         onClick={handleClose}
                                         disabled={isSubmitting}
-                                        className="border-foreground-secondary/20 text-foreground-secondary hover:bg-foreground-secondary/10 h-9 xs:h-10 w-9 xs:w-10 rounded-md p-0 flex-shrink-0"
+                                        className="border-foreground-secondary/20 text-foreground-secondary hover:bg-foreground-secondary/10 xs:h-10 xs:w-10 h-9 w-9 flex-shrink-0 rounded-md p-0"
                                     >
-                                        <Icons.CrossL className="w-3 xs:w-4 h-3 xs:h-4" />
+                                        <Icons.CrossL className="xs:w-4 xs:h-4 h-3 w-3" />
                                     </Button>
                                     <Button
                                         type="submit"
-                                        disabled={isSubmitting || !formData.name.trim() || !isValidEmail(formData.email)}
-                                        className="flex-1 bg-foreground-primary text-background-primary hover:bg-foreground-hover hover:text-background-primary h-9 xs:h-10 text-xs xs:text-sm disabled:opacity-50 disabled:cursor-not-allowed min-w-0"
+                                        disabled={
+                                            isSubmitting ||
+                                            !formData.name.trim() ||
+                                            !isValidEmail(formData.email)
+                                        }
+                                        className="bg-foreground-primary text-background-primary hover:bg-foreground-hover hover:text-background-primary xs:h-10 xs:text-sm h-9 min-w-0 flex-1 text-xs disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         <span className="truncate">
                                             {isSubmitting ? 'Submitting...' : 'Email me a link'}

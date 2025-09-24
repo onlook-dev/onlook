@@ -1,10 +1,12 @@
 'use client';
 
+import { useCallback, useState } from 'react';
+
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Color } from '@onlook/utility';
-import { useCallback, useState } from 'react';
-import { ColorPickerContent } from './color-picker';
+
 import { useColorUpdate } from '../hooks/use-color-update';
+import { ColorPickerContent } from './color-picker';
 
 interface InputColorProps {
     color: string;
@@ -63,7 +65,7 @@ export const InputColor = ({ color, elementStyleKey, onColorChange }: InputColor
                     </PopoverContent>
                 </Popover>
             </div>
-            <div className="text-xs text-white bg-background-tertiary/50 flex h-full items-center rounded-r-md px-3 py-1.5">
+            <div className="bg-background-tertiary/50 flex h-full items-center rounded-r-md px-3 py-1.5 text-xs text-white">
                 {Math.round(tempColor.rgb.a * 100).toString()}%
             </div>
         </div>

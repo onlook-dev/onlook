@@ -1,20 +1,22 @@
 'use client';
 
-import { getFileUrlFromStorage } from '@/utils/supabase/client';
-import { STORAGE_BUCKETS } from '@onlook/constants';
-import type { Project } from '@onlook/models';
-import { timeAgo } from '@onlook/utility';
-import { motion } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'motion/react';
+
+import type { Project } from '@onlook/models';
+import { STORAGE_BUCKETS } from '@onlook/constants';
+import { timeAgo } from '@onlook/utility';
+
+import { getFileUrlFromStorage } from '@/utils/supabase/client';
 import { EditAppButton } from '../edit-app';
 import { SettingsDropdown } from '../settings';
 
 export function ProjectCard({
     project,
     refetch,
-    aspectRatio = "aspect-[4/2.6]",
-    searchQuery = "",
-    HighlightText
+    aspectRatio = 'aspect-[4/2.6]',
+    searchQuery = '',
+    HighlightText,
 }: {
     project: Project;
     refetch: () => void;
@@ -43,7 +45,10 @@ export function ProjectCard({
         };
     }, [project.metadata?.previewImg]);
 
-    const lastUpdated = useMemo(() => timeAgo(project.metadata.updatedAt), [project.metadata.updatedAt]);
+    const lastUpdated = useMemo(
+        () => timeAgo(project.metadata.updatedAt),
+        [project.metadata.updatedAt],
+    );
 
     return (
         <motion.div
@@ -51,52 +56,66 @@ export function ProjectCard({
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ y: -4 }}
             transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-            className="w-full break-inside-avoid cursor-pointer"
+            className="w-full cursor-pointer break-inside-avoid"
         >
-            <div className={`relative ${aspectRatio} rounded-lg overflow-hidden shadow-sm hover:shadow-xl hover:shadow-black/20 transition-all duration-300 group`}>
+            <div
+                className={`relative ${aspectRatio} group overflow-hidden rounded-lg shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-black/20`}
+            >
                 {img ? (
-                    <img src={img} alt={project.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                    <img
+                        src={img}
+                        alt={project.name}
+                        className="absolute inset-0 h-full w-full object-cover"
+                        loading="lazy"
+                    />
                 ) : (
                     <>
-                        <div className="absolute inset-0 w-full h-full bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40" />
-                        <div className="absolute inset-0 rounded-lg border-[0.5px] border-gray-500/70" style={{ maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)' }} />
+                        <div className="absolute inset-0 h-full w-full bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40" />
+                        <div
+                            className="absolute inset-0 rounded-lg border-[0.5px] border-gray-500/70"
+                            style={{
+                                maskImage:
+                                    'linear-gradient(to bottom, black 60%, transparent 100%)',
+                            }}
+                        />
                     </>
                 )}
 
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute inset-0 bg-black/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent" />
 
-                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30">
+                <div className="absolute top-3 right-3 z-30 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                     <SettingsDropdown project={project} refetch={refetch} />
                 </div>
 
-                <div className="absolute inset-0 flex items-center justify-center bg-background/30 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto z-20">
-                    <EditAppButton
-                        project={project}
-                    />
+                <div className="bg-background/30 pointer-events-none absolute inset-0 z-20 flex items-center justify-center opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
+                    <EditAppButton project={project} />
                 </div>
 
                 <div
-                    className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background/20 to-transparent p-4 h-32 transition-all duration-300 group-hover:from-background group-hover:via-background/40"
-                    style={{ bottom: "-1px", left: "-1px", right: "-1px" }}
+                    className="from-background via-background/20 group-hover:from-background group-hover:via-background/40 absolute right-0 bottom-0 left-0 h-32 bg-gradient-to-t to-transparent p-4 transition-all duration-300"
+                    style={{ bottom: '-1px', left: '-1px', right: '-1px' }}
                 >
-                    <div className="flex justify-between items-end h-full">
+                    <div className="flex h-full items-end justify-between">
                         <div>
-                            <div className="text-white font-medium text-base mb-1 truncate drop-shadow-lg">
+                            <div className="mb-1 truncate text-base font-medium text-white drop-shadow-lg">
                                 {HighlightText ? (
                                     <HighlightText text={project.name} searchQuery={searchQuery} />
                                 ) : (
                                     project.name
                                 )}
                             </div>
-                            <div className="text-white/70 text-xs mb-1 drop-shadow-lg flex items-center">
+                            <div className="mb-1 flex items-center text-xs text-white/70 drop-shadow-lg">
                                 <span>{lastUpdated} ago</span>
                             </div>
                             {SHOW_DESCRIPTION && project.metadata?.description && (
-                                <div className="text-white/60 text-xs line-clamp-1 drop-shadow-lg">
+                                <div className="line-clamp-1 text-xs text-white/60 drop-shadow-lg">
                                     {HighlightText ? (
-                                        <HighlightText text={project.metadata.description} searchQuery={searchQuery} />
+                                        <HighlightText
+                                            text={project.metadata.description}
+                                            searchQuery={searchQuery}
+                                        />
                                     ) : (
                                         project.metadata.description
                                     )}

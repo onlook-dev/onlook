@@ -1,8 +1,8 @@
-import { type Deployment, type DrizzleDb } from '@onlook/db';
-import {
-    DeploymentStatus
-} from '@onlook/models';
 import { TRPCError } from '@trpc/server';
+
+import type { Deployment, DrizzleDb } from '@onlook/db';
+import { DeploymentStatus } from '@onlook/models';
+
 import { deployFreestyle } from './deploy';
 import { updateDeployment } from './helpers';
 
@@ -45,4 +45,4 @@ export const unpublish = async (db: DrizzleDb, deployment: Deployment, urls: str
         });
         throw error;
     }
-}
+};

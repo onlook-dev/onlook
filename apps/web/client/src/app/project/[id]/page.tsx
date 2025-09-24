@@ -27,8 +27,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     } catch (error) {
         console.error('Failed to load project data:', error);
         return (
-            <div className="h-screen w-screen flex items-center justify-center">
-                <div>Failed to load project: {error instanceof Error ? error.message : 'Unknown error'}</div>
+            <div className="flex h-screen w-screen items-center justify-center">
+                <div>
+                    Failed to load project:{' '}
+                    {error instanceof Error ? error.message : 'Unknown error'}
+                </div>
             </div>
         );
     }

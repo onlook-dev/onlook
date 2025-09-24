@@ -1,9 +1,11 @@
 // import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
-import { useEditorEngine } from '@/components/store/editor';
+import { observer } from 'mobx-react-lite';
+
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { observer } from 'mobx-react-lite';
+
+import { useEditorEngine } from '@/components/store/editor';
 
 export const ChatControls = observer(() => {
     const editorEngine = useEditorEngine();
@@ -22,7 +24,7 @@ export const ChatControls = observer(() => {
                     <Button
                         variant={'ghost'}
                         size={'icon'}
-                        className="p-2 w-fit h-fit hover:bg-background-onlook cursor-pointer"
+                        className="hover:bg-background-onlook h-fit w-fit cursor-pointer p-2"
                         onClick={handleNewChat}
                         disabled={editorEngine.chat.isStreaming || isStartingNewConversation}
                     >

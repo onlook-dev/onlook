@@ -1,6 +1,8 @@
-import type { EditorEngine } from '@/components/store/editor/engine';
-import { toast } from '@onlook/ui/sonner';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { toast } from '@onlook/ui/sonner';
+
+import type { EditorEngine } from '@/components/store/editor/engine';
 
 export enum ImageFit {
     FILL = 'fill',
@@ -85,27 +87,24 @@ export const useBackgroundImage = (editorEngine: EditorEngine) => {
         editorEngine.style.selectedStyle?.styles.computed.backgroundRepeat,
     ]);
 
-    const applyFillOption = useCallback(
-        (fillOptionValue: ImageFit) => {
-            try {
-                const selected = editorEngine.elements.selected;
+    const applyFillOption = useCallback((fillOptionValue: ImageFit) => {
+        try {
+            const selected = editorEngine.elements.selected;
 
-                if (!selected || selected.length === 0) {
-                    console.warn('No elements selected to apply fill option');
-                    return;
-                }
-
-                const cssStyles = FitToStyle[fillOptionValue];
-                editorEngine.style.updateMultiple(cssStyles);
-            } catch (error) {
-                console.error('Failed to apply fill option:', error);
-                toast.error('Failed to apply fill option', {
-                    description: error instanceof Error ? error.message : String(error),
-                });
+            if (!selected || selected.length === 0) {
+                console.warn('No elements selected to apply fill option');
+                return;
             }
-        },
-        [],
-    );
+
+            const cssStyles = FitToStyle[fillOptionValue];
+            editorEngine.style.updateMultiple(cssStyles);
+        } catch (error) {
+            console.error('Failed to apply fill option:', error);
+            toast.error('Failed to apply fill option', {
+                description: error instanceof Error ? error.message : String(error),
+            });
+        }
+    }, []);
 
     const handleFillOptionChange = useCallback(
         (option: ImageFit) => {

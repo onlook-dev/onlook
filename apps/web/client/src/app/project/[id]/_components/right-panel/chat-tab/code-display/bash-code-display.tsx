@@ -1,9 +1,11 @@
-import { useEditorEngine } from '@/components/store/editor';
+import { useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import stripAnsi from 'strip-ansi';
+
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
-import stripAnsi from 'strip-ansi';
+
+import { useEditorEngine } from '@/components/store/editor';
 
 const formatCommandOutput = (output: string | null) => {
     if (output === null) {
@@ -18,7 +20,7 @@ const formatCommandOutput = (output: string | null) => {
         // Add appropriate styling based on line content
         if (cleanLine.includes('installed')) {
             return (
-                <div key={index} className="text-green-400 flex items-center gap-2">
+                <div key={index} className="flex items-center gap-2 text-green-400">
                     <Icons.Check className="h-4 w-4" />
                     <span>{cleanLine}</span>
                 </div>
@@ -27,7 +29,7 @@ const formatCommandOutput = (output: string | null) => {
 
         if (cleanLine.includes('error') || cleanLine.includes('Error')) {
             return (
-                <div key={index} className="text-red-400 flex items-center gap-2">
+                <div key={index} className="flex items-center gap-2 text-red-400">
                     <Icons.CrossCircled className="h-4 w-4" />
                     <span>{cleanLine}</span>
                 </div>
@@ -36,7 +38,7 @@ const formatCommandOutput = (output: string | null) => {
 
         if (cleanLine.includes('warning') || cleanLine.includes('Warning')) {
             return (
-                <div key={index} className="text-yellow-400 flex items-center gap-2">
+                <div key={index} className="flex items-center gap-2 text-yellow-400">
                     <Icons.ExclamationTriangle className="h-4 w-4" />
                     <span>{cleanLine}</span>
                 </div>
@@ -45,7 +47,7 @@ const formatCommandOutput = (output: string | null) => {
 
         if (cleanLine.includes('$')) {
             return (
-                <div key={index} className="text-blue-400 flex items-center gap-2">
+                <div key={index} className="flex items-center gap-2 text-blue-400">
                     <Icons.Terminal className="h-4 w-4" />
                     <span>{cleanLine}</span>
                 </div>
@@ -53,12 +55,26 @@ const formatCommandOutput = (output: string | null) => {
         }
 
         // Default styling for other lines
-        return <div key={index} className="text-foreground-secondary">{cleanLine}</div>;
+        return (
+            <div key={index} className="text-foreground-secondary">
+                {cleanLine}
+            </div>
+        );
     });
 };
 
 export const BashCodeDisplay = observer(
-    ({ content, defaultStdOut, defaultStdErr, isStream }: { content: string; defaultStdOut: string | null; defaultStdErr: string | null; isStream: boolean }) => {
+    ({
+        content,
+        defaultStdOut,
+        defaultStdErr,
+        isStream,
+    }: {
+        content: string;
+        defaultStdOut: string | null;
+        defaultStdErr: string | null;
+        isStream: boolean;
+    }) => {
         const editorEngine = useEditorEngine();
         const [running, setRunning] = useState(false);
         const [stdOut, setStdOut] = useState<string | null>(defaultStdOut);
@@ -70,7 +86,10 @@ export const BashCodeDisplay = observer(
             setStdErr(null);
 
             try {
-                const result = await editorEngine.activeSandbox.session.runCommand(content, setStdOut);
+                const result = await editorEngine.activeSandbox.session.runCommand(
+                    content,
+                    setStdOut,
+                );
 
                 if (!result) {
                     setStdErr('Failed to execute command: No session available');
@@ -90,23 +109,24 @@ export const BashCodeDisplay = observer(
         };
 
         return (
-            <div className="flex flex-col border rounded-lg bg-background w-full text-foreground">
-                <div className="flex flex-col w-full h-full">
-                    <div className="relative flex p-4 text-xs w-full overflow-auto bg-background-secondary">
+            <div className="bg-background text-foreground flex w-full flex-col rounded-lg border">
+                <div className="flex h-full w-full flex-col">
+                    <div className="bg-background-secondary relative flex w-full overflow-auto p-4 text-xs">
                         <code className="whitespace-pre">
-                            <span className="text-foreground-secondary select-none mr-2">$</span>
-                            {content}</code>
+                            <span className="text-foreground-secondary mr-2 select-none">$</span>
+                            {content}
+                        </code>
                     </div>
                     {(stdOut !== null || stdErr !== null) && (
-                        <div className="w-full h-[1px] bg-foreground-secondary/30"></div>
+                        <div className="bg-foreground-secondary/30 h-[1px] w-full"></div>
                     )}
                     {stdOut !== null && (
-                        <code className="px-4 py-2 text-xs w-full max-h-48 overflow-auto bg-background-secondary whitespace-pre font-mono space-y-1">
+                        <code className="bg-background-secondary max-h-48 w-full space-y-1 overflow-auto px-4 py-2 font-mono text-xs whitespace-pre">
                             {formatCommandOutput(stdOut)}
                         </code>
                     )}
                     {stdErr !== null && (
-                        <code className="px-4 py-2 text-xs w-full max-h-48 overflow-auto bg-background-secondary text-red-500 whitespace-pre font-mono">
+                        <code className="bg-background-secondary max-h-48 w-full overflow-auto px-4 py-2 font-mono text-xs whitespace-pre text-red-500">
                             {formatCommandOutput(stdErr)}
                         </code>
                     )}
@@ -116,7 +136,7 @@ export const BashCodeDisplay = observer(
                     {stdOut !== null ? (
                         <Button
                             size={'sm'}
-                            className="flex flex-grow rounded-none gap-2 px-1 bg-foreground/10 text-foreground group-hover:bg-foreground/20 group-hover:text-foreground-secondary transition-none"
+                            className="bg-foreground/10 text-foreground group-hover:bg-foreground/20 group-hover:text-foreground-secondary flex flex-grow gap-2 rounded-none px-1 transition-none"
                             variant={'ghost'}
                             onClick={runCommand}
                             disabled={running || isStream}
@@ -131,7 +151,7 @@ export const BashCodeDisplay = observer(
                     ) : (
                         <Button
                             size={'sm'}
-                            className="group flex flex-grow rounded-none gap-2 px-1 bg-teal-400/20 text-teal-200 hover:bg-teal-400/40 hover:text-teal-100"
+                            className="group flex flex-grow gap-2 rounded-none bg-teal-400/20 px-1 text-teal-200 hover:bg-teal-400/40 hover:text-teal-100"
                             variant={'ghost'}
                             onClick={runCommand}
                             disabled={running || isStream}
@@ -139,7 +159,7 @@ export const BashCodeDisplay = observer(
                             {running ? (
                                 <Icons.LoadingSpinner className="animate-spin" />
                             ) : (
-                                <Icons.Play className="text-teal-300 group-hover:text-teal-100 transition-none" />
+                                <Icons.Play className="text-teal-300 transition-none group-hover:text-teal-100" />
                             )}
                             Run command
                         </Button>

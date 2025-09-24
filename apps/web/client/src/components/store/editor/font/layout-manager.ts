@@ -1,3 +1,8 @@
+import { camelCase } from 'lodash';
+import { makeAutoObservable } from 'mobx';
+
+import type { CodeDiff, Font } from '@onlook/models';
+import type { T } from '@onlook/parser';
 import {
     addFontImportToFile,
     createStringLiteralWithFont,
@@ -8,10 +13,8 @@ import {
     updateClassNameWithFontVar,
     updateTemplateLiteralWithFontClass,
 } from '@onlook/fonts';
-import type { CodeDiff, Font } from '@onlook/models';
-import { generate, getAstFromContent, t, type T, traverse } from '@onlook/parser';
-import { camelCase } from 'lodash';
-import { makeAutoObservable } from 'mobx';
+import { generate, getAstFromContent, t, traverse } from '@onlook/parser';
+
 import type { EditorEngine } from '../engine';
 import { normalizePath } from '../sandbox/helpers';
 

@@ -1,5 +1,7 @@
-import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
+
+import { Separator } from '@onlook/ui/separator';
+
 import { CustomDomain } from './custom';
 import { DangerZone } from './danger-zone';
 import { PreviewDomain } from './preview';

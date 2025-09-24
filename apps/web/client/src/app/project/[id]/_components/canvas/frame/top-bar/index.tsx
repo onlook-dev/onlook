@@ -1,11 +1,13 @@
-import { useEditorEngine } from '@/components/store/editor';
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { observer } from 'mobx-react-lite';
+
 import type { Frame } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
-import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { HoverOnlyTooltip } from '../../../editor-bar/hover-tooltip';
 import { BranchDisplay } from './branch';
 import { createMouseMoveHandler } from './helpers';
@@ -59,16 +61,16 @@ export const TopBar = observer(
             mouseDownRef.current = {
                 x: e.clientX,
                 y: e.clientY,
-                time: Date.now()
+                time: Date.now(),
             };
 
-            const selectedFrames = editorEngine.frames.selected.map(frameData => frameData.frame);
+            const selectedFrames = editorEngine.frames.selected.map((frameData) => frameData.frame);
             const framesToMove = selectedFrames.length > 0 ? selectedFrames : [frame];
 
             createMouseMoveHandler(e, {
                 editorEngine,
                 selectedFrames: framesToMove,
-                clearElements
+                clearElements,
             });
         };
 
@@ -97,8 +99,8 @@ export const TopBar = observer(
             const currentTime = Date.now();
             const timeDiff = currentTime - mouseDownRef.current.time;
             const distance = Math.sqrt(
-                Math.pow(e.clientX - mouseDownRef.current.x, 2) + 
-                Math.pow(e.clientY - mouseDownRef.current.y, 2)
+                Math.pow(e.clientX - mouseDownRef.current.x, 2) +
+                    Math.pow(e.clientY - mouseDownRef.current.y, 2),
             );
 
             // Don't register click if it was a long hold (>200ms) or significant movement (>5px)
@@ -115,9 +117,9 @@ export const TopBar = observer(
             <div
                 ref={topBarRef}
                 className={cn(
-                    'bg-blend-multiply hover:shadow m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
-                    isSelected && 'text-teal-400 fill-teal-400',
-                    !isSelected && isInDragSelection && 'text-teal-500 fill-teal-500',
+                    'border-input text-foreground-secondary group-hover:text-foreground relative m-auto flex cursor-grab flex-row items-center overflow-hidden bg-blend-multiply shadow-sm backdrop-blur-lg hover:shadow active:cursor-grabbing',
+                    isSelected && 'fill-teal-400 text-teal-400',
+                    !isSelected && isInDragSelection && 'fill-teal-500 text-teal-500',
                 )}
                 style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.04)',
@@ -147,7 +149,7 @@ export const TopBar = observer(
                             variant="ghost"
                             size="sm"
                             className={cn(
-                                'cursor-pointer rounded-lg h-auto px-1 py-1 hover:!bg-transparent focus:!bg-transparent active:!bg-transparent',
+                                'h-auto cursor-pointer rounded-lg px-1 py-1 hover:!bg-transparent focus:!bg-transparent active:!bg-transparent',
                                 !editorEngine.frames.navigation.canGoBack(frame.id) && 'hidden',
                                 !isSelected && 'hidden',
                             )}
@@ -162,7 +164,7 @@ export const TopBar = observer(
                             variant="ghost"
                             size="sm"
                             className={cn(
-                                'cursor-pointer rounded-lg h-auto px-1 py-1 hover:!bg-transparent focus:!bg-transparent active:!bg-transparent',
+                                'h-auto cursor-pointer rounded-lg px-1 py-1 hover:!bg-transparent focus:!bg-transparent active:!bg-transparent',
                                 !editorEngine.frames.navigation.canGoForward(frame.id) && 'hidden',
                                 !isSelected && 'hidden',
                             )}
@@ -177,7 +179,7 @@ export const TopBar = observer(
                             variant="ghost"
                             size="sm"
                             className={cn(
-                                'cursor-pointer rounded-lg h-auto hover:!bg-transparent focus:!bg-transparent active:!bg-transparent',
+                                'h-auto cursor-pointer rounded-lg hover:!bg-transparent focus:!bg-transparent active:!bg-transparent',
                                 !isSelected && 'hidden',
                             )}
                             onClick={handleReload}
@@ -186,13 +188,25 @@ export const TopBar = observer(
                         </Button>
                     </HoverOnlyTooltip>
                     <BranchDisplay frame={frame} />
-                    <span className={cn("ml-1.25 mb-0.5", isSelected ? "text-teal-700" : "text-foreground-secondary/50")}>·</span>
+                    <span
+                        className={cn(
+                            'mb-0.5 ml-1.25',
+                            isSelected ? 'text-teal-700' : 'text-foreground-secondary/50',
+                        )}
+                    >
+                        ·
+                    </span>
                     <PageSelector frame={frame} />
                 </div>
-                <HoverOnlyTooltip content="Preview in new tab" side="top" hideArrow className="mb-1">
+                <HoverOnlyTooltip
+                    content="Preview in new tab"
+                    side="top"
+                    hideArrow
+                    className="mb-1"
+                >
                     <Link
                         className={cn(
-                            'absolute right-1 top-1/2 -translate-y-1/2 transition-opacity duration-300',
+                            'absolute top-1/2 right-1 -translate-y-1/2 transition-opacity duration-300',
                         )}
                         href={frame.url.replace(/\[([^\]]+)\]/g, 'temp-$1')} // Dynamic routes are not supported so we replace them with a temporary value
                         target="_blank"
@@ -203,11 +217,16 @@ export const TopBar = observer(
                             pointerEvents: shouldShowExternalLink ? 'auto' : 'none',
                         }}
                     >
-                        <Button variant="ghost" size="icon" className="rounded-lg hover:!bg-transparent focus:!bg-transparent active:!bg-transparent">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="rounded-lg hover:!bg-transparent focus:!bg-transparent active:!bg-transparent"
+                        >
                             <Icons.ExternalLink />
                         </Button>
                     </Link>
                 </HoverOnlyTooltip>
             </div>
         );
-    });
+    },
+);

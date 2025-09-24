@@ -1,5 +1,7 @@
+import type { ReactNode } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+
 import { useImageDelete } from '../hooks/use-image-delete';
 import { useImageMove } from '../hooks/use-image-move';
 import { useImageRename } from '../hooks/use-image-rename';
@@ -41,7 +43,12 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
             uploadOperations.uploadState.error ??
             moveOperations.moveState.error
         );
-    }, [deleteOperations.deleteState.error, renameOperations.renameState.error, uploadOperations.uploadState.error, moveOperations.moveState.error]);
+    }, [
+        deleteOperations.deleteState.error,
+        renameOperations.renameState.error,
+        uploadOperations.uploadState.error,
+        moveOperations.moveState.error,
+    ]);
 
     const value: ImagesContextValue = {
         isOperating,
@@ -49,7 +56,7 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
         renameOperations,
         uploadOperations,
         moveOperations,
-        error
+        error,
     };
 
     return <ImagesContext.Provider value={value}>{children}</ImagesContext.Provider>;

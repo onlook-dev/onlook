@@ -1,14 +1,17 @@
 'use client';
 
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useChat as useAiChat } from '@ai-sdk/react';
+import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
+import { usePostHog } from 'posthog-js/react';
+
+import type { ChatMessage, ChatSuggestion } from '@onlook/models';
+import { ChatType } from '@onlook/models';
+import { jsonClone } from '@onlook/utility';
+
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { api } from '@/trpc/client';
-import { useChat as useAiChat } from '@ai-sdk/react';
-import { ChatType, type ChatMessage, type ChatSuggestion } from '@onlook/models';
-import { jsonClone } from '@onlook/utility';
-import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
-import { usePostHog } from 'posthog-js/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     attachCommitToUserMessage,
     getUserChatMessageFromString,
@@ -120,7 +123,8 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
 
             // For resubmitted messages, we want to keep the previous context and refresh if possible
             const previousContext = message.metadata?.context ?? [];
-            const updatedContext = await editorEngine.chat.context.getRefreshedContext(previousContext);
+            const updatedContext =
+                await editorEngine.chat.context.getRefreshedContext(previousContext);
 
             message.metadata = {
                 ...message.metadata,

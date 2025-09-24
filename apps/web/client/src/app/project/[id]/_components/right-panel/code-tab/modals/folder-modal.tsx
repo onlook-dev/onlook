@@ -1,4 +1,7 @@
-import { useEditorEngine } from '@/components/store/editor';
+import path from 'path';
+import { useEffect, useMemo, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
 import { Button } from '@onlook/ui/button';
 import {
     Dialog,
@@ -11,24 +14,16 @@ import {
 import { Input } from '@onlook/ui/input';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
-import path from 'path';
-import { useEffect, useMemo, useState } from 'react';
-import {
-    createFolderInSandbox,
-    doesFolderExist,
-    validateFolderName,
-} from '../file-operations';
+
+import { useEditorEngine } from '@/components/store/editor';
+import { createFolderInSandbox, doesFolderExist, validateFolderName } from '../file-operations';
 
 interface FolderModalProps {
     basePath: string;
     onSuccess?: () => void;
 }
 
-export const FolderModal = observer(({
-    basePath,
-    onSuccess,
-}: FolderModalProps) => {
+export const FolderModal = observer(({ basePath, onSuccess }: FolderModalProps) => {
     const editorEngine = useEditorEngine();
     const files = editorEngine.activeSandbox.files;
     const open = editorEngine.ide.folderModalOpen;
@@ -78,7 +73,11 @@ export const FolderModal = observer(({
         try {
             setIsLoading(true);
 
-            await createFolderInSandbox(editorEngine.activeSandbox.session.provider, fullPath, editorEngine.activeSandbox);
+            await createFolderInSandbox(
+                editorEngine.activeSandbox.session.provider,
+                fullPath,
+                editorEngine.activeSandbox,
+            );
             toast(`Folder "${name}" created successfully!`);
 
             setName('');
@@ -96,13 +95,13 @@ export const FolderModal = observer(({
     const displayPath = basePath === '' ? '/' : `/${basePath}`;
 
     return (
-        <Dialog open={open} onOpenChange={(isOpen) => editorEngine.ide.folderModalOpen = isOpen}>
+        <Dialog open={open} onOpenChange={(isOpen) => (editorEngine.ide.folderModalOpen = isOpen)}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Create New Folder</DialogTitle>
                     <DialogDescription>
                         Create a new folder in{' '}
-                        <code className="bg-background-secondary px-1 py-0.5 rounded text-xs">
+                        <code className="bg-background-secondary rounded px-1 py-0.5 text-xs">
                             {displayPath}
                         </code>
                     </DialogDescription>
@@ -128,13 +127,16 @@ export const FolderModal = observer(({
                             onCompositionEnd={() => setIsComposing(false)}
                         />
                         {warning && (
-                            <p className="text-sm text-yellow-300 flex items-center gap-2">
+                            <p className="flex items-center gap-2 text-sm text-yellow-300">
                                 {warning}
                             </p>
                         )}
                         {fullPath && !warning && (
-                            <p className="text-sm text-muted-foreground">
-                                Full path: <code className="bg-background-secondary px-1 py-0.5 rounded text-xs">{fullPath}</code>
+                            <p className="text-muted-foreground text-sm">
+                                Full path:{' '}
+                                <code className="bg-background-secondary rounded px-1 py-0.5 text-xs">
+                                    {fullPath}
+                                </code>
                             </p>
                         )}
                     </div>
@@ -143,7 +145,7 @@ export const FolderModal = observer(({
                 <DialogFooter>
                     <Button
                         variant="ghost"
-                        onClick={() => editorEngine.ide.folderModalOpen = false}
+                        onClick={() => (editorEngine.ide.folderModalOpen = false)}
                         disabled={isLoading}
                     >
                         Cancel
@@ -159,4 +161,4 @@ export const FolderModal = observer(({
             </DialogContent>
         </Dialog>
     );
-}); 
+});

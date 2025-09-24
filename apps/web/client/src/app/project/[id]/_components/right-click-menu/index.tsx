@@ -1,8 +1,8 @@
-import { Hotkey } from '@/components/hotkey';
-import { IDE } from '@/components/ide';
-import { useEditorEngine } from '@/components/store/editor';
-import { EditorTabValue } from '@onlook/models/editor';
+import { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
 import type { DomElement } from '@onlook/models/element';
+import { EditorTabValue } from '@onlook/models/editor';
 import { DEFAULT_IDE } from '@onlook/models/ide';
 import {
     ContextMenu,
@@ -14,8 +14,10 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Kbd } from '@onlook/ui/kbd';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+
+import { Hotkey } from '@/components/hotkey';
+import { IDE } from '@/components/ide';
+import { useEditorEngine } from '@/components/store/editor';
 
 interface RightClickMenuProps {
     children: React.ReactNode;
@@ -193,7 +195,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     return (
         <ContextMenu>
             <ContextMenuTrigger>{children}</ContextMenuTrigger>
-            <ContextMenuContent className="w-64 bg-background/95 backdrop-blur-lg">
+            <ContextMenuContent className="bg-background/95 w-64 backdrop-blur-lg">
                 {menuItems.map((group, groupIndex) => (
                     <div key={groupIndex}>
                         {group.map((item) => (

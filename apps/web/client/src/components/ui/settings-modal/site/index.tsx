@@ -1,12 +1,14 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { api } from '@/trpc/react';
+import { useMemo, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
+import type { PageMetadata } from '@onlook/models';
 import { DefaultSettings } from '@onlook/constants';
-import { type PageMetadata } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { createSecureUrl } from '@onlook/utility';
-import { observer } from 'mobx-react-lite';
-import { useMemo, useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
+import { api } from '@/trpc/react';
 import { MetadataForm } from './metadata-form';
 import { useMetadataForm } from './use-metadata-form';
 
@@ -51,7 +53,10 @@ export const SiteTab = observer(() => {
         try {
             const url = createSecureUrl(baseUrl);
             const finalTitle = getFinalTitleMetadata();
-            const siteTitle = typeof finalTitle === 'string' ? finalTitle : finalTitle.absolute ?? finalTitle.default ?? '';
+            const siteTitle =
+                typeof finalTitle === 'string'
+                    ? finalTitle
+                    : (finalTitle.absolute ?? finalTitle.default ?? '');
 
             const updatedMetadata: PageMetadata = {
                 ...(homePage?.metadata ?? {}),
@@ -130,8 +135,8 @@ export const SiteTab = observer(() => {
             </div>
             <div className="relative">
                 {editorEngine.pages.isScanning ? (
-                    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center">
-                        <div className="flex items-center gap-3 text-foreground-secondary">
+                    <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm">
+                        <div className="text-foreground-secondary flex items-center gap-3">
                             <Icons.LoadingSpinner className="h-5 w-5 animate-spin" />
                             <span className="text-sm">Fetching metadata...</span>
                         </div>

@@ -1,7 +1,9 @@
-import { useEditorEngine } from '@/components/store/editor';
-import type { FrameData } from '@/components/store/editor/frames';
-import { Icons } from '@onlook/ui/icons';
 import { useState } from 'react';
+
+import { Icons } from '@onlook/ui/icons';
+
+import type { FrameData } from '@/components/store/editor/frames';
+import { useEditorEngine } from '@/components/store/editor';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { ToolbarButton } from '../toolbar-button';
 
@@ -40,32 +42,32 @@ export function WindowActionsGroup({ frameData }: { frameData: FrameData }) {
         <>
             <HoverOnlyTooltip content="Duplicate Frame" side="bottom" sideOffset={10}>
                 <ToolbarButton
-                    className="flex items-center w-9"
+                    className="flex w-9 items-center"
                     onClick={duplicateWindow}
                     disabled={isDuplicating}
                 >
                     {isDuplicating ? (
-                        <Icons.LoadingSpinner className="size-4 min-size-4 animate-spin" />
+                        <Icons.LoadingSpinner className="min-size-4 size-4 animate-spin" />
                     ) : (
-                        <Icons.Copy className="size-4 min-size-4" />
+                        <Icons.Copy className="min-size-4 size-4" />
                     )}
                 </ToolbarButton>
             </HoverOnlyTooltip>
             {editorEngine.frames.canDelete() && (
                 <HoverOnlyTooltip content="Delete Frame" side="bottom" sideOffset={10}>
                     <ToolbarButton
-                        className="flex items-center w-9"
+                        className="flex w-9 items-center"
                         disabled={!editorEngine.frames.canDelete() || isDeleting}
                         onClick={deleteWindow}
                     >
                         {isDeleting ? (
-                            <Icons.LoadingSpinner className="size-4 min-size-4 animate-spin" />
+                            <Icons.LoadingSpinner className="min-size-4 size-4 animate-spin" />
                         ) : (
-                            <Icons.Trash className="size-4 min-size-4" />
+                            <Icons.Trash className="min-size-4 size-4" />
                         )}
                     </ToolbarButton>
                 </HoverOnlyTooltip>
             )}
         </>
     );
-} 
+}

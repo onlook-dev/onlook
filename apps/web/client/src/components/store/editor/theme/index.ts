@@ -1,5 +1,6 @@
+import { camelCase } from 'lodash';
+import { makeAutoObservable } from 'mobx';
 
-import { DEFAULT_COLOR_NAME, TAILWIND_WEB_COLORS } from '@onlook/constants';
 import type {
     ClassReplacement,
     ColorUpdate,
@@ -8,9 +9,10 @@ import type {
     ThemeColors,
     UpdateResult,
 } from '@onlook/models/assets';
-import { SystemTheme } from '@onlook/models/assets';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import type { TailwindColor } from '@onlook/models/style';
+import { DEFAULT_COLOR_NAME, TAILWIND_WEB_COLORS } from '@onlook/constants';
+import { SystemTheme } from '@onlook/models/assets';
 import {
     generate,
     getAstFromContent,
@@ -18,12 +20,11 @@ import {
     isColorsObjectProperty,
     isObjectExpression,
     transformAst,
-    traverse
+    traverse,
 } from '@onlook/parser';
 import { getOidFromJsxElement } from '@onlook/parser/src/code-edit/helpers';
 import { Color } from '@onlook/utility';
-import { camelCase } from 'lodash';
-import { makeAutoObservable } from 'mobx';
+
 import type { EditorEngine } from '../engine';
 import {
     addTailwindCssVariable,
@@ -47,9 +48,7 @@ export class ThemeManager {
     private configPath: string | null = null;
     private cssPath: string | null = null;
 
-    constructor(
-        private editorEngine: EditorEngine,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
@@ -248,7 +247,8 @@ export class ThemeManager {
         Object.keys(TAILWIND_WEB_COLORS)
             .filter((colorName) => !excludedColors.includes(colorName))
             .forEach((colorName) => {
-                const defaultColorScale = TAILWIND_WEB_COLORS[colorName as keyof typeof TAILWIND_WEB_COLORS];
+                const defaultColorScale =
+                    TAILWIND_WEB_COLORS[colorName as keyof typeof TAILWIND_WEB_COLORS];
 
                 if (typeof defaultColorScale !== 'object' || defaultColorScale === null) {
                     return;
@@ -342,7 +342,8 @@ export class ThemeManager {
             if (originalKey) {
                 const [parentKey, keyName] = originalKey.split('-');
 
-                const isDefaultColor = parentKey && TAILWIND_WEB_COLORS[parentKey as keyof typeof TAILWIND_WEB_COLORS];
+                const isDefaultColor =
+                    parentKey && TAILWIND_WEB_COLORS[parentKey as keyof typeof TAILWIND_WEB_COLORS];
                 if (isDefaultColor) {
                     const colorIndex = parseInt(keyName ?? '0') / 100;
 
@@ -414,7 +415,8 @@ export class ThemeManager {
                                 if (colorName) {
                                     // Delete specific color within group
                                     const colorIndex = groupProp.value.properties.findIndex(
-                                        (prop) => isValidTailwindConfigProperty(prop as any, colorName),
+                                        (prop) =>
+                                            isValidTailwindConfigProperty(prop as any, colorName),
                                     );
 
                                     if (colorIndex !== -1) {
@@ -691,8 +693,14 @@ export class ThemeManager {
 
             const configFile = await this.editorEngine.activeSandbox.readFile(configPath);
             const cssFile = await this.editorEngine.activeSandbox.readFile(cssPath);
-            const configContent = configFile && configFile.type === 'text' ? extractColorsFromTailwindConfig(configFile.content) : '';
-            const cssContent = cssFile && cssFile.type === 'text' ? extractTailwindCssVariables(cssFile.content) : '';
+            const configContent =
+                configFile && configFile.type === 'text'
+                    ? extractColorsFromTailwindConfig(configFile.content)
+                    : '';
+            const cssContent =
+                cssFile && cssFile.type === 'text'
+                    ? extractTailwindCssVariables(cssFile.content)
+                    : '';
             return {
                 configPath,
                 configContent,
@@ -1141,7 +1149,7 @@ export class ThemeManager {
 
     async updateClassReferences(replacements: ClassReplacement[]): Promise<void> {
         const sourceFiles = this.editorEngine.activeSandbox.listAllFiles();
-        const filesToUpdate = sourceFiles.filter((file) => file.endsWith('.tsx'))
+        const filesToUpdate = sourceFiles.filter((file) => file.endsWith('.tsx'));
 
         await Promise.all(
             filesToUpdate.map(async (file) => {

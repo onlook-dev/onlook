@@ -1,10 +1,12 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { api } from '@/trpc/react';
-import type { ChatSuggestion } from '@onlook/models';
-import { Icons } from '@onlook/ui/icons';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
-import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+
+import type { ChatSuggestion } from '@onlook/models';
+import { Icons } from '@onlook/ui/icons';
+
+import { useEditorEngine } from '@/components/store/editor';
+import { api } from '@/trpc/react';
 
 export interface SuggestionsRef {
     handleTabNavigation: (reverse: boolean) => boolean;
@@ -107,12 +109,7 @@ export const Suggestions = observer(
                                 ease: 'easeOut',
                             }}
                             key={suggestion.title}
-                            className="text-xs flex border border-blue-500/20 items-center gap-2 p-2 
-                                text-left text-blue-300 bg-blue-500/10 rounded-lg transition-all 
-                                relative hover:bg-blue-500/20 
-                                focus:outline-none focus:ring-2 focus:ring-blue-500 
-                                focus:border-blue-400/40 focus:bg-blue-500/30 
-                                focus:text-blue-200 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                            className="relative flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 p-2 text-left text-xs text-blue-300 transition-all hover:bg-blue-500/20 focus:border-blue-400/40 focus:bg-blue-500/30 focus:text-blue-200 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] focus:ring-2 focus:ring-blue-500 focus:outline-none"
                             onClick={() => setInput(suggestion.prompt)}
                             onFocus={() => {
                                 setFocusedIndex(index);
@@ -129,7 +126,7 @@ export const Suggestions = observer(
                                 }
                             }}
                         >
-                            <Icons.Lightbulb className="w-4 h-4 flex-shrink-0" />
+                            <Icons.Lightbulb className="h-4 w-4 flex-shrink-0" />
                             {suggestion.title}
                         </motion.button>
                     ))}

@@ -1,12 +1,10 @@
-import type { EditorEngine } from '@/components/store/editor/engine';
-import {
-    type Action,
-    type CodeDiffRequest,
-    type FileToRequests
-} from '@onlook/models';
+import { makeAutoObservable } from 'mobx';
+
+import type { Action, CodeDiffRequest, FileToRequests } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { assertNever } from '@onlook/utility';
-import { makeAutoObservable } from 'mobx';
+
+import type { EditorEngine } from '@/components/store/editor/engine';
 import {
     getEditTextRequests,
     getGroupRequests,
@@ -43,7 +41,10 @@ export class CodeManager {
             toast.error('Error writing requests', {
                 description: error instanceof Error ? error.message : 'Unknown error',
             });
-            this.editorEngine.branches.activeError.addCodeApplicationError(error instanceof Error ? error.message : 'Unknown error', action);
+            this.editorEngine.branches.activeError.addCodeApplicationError(
+                error instanceof Error ? error.message : 'Unknown error',
+                action,
+            );
         }
     }
 
@@ -106,5 +107,5 @@ export class CodeManager {
         return requestByFile;
     }
 
-    clear() { }
+    clear() {}
 }

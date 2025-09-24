@@ -1,14 +1,16 @@
-import type { CodeDiffRequest } from '@onlook/models/code';
-import { StyleChangeType, type StyleChange } from '@onlook/models/style';
-import { CssToTailwindTranslator, propertyMap } from '@onlook/utility';
 import { twMerge } from 'tailwind-merge';
+
+import type { CodeDiffRequest } from '@onlook/models/code';
+import type { StyleChange } from '@onlook/models/style';
+import { StyleChangeType } from '@onlook/models/style';
+import { CssToTailwindTranslator, propertyMap } from '@onlook/utility';
 
 export function addTailwindToRequest(
     request: CodeDiffRequest,
     styles: Record<string, StyleChange>,
 ): void {
     const newClasses = getTailwindClasses(request.oid, styles);
-    request.attributes['className'] = twMerge(request.attributes['className'] || '', newClasses);
+    request.attributes.className = twMerge(request.attributes.className || '', newClasses);
 }
 
 export function getTailwindClasses(oid: string, styles: Record<string, StyleChange>): string[] {
@@ -57,4 +59,3 @@ export function createCSSRuleString(oid: string, styles: Record<string, StyleCha
         .join(' ');
     return `${oid} { ${cssString} }`;
 }
-

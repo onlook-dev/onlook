@@ -1,22 +1,26 @@
-import { FREESTYLE_IP_ADDRESS } from '@onlook/constants';
-import { type CustomDomainVerification } from '@onlook/db';
-import { type AVerificationRecord } from '@onlook/models';
 import { promises as dns } from 'dns';
 import { parse } from 'tldts';
 
+import type { CustomDomainVerification } from '@onlook/db';
+import type { AVerificationRecord } from '@onlook/models';
+import { FREESTYLE_IP_ADDRESS } from '@onlook/constants';
+
 export const getARecords = (subdomain: string | null): AVerificationRecord[] => {
     if (!subdomain) {
-        return [{
-            type: 'A',
-            name: '@',
-            value: FREESTYLE_IP_ADDRESS,
-            verified: false,
-        }, {
-            type: 'A',
-            name: 'www',
-            value: FREESTYLE_IP_ADDRESS,
-            verified: false,
-        }];
+        return [
+            {
+                type: 'A',
+                name: '@',
+                value: FREESTYLE_IP_ADDRESS,
+                verified: false,
+            },
+            {
+                type: 'A',
+                name: 'www',
+                value: FREESTYLE_IP_ADDRESS,
+                verified: false,
+            },
+        ];
     }
 
     return [
@@ -27,12 +31,16 @@ export const getARecords = (subdomain: string | null): AVerificationRecord[] => 
             verified: false,
         },
     ];
-}
+};
 
 export const getFailureReason = async (verification: CustomDomainVerification): Promise<string> => {
     const errors: string[] = [];
     const txtRecord = verification.txtRecord;
-    const txtRecordResponse = await isTxtRecordPresent(verification.fullDomain, txtRecord.name, txtRecord.value);
+    const txtRecordResponse = await isTxtRecordPresent(
+        verification.fullDomain,
+        txtRecord.name,
+        txtRecord.value,
+    );
 
     if (!txtRecordResponse.isPresent) {
         let txtError = `TXT Record Missing:\n`;
@@ -41,7 +49,7 @@ export const getFailureReason = async (verification: CustomDomainVerification): 
         txtError += `        value: "${txtRecord.value}"\n`;
         if (txtRecordResponse.foundRecords.length > 0) {
             txtError += `    Found:\n`;
-            txtError += `        value: ${txtRecordResponse.foundRecords.map(record => `"${record}"`).join(', ')}`;
+            txtError += `        value: ${txtRecordResponse.foundRecords.map((record) => `"${record}"`).join(', ')}`;
         } else {
             txtError += `    Found: No TXT records`;
         }
@@ -70,7 +78,11 @@ export const getFailureReason = async (verification: CustomDomainVerification): 
     return errors.join('\n\n');
 };
 
-export async function isTxtRecordPresent(fullDomain: string, name: string, expectedValue: string): Promise<{
+export async function isTxtRecordPresent(
+    fullDomain: string,
+    name: string,
+    expectedValue: string,
+): Promise<{
     isPresent: boolean;
     foundRecords: string[];
 }> {
@@ -85,7 +97,7 @@ export async function isTxtRecordPresent(fullDomain: string, name: string, expec
 
         const domain = parsedDomain.domain ?? fullDomain;
         const records = await dns.resolveTxt(`${name}.${domain}`);
-        const foundRecords = records.map(entry => entry.join(''));
+        const foundRecords = records.map((entry) => entry.join(''));
         return {
             isPresent: foundRecords.includes(expectedValue),
             foundRecords,
@@ -98,7 +110,10 @@ export async function isTxtRecordPresent(fullDomain: string, name: string, expec
     }
 }
 
-export async function isARecordPresent(name: string, expectedIp: string): Promise<{
+export async function isARecordPresent(
+    name: string,
+    expectedIp: string,
+): Promise<{
     isPresent: boolean;
     foundRecords: string[];
 }> {
@@ -115,4 +130,3 @@ export async function isARecordPresent(name: string, expectedIp: string): Promis
         };
     }
 }
-

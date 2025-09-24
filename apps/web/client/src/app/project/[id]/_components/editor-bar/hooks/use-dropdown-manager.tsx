@@ -23,33 +23,39 @@ export const DropdownManagerProvider = ({ children }: DropdownManagerProviderPro
     const [dropdownCallbacks, setDropdownCallbacks] = useState<Map<string, () => void>>(new Map());
 
     const registerDropdown = useCallback((id: string, onClose: () => void) => {
-        setDropdownCallbacks(prev => new Map(prev).set(id, onClose));
+        setDropdownCallbacks((prev) => new Map(prev).set(id, onClose));
     }, []);
 
     const unregisterDropdown = useCallback((id: string) => {
-        setDropdownCallbacks(prev => {
+        setDropdownCallbacks((prev) => {
             const newMap = new Map(prev);
             newMap.delete(id);
             return newMap;
         });
     }, []);
 
-    const openDropdown = useCallback((id: string) => {
-        // Close the currently open dropdown if it's different
-        if (openDropdownId && openDropdownId !== id) {
-            const closeCallback = dropdownCallbacks.get(openDropdownId);
-            if (closeCallback) {
-                closeCallback();
+    const openDropdown = useCallback(
+        (id: string) => {
+            // Close the currently open dropdown if it's different
+            if (openDropdownId && openDropdownId !== id) {
+                const closeCallback = dropdownCallbacks.get(openDropdownId);
+                if (closeCallback) {
+                    closeCallback();
+                }
             }
-        }
-        setOpenDropdownId(id);
-    }, [openDropdownId, dropdownCallbacks]);
+            setOpenDropdownId(id);
+        },
+        [openDropdownId, dropdownCallbacks],
+    );
 
-    const closeDropdown = useCallback((id: string) => {
-        if (openDropdownId === id) {
-            setOpenDropdownId(null);
-        }
-    }, [openDropdownId]);
+    const closeDropdown = useCallback(
+        (id: string) => {
+            if (openDropdownId === id) {
+                setOpenDropdownId(null);
+            }
+        },
+        [openDropdownId],
+    );
 
     const closeAllDropdowns = useCallback(() => {
         if (openDropdownId) {
@@ -91,20 +97,28 @@ interface UseDropdownControlProps {
     isOverflow?: boolean;
 }
 
-export const useDropdownControl = ({ id, onOpenChange, isOverflow = false }: UseDropdownControlProps) => {
-    const { openDropdownId, registerDropdown, unregisterDropdown, openDropdown, closeDropdown } = useDropdownManager();
+export const useDropdownControl = ({
+    id,
+    onOpenChange,
+    isOverflow = false,
+}: UseDropdownControlProps) => {
+    const { openDropdownId, registerDropdown, unregisterDropdown, openDropdown, closeDropdown } =
+        useDropdownManager();
     const [isOpen, setIsOpen] = useState(false);
 
-    const handleOpenChange = useCallback((open: boolean) => {
-        if (open) {
-            openDropdown(id);
-            setIsOpen(true);
-        } else {
-            closeDropdown(id);
-            setIsOpen(false);
-        }
-        onOpenChange?.(open);
-    }, [id, openDropdown, closeDropdown, onOpenChange]);
+    const handleOpenChange = useCallback(
+        (open: boolean) => {
+            if (open) {
+                openDropdown(id);
+                setIsOpen(true);
+            } else {
+                closeDropdown(id);
+                setIsOpen(false);
+            }
+            onOpenChange?.(open);
+        },
+        [id, openDropdown, closeDropdown, onOpenChange],
+    );
 
     const onOpenChangeRef = useRef(onOpenChange);
     onOpenChangeRef.current = onOpenChange;
@@ -132,4 +146,4 @@ export const useDropdownControl = ({ id, onOpenChange, isOverflow = false }: Use
         isOpen,
         onOpenChange: handleOpenChange,
     };
-}; 
+};

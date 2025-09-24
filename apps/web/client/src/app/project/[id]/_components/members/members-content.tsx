@@ -1,6 +1,7 @@
+import { Icons } from '@onlook/ui/icons/index';
+
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
-import { Icons } from '@onlook/ui/icons/index';
 import { InvitationRow } from './invitation-row';
 import { InviteMemberInput } from './invite-member-input';
 import { MemberRow } from './member-row';
@@ -17,15 +18,17 @@ export const MembersContent = () => {
     });
 
     if (loadingMembers && loadingInvitations) {
-        return <div className="h-32 gap-2 p-3 text-muted-foreground text-sm flex items-center justify-center">
-            <Icons.LoadingSpinner className="h-6 w-6 animate-spin text-foreground-primary" />
-            <div className="text-sm">Loading members...</div>
-        </div>;
+        return (
+            <div className="text-muted-foreground flex h-32 items-center justify-center gap-2 p-3 text-sm">
+                <Icons.LoadingSpinner className="text-foreground-primary h-6 w-6 animate-spin" />
+                <div className="text-sm">Loading members...</div>
+            </div>
+        );
     }
 
     return (
         <>
-            <div className="border-b border-b-[0.5px] p-3 text-muted-foreground text-sm">
+            <div className="text-muted-foreground border-b border-b-[0.5px] p-3 text-sm">
                 Invite Team Members
             </div>
             <InviteMemberInput projectId={projectId} />

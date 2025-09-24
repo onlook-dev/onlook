@@ -1,9 +1,14 @@
+import type { NextRequest } from 'next/server';
+
+import type { Usage } from '@onlook/models';
+import { UsageType } from '@onlook/models';
+
 import { createClient as createTRPCClient } from '@/trpc/request-server';
 import { createClient as createSupabaseClient } from '@/utils/supabase/request-server';
-import { UsageType, type Usage } from '@onlook/models';
-import { type NextRequest } from 'next/server';
 
-export const checkMessageLimit = async (req: NextRequest): Promise<{
+export const checkMessageLimit = async (
+    req: NextRequest,
+): Promise<{
     exceeded: boolean;
     usage: Usage;
 }> => {
@@ -32,17 +37,22 @@ export const checkMessageLimit = async (req: NextRequest): Promise<{
         exceeded: false,
         usage: monthlyUsage,
     };
-}
+};
 
 export const getSupabaseUser = async (request: NextRequest) => {
     const supabase = await createSupabaseClient(request);
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
     return user;
-}
+};
 
-export const incrementUsage = async (req: NextRequest, traceId?: string): Promise<{
-    usageRecordId: string | undefined,
-    rateLimitId: string | undefined,
+export const incrementUsage = async (
+    req: NextRequest,
+    traceId?: string,
+): Promise<{
+    usageRecordId: string | undefined;
+    rateLimitId: string | undefined;
 } | null> => {
     try {
         const user = await getSupabaseUser(req);
@@ -62,14 +72,14 @@ export const incrementUsage = async (req: NextRequest, traceId?: string): Promis
         console.error('Error in chat usage increment', error);
     }
     return null;
-}
+};
 
 export const decrementUsage = async (
     req: NextRequest,
     usageRecord: {
-        usageRecordId: string | undefined,
-        rateLimitId: string | undefined,
-    } | null
+        usageRecordId: string | undefined;
+        rateLimitId: string | undefined;
+    } | null,
 ): Promise<void> => {
     try {
         if (!usageRecord) {
@@ -86,4 +96,4 @@ export const decrementUsage = async (
     } catch (error) {
         console.error('Error in chat usage decrement', error);
     }
-}
+};

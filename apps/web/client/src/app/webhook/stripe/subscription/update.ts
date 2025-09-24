@@ -1,4 +1,7 @@
-import { trackEvent } from '@/utils/analytics/server';
+import type Stripe from 'stripe';
+import { and, eq } from 'drizzle-orm';
+import { v4 as uuid } from 'uuid';
+
 import { prices, rateLimits, subscriptions } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import {
@@ -7,9 +10,8 @@ import {
     ScheduledSubscriptionAction,
     SubscriptionStatus,
 } from '@onlook/stripe';
-import { and, eq } from 'drizzle-orm';
-import Stripe from 'stripe';
-import { v4 as uuid } from 'uuid';
+
+import { trackEvent } from '@/utils/analytics/server';
 import { extractIdsFromEvent } from './helpers';
 
 export const handleSubscriptionUpdated = async (
@@ -175,13 +177,16 @@ const updateSubscriptionScheduleIfNeeded = async (
 ) => {
     if (!stripeSubscriptionScheduleId) {
         // If there is no schedule, clear the scheduled action and price change on.
-        await db.update(subscriptions).set({
-            scheduledAction: null,
-            scheduledChangeAt: null,
-            scheduledPriceId: null,
-            stripeSubscriptionScheduleId: null,
-            updatedAt: new Date(),
-        }).where(eq(subscriptions.id, subscriptionId));
+        await db
+            .update(subscriptions)
+            .set({
+                scheduledAction: null,
+                scheduledChangeAt: null,
+                scheduledPriceId: null,
+                stripeSubscriptionScheduleId: null,
+                updatedAt: new Date(),
+            })
+            .where(eq(subscriptions.id, subscriptionId));
         return;
     }
 

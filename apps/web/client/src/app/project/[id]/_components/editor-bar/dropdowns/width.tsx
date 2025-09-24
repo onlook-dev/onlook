@@ -1,10 +1,12 @@
 'use client';
 
+import { observer } from 'mobx-react-lite';
+
 import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { LayoutMode } from '@onlook/utility';
-import { observer } from 'mobx-react-lite';
+
 import { useDimensionControl } from '../hooks/use-dimension-control';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
@@ -16,28 +18,29 @@ export const Width = observer(() => {
         useDimensionControl('width');
 
     const { isOpen, onOpenChange } = useDropdownControl({
-        id: 'width-dropdown'
+        id: 'width-dropdown',
     });
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
-            <HoverOnlyTooltip content="Width" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
+            <HoverOnlyTooltip
+                content="Width"
+                side="bottom"
+                className="mt-1"
+                hideArrow
+                disabled={isOpen}
+            >
                 <DropdownMenuTrigger asChild>
-                    <ToolbarButton
-                        isOpen={isOpen}
-                        className="flex items-center gap-1"
-                    >
-                        <Icons.Width className="h-4 w-4 min-h-4 min-w-4" />
-                        <span className="text-small">
-                            {dimensionState.width.value}
-                        </span>
+                    <ToolbarButton isOpen={isOpen} className="flex items-center gap-1">
+                        <Icons.Width className="h-4 min-h-4 w-4 min-w-4" />
+                        <span className="text-small">{dimensionState.width.value}</span>
                     </ToolbarButton>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
-            <DropdownMenuContent align="start" className="w-[260px] mt-1 p-3 rounded-lg space-y-3">
+            <DropdownMenuContent align="start" className="mt-1 w-[260px] space-y-3 rounded-lg p-3">
                 <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-white">Width</span>
+                        <span className="text-muted-white text-sm">Width</span>
                         <InputDropdown
                             value={dimensionState.width.num ?? 0}
                             unit={dimensionState.width.unit}
@@ -49,7 +52,7 @@ export const Width = observer(() => {
                         />
                     </div>
                     <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Min</span>
+                        <span className="text-muted-foreground text-sm">Min</span>
                         <InputDropdown
                             value={dimensionState.minWidth.num ?? 0}
                             unit={dimensionState.minWidth.unit}
@@ -61,7 +64,7 @@ export const Width = observer(() => {
                         />
                     </div>
                     <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Max</span>
+                        <span className="text-muted-foreground text-sm">Max</span>
                         <InputDropdown
                             value={dimensionState.maxWidth.num ?? 0}
                             unit={dimensionState.maxWidth.unit}
@@ -76,4 +79,4 @@ export const Width = observer(() => {
             </DropdownMenuContent>
         </DropdownMenu>
     );
-})
+});

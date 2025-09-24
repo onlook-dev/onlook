@@ -1,7 +1,9 @@
-import type { IFrameView } from '@/app/project/[id]/_components/canvas/frame/view';
-import type { DomElement, EditTextResult, ElementPosition } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
+
+import type { DomElement, EditTextResult, ElementPosition } from '@onlook/models';
+
 import type { EditorEngine } from '../engine';
+import type { IFrameView } from '@/app/project/[id]/_components/canvas/frame/view';
 import { adaptRectToCanvas } from '../overlay/utils';
 
 export class TextEditingManager {
@@ -23,9 +25,7 @@ export class TextEditingManager {
 
     async start(el: DomElement, frameView: IFrameView): Promise<void> {
         try {
-            const isEditable = (await frameView.isChildTextEditable(el.oid ?? '')) as
-                | boolean
-                | null;
+            const isEditable = await frameView.isChildTextEditable(el.oid ?? '');
             if (isEditable !== true) {
                 throw new Error(
                     isEditable === null
@@ -34,7 +34,7 @@ export class TextEditingManager {
                 );
             }
 
-            const res = (await frameView.startEditingText(el.domId)) as EditTextResult | null;
+            const res = await frameView.startEditingText(el.domId);
             if (!res) {
                 throw new Error('Failed to start editing text, no result returned');
             }
@@ -84,10 +84,7 @@ export class TextEditingManager {
                 throw new Error('No frameView found for text editing');
             }
 
-            const res = await frameData.view.editText(
-                this.targetDomEl.domId,
-                newContent,
-            );
+            const res = await frameData.view.editText(this.targetDomEl.domId, newContent);
             if (!res) {
                 throw new Error('Failed to edit text. No dom element returned');
             }
@@ -192,10 +189,7 @@ export class TextEditingManager {
                 return;
             }
 
-            const domEl = await frameData.view.getElementByDomId(
-                selectedEl.domId,
-                true,
-            )
+            const domEl = await frameData.view.getElementByDomId(selectedEl.domId, true);
             if (!domEl) {
                 return;
             }
@@ -209,7 +203,7 @@ export class TextEditingManager {
 
     async editElementAtLoc(pos: ElementPosition, frameView: IFrameView): Promise<void> {
         try {
-            const el = (await frameView.getElementAtLoc(pos.x, pos.y, true)) as DomElement;
+            const el = await frameView.getElementAtLoc(pos.x, pos.y, true);
             if (!el) {
                 console.error('Failed to get element at location');
                 return;

@@ -1,12 +1,23 @@
-import { CodeProvider, getStaticCodeProvider } from '@onlook/code-provider';
-import { getSandboxPreviewUrl, SandboxTemplates, Templates } from '@onlook/constants';
-import { branches, branchInsertSchema, branchUpdateSchema, canvases, createDefaultFrame, frames, fromDbBranch, fromDbFrame } from '@onlook/db';
-import type { Frame } from '@onlook/models';
-import { calculateNonOverlappingPosition, generateUniqueBranchName } from '@onlook/utility';
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
+
+import type { Frame } from '@onlook/models';
+import { CodeProvider, getStaticCodeProvider } from '@onlook/code-provider';
+import { getSandboxPreviewUrl, SandboxTemplates, Templates } from '@onlook/constants';
+import {
+    branches,
+    branchInsertSchema,
+    branchUpdateSchema,
+    canvases,
+    createDefaultFrame,
+    frames,
+    fromDbBranch,
+    fromDbFrame,
+} from '@onlook/db';
+import { calculateNonOverlappingPosition, generateUniqueBranchName } from '@onlook/utility';
+
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { extractCsbPort } from './helper';
 
@@ -28,9 +39,9 @@ export const branchRouter = createTRPCRouter({
         )
         .query(async ({ ctx, input }) => {
             const dbBranches = await ctx.db.query.branches.findMany({
-                where: input.onlyDefault ?
-                    and(eq(branches.isDefault, true), eq(branches.projectId, input.projectId)) :
-                    eq(branches.projectId, input.projectId),
+                where: input.onlyDefault
+                    ? and(eq(branches.isDefault, true), eq(branches.projectId, input.projectId))
+                    : eq(branches.projectId, input.projectId),
             });
             // TODO: Create a default branch if none exists for backwards compatibility
 
@@ -42,25 +53,21 @@ export const branchRouter = createTRPCRouter({
             }
             return dbBranches.map(fromDbBranch);
         }),
-    create: protectedProcedure
-        .input(branchInsertSchema)
-        .mutation(async ({ ctx, input }) => {
-            try {
-                await ctx.db.insert(branches).values(input);
-                return true;
-            } catch (error) {
-                console.error('Error creating branch', error);
-                return false;
-            }
-        }),
+    create: protectedProcedure.input(branchInsertSchema).mutation(async ({ ctx, input }) => {
+        try {
+            await ctx.db.insert(branches).values(input);
+            return true;
+        } catch (error) {
+            console.error('Error creating branch', error);
+            return false;
+        }
+    }),
     update: protectedProcedure.input(branchUpdateSchema).mutation(async ({ ctx, input }) => {
         try {
             await ctx.db
                 .update(branches)
                 .set({ ...input, updatedAt: new Date() })
-                .where(
-                    eq(branches.id, input.id)
-                );
+                .where(eq(branches.id, input.id));
             return true;
         } catch (error) {
             console.error('Error updating branch', error);
@@ -109,10 +116,13 @@ export const branchRouter = createTRPCRouter({
                 const existingBranches = await ctx.db.query.branches.findMany({
                     where: eq(branches.projectId, sourceBranch.projectId),
                 });
-                const existingNames = existingBranches.map(branch => branch.name);
+                const existingNames = existingBranches.map((branch) => branch.name);
 
                 // Generate unique branch name
-                const branchName: string = generateUniqueBranchName(sourceBranch.name, existingNames);
+                const branchName: string = generateUniqueBranchName(
+                    sourceBranch.name,
+                    existingNames,
+                );
 
                 // Fork the sandbox using code provider
                 const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
@@ -148,7 +158,7 @@ export const branchRouter = createTRPCRouter({
                     await tx.insert(branches).values(newBranch);
 
                     // Always create at least one frame using the target branch's frame data
-                    let createdFrames: Frame[] = [];
+                    const createdFrames: Frame[] = [];
 
                     // Get the canvas for the project
                     const canvas = await tx.query.canvases.findFirst({
@@ -165,7 +175,11 @@ export const branchRouter = createTRPCRouter({
                         let baseX = 100;
                         let baseY = 100;
 
-                        if (sourceBranch.frames && sourceBranch.frames.length > 0 && sourceBranch.frames[0]) {
+                        if (
+                            sourceBranch.frames &&
+                            sourceBranch.frames.length > 0 &&
+                            sourceBranch.frames[0]
+                        ) {
                             const sourceFrame = sourceBranch.frames[0];
                             frameWidth = parseInt(sourceFrame.width) || frameWidth;
                             frameHeight = parseInt(sourceFrame.height) || frameHeight;
@@ -190,7 +204,10 @@ export const branchRouter = createTRPCRouter({
                         };
 
                         // Calculate non-overlapping position
-                        const optimalPosition = calculateNonOverlappingPosition(proposedFrame, existingFrames);
+                        const optimalPosition = calculateNonOverlappingPosition(
+                            proposedFrame,
+                            existingFrames,
+                        );
 
                         const newFrame = createDefaultFrame({
                             canvasId: canvas.id,
@@ -228,12 +245,14 @@ export const branchRouter = createTRPCRouter({
             z.object({
                 projectId: z.string().uuid(),
                 branchName: z.string().optional(),
-                framePosition: z.object({
-                    x: z.number(),
-                    y: z.number(),
-                    width: z.number(),
-                    height: z.number(),
-                }).optional(),
+                framePosition: z
+                    .object({
+                        x: z.number(),
+                        y: z.number(),
+                        width: z.number(),
+                        height: z.number(),
+                    })
+                    .optional(),
             }),
         )
         .mutation(async ({ ctx, input }) => {
@@ -246,7 +265,7 @@ export const branchRouter = createTRPCRouter({
                             frames: true,
                         },
                     });
-                    const existingNames = existingBranches.map(branch => branch.name);
+                    const existingNames = existingBranches.map((branch) => branch.name);
 
                     // Generate unique branch name if not provided
                     const baseName = 'empty';
@@ -258,7 +277,9 @@ export const branchRouter = createTRPCRouter({
                     }
 
                     // Create new blank sandbox
-                    const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
+                    const CodesandboxProvider = await getStaticCodeProvider(
+                        CodeProvider.CodeSandbox,
+                    );
                     const blankSandbox = await CodesandboxProvider.createProject({
                         source: 'template',
                         id: SandboxTemplates[Templates.EMPTY_NEXTJS].id,
@@ -268,7 +289,7 @@ export const branchRouter = createTRPCRouter({
 
                     const sandboxId = blankSandbox.id;
                     // Extract port from existing project frames or fall back to 3000
-                    const allFrames = existingBranches.flatMap(branch => branch.frames || []);
+                    const allFrames = existingBranches.flatMap((branch) => branch.frames || []);
                     const port = extractCsbPort(allFrames) ?? 3000;
                     const previewUrl = getSandboxPreviewUrl(sandboxId, port);
 
@@ -291,7 +312,7 @@ export const branchRouter = createTRPCRouter({
                     await tx.insert(branches).values(newBranch);
 
                     // Create new frame if position is provided
-                    let createdFrames: Frame[] = [];
+                    const createdFrames: Frame[] = [];
                     if (input.framePosition) {
                         // Get the canvas for the project
                         const canvas = await tx.query.canvases.findFirst({
@@ -319,7 +340,10 @@ export const branchRouter = createTRPCRouter({
                             };
 
                             // Calculate non-overlapping position
-                            const optimalPosition = calculateNonOverlappingPosition(proposedFrame, existingFrames);
+                            const optimalPosition = calculateNonOverlappingPosition(
+                                proposedFrame,
+                                existingFrames,
+                            );
 
                             const newFrame = createDefaultFrame({
                                 canvasId: canvas.id,
@@ -349,7 +373,8 @@ export const branchRouter = createTRPCRouter({
                 console.error('Error creating blank sandbox', error);
                 throw new TRPCError({
                     code: 'INTERNAL_SERVER_ERROR',
-                    message: error instanceof Error ? error.message : 'Failed to create blank sandbox',
+                    message:
+                        error instanceof Error ? error.message : 'Failed to create blank sandbox',
                 });
             }
         }),

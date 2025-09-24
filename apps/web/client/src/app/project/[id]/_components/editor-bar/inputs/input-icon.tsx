@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { UNITS } from '@onlook/constants';
 import {
     DropdownMenu,
@@ -6,9 +8,8 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { useState } from 'react';
-import { useInputControl } from '../hooks/use-input-control';
 
+import { useInputControl } from '../hooks/use-input-control';
 
 type IconType =
     | 'LeftSide'
@@ -37,9 +38,9 @@ export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: 
     return (
         <div className="flex items-center gap-2">
             {IconComponent && (
-                <IconComponent className="h-5 w-5 min-h-5 min-w-5 text-muted-foreground" />
+                <IconComponent className="text-muted-foreground h-5 min-h-5 w-5 min-w-5" />
             )}
-            <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px] w-full">
+            <div className="bg-background-tertiary/50 flex h-[36px] w-full items-center justify-between rounded-md px-3">
                 <input
                     type="text"
                     inputMode="decimal"
@@ -47,14 +48,14 @@ export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: 
                     value={localValue}
                     onChange={(e) => handleChange(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    className="w-[40px] bg-transparent text-sm text-white focus:outline-none uppercase hover:text-white"
+                    className="w-[40px] bg-transparent text-sm text-white uppercase hover:text-white focus:outline-none"
                 />
 
                 <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer hover:text-white transition-colors">
+                    <DropdownMenuTrigger className="text-muted-foreground cursor-pointer text-[12px] transition-colors hover:text-white focus:outline-none">
                         {unitValue === 'px' ? '' : unitValue}
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="min-w-0 w-[64px]">
+                    <DropdownMenuContent align="start" className="w-[64px] min-w-0">
                         {UNITS.map((unitOption) => (
                             <DropdownMenuItem
                                 key={unitOption}
@@ -62,7 +63,7 @@ export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: 
                                     onUnitChange?.(unitOption);
                                     setUnitValue(unitOption);
                                 }}
-                                className="text-[12px] text-center px-2 hover:bg-background-tertiary/70 hover:text-white transition-colors"
+                                className="hover:bg-background-tertiary/70 px-2 text-center text-[12px] transition-colors hover:text-white"
                             >
                                 {unitOption}
                             </DropdownMenuItem>

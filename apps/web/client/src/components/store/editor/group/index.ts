@@ -3,13 +3,14 @@ import type {
     ActionTarget,
     GroupContainer,
     GroupElementsAction,
-    UngroupElementsAction
+    UngroupElementsAction,
 } from '@onlook/models/actions';
 import { createDomId, createOid } from '@onlook/utility';
+
 import type { EditorEngine } from '../engine';
 
 export class GroupManager {
-    constructor(private editorEngine: EditorEngine) { }
+    constructor(private editorEngine: EditorEngine) {}
 
     async groupSelectedElements() {
         const selectedEls = this.editorEngine.elements.selected;
@@ -86,7 +87,6 @@ export class GroupManager {
             }
             return null;
         }
-
 
         if (!frameId) {
             if (log) {
@@ -206,5 +206,5 @@ export class GroupManager {
         };
     }
 
-    clear() { }
+    clear() {}
 }

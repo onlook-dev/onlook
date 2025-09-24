@@ -1,4 +1,3 @@
-import { EditorAttributes } from '@onlook/constants';
 import type {
     Action,
     ActionElement,
@@ -11,6 +10,7 @@ import type {
     UpdateStyleAction,
     WriteCodeAction,
 } from '@onlook/models/actions';
+import { EditorAttributes } from '@onlook/constants';
 import { assertNever, createDomId, createOid } from '@onlook/utility';
 
 export function reverse<T>(change: Change<T>): Change<T> {

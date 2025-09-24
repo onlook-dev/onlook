@@ -43,7 +43,10 @@ describe('FrameNavigationManager', () => {
             navigationManager.addToHistory(testFrameId, '/page2');
             navigationManager.addToHistory(testFrameId, '/page2');
 
-            expect(navigationManager.getNavigationHistory(testFrameId)).toEqual(['/page1', '/page2']);
+            expect(navigationManager.getNavigationHistory(testFrameId)).toEqual([
+                '/page1',
+                '/page2',
+            ]);
             expect(navigationManager.getCurrentHistoryIndex(testFrameId)).toBe(1);
         });
 
@@ -57,7 +60,7 @@ describe('FrameNavigationManager', () => {
             expect(navigationManager.getNavigationHistory(testFrameId)).toEqual([
                 '/page1',
                 '/page2',
-                '/page1'
+                '/page1',
             ]);
             expect(navigationManager.getCurrentHistoryIndex(testFrameId)).toBe(2);
         });

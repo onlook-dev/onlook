@@ -1,9 +1,5 @@
-import { useEditorEngine } from '@/components/store/editor';
-import {
-    doesRouteExist,
-    normalizeRoute,
-    validateNextJsRoute,
-} from '@/components/store/editor/pages/helper';
+import { useEffect, useMemo, useState } from 'react';
+
 import { Button } from '@onlook/ui/button';
 import {
     Dialog,
@@ -16,7 +12,13 @@ import {
 import { Input } from '@onlook/ui/input';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
-import { useEffect, useMemo, useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
+import {
+    doesRouteExist,
+    normalizeRoute,
+    validateNextJsRoute,
+} from '@/components/store/editor/pages/helper';
 
 interface PageModalProps {
     open: boolean;
@@ -130,7 +132,7 @@ export function PageModal({
                             onCompositionEnd={() => setIsComposing(false)}
                         />
                         {warning && (
-                            <p className="text-sm text-yellow-300 flex items-center gap-2">
+                            <p className="flex items-center gap-2 text-sm text-yellow-300">
                                 {warning}
                             </p>
                         )}

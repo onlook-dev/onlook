@@ -1,6 +1,8 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { stringToParsedValue } from '@onlook/utility';
 import { useEffect, useState } from 'react';
+
+import { stringToParsedValue } from '@onlook/utility';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { InputIcon } from '../../inputs/input-icon';
 
 export const GapInput = () => {
@@ -20,8 +22,8 @@ export const GapInput = () => {
     }, [editorEngine.style.selectedStyle?.styles.computed.gap]);
 
     return (
-        <div className="flex items-center gap-0 w-full">
-            <span className="text-sm text-muted-foreground w-20">Gap</span>
+        <div className="flex w-full items-center gap-0">
+            <span className="text-muted-foreground w-20 text-sm">Gap</span>
             <div className="flex-1">
                 <InputIcon
                     value={numValue}

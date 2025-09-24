@@ -1,8 +1,10 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
-import { VersionRow, VersionRowType } from './version-row';
+
+import { Separator } from '@onlook/ui/separator';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { NoSavedVersions } from './empty-state/saved';
+import { VersionRow, VersionRowType } from './version-row';
 
 export const SavedVersions = observer(() => {
     const editorEngine = useEditorEngine();

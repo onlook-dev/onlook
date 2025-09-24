@@ -1,6 +1,7 @@
 'use client';
 
-import { DeploymentType } from '@onlook/models';
+import type { DeploymentType } from '@onlook/models';
+
 import { useHostingContext } from './provider';
 
 export function useHostingType(type: DeploymentType) {
@@ -33,4 +34,4 @@ export function useHostingType(type: DeploymentType) {
         refetch,
         cancel,
     };
-} 
+}

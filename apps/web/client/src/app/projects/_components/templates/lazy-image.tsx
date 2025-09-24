@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
+import { motion } from 'motion/react';
 
 interface LazyImageProps {
     src: string | null;
@@ -16,11 +16,11 @@ interface LazyImageProps {
 export function LazyImage({
     src,
     alt,
-    className = "",
-    placeholderClassName = "",
+    className = '',
+    placeholderClassName = '',
     onLoad,
     onError,
-    cardStyle = false
+    cardStyle = false,
 }: LazyImageProps) {
     const [isLoaded, setIsLoaded] = useState(false);
     const [isInView, setIsInView] = useState(false);
@@ -37,8 +37,8 @@ export function LazyImage({
                 }
             },
             {
-                rootMargin: "50px"
-            }
+                rootMargin: '50px',
+            },
         );
 
         if (containerRef.current) {
@@ -60,12 +60,10 @@ export function LazyImage({
 
     const renderImageContent = () => (
         <>
-            <div
-                className={`absolute inset-0 bg-secondary ${placeholderClassName}`}
-            />
+            <div className={`bg-secondary absolute inset-0 ${placeholderClassName}`} />
 
             {!isLoaded && !hasError && (
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-foreground/10 to-transparent animate-shimmer" />
+                <div className="via-foreground/10 animate-shimmer absolute inset-0 bg-gradient-to-r from-transparent to-transparent" />
             )}
 
             {isInView && !hasError && src && (
@@ -73,20 +71,24 @@ export function LazyImage({
                     ref={imgRef}
                     src={src}
                     alt={alt}
-                    className={cardStyle ? "absolute inset-0 w-full h-full object-cover" : `absolute inset-0 w-full h-full object-cover ${className}`}
+                    className={
+                        cardStyle
+                            ? 'absolute inset-0 h-full w-full object-cover'
+                            : `absolute inset-0 h-full w-full object-cover ${className}`
+                    }
                     onLoad={handleLoad}
                     onError={handleError}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: isLoaded ? 1 : 0 }}
                     transition={{
                         duration: 0.3,
-                        ease: [0.25, 0.46, 0.45, 0.94]
+                        ease: [0.25, 0.46, 0.45, 0.94],
                     }}
                 />
             )}
 
             {(hasError || !src) && (
-                <div className="absolute inset-0 bg-secondary flex items-center justify-center">
+                <div className="bg-secondary absolute inset-0 flex items-center justify-center">
                     <div className="text-foreground-tertiary text-lg">
                         {hasError ? 'Failed to load' : 'No image available'}
                     </div>
@@ -101,8 +103,8 @@ export function LazyImage({
             className={`relative overflow-hidden ${cardStyle ? '' : className}`}
         >
             {cardStyle ? (
-                <div className="ml-4 mr-4 mt-4 mb-0 h-full">
-                    <div className="relative h-full rounded-lg overflow-hidden bg-white shadow-lg">
+                <div className="mt-4 mr-4 mb-0 ml-4 h-full">
+                    <div className="relative h-full overflow-hidden rounded-lg bg-white shadow-lg">
                         {renderImageContent()}
                     </div>
                 </div>

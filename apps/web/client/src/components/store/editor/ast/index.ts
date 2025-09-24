@@ -1,5 +1,7 @@
-import type { LayerNode, TemplateNode } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
+
+import type { LayerNode, TemplateNode } from '@onlook/models';
+
 import type { EditorEngine } from '../engine';
 import { LayersManager } from './layers';
 

@@ -1,7 +1,9 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { useStateManager } from '@/components/store/state';
-import { transKeys } from '@/i18n/keys';
-import { api } from '@/trpc/react';
+import { useRef, useState } from 'react';
+import { redirect } from 'next/navigation';
+import { observer } from 'mobx-react-lite';
+import { useTranslations } from 'next-intl';
+import { usePostHog } from 'posthog-js/react';
+
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -13,11 +15,11 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
-import { useTranslations } from 'next-intl';
-import { redirect } from 'next/navigation';
-import { usePostHog } from 'posthog-js/react';
-import { useRef, useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
+import { useStateManager } from '@/components/store/state';
+import { transKeys } from '@/i18n/keys';
+import { api } from '@/trpc/react';
 import { CloneProjectDialog } from '../clone-project-dialog';
 import { NewProjectMenu } from './new-project-menu';
 import { RecentProjectsMenu } from './recent-projects';
@@ -55,7 +57,7 @@ export const ProjectBreadcrumb = observer(() => {
             return;
         }
 
-        const sandboxId = editorEngine.branches.activeBranch.sandbox.id
+        const sandboxId = editorEngine.branches.activeBranch.sandbox.id;
         if (!sandboxId) {
             console.error('No sandbox ID found');
             return;
@@ -94,20 +96,20 @@ export const ProjectBreadcrumb = observer(() => {
     }
 
     return (
-        <div className="mr-1 flex flex-row items-center text-small gap-2">
+        <div className="text-small mr-1 flex flex-row items-center gap-2">
             <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button
-                        variant='ghost'
-                        className="ml-1 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:!bg-transparent cursor-pointer group"
+                        variant="ghost"
+                        className="text-foreground-onlook text-small hover:text-foreground-active group ml-1 cursor-pointer gap-2 px-0 hover:!bg-transparent"
                     >
                         <Icons.OnlookLogo
                             className={cn(
-                                'w-9 h-9 hidden md:block',
+                                'hidden h-9 w-9 md:block',
                                 isClosingProject && 'animate-pulse',
                             )}
                         />
-                        <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer group-hover:text-foreground-active">
+                        <span className="text-foreground-onlook text-small group-hover:text-foreground-active mx-0 max-w-[60px] cursor-pointer truncate px-0 md:max-w-[100px] lg:max-w-[200px]">
                             {isClosingProject ? 'Stopping project...' : project?.name}
                         </span>
                         <Icons.ChevronDown className="text-foreground-onlook group-hover:text-foreground-active" />
@@ -131,7 +133,7 @@ export const ProjectBreadcrumb = observer(() => {
                         onClick={() => handleNavigateToProjects()}
                         className="cursor-pointer"
                     >
-                        <div className="flex flex-row center items-center group">
+                        <div className="center group flex flex-row items-center">
                             <Icons.Tokens className="mr-2" />
                             {t(transKeys.projects.actions.goToAllProjects)}
                         </div>
@@ -145,7 +147,7 @@ export const ProjectBreadcrumb = observer(() => {
                         disabled={isDownloading}
                         className="cursor-pointer"
                     >
-                        <div className="flex flex-row center items-center group">
+                        <div className="center group flex flex-row items-center">
                             <Icons.Download className="mr-2" />
                             {isDownloading
                                 ? t(transKeys.projects.actions.downloadingCode)
@@ -157,8 +159,8 @@ export const ProjectBreadcrumb = observer(() => {
                         className="cursor-pointer"
                         onClick={() => (stateManager.isSettingsModalOpen = true)}
                     >
-                        <div className="flex flex-row center items-center group">
-                            <Icons.Gear className="mr-2 group-hover:rotate-12 transition-transform" />
+                        <div className="center group flex flex-row items-center">
+                            <Icons.Gear className="mr-2 transition-transform group-hover:rotate-12" />
                             {t(transKeys.help.menu.openSettings)}
                         </div>
                     </DropdownMenuItem>

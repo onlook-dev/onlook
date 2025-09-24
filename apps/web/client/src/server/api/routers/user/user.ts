@@ -1,10 +1,13 @@
-import { trackEvent } from '@/utils/analytics/server';
-import { callUserWebhook } from '@/utils/n8n/webhook';
-import { authUsers, fromDbUser, userInsertSchema, users, type User } from '@onlook/db';
-import { extractNames } from '@onlook/utility';
-import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
+
+import type { User } from '@onlook/db';
+import { authUsers, fromDbUser, userInsertSchema, users } from '@onlook/db';
+import { extractNames } from '@onlook/utility';
+
+import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { trackEvent } from '@/utils/analytics/server';
+import { callUserWebhook } from '@/utils/n8n/webhook';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { userSettingsRouter } from './user-settings';
 
@@ -16,14 +19,16 @@ export const userRouter = createTRPCRouter({
         });
 
         const { displayName, firstName, lastName } = getUserName(authUser);
-        const userData = user ? fromDbUser({
-            ...user,
-            firstName: user.firstName ?? firstName,
-            lastName: user.lastName ?? lastName,
-            displayName: user.displayName ?? displayName,
-            email: user.email ?? authUser.email,
-            avatarUrl: user.avatarUrl ?? authUser.user_metadata.avatarUrl,
-        }) : null;
+        const userData = user
+            ? fromDbUser({
+                  ...user,
+                  firstName: user.firstName ?? firstName,
+                  lastName: user.lastName ?? lastName,
+                  displayName: user.displayName ?? displayName,
+                  email: user.email ?? authUser.email,
+                  avatarUrl: user.avatarUrl ?? authUser.user_metadata.avatarUrl,
+              })
+            : null;
         return userData;
     }),
     getById: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
@@ -68,7 +73,8 @@ export const userRouter = createTRPCRouter({
                         ...userData,
                         updatedAt: new Date(),
                     },
-                }).returning();
+                })
+                .returning();
 
             if (!existingUser) {
                 await trackEvent({
@@ -101,7 +107,14 @@ export const userRouter = createTRPCRouter({
 });
 
 function getUserName(authUser: SupabaseUser) {
-    const displayName: string | undefined = authUser.user_metadata.name ?? authUser.user_metadata.display_name ?? authUser.user_metadata.full_name ?? authUser.user_metadata.first_name ?? authUser.user_metadata.last_name ?? authUser.user_metadata.given_name ?? authUser.user_metadata.family_name;
+    const displayName: string | undefined =
+        authUser.user_metadata.name ??
+        authUser.user_metadata.display_name ??
+        authUser.user_metadata.full_name ??
+        authUser.user_metadata.first_name ??
+        authUser.user_metadata.last_name ??
+        authUser.user_metadata.given_name ??
+        authUser.user_metadata.family_name;
     const { firstName, lastName } = extractNames(displayName ?? '');
     return {
         displayName: displayName ?? '',

@@ -1,13 +1,11 @@
-import type { DomElement, DomElementStyles, Font } from '@onlook/models';
-import {
-    type Change,
-    type StyleActionTarget,
-    type UpdateStyleAction,
-} from '@onlook/models/actions';
-import { StyleChangeType, type StyleChange } from '@onlook/models/style';
-import { convertFontString } from '@onlook/utility';
-import { makeAutoObservable, reaction } from 'mobx';
 import type { CSSProperties } from 'react';
+import { makeAutoObservable, reaction } from 'mobx';
+
+import type { DomElement, DomElementStyles, Font } from '@onlook/models';
+import type { Change, StyleActionTarget, UpdateStyleAction } from '@onlook/models/actions';
+import { StyleChangeType } from '@onlook/models/style';
+import { convertFontString } from '@onlook/utility';
+
 import type { EditorEngine } from '../engine';
 
 export interface SelectedStyle {
@@ -105,16 +103,18 @@ export class StyleManager {
 
         const targets: Array<StyleActionTarget> = filteredSelected.map((selectedEl) => {
             const change: Change<Record<string, StyleChange>> = {
-                updated:
-                    Object.fromEntries(
-                        Object.keys(styles).map((style) => [
-                            style,
-                            {
-                                value: styles[style as keyof CSSProperties]?.toString() ?? '',
-                                type: type === StyleChangeType.Custom ? StyleChangeType.Custom : StyleChangeType.Value,
-                            },
-                        ]),
-                    ),
+                updated: Object.fromEntries(
+                    Object.keys(styles).map((style) => [
+                        style,
+                        {
+                            value: styles[style as keyof CSSProperties]?.toString() ?? '',
+                            type:
+                                type === StyleChangeType.Custom
+                                    ? StyleChangeType.Custom
+                                    : StyleChangeType.Value,
+                        },
+                    ]),
+                ),
                 original: Object.fromEntries(
                     Object.keys(styles).map((style) => [
                         style,

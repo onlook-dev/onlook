@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
+
+import type { ProcessedFile } from '../../src/app/projects/types';
 import { detectPortFromPackageJson } from '../../src/app/projects/import/local/_context/index';
-import { ProcessedFileType, type ProcessedFile } from '../../src/app/projects/types';
+import { ProcessedFileType } from '../../src/app/projects/types';
 
 describe('detectPortFromPackageJson', () => {
     const createMockFile = (content: string): ProcessedFile => ({
@@ -125,7 +127,9 @@ describe('detectPortFromPackageJson', () => {
     });
 
     it('handles complex dev script with multiple options', () => {
-        const mockFile = createMockFile('{"scripts": {"dev": "cross-env NODE_ENV=development next dev --port 4500 --turbo"}}');
+        const mockFile = createMockFile(
+            '{"scripts": {"dev": "cross-env NODE_ENV=development next dev --port 4500 --turbo"}}',
+        );
         const result = detectPortFromPackageJson(mockFile);
         expect(result).toBe(4500);
     });

@@ -1,12 +1,14 @@
 'use server';
 
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+
+import type { SignInMethod } from '@onlook/models';
+import { SEED_USER } from '@onlook/db';
+
 import { env } from '@/env';
 import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
-import { SEED_USER } from '@onlook/db';
-import { SignInMethod } from '@onlook/models';
-import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
 
 export async function login(provider: SignInMethod.GITHUB | SignInMethod.GOOGLE) {
     const supabase = await createClient();
@@ -44,7 +46,9 @@ export async function devLogin() {
 
     const supabase = await createClient();
 
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+        data: { session },
+    } = await supabase.auth.getSession();
 
     if (session) {
         redirect(Routes.AUTH_REDIRECT);

@@ -1,23 +1,19 @@
 'use client';
 
-import { transKeys } from '@/i18n/keys';
-import { api } from '@/trpc/react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
+
 import type { Project } from '@onlook/models';
-import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@onlook/ui/dialog';
 import { Button } from '@onlook/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
 import { DropdownMenuItem } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { cn } from '@onlook/ui/utils';
-import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useState } from 'react';
+
+import { transKeys } from '@/i18n/keys';
+import { api } from '@/trpc/react';
 
 export function RenameProject({ project, refetch }: { project: Project; refetch: () => void }) {
     const t = useTranslations();
@@ -32,31 +28,33 @@ export function RenameProject({ project, refetch }: { project: Project; refetch:
     }, [project.name]);
 
     const handleRenameProject = async () => {
-        await updateProject(
-            {
-                id: project.id,
-                name: projectName,
-                updatedAt: new Date()
-            },
-        );
+        await updateProject({
+            id: project.id,
+            name: projectName,
+            updatedAt: new Date(),
+        });
         // Invalidate queries to refresh UI
         await Promise.all([
             utils.project.list.invalidate(),
-            utils.project.get.invalidate({ projectId: project.id })
+            utils.project.get.invalidate({ projectId: project.id }),
         ]);
 
         // Optimistically update list ordering and title immediately
-        window.dispatchEvent(new CustomEvent('onlook_project_updated', {
-            detail: {
-                id: project.id,
-                name: projectName,
-                metadata: {
-                    updatedAt: new Date().toISOString(),
-                    description: project.metadata?.description,
+        window.dispatchEvent(
+            new CustomEvent('onlook_project_updated', {
+                detail: {
+                    id: project.id,
+                    name: projectName,
+                    metadata: {
+                        updatedAt: new Date().toISOString(),
+                        description: project.metadata?.description,
+                    },
                 },
-            },
-        }));
-        window.dispatchEvent(new CustomEvent('onlook_project_modified', { detail: { id: project.id } }));
+            }),
+        );
+        window.dispatchEvent(
+            new CustomEvent('onlook_project_modified', { detail: { id: project.id } }),
+        );
         setShowRenameDialog(false);
         refetch();
     };
@@ -70,7 +68,7 @@ export function RenameProject({ project, refetch }: { project: Project; refetch:
                 }}
                 className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
             >
-                <Icons.Pencil className="w-4 h-4" />
+                <Icons.Pencil className="h-4 w-4" />
                 {t(transKeys.projects.actions.renameProject)}
             </DropdownMenuItem>
 
@@ -79,7 +77,7 @@ export function RenameProject({ project, refetch }: { project: Project; refetch:
                     <DialogHeader>
                         <DialogTitle>{t(transKeys.projects.dialogs.rename.title)}</DialogTitle>
                     </DialogHeader>
-                    <div className="flex flex-col w-full gap-2">
+                    <div className="flex w-full flex-col gap-2">
                         <Label htmlFor="text">{t(transKeys.projects.dialogs.rename.label)}</Label>
                         <Input
                             minLength={0}

@@ -1,11 +1,8 @@
 import type { Project } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from '@onlook/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+
 import { CloneProject } from './clone-project';
 import { CreateTemplate } from './create-template';
 import { DeleteProject } from './delete-project';
@@ -18,7 +15,7 @@ export function SettingsDropdown({ project, refetch }: { project: Project; refet
                 <Button
                     size="default"
                     variant="ghost"
-                    className="w-8 h-8 p-0 flex items-center justify-center hover:bg-background-onlook cursor-pointer backdrop-blur-lg"
+                    className="hover:bg-background-onlook flex h-8 w-8 cursor-pointer items-center justify-center p-0 backdrop-blur-lg"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <Icons.DotsHorizontal />

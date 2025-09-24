@@ -1,17 +1,22 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { useHostingType } from '@/components/store/hosting';
-import { api } from '@/trpc/react';
+import { observer } from 'mobx-react-lite';
+
 import { DeploymentStatus, DeploymentType } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { toast } from '@onlook/ui/sonner';
-import { observer } from 'mobx-react-lite';
+
+import { useEditorEngine } from '@/components/store/editor';
+import { useHostingType } from '@/components/store/hosting';
+import { api } from '@/trpc/react';
 
 export const DangerZone = observer(() => {
     const editorEngine = useEditorEngine();
 
     const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
-    const { deployment: unpublishPreviewDeployment, unpublish: runUnpublishPreview } = useHostingType(DeploymentType.UNPUBLISH_PREVIEW);
-    const { deployment: unpublishCustomDeployment, unpublish: runUnpublishCustom } = useHostingType(DeploymentType.UNPUBLISH_CUSTOM);
+    const { deployment: unpublishPreviewDeployment, unpublish: runUnpublishPreview } =
+        useHostingType(DeploymentType.UNPUBLISH_PREVIEW);
+    const { deployment: unpublishCustomDeployment, unpublish: runUnpublishCustom } = useHostingType(
+        DeploymentType.UNPUBLISH_CUSTOM,
+    );
 
     const previewDomain = domains?.preview;
     const customDomain = domains?.published;
@@ -41,8 +46,8 @@ export const DangerZone = observer(() => {
         <div className="flex flex-col gap-4">
             <h2 className="text-lg">Danger Zone</h2>
             <div className="flex flex-col gap-4">
-                <div className="flex flex-row gap-2 items-center">
-                    <p className="text-sm text-muted-foreground">
+                <div className="flex flex-row items-center gap-2">
+                    <p className="text-muted-foreground text-sm">
                         {!previewDomain
                             ? 'Your domain is not published'
                             : `Unpublish from ${previewDomain.url}`}
@@ -56,14 +61,19 @@ export const DangerZone = observer(() => {
                         className="ml-auto"
                         size="sm"
                         variant="destructive"
-                        disabled={!previewDomain || unpublishPreviewDeployment?.status === DeploymentStatus.IN_PROGRESS}
+                        disabled={
+                            !previewDomain ||
+                            unpublishPreviewDeployment?.status === DeploymentStatus.IN_PROGRESS
+                        }
                     >
-                        {unpublishPreviewDeployment?.status === DeploymentStatus.IN_PROGRESS ? 'Unpublishing...' : 'Unpublish'}
+                        {unpublishPreviewDeployment?.status === DeploymentStatus.IN_PROGRESS
+                            ? 'Unpublishing...'
+                            : 'Unpublish'}
                     </Button>
                 </div>
                 {customDomain && (
-                    <div className="flex flex-row gap-2 items-center">
-                        <p className="text-sm text-muted-foreground">
+                    <div className="flex flex-row items-center gap-2">
+                        <p className="text-muted-foreground text-sm">
                             Unpublish from {customDomain.url}
                         </p>
                         <Button
@@ -71,9 +81,14 @@ export const DangerZone = observer(() => {
                             className="ml-auto"
                             size="sm"
                             variant="destructive"
-                            disabled={!customDomain || unpublishCustomDeployment?.status === DeploymentStatus.IN_PROGRESS}
+                            disabled={
+                                !customDomain ||
+                                unpublishCustomDeployment?.status === DeploymentStatus.IN_PROGRESS
+                            }
                         >
-                            {unpublishCustomDeployment?.status === DeploymentStatus.IN_PROGRESS ? 'Unpublishing...' : 'Unpublish'}
+                            {unpublishCustomDeployment?.status === DeploymentStatus.IN_PROGRESS
+                                ? 'Unpublishing...'
+                                : 'Unpublish'}
                         </Button>
                     </div>
                 )}

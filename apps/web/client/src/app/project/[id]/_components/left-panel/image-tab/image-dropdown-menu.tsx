@@ -1,10 +1,21 @@
-import type { FolderNode, ImageContentData } from "@onlook/models";
-import { Button } from "@onlook/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@onlook/ui/dropdown-menu";
-import { Icons } from "@onlook/ui/icons";
-import { memo, useCallback, useMemo, useState } from "react";
-import { rootDir } from "./folder";
-import { FolderDropdown } from "./folder-dropdown/folder-dropdown";
+import { memo, useCallback, useMemo, useState } from 'react';
+
+import type { FolderNode, ImageContentData } from '@onlook/models';
+import { Button } from '@onlook/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
+
+import { rootDir } from './folder';
+import { FolderDropdown } from './folder-dropdown/folder-dropdown';
 
 export const ImageDropdownMenu = memo(
     ({
@@ -51,22 +62,23 @@ export const ImageDropdownMenu = memo(
 
         return (
             <div
-                className={`absolute right-2 top-2 ${isVisible ? 'opacity-100' : 'opacity-0'
-                    } group-hover:opacity-100 transition-opacity duration-300`}
+                className={`absolute top-2 right-2 ${
+                    isVisible ? 'opacity-100' : 'opacity-0'
+                } transition-opacity duration-300 group-hover:opacity-100`}
             >
                 <DropdownMenu onOpenChange={handleOpenChange}>
                     <DropdownMenuTrigger asChild>
                         <Button
                             size="icon"
                             variant={'ghost'}
-                            className="bg-background p-1 inline-flex items-center justify-center h-auto w-auto rounded shadow-sm"
+                            className="bg-background inline-flex h-auto w-auto items-center justify-center rounded p-1 shadow-sm"
                             disabled={isDisabled}
                         >
-                            <Icons.DotsHorizontal className="text-foreground dark:text-white w-4 h-4" />
+                            <Icons.DotsHorizontal className="text-foreground h-4 w-4 dark:text-white" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
-                        className="rounded-md bg-background"
+                        className="bg-background rounded-md"
                         align="start"
                         side="right"
                     >
@@ -74,11 +86,11 @@ export const ImageDropdownMenu = memo(
                             <Button
                                 onClick={handleRenameImage}
                                 variant={'ghost'}
-                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
+                                className="hover:bg-background-secondary focus:bg-background-secondary group w-full rounded-sm"
                                 disabled={isDisabled}
                             >
-                                <span className="flex w-full text-smallPlus items-center">
-                                    <Icons.Pencil className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                <span className="text-smallPlus flex w-full items-center">
+                                    <Icons.Pencil className="text-foreground-secondary group-hover:text-foreground-active mr-2 h-4 w-4" />
                                     <span>Rename</span>
                                 </span>
                             </Button>
@@ -86,12 +98,12 @@ export const ImageDropdownMenu = memo(
                         <DropdownMenuItem asChild>
                             <Button
                                 variant={'ghost'}
-                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
+                                className="hover:bg-background-secondary focus:bg-background-secondary group w-full rounded-sm"
                                 onClick={handleDeleteImage}
                                 disabled={isDisabled}
                             >
-                                <span className="flex w-full text-smallPlus items-center">
-                                    <Icons.Trash className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                <span className="text-smallPlus flex w-full items-center">
+                                    <Icons.Trash className="text-foreground-secondary group-hover:text-foreground-active mr-2 h-4 w-4" />
                                     <span>Delete</span>
                                 </span>
                             </Button>
@@ -99,12 +111,12 @@ export const ImageDropdownMenu = memo(
                         <DropdownMenuItem asChild>
                             <Button
                                 variant={'ghost'}
-                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
+                                className="hover:bg-background-secondary focus:bg-background-secondary group w-full rounded-sm"
                                 onClick={handleOpenFolder}
                                 disabled={isDisabled}
                             >
-                                <span className="flex w-full text-smallPlus items-center">
-                                    <Icons.DirectoryOpen className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                <span className="text-smallPlus flex w-full items-center">
+                                    <Icons.DirectoryOpen className="text-foreground-secondary group-hover:text-foreground-active mr-2 h-4 w-4" />
                                     <span>Open Folder</span>
                                 </span>
                             </Button>
@@ -115,8 +127,8 @@ export const ImageDropdownMenu = memo(
                                 disabled={isDisabled}
                                 className="hover:bg-background-secondary focus:bg-background-secondary rounded-sm"
                             >
-                                <span className="flex w-full text-smallPlus items-center">
-                                    <Icons.MoveToFolder className="mr-2 h-4 w-4 text-foreground-secondary" />
+                                <span className="text-smallPlus flex w-full items-center">
+                                    <Icons.MoveToFolder className="text-foreground-secondary mr-2 h-4 w-4" />
                                     <span>Move to Folder</span>
                                 </span>
                             </DropdownMenuSubTrigger>

@@ -1,14 +1,16 @@
 'use client';
 
-import { transKeys } from '@/i18n/keys';
-import { api } from '@/trpc/react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
+
 import type { Project } from '@onlook/models';
 import {
     AlertDialog,
     AlertDialogContent,
     AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogTitle
+    AlertDialogTitle,
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { DropdownMenuItem } from '@onlook/ui/dropdown-menu';
@@ -16,9 +18,9 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { cn } from '@onlook/ui/utils';
-import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
+
+import { transKeys } from '@/i18n/keys';
+import { api } from '@/trpc/react';
 
 export function CloneProject({ project, refetch }: { project: Project; refetch: () => void }) {
     const t = useTranslations();
@@ -27,7 +29,10 @@ export function CloneProject({ project, refetch }: { project: Project; refetch: 
     const [showCloneDialog, setShowCloneDialog] = useState(false);
     const [cloneProjectName, setCloneProjectName] = useState(`${project.name} (Clone)`);
     const [isCloningProject, setIsCloningProject] = useState(false);
-    const isCloneProjectNameEmpty = useMemo(() => cloneProjectName.trim().length === 0, [cloneProjectName]);
+    const isCloneProjectNameEmpty = useMemo(
+        () => cloneProjectName.trim().length === 0,
+        [cloneProjectName],
+    );
 
     useEffect(() => {
         setCloneProjectName(`${project.name} (Clone)`);
@@ -42,9 +47,7 @@ export function CloneProject({ project, refetch }: { project: Project; refetch: 
             });
 
             // Invalidate and refetch project lists
-            await Promise.all([
-                utils.project.list.invalidate(),
-            ]);
+            await Promise.all([utils.project.list.invalidate()]);
 
             toast.success('Project cloned successfully');
             setShowCloneDialog(false);
@@ -55,7 +58,8 @@ export function CloneProject({ project, refetch }: { project: Project; refetch: 
 
             if (errorMessage.includes('502') || errorMessage.includes('sandbox')) {
                 toast.error('Sandbox service temporarily unavailable', {
-                    description: 'Please try again in a few moments. Our servers may be experiencing high load.',
+                    description:
+                        'Please try again in a few moments. Our servers may be experiencing high load.',
                 });
             } else {
                 toast.error('Failed to clone project', {
@@ -76,7 +80,7 @@ export function CloneProject({ project, refetch }: { project: Project; refetch: 
                 }}
                 className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
             >
-                <Icons.Copy className="w-4 h-4" />
+                <Icons.Copy className="h-4 w-4" />
                 Clone Project
             </DropdownMenuItem>
 
@@ -85,7 +89,7 @@ export function CloneProject({ project, refetch }: { project: Project; refetch: 
                     <AlertDialogHeader>
                         <AlertDialogTitle>Clone Project</AlertDialogTitle>
                     </AlertDialogHeader>
-                    <div className="flex flex-col w-full gap-2">
+                    <div className="flex w-full flex-col gap-2">
                         <Label htmlFor="clone-name">Project Name</Label>
                         <Input
                             id="clone-name"
@@ -105,7 +109,11 @@ export function CloneProject({ project, refetch }: { project: Project; refetch: 
                         </p>
                     </div>
                     <AlertDialogFooter>
-                        <Button variant={'ghost'} onClick={() => setShowCloneDialog(false)} disabled={isCloningProject}>
+                        <Button
+                            variant={'ghost'}
+                            onClick={() => setShowCloneDialog(false)}
+                            disabled={isCloningProject}
+                        >
                             {t(transKeys.projects.actions.cancel)}
                         </Button>
                         <Button

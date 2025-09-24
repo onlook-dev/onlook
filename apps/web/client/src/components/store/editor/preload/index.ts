@@ -1,6 +1,8 @@
-import { LOCAL_PRELOAD_SCRIPT_SRC, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
-import type { SandboxFile } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
+
+import type { SandboxFile } from '@onlook/models';
+import { LOCAL_PRELOAD_SCRIPT_SRC, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
+
 import type { EditorEngine } from '../engine';
 import { normalizePath } from '../sandbox/helpers';
 
@@ -48,7 +50,9 @@ export class PreloadScriptManager {
     private async copyPreloadScriptToPublic(existingFile: SandboxFile | null): Promise<boolean> {
         try {
             if (!this.editorEngine.activeSandbox.session.provider) {
-                console.error('[PreloadScriptManager] No sandbox provider available for preload script file check');
+                console.error(
+                    '[PreloadScriptManager] No sandbox provider available for preload script file check',
+                );
                 return false;
             }
 
@@ -73,7 +77,7 @@ export class PreloadScriptManager {
                 }
             }
 
-            // Write the script content to the CodeSandbox project 
+            // Write the script content to the CodeSandbox project
             const writeSuccess = await this.editorEngine.activeSandbox.writeFile(
                 `public${LOCAL_PRELOAD_SCRIPT_SRC}`,
                 scriptContent,

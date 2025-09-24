@@ -1,8 +1,9 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
-import { observer } from 'mobx-react-lite';
 import React from 'react';
+import { observer } from 'mobx-react-lite';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { BranchDisplay } from '../../canvas/frame/top-bar/branch';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { useMeasureGroup } from '../hooks/use-measure-group';
@@ -18,7 +19,7 @@ export const FrameSelected = observer(({ availableWidth = 0 }: { availableWidth?
     const frameData = editorEngine.frames.selected[0];
     const { isOpen, onOpenChange } = useDropdownControl({
         id: 'window-selected-overflow-dropdown',
-        isOverflow: true
+        isOverflow: true,
     });
     if (!frameData) return null;
 
@@ -26,42 +27,34 @@ export const FrameSelected = observer(({ availableWidth = 0 }: { availableWidth?
         {
             key: 'device',
             label: 'Device',
-            components: [
-                <DeviceSelector key="device" />
-            ]
+            components: [<DeviceSelector key="device" />],
         },
         {
             key: 'rotate',
             label: 'Rotate',
-            components: [
-                <RotateGroup key="rotate" frameData={frameData} />
-            ]
+            components: [<RotateGroup key="rotate" frameData={frameData} />],
         },
         {
             key: 'window-actions',
             label: 'Window Actions',
-            components: [
-                <WindowActionsGroup key="window-actions" frameData={frameData} />
-            ]
+            components: [<WindowActionsGroup key="window-actions" frameData={frameData} />],
         },
         {
             key: 'theme',
             label: 'Theme',
-            components: [
-                <ThemeGroup key="theme" frameData={frameData} />
-            ]
+            components: [<ThemeGroup key="theme" frameData={frameData} />],
         },
     ];
 
     const { visibleCount } = useMeasureGroup({
         availableWidth,
-        count: WINDOW_GROUPS.length
+        count: WINDOW_GROUPS.length,
     });
     const visibleGroups = WINDOW_GROUPS.slice(0, visibleCount);
     const overflowGroups = WINDOW_GROUPS.slice(visibleCount);
 
     return (
-        <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden px-0.5">
+        <div className="flex w-full items-center justify-center gap-0.5 overflow-hidden px-0.5">
             {visibleGroups.map((group, groupIdx) => (
                 <React.Fragment key={group.key}>
                     {groupIdx > 0 && <InputSeparator />}
@@ -80,4 +73,4 @@ export const FrameSelected = observer(({ availableWidth = 0 }: { availableWidth?
             />
         </div>
     );
-}); 
+});

@@ -1,8 +1,10 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { useEffect, useRef, useState } from 'react';
+
 import { useDropdownControl } from '../../hooks/use-dropdown-manager';
 import { useTextControl } from '../../hooks/use-text-control';
 import { HoverOnlyTooltip } from '../../hover-tooltip';
@@ -16,7 +18,7 @@ export const FontSizeSelector = () => {
     const [inputValue, setInputValue] = useState(textState.fontSize.toString());
 
     const { isOpen, onOpenChange } = useDropdownControl({
-        id: 'font-size-dropdown'
+        id: 'font-size-dropdown',
     });
 
     // Update local input value when textState.fontSize changes externally
@@ -88,16 +90,13 @@ export const FontSizeSelector = () => {
                 disabled={isOpen}
             >
                 <div className="flex items-center gap-0.5">
-                    <ToolbarButton
-                        onClick={() => adjustFontSize(-1)}
-                        className="px-2 min-w-9"
-                    >
+                    <ToolbarButton onClick={() => adjustFontSize(-1)} className="min-w-9 px-2">
                         <Icons.Minus className="h-4 w-4" />
                     </ToolbarButton>
                     <DropdownMenuTrigger asChild>
                         <ToolbarButton
                             isOpen={isOpen}
-                            className="min-w-[40px] px-1 w-11"
+                            className="w-11 min-w-[40px] px-1"
                             onClick={handleInputClick}
                         >
                             <input
@@ -108,14 +107,11 @@ export const FontSizeSelector = () => {
                                 onKeyDown={handleInputKeyDown}
                                 onBlur={handleInputBlur}
                                 onClick={(e) => e.stopPropagation()}
-                                className="w-full bg-transparent text-center text-sm focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                className="w-full [appearance:textfield] bg-transparent text-center text-sm focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                             />
                         </ToolbarButton>
                     </DropdownMenuTrigger>
-                    <ToolbarButton
-                        onClick={() => adjustFontSize(1)}
-                        className="px-2 min-w-9"
-                    >
+                    <ToolbarButton onClick={() => adjustFontSize(1)} className="min-w-9 px-2">
                         <Icons.Plus className="h-4 w-4" />
                     </ToolbarButton>
                 </div>
@@ -129,10 +125,11 @@ export const FontSizeSelector = () => {
                         <button
                             key={size}
                             onClick={() => handleSizeSelect(size)}
-                            className={`cursor-pointer text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${size === textState.fontSize
-                                ? 'bg-background-tertiary/20 border-border border text-white'
-                                : ''
-                                }`}
+                            className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border cursor-pointer justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${
+                                size === textState.fontSize
+                                    ? 'bg-background-tertiary/20 border-border border text-white'
+                                    : ''
+                            }`}
                         >
                             {size}
                         </button>

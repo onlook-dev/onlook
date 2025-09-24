@@ -1,11 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
-import { type ImageContentData } from '@onlook/models';
 
-export const useImageSearch = ({
-    imageAssets,
-}: {
-    imageAssets: ImageContentData[];
-}) => {
+import type { ImageContentData } from '@onlook/models';
+
+export const useImageSearch = ({ imageAssets }: { imageAssets: ImageContentData[] }) => {
     const [search, setSearch] = useState('');
 
     const filteredImages = useMemo(() => {
@@ -38,4 +35,4 @@ export const useImageSearch = ({
         handleSearchChange,
         handleKeyDown,
     };
-}; 
+};

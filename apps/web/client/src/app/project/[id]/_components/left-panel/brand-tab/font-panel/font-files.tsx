@@ -1,8 +1,9 @@
+import { observer } from 'mobx-react-lite';
+
 import { VARIANTS } from '@onlook/fonts';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { extractFontParts } from '@onlook/utility';
-import { observer } from 'mobx-react-lite';
 
 export interface FontFile {
     name: string;
@@ -28,18 +29,18 @@ const FontFiles = observer(
         }
 
         return (
-            <div className="space-y-2 flex-1 max-h-[350px] pb-6 overflow-y-auto">
+            <div className="max-h-[350px] flex-1 space-y-2 overflow-y-auto pb-6">
                 {fontFiles.map((font, index) => (
                     <div
                         key={index}
-                        className="flex flex-col space-y-2 border border-white/10 rounded-lg p-3 bg-black/10"
+                        className="flex flex-col space-y-2 rounded-lg border border-white/10 bg-black/10 p-3"
                     >
                         <div className="flex items-center justify-between">
                             <div className="flex flex-col">
                                 <span className="text-sm font-normal">
                                     {extractFontParts(font.file.name).family}
                                 </span>
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-muted-foreground text-xs">
                                     {font.file.name}
                                 </span>
                             </div>
@@ -47,7 +48,7 @@ const FontFiles = observer(
                             <div className="flex items-center gap-2">
                                 <div className="relative">
                                     <select
-                                        className="appearance-none bg-black/20 border border-white/10 rounded-md text-sm p-2 pr-8 text-white cursor-pointer hover:bg-background-hover hover:text-accent-foreground hover:border-border-hover"
+                                        className="hover:bg-background-hover hover:text-accent-foreground hover:border-border-hover cursor-pointer appearance-none rounded-md border border-white/10 bg-black/20 p-2 pr-8 text-sm text-white"
                                         value={font.weight}
                                         onChange={(e) => onWeightChange(index, e.target.value)}
                                     >
@@ -57,18 +58,18 @@ const FontFiles = observer(
                                             </option>
                                         ))}
                                     </select>
-                                    <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                                        <Icons.ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                        <Icons.ChevronDown className="text-muted-foreground h-4 w-4" />
                                     </div>
                                 </div>
 
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-9 w-9 border border-white/10 bg-black/20 rounded-md"
+                                    className="h-9 w-9 rounded-md border border-white/10 bg-black/20"
                                     onClick={() => onRemoveFont(index)}
                                 >
-                                    <Icons.Trash className="h-4 w-4 text-muted-foreground" />
+                                    <Icons.Trash className="text-muted-foreground h-4 w-4" />
                                 </Button>
                             </div>
                         </div>

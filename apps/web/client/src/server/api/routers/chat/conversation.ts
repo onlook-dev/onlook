@@ -1,15 +1,17 @@
+import { generateText } from 'ai';
+import { eq } from 'drizzle-orm';
+import { v4 as uuidv4 } from 'uuid';
+import { z } from 'zod';
+
 import { initModel } from '@onlook/ai';
 import {
     conversationInsertSchema,
     conversations,
     conversationUpdateSchema,
-    fromDbConversation
+    fromDbConversation,
 } from '@onlook/db';
 import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
-import { generateText } from 'ai';
-import { eq } from 'drizzle-orm';
-import { v4 as uuidv4 } from 'uuid';
-import { z } from 'zod';
+
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const conversationRouter = createTRPCRouter({
@@ -33,40 +35,43 @@ export const conversationRouter = createTRPCRouter({
             }
             return fromDbConversation(conversation);
         }),
-    upsert: protectedProcedure
-        .input(conversationInsertSchema)
-        .mutation(async ({ ctx, input }) => {
-            const [conversation] = await ctx.db.insert(conversations).values(input).returning();
-            if (!conversation) {
-                throw new Error('Conversation not created');
-            }
-            return fromDbConversation(conversation);
-        }),
-    update: protectedProcedure
-        .input(conversationUpdateSchema)
-        .mutation(async ({ ctx, input }) => {
-            const [conversation] = await ctx.db.update({
+    upsert: protectedProcedure.input(conversationInsertSchema).mutation(async ({ ctx, input }) => {
+        const [conversation] = await ctx.db.insert(conversations).values(input).returning();
+        if (!conversation) {
+            throw new Error('Conversation not created');
+        }
+        return fromDbConversation(conversation);
+    }),
+    update: protectedProcedure.input(conversationUpdateSchema).mutation(async ({ ctx, input }) => {
+        const [conversation] = await ctx.db
+            .update({
                 ...conversations,
                 updatedAt: new Date(),
-            }).set(input)
-                .where(eq(conversations.id, input.id)).returning();
-            if (!conversation) {
-                throw new Error('Conversation not updated');
-            }
-            return fromDbConversation(conversation);
-        }),
+            })
+            .set(input)
+            .where(eq(conversations.id, input.id))
+            .returning();
+        if (!conversation) {
+            throw new Error('Conversation not updated');
+        }
+        return fromDbConversation(conversation);
+    }),
     delete: protectedProcedure
-        .input(z.object({
-            conversationId: z.string()
-        }))
+        .input(
+            z.object({
+                conversationId: z.string(),
+            }),
+        )
         .mutation(async ({ ctx, input }) => {
             await ctx.db.delete(conversations).where(eq(conversations.id, input.conversationId));
         }),
     generateTitle: protectedProcedure
-        .input(z.object({
-            conversationId: z.string(),
-            content: z.string(),
-        }))
+        .input(
+            z.object({
+                conversationId: z.string(),
+                content: z.string(),
+            }),
+        )
         .mutation(async ({ ctx, input }) => {
             const { model, providerOptions, headers } = await initModel({
                 provider: LLMProvider.OPENROUTER,
@@ -93,10 +98,17 @@ export const conversationRouter = createTRPCRouter({
             });
 
             const generatedName = result.text.trim();
-            if (generatedName && generatedName.length > 0 && generatedName.length <= MAX_NAME_LENGTH) {
-                await ctx.db.update(conversations).set({
-                    displayName: generatedName,
-                }).where(eq(conversations.id, input.conversationId));
+            if (
+                generatedName &&
+                generatedName.length > 0 &&
+                generatedName.length <= MAX_NAME_LENGTH
+            ) {
+                await ctx.db
+                    .update(conversations)
+                    .set({
+                        displayName: generatedName,
+                    })
+                    .where(eq(conversations.id, input.conversationId));
                 return generatedName;
             }
 

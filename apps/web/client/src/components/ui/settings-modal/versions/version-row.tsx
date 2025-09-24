@@ -1,16 +1,17 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { useStateManager } from '@/components/store/state';
+import { useEffect, useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
 import type { GitCommit } from '@onlook/git';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { toast } from '@onlook/ui/sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-
 import { cn } from '@onlook/ui/utils';
 import { formatCommitDate, timeAgo } from '@onlook/utility';
-import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
+import { useStateManager } from '@/components/store/state';
 
 export enum VersionRowType {
     SAVED = 'saved',
@@ -101,7 +102,7 @@ export const VersionRow = observer(
         return (
             <div
                 key={commit.oid}
-                className="py-4 px-6 grid grid-cols-6 items-center justify-between hover:bg-background-secondary/80 transition-colors group"
+                className="hover:bg-background-secondary/80 group grid grid-cols-6 items-center justify-between px-6 py-4 transition-colors"
             >
                 <span className="col-span-4 flex flex-col gap-0.5">
                     {isRenaming ? (
@@ -115,21 +116,21 @@ export const VersionRow = observer(
                                 }
                             }}
                             onBlur={finishRenaming}
-                            className="p-0 pl-2 h-8 border border-transparent hover:border-border/50 focus-visible:border-primary/10 focus-visible:ring-0 focus-visible:outline-none focus-visible:bg-transparent bg-transparent hover:bg-transparent transition-all duration-100"
+                            className="hover:border-border/50 focus-visible:border-primary/10 h-8 border border-transparent bg-transparent p-0 pl-2 transition-all duration-100 hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:outline-none"
                         />
                     ) : (
                         <span>{commit.displayName ?? commit.message ?? 'Backup'}</span>
                     )}
                     <span className="text-muted-foreground font-light">
                         {commit.author.name}{' '}
-                        <span className="text-xs mx-0.45 inline-block scale-75">•</span>{' '}
+                        <span className="mx-0.45 inline-block scale-75 text-xs">•</span>{' '}
                         {renderDate()}
                     </span>
                 </span>
-                <span className="col-span-1 text-muted-foreground"></span>
+                <span className="text-muted-foreground col-span-1"></span>
                 <div
                     className={cn(
-                        'col-span-1 gap-2 flex justify-end group-hover:opacity-100 opacity-0 transition-opacity',
+                        'col-span-1 flex justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100',
                         (isCheckoutSuccess || isCheckingOut || isRenaming) && 'opacity-100',
                     )}
                 >
@@ -137,7 +138,7 @@ export const VersionRow = observer(
                         <Button
                             variant="outline"
                             size="sm"
-                            className="gap-2 bg-background-secondary"
+                            className="bg-background-secondary gap-2"
                             onClick={() => editorEngine.versions.removeSavedCommit(commit)}
                         >
                             <Icons.BookmarkFilled />
@@ -147,7 +148,7 @@ export const VersionRow = observer(
                         <Button
                             variant="outline"
                             size="sm"
-                            className="gap-2 bg-background-secondary hidden"
+                            className="bg-background-secondary hidden gap-2"
                             onClick={() => editorEngine.versions.saveCommit(commit)}
                         >
                             <Icons.Bookmark />
@@ -158,7 +159,7 @@ export const VersionRow = observer(
                         <Button
                             variant="outline"
                             size="sm"
-                            className="gap-2 bg-background-secondary"
+                            className="bg-background-secondary gap-2"
                         >
                             <Icons.Check className="h-4 w-4 text-green-500" />
                             <span className="text-muted-foreground">Restored</span>
@@ -174,7 +175,7 @@ export const VersionRow = observer(
                                         onClick={startRenaming}
                                         disabled={isRenaming || isCheckingOut}
                                     >
-                                        <Icons.Pencil className="h-4 w-4 mr-2" />
+                                        <Icons.Pencil className="mr-2 h-4 w-4" />
                                         Rename
                                     </Button>
                                 </TooltipTrigger>
@@ -191,7 +192,7 @@ export const VersionRow = observer(
                                         onClick={handleCheckout}
                                         disabled={isCheckingOut}
                                     >
-                                        <Icons.CounterClockwiseClock className="h-4 w-4 mr-2" />
+                                        <Icons.CounterClockwiseClock className="mr-2 h-4 w-4" />
                                         {isCheckingOut ? 'Restoring...' : 'Restore'}
                                     </Button>
                                 </TooltipTrigger>

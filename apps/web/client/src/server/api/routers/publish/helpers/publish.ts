@@ -1,7 +1,9 @@
-import { DefaultSettings } from '@onlook/constants';
-import { type Deployment, type DrizzleDb } from '@onlook/db';
-import { DeploymentStatus, DeploymentType } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
+
+import type { Deployment, DrizzleDb } from '@onlook/db';
+import { DefaultSettings } from '@onlook/constants';
+import { DeploymentStatus, DeploymentType } from '@onlook/models';
+
 import { PublishManager } from '../manager';
 import { deployFreestyle } from './deploy';
 import { extractEnvVarsFromSandbox } from './env';
@@ -11,11 +13,11 @@ import { getProjectUrls, updateDeployment } from './helpers';
 export async function publish({
     db,
     deployment,
-    sandboxId
+    sandboxId,
 }: {
     db: DrizzleDb;
     deployment: Deployment;
-    sandboxId: string
+    sandboxId: string;
 }) {
     const {
         id: deploymentId,

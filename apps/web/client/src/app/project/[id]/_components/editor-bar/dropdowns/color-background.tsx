@@ -1,10 +1,12 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
+import { useMemo } from 'react';
+import { observer } from 'mobx-react-lite';
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
-import { useMemo } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { useColorUpdate } from '../hooks/use-color-update';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
@@ -51,14 +53,17 @@ export const ColorBackground = observer(() => {
                             className="flex w-10 flex-col items-center justify-center gap-0.5"
                         >
                             <Icons.PaintBucket className="h-2 w-2" />
-                            <div className="h-[4px] w-6 rounded-full border-[0.5px] border-border" style={previewStyle} />
+                            <div
+                                className="border-border h-[4px] w-6 rounded-full border-[0.5px]"
+                                style={previewStyle}
+                            />
                         </ToolbarButton>
                     </DropdownMenuTrigger>
                 </HoverOnlyTooltip>
                 <DropdownMenuContent
                     align="start"
                     side="bottom"
-                    className="w-[224px] mt-1 p-0 rounded-lg overflow-hidden shadow-xl backdrop-blur-lg"
+                    className="mt-1 w-[224px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
                 >
                     <ColorPickerContent
                         color={tempColor}

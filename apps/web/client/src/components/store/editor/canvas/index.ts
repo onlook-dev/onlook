@@ -1,13 +1,15 @@
-import { api } from '@/trpc/client';
-import { DefaultSettings } from '@onlook/constants';
-import { DefaultDesktopFrame } from '@onlook/db';
-import type { Canvas, RectPosition } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
+
+import type { Canvas, RectPosition } from '@onlook/models';
+import { DefaultSettings } from '@onlook/constants';
+import { DefaultDesktopFrame } from '@onlook/db';
+
 import type { EditorEngine } from '../engine';
+import { api } from '@/trpc/client';
 
 export class CanvasManager {
-    private _id: string = '';
+    private _id = '';
     private _scale: number = DefaultSettings.SCALE;
     private _position: RectPosition = DefaultSettings.PAN_POSITION;
 

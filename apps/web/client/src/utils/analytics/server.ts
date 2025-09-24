@@ -1,9 +1,11 @@
-import { env } from "@/env";
-import { PostHog, type EventMessage } from "posthog-node";
+import type { EventMessage } from 'posthog-node';
+import { PostHog } from 'posthog-node';
+
+import { env } from '@/env';
 
 class PostHogSingleton {
     private static instance: PostHog | null = null;
-    private constructor() { }
+    private constructor() {}
 
     public static getInstance(): PostHog | null {
         if (!env.NEXT_PUBLIC_POSTHOG_KEY) {

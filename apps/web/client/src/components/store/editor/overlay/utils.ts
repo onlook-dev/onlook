@@ -1,6 +1,7 @@
-import type { IFrameView } from '@/app/project/[id]/_components/canvas/frame/view';
-import { EditorAttributes } from '@onlook/constants';
 import type { ElementPosition, RectDimensions } from '@onlook/models';
+import { EditorAttributes } from '@onlook/constants';
+
+import type { IFrameView } from '@/app/project/[id]/_components/canvas/frame/view';
 
 /**
  * Calculates the cumulative offset between an element and its ancestor,
@@ -86,7 +87,7 @@ export function adaptValueToCanvas(value: number, inverse = false): number {
 export function getRelativeMousePositionToFrameView(
     e: React.MouseEvent<HTMLDivElement>,
     frameView: IFrameView,
-    inverse: boolean = false,
+    inverse = false,
 ): ElementPosition {
     const rect = frameView.getBoundingClientRect();
     const canvasContainer = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);

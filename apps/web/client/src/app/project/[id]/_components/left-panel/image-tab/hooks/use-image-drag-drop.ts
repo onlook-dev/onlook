@@ -1,7 +1,10 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { EditorMode, type ImageContentData } from '@onlook/models';
-import { usePostHog } from 'posthog-js/react';
 import { useCallback, useState } from 'react';
+import { usePostHog } from 'posthog-js/react';
+
+import type { ImageContentData } from '@onlook/models';
+import { EditorMode } from '@onlook/models';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { useImagesContext } from '../providers/images-provider';
 
 export const useImageDragDrop = (currentFolder?: string) => {
@@ -128,4 +131,4 @@ export const useImageDragDrop = (currentFolder?: string) => {
         onImageMouseUp,
         onImageDragEnd,
     };
-}; 
+};
