@@ -1,9 +1,8 @@
 import { EditorAttributes } from '@onlook/constants';
 import { createOid } from '@onlook/utility';
 
-import { type NodePath, type T } from './packages';
 import { isReactFragment } from './helpers';
-import { t, traverse } from './packages';
+import { t, traverse, type T } from './packages';
 
 export function addOidsToAst(
     ast: T.File,
@@ -47,7 +46,7 @@ export function addOidsToAst(
                     // Single valid oid - check if it conflicts with other branches or local duplicates
                     const value = allOids.values[0];
                     const index = allOids.indices[0];
-                    
+
                     if (value && index !== undefined) {
                         const oidOwnerBranch = branchOidMap.get(value);
 
@@ -106,7 +105,7 @@ export function getAllExistingOids(
     attributes.forEach((attr, index) => {
         if (t.isJSXAttribute(attr) && attr.name.name === EditorAttributes.DATA_ONLOOK_ID) {
             oidIndices.push(index);
-            
+
             const existingAttrValue = attr.value;
             if (!existingAttrValue || !t.isStringLiteral(existingAttrValue)) {
                 hasInvalid = true;
@@ -161,33 +160,4 @@ export function getExistingOid(
         value: existingAttrValue.value,
         shouldRemove: false,
     };
-}
-
-export function removeOidsFromAst(ast: T.File) {
-    traverse(ast, {
-        JSXOpeningElement(path: NodePath<T.JSXOpeningElement>) {
-            if (isReactFragment(path.node)) {
-                return;
-            }
-            const attributes = path.node.attributes;
-            const existingAttrIndex = attributes.findIndex(
-                (attr: any) => attr.name?.name === EditorAttributes.DATA_ONLOOK_ID,
-            );
-
-            if (existingAttrIndex !== -1) {
-                attributes.splice(existingAttrIndex, 1);
-            }
-        },
-        JSXAttribute(path: NodePath<T.JSXAttribute>) {
-            if (path.node.name.name === 'key') {
-                const value = path.node.value;
-                if (
-                    t.isStringLiteral(value) &&
-                    value.value.startsWith(EditorAttributes.ONLOOK_MOVE_KEY_PREFIX)
-                ) {
-                    return path.remove();
-                }
-            }
-        },
-    });
 }
