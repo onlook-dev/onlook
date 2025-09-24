@@ -1,10 +1,10 @@
-import * as path from 'node:path';
 import { includeIgnoreFile } from '@eslint/compat';
 import eslint from '@eslint/js';
 import importPlugin from 'eslint-plugin-import';
 import * as jsoncPlugin from 'eslint-plugin-jsonc';
 import onlyWarn from 'eslint-plugin-only-warn';
 import prettierPlugin from 'eslint-plugin-prettier';
+import * as path from 'node:path';
 import tseslint from 'typescript-eslint';
 
 import prettierConfig from '@onlook/prettier';
@@ -54,12 +54,12 @@ export default tseslint.config(
             '@typescript-eslint/consistent-type-definitions': 'off',
             '@typescript-eslint/consistent-type-imports': [
                 'warn',
-                { prefer: 'type-imports', fixStyle: 'separate-type-imports' },
+                { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
             ],
             '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
             '@typescript-eslint/require-await': 'off',
             '@typescript-eslint/no-misused-promises': 'warn',
-            'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
+            'import/consistent-type-specifier-style': 'warn',
         },
     },
     {

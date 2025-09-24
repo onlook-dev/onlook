@@ -31,6 +31,6 @@
     "exclude": [
         "node_modules",
         ".next",
-        "public/**/*"
+        "public/onlook-preload-script.js"
     ]
 }
