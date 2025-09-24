@@ -1,8 +1,8 @@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
+import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 
 interface SearchResult {
@@ -34,7 +34,7 @@ export const SearchSourcesDisplay = observer(({
                         />
                         <div className="flex flex-col">
                             <span>Searched web</span>
-                            <span className="text-foreground-tertiary text-xs">
+                            <span className="text-foreground-tertiary text-xs truncate">
                                 {query}
                             </span>
                         </div>

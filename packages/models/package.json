@@ -12,8 +12,8 @@
     "scripts": {
         "build": "bun build src/index.ts --outfile=dist/index.js",
         "clean": "rm -rf node_modules",
-        "lint": "eslint --fix",
-        "format": "prettier --write .",
+        "lint": "eslint . --max-warnings 0",
+        "format": "eslint --fix .",
         "typecheck": "tsc --noEmit"
     },
     "keywords": [
@@ -31,9 +31,11 @@
         "./*": "./src/*/index.ts"
     },
     "devDependencies": {
+        "@onlook/eslint": "*",
         "@onlook/typescript": "*",
-        "typescript": "^5.5.4",
-        "ai": "5.0.26"
+        "ai": "5.0.26",
+        "eslint": "^9.0.0",
+        "typescript": "^5.5.4"
     },
     "dependencies": {
         "zod": "^4.1.3"

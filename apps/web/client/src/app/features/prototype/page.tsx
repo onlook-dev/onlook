@@ -6,19 +6,18 @@ import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-proj
 import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
-import React from 'react';
 import { ButtonLink } from '../../_components/button-link';
 import { UnicornBackground } from '../../_components/hero/unicorn-background';
 import { CTASection } from '../../_components/landing-page/cta-section';
 import { FAQDropdown } from '../../_components/landing-page/faq-dropdown';
 import { ResponsiveMockupSection } from '../../_components/landing-page/responsive-mockup-section';
-import { WebsiteLayout } from '../../_components/website-layout';
-import { useGitHubStats } from '../../_components/top-bar/github';
 import { AiChatInteractive } from '../../_components/shared/mockups/ai-chat-interactive';
 import { DirectEditingInteractive } from '../../_components/shared/mockups/direct-editing-interactive';
 import { TailwindColorEditorMockup } from '../../_components/shared/mockups/tailwind-color-editor';
+import { useGitHubStats } from '../../_components/top-bar/github';
+import { WebsiteLayout } from '../../_components/website-layout';
 
 function PrototypeFeaturesHero() {
     const router = useRouter();
@@ -115,7 +114,7 @@ function PrototypeBenefitsSection() {
                         <AiChatInteractive />
                     </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div className="flex flex-col order-2 lg:order-1">
                         <h2 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">Design to Code Tool for Product Teams</h2>
@@ -128,7 +127,7 @@ function PrototypeBenefitsSection() {
                         <DirectEditingInteractive />
                     </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div className="flex flex-col order-2 lg:order-1">
                         <h2 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">Product Prototype Testing Platform</h2>
@@ -157,7 +156,7 @@ function PrototypeFeaturesGridSection() {
                         Describe your product idea in natural language and watch AI generate a fully functional prototype with proper React architecture, state management, and responsive design.
                     </p>
                 </div>
-                
+
                 <div>
                     <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Interactive Components</h2>
                     <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Working features, not static mockups</p>
@@ -165,7 +164,7 @@ function PrototypeFeaturesGridSection() {
                         Create prototypes with working forms, navigation, data visualization, and user interactions—not just static screens linked together.
                     </p>
                 </div>
-                
+
                 <div>
                     <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Real-Time Collaboration (planned)</h2>
                     <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Team feedback and iteration</p>
@@ -173,7 +172,7 @@ function PrototypeFeaturesGridSection() {
                         Share prototypes instantly with your team for feedback, comments, and collaborative editing in real-time.
                     </p>
                 </div>
-                
+
                 <div>
                     <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Figma to React Conversion</h2>
                     <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Design to production-ready code</p>
@@ -181,7 +180,7 @@ function PrototypeFeaturesGridSection() {
                         Import Figma designs and convert them to clean, production-ready React code with proper component structure and Tailwind styling.
                     </p>
                 </div>
-                
+
                 <div>
                     <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">One-Click Deployment</h2>
                     <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Instant live prototypes</p>
@@ -189,7 +188,7 @@ function PrototypeFeaturesGridSection() {
                         Deploy your prototypes to live URLs instantly for user testing, stakeholder reviews, and product validation without any setup.
                     </p>
                 </div>
-                
+
                 <div>
                     <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Version History</h2>
                     <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Complete prototype evolution tracking</p>

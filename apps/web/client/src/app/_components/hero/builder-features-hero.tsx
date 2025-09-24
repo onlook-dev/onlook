@@ -2,7 +2,7 @@
 
 import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { useGitHubStats } from '../top-bar/github';
 import { UnicornBackground } from './unicorn-background';

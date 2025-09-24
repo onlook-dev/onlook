@@ -45,9 +45,11 @@ declare const messages: {
             "showInExplorer": "Show in Explorer",
             "renameProject": "Rename Project",
             "deleteProject": "Delete Project",
+            "cloneProject": "Clone Project",
             "cancel": "Cancel",
             "delete": "Delete",
             "rename": "Rename",
+            "clone": "Clone",
             "goToAllProjects": "Go to all Projects",
             "newProject": "New Project",
             "blankProject": "Blank Project",
@@ -70,6 +72,12 @@ declare const messages: {
             "rename": {
                 "title": "Rename Project",
                 "label": "Project Name",
+                "error": "Project name can't be empty"
+            },
+            "clone": {
+                "title": "Clone Project",
+                "label": "Project Name",
+                "placeholder": "Enter name for cloned project",
                 "error": "Project name can't be empty"
             }
         },

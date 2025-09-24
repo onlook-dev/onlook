@@ -5,7 +5,7 @@ import {
     migrateFontsFromLayout,
 } from '../src/helpers/font-extractors';
 import { runDataDrivenTests } from './test-utils';
-import { parse, traverse, type t as T } from '@onlook/parser';
+import { parse, traverse, T } from '@onlook/parser';
 import path from 'path';
 
 const __dirname = import.meta.dir;

@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import { parse, traverse, types as t, type t as T, NodePath } from '@onlook/parser';
+import { parse, traverse, t, T, NodePath } from '@onlook/parser';
 import {
     isTailwindThemeProperty,
     hasPropertyName,

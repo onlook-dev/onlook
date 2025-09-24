@@ -4,15 +4,18 @@ import type { EditMessage } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
 import { type ChatMessage } from '@onlook/models/chat';
-import { ChatMessageList } from '@onlook/ui/chat/chat-message-list';
+import {
+    Conversation,
+    ConversationContent,
+    ConversationScrollButton
+} from '@onlook/ui/ai-elements';
 import { Icons } from '@onlook/ui/icons';
 import { assertNever } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { AssistantMessage } from './assistant-message';
 import { ErrorMessage } from './error-message';
-import { StreamMessage } from './stream-message';
 import { UserMessage } from './user-message';
 
 interface ChatMessagesProps {
@@ -23,28 +26,13 @@ interface ChatMessagesProps {
 }
 
 export const ChatMessages = observer(({
-    messages: baseMessages,
+    messages,
     onEditMessage,
     isStreaming,
     error,
 }: ChatMessagesProps) => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
-    const { messages, streamedMessage }: { messages: ChatMessage[], streamedMessage: ChatMessage | null } = useMemo(() => {
-        if (isStreaming) {
-            const lastAssistantMessage = baseMessages[baseMessages.length - 1];
-            if (lastAssistantMessage && lastAssistantMessage.role === 'assistant') {
-                return {
-                    messages: baseMessages.slice(0, -1),
-                    streamedMessage: lastAssistantMessage,
-                };
-            }
-        }
-        return {
-            messages: baseMessages,
-            streamedMessage: null,
-        };
-    }, [baseMessages, isStreaming]);
 
     const renderMessage = useCallback(
         (message: ChatMessage, index: number) => {
@@ -68,7 +56,7 @@ export const ChatMessages = observer(({
                 default:
                     assertNever(message.role);
             }
-            return <div key={`message-${message.id}-${index}`}>{messageNode}</div>;
+            return <div key={`message-${message.id}-${index}`} className="my-2">{messageNode}</div>;
         },
         [onEditMessage],
     );
@@ -87,17 +75,17 @@ export const ChatMessages = observer(({
     }
 
     return (
-        <ChatMessageList
-            contentKey={`${messages.map((m) => m.id).join('|')}${isStreaming ? `|${messages?.[messages.length - 1]?.id ?? ''}` : ''}`}
-        >
-            {messages.map((message, index) => renderMessage(message, index))}
-            {streamedMessage && <StreamMessage message={streamedMessage} />}
-            {error && <ErrorMessage error={error} />}
-            {isStreaming && <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
-                <Icons.LoadingSpinner className="animate-spin" />
-                <p>Thinking ...</p>
-            </div>}
-        </ChatMessageList>
+        <Conversation className="h-full w-full">
+            <ConversationContent className="p-0 m-0">
+                {messages.map((message, index) => renderMessage(message, index))}
+                {error && <ErrorMessage error={error} />}
+                {isStreaming && <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
+                    <Icons.LoadingSpinner className="animate-spin" />
+                    <p>Thinking ...</p>
+                </div>}
+            </ConversationContent>
+            <ConversationScrollButton />
+        </Conversation>
     );
 },
 );

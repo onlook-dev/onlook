@@ -1,34 +1,34 @@
 "use client";
-import { Icons } from '@onlook/ui/icons';
 import { WebsiteLayout } from '@/app/_components/website-layout';
+import { useReducedMotion } from '@onlook/ui/hooks';
+import { Icons } from '@onlook/ui/icons';
+import { motion } from 'motion/react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useParallaxCursor } from '../../hooks/use-parallax-cursor';
+import { ButtonLink } from '../_components/button-link';
 import { CTASection } from '../_components/landing-page/cta-section';
 import { Illustrations } from '../_components/landing-page/illustrations';
-import { vujahdayScript } from '../fonts';
-import { ButtonLink } from '../_components/button-link';
 import { useGitHubStats } from '../_components/top-bar/github';
-import { useParallaxCursor } from '../../hooks/use-parallax-cursor';
-import { motion } from 'framer-motion';
-import { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import { useReducedMotion } from '@onlook/ui/hooks';
+import { vujahdayScript } from '../fonts';
 
 export default function AboutPage() {
     const { raw: starCount, contributors } = useGitHubStats();
     const parallax = useParallaxCursor({ intensity: 0.15, smoothness: 0.08 });
     const prefersReducedMotion = useReducedMotion();
-    
+
     // Responsive state for mobile detection
     const [isMobile, setIsMobile] = useState(false);
-    
+
     useEffect(() => {
         const checkMobile = () => {
             setIsMobile(window.innerWidth < 768); // md breakpoint
         };
-        
+
         checkMobile();
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
-    
+
     // Timeline line dynamic positioning
     const timelineContainerRef = useRef<HTMLDivElement>(null);
     const firstSquareRef = useRef<HTMLDivElement>(null);
@@ -56,26 +56,26 @@ export default function AboutPage() {
             initial: prefersReducedMotion ? { opacity: 0 } : { opacity: 0, filter: "blur(4px)" },
             whileInView: prefersReducedMotion ? { opacity: 1 } : { opacity: 1, filter: "blur(0px)" },
             viewport: customViewport || { once: true, margin: "-100px 0px -100px 0px", amount: 0.3 },
-            transition: { 
-                duration: prefersReducedMotion ? 0.3 : 0.6, 
-                delay, 
-                ease: "easeOut" 
+            transition: {
+                duration: prefersReducedMotion ? 0.3 : 0.6,
+                delay,
+                ease: [0.25, 0.46, 0.45, 0.94] as const
             }
         };
-        
+
         if (includeStyle) {
             return {
                 ...baseProps,
-                style: { 
-                    willChange: prefersReducedMotion ? "opacity" : "opacity, filter", 
-                    transform: "translateZ(0)" 
+                style: {
+                    willChange: prefersReducedMotion ? "opacity" : "opacity, filter",
+                    transform: "translateZ(0)"
                 }
             };
         }
-        
+
         return baseProps;
     };
-    
+
     return (
         <WebsiteLayout showFooter={true}>
             <main className="bg-background text-foreground-primary">
@@ -88,7 +88,7 @@ export default function AboutPage() {
                         >
                             Design deserves<br />better tools
                         </motion.h1>
-                        
+
                         {/* Stats - shown below title on mobile/midsize, hidden on large screens */}
                         <motion.div
                             className="block lg:hidden mb-24"
@@ -112,7 +112,7 @@ export default function AboutPage() {
                                 </div>
                             </div>
                         </motion.div>
-                        
+
                         <div className="flex gap-12 flex-col md:flex-row md:items-start md:justify-between">
                             <motion.div
                                 className=" max-w-lg text-left"
@@ -120,7 +120,7 @@ export default function AboutPage() {
                             >
                                 <p className="text-lg md:text-large max-w-lg md:max-w-none text-foreground-secondary text-left font-light text-balance">
                                     Onlook was founded to obliterate the divide between creativity and implementation.<br /><br />
-                                    For too long, the most brilliant creative teams have been severed by the complexity of tools. 
+                                    For too long, the most brilliant creative teams have been severed by the complexity of tools.
                                     We're building a global movement, led by a passionate and highly technical team based in San Francisco called "The Odyssey" to build a bridge that will end the gap between creativity and implementation.<br /><br />
                                     If you're deeply opinionated about design, developer tools, and how AI can enhance the creative process, or are looking to be a part of an entirely new kind of organization, apply to join The Odyssey below.
                                 </p>
@@ -151,7 +151,7 @@ export default function AboutPage() {
                     </div>
                 </section>
 
-            
+
                 {/* Meet the Founders Section */}
                 <section className="py-48">
                     <div className="max-w-6xl mx-auto px-8">
@@ -254,10 +254,10 @@ export default function AboutPage() {
                                 </h2>
                             </motion.div>
                             {/* Desktop only image */}
-                            <motion.img 
-                                src="/assets/about-office-1.png" 
-                                alt="Office space" 
-                                className="hidden md:block w-[400px] h-[400px] object-cover mb-0 transition-transform duration-300 ease-out pointer-events-none select-none" 
+                            <motion.img
+                                src="/assets/about-office-1.png"
+                                alt="Office space"
+                                className="hidden md:block w-[400px] h-[400px] object-cover mb-0 transition-transform duration-300 ease-out pointer-events-none select-none"
                                 style={{
                                     transform: `translate(${parallax.x * 60}px, ${parallax.y * 45}px)`,
                                     willChange: prefersReducedMotion ? "opacity" : "opacity, filter"
@@ -272,72 +272,72 @@ export default function AboutPage() {
                             <div className="grid grid-cols-1 gap-4 mb-4">
                                 {/* Top row - 2 images */}
                                 <div className="space-y-4">
-                                    <motion.img 
-                                        src="/assets/about-office-1.png" 
-                                        alt="Office space" 
-                                        className="w-full h-100 object-cover transition-transform duration-300 ease-out pointer-events-none select-none" 
-                                        {...getBlurAnimationProps(0.1, false, { 
-                                            once: true, 
-                                            margin: isMobile ? "-50px 0px -50px 0px" : "-100px 0px -100px 0px", 
-                                            amount: isMobile ? 0.1 : 0.3 
+                                    <motion.img
+                                        src="/assets/about-office-1.png"
+                                        alt="Office space"
+                                        className="w-full h-100 object-cover transition-transform duration-300 ease-out pointer-events-none select-none"
+                                        {...getBlurAnimationProps(0.1, false, {
+                                            once: true,
+                                            margin: isMobile ? "-50px 0px -50px 0px" : "-100px 0px -100px 0px",
+                                            amount: isMobile ? 0.1 : 0.3
                                         })}
                                     />
-                                    <motion.img 
-                                        src="/assets/about-office-3.png" 
-                                        alt="Office space" 
-                                        className="w-full h-100 object-cover transition-transform duration-300 ease-out pointer-events-none select-none" 
-                                        {...getBlurAnimationProps(0.2, false, { 
-                                            once: true, 
-                                            margin: isMobile ? "-50px 0px -50px 0px" : "-100px 0px -100px 0px", 
-                                            amount: isMobile ? 0.1 : 0.3 
+                                    <motion.img
+                                        src="/assets/about-office-3.png"
+                                        alt="Office space"
+                                        className="w-full h-100 object-cover transition-transform duration-300 ease-out pointer-events-none select-none"
+                                        {...getBlurAnimationProps(0.2, false, {
+                                            once: true,
+                                            margin: isMobile ? "-50px 0px -50px 0px" : "-100px 0px -100px 0px",
+                                            amount: isMobile ? 0.1 : 0.3
                                         })}
                                     />
                                 </div>
                                 <div className="space-y-4">
-                                    <motion.img 
-                                        src="/assets/about-office-2.png" 
-                                        alt="Office space" 
-                                        className="w-full h-100 object-cover transition-transform duration-300 ease-out pointer-events-none select-none" 
-                                        {...getBlurAnimationProps(0.3, false, { 
-                                            once: true, 
-                                            margin: isMobile ? "-50px 0px -50px 0px" : "-100px 0px -100px 0px", 
-                                            amount: isMobile ? 0.1 : 0.3 
+                                    <motion.img
+                                        src="/assets/about-office-2.png"
+                                        alt="Office space"
+                                        className="w-full h-100 object-cover transition-transform duration-300 ease-out pointer-events-none select-none"
+                                        {...getBlurAnimationProps(0.3, false, {
+                                            once: true,
+                                            margin: isMobile ? "-50px 0px -50px 0px" : "-100px 0px -100px 0px",
+                                            amount: isMobile ? 0.1 : 0.3
                                         })}
                                     />
                                 </div>
                             </div>
-                            
+
                             {/* Earn your stake text after third image */}
                             <motion.div
                                 className="flex flex-col items-start justify-center text-white text-left px-12 py-48 mb-4"
                                 {...getBlurAnimationProps(0.2)}
                             >
                                 <span className="mb-8 text-foreground-primary text-3xl font-light">Earn your stake<br />in the future of<br />creative work</span>
-                                <ButtonLink  href="https://www.ycombinator.com/companies/onlook/jobs/e4gHv1n-founding-engineer-fullstack" target="_blank" rel="noopener noreferrer" rightIcon={<span className="ml-2">→</span>}>
+                                <ButtonLink href="https://www.ycombinator.com/companies/onlook/jobs/e4gHv1n-founding-engineer-fullstack" target="_blank" rel="noopener noreferrer" rightIcon={<span className="ml-2">→</span>}>
                                     Claim your desk
                                 </ButtonLink>
                             </motion.div>
-                            
+
                             {/* Bottom centered image */}
                             <div className="flex flex-col justify-center gap-4">
-                                <motion.img 
-                                    src="/assets/about-office-5.png" 
-                                    alt="Office space" 
-                                    className="w-full h-100 object-cover transition-transform duration-300 ease-out pointer-events-none select-none" 
-                                    {...getBlurAnimationProps(0.4, false, { 
-                                        once: true, 
-                                        margin: isMobile ? "-50px 0px -50px 0px" : "-100px 0px -100px 0px", 
-                                        amount: isMobile ? 0.1 : 0.3 
+                                <motion.img
+                                    src="/assets/about-office-5.png"
+                                    alt="Office space"
+                                    className="w-full h-100 object-cover transition-transform duration-300 ease-out pointer-events-none select-none"
+                                    {...getBlurAnimationProps(0.4, false, {
+                                        once: true,
+                                        margin: isMobile ? "-50px 0px -50px 0px" : "-100px 0px -100px 0px",
+                                        amount: isMobile ? 0.1 : 0.3
                                     })}
                                 />
-                                <motion.img 
-                                    src="/assets/about-office-4.png" 
-                                    alt="Office space" 
-                                    className="w-full h-100 object-cover transition-transform duration-300 ease-out pointer-events-none select-none" 
-                                    {...getBlurAnimationProps(0.5, false, { 
-                                        once: true, 
-                                        margin: isMobile ? "-50px 0px -50px 0px" : "-100px 0px -100px 0px", 
-                                        amount: isMobile ? 0.1 : 0.3 
+                                <motion.img
+                                    src="/assets/about-office-4.png"
+                                    alt="Office space"
+                                    className="w-full h-100 object-cover transition-transform duration-300 ease-out pointer-events-none select-none"
+                                    {...getBlurAnimationProps(0.5, false, {
+                                        once: true,
+                                        margin: isMobile ? "-50px 0px -50px 0px" : "-100px 0px -100px 0px",
+                                        amount: isMobile ? 0.1 : 0.3
                                     })}
                                 />
                             </div>
@@ -347,10 +347,10 @@ export default function AboutPage() {
                         <div className="hidden md:block">
                             {/* Row 2: Three elements, offset right */}
                             <div className="flex flex-row items-center justify-center gap-40 w-full relative max-w-8xl">
-                                <motion.img 
-                                    src="/assets/about-office-2.png" 
-                                    alt="Office space" 
-                                    className="w-[400px] h-[400px] object-cover relative bottom-[60px] ml-12 transition-transform duration-300 ease-out pointer-events-none select-none" 
+                                <motion.img
+                                    src="/assets/about-office-2.png"
+                                    alt="Office space"
+                                    className="w-[400px] h-[400px] object-cover relative bottom-[60px] ml-12 transition-transform duration-300 ease-out pointer-events-none select-none"
                                     style={{
                                         transform: `translate(${parallax.x * -50}px, ${parallax.y * 80}px)`,
                                         willChange: prefersReducedMotion ? "opacity" : "opacity, filter"
@@ -362,14 +362,14 @@ export default function AboutPage() {
                                     {...getBlurAnimationProps(0.2)}
                                 >
                                     <span className="mb-8 text-foreground-primary text-lg md:text-3xl font-light">Earn your stake<br />in the future of<br />creative work</span>
-                                    <ButtonLink  href="https://www.ycombinator.com/companies/onlook/jobs/e4gHv1n-founding-engineer-fullstack" target="_blank" rel="noopener noreferrer" rightIcon={<span className="ml-2">→</span>}>
+                                    <ButtonLink href="https://www.ycombinator.com/companies/onlook/jobs/e4gHv1n-founding-engineer-fullstack" target="_blank" rel="noopener noreferrer" rightIcon={<span className="ml-2">→</span>}>
                                         Claim your desk
                                     </ButtonLink>
                                 </motion.div>
-                                <motion.img 
-                                    src="/assets/about-office-3.png" 
-                                    alt="Office space" 
-                                    className="w-[400px] h-[400px] object-cover transition-transform duration-300 ease-out pointer-events-none select-none" 
+                                <motion.img
+                                    src="/assets/about-office-3.png"
+                                    alt="Office space"
+                                    className="w-[400px] h-[400px] object-cover transition-transform duration-300 ease-out pointer-events-none select-none"
                                     style={{
                                         transform: `translate(${parallax.x * 55}px, ${parallax.y * -40}px)`,
                                         willChange: prefersReducedMotion ? "opacity" : "opacity, filter"
@@ -394,10 +394,10 @@ export default function AboutPage() {
                                         {...getBlurAnimationProps(0.4, false)}
                                     />
                                 </motion.div>
-                                <motion.img 
-                                    src="/assets/about-office-5.png" 
-                                    alt="Office space" 
-                                    className="w-[400px] h-[400px] object-cover relative left-20 top-24 transition-transform duration-300 ease-out pointer-events-none select-none" 
+                                <motion.img
+                                    src="/assets/about-office-5.png"
+                                    alt="Office space"
+                                    className="w-[400px] h-[400px] object-cover relative left-20 top-24 transition-transform duration-300 ease-out pointer-events-none select-none"
                                     style={{
                                         transform: `translate(${parallax.x * 65}px, ${parallax.y * -65}px)`,
                                         willChange: prefersReducedMotion ? "opacity" : "opacity, filter"

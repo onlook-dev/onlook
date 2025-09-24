@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import UnicornScene from 'unicornstudio-react/next';
 
 export function UnicornBackground() {

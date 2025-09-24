@@ -1,5 +1,7 @@
-import { generate, getAstFromContent, types as t, traverse, type t as T } from '@onlook/parser';
-import { type FileOperations } from '@onlook/utility';
+import type { T } from '@onlook/parser';
+import type { FileOperations } from '@onlook/utility';
+import { generate, getAstFromContent, t, traverse } from '@onlook/parser';
+
 import { getLayoutPath } from './helpers';
 
 /**
@@ -47,7 +49,7 @@ export async function removeBuiltWithScriptFromLayout(
                     // Find and remove the Script element for builtwith.js
                     const children = path.node.children;
                     // Remove all <Script src="/builtwith.js" ... /> elements
-                    for (let i = 0; i < children.length; ) {
+                    for (let i = 0; i < children.length;) {
                         const child = children[i];
                         if (
                             t.isJSXElement(child) &&

@@ -2,7 +2,7 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import { EditorAttributes } from '@onlook/constants';
-import { EditorMode } from '@onlook/models';
+import { EditorMode, EditorTabValue } from '@onlook/models';
 import { throttle } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -39,7 +39,10 @@ export const Canvas = observer(() => {
         }
 
         // Start drag selection only in design mode and left mouse button
-        if (editorEngine.state.editorMode === EditorMode.DESIGN && event.button === 0) {
+        if (event.button !== 0) {
+            return;
+        }
+        if (editorEngine.state.editorMode === EditorMode.DESIGN) {
             const rect = containerRef.current.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
@@ -57,7 +60,12 @@ export const Canvas = observer(() => {
                 editorEngine.clearUI();
                 editorEngine.frames.deselectAll();
             }
-        } else if (event.button === 0) {
+
+            // Switch to chat mode when clicking on empty canvas space during code editing
+            if (editorEngine.state.rightPanelTab === EditorTabValue.DEV) {
+                editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
+            }
+        } else {
             // Only clear UI for left clicks that don't start drag selection
             editorEngine.clearUI();
         }
