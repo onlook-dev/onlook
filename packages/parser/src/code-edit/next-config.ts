@@ -1,7 +1,9 @@
+import type { FileOperations } from '@onlook/utility';
 import { CUSTOM_OUTPUT_DIR, JS_FILE_EXTENSIONS } from '@onlook/constants';
-import { type FileOperations } from '@onlook/utility';
+
+import type { T } from '../packages';
 import { genASTParserOptionsByFileExtension } from '../helpers';
-import { generate, parse, type t as T, types as t, traverse } from '../packages';
+import { generate, parse, t, traverse } from '../packages';
 
 enum CONFIG_BASE_NAME {
     NEXTJS = 'next.config',

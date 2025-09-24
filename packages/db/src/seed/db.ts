@@ -183,6 +183,7 @@ const message0 = {
     checkpoints: [],
     parts: [{ type: 'text', text: 'Test message 0' }],
     snapshots: null,
+    usage: null,
 } satisfies Message;
 
 const message1 = {
@@ -197,6 +198,7 @@ const message1 = {
     parts: [{ type: 'text', text: 'Test message 1' }],
     checkpoints: [],
     snapshots: null,
+    usage: null,
 } satisfies Message;
 
 const message2 = {
@@ -211,6 +213,7 @@ const message2 = {
     parts: [{ type: 'text', text: 'Test message 2' }],
     checkpoints: [],
     snapshots: null,
+    usage: null,
 } satisfies Message;
 
 const message3 = {
@@ -225,6 +228,7 @@ const message3 = {
     parts: [{ type: 'text', text: 'Test message 3' }],
     checkpoints: [],
     snapshots: null,
+    usage: null,
 } satisfies Message;
 
 const message4 = {
@@ -239,6 +243,7 @@ const message4 = {
     checkpoints: [],
     snapshots: null,
     commitOid: null,
+    usage: null,
 } satisfies Message;
 
 const product0 = {

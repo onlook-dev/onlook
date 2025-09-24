@@ -12,9 +12,9 @@ export const subscriptions = pgTable('subscriptions', {
     id: uuid('id').primaryKey().defaultRandom(),
 
     // Relationships
-    userId: uuid('user_id').notNull().references(() => users.id),
-    productId: uuid('product_id').notNull().references(() => products.id),
-    priceId: uuid('price_id').notNull().references(() => prices.id),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    productId: uuid('product_id').notNull().references(() => products.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    priceId: uuid('price_id').notNull().references(() => prices.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
 
     // Metadata
     startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),

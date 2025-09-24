@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@source "../../../node_modules/streamdown/dist/index.js";
 
 @custom-variant dark (&:is(.dark *));
 @plugin '@tailwindcss/typography';

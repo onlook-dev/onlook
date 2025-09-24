@@ -1,3 +1,9 @@
+import * as pathModule from 'path';
+import { camelCase } from 'lodash';
+import { makeAutoObservable } from 'mobx';
+
+import type { FontConfig, FontUploadFile } from '@onlook/models';
+import type { T } from '@onlook/parser';
 import { DefaultSettings } from '@onlook/constants';
 import {
     createFontSrcObjects,
@@ -6,12 +12,9 @@ import {
     hasLocalFontImport,
     mergeLocalFontSources,
 } from '@onlook/fonts';
-import type { FontConfig, FontUploadFile } from '@onlook/models';
-import { types as t, type t as T } from '@onlook/parser';
+import { t } from '@onlook/parser';
 import { getFontFileName } from '@onlook/utility';
-import { camelCase } from 'lodash';
-import { makeAutoObservable } from 'mobx';
-import * as pathModule from 'path';
+
 import type { EditorEngine } from '../engine';
 
 export class FontUploadManager {
@@ -45,7 +48,10 @@ export class FontUploadManager {
 
             const fontName = camelCase(`custom-${baseFontName}`);
 
-            const { fontNameExists, existingFontNode } = findFontExportDeclaration(fontConfigAst, fontName);
+            const { fontNameExists, existingFontNode } = findFontExportDeclaration(
+                fontConfigAst,
+                fontName,
+            );
 
             const fontConfigs = await this.processFontFiles(fontFiles, baseFontName, basePath);
             const fontsSrc = createFontSrcObjects(fontConfigs);

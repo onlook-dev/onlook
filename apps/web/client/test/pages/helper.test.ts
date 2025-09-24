@@ -1,7 +1,7 @@
-import { describe, expect, mock, test } from 'bun:test';
 import type { ReaddirEntry } from '@codesandbox/sdk';
 import type { PageNode, SandboxFile } from '@onlook/models';
 import { RouterType } from '@onlook/models';
+import { describe, expect, mock, test } from 'bun:test';
 import { scanAppDirectory } from '../../src/components/store/editor/pages/helper';
 
 // Mock SandboxManager interface
@@ -727,7 +727,7 @@ describe('scanAppDirectory', () => {
     test('should handle directory read errors gracefully', async () => {
         const mockSandboxManager = createMockSandboxManager({});
         // Override readDir to throw an error
-        mockSandboxManager.readDir = mock(() => {
+        mockSandboxManager.readDir = mock(async () => {
             throw new Error('Directory not found');
         });
 

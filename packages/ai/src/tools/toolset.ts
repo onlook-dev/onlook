@@ -1,71 +1,70 @@
 import { ChatType } from '@onlook/models';
 import { type InferUITools, type ToolSet } from 'ai';
 import {
-    BASH_EDIT_TOOL_NAME,
-    BASH_READ_TOOL_NAME,
-    bashEditTool,
-    bashReadTool,
-    FUZZY_EDIT_FILE_TOOL_NAME,
-    fuzzyEditFileTool,
-    GLOB_TOOL_NAME,
-    globTool,
-    GREP_TOOL_NAME,
-    grepTool,
-    LIST_BRANCHES_TOOL_NAME,
-    LIST_FILES_TOOL_NAME,
-    listBranchesTool,
-    listFilesTool,
-    ONLOOK_INSTRUCTIONS_TOOL_NAME,
-    onlookInstructionsTool,
-    READ_FILE_TOOL_NAME,
-    READ_STYLE_GUIDE_TOOL_NAME,
-    readFileTool,
-    readStyleGuideTool,
-    SANDBOX_TOOL_NAME,
-    sandboxTool,
-    SCRAPE_URL_TOOL_NAME,
-    scrapeUrlTool,
-    SEARCH_REPLACE_EDIT_FILE_TOOL_NAME,
-    SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME,
-    searchReplaceEditFileTool,
-    searchReplaceMultiEditFileTool,
-    TERMINAL_COMMAND_TOOL_NAME,
-    terminalCommandTool,
-    TYPECHECK_TOOL_NAME,
-    typecheckTool,
-    WEB_SEARCH_TOOL_NAME,
-    webSearchTool,
-    WRITE_FILE_TOOL_NAME,
-    writeFileTool,
-} from './tools';
+    BashEditTool,
+    BashReadTool,
+    CheckErrorsTool,
+    FuzzyEditFileTool,
+    GlobTool,
+    GrepTool,
+    ListBranchesTool,
+    ListFilesTool,
+    OnlookInstructionsTool,
+    ReadFileTool,
+    ReadStyleGuideTool,
+    SandboxTool,
+    ScrapeUrlTool,
+    SearchReplaceEditTool,
+    SearchReplaceMultiEditFileTool,
+    TerminalCommandTool,
+    TypecheckTool,
+    WebSearchTool,
+    WriteFileTool,
+} from './classes';
 
-export const ASK_TOOL_SET: ToolSet = {
-    [LIST_FILES_TOOL_NAME]: listFilesTool,
-    [READ_FILE_TOOL_NAME]: readFileTool,
-    [BASH_READ_TOOL_NAME]: bashReadTool,
-    [ONLOOK_INSTRUCTIONS_TOOL_NAME]: onlookInstructionsTool,
-    [READ_STYLE_GUIDE_TOOL_NAME]: readStyleGuideTool,
-    [LIST_BRANCHES_TOOL_NAME]: listBranchesTool,
-    [SCRAPE_URL_TOOL_NAME]: scrapeUrlTool,
-    [WEB_SEARCH_TOOL_NAME]: webSearchTool,
-    [GLOB_TOOL_NAME]: globTool,
-    [GREP_TOOL_NAME]: grepTool,
-};
+// Helper function to convert tool classes to ToolSet
+function createToolSet(toolClasses: Array<{ toolName: string; getAITool: () => any }>): ToolSet {
+    return toolClasses.reduce((acc, toolClass) => {
+        acc[toolClass.toolName] = toolClass.getAITool();
+        return acc;
+    }, {} as ToolSet);
+}
 
-export const BUILD_TOOL_SET: ToolSet = {
-    ...ASK_TOOL_SET,
-    [SEARCH_REPLACE_EDIT_FILE_TOOL_NAME]: searchReplaceEditFileTool,
-    [SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME]: searchReplaceMultiEditFileTool,
-    [FUZZY_EDIT_FILE_TOOL_NAME]: fuzzyEditFileTool,
-    [WRITE_FILE_TOOL_NAME]: writeFileTool,
-    [BASH_EDIT_TOOL_NAME]: bashEditTool,
-    [SANDBOX_TOOL_NAME]: sandboxTool,
-    [TERMINAL_COMMAND_TOOL_NAME]: terminalCommandTool,
-    [TYPECHECK_TOOL_NAME]: typecheckTool,
-};
+const readOnlyToolClasses = [
+    ListFilesTool,
+    ReadFileTool,
+    BashReadTool,
+    OnlookInstructionsTool,
+    ReadStyleGuideTool,
+    ListBranchesTool,
+    ScrapeUrlTool,
+    WebSearchTool,
+    GlobTool,
+    GrepTool,
+    TypecheckTool,
+    CheckErrorsTool,
+];
+const editOnlyToolClasses = [
+    SearchReplaceEditTool,
+    SearchReplaceMultiEditFileTool,
+    FuzzyEditFileTool,
+    WriteFileTool,
+    BashEditTool,
+    SandboxTool,
+    TerminalCommandTool,
+];
+const allToolClasses = [...readOnlyToolClasses, ...editOnlyToolClasses];
 
-export type ChatTools = InferUITools<typeof BUILD_TOOL_SET>;
+export const readOnlyToolset: ToolSet = createToolSet(readOnlyToolClasses);
+export const allToolset: ToolSet = createToolSet(allToolClasses);
+export const TOOLS_MAP = new Map(allToolClasses.map(toolClass => [toolClass.toolName, toolClass]));
+
+export function getToolClassesFromType(chatType: ChatType) {
+    return chatType === ChatType.ASK ? readOnlyToolClasses : allToolClasses
+}
 
 export function getToolSetFromType(chatType: ChatType) {
-    return chatType === ChatType.ASK ? ASK_TOOL_SET : BUILD_TOOL_SET;
+    return chatType === ChatType.ASK ? readOnlyToolset : allToolset;
 }
+
+export type ChatTools = InferUITools<typeof allToolset>;
