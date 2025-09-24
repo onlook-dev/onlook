@@ -7,7 +7,7 @@ import {
     READ_FILE_TOOL_NAME,
     READ_FILE_TOOL_PARAMETERS,
     readFileTool,
-    readOnlyTools,
+    readOnlyToolset,
 } from '../../src/tools';
 
 describe('Read File Tool', () => {
@@ -19,9 +19,9 @@ describe('Read File Tool', () => {
 
     test('should be included in both toolsets', () => {
         expect(editTools[READ_FILE_TOOL_NAME]).toBeDefined();
-        expect(readOnlyTools[READ_FILE_TOOL_NAME]).toBeDefined();
+        expect(readOnlyToolset[READ_FILE_TOOL_NAME]).toBeDefined();
         expect(editTools[READ_FILE_TOOL_NAME]).toBe(readFileTool);
-        expect(readOnlyTools[READ_FILE_TOOL_NAME]).toBe(readFileTool);
+        expect(readOnlyToolset[READ_FILE_TOOL_NAME]).toBe(readFileTool);
     });
 
     test('should have correct parameter schema', () => {
@@ -85,9 +85,9 @@ describe('List Files Tool', () => {
 
     test('should be included in both toolsets', () => {
         expect(editTools[LIST_FILES_TOOL_NAME]).toBeDefined();
-        expect(readOnlyTools[LIST_FILES_TOOL_NAME]).toBeDefined();
+        expect(readOnlyToolset[LIST_FILES_TOOL_NAME]).toBeDefined();
         expect(editTools[LIST_FILES_TOOL_NAME]).toBe(listFilesTool);
-        expect(readOnlyTools[LIST_FILES_TOOL_NAME]).toBe(listFilesTool);
+        expect(readOnlyToolset[LIST_FILES_TOOL_NAME]).toBe(listFilesTool);
     });
 
     test('should have correct parameter schema', () => {

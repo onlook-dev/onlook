@@ -44,7 +44,6 @@ const readOnlyToolClasses = [
     TypecheckTool,
     CheckErrorsTool,
 ];
-
 const editOnlyToolClasses = [
     SearchReplaceEditTool,
     SearchReplaceMultiEditFileTool,
@@ -54,13 +53,18 @@ const editOnlyToolClasses = [
     SandboxTool,
     TerminalCommandTool,
 ];
+const allToolClasses = [...readOnlyToolClasses, ...editOnlyToolClasses];
 
-export const readOnlyTools: ToolSet = createToolSet(readOnlyToolClasses);
-export const allTools: ToolSet = createToolSet([...readOnlyToolClasses, ...editOnlyToolClasses]);
-export function getToolSetFromType(chatType: ChatType) {
-    return chatType === ChatType.ASK ? readOnlyTools : allTools;
-}
+export const readOnlyToolset: ToolSet = createToolSet(readOnlyToolClasses);
+export const allToolset: ToolSet = createToolSet(allToolClasses);
+export const TOOLS_MAP = new Map(allToolClasses.map(toolClass => [toolClass.name, toolClass]));
+
 export function getToolClassesFromType(chatType: ChatType) {
-    return chatType === ChatType.ASK ? readOnlyToolClasses : [...readOnlyToolClasses, ...editOnlyToolClasses];
+    return chatType === ChatType.ASK ? readOnlyToolClasses : allToolClasses
 }
-export type ChatTools = InferUITools<typeof allTools>;
+
+export function getToolSetFromType(chatType: ChatType) {
+    return chatType === ChatType.ASK ? readOnlyToolset : allToolset;
+}
+
+export type ChatTools = InferUITools<typeof allToolset>;

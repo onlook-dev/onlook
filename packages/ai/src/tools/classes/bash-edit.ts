@@ -86,8 +86,9 @@ export class BashEditTool extends ClientTool {
 
     getLabel(input?: z.infer<typeof BashEditTool.parameters>): string {
         if (input?.command) {
-            return 'Running command ' + (input.command.split(' ')[0] || '');
+            return 'Running command ' + (input.command.split('/').pop() || '');
+        } else {
+            return 'Running command';
         }
-        return 'Running command';
     }
 }

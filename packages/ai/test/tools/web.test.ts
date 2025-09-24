@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import {
     editTools,
-    readOnlyTools,
+    readOnlyToolset,
     SCRAPE_URL_TOOL_NAME,
     SCRAPE_URL_TOOL_PARAMETERS,
     scrapeUrlTool,
@@ -16,9 +16,9 @@ describe('Firecrawl Web Scraping Tool', () => {
 
     it('should be included in both buildToolSet and askToolSet', () => {
         expect(editTools[SCRAPE_URL_TOOL_NAME]).toBeDefined();
-        expect(readOnlyTools[SCRAPE_URL_TOOL_NAME]).toBeDefined();
+        expect(readOnlyToolset[SCRAPE_URL_TOOL_NAME]).toBeDefined();
         expect(editTools[SCRAPE_URL_TOOL_NAME]).toBe(scrapeUrlTool);
-        expect(readOnlyTools[SCRAPE_URL_TOOL_NAME]).toBe(scrapeUrlTool);
+        expect(readOnlyToolset[SCRAPE_URL_TOOL_NAME]).toBe(scrapeUrlTool);
     });
 
     it('should have the correct parameter schema', () => {
