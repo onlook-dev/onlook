@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { ClientTool } from '../models/client';
 
 export class CheckErrorsTool extends ClientTool {
-    static readonly name = 'check_errors';
+    static readonly toolName = 'check_errors';
     static readonly description = 'Check for terminal errors similar to chat errors. Lists all current terminal errors from all branches.'
     static readonly parameters = z.object({});
     static readonly icon = Icons.MagnifyingGlass;

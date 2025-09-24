@@ -17,7 +17,7 @@ export class BashEditTool extends ClientTool {
         'ln',
         'git',
     ]);
-    static readonly name = 'bash_edit';
+    static readonly toolName = 'bash_edit';
     static readonly description = 'Execute bash commands for file editing and system operations';
     static readonly parameters = z.object({
         command: z

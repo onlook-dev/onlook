@@ -7,7 +7,7 @@ export interface ToolIcon {
 }
 
 export abstract class BaseTool {
-    static readonly name: string;
+    static readonly toolName: string;
     static readonly description: string;
     static readonly parameters: z.ZodSchema;
     static readonly icon: ComponentType<ToolIcon>;

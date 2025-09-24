@@ -5,7 +5,7 @@ import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class TerminalCommandTool extends ClientTool {
-    static readonly name = 'terminal_command';
+    static readonly toolName = 'terminal_command';
     static readonly description = 'Run any generic Linux Bash command in the terminal';
     static readonly parameters = z.object({
         command: z.string().describe('The command to run'),

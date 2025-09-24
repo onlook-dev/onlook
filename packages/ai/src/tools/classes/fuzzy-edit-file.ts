@@ -5,7 +5,7 @@ import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class FuzzyEditFileTool extends ClientTool {
-    static readonly name = 'fuzzy_edit_file';
+    static readonly toolName = 'fuzzy_edit_file';
     static readonly description = 'Edit a file using fuzzy matching and natural language instructions';
     static readonly parameters = z.object({
         file_path: z.string().describe('The absolute path to the file to edit'),

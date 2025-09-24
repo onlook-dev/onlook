@@ -6,7 +6,7 @@ import { isCommandAvailable, resolveDirectoryPath, safeRunCommand } from '../sha
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class ListFilesTool extends ClientTool {
-    static readonly name = 'list_files';
+    static readonly toolName = 'list_files';
     static readonly description = 'List files and directories in a specified path. Supports both absolute and relative paths with fuzzy matching. Can filter by type and exclude patterns. Returns file paths with type information (file/directory). Only lists immediate children (non-recursive).';
     static readonly parameters = z.object({
         path: z

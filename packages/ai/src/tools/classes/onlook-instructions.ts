@@ -5,7 +5,7 @@ import { ONLOOK_INSTRUCTIONS } from '../../prompt/onlook';
 import { ClientTool } from '../models/client';
 
 export class OnlookInstructionsTool extends ClientTool {
-    static readonly name = 'onlook_instructions';
+    static readonly toolName = 'onlook_instructions';
     static readonly description = 'Get Onlook-specific instructions and guidelines';
     static readonly parameters = z.object({});
     static readonly icon = Icons.OnlookLogo;
