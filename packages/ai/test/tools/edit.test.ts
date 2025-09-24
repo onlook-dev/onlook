@@ -1,19 +1,17 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { EditorEngine } from '@/components/store/editor/engine';
-import {
-    handleSearchReplaceEditFileTool,
-    handleSearchReplaceMultiEditFileTool,
-} from '@/components/tools/handlers/edit';
+import { SearchReplaceEditTool } from '@onlook/ai/src/tools/classes/search-replace-edit';
+import { SearchReplaceMultiEditFileTool } from '@onlook/ai/src/tools/classes/search-replace-multi-edit';
+import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 
 // Mock the EditorEngine and Sandbox
 const mockSandbox = {
-    readFile: vi.fn(),
-    writeFile: vi.fn(),
-    fileExists: vi.fn(),
+    readFile: mock(),
+    writeFile: mock(),
+    fileExists: mock(),
 };
 
 const mockBranches = {
-    getSandboxById: vi.fn(),
+    getSandboxById: mock(),
 };
 
 const mockEditorEngine = {
@@ -22,7 +20,11 @@ const mockEditorEngine = {
 
 describe('Edit Tool Handlers', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        // Reset mocks
+        mockSandbox.readFile = mock();
+        mockSandbox.writeFile = mock();
+        mockSandbox.fileExists = mock();
+        mockBranches.getSandboxById = mock();
         mockBranches.getSandboxById.mockReturnValue(mockSandbox);
         mockSandbox.writeFile.mockResolvedValue(true);
     });
@@ -43,7 +45,7 @@ describe('Edit Tool Handlers', () => {
                 replace_all: false,
             };
 
-            const result = await handleSearchReplaceEditFileTool(args, mockEditorEngine);
+            const result = await new SearchReplaceEditTool().handle(args, mockEditorEngine);
 
             expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'Hi world, this is a test');
             expect(result).toBe('File /test/file.ts edited successfully');
@@ -63,7 +65,7 @@ describe('Edit Tool Handlers', () => {
                 replace_all: false,
             };
 
-            await expect(handleSearchReplaceEditFileTool(args, mockEditorEngine)).rejects.toThrow(
+            await expect(new SearchReplaceEditTool().handle(args, mockEditorEngine)).rejects.toThrow(
                 'String not found in file: NotFound'
             );
         });
@@ -82,7 +84,7 @@ describe('Edit Tool Handlers', () => {
                 replace_all: false,
             };
 
-            await expect(handleSearchReplaceEditFileTool(args, mockEditorEngine)).rejects.toThrow(
+            await expect(new SearchReplaceEditTool().handle(args, mockEditorEngine)).rejects.toThrow(
                 'Multiple occurrences found. Use replace_all=true or provide more context.'
             );
         });
@@ -101,7 +103,7 @@ describe('Edit Tool Handlers', () => {
                 replace_all: true,
             };
 
-            const result = await handleSearchReplaceEditFileTool(args, mockEditorEngine);
+            const result = await new SearchReplaceEditTool().handle(args, mockEditorEngine);
 
             expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'replacement replacement replacement');
             expect(result).toBe('File /test/file.ts edited successfully');
@@ -121,7 +123,7 @@ describe('Edit Tool Handlers', () => {
                 replace_all: true,
             };
 
-            const result = await handleSearchReplaceEditFileTool(args, mockEditorEngine);
+            const result = await new SearchReplaceEditTool().handle(args, mockEditorEngine);
 
             // replace_all with non-existent string should succeed but make no changes
             expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'Hello world');
@@ -142,7 +144,7 @@ describe('Edit Tool Handlers', () => {
                 replace_all: true,
             };
 
-            const result = await handleSearchReplaceEditFileTool(args, mockEditorEngine);
+            const result = await new SearchReplaceEditTool().handle(args, mockEditorEngine);
 
             // Empty string replacement should insert between every character
             expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'XaXbXcX');
@@ -164,7 +166,7 @@ describe('Edit Tool Handlers', () => {
             };
 
             // This should still work, even though it's a no-op
-            const result = await handleSearchReplaceEditFileTool(args, mockEditorEngine);
+            const result = await new SearchReplaceEditTool().handle(args, mockEditorEngine);
             expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'Hello world');
             expect(result).toBe('File /test/file.ts edited successfully');
         });
@@ -187,7 +189,7 @@ describe('Edit Tool Handlers', () => {
                 ],
             };
 
-            const result = await handleSearchReplaceMultiEditFileTool(args, mockEditorEngine);
+            const result = await new SearchReplaceMultiEditFileTool().handle(args, mockEditorEngine);
 
             expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'Hi universe, this is a test');
             expect(result).toBe('File /test/file.ts edited with 2 changes');
@@ -208,7 +210,7 @@ describe('Edit Tool Handlers', () => {
                 ],
             };
 
-            await expect(handleSearchReplaceMultiEditFileTool(args, mockEditorEngine)).rejects.toThrow(
+            await expect(new SearchReplaceMultiEditFileTool().handle(args, mockEditorEngine)).rejects.toThrow(
                 'String not found in file: NotFound'
             );
 
@@ -231,7 +233,7 @@ describe('Edit Tool Handlers', () => {
                 ],
             };
 
-            const result = await handleSearchReplaceMultiEditFileTool(args, mockEditorEngine);
+            const result = await new SearchReplaceMultiEditFileTool().handle(args, mockEditorEngine);
 
             expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'replacement replacement universe replacement');
             expect(result).toBe('File /test/file.ts edited with 2 changes');
@@ -251,7 +253,7 @@ describe('Edit Tool Handlers', () => {
                 ],
             };
 
-            await expect(handleSearchReplaceMultiEditFileTool(args, mockEditorEngine)).rejects.toThrow(
+            await expect(new SearchReplaceMultiEditFileTool().handle(args, mockEditorEngine)).rejects.toThrow(
                 'Multiple occurrences found for "test". Use replace_all=true or provide more context.'
             );
 
@@ -274,7 +276,7 @@ describe('Edit Tool Handlers', () => {
                 ],
             };
 
-            const result = await handleSearchReplaceMultiEditFileTool(args, mockEditorEngine);
+            const result = await new SearchReplaceMultiEditFileTool().handle(args, mockEditorEngine);
 
             expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'Hi Hi universe example');
             expect(result).toBe('File /test/file.ts edited with 3 changes');
@@ -295,7 +297,7 @@ describe('Edit Tool Handlers', () => {
                 ],
             };
 
-            const result = await handleSearchReplaceMultiEditFileTool(args, mockEditorEngine);
+            const result = await new SearchReplaceMultiEditFileTool().handle(args, mockEditorEngine);
 
             // Sequential application: 'old' -> 'new' -> 'final'
             expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'final text here');
@@ -318,7 +320,7 @@ describe('Edit Tool Handlers', () => {
                 ],
             };
 
-            const result = await handleSearchReplaceMultiEditFileTool(args, mockEditorEngine);
+            const result = await new SearchReplaceMultiEditFileTool().handle(args, mockEditorEngine);
 
             expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'beginning center finish');
             expect(result).toBe('File /test/file.ts edited with 3 changes');
@@ -339,7 +341,7 @@ describe('Edit Tool Handlers', () => {
                 ],
             };
 
-            const result = await handleSearchReplaceMultiEditFileTool(args, mockEditorEngine);
+            const result = await new SearchReplaceMultiEditFileTool().handle(args, mockEditorEngine);
 
             // Sequential: 'foo' -> 'qux' (all): 'qux bar qux'
             // Then 'bar' -> 'baz': 'qux baz qux'
@@ -363,7 +365,7 @@ describe('Edit Tool Handlers', () => {
                 ],
             };
 
-            const result = await handleSearchReplaceMultiEditFileTool(args, mockEditorEngine);
+            const result = await new SearchReplaceMultiEditFileTool().handle(args, mockEditorEngine);
 
             // Sequential application: each edit builds on the previous result
             expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'const newName = newValue; const anotherName = data;');
@@ -379,7 +381,7 @@ describe('Edit Tool Handlers', () => {
                 edits: [{ old_string: 'test', new_string: 'replacement', replace_all: false }],
             };
 
-            await expect(handleSearchReplaceMultiEditFileTool(args, mockEditorEngine)).rejects.toThrow(
+            await expect(new SearchReplaceMultiEditFileTool().handle(args, mockEditorEngine)).rejects.toThrow(
                 'Sandbox not found for branch ID: invalid-branch'
             );
         });
@@ -393,7 +395,7 @@ describe('Edit Tool Handlers', () => {
                 edits: [{ old_string: 'test', new_string: 'replacement', replace_all: false }],
             };
 
-            await expect(handleSearchReplaceMultiEditFileTool(args, mockEditorEngine)).rejects.toThrow(
+            await expect(new SearchReplaceMultiEditFileTool().handle(args, mockEditorEngine)).rejects.toThrow(
                 'Cannot read file /test/nonexistent.ts: file not found or not text'
             );
         });
@@ -411,7 +413,7 @@ describe('Edit Tool Handlers', () => {
                 edits: [{ old_string: 'Hello', new_string: 'Hi', replace_all: false }],
             };
 
-            await expect(handleSearchReplaceMultiEditFileTool(args, mockEditorEngine)).rejects.toThrow(
+            await expect(new SearchReplaceMultiEditFileTool().handle(args, mockEditorEngine)).rejects.toThrow(
                 'Failed to write file /test/file.ts'
             );
         });
@@ -428,7 +430,7 @@ describe('Edit Tool Handlers', () => {
                 edits: [],
             };
 
-            const result = await handleSearchReplaceMultiEditFileTool(args, mockEditorEngine);
+            const result = await new SearchReplaceMultiEditFileTool().handle(args, mockEditorEngine);
 
             expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'Hello world');
             expect(result).toBe('File /test/file.ts edited with 0 changes');
@@ -448,7 +450,7 @@ describe('Edit Tool Handlers', () => {
                 ],
             };
 
-            const result = await handleSearchReplaceMultiEditFileTool(args, mockEditorEngine);
+            const result = await new SearchReplaceMultiEditFileTool().handle(args, mockEditorEngine);
 
             // replace_all with non-existent string should succeed but make no changes
             expect(mockSandbox.writeFile).toHaveBeenCalledWith('/test/file.ts', 'Hello world');
@@ -471,7 +473,7 @@ describe('Edit Tool Handlers', () => {
                 ],
             };
 
-            await expect(handleSearchReplaceMultiEditFileTool(args, mockEditorEngine)).rejects.toThrow(
+            await expect(new SearchReplaceMultiEditFileTool().handle(args, mockEditorEngine)).rejects.toThrow(
                 'String not found in file: missing'
             );
 

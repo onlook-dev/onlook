@@ -1,6 +1,7 @@
+import { ListFilesTool } from '@onlook/ai/src/tools/classes/list-files';
+import { ReadFileTool } from '@onlook/ai/src/tools/classes/read-file';
+import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import type { EditorEngine } from '../../src/components/store/editor/engine';
-import { handleListFilesTool, handleReadFileTool } from '../../src/components/tools/handlers/read';
 
 // Mock types
 interface MockSandbox {
@@ -67,9 +68,10 @@ describe('Read Handler Tests', () => {
 
             mockSandbox.readFile = mock(() => Promise.resolve({ content: 'test content', type: 'text' }));
 
-            await handleReadFileTool({ 
-                branchId: 'test-branch', 
-                file_path: "file'name.txt" 
+            const readTool = new ReadFileTool();
+            await readTool.handle({
+                branchId: 'test-branch',
+                file_path: "file'name.txt"
             }, mockEditorEngine as unknown as EditorEngine);
 
             // Verify the find command properly escapes single quotes
@@ -97,9 +99,10 @@ describe('Read Handler Tests', () => {
             mockSandbox.readFile = mock(() => Promise.resolve(null));
 
             try {
-                await handleReadFileTool({ 
-                    branchId: 'test-branch', 
-                    file_path: "file$(rm -rf /)name.txt" 
+                const readTool = new ReadFileTool();
+                await readTool.handle({
+                    branchId: 'test-branch',
+                    file_path: "file$(rm -rf /)name.txt"
                 }, mockEditorEngine as unknown as EditorEngine);
             } catch (error) {
                 // Expected to fail
@@ -123,14 +126,15 @@ describe('Read Handler Tests', () => {
                 return Promise.resolve({ success: true, output: '' });
             });
 
-            mockSandbox.readFile = mock(() => Promise.resolve({ 
-                content: 'line 1\nline 2\nline 3', 
-                type: 'text' 
+            mockSandbox.readFile = mock(() => Promise.resolve({
+                content: 'line 1\nline 2\nline 3',
+                type: 'text'
             }));
 
-            const result = await handleReadFileTool({ 
-                branchId: 'test-branch', 
-                file_path: './test.txt' 
+            const readTool = new ReadFileTool();
+            const result = await readTool.handle({
+                branchId: 'test-branch',
+                file_path: './test.txt'
             }, mockEditorEngine as unknown as EditorEngine);
 
             expect(result.content).toBe('1→line 1\n2→line 2\n3→line 3');
@@ -151,13 +155,14 @@ describe('Read Handler Tests', () => {
                 return Promise.resolve({ success: true, output: '' });
             });
 
-            mockSandbox.readFile = mock(() => Promise.resolve({ 
-                content: 'line 1\nline 2\nline 3\nline 4\nline 5', 
-                type: 'text' 
+            mockSandbox.readFile = mock(() => Promise.resolve({
+                content: 'line 1\nline 2\nline 3\nline 4\nline 5',
+                type: 'text'
             }));
 
-            const result = await handleReadFileTool({ 
-                branchId: 'test-branch', 
+            const readTool = new ReadFileTool();
+            const result = await readTool.handle({
+                branchId: 'test-branch',
                 file_path: 'test.txt',
                 offset: 2,
                 limit: 2
@@ -169,7 +174,7 @@ describe('Read Handler Tests', () => {
 
         test('should truncate large files to 2000 lines', async () => {
             const largeContent = Array.from({ length: 3000 }, (_, i) => `line ${i + 1}`).join('\n');
-            
+
             mockSandbox.session.runCommand = mock((command) => {
                 if (command.includes('which') || command.includes('command -v')) {
                     return Promise.resolve({ success: true, output: '/usr/bin/command' });
@@ -180,13 +185,14 @@ describe('Read Handler Tests', () => {
                 return Promise.resolve({ success: true, output: '' });
             });
 
-            mockSandbox.readFile = mock(() => Promise.resolve({ 
-                content: largeContent, 
-                type: 'text' 
+            mockSandbox.readFile = mock(() => Promise.resolve({
+                content: largeContent,
+                type: 'text'
             }));
 
-            const result = await handleReadFileTool({ 
-                branchId: 'test-branch', 
+            const readTool = new ReadFileTool();
+            const result = await readTool.handle({
+                branchId: 'test-branch',
                 file_path: 'large.txt'
             }, mockEditorEngine as unknown as EditorEngine);
 
@@ -205,15 +211,16 @@ describe('Read Handler Tests', () => {
                     return Promise.resolve({ success: true, output: '/current/dir' });
                 }
                 if (command.includes('find') && command.includes('-printf')) {
-                    return Promise.resolve({ 
-                        success: true, 
+                    return Promise.resolve({
+                        success: true,
                         output: '/current/dir/file1.txt|f|1024|2023-01-01 12:00\n/current/dir/dir1|d|4096|2023-01-02 10:30\n'
                     });
                 }
                 return Promise.resolve({ success: true, output: '' });
             });
 
-            const result = await handleListFilesTool({ 
+            const listTool = new ListFilesTool();
+            const result = await listTool.handle({
                 branchId: 'test-branch'
             }, mockEditorEngine as unknown as EditorEngine);
 
@@ -245,12 +252,13 @@ describe('Read Handler Tests', () => {
                 return Promise.resolve({ success: true, output: '' });
             });
 
-            await handleListFilesTool({ 
+            const listTool = new ListFilesTool();
+            await listTool.handle({
                 branchId: 'test-branch',
                 path: '/test/dir',
                 file_types_only: true
             }, mockEditorEngine as unknown as EditorEngine);
-            
+
             expect(findCommand).toContain('-type f');
             expect(findCommand).not.toContain('-type d');
         });
@@ -259,7 +267,7 @@ describe('Read Handler Tests', () => {
             let hiddenCommand = '';
             let visibleCommand = '';
             let callCount = 0;
-            
+
             mockSandbox.session.runCommand = mock((command) => {
                 if (command.includes('which') || command.includes('command -v')) {
                     return Promise.resolve({ success: true, output: '/usr/bin/command' });
@@ -276,18 +284,20 @@ describe('Read Handler Tests', () => {
                 return Promise.resolve({ success: true, output: '' });
             });
 
-            await handleListFilesTool({ 
+            const listTool = new ListFilesTool();
+            await listTool.handle({
                 branchId: 'test-branch',
                 path: '/test/dir',
                 show_hidden: false
             }, mockEditorEngine as unknown as EditorEngine);
 
-            await handleListFilesTool({ 
+            const listTool2 = new ListFilesTool();
+            await listTool2.handle({
                 branchId: 'test-branch',
                 path: '/test/dir',
                 show_hidden: true
             }, mockEditorEngine as unknown as EditorEngine);
-            
+
             expect(hiddenCommand).toContain('! -name ".*"');
             expect(visibleCommand).not.toContain('! -name ".*"');
         });
@@ -302,8 +312,9 @@ describe('Read Handler Tests', () => {
             };
 
             try {
-                await handleReadFileTool({ 
-                    branchId: 'invalid-branch', 
+                const readTool = new ReadFileTool();
+                await readTool.handle({
+                    branchId: 'invalid-branch',
                     file_path: 'test.txt'
                 }, mockEngineWithoutSandbox as unknown as EditorEngine);
                 expect.unreachable('Should have thrown an error');
@@ -330,14 +341,15 @@ describe('Read Handler Tests', () => {
                 return Promise.resolve({ success: true, output: '' });
             });
 
-            mockSandbox.readFile = mock(() => Promise.resolve({ 
-                content: '', 
-                type: 'binary' 
+            mockSandbox.readFile = mock(() => Promise.resolve({
+                content: '',
+                type: 'binary'
             }));
 
             try {
-                await handleReadFileTool({ 
-                    branchId: 'test-branch', 
+                const readTool = new ReadFileTool();
+                await readTool.handle({
+                    branchId: 'test-branch',
                     file_path: 'image.png'
                 }, mockEditorEngine as unknown as EditorEngine);
                 expect.unreachable('Should have thrown an error');

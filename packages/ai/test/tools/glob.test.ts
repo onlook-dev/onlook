@@ -1,6 +1,6 @@
-import { describe, expect, test, mock, beforeEach, afterEach } from 'bun:test';
-import { handleGlobTool } from '../../src/components/tools/handlers/glob';
-import type { EditorEngine } from '../../src/components/store/editor/engine';
+import { GlobTool } from '@onlook/ai/src/tools/classes/glob';
+import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 
 // Mock sandbox and session for testing
 const createMockSession = (commandResults: Record<string, { success: boolean; output: string; error?: string }>) => ({
@@ -47,7 +47,8 @@ describe('Glob Tool', () => {
                 pattern: '*.js'
             };
 
-            const result = await handleGlobTool(args, engineWithoutSandbox);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, engineWithoutSandbox);
             expect(result).toBe('Error: Sandbox not found for branch ID: nonexistent');
         });
 
@@ -57,7 +58,8 @@ describe('Glob Tool', () => {
                 pattern: ''
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toBe('Error: Pattern cannot be empty');
         });
 
@@ -67,7 +69,8 @@ describe('Glob Tool', () => {
                 pattern: '   '
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toBe('Error: Pattern cannot be empty');
         });
 
@@ -77,7 +80,8 @@ describe('Glob Tool', () => {
                 pattern: 'test///'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toBe('Error: Invalid pattern "test///". Check your glob syntax.');
         });
 
@@ -93,7 +97,8 @@ describe('Glob Tool', () => {
                 path: 'nonexistent'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toBe('Error: Search path "nonexistent" does not exist');
         });
 
@@ -110,7 +115,8 @@ describe('Glob Tool', () => {
                 path: 'file.txt'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toBe('Error: Search path "file.txt" is not a directory');
         });
     });
@@ -129,7 +135,8 @@ describe('Glob Tool', () => {
                 pattern: 'nonexistent/**/*.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toBe('Error: Pattern base path "nonexistent" does not exist');
         });
 
@@ -147,7 +154,8 @@ describe('Glob Tool', () => {
                 pattern: 'src/**/*.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 2 files:');
             expect(result).toContain('src/file1.js');
             expect(result).toContain('src/file2.js');
@@ -168,7 +176,8 @@ describe('Glob Tool', () => {
                 pattern: '**/*.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 2 files:');
             expect(result).toContain('src/file1.js');
             expect(result).toContain('src/file2.js');
@@ -188,7 +197,8 @@ describe('Glob Tool', () => {
                 pattern: '*.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 2 files:');
             expect(result).toContain('file1.js');
             expect(result).toContain('file2.js');
@@ -209,7 +219,8 @@ describe('Glob Tool', () => {
                 pattern: '**/*.tsx'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 2 files:');
             expect(result).toContain('src/component.tsx');
             expect(result).toContain('src/utils.tsx');
@@ -229,10 +240,11 @@ describe('Glob Tool', () => {
                 pattern: '**/*.{js,jsx}' // Complex pattern with brace expansion
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 1 file:');
             expect(result).toContain('src/file.js');
-            
+
             // Verify sh was not called for complex pattern
             expect(mockSandbox.session.runCommand).not.toHaveBeenCalledWith(
                 expect.stringContaining('sh -c'),
@@ -264,7 +276,8 @@ describe('Glob Tool', () => {
                 pattern: '*.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 2 files:');
             expect(result).toContain('app.js');
             expect(result).toContain('utils.js');
@@ -283,7 +296,8 @@ describe('Glob Tool', () => {
                 pattern: '**/*.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 2 files:');
             expect(result).toContain('src/app.js');
             expect(result).toContain('src/utils/helper.js');
@@ -308,7 +322,8 @@ describe('Glob Tool', () => {
                 pattern: '*.{ts,tsx}'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 2 files:');
             expect(result).toContain('component.tsx');
             expect(result).toContain('utils.ts');
@@ -327,7 +342,8 @@ describe('Glob Tool', () => {
                 pattern: 'test?.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 2 files:');
             expect(result).toContain('test1.js');
             expect(result).toContain('test2.js');
@@ -346,7 +362,8 @@ describe('Glob Tool', () => {
                 pattern: 'file[12].js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 2 files:');
             expect(result).toContain('file1.js');
             expect(result).toContain('file2.js');
@@ -368,7 +385,8 @@ describe('Glob Tool', () => {
                 path: 'src'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 2 files:');
             expect(result).toContain('src/component.tsx');
             expect(result).toContain('src/utils.tsx');
@@ -387,7 +405,8 @@ describe('Glob Tool', () => {
                 pattern: '*.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 2 files:');
             expect(result).toContain('app.js');
             expect(result).toContain('index.js');
@@ -410,7 +429,8 @@ describe('Glob Tool', () => {
                 pattern: '*.nonexistent'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toBe('No files found matching pattern "*.nonexistent" in path "."');
         });
 
@@ -427,7 +447,8 @@ describe('Glob Tool', () => {
                 pattern: '**/*'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 1 file:');
             expect(result).toContain('src/app.js');
             expect(result).not.toContain('node_modules/lib.js');
@@ -437,7 +458,7 @@ describe('Glob Tool', () => {
 
         test('should handle truncation for large result sets', async () => {
             const largeOutput = Array.from({ length: 1500 }, (_, i) => `file${i}.js`).join('\n');
-            
+
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
@@ -450,7 +471,8 @@ describe('Glob Tool', () => {
                 pattern: '*.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Showing first');
             expect(result).toContain('of 1000+ files (truncated)');
             expect(result).toContain('Please refine your pattern');
@@ -469,7 +491,8 @@ describe('Glob Tool', () => {
                 pattern: '*.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('src/app.js');
             expect(result).toContain('src/utils.js');
             expect(result).not.toContain('\r');
@@ -489,7 +512,8 @@ describe('Glob Tool', () => {
                 pattern: 'unique.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 1 file:');
             expect(result).toContain('unique.js');
         });
@@ -507,7 +531,8 @@ describe('Glob Tool', () => {
                 pattern: '*.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 3 files:');
             expect(result).toContain('file1.js');
             expect(result).toContain('file2.js');
@@ -531,7 +556,8 @@ describe('Glob Tool', () => {
                 pattern: '*.{js,ts}'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 2 files:');
             expect(result).toContain('app.js');
             expect(result).toContain('utils.ts');
@@ -552,7 +578,8 @@ describe('Glob Tool', () => {
                 pattern: '**/file.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 1 file:');
             expect(result).toContain('src/deep/nested/file.js');
         });
@@ -572,7 +599,8 @@ describe('Glob Tool', () => {
                 pattern: 'test.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 1 file:');
             expect(result).toContain('test.js');
         });
@@ -594,7 +622,8 @@ describe('Glob Tool', () => {
                 pattern: '*.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toBe('No files found matching pattern "*.js" in path "."');
         });
 
@@ -609,7 +638,8 @@ describe('Glob Tool', () => {
                 pattern: '*.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toBe('Error: Unexpected error');
         });
 
@@ -628,7 +658,8 @@ describe('Glob Tool', () => {
                 pattern: '*.{js'  // Missing closing brace
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toBe('No files found matching pattern "*.{js" in path "."');
         });
     });
@@ -647,7 +678,8 @@ describe('Glob Tool', () => {
                 pattern: '*.nonexistent'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toBe('No files found matching pattern "*.nonexistent" in path "."');
         });
 
@@ -664,7 +696,8 @@ describe('Glob Tool', () => {
                 pattern: 'my*.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 1 file:');
             expect(result).toContain('my file.js');
         });
@@ -682,7 +715,8 @@ describe('Glob Tool', () => {
                 pattern: '*.js'
             };
 
-            const result = await handleGlobTool(args, mockEngine);
+            const globTool = new GlobTool();
+            const result = await globTool.handle(args, mockEngine);
             expect(result).toContain('Found 2 files:');
             expect(result).toContain('file1.js');
             expect(result).toContain('file2.js');
