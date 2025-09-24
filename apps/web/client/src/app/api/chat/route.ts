@@ -82,6 +82,8 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         const systemPrompt = getSystemPromptFromType(chatType);
         const tools = getToolSetFromType(chatType);
 
+        console.log(...convertToStreamMessages(messages))
+
         const result = streamText({
             model,
             headers,
