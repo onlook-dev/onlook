@@ -59,7 +59,7 @@ export class FontUploadManager {
             await this.updateAstWithFontConfig(
                 fontConfigAst,
                 fontName,
-                fontsSrc as T.ObjectExpression[],
+                fontsSrc,
                 fontNameExists,
                 existingFontNode,
             );

@@ -1,13 +1,15 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { motion } from 'motion/react';
+
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
+
 import { CreateManagerProvider } from '@/components/store/create';
 import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
 import { Routes } from '@/utils/constants';
-import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
-import { motion } from 'motion/react';
-import { useRouter } from 'next/navigation';
 import { ButtonLink } from '../../_components/button-link';
 import { UnicornBackground } from '../../_components/hero/unicorn-background';
 import { CTASection } from '../../_components/landing-page/cta-section';
@@ -28,67 +30,69 @@ function PrototypeFeaturesHero() {
     };
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center gap-12 p-8 text-lg text-center relative">
+        <div className="relative flex h-full w-full flex-col items-center justify-center gap-12 p-8 text-center text-lg">
             <UnicornBackground />
-            <div className="flex flex-col gap-6 items-center relative z-20 pt-4 pb-2 max-w-3xl">
+            <div className="relative z-20 flex max-w-3xl flex-col items-center gap-6 pt-4 pb-2">
                 <motion.h1
-                    className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4"
-                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, filter: "blur(0px)" }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                    className="text-foreground-secondary mb-4 text-sm font-medium tracking-wider uppercase"
+                    initial={{ opacity: 0, filter: 'blur(4px)' }}
+                    animate={{ opacity: 1, filter: 'blur(0px)' }}
+                    transition={{ duration: 0.6, ease: 'easeOut' }}
+                    style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                 >
                     AI Prototype Generator
                 </motion.h1>
                 <motion.p
-                    className="text-4xl md:text-6xl font-light leading-tight text-center !leading-[1] text-balance"
-                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, filter: "blur(0px)" }}
-                    transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                    className="text-center text-4xl !leading-[1] leading-tight font-light text-balance md:text-6xl"
+                    initial={{ opacity: 0, filter: 'blur(4px)' }}
+                    animate={{ opacity: 1, filter: 'blur(0px)' }}
+                    transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
+                    style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                 >
                     From Idea to Interactive Prototype in Minutes
                 </motion.p>
                 <motion.p
-                    className="text-lg text-foreground-secondary mx-auto max-w-xl text-center"
-                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, filter: "blur(0px)" }}
-                    transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
-                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                    className="text-foreground-secondary mx-auto max-w-xl text-center text-lg"
+                    initial={{ opacity: 0, filter: 'blur(4px)' }}
+                    animate={{ opacity: 1, filter: 'blur(0px)' }}
+                    transition={{ duration: 0.6, delay: 0.15, ease: 'easeOut' }}
+                    style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                 >
-                    Onlook's AI prototype generator creates functional React prototypes with real interactions, not static mockups. Perfect for product managers and designers who need rapid prototyping tools that generate production-ready code.
+                    Onlook's AI prototype generator creates functional React prototypes with real
+                    interactions, not static mockups. Perfect for product managers and designers who
+                    need rapid prototyping tools that generate production-ready code.
                 </motion.p>
                 <motion.div
                     className="mt-8"
-                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, filter: "blur(0px)" }}
-                    transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                    initial={{ opacity: 0, filter: 'blur(4px)' }}
+                    animate={{ opacity: 1, filter: 'blur(0px)' }}
+                    transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
+                    style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                 >
                     <Button
                         variant="secondary"
                         size="lg"
-                        className="p-6 cursor-pointer hover:bg-foreground-primary hover:text-background-primary transition-all duration-300"
+                        className="hover:bg-foreground-primary hover:text-background-primary cursor-pointer p-6 transition-all duration-300"
                         onClick={handleGeneratePrototype}
                     >
                         Generate Your First Prototype
                     </Button>
                 </motion.div>
                 <motion.div
-                    className="mt-8 flex items-center justify-center gap-6 text-sm text-foreground-secondary"
-                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, filter: "blur(0px)" }}
-                    transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                    className="text-foreground-secondary mt-8 flex items-center justify-center gap-6 text-sm"
+                    initial={{ opacity: 0, filter: 'blur(4px)' }}
+                    animate={{ opacity: 1, filter: 'blur(0px)' }}
+                    transition={{ duration: 0.6, delay: 0.4, ease: 'easeOut' }}
+                    style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                 >
                     <div className="flex items-center gap-2">
                         <span>{starCount}+ GitHub stars</span>
                     </div>
-                    <div className="w-1 h-1 bg-foreground-secondary rounded-full"></div>
+                    <div className="bg-foreground-secondary h-1 w-1 rounded-full"></div>
                     <div className="flex items-center gap-2">
                         <span>YC W25</span>
                     </div>
-                    <div className="w-1 h-1 bg-foreground-secondary rounded-full"></div>
+                    <div className="bg-foreground-secondary h-1 w-1 rounded-full"></div>
                     <div className="flex items-center gap-2">
                         <span>Open Source</span>
                     </div>
@@ -100,14 +104,21 @@ function PrototypeFeaturesHero() {
 
 function PrototypeBenefitsSection() {
     return (
-        <div className="w-full max-w-6xl mx-auto py-32 lg:py-64 px-8">
+        <div className="mx-auto w-full max-w-6xl px-8 py-32 lg:py-64">
             <div className="space-y-24">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                    <div className="flex flex-col order-2 lg:order-1">
-                        <h2 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">AI-Powered Rapid Prototyping Tool</h2>
-                        <p className="text-foreground-primary text-2xl md:text-4xl font-light mb-6">Generate Functional Prototypes - Beyond Clickable Layers</p>
-                        <p className="text-foreground-secondary text-regular mb-8 text-balance max-w-xl">
-                            Unlike traditional prototyping tools that create static mockups, Onlook's AI prototype generator builds fully interactive React applications with real databases, user authentication, and working features. Go beyond clickable wireframes.
+                <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
+                    <div className="order-2 flex flex-col lg:order-1">
+                        <h2 className="text-foreground-secondary mb-4 text-sm font-medium tracking-wider uppercase">
+                            AI-Powered Rapid Prototyping Tool
+                        </h2>
+                        <p className="text-foreground-primary mb-6 text-2xl font-light md:text-4xl">
+                            Generate Functional Prototypes - Beyond Clickable Layers
+                        </p>
+                        <p className="text-foreground-secondary text-regular mb-8 max-w-xl text-balance">
+                            Unlike traditional prototyping tools that create static mockups,
+                            Onlook's AI prototype generator builds fully interactive React
+                            applications with real databases, user authentication, and working
+                            features. Go beyond clickable wireframes.
                         </p>
                     </div>
                     <div className="order-1 lg:order-2">
@@ -115,12 +126,19 @@ function PrototypeBenefitsSection() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                    <div className="flex flex-col order-2 lg:order-1">
-                        <h2 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">Design to Code Tool for Product Teams</h2>
-                        <p className="text-foreground-primary text-2xl md:text-4xl font-light mb-6">Turn Designs into Working Code Instantly</p>
-                        <p className="text-foreground-secondary text-regular mb-8 text-balance max-w-xl">
-                            Import your Figma designs and watch AI transform them into production-ready React components with proper state management, responsive layouts, and clean code architecture. Bridge the gap between design and development with intelligent code generation.
+                <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
+                    <div className="order-2 flex flex-col lg:order-1">
+                        <h2 className="text-foreground-secondary mb-4 text-sm font-medium tracking-wider uppercase">
+                            Design to Code Tool for Product Teams
+                        </h2>
+                        <p className="text-foreground-primary mb-6 text-2xl font-light md:text-4xl">
+                            Turn Designs into Working Code Instantly
+                        </p>
+                        <p className="text-foreground-secondary text-regular mb-8 max-w-xl text-balance">
+                            Import your Figma designs and watch AI transform them into
+                            production-ready React components with proper state management,
+                            responsive layouts, and clean code architecture. Bridge the gap between
+                            design and development with intelligent code generation.
                         </p>
                     </div>
                     <div className="order-1 lg:order-2">
@@ -128,15 +146,22 @@ function PrototypeBenefitsSection() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                    <div className="flex flex-col order-2 lg:order-1">
-                        <h2 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">Product Prototype Testing Platform</h2>
-                        <p className="text-foreground-primary text-2xl md:text-4xl font-light mb-6">Test Ideas While Building the Full Product</p>
-                        <p className="text-foreground-secondary text-regular mb-8 text-balance max-w-xl">
-                            Deploy your AI-generated prototypes instantly to gather real user feedback. Share functional prototypes with stakeholders, run usability tests, and validate product concepts with working applications that feel like the real thing.
+                <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
+                    <div className="order-2 flex flex-col lg:order-1">
+                        <h2 className="text-foreground-secondary mb-4 text-sm font-medium tracking-wider uppercase">
+                            Product Prototype Testing Platform
+                        </h2>
+                        <p className="text-foreground-primary mb-6 text-2xl font-light md:text-4xl">
+                            Test Ideas While Building the Full Product
+                        </p>
+                        <p className="text-foreground-secondary text-regular mb-8 max-w-xl text-balance">
+                            Deploy your AI-generated prototypes instantly to gather real user
+                            feedback. Share functional prototypes with stakeholders, run usability
+                            tests, and validate product concepts with working applications that feel
+                            like the real thing.
                         </p>
                     </div>
-                    <div className="w-full h-100 rounded-lg order-1 lg:order-2">
+                    <div className="order-1 h-100 w-full rounded-lg lg:order-2">
                         <TailwindColorEditorMockup />
                     </div>
                 </div>
@@ -147,53 +172,84 @@ function PrototypeBenefitsSection() {
 
 function PrototypeFeaturesGridSection() {
     return (
-        <div className="w-full max-w-6xl mx-auto py-32 px-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-16 gap-y-20">
+        <div className="mx-auto w-full max-w-6xl px-8 py-32">
+            <div className="grid grid-cols-1 gap-x-16 gap-y-20 md:grid-cols-3">
                 <div>
-                    <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">AI Prototype Generation</h2>
-                    <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Natural language to functional prototypes</p>
-                    <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
-                        Describe your product idea in natural language and watch AI generate a fully functional prototype with proper React architecture, state management, and responsive design.
+                    <h2 className="text-foreground-secondary text-small mb-4 tracking-wider uppercase">
+                        AI Prototype Generation
+                    </h2>
+                    <p className="text-foreground-primary mb-6 text-lg font-light text-balance md:text-xl">
+                        Natural language to functional prototypes
+                    </p>
+                    <p className="text-foreground-secondary text-regular leading-relaxed text-balance">
+                        Describe your product idea in natural language and watch AI generate a fully
+                        functional prototype with proper React architecture, state management, and
+                        responsive design.
                     </p>
                 </div>
 
                 <div>
-                    <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Interactive Components</h2>
-                    <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Working features, not static mockups</p>
-                    <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
-                        Create prototypes with working forms, navigation, data visualization, and user interactions—not just static screens linked together.
+                    <h2 className="text-foreground-secondary text-small mb-4 tracking-wider uppercase">
+                        Interactive Components
+                    </h2>
+                    <p className="text-foreground-primary mb-6 text-lg font-light text-balance md:text-xl">
+                        Working features, not static mockups
+                    </p>
+                    <p className="text-foreground-secondary text-regular leading-relaxed text-balance">
+                        Create prototypes with working forms, navigation, data visualization, and
+                        user interactions—not just static screens linked together.
                     </p>
                 </div>
 
                 <div>
-                    <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Real-Time Collaboration (planned)</h2>
-                    <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Team feedback and iteration</p>
-                    <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
-                        Share prototypes instantly with your team for feedback, comments, and collaborative editing in real-time.
+                    <h2 className="text-foreground-secondary text-small mb-4 tracking-wider uppercase">
+                        Real-Time Collaboration (planned)
+                    </h2>
+                    <p className="text-foreground-primary mb-6 text-lg font-light text-balance md:text-xl">
+                        Team feedback and iteration
+                    </p>
+                    <p className="text-foreground-secondary text-regular leading-relaxed text-balance">
+                        Share prototypes instantly with your team for feedback, comments, and
+                        collaborative editing in real-time.
                     </p>
                 </div>
 
                 <div>
-                    <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Figma to React Conversion</h2>
-                    <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Design to production-ready code</p>
-                    <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
-                        Import Figma designs and convert them to clean, production-ready React code with proper component structure and Tailwind styling.
+                    <h2 className="text-foreground-secondary text-small mb-4 tracking-wider uppercase">
+                        Figma to React Conversion
+                    </h2>
+                    <p className="text-foreground-primary mb-6 text-lg font-light text-balance md:text-xl">
+                        Design to production-ready code
+                    </p>
+                    <p className="text-foreground-secondary text-regular leading-relaxed text-balance">
+                        Import Figma designs and convert them to clean, production-ready React code
+                        with proper component structure and Tailwind styling.
                     </p>
                 </div>
 
                 <div>
-                    <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">One-Click Deployment</h2>
-                    <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Instant live prototypes</p>
-                    <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
-                        Deploy your prototypes to live URLs instantly for user testing, stakeholder reviews, and product validation without any setup.
+                    <h2 className="text-foreground-secondary text-small mb-4 tracking-wider uppercase">
+                        One-Click Deployment
+                    </h2>
+                    <p className="text-foreground-primary mb-6 text-lg font-light text-balance md:text-xl">
+                        Instant live prototypes
+                    </p>
+                    <p className="text-foreground-secondary text-regular leading-relaxed text-balance">
+                        Deploy your prototypes to live URLs instantly for user testing, stakeholder
+                        reviews, and product validation without any setup.
                     </p>
                 </div>
 
                 <div>
-                    <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Version History</h2>
-                    <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Complete prototype evolution tracking</p>
-                    <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
-                        Track prototype iterations with automatic versioning, rollback to previous versions, and maintain a complete history of your product evolution.
+                    <h2 className="text-foreground-secondary text-small mb-4 tracking-wider uppercase">
+                        Version History
+                    </h2>
+                    <p className="text-foreground-primary mb-6 text-lg font-light text-balance md:text-xl">
+                        Complete prototype evolution tracking
+                    </p>
+                    <p className="text-foreground-secondary text-regular leading-relaxed text-balance">
+                        Track prototype iterations with automatic versioning, rollback to previous
+                        versions, and maintain a complete history of your product evolution.
                     </p>
                 </div>
             </div>
@@ -204,11 +260,11 @@ function PrototypeFeaturesGridSection() {
 const prototypeFaqs = [
     {
         question: 'What makes Onlook different from other prototyping tools?',
-        answer: 'Onlook generates functional React prototypes with real interactions, databases, and working features—not just clickable mockups. While other tools create static prototypes, Onlook\'s AI builds production-ready code you can actually test and deploy.',
+        answer: "Onlook generates functional React prototypes with real interactions, databases, and working features—not just clickable mockups. While other tools create static prototypes, Onlook's AI builds production-ready code you can actually test and deploy.",
     },
     {
         question: 'How quickly can I create a prototype with Onlook?',
-        answer: 'Most prototypes can be generated in minutes. Simply describe your idea or import a Figma design, and Onlook\'s AI will create a functional React prototype with working components, proper styling, and interactive features ready for testing.',
+        answer: "Most prototypes can be generated in minutes. Simply describe your idea or import a Figma design, and Onlook's AI will create a functional React prototype with working components, proper styling, and interactive features ready for testing.",
     },
     {
         question: 'Can I use my existing Figma designs?',
@@ -230,15 +286,22 @@ const prototypeFaqs = [
 
 function PrototypeFAQSection() {
     return (
-        <div className="w-full py-48 px-8 bg-background-onlook/80" id="faq">
-            <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start gap-24 md:gap-12">
-                <div className="flex-1 flex flex-col items-start">
-                    <h3 className="text-foreground-primary text-5xl md:text-6xl leading-[1.1] font-light mb-12 mt-4 max-w-3xl text-balance">
-                        Frequently<br />asked questions
+        <div className="bg-background-onlook/80 w-full px-8 py-48" id="faq">
+            <div className="mx-auto flex max-w-6xl flex-col items-start gap-24 md:flex-row md:gap-12">
+                <div className="flex flex-1 flex-col items-start">
+                    <h3 className="text-foreground-primary mt-4 mb-12 max-w-3xl text-5xl leading-[1.1] font-light text-balance md:text-6xl">
+                        Frequently
+                        <br />
+                        asked questions
                     </h3>
-                    <ButtonLink href={Routes.FAQ} rightIcon={<Icons.ArrowRight className="w-5 h-5" />}>Read our FAQs</ButtonLink>
+                    <ButtonLink
+                        href={Routes.FAQ}
+                        rightIcon={<Icons.ArrowRight className="h-5 w-5" />}
+                    >
+                        Read our FAQs
+                    </ButtonLink>
                 </div>
-                <div className="flex-1 flex flex-col gap-6">
+                <div className="flex flex-1 flex-col gap-6">
                     <FAQDropdown faqs={prototypeFaqs} />
                 </div>
             </div>
@@ -250,21 +313,24 @@ export default function PrototypeFeaturesPage() {
     return (
         <CreateManagerProvider>
             <WebsiteLayout showFooter={true}>
-                <div className="w-screen h-screen flex items-center justify-center" id="hero">
+                <div className="flex h-screen w-screen items-center justify-center" id="hero">
                     <PrototypeFeaturesHero />
                 </div>
                 <ResponsiveMockupSection />
                 <PrototypeBenefitsSection />
-                <div className="w-full max-w-6xl mx-auto py-32 px-8 text-center">
-                    <div className="max-w-3xl mx-auto">
-                        <h2 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-6">
+                <div className="mx-auto w-full max-w-6xl px-8 py-32 text-center">
+                    <div className="mx-auto max-w-3xl">
+                        <h2 className="text-foreground-secondary mb-6 text-sm font-medium tracking-wider uppercase">
                             Complete Rapid Prototyping Solution
                         </h2>
-                        <p className="text-foreground-primary text-2xl md:text-5xl leading-[1.1] font-light mb-8 text-balance">
+                        <p className="text-foreground-primary mb-8 text-2xl leading-[1.1] font-light text-balance md:text-5xl">
                             All the Features you need to Build and Scale
                         </p>
-                        <p className="text-foreground-secondary text-lg max-w-xl mx-auto text-balance">
-                            Everything You Need for Fast Product Validation. Generate, test, and iterate on product ideas with AI-powered prototyping tools. Create functional React prototypes that help you validate concepts, gather feedback, and make data-driven product decisions faster than ever.
+                        <p className="text-foreground-secondary mx-auto max-w-xl text-lg text-balance">
+                            Everything You Need for Fast Product Validation. Generate, test, and
+                            iterate on product ideas with AI-powered prototyping tools. Create
+                            functional React prototypes that help you validate concepts, gather
+                            feedback, and make data-driven product decisions faster than ever.
                         </p>
                     </div>
                 </div>
