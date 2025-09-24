@@ -10,26 +10,23 @@ import { ToolCallSimple } from './tool-call-simple';
 
 export const ToolCallDisplay = ({
     messageId,
-    isLastPart,
     toolPart,
     isStream,
     applied
 }: {
     messageId: string,
-    isLastPart: boolean,
     toolPart: ToolUIPart,
     isStream: boolean,
     applied: boolean
 }) => {
     const toolName = toolPart.type.split('-')[1];
-    const loading = isStream && isLastPart;
 
     if (isStream || (toolPart.state !== 'output-available' && toolPart.state !== 'input-available')) {
         return (
             <ToolCallSimple
                 toolPart={toolPart}
                 key={toolPart.toolCallId}
-                loading={loading}
+                loading={true}
             />
         );
     }
@@ -42,7 +39,6 @@ export const ToolCallDisplay = ({
                 <ToolCallSimple
                     toolPart={toolPart}
                     key={toolPart.toolCallId}
-                    loading={loading}
                 />
             );
         }
@@ -83,7 +79,6 @@ export const ToolCallDisplay = ({
                 <ToolCallSimple
                     toolPart={toolPart}
                     key={toolPart.toolCallId}
-                    loading={loading}
                 />
             );
         }
@@ -109,7 +104,6 @@ export const ToolCallDisplay = ({
                 <ToolCallSimple
                     toolPart={toolPart}
                     key={toolPart.toolCallId}
-                    loading={loading}
                 />
             );
         }
@@ -135,7 +129,6 @@ export const ToolCallDisplay = ({
                 <ToolCallSimple
                     toolPart={toolPart}
                     key={toolPart.toolCallId}
-                    loading={loading}
                 />
             );
         }
@@ -161,7 +154,6 @@ export const ToolCallDisplay = ({
                 <ToolCallSimple
                     toolPart={toolPart}
                     key={toolPart.toolCallId}
-                    loading={loading}
                 />
             );
         }
@@ -229,7 +221,6 @@ export const ToolCallDisplay = ({
         <ToolCallSimple
             toolPart={toolPart}
             key={toolPart.toolCallId}
-            loading={loading}
         />
     );
 }

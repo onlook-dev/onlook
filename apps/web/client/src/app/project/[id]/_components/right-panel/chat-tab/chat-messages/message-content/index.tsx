@@ -18,7 +18,6 @@ export const MessageContent = observer(
         isStream: boolean;
     }) => {
         const renderedParts = parts.map((part, idx) => {
-            const isLastPart = idx === parts.length - 1;
             if (part.type === 'text') {
                 return (
                     <Response key={part.text}>
@@ -31,7 +30,6 @@ export const MessageContent = observer(
                 return (
                     <ToolCallDisplay
                         messageId={messageId}
-                        isLastPart={isLastPart}
                         toolPart={toolPart}
                         key={toolPart.toolCallId}
                         isStream={isStream}
@@ -39,6 +37,7 @@ export const MessageContent = observer(
                     />
                 );
             } else if (part.type === 'reasoning') {
+                const isLastPart = idx === parts.length - 1;
                 return (
                     <Reasoning key={part.text} className={cn(
                         "px-2 m-0 items-center gap-2 text-foreground-tertiary",
@@ -47,9 +46,9 @@ export const MessageContent = observer(
                         <ReasoningTrigger />
                         <ReasoningContent className="text-xs">{part.text}</ReasoningContent>
                     </Reasoning>
-                )
+                );
             }
-        }).filter(Boolean);
+        })
 
         return (
             <>
