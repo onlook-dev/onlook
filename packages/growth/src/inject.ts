@@ -1,4 +1,4 @@
-import { generate, getAstFromContent, types as t, traverse } from '@onlook/parser';
+import { generate, getAstFromContent, t, traverse } from '@onlook/parser';
 import { type FileOperations } from '@onlook/utility';
 import { getLayoutPath } from './helpers';
 import { builtWithScript } from './script';

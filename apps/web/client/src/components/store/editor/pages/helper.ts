@@ -1,8 +1,11 @@
+import { nanoid } from 'nanoid';
+
 import type { ListFilesOutputFile } from '@onlook/code-provider';
 import type { PageMetadata, PageNode, SandboxFile } from '@onlook/models';
+import type { T } from '@onlook/parser';
 import { RouterType } from '@onlook/models';
-import { generate, getAstFromContent, types as t, traverse, type t as T } from '@onlook/parser';
-import { nanoid } from 'nanoid';
+import { generate, getAstFromContent, t, traverse } from '@onlook/parser';
+
 import type { SandboxManager } from '../sandbox';
 import { formatContent } from '../sandbox/helpers';
 
