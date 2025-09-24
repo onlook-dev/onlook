@@ -1,7 +1,7 @@
 import { EditorAttributes } from '@onlook/constants';
 import { createOid } from '@onlook/utility';
 
-import type { NodePath, T } from './packages';
+import { type NodePath, type T } from './packages';
 import { isReactFragment } from './helpers';
 import { t, traverse } from './packages';
 
@@ -23,32 +23,50 @@ export function addOidsToAst(
             const existingOid = getExistingOid(attributes);
 
             if (existingOid) {
-                // If the element already has an oid, check if it conflicts with other branches or local duplicates
-                const { value, index } = existingOid;
-                const oidOwnerBranch = branchOidMap.get(value);
+                const { value, index, shouldRemove } = existingOid;
 
-                // Replace OID if:
-                // 1. It exists globally AND belongs to a different branch, OR
-                // 2. It's already used elsewhere in this same AST
-                if (
-                    (globalOids.has(value) &&
-                        oidOwnerBranch &&
-                        oidOwnerBranch !== currentBranchId) ||
-                    localOids.has(value)
-                ) {
-                    // Generate a new unique OID that doesn't conflict globally or locally
+                if (shouldRemove) {
+                    // Remove invalid oid attribute and create a new valid one
+                    attributes.splice(index, 1);
                     let newOid: string;
                     do {
                         newOid = createOid();
                     } while (globalOids.has(newOid) || localOids.has(newOid));
 
-                    const attr = attributes[index] as T.JSXAttribute;
-                    attr.value = t.stringLiteral(newOid);
+                    const newOidAttribute = t.jSXAttribute(
+                        t.jSXIdentifier(EditorAttributes.DATA_ONLOOK_ID),
+                        t.stringLiteral(newOid),
+                    );
+                    attributes.push(newOidAttribute);
                     localOids.add(newOid);
                     modified = true;
                 } else {
-                    // Keep existing OID and track it locally for future duplicate detection
-                    localOids.add(value);
+                    // If the element already has a valid oid, check if it conflicts with other branches or local duplicates
+                    const oidOwnerBranch = branchOidMap.get(value);
+
+                    // Replace OID if:
+                    // 1. It exists globally AND belongs to a different branch, OR
+                    // 2. It's already used elsewhere in this same AST
+                    if (
+                        (globalOids.has(value) &&
+                            oidOwnerBranch &&
+                            oidOwnerBranch !== currentBranchId) ||
+                        localOids.has(value)
+                    ) {
+                        // Generate a new unique OID that doesn't conflict globally or locally
+                        let newOid: string;
+                        do {
+                            newOid = createOid();
+                        } while (globalOids.has(newOid) || localOids.has(newOid));
+
+                        const attr = attributes[index] as T.JSXAttribute;
+                        attr.value = t.stringLiteral(newOid);
+                        localOids.add(newOid);
+                        modified = true;
+                    } else {
+                        // Keep existing OID and track it locally for future duplicate detection
+                        localOids.add(value);
+                    }
                 }
             } else {
                 // If the element doesn't have an oid, create one
@@ -72,7 +90,7 @@ export function addOidsToAst(
 
 export function getExistingOid(
     attributes: (T.JSXAttribute | T.JSXSpreadAttribute)[],
-): { value: string; index: number } | null {
+): { value: string; index: number; shouldRemove: boolean } | null {
     const existingAttrIndex = attributes.findIndex(
         (attr) => t.isJSXAttribute(attr) && attr.name.name === EditorAttributes.DATA_ONLOOK_ID,
     );
@@ -93,12 +111,18 @@ export function getExistingOid(
 
     const existingAttrValue = existingAttr.value;
     if (!existingAttrValue || !t.isStringLiteral(existingAttrValue)) {
-        return null;
+        // Mark invalid oid attributes for removal
+        return {
+            index: existingAttrIndex,
+            value: '',
+            shouldRemove: true,
+        };
     }
 
     return {
         index: existingAttrIndex,
         value: existingAttrValue.value,
+        shouldRemove: false,
     };
 }
 
