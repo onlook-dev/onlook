@@ -739,5 +739,428 @@ describe('addOidsToAst', () => {
             expect(oidMatch![1]).toHaveLength(7);
             expect(typeof oidMatch![1]).toBe('string');
         });
+
+        test('should treat empty string oids as invalid', async () => {
+            const inputContent = `<div data-oid="">Content</div>`;
+            const ast = getAstFromContent(inputContent);
+            if (!ast) throw new Error('Failed to parse input code');
+
+            const { ast: astWithIds, modified } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, inputContent);
+
+            expect(modified).toBe(true);
+            expect(result).not.toContain('data-oid=""');
+            
+            // Should have exactly one valid oid
+            const oidMatch = result.match(/data-oid="([^"]*)"/);
+            expect(oidMatch).not.toBeNull();
+            expect(oidMatch![1]).toHaveLength(7);
+            expect(oidMatch?.[1]?.trim()).not.toBe('');
+        });
+
+        test('should handle multiple oids including empty strings', async () => {
+            const inputContent = `<div data-oid="" data-oid="valid-oid">Content</div>`;
+            const ast = getAstFromContent(inputContent);
+            if (!ast) throw new Error('Failed to parse input code');
+
+            const { ast: astWithIds, modified } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, inputContent);
+
+            expect(modified).toBe(true);
+            expect(result).not.toContain('data-oid=""');
+            expect(result).not.toContain('data-oid="valid-oid"');
+            
+            // Should have exactly one new valid oid (all removed due to multiple + invalid)
+            const oidCount = (result.match(/data-oid=/g) || []).length;
+            expect(oidCount).toBe(1);
+            
+            const oidMatch = result.match(/data-oid="([^"]*)"/);
+            expect(oidMatch![1]).toHaveLength(7);
+        });
+
+        test('should treat whitespace-only oids as invalid', async () => {
+            const inputContent = `<div data-oid="   ">Content</div>`;
+            const ast = getAstFromContent(inputContent);
+            if (!ast) throw new Error('Failed to parse input code');
+
+            const { ast: astWithIds, modified } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, inputContent);
+
+            expect(modified).toBe(true);
+            expect(result).not.toContain('data-oid="   "');
+            
+            // Should have exactly one valid oid
+            const oidMatch = result.match(/data-oid="([^"]*)"/);
+            expect(oidMatch).not.toBeNull();
+            expect(oidMatch![1]).toHaveLength(7);
+            expect(oidMatch?.[1]?.trim()).not.toBe('');
+        });
+
+        test('should handle different types of whitespace as invalid', async () => {
+            const ast = getAstFromContent('<div>Content</div>');
+            if (!ast) throw new Error('Failed to parse input code');
+
+            // Add multiple whitespace-only oids
+            ast.program.body.forEach((statement) => {
+                if (statement.type === 'ExpressionStatement' && statement.expression.type === 'JSXElement') {
+                    const openingElement = statement.expression.openingElement;
+                    
+                    const spacesOid = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: { type: 'StringLiteral', value: '   ' },
+                    };
+                    
+                    const tabsOid = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: { type: 'StringLiteral', value: '\t\t' },
+                    };
+                    
+                    const newlinesOid = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: { type: 'StringLiteral', value: '\n\r\n' },
+                    };
+
+                    openingElement.attributes.push(
+                        spacesOid as any,
+                        tabsOid as any,
+                        newlinesOid as any
+                    );
+                }
+            });
+
+            const { ast: astWithIds, modified } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, '<div>Content</div>');
+
+            expect(modified).toBe(true);
+            expect(result).not.toContain('data-oid="   "');
+            expect(result).not.toContain('data-oid="\t\t"');
+            expect(result).not.toContain('data-oid="\n\r\n"');
+            
+            // Should have exactly one valid oid (all whitespace-only removed)
+            const oidCount = (result.match(/data-oid=/g) || []).length;
+            expect(oidCount).toBe(1);
+            
+            const oidMatch = result.match(/data-oid="([^"]*)"/);
+            expect(oidMatch![1]).toHaveLength(7);
+            expect(oidMatch?.[1]?.trim()).toBe(oidMatch?.[1]); // Should not have leading/trailing whitespace
+        });
+
+        test('should handle multiple oids on self-closing elements', async () => {
+            const inputContent = `<img data-oid="img1" data-oid="img2" src="test.jpg" />`;
+            const ast = getAstFromContent(inputContent);
+            if (!ast) throw new Error('Failed to parse input code');
+
+            const { ast: astWithIds, modified } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, inputContent);
+
+            expect(modified).toBe(true);
+            expect(result).not.toContain('data-oid="img1"');
+            expect(result).not.toContain('data-oid="img2"');
+            
+            // Should have exactly one valid oid
+            const oidCount = (result.match(/data-oid=/g) || []).length;
+            expect(oidCount).toBe(1);
+            
+            // Should preserve other attributes
+            expect(result).toContain('src="test.jpg"');
+            
+            const oidMatch = result.match(/data-oid="([^"]*)"/);
+            expect(oidMatch![1]).toHaveLength(7);
+        });
+
+        test('should handle mixed valid/invalid oids on self-closing elements', async () => {
+            const ast = getAstFromContent('<br />');
+            if (!ast) throw new Error('Failed to parse input code');
+
+            // Manually add mixed oids to self-closing element
+            ast.program.body.forEach((statement) => {
+                if (statement.type === 'ExpressionStatement' && statement.expression.type === 'JSXElement') {
+                    const openingElement = statement.expression.openingElement;
+                    
+                    const validOid = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: { type: 'StringLiteral', value: 'valid-br-oid' },
+                    };
+                    
+                    const emptyOid = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: { type: 'StringLiteral', value: '' },
+                    };
+                    
+                    const invalidOid = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: {
+                            type: 'JSXExpressionContainer',
+                            expression: { type: 'Literal', value: 123, raw: '123' },
+                        },
+                    };
+
+                    openingElement.attributes.push(
+                        validOid as any,
+                        emptyOid as any,
+                        invalidOid as any
+                    );
+                }
+            });
+
+            const { ast: astWithIds, modified } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, '<br />');
+
+            expect(modified).toBe(true);
+            expect(result).not.toContain('data-oid="valid-br-oid"');
+            expect(result).not.toContain('data-oid=""');
+            expect(result).not.toContain('data-oid={123}');
+            
+            // Should have exactly one valid oid (all removed due to multiple + invalid)
+            const oidCount = (result.match(/data-oid=/g) || []).length;
+            expect(oidCount).toBe(1);
+            
+            const oidMatch = result.match(/data-oid="([^"]*)"/);
+            expect(oidMatch![1]).toHaveLength(7);
+        });
+
+        test('should handle JSX expression containers with variables as invalid', async () => {
+            const ast = getAstFromContent('<div>Content</div>');
+            if (!ast) throw new Error('Failed to parse input code');
+
+            // Add JSX expression containers with different types of expressions
+            ast.program.body.forEach((statement) => {
+                if (statement.type === 'ExpressionStatement' && statement.expression.type === 'JSXElement') {
+                    const openingElement = statement.expression.openingElement;
+                    
+                    // Variable expression
+                    const variableOid = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: {
+                            type: 'JSXExpressionContainer',
+                            expression: { type: 'Identifier', name: 'someVariable' },
+                        },
+                    };
+                    
+                    // Function call expression  
+                    const functionOid = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: {
+                            type: 'JSXExpressionContainer',
+                            expression: {
+                                type: 'CallExpression',
+                                callee: { type: 'Identifier', name: 'generateId' },
+                                arguments: [],
+                            },
+                        },
+                    };
+                    
+                    // Member expression
+                    const memberOid = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: {
+                            type: 'JSXExpressionContainer',
+                            expression: {
+                                type: 'MemberExpression',
+                                object: { type: 'Identifier', name: 'obj' },
+                                property: { type: 'Identifier', name: 'id' },
+                                computed: false,
+                            },
+                        },
+                    };
+                    
+                    // Template literal expression
+                    const templateOid = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: {
+                            type: 'JSXExpressionContainer',
+                            expression: {
+                                type: 'TemplateLiteral',
+                                quasis: [
+                                    { type: 'TemplateElement', value: { raw: 'id-', cooked: 'id-' }, tail: false },
+                                    { type: 'TemplateElement', value: { raw: '', cooked: '' }, tail: true }
+                                ],
+                                expressions: [{ type: 'Identifier', name: 'counter' }],
+                            },
+                        },
+                    };
+
+                    openingElement.attributes.push(
+                        variableOid as any,
+                        functionOid as any,
+                        memberOid as any,
+                        templateOid as any
+                    );
+                }
+            });
+
+            const { ast: astWithIds, modified } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, '<div>Content</div>');
+
+            expect(modified).toBe(true);
+            expect(result).not.toContain('data-oid={someVariable}');
+            expect(result).not.toContain('data-oid={generateId()}');
+            expect(result).not.toContain('data-oid={obj.id}');
+            expect(result).not.toContain('data-oid={`id-${counter}`}');
+            
+            // Should have exactly one valid oid (all expressions treated as invalid)
+            const oidCount = (result.match(/data-oid=/g) || []).length;
+            expect(oidCount).toBe(1);
+            
+            const oidMatch = result.match(/data-oid="([^"]*)"/);
+            expect(oidMatch![1]).toHaveLength(7);
+        });
+
+        test('should handle mixed string literals and expressions', async () => {
+            const ast = getAstFromContent('<span>Text</span>');
+            if (!ast) throw new Error('Failed to parse input code');
+
+            // Add mix of string literal and expression
+            ast.program.body.forEach((statement) => {
+                if (statement.type === 'ExpressionStatement' && statement.expression.type === 'JSXElement') {
+                    const openingElement = statement.expression.openingElement;
+                    
+                    const validStringOid = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: { type: 'StringLiteral', value: 'valid-string-oid' },
+                    };
+                    
+                    const expressionOid = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: {
+                            type: 'JSXExpressionContainer',
+                            expression: { type: 'Identifier', name: 'dynamicId' },
+                        },
+                    };
+
+                    openingElement.attributes.push(
+                        validStringOid as any,
+                        expressionOid as any
+                    );
+                }
+            });
+
+            const { ast: astWithIds, modified } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, '<span>Text</span>');
+
+            expect(modified).toBe(true);
+            expect(result).not.toContain('data-oid="valid-string-oid"');
+            expect(result).not.toContain('data-oid={dynamicId}');
+            
+            // Should have exactly one new valid oid (all removed due to multiple + invalid)
+            const oidCount = (result.match(/data-oid=/g) || []).length;
+            expect(oidCount).toBe(1);
+            
+            const oidMatch = result.match(/data-oid="([^"]*)"/);
+            expect(oidMatch![1]).toHaveLength(7);
+        });
+
+        test('should handle elements with spread attributes and multiple oids', async () => {
+            const ast = getAstFromContent('<div>Content</div>');
+            if (!ast) throw new Error('Failed to parse input code');
+
+            // Add spread attributes mixed with oids
+            ast.program.body.forEach((statement) => {
+                if (statement.type === 'ExpressionStatement' && statement.expression.type === 'JSXElement') {
+                    const openingElement = statement.expression.openingElement;
+                    
+                    // Add spread attribute
+                    const spreadAttr = {
+                        type: 'JSXSpreadAttribute',
+                        argument: { type: 'Identifier', name: 'props' },
+                    };
+                    
+                    // Add multiple oids
+                    const oid1 = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: { type: 'StringLiteral', value: 'oid-before-spread' },
+                    };
+                    
+                    const oid2 = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: { type: 'StringLiteral', value: 'oid-after-spread' },
+                    };
+                    
+                    // Add regular attribute for context
+                    const classAttr = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'className' },
+                        value: { type: 'StringLiteral', value: 'test-class' },
+                    };
+
+                    openingElement.attributes.push(
+                        oid1 as any,
+                        spreadAttr as any,
+                        oid2 as any,
+                        classAttr as any
+                    );
+                }
+            });
+
+            const { ast: astWithIds, modified } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, '<div>Content</div>');
+
+            expect(modified).toBe(true);
+            expect(result).not.toContain('data-oid="oid-before-spread"');
+            expect(result).not.toContain('data-oid="oid-after-spread"');
+            
+            // Should preserve spread and other attributes
+            expect(result).toContain('{...props}');
+            expect(result).toContain('className="test-class"');
+            
+            // Should have exactly one valid oid (multiples removed)
+            const oidCount = (result.match(/data-oid=/g) || []).length;
+            expect(oidCount).toBe(1);
+            
+            const oidMatch = result.match(/data-oid="([^"]*)"/);
+            expect(oidMatch![1]).toHaveLength(7);
+        });
+
+        test('should handle spread attributes that might contain oid properties', async () => {
+            const inputContent = `<div {...someProps} data-oid="explicit-oid">Content</div>`;
+            const ast = getAstFromContent(inputContent);
+            if (!ast) throw new Error('Failed to parse input code');
+
+            // Add another explicit oid to trigger multiple handling
+            ast.program.body.forEach((statement) => {
+                if (statement.type === 'ExpressionStatement' && statement.expression.type === 'JSXElement') {
+                    const openingElement = statement.expression.openingElement;
+                    
+                    const additionalOid = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: { type: 'StringLiteral', value: 'second-explicit-oid' },
+                    };
+
+                    openingElement.attributes.push(additionalOid as any);
+                }
+            });
+
+            const { ast: astWithIds, modified } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, inputContent);
+
+            expect(modified).toBe(true);
+            expect(result).not.toContain('data-oid="explicit-oid"');
+            expect(result).not.toContain('data-oid="second-explicit-oid"');
+            
+            // Should preserve spread attribute
+            expect(result).toContain('{...someProps}');
+            
+            // Should have exactly one valid oid (all explicit ones removed due to multiples)
+            const oidCount = (result.match(/data-oid=/g) || []).length;
+            expect(oidCount).toBe(1);
+            
+            const oidMatch = result.match(/data-oid="([^"]*)"/);
+            expect(oidMatch![1]).toHaveLength(7);
+        });
     });
 });

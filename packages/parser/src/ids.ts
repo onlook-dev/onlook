@@ -111,7 +111,14 @@ export function getAllExistingOids(
                 hasInvalid = true;
                 oidValues.push('');
             } else {
-                oidValues.push(existingAttrValue.value);
+                const value = existingAttrValue.value;
+                // Treat empty strings and whitespace-only strings as invalid
+                if (!value || value.trim() === '') {
+                    hasInvalid = true;
+                    oidValues.push('');
+                } else {
+                    oidValues.push(value);
+                }
             }
         }
     });
@@ -155,9 +162,19 @@ export function getExistingOid(
         };
     }
 
+    const value = existingAttrValue.value;
+    // Treat empty strings and whitespace-only strings as invalid
+    if (!value || value.trim() === '') {
+        return {
+            index: existingAttrIndex,
+            value: '',
+            shouldRemove: true,
+        };
+    }
+
     return {
         index: existingAttrIndex,
-        value: existingAttrValue.value,
+        value,
         shouldRemove: false,
     };
 }
