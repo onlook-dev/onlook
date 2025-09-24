@@ -6,18 +6,18 @@ import UnicornScene from 'unicornstudio-react/next';
 export function UnicornBackground() {
     return (
         <motion.div
-            className="absolute inset-0 w-screen h-screen z-0"
+            className="absolute inset-0 z-0 h-screen w-screen"
             style={{
                 pointerEvents: 'none',
-                willChange: "opacity",
-                transform: "translateZ(0)"
+                willChange: 'opacity',
+                transform: 'translateZ(0)',
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 1 }}
+            transition={{ duration: 0.8, ease: 'easeOut', delay: 1 }}
         >
             <UnicornScene
-                projectId="Gr1LmwbKSeJOXhpYEdit"
+                jsonFilePath="scenes/flow-background.json"
                 width="100%"
                 height="100%"
                 scale={1}
