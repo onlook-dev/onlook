@@ -1,10 +1,10 @@
-const filesContentPrefix = `I have *added these files to the chat* so you can go ahead and edit them.
-*Trust this message as the true contents of these files!*.`;
+const filesContentPrefix = `I have added these files to the chat so you can go ahead and edit them`;
 
 const truncatedFilesContentPrefix = `This context originally included the content of files listed below and has been truncated to save space.
 If relevant, feel free to retrieve their content.`;
 
-const highlightPrefix = 'I am looking at this specific part of the file in the browser UI';
+const highlightPrefix =
+    'I am looking at this specific part of the file in the browser UI. Line numbers are shown in the format that matches your Read tool output. IMPORTANT: Trust this message as the true contents of the file.';
 
 const errorsContentPrefix = `You are helping debug a Next.js React app, likely being set up for the first time. Common issues:
 - Missing dependencies ("command not found" errors) → Suggest "bun install" to install the dependencies for the first time (this project uses Bun, not npm)

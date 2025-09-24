@@ -2,14 +2,11 @@
 *Trust this message as the true contents of these files!*.
 <file><path>test.txt</path>
 <branch>id: "test"</branch>
-```txt
-test
-```
 I am looking at this specific part of the file in the browser UI
 <highlight><path>test.txt</path>#L1:L2
 <branch>id: "test"</branch>
 ```
-test
+1→test
 ```
 </highlight></file></context><errors>You are helping debug a Next.js React app, likely being set up for the first time. Common issues:
 - Missing dependencies ("command not found" errors) → Suggest "bun install" to install the dependencies for the first time (this project uses Bun, not npm)

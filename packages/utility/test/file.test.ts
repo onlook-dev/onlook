@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { getMimeType, isImageFile } from '../src/file';
+import { formatWithLineNumbers, getMimeType, isImageFile } from '../src/file';
 
 describe('getMimeType', () => {
     it('returns correct MIME type for .ico', () => {
@@ -149,5 +149,70 @@ describe('isImageFile', () => {
             expect(isImageFile('画像.png')).toBe(true);
             expect(isImageFile('émoji😀.svg')).toBe(true);
         });
+    });
+});
+
+describe('formatWithLineNumbers', () => {
+    it('formats single line with default start index', () => {
+        const content = 'Hello world';
+        const expected = '1→Hello world';
+        expect(formatWithLineNumbers(content)).toBe(expected);
+    });
+
+    it('formats multiple lines with default start index', () => {
+        const content = 'Line one\nLine two\nLine three';
+        const expected = '1→Line one\n2→Line two\n3→Line three';
+        expect(formatWithLineNumbers(content)).toBe(expected);
+    });
+
+    it('formats with custom start index', () => {
+        const content = 'First line\nSecond line';
+        const expected = '5→First line\n6→Second line';
+        expect(formatWithLineNumbers(content, 5)).toBe(expected);
+    });
+
+    it('handles empty content', () => {
+        const content = '';
+        const expected = '1→';
+        expect(formatWithLineNumbers(content)).toBe(expected);
+    });
+
+    it('handles content with empty lines', () => {
+        const content = 'Line 1\n\nLine 3';
+        const expected = '1→Line 1\n2→\n3→Line 3';
+        expect(formatWithLineNumbers(content)).toBe(expected);
+    });
+
+    it('pads line numbers correctly for double digits', () => {
+        const content = Array(12).fill('line').map((_, i) => `Line ${i + 1}`).join('\n');
+        const lines = formatWithLineNumbers(content).split('\n');
+        expect(lines[0]).toBe(' 1→Line 1');
+        expect(lines[8]).toBe(' 9→Line 9');
+        expect(lines[9]).toBe('10→Line 10');
+        expect(lines[11]).toBe('12→Line 12');
+    });
+
+    it('pads line numbers correctly with custom start index', () => {
+        const content = 'Line 1\nLine 2';
+        const expected = '98→Line 1\n99→Line 2';
+        expect(formatWithLineNumbers(content, 98)).toBe(expected);
+    });
+
+    it('handles large line numbers with proper padding', () => {
+        const content = 'Line 1\nLine 2';
+        const expected = '998→Line 1\n999→Line 2';
+        expect(formatWithLineNumbers(content, 998)).toBe(expected);
+    });
+
+    it('handles content that ends with newline', () => {
+        const content = 'Line 1\nLine 2\n';
+        const expected = '1→Line 1\n2→Line 2\n3→';
+        expect(formatWithLineNumbers(content)).toBe(expected);
+    });
+
+    it('preserves tabs and spaces in content', () => {
+        const content = '\tIndented line\n  Spaced line';
+        const expected = '1→\tIndented line\n2→  Spaced line';
+        expect(formatWithLineNumbers(content)).toBe(expected);
     });
 });

@@ -201,7 +201,7 @@ export async function getContentFromTemplateNode(
             .join('\n');
 
         return selectedText;
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error reading range from file:', error);
         throw error;
     }

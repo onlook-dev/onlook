@@ -1,6 +1,9 @@
 'use client';
 
-import { RouterType, type TemplateNode } from '@onlook/models';
+import { makeAutoObservable } from 'mobx';
+
+import { type TemplateNode } from '@onlook/models';
+import { RouterType } from '@onlook/models';
 import {
     addOidsToAst,
     createTemplateNodeMap,
@@ -11,9 +14,9 @@ import {
     injectPreloadScript,
 } from '@onlook/parser';
 import { isRootLayoutFile } from '@onlook/utility/src/path';
-import { makeAutoObservable } from 'mobx';
+
 import { UnifiedCacheManager } from '../cache/unified-cache';
-import type { EditorEngine } from '../engine';
+import { type EditorEngine } from '../engine';
 import { formatContent } from '../sandbox/helpers';
 
 interface TemplateNodeCacheData {
@@ -69,13 +72,16 @@ export class TemplateNodeManager {
             const data = encoder.encode(content);
             const hashBuffer = await crypto.subtle.digest('SHA-1', data);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
+            return hashArray
+                .map((b) => b.toString(16).padStart(2, '0'))
+                .join('')
+                .slice(0, 16);
         } catch (error) {
             // Fallback hash
             let hash = 0;
             for (let i = 0; i < content.length; i++) {
                 const char = content.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
+                hash = (hash << 5) - hash + char;
                 hash = hash & hash;
             }
             return Math.abs(hash).toString(36);
@@ -129,7 +135,11 @@ export class TemplateNodeManager {
         const formattedContent = await formatContent(filePath, unformattedContent);
         const astWithIdsAndFormatted = getAstFromContent(formattedContent);
         const finalAst = astWithIdsAndFormatted ?? astWithIds;
-        const templateNodeMap = createTemplateNodeMap({ ast: finalAst, filename: filePath, branchId });
+        const templateNodeMap = createTemplateNodeMap({
+            ast: finalAst,
+            filename: filePath,
+            branchId,
+        });
 
         // Store template nodes
         templateNodeMap.forEach((node, oid) => {

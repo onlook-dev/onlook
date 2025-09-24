@@ -1,5 +1,6 @@
-import { BINARY_EXTENSIONS, IMAGE_EXTENSIONS } from '@onlook/constants';
 import mime from 'mime-lite';
+
+import { BINARY_EXTENSIONS, IMAGE_EXTENSIONS } from '@onlook/constants';
 
 /**
  * Check if a file is binary based on its extension
@@ -110,3 +111,17 @@ export const convertToBase64 = (content: Uint8Array): string => {
             .join(''),
     );
 };
+
+export function formatWithLineNumbers(content: string, startIndex: number = 1): string {
+    const lines = content.split('\n');
+    const maxLineNumber = startIndex + lines.length - 1;
+    const padding = maxLineNumber.toString().length;
+    
+    return lines
+        .map((line, index) => {
+            const lineNumber = startIndex + index;
+            const paddedLineNumber = lineNumber.toString().padStart(padding, ' ');
+            return `${paddedLineNumber}→${line}`;
+        })
+        .join('\n');
+}

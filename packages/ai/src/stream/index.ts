@@ -1,6 +1,10 @@
+import type { ModelMessage, ToolUIPart } from 'ai';
+import { convertToModelMessages } from 'ai';
+
 import { type ChatMessage } from '@onlook/models';
-import { convertToModelMessages, type ModelMessage, type ToolUIPart } from 'ai';
-import { getHydratedUserMessage, type HydrateMessageOptions } from '../prompt';
+
+import type { HydrateMessageOptions } from '../prompt';
+import { getHydratedUserMessage } from '../prompt';
 
 export function convertToStreamMessages(messages: ChatMessage[]): ModelMessage[] {
     const totalMessages = messages.length;

@@ -1,3 +1,5 @@
+import { type FileUIPart } from 'ai';
+
 import type {
     ChatMessage,
     ErrorMessageContext,
@@ -6,16 +8,18 @@ import type {
     MessageContext,
     ProjectMessageContext,
 } from '@onlook/models';
-import type { FileUIPart } from 'ai';
-import { ASK_MODE_SYSTEM_PROMPT } from './ask';
-import { CONTEXT_PROMPTS } from './context';
-import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
-import { CODE_FENCE } from './format';
+import { MessageContextType } from '@onlook/models';
+import { formatWithLineNumbers } from '@onlook/utility';
+
+import { ASK_MODE_SYSTEM_PROMPT } from './constants/ask';
+import { CONTEXT_PROMPTS } from './constants/context';
+import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './constants/create';
+import { CODE_FENCE } from './constants/format';
+import { SHELL_PROMPT } from './constants/shell';
+import { SUGGESTION_SYSTEM_PROMPT } from './constants/suggest';
+import { SUMMARY_PROMPTS } from './constants/summary';
+import { SYSTEM_PROMPT } from './constants/system';
 import { wrapXml } from './helpers';
-import { SHELL_PROMPT } from './shell';
-import { SUGGESTION_SYSTEM_PROMPT } from './suggest';
-import { SUMMARY_PROMPTS } from './summary';
-import { SYSTEM_PROMPT } from './system';
 
 export interface HydrateMessageOptions {
     totalMessages: number;
@@ -69,11 +73,11 @@ export function getHydratedUserMessage(
     opt: HydrateMessageOptions,
 ): ChatMessage {
     let userParts: ChatMessage['parts'] = [];
-    const files = context.filter((c) => c.type === 'file').map((c) => c);
-    const highlights = context.filter((c) => c.type === 'highlight').map((c) => c);
-    const errors = context.filter((c) => c.type === 'error').map((c) => c);
-    const project = context.filter((c) => c.type === 'project').map((c) => c);
-    const images = context.filter((c) => c.type === 'image').map((c) => c);
+    const files = context.filter((c) => c.type === MessageContextType.FILE).map((c) => c);
+    const highlights = context.filter((c) => c.type === MessageContextType.HIGHLIGHT).map((c) => c);
+    const errors = context.filter((c) => c.type === MessageContextType.ERROR).map((c) => c);
+    const project = context.filter((c) => c.type === MessageContextType.PROJECT).map((c) => c);
+    const images = context.filter((c) => c.type === MessageContextType.IMAGE).map((c) => c);
 
     // If there are 50 user messages in the contexts, we can trim all of them except
     // the last one. The logic could be adjusted to trim more or less messages.
@@ -94,7 +98,7 @@ export function getHydratedUserMessage(
     }
 
     if (errors.length > 0) {
-        let errorPrompt = getErrorsContent(errors);
+        const errorPrompt = getErrorsContent(errors);
         prompt += errorPrompt;
     }
 
@@ -163,7 +167,7 @@ export function getFilesContent(
         const pathDisplay = wrapXml('path', file.path);
         let filePrompt = `${pathDisplay}\n${branchDisplay}\n`;
         filePrompt += `${CODE_FENCE.start}${getLanguageFromFilePath(file.path)}\n`;
-        filePrompt += file.content;
+        filePrompt += formatWithLineNumbers(file.content, 1);
         filePrompt += `\n${CODE_FENCE.end}\n`;
         filePrompt += getHighlightsContent(file.path, highlights);
 
@@ -191,7 +195,7 @@ export function getErrorsContent(errors: ErrorMessageContext[]) {
 }
 
 export function getLanguageFromFilePath(filePath: string): string {
-    return filePath.split('.').pop() || '';
+    return filePath.split('.').pop() ?? '';
 }
 
 export function getHighlightsContent(filePath: string, highlights: HighlightMessageContext[]) {
@@ -206,7 +210,7 @@ export function getHighlightsContent(filePath: string, highlights: HighlightMess
         const pathDisplay = wrapXml('path', filePath);
         let highlightPrompt = `${pathDisplay}#L${highlight.start}:L${highlight.end}\n${branchDisplay}\n`;
         highlightPrompt += `${CODE_FENCE.start}\n`;
-        highlightPrompt += highlight.content;
+        highlightPrompt += formatWithLineNumbers(highlight.content, highlight.start);
         highlightPrompt += `\n${CODE_FENCE.end}\n`;
         highlightPrompt = wrapXml(
             fileHighlights.length > 1 ? `highlight-${index}` : 'highlight',
