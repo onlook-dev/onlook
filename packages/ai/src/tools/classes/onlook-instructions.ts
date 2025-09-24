@@ -1,7 +1,7 @@
 import { Icons } from '@onlook/ui/icons';
 import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
-import { ONLOOK_INSTRUCTIONS } from '../../prompt/onlook';
+import { ONLOOK_INSTRUCTIONS } from '../../prompt/constants';
 import { ClientTool } from '../models/client';
 
 export class OnlookInstructionsTool extends ClientTool {

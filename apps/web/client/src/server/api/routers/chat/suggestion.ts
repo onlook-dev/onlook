@@ -1,5 +1,4 @@
-import { initModel } from '@onlook/ai';
-import { SUGGESTION_SYSTEM_PROMPT } from '@onlook/ai/src/prompt/suggest';
+import { initModel, SUGGESTION_SYSTEM_PROMPT } from '@onlook/ai';
 import { conversations } from '@onlook/db';
 import type { ChatSuggestion } from '@onlook/models';
 import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';

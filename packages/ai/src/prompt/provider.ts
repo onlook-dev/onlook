@@ -7,15 +7,8 @@ import type {
     ProjectMessageContext,
 } from '@onlook/models';
 import type { FileUIPart } from 'ai';
-import { ASK_MODE_SYSTEM_PROMPT } from './ask';
-import { CONTEXT_PROMPTS } from './context';
-import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
-import { CODE_FENCE } from './format';
+import { ASK_MODE_SYSTEM_PROMPT, CODE_FENCE, CONTEXT_PROMPTS, CREATE_NEW_PAGE_SYSTEM_PROMPT, SHELL_PROMPT, SUGGESTION_SYSTEM_PROMPT, SUMMARY_PROMPTS, SYSTEM_PROMPT } from './constants';
 import { wrapXml } from './helpers';
-import { SHELL_PROMPT } from './shell';
-import { SUGGESTION_SYSTEM_PROMPT } from './suggest';
-import { SUMMARY_PROMPTS } from './summary';
-import { SYSTEM_PROMPT } from './system';
 
 export interface HydrateMessageOptions {
     totalMessages: number;
