@@ -34,3 +34,13 @@ If you encounter issues such as "Column not found" error, your database may be o
 
 1. Run `bun db:push` to push the schema to the database. If there are conflicts, you can try step 2.
 2. Run `bun db:reset` to fully reset the database and re-run the migrations. WARNING: This will delete all data in the database.
+
+### Testing the Preload Script
+
+If you want to update the preload script and test it with Onlook, follow these steps:
+
+1. Run bun `bun run dev` from the root of the project.
+2. Copy the file `apps/web/client/public/onlook-preload-script.js` into to `public/onlook-preload-script.js` in the code tab in onlook or the codesandbox interface.
+3. Refresh the localhost tab. You should now be able to test the preload script.
+
+If you want to update the preload script and test any changes, you need to refresh the localhost tab.
