@@ -1,7 +1,8 @@
-import type { ToolUIPart, UIMessage } from 'ai';
+import type { ChatMessage } from '@onlook/models';
+import { Reasoning, ReasoningContent, ReasoningTrigger, Response } from '@onlook/ui/ai-elements';
+import { cn } from '@onlook/ui/utils';
+import type { ToolUIPart } from 'ai';
 import { observer } from 'mobx-react-lite';
-import { useMemo } from 'react';
-import { MarkdownRenderer } from '../markdown-renderer';
 import { ToolCallDisplay } from './tool-call-display';
 
 export const MessageContent = observer(
@@ -12,47 +13,42 @@ export const MessageContent = observer(
         isStream,
     }: {
         messageId: string;
-        parts: UIMessage['parts'];
+        parts: ChatMessage['parts'];
         applied: boolean;
         isStream: boolean;
     }) => {
-        // Find the index of the last tool-*** part
-        const lastToolInvocationIdx = useMemo(() =>
-            parts?.map((part, index) => ({ type: part.type, index }))
-                .filter(item => item.type.startsWith('tool-'))
-                .pop()?.index ?? -1,
-            [parts]
-        );
-
         const renderedParts = parts.map((part, idx) => {
             if (part.type === 'text') {
                 return (
-                    <MarkdownRenderer
-                        messageId={messageId}
-                        type="text"
-                        key={part.text}
-                        content={part.text}
-                        applied={applied}
-                        isStream={isStream}
-                    />
+                    <Response key={part.text}>
+                        {part.text}
+                    </Response>
+
                 );
             } else if (part.type.startsWith('tool-')) {
                 const toolPart = part as ToolUIPart;
                 return (
                     <ToolCallDisplay
                         messageId={messageId}
-                        index={idx}
-                        lastToolInvocationIdx={lastToolInvocationIdx}
-                        toolInvocation={toolPart}
+                        toolPart={toolPart}
                         key={toolPart.toolCallId}
                         isStream={isStream}
                         applied={applied}
                     />
                 );
             } else if (part.type === 'reasoning') {
-                return null;
+                const isLastPart = idx === parts.length - 1;
+                return (
+                    <Reasoning key={part.text} className={cn(
+                        "px-2 m-0 items-center gap-2 text-foreground-tertiary",
+                        isStream && isLastPart && "bg-gradient-to-l from-white/20 via-white/90 to-white/20 bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer filter drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]"
+                    )} isStreaming={isStream}>
+                        <ReasoningTrigger />
+                        <ReasoningContent className="text-xs">{part.text}</ReasoningContent>
+                    </Reasoning>
+                );
             }
-        }).filter(Boolean);
+        })
 
         return (
             <>

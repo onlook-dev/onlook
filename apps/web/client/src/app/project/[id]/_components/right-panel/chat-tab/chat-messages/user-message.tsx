@@ -1,6 +1,6 @@
-import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
+import type { EditMessage } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
-import { ChatType, MessageCheckpointType, type UserChatMessage } from '@onlook/models';
+import { ChatType, MessageCheckpointType, type ChatMessage } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
@@ -13,10 +13,11 @@ import { SentContextPill } from '../context-pills/sent-context-pill';
 import { MessageContent } from './message-content';
 
 interface UserMessageProps {
-    message: UserChatMessage;
+    onEditMessage: EditMessage;
+    message: ChatMessage;
 }
 
-export const getUserMessageContent = (message: UserChatMessage) => {
+export const getUserMessageContent = (message: ChatMessage) => {
     return message.parts.map((part) => {
         if (part.type === 'text') {
             return part.text;
@@ -25,9 +26,8 @@ export const getUserMessageContent = (message: UserChatMessage) => {
     }).join('');
 }
 
-export const UserMessage = ({ message }: UserMessageProps) => {
+export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
-    const { sendMessageToChat } = useChatContext();
     const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
@@ -35,7 +35,9 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     const [isRestoring, setIsRestoring] = useState(false);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const commitOid = message.metadata?.checkpoints?.find((s) => s.type === MessageCheckpointType.GIT)?.oid;
+    const commitOid = message.metadata?.checkpoints?.find(
+        (s) => s.type === MessageCheckpointType.GIT,
+    )?.oid;
 
     useEffect(() => {
         if (isEditing && textareaRef.current) {
@@ -59,7 +61,7 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
             e.preventDefault();
-            handleSubmit();
+            void handleSubmit();
         } else if (e.key === 'Escape') {
             e.preventDefault();
             handleCancel();
@@ -79,22 +81,23 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     };
 
     const handleRetry = async () => {
-        await sendMessage(getUserMessageContent(message));
+        toast.promise(
+            onEditMessage(message.id, getUserMessageContent(message), ChatType.EDIT),
+            {
+                error: 'Failed to resubmit message',
+            }
+        )
     };
 
     const sendMessage = async (newContent: string) => {
-        try {
-            const newMessage = await editorEngine.chat.resubmitMessage(message.id, newContent);
-            if (!newMessage) {
-                throw new Error('Message not found');
+        toast.promise(
+            onEditMessage(message.id, newContent, ChatType.EDIT),
+            {
+                loading: 'Editing message...',
+                success: 'Message resubmitted successfully',
+                error: 'Failed to resubmit message',
             }
-            sendMessageToChat(ChatType.EDIT);
-        } catch (error) {
-            console.error('Failed to resubmit message', error);
-            toast.error('Failed to resubmit message. Please try again.', {
-                description: error instanceof Error ? error.message : 'Unknown error',
-            });
-        }
+        )
     };
 
     const handleRestoreCheckpoint = async () => {
@@ -217,7 +220,9 @@ export const UserMessage = ({ message }: UserMessageProps) => {
                     </div>
                 </div>
                 <div className="text-small mt-1">
-                    {isEditing ? renderEditingInput() : (
+                    {isEditing ? (
+                        renderEditingInput()
+                    ) : (
                         <MessageContent
                             messageId={message.id}
                             parts={message.parts}

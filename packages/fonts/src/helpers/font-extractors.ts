@@ -1,5 +1,7 @@
 import type { Font } from '@onlook/models';
-import { generate, getAstFromContent, type t as T, types as t, traverse } from '@onlook/parser';
+import type { T } from '@onlook/parser';
+import { generate, getAstFromContent, t, traverse } from '@onlook/parser';
+
 import { removeFontsFromClassName } from './class-utils';
 
 /**

@@ -12,7 +12,7 @@ import { Separator } from '@onlook/ui/separator';
 import { cn } from '@onlook/ui/utils';
 import { inferPageFromUrl } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { HoverOnlyTooltip } from '../../../editor-bar/hover-tooltip';
 import { PageModal } from '../../../left-panel/page-tab/page-modal';
 
@@ -97,12 +97,6 @@ export const PageSelector = observer(({ frame, className, tooltipSide = "top", s
         return items;
     };
 
-    useEffect(() => {
-        if (editorEngine.activeSandbox.routerConfig) {
-            editorEngine.pages.scanPages();
-        }
-    }, [editorEngine.activeSandbox.routerConfig]);
-
     const displayPages = useMemo(() => {
         if (allPages.length > 0) {
             return allPages;
@@ -150,7 +144,7 @@ export const PageSelector = observer(({ frame, className, tooltipSide = "top", s
                         variant="ghost"
                         size={buttonSize}
                         className={cn(
-                            "h-auto px-2 py-1 text-xs hover:bg-background-secondary",
+                            "h-auto px-2 py-1 text-xs hover:!bg-transparent focus:!bg-transparent active:!bg-transparent",
                             buttonClassName,
                             className
                         )}

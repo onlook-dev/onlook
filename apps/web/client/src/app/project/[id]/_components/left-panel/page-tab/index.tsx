@@ -5,7 +5,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { type NodeApi, Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import { PageTreeNode } from '../layers-tab/tree/page-tree-node';
@@ -20,10 +20,6 @@ export const PagesTab = observer(() => {
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
     const treeRef = useRef<TreeApi<PageNode>>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-        editorEngine.pages.scanPages();
-    }, []);
 
     const filteredPages = useMemo(() => {
         if (!searchQuery.trim()) {

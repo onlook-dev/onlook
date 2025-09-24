@@ -1,7 +1,8 @@
 import '@/styles/globals.css';
 import '@onlook/ui/globals.css';
 
-import { PostHogProvider } from '@/components/posthog-provider';
+import RB2BLoader from '@/components/rb2b-loader';
+import { TelemetryProvider } from '@/components/telemetry-provider';
 import { env } from '@/env';
 import { FeatureFlagsProvider } from '@/hooks/use-feature-flags';
 import { TRPCReactProvider } from '@/trpc/react';
@@ -14,7 +15,6 @@ import Script from 'next/script';
 import { ThemeProvider } from './_components/theme';
 import { AuthProvider } from './auth/auth-context';
 import { faqSchema, organizationSchema } from './seo';
-import RB2BLoader from '@/components/rb2b-loader';
 
 const isProduction = env.NODE_ENV === 'production';
 
@@ -80,7 +80,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 )}
                 <TRPCReactProvider>
                     <FeatureFlagsProvider>
-                        <PostHogProvider>
+                        <TelemetryProvider>
                             <ThemeProvider
                                 attribute="class"
                                 forcedTheme="dark"
@@ -94,7 +94,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                                     </NextIntlClientProvider>
                                 </AuthProvider>
                             </ThemeProvider>
-                        </PostHogProvider>
+                        </TelemetryProvider>
                     </FeatureFlagsProvider>
                 </TRPCReactProvider>
             </body>

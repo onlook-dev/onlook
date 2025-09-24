@@ -27,7 +27,7 @@ export function StartBlank({
     const handleStartBlankProject = async () => {
         if (!user?.id) {
             // Store the return URL and open auth modal
-            localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
+            await localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
             setIsAuthModalOpen(true);
             return;
         }

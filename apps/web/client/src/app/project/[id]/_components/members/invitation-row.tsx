@@ -42,7 +42,7 @@ export const InvitationRow = ({ invitation }: { invitation: ProjectInvitation })
             </Avatar>
             <div className="flex flex-col justify-center gap-0.5 text-muted-foreground text-sm flex-1">
                 <div>Pending Invitation</div>
-                <div>{invitation.inviteeEmail}</div>
+                <div className="truncate text-xs">{invitation.inviteeEmail}</div>
             </div>
             <div className="flex flex-row items-center justify-center ">
                 <Tooltip>

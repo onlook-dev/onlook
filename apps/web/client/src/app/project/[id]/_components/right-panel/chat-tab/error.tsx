@@ -6,27 +6,30 @@ import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import type { ParsedError } from '@onlook/utility';
-import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
+import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
-import { useChatContext } from '../../../_hooks/use-chat';
+import type { SendMessage } from '../../../_hooks/use-chat';
 
-export const ErrorSection = observer(() => {
-    const { isWaiting, sendMessageToChat } = useChatContext();
+interface ErrorSectionProps {
+    isStreaming: boolean;
+    onSendMessage: SendMessage;
+}
+
+export const ErrorSection = observer(({ isStreaming, onSendMessage }: ErrorSectionProps) => {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(false);
     const allErrors = editorEngine.branches.getAllErrors();
     const errorCount = editorEngine.branches.getTotalErrorCount();
 
-    const sendFixError = async () => {
-        try {
-            await editorEngine.chat.addFixErrorMessage();
-            await sendMessageToChat(ChatType.FIX);
-        } catch (error) {
-            console.error('Error sending fix error message', error);
-            toast.error('Failed to send fix error message. Please try again.');
-        }
-    }
+    const sendFixError = () => {
+        toast.promise(
+            onSendMessage('How can I resolve these errors? If you propose a fix, please make it concise.', ChatType.FIX),
+            {
+                error: 'Failed to send fix error message. Please try again.',
+            }
+        )
+    };
 
     return (
         <Collapsible
@@ -73,7 +76,7 @@ export const ErrorSection = observer(() => {
                         <Button
                             variant="ghost"
                             size="sm"
-                            disabled={isWaiting}
+                            disabled={isStreaming}
                             className="h-7 px-2 text-amber-600 dark:text-amber-400 hover:text-amber-900 hover:bg-amber-200 dark:hover:text-amber-100 dark:hover:bg-amber-700 font-sans select-none"
                             onClick={sendFixError}
                         >

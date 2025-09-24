@@ -41,7 +41,7 @@ export async function compressImage(
     onProgress?: (progress: number) => void
 ): Promise<CompressionResult> {
     const opts = { ...DEFAULT_OPTIONS, ...options };
-    
+
     if (!canCompressFile(file)) {
         throw new Error(`Cannot compress file type: ${file.type}`);
     }
@@ -78,7 +78,7 @@ export async function compressImage(
                 // Draw and compress
                 if (ctx) {
                     ctx.drawImage(img, 0, 0, width, height);
-                    
+
                     onProgress?.(70);
 
                     // Try different quality levels if size is too large
@@ -149,11 +149,11 @@ export async function compressMultipleImages(
     onProgress?: (fileIndex: number, fileProgress: number, totalProgress: number) => void
 ): Promise<CompressionResult[]> {
     const results: CompressionResult[] = [];
-    
+
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
         if (!file) continue;
-        
+
         if (!canCompressFile(file)) {
             // For non-compressible files, return as-is
             results.push({
@@ -181,7 +181,7 @@ export async function compressMultipleImages(
                 compressionRatio: 0,
             });
         }
-        
+
         onProgress?.(i, 100, ((i + 1) / files.length) * 100);
     }
 
@@ -198,49 +198,5 @@ function getExtensionForFormat(format: string): string {
             return '.png';
         default:
             return '.jpg';
-    }
-}
-
-// Smart compression based on file size
-export function getCompressionOptions(file: File): CompressionOptions {
-    const size = file.size;
-    const MB = 1024 * 1024;
-
-    if (size > 10 * MB) {
-        // Very large files - aggressive compression
-        return {
-            maxWidth: 1280,
-            maxHeight: 720,
-            quality: 0.6,
-            format: 'image/jpeg',
-            maxSizeBytes: 1 * MB,
-        };
-    } else if (size > 5 * MB) {
-        // Large files - moderate compression
-        return {
-            maxWidth: 1600,
-            maxHeight: 900,
-            quality: 0.7,
-            format: 'image/jpeg',
-            maxSizeBytes: 1.5 * MB,
-        };
-    } else if (size > 2 * MB) {
-        // Medium files - light compression
-        return {
-            maxWidth: 1920,
-            maxHeight: 1080,
-            quality: 0.8,
-            format: 'image/jpeg',
-            maxSizeBytes: 2 * MB,
-        };
-    } else {
-        // Small files - minimal compression, keep quality
-        return {
-            maxWidth: 1920,
-            maxHeight: 1080,
-            quality: 0.85,
-            format: file.type === 'image/png' ? 'image/webp' : 'image/jpeg',
-            maxSizeBytes: 2 * MB,
-        };
     }
 }

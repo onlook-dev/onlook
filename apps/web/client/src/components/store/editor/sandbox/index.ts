@@ -15,8 +15,7 @@ import {
     getDirName,
     isImageFile,
     isRootLayoutFile,
-    isSubdirectory,
-    LogTimer,
+    isSubdirectory
 } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
@@ -54,7 +53,7 @@ export class SandboxManager {
             this.branch,
             this.errorManager
         );
-        this.fileSync = new FileSyncManager();
+        this.fileSync = new FileSyncManager(this.branch.projectId, this.branch.id);
         makeAutoObservable(this);
     }
 
@@ -88,7 +87,7 @@ export class SandboxManager {
     }
 
     async index(force = false) {
-        console.log('[SandboxManager] Starting indexing, force:', force);
+        console.log(`[SandboxManager] Starting indexing for ${this.branch.projectId}/${this.branch.id}, force: ${force}`);
 
         if (this._isIndexing || (this._isIndexed && !force)) {
             return;
@@ -100,30 +99,22 @@ export class SandboxManager {
         }
 
         this._isIndexing = true;
-        const timer = new LogTimer('Sandbox Indexing');
 
         try {
             // Detect router configuration first
             if (!this._routerConfig) {
                 this._routerConfig = await detectRouterTypeInSandbox(this);
-                if (this._routerConfig) {
-                    timer.log(
-                        `Router detected: ${this._routerConfig.type} at ${this._routerConfig.basePath}`,
-                    );
-                }
             }
 
             // Get all file paths
             const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES);
             this._discoveredFiles = allFilePaths;
-            timer.log(`File discovery completed - ${allFilePaths.length} files found`);
 
             // Process files in non-blocking batches
             await this.processFilesInBatches(allFilePaths);
 
             await this.watchFiles();
             this._isIndexed = true;
-            timer.log('Indexing completed successfully');
         } catch (error) {
             console.error('Error during indexing:', error);
             throw error;
@@ -135,39 +126,39 @@ export class SandboxManager {
     /**
      * Process files in non-blocking batches to avoid blocking the UI thread
      */
-    private async processFilesInBatches(allFilePaths: string[], batchSize: number = 20): Promise<void> {
-        let processed = 0;
-
+    private async processFilesInBatches(allFilePaths: string[], batchSize = 10): Promise<void> {
         for (let i = 0; i < allFilePaths.length; i += batchSize) {
             const batch = allFilePaths.slice(i, i + batchSize);
 
-            // Process current batch
-            for (const filePath of batch) {
+            // Process batch in parallel for better performance
+            const batchPromises = batch.map(async (filePath) => {
                 // Track image files first
                 if (isImageFile(filePath)) {
                     this.fileSync.writeEmptyFile(filePath, 'binary');
-                    processed++;
-                    continue;
+                    return;
                 }
 
-                const remoteFile = await this.readRemoteFile(filePath);
-                if (remoteFile) {
-                    this.fileSync.updateCache(remoteFile);
+                // Check cache first
+                const cachedFile = this.fileSync.readCache(filePath);
+                if (cachedFile && cachedFile.content !== null) {
                     if (this.isJsxFile(filePath)) {
-                        await this.processFileForMapping(remoteFile);
+                        await this.processFileForMapping(cachedFile);
+                    }
+                } else {
+                    const file = await this.fileSync.readOrFetch(filePath, this.readRemoteFile.bind(this));
+                    if (file && this.isJsxFile(filePath)) {
+                        await this.processFileForMapping(file);
                     }
                 }
-                processed++;
-            }
+            });
+
+            await Promise.all(batchPromises);
 
             // Yield control to the event loop after each batch
             if (i + batchSize < allFilePaths.length) {
-                console.log(`[SandboxManager] Processed ${processed}/${allFilePaths.length} files...`);
-                await new Promise(resolve => setTimeout(resolve, 0));
+                await new Promise(resolve => setTimeout(resolve, 1));
             }
         }
-
-        console.log(`[SandboxManager] Completed processing ${processed} files`);
     }
 
     /**
@@ -256,8 +247,11 @@ export class SandboxManager {
         }
     }
 
-    async readFile(path: string): Promise<SandboxFile | null> {
+    async readFile(path: string, remote = false): Promise<SandboxFile | null> {
         const normalizedPath = normalizePath(path);
+        if (remote) {
+            return this.readRemoteFile(normalizedPath);
+        }
         return this.fileSync.readOrFetch(normalizedPath, this.readRemoteFile.bind(this));
     }
 
@@ -558,42 +552,20 @@ export class SandboxManager {
     async handleFileChangedEvent(normalizedPath: string) {
         const cachedFile = this.fileSync.readCache(normalizedPath);
 
-        if (isImageFile(normalizedPath)) {
-            if (!cachedFile || cachedFile.content === null) {
-                // If the file was not cached, we need to write an empty file
-                this.fileSync.writeEmptyFile(normalizedPath, 'binary');
-            } else {
-                // If the file was already cached, we need to read the remote file and update the cache
-                const remoteFile = await this.readRemoteFile(normalizedPath);
-                if (!remoteFile || remoteFile.content === null) {
-                    console.error(`File content for ${normalizedPath} not found in remote`);
-                    return;
-                }
-                this.fileSync.updateCache(remoteFile);
-            }
-        } else {
-            // If the file is not an image, we need to read the remote file and update the cache
-            const remoteFile = await this.readRemoteFile(normalizedPath);
-            if (!remoteFile || remoteFile.content === null) {
-                console.error(`File content for ${normalizedPath} not found in remote`);
-                return;
-            }
-            if (remoteFile.type === 'text') {
-                // If the file is a text file, we need to process it for mapping
-                this.fileSync.updateCache({
-                    type: 'text',
-                    path: normalizedPath,
-                    content: remoteFile.content,
-                });
-                if (remoteFile.content !== cachedFile?.content) {
-                    await this.processFileForMapping(remoteFile);
-                }
-            } else {
-                this.fileSync.updateCache({
-                    type: 'binary',
-                    path: normalizedPath,
-                    content: remoteFile.content,
-                });
+        // Always read the remote file and update the cache, regardless of file type
+        const remoteFile = await this.readRemoteFile(normalizedPath);
+        if (!remoteFile) {
+            console.error(`File content for ${normalizedPath} not found in remote`);
+            return;
+        }
+
+        // Always update the cache with the fresh remote file content
+        this.fileSync.updateCache(remoteFile);
+
+        // For text files, also process for mapping if content has changed
+        if (remoteFile.type === 'text' && this.isJsxFile(normalizedPath)) {
+            if (remoteFile.content !== cachedFile?.content) {
+                await this.processFileForMapping(remoteFile);
             }
         }
     }
@@ -687,6 +659,12 @@ export class SandboxManager {
                 },
             });
 
+            // Read and cache the copied file
+            const copiedFile = await this.readRemoteFile(normalizedTargetPath);
+            if (copiedFile) {
+                this.fileSync.updateCache(copiedFile);
+            }
+
             return true;
         } catch (error) {
             console.error(`Error copying ${path} to ${targetPath}:`, error);
@@ -753,6 +731,7 @@ export class SandboxManager {
                 },
             });
 
+            // Note: Cache update handled by file watcher rename event
             return true;
         } catch (error) {
             console.error(`Error renaming file ${oldPath} to ${newPath}:`, error);

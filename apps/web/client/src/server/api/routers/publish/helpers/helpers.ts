@@ -1,5 +1,4 @@
-import { deployments, deploymentUpdateSchema, previewDomains, projectCustomDomains, type Deployment } from '@onlook/db';
-import type { DrizzleDb } from '@onlook/db/src/client';
+import { deployments, deploymentUpdateSchema, previewDomains, projectCustomDomains, type Deployment, type DrizzleDb } from '@onlook/db';
 import {
     DeploymentStatus,
     DeploymentType

@@ -7,8 +7,10 @@ import { getSandboxPreviewUrl, STORAGE_BUCKETS } from '@onlook/constants';
 import {
     branches,
     canvases,
+    conversations,
     createDefaultBranch,
     createDefaultCanvas,
+    createDefaultConversation,
     createDefaultFrame,
     createDefaultUserCanvas,
     DefaultFrameType,
@@ -34,8 +36,8 @@ import { generateText } from 'ai';
 import { and, eq, ne } from 'drizzle-orm';
 import { z } from 'zod';
 import { projectCreateRequestRouter } from './createRequest';
+import { fork } from './fork';
 import { extractCsbPort } from './helper';
-import { forkTemplate } from './template';
 
 export const projectRouter = createTRPCRouter({
     hasAccess: protectedProcedure
@@ -290,7 +292,10 @@ export const projectRouter = createTRPCRouter({
                 });
                 await tx.insert(frames).values(mobileFrame);
 
-                // 6. Create the creation request
+                // 6. Create the default chat conversation
+                await tx.insert(conversations).values(createDefaultConversation(newProject.id));
+
+                // 7. Create the creation request
                 if (input.creationData) {
                     await tx.insert(projectCreateRequests).values({
                         ...input.creationData,
@@ -309,7 +314,7 @@ export const projectRouter = createTRPCRouter({
                 return newProject;
             });
         }),
-    forkTemplate,
+    fork,
     generateName: protectedProcedure
         .input(z.object({
             prompt: z.string(),
@@ -318,7 +323,7 @@ export const projectRouter = createTRPCRouter({
             try {
                 const { model, providerOptions, headers } = await initModel({
                     provider: LLMProvider.OPENROUTER,
-                    model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+                    model: OPENROUTER_MODELS.OPEN_AI_GPT_5_NANO,
                 });
 
                 const MAX_NAME_LENGTH = 50;

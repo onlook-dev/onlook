@@ -46,7 +46,7 @@ describe('TemplateNodeManager', () => {
                 })),
             },
         } as any;
-        manager = new TemplateNodeManager(mockEditorEngine);
+        manager = new TemplateNodeManager(mockEditorEngine, 'test-project');
         await manager.init();
     });
 

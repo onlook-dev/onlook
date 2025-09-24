@@ -1,5 +1,4 @@
-import { type Deployment } from '@onlook/db';
-import type { DrizzleDb } from '@onlook/db/src/client';
+import { type Deployment, type DrizzleDb } from '@onlook/db';
 import {
     DeploymentStatus
 } from '@onlook/models';

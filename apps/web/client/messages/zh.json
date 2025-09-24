@@ -42,11 +42,14 @@
             "showInExplorer": "在资源管理器中显示",
             "renameProject": "重命名项目",
             "deleteProject": "删除项目",
+            "cloneProject": "克隆项目",
             "cancel": "取消",
             "delete": "删除",
             "rename": "重命名",
+            "clone": "克隆",
             "goToAllProjects": "查看所有项目",
             "newProject": "新建项目",
+            "blankProject": "空白项目",
             "startFromScratch": "从零开始",
             "importProject": "导入项目",
             "subscriptions": "订阅",
@@ -66,6 +69,12 @@
             "rename": {
                 "title": "重命名项目",
                 "label": "项目名称",
+                "error": "项目名称不能为空"
+            },
+            "clone": {
+                "title": "克隆项目",
+                "label": "项目名称",
+                "placeholder": "为克隆项目输入名称",
                 "error": "项目名称不能为空"
             }
         },

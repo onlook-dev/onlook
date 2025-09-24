@@ -1,7 +1,10 @@
-import { type NodePath, type t as T, types as t, traverse } from '../packages';
-import { type CodeAction, CodeActionType } from '@onlook/models/actions';
+import type { CodeAction } from '@onlook/models/actions';
 import type { CodeDiffRequest } from '@onlook/models/code';
+import { CodeActionType } from '@onlook/models/actions';
 import { assertNever } from '@onlook/utility';
+
+import type { NodePath, T } from '../packages';
+import { t, traverse } from '../packages';
 import { groupElementsInNode, ungroupElementsInNode } from './group';
 import { getOidFromJsxElement } from './helpers';
 import { insertImageToNode, removeImageFromNode } from './image';

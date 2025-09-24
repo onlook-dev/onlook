@@ -1,6 +1,6 @@
+import type { SandboxFile } from '@onlook/models';
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 import { FileSyncManager } from '../../src/components/store/editor/sandbox/file-sync';
-import type { SandboxFile } from '@onlook/models';
 
 mock.module('localforage', () => ({
     getItem: mock(async () => null),
@@ -39,7 +39,10 @@ describe('FileSyncManager', async () => {
         });
 
         // Create FileSyncManager instance and initialize
-        fileSyncManager = new FileSyncManager();
+        fileSyncManager = new FileSyncManager(
+            'test-project-id',
+            'test-branch-id'
+        );
         await fileSyncManager.init();
     });
 
@@ -153,7 +156,7 @@ describe('FileSyncManager', async () => {
             { type: 'text', path: 'file2.tsx', content: '<div>Content 2</div>' },
             { type: 'text', path: 'file3.tsx', content: '<div>Content 3</div>' }
         ];
-        
+
         files.forEach(file => fileSyncManager.updateCache(file));
 
         // Get list of files
@@ -172,7 +175,7 @@ describe('FileSyncManager', async () => {
             { type: 'text', path: 'file1.tsx', content: '<div>Content 1</div>' },
             { type: 'text', path: 'file2.tsx', content: '<div>Content 2</div>' }
         ];
-        
+
         files.forEach(file => fileSyncManager.updateCache(file));
 
         // Verify files are in cache
@@ -188,7 +191,7 @@ describe('FileSyncManager', async () => {
     test('should evict least recently used files when cache exceeds limits', async () => {
         // Create a new FileSyncManager with small limits for testing
         const testManager = new (FileSyncManager as any)();
-        
+
         // Add files beyond the cache limit to test eviction
         const files: SandboxFile[] = [];
         for (let i = 0; i < 10; i++) {
@@ -222,7 +225,7 @@ describe('FileSyncManager', async () => {
         // Recently accessed file should still be in cache if eviction happened
         const finalCachedFiles = testManager.listAllFiles();
         expect(finalCachedFiles.length).toBeGreaterThan(0);
-        
+
         await testManager.clear();
     });
 

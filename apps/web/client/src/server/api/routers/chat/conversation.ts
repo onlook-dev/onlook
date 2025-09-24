@@ -70,7 +70,7 @@ export const conversationRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             const { model, providerOptions, headers } = await initModel({
                 provider: LLMProvider.OPENROUTER,
-                model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+                model: OPENROUTER_MODELS.CLAUDE_3_5_HAIKU,
             });
 
             const MAX_NAME_LENGTH = 50;

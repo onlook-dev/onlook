@@ -7,9 +7,9 @@ export class FileCacheManager {
     private fileCache: UnifiedCacheManager<SandboxFile>;
     private directoryCache: UnifiedCacheManager<SandboxDirectory>;
 
-    constructor() {
+    constructor(projectId: string, branchId: string) {
         this.fileCache = new UnifiedCacheManager({
-            name: 'sandbox-files',
+            name: `${projectId}-${branchId}-sandbox-files`,
             maxItems: 500,
             maxSizeBytes: 50 * 1024 * 1024, // 50MB
             ttlMs: 1000 * 60 * 30, // 30 minutes
@@ -17,11 +17,11 @@ export class FileCacheManager {
         });
 
         this.directoryCache = new UnifiedCacheManager({
-            name: 'sandbox-directories',
+            name: `${projectId}-${branchId}-sandbox-directories`,
             maxItems: 1000,
             maxSizeBytes: 5 * 1024 * 1024, // 5MB
             ttlMs: 1000 * 60 * 60, // 1 hour
-            persistent: false, // Directories are lightweight, no need to persist
+            persistent: true,
         });
     }
 

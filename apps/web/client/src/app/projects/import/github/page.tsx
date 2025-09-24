@@ -2,12 +2,12 @@
 
 import { useGetBackground } from '@/hooks/use-get-background';
 import { MotionCard } from '@onlook/ui/motion-card';
-import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
+import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import useResizeObserver from 'use-resize-observer';
 import { ConnectGithub } from './_components/connect';
 import { FinalizingGithubProject } from './_components/finalizing';
 import { SetupGithub } from './_components/setup';
-import { useImportGithubProject } from './_context/context';
+import { useImportGithubProject } from './_context';
 
 const steps = [
     <ConnectGithub />,

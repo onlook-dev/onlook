@@ -1,4 +1,4 @@
-import type { DomElement } from '@onlook/models';
+import { ChatType, type DomElement } from '@onlook/models';
 import {
     MessageContextType,
     type BranchMessageContext,
@@ -9,44 +9,77 @@ import {
     type MessageContext,
     type ProjectMessageContext,
 } from '@onlook/models/chat';
-import type { ParsedError } from '@onlook/utility';
+import { assertNever, type ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
+import type { FrameData } from '../frames';
 
 export class ChatContext {
-    context: MessageContext[] = [];
+    private _context: MessageContext[] = [];
     private selectedReactionDisposer?: () => void;
 
-    constructor(
-        private editorEngine: EditorEngine,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
     init() {
         this.selectedReactionDisposer = reaction(
-            () => this.editorEngine.elements.selected,
-            () => this.getChatContext().then((context) => (this.context = context)),
+            () => ({
+                elements: this.editorEngine.elements.selected,
+                frames: this.editorEngine.frames.selected,
+            }),
+            (
+                { elements, frames },
+            ) => this.generateContextFromReaction({ elements, frames }).then((context) => (this.context = context)),
         );
     }
 
-    async getChatContext(): Promise<MessageContext[]> {
-        const selected = this.editorEngine.elements.selected;
+    get context(): MessageContext[] {
+        return this._context;
+    }
 
+    set context(context: MessageContext[]) {
+        this._context = context;
+    }
+
+    addContexts(contexts: MessageContext[]) {
+        this._context = [...this._context, ...contexts];
+    }
+
+    async getContextByChatType(type: ChatType): Promise<MessageContext[]> {
+        switch (type) {
+            case ChatType.EDIT:
+            case ChatType.CREATE:
+            case ChatType.ASK:
+                return await this.getLatestContext();
+            case ChatType.FIX:
+                return this.getErrorContext();
+            default:
+                assertNever(type);
+        }
+    }
+
+    async getLatestContext(): Promise<MessageContext[]> {
+        return await this.getRefreshedContext(this.context);
+    }
+
+    private async generateContextFromReaction({ elements, frames }: { elements: DomElement[], frames: FrameData[] }): Promise<MessageContext[]> {
         let highlightedContext: HighlightMessageContext[] = [];
-        if (selected.length) {
-            highlightedContext = await this.getHighlightedContext(selected);
+        if (elements.length) {
+            highlightedContext = await this.getHighlightedContext(elements);
         }
         const imageContext = await this.getImageContext();
 
         // Derived from highlighted context
         const fileContext = await this.getFileContext(highlightedContext);
-        const branchContext = this.getBranchContext(highlightedContext);
+        const branchContext = this.getBranchContext(highlightedContext, frames);
         const context = [...fileContext, ...highlightedContext, ...imageContext, ...branchContext];
         return context;
     }
 
     async getRefreshedContext(context: MessageContext[]): Promise<MessageContext[]> {
+        // Refresh the context if possible. Files and highlight content may have changed since the last time they were added to the context.
+        // Images are not refreshed as they are not editable.
         return await Promise.all(context.map(async (c) => {
             if (c.type === MessageContextType.FILE) {
                 const fileContent = await this.editorEngine.activeSandbox.readFile(c.path);
@@ -103,9 +136,13 @@ export class ChatContext {
         return fileContext;
     }
 
-    getBranchContext(highlightedContext: HighlightMessageContext[]): BranchMessageContext[] {
-        // Get unique branch IDs from highlighted context
-        const uniqueBranchIds = new Set<string>();
+    getBranchContext(
+        highlightedContext: HighlightMessageContext[],
+        frames: FrameData[],
+    ): BranchMessageContext[] {
+        // Get unique branch IDs from selected elements and frames context
+        const uniqueBranchIds = new Set<string>(frames.map(frame => frame.frame.branchId));
+
         highlightedContext.forEach(highlight => {
             uniqueBranchIds.add(highlight.branchId);
         });
@@ -133,36 +170,49 @@ export class ChatContext {
         const highlightedContext: HighlightMessageContext[] = [];
         for (const node of selected) {
             const oid = node.oid;
-            if (!oid) {
-                console.error('No oid found for node', node);
-                continue;
+            const instanceId = node.instanceId;
+
+            if (oid) {
+                const context = await this.getHighlightContextById(oid, node.tagName, false);
+                if (context) highlightedContext.push(context);
             }
 
-            const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(oid);
-            if (codeBlock === null) {
-                console.error('No code block found for node', node);
-                continue;
+            if (instanceId) {
+                const context = await this.getHighlightContextById(instanceId, node.tagName, true);
+                if (context) highlightedContext.push(context);
             }
 
-            const templateNode = this.editorEngine.templateNodes.getTemplateNode(oid);
-            if (!templateNode) {
-                console.error('No template node found for node', node);
-                continue;
+            if (!oid && !instanceId) {
+                console.error('No oid or instanceId found for node', node);
             }
-
-            highlightedContext.push({
-                type: MessageContextType.HIGHLIGHT,
-                displayName: node.tagName.toLowerCase(),
-                path: templateNode.path,
-                content: codeBlock,
-                start: templateNode.startTag.start.line,
-                end: templateNode.endTag?.end.line || templateNode.startTag.start.line,
-                oid,
-                branchId: templateNode.branchId,
-            });
         }
 
         return highlightedContext;
+    }
+
+    private async getHighlightContextById(id: string, tagName: string, isInstance: boolean): Promise<HighlightMessageContext | null> {
+        const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(id);
+        if (codeBlock === null) {
+            console.error('No code block found for id', id);
+            return null;
+        }
+
+        const templateNode = this.editorEngine.templateNodes.getTemplateNode(id);
+        if (!templateNode) {
+            console.error('No template node found for id', id);
+            return null;
+        }
+
+        return {
+            type: MessageContextType.HIGHLIGHT,
+            displayName: (isInstance && templateNode.component) ? templateNode.component : tagName.toLowerCase(),
+            path: templateNode.path,
+            content: codeBlock,
+            start: templateNode.startTag.start.line,
+            end: templateNode.endTag?.end.line || templateNode.startTag.start.line,
+            oid: id,
+            branchId: templateNode.branchId,
+        };
     }
 
     // TODO: Enhance with custom rules
@@ -177,8 +227,8 @@ export class ChatContext {
         ];
     }
 
-    getErrorContext(errors: ParsedError[]): ErrorMessageContext[] {
-        const branchErrors = errors;
+    getErrorContext(): ErrorMessageContext[] {
+        const branchErrors = this.editorEngine.branches.getAllErrors();
         // Group errors by branch for context
         const branchGroups = new Map<string, ParsedError[]>();
         branchErrors.forEach(error => {
@@ -200,16 +250,16 @@ export class ChatContext {
 
     async getCreateContext() {
         try {
-            const context: MessageContext[] = [];
+            const createContext: MessageContext[] = [];
             const pageContext = await this.getDefaultPageContext();
             const styleGuideContext = await this.getDefaultStyleGuideContext();
             if (pageContext) {
-                context.push(pageContext);
+                createContext.push(pageContext);
             }
             if (styleGuideContext) {
-                context.push(...styleGuideContext);
+                createContext.push(...styleGuideContext);
             }
-            return context;
+            return createContext;
         } catch (error) {
             console.error('Error getting create context', error);
             return [];
@@ -279,7 +329,7 @@ export class ChatContext {
         }
     }
 
-    clearAttachments() {
+    clearImagesFromContext() {
         this.context = this.context.filter((context) => context.type !== MessageContextType.IMAGE);
     }
 

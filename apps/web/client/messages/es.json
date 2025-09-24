@@ -42,11 +42,14 @@
             "showInExplorer": "Mostrar en Explorador",
             "renameProject": "Renombrar Proyecto",
             "deleteProject": "Eliminar Proyecto",
+            "cloneProject": "Clonar Proyecto",
             "cancel": "Cancelar",
             "delete": "Eliminar",
             "rename": "Renombrar",
+            "clone": "Clonar",
             "goToAllProjects": "Ir a todos los Proyectos",
             "newProject": "Nuevo Proyecto",
+            "blankProject": "Proyecto en Blanco",
             "startFromScratch": "Empezar desde cero",
             "importProject": "Importar un proyecto",
             "subscriptions": "Suscripciones",
@@ -66,6 +69,12 @@
             "rename": {
                 "title": "Renombrar Proyecto",
                 "label": "Nombre del Proyecto",
+                "error": "El nombre del proyecto no puede estar vacío"
+            },
+            "clone": {
+                "title": "Clonar Proyecto",
+                "label": "Nombre del Proyecto",
+                "placeholder": "Ingrese el nombre para el proyecto clonado",
                 "error": "El nombre del proyecto no puede estar vacío"
             }
         },

@@ -148,7 +148,7 @@ export const LayersTab = observer(() => {
                     rowHeight={24}
                     height={height ?? 300}
                     width={width ?? 365}
-                    renderRow={TreeRow as any}
+                    renderRow={(props: any) => <TreeRow {...props} />}
                     onMove={handleDragEnd}
                     disableDrop={disableDrop}
                     className="overflow-auto"

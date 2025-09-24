@@ -25,8 +25,6 @@ export async function readRemoteFile(
 ): Promise<SandboxFile | null> {
     try {
         if (isImageFile(filePath)) {
-            console.log('reading image file', filePath);
-
             const content = await client.fs.readFile(filePath);
             return getFileFromContent(filePath, content);
         } else {

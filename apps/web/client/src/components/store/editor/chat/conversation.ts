@@ -1,15 +1,11 @@
 import { api } from '@/trpc/client';
-import { toDbMessage } from '@onlook/db';
-import type { GitCommit } from '@onlook/git';
-import { ChatMessageRole, MessageCheckpointType, type ChatConversation, type ChatMessage, type MessageContext, type UserChatMessage } from '@onlook/models';
+import { type ChatConversation } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { toast } from 'sonner';
 import type { EditorEngine } from '../engine';
-import { getUserChatMessageFromString } from './message';
 
-interface CurrentConversation {
-    conversation: ChatConversation;
-    messages: ChatMessage[];
+interface CurrentConversation extends ChatConversation {
+    messageCount: number;
 }
 
 export class ConversationManager {
@@ -17,9 +13,7 @@ export class ConversationManager {
     conversations: ChatConversation[] = [];
     creatingConversation = false;
 
-    constructor(
-        private editorEngine: EditorEngine,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
@@ -47,18 +41,27 @@ export class ConversationManager {
         return sorted || [];
     }
 
+    setConversationLength(length: number) {
+        if (this.current) {
+            this.current = {
+                ...this.current,
+                messageCount: length,
+            };
+        }
+    }
+
     async startNewConversation() {
         try {
             this.creatingConversation = true;
-            if (this.current?.messages.length === 0 && !this.current?.conversation.title) {
+            if (this.current?.messageCount === 0 && !this.current?.title) {
                 throw new Error('Current conversation is already empty.');
             }
             const newConversation = await api.chat.conversation.upsert.mutate({
                 projectId: this.editorEngine.projectId,
             });
             this.current = {
-                conversation: newConversation,
-                messages: [],
+                ...newConversation,
+                messageCount: 0,
             };
             this.conversations.push(newConversation);
         } catch (error) {
@@ -78,15 +81,10 @@ export class ConversationManager {
             return;
         }
 
-        const messages = await this.getMessagesFromStorage(id);
         this.current = {
-            conversation: match,
-            messages: messages,
+            ...match,
+            messageCount: 0,
         };
-    }
-
-    async getMessagesFromStorage(id: string): Promise<ChatMessage[]> {
-        return api.chat.message.getAll.query({ conversationId: id });
     }
 
     deleteConversation(id: string) {
@@ -101,95 +99,42 @@ export class ConversationManager {
             return;
         }
         this.conversations.splice(index, 1);
-        this.deleteConversationInStorage(id);
-        if (this.current?.conversation.id === id) {
+        void this.deleteConversationInStorage(id);
+        if (this.current?.id === id) {
             if (this.conversations.length > 0 && !!this.conversations[0]) {
-                this.selectConversation(this.conversations[0].id);
+                void this.selectConversation(this.conversations[0].id);
             } else {
-                this.startNewConversation();
+                void this.startNewConversation();
             }
         }
     }
 
-    async addUserMessage(
-        content: string,
-        context: MessageContext[],
-    ): Promise<UserChatMessage> {
+    async generateTitle(content: string): Promise<void> {
         if (!this.current) {
             console.error('No conversation found');
-            throw new Error('No conversation found');
+            return;
         }
-        const message = getUserChatMessageFromString(content, context, this.current.conversation.id);
-
-        await this.addOrReplaceMessage(message);
-        if (!this.current.conversation.title) {
-            this.addConversationTitle(this.current.conversation.id, content);
-        }
-        return message;
-    }
-
-    async addConversationTitle(conversationId: string, content: string) {
         const title = await api.chat.conversation.generateTitle.mutate({
-            conversationId,
+            conversationId: this.current?.id,
             content,
         });
         if (!title) {
-            console.error('Error generating conversation title');
+            console.error('Error generating conversation title. No title returned.');
             return;
         }
-        // Update conversation in list
-        const listConversation = this.conversations.find((c) => c.id === conversationId);
-        if (!listConversation) {
-            console.error('No conversation found');
-            return;
+        // Update local active conversation 
+        this.current = {
+            ...this.current,
+            title,
+        };
+        // Update in local conversations list
+        const index = this.conversations.findIndex((c) => c.id === this.current?.id);
+        if (index !== -1 && this.conversations[index]) {
+            this.conversations[index] = {
+                ...this.conversations[index],
+                title,
+            };
         }
-        listConversation.title = title;
-    }
-
-    async attachCommitToUserMessage(id: string, commit: GitCommit): Promise<void> {
-        const message = this.current?.messages.find((m) => m.id === id && m.role === ChatMessageRole.USER);
-        if (!message) {
-            console.error('No message found with id', id);
-            return;
-        }
-        const userMessage = message as UserChatMessage;
-        const newCheckpoints = [
-            ...userMessage.metadata.checkpoints,
-            {
-                type: MessageCheckpointType.GIT,
-                oid: commit.oid,
-                createdAt: new Date(),
-            },
-        ];
-        userMessage.metadata.checkpoints = newCheckpoints;
-        await api.chat.message.updateCheckpoints.mutate({
-            messageId: message.id,
-            checkpoints: newCheckpoints,
-        });
-        await this.addOrReplaceMessage(userMessage);
-    }
-
-    async addOrReplaceMessage(message: ChatMessage) {
-        if (!this.current) {
-            console.error('No conversation found');
-            return;
-        }
-        const index = this.current.messages.findIndex((m) => m.id === message.id || (m.metadata?.vercelId && m.metadata?.vercelId === message.metadata?.vercelId));
-        if (index === -1) {
-            this.current.messages.push(message);
-        } else {
-            this.current.messages[index] = message;
-        }
-        await this.upsertMessageInStorage(message);
-    }
-
-    async removeMessages(messages: ChatMessage[]) {
-        if (!this.current) {
-            console.error('No conversation found');
-            return;
-        }
-        this.current.messages = this.current.messages.filter((m) => !messages.includes(m));
-        await this.deleteMessagesInStorage(messages.map((m) => m.id));
     }
 
     async getConversationsFromStorage(id: string): Promise<ChatConversation[] | null> {
@@ -202,14 +147,6 @@ export class ConversationManager {
 
     async deleteConversationInStorage(id: string) {
         await api.chat.conversation.delete.mutate({ conversationId: id });
-    }
-
-    async deleteMessagesInStorage(messageIds: string[]) {
-        await api.chat.message.delete.mutate({ messageIds });
-    }
-
-    async upsertMessageInStorage(message: ChatMessage) {
-        await api.chat.message.upsert.mutate({ message: toDbMessage(message) });
     }
 
     clear() {

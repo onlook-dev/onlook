@@ -1,4 +1,3 @@
-import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
 import { ChatType, EditorTabValue } from '@onlook/models';
@@ -23,18 +22,18 @@ export const OverlayChatInput = observer(({
     const t = useTranslations();
     const [isComposing, setIsComposing] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const { sendMessageToChat } = useChatContext();
 
     const handleSubmit = async () => {
-        try {
+        toast.promise(async () => {
             editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
-            await editorEngine.chat.addEditMessage(inputState.value);
-            sendMessageToChat(ChatType.EDIT);
-            setInputState(DEFAULT_INPUT_STATE);
-        } catch (error) {
-            console.error('Error sending message', error);
-            toast.error('Failed to send message. Please try again.');
-        }
+            void editorEngine.chat.sendMessage(inputState.value, ChatType.EDIT);
+        }, {
+            loading: 'Sending message...',
+            success: 'Message sent',
+            error: 'Failed to send message',
+        });
+
+        setInputState(DEFAULT_INPUT_STATE);
     };
 
     return (

@@ -1,6 +1,5 @@
 import { DefaultSettings } from '@onlook/constants';
-import type { Deployment } from '@onlook/db';
-import type { DrizzleDb } from '@onlook/db/src/client';
+import { type Deployment, type DrizzleDb } from '@onlook/db';
 import { DeploymentStatus, DeploymentType } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
 import { PublishManager } from '../manager';

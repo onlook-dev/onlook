@@ -7,13 +7,18 @@ import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { BranchesTab } from './branches-tab';
 import { BrandTab } from './brand-tab';
-import { HelpDropdown } from './help-dropdown';
+import { HelpButton } from './help-button';
 import { ImagesTab } from './image-tab';
 import { LayersTab } from './layers-tab';
 import { PagesTab } from './page-tab';
 import { ZoomControls } from './zoom-controls';
 
-const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; disabled?: boolean }[] =
+const tabs: {
+    value: LeftPanelTabValue;
+    icon: React.ReactNode;
+    label: any,
+    disabled?: boolean
+}[] =
     [
         {
             value: LeftPanelTabValue.LAYERS,
@@ -37,7 +42,7 @@ const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; di
         },
         {
             value: LeftPanelTabValue.BRANCHES,
-            icon: <Icons.Commit className="w-5 h-5" />,
+            icon: <Icons.Branch className="w-5 h-5" />,
             label: transKeys.editor.panels.layers.tabs.branches,
         },
     ];
@@ -117,13 +122,13 @@ export const LeftPanel = observer(() => {
                         onMouseEnter={() => !tab.disabled && handleMouseEnter(tab.value)}
                     >
                         {tab.icon}
-                        <span className="text-xs leading-tight">{t(tab.label as any)}</span>
+                        <span className="text-xs leading-tight">{t(tab.label)}</span>
                     </button>
                 ))}
 
                 <div className="mt-auto flex flex-col gap-0 items-center mb-4">
                     <ZoomControls />
-                    <HelpDropdown />
+                    <HelpButton />
                 </div>
             </div>
 

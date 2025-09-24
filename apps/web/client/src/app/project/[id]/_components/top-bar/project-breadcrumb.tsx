@@ -2,7 +2,6 @@ import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
-import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -16,24 +15,24 @@ import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { redirect, useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
 import { useRef, useState } from 'react';
+import { CloneProjectDialog } from '../clone-project-dialog';
+import { NewProjectMenu } from './new-project-menu';
 import { RecentProjectsMenu } from './recent-projects';
 
 export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
     const stateManager = useStateManager();
     const posthog = usePostHog();
-
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-
     const t = useTranslations();
     const closeTimeoutRef = useRef<Timer | null>(null);
-    const router = useRouter();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isClosingProject, setIsClosingProject] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
+    const [showCloneDialog, setShowCloneDialog] = useState(false);
 
     async function handleNavigateToProjects(_route?: 'create' | 'import') {
         try {
@@ -95,12 +94,12 @@ export const ProjectBreadcrumb = observer(() => {
     }
 
     return (
-        <div className="mx-2 flex flex-row items-center text-small gap-2">
+        <div className="mr-1 flex flex-row items-center text-small gap-2">
             <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant='ghost'
-                        className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent cursor-pointer group"
+                        className="ml-1 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:!bg-transparent cursor-pointer group"
                     >
                         <Icons.OnlookLogo
                             className={cn(
@@ -132,7 +131,7 @@ export const ProjectBreadcrumb = observer(() => {
                         onClick={() => handleNavigateToProjects()}
                         className="cursor-pointer"
                     >
-                        <div className="flex row center items-center group">
+                        <div className="flex flex-row center items-center group">
                             <Icons.Tokens className="mr-2" />
                             {t(transKeys.projects.actions.goToAllProjects)}
                         </div>
@@ -140,27 +139,13 @@ export const ProjectBreadcrumb = observer(() => {
                     <DropdownMenuSeparator />
                     <RecentProjectsMenu />
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                        onClick={() => router.push(Routes.HOME)}
-                        className="cursor-pointer"
-                    >
-                        <div className="flex row center items-center group">
-                            <Icons.Plus className="mr-2" />
-                            {t(transKeys.projects.actions.newProject)}
-                        </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push(Routes.IMPORT_PROJECT)}>
-                        <div className="flex row center items-center group">
-                            <Icons.Upload className="mr-2" />
-                            {t(transKeys.projects.actions.import)}
-                        </div>
-                    </DropdownMenuItem>
+                    <NewProjectMenu onShowCloneDialog={setShowCloneDialog} />
                     <DropdownMenuItem
                         onClick={handleDownloadCode}
                         disabled={isDownloading}
                         className="cursor-pointer"
                     >
-                        <div className="flex row center items-center group">
+                        <div className="flex flex-row center items-center group">
                             <Icons.Download className="mr-2" />
                             {isDownloading
                                 ? t(transKeys.projects.actions.downloadingCode)
@@ -172,13 +157,19 @@ export const ProjectBreadcrumb = observer(() => {
                         className="cursor-pointer"
                         onClick={() => (stateManager.isSettingsModalOpen = true)}
                     >
-                        <div className="flex row center items-center group">
+                        <div className="flex flex-row center items-center group">
                             <Icons.Gear className="mr-2 group-hover:rotate-12 transition-transform" />
                             {t(transKeys.help.menu.openSettings)}
                         </div>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
+
+            <CloneProjectDialog
+                isOpen={showCloneDialog}
+                onClose={() => setShowCloneDialog(false)}
+                projectName={project?.name}
+            />
         </div>
     );
 });

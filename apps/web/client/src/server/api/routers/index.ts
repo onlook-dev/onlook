@@ -1,7 +1,6 @@
 export * from './chat';
 export * from './code';
 export * from './domain';
-export * from './feedback';
 export * from './forward';
 export * from './github';
 export * from './image';

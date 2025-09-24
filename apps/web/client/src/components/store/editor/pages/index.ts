@@ -1,5 +1,6 @@
+import { LeftPanelTabValue } from '@onlook/models';
 import type { PageMetadata, PageNode } from '@onlook/models/pages';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
 import {
@@ -23,6 +24,25 @@ export class PagesManager {
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
+    }
+
+    init() {
+        reaction(
+            () => {
+                return {
+                    isIndexing: this.editorEngine.activeSandbox.isIndexing,
+                    isIndexed: this.editorEngine.activeSandbox.isIndexed,
+                };
+            },
+            (sandboxStatus) => {
+                if (this.editorEngine.state.leftPanelTab !== LeftPanelTabValue.PAGES) {
+                    return;
+                }
+                if (sandboxStatus.isIndexed && !sandboxStatus.isIndexing) {
+                    this.scanPages();
+                }
+            },
+        );
     }
 
     get tree() {

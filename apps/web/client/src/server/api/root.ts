@@ -1,9 +1,7 @@
 import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
 import {
     chatRouter,
-    codeRouter,
     domainRouter,
-    feedbackRouter,
     frameRouter,
     githubRouter,
     invitationRouter,
@@ -16,6 +14,7 @@ import {
     usageRouter,
     userCanvasRouter,
     userRouter,
+    utilsRouter,
 } from './routers';
 import { branchRouter } from './routers/project/branch';
 
@@ -34,14 +33,13 @@ export const appRouter = createTRPCRouter({
     chat: chatRouter,
     frame: frameRouter,
     userCanvas: userCanvasRouter,
-    code: codeRouter,
+    utils: utilsRouter,
     member: memberRouter,
     domain: domainRouter,
     github: githubRouter,
     subscription: subscriptionRouter,
     usage: usageRouter,
     publish: publishRouter,
-    feedback: feedbackRouter,
 });
 
 // export type definition of API
