@@ -53,3 +53,4 @@ export type ChatTools = InferUITools<typeof editTools>;
 export function getToolSetFromType(chatType: ChatType) {
     return chatType === ChatType.ASK ? readOnlyTools : editTools;
 }
+

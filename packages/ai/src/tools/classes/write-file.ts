@@ -1,28 +1,33 @@
 import { Icons } from '@onlook/ui/icons';
+import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
-import { ClientTool, type EditorEngine } from '../models/client';
+import { ClientTool } from '../models/client';
+import { BRANCH_ID_SCHEMA } from '../shared/type';
 
-export class WriteFileTool extends ClientTool {
+export class WriteFileTool implements ClientTool {
     static readonly name = 'write_file';
     static readonly description = 'Write content to a new file or overwrite an existing file';
     static readonly parameters = z.object({
         file_path: z.string().describe('Path to the file to write'),
         content: z.string().describe('Content to write to the file'),
-        branchId: z.string().optional().describe('The branch ID to operate on'),
+        branchId: BRANCH_ID_SCHEMA,
     });
     static readonly icon = Icons.FilePlus;
 
-    constructor(
-        private handleImpl?: (input: z.infer<typeof WriteFileTool.parameters>, editorEngine: EditorEngine) => Promise<any>
-    ) {
-        super();
-    }
-
-    async handle(input: z.infer<typeof WriteFileTool.parameters>, editorEngine: EditorEngine): Promise<any> {
-        if (this.handleImpl) {
-            return this.handleImpl(input, editorEngine);
+    async handle(args: z.infer<typeof WriteFileTool.parameters>, editorEngine: EditorEngine): Promise<string> {
+        try {
+            const sandbox = editorEngine.branches.getSandboxById(args.branchId);
+            if (!sandbox) {
+                throw new Error(`Sandbox not found for branch ID: ${args.branchId}`);
+            }
+            const result = await sandbox.writeFile(args.file_path, args.content);
+            if (!result) {
+                throw new Error(`Failed to write file ${args.file_path}`);
+            }
+            return `File ${args.file_path} written successfully`;
+        } catch (error) {
+            throw new Error(`Cannot write file ${args.file_path}: ${error}`);
         }
-        throw new Error('WriteFileTool.handle must be implemented by providing handleImpl in constructor');
     }
 
     getLabel(input?: z.infer<typeof WriteFileTool.parameters>): string {

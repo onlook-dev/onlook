@@ -1,26 +1,45 @@
+import type { CheckErrorsResult } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
+import type { ParsedError } from '@onlook/utility';
+import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
-import { ClientTool, type EditorEngine } from '../models/client';
+import { ClientTool } from '../models/client';
 
-export class CheckErrorsTool extends ClientTool {
+export class CheckErrorsTool implements ClientTool {
     static readonly name = 'check_errors';
-    static readonly description = 'Check for errors in the project';
-    static readonly parameters = z.object({
-        branchId: z.string().optional().describe('The branch ID to operate on'),
-    });
+    static readonly description = 'Check for terminal errors similar to chat errors. Lists all current terminal errors from all branches.'
+    static readonly parameters = z.object({});
     static readonly icon = Icons.MagnifyingGlass;
 
-    constructor(
-        private handleImpl?: (input: z.infer<typeof CheckErrorsTool.parameters>, editorEngine: EditorEngine) => Promise<any>
-    ) {
-        super();
-    }
+    async handle(
+        _params: unknown,
+        editorEngine: EditorEngine,
+    ): Promise<CheckErrorsResult> {
+        const errors = editorEngine.branches.getAllErrors();
 
-    async handle(input: z.infer<typeof CheckErrorsTool.parameters>, editorEngine: EditorEngine): Promise<any> {
-        if (this.handleImpl) {
-            return this.handleImpl(input, editorEngine);
+        if (errors.length === 0) {
+            return {
+                success: true,
+                message: 'No errors found.',
+                errors: [],
+                count: 0,
+            };
         }
-        throw new Error('CheckErrorsTool.handle must be implemented by providing handleImpl in constructor');
+
+        const errorSummary = errors.map((error: ParsedError) => ({
+            sourceId: error.sourceId,
+            type: error.type,
+            content: error.content,
+            branchId: error.branchId,
+            branchName: error.branchName,
+        }));
+
+        return {
+            success: true,
+            message: `Found ${errors.length} error${errors.length > 1 ? 's' : ''}`,
+            errors: errorSummary,
+            count: errors.length,
+        };
     }
 
     getLabel(input?: z.infer<typeof CheckErrorsTool.parameters>): string {

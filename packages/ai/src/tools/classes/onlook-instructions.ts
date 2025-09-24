@@ -1,24 +1,17 @@
 import { Icons } from '@onlook/ui/icons';
+import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+import { ONLOOK_INSTRUCTIONS } from 'src/prompt/onlook';
 import { z } from 'zod';
-import { ClientTool, type EditorEngine } from '../models/client';
+import { ClientTool } from '../models/client';
 
-export class OnlookInstructionsTool extends ClientTool {
+export class OnlookInstructionsTool implements ClientTool {
     static readonly name = 'onlook_instructions';
     static readonly description = 'Get Onlook-specific instructions and guidelines';
     static readonly parameters = z.object({});
     static readonly icon = Icons.OnlookLogo;
 
-    constructor(
-        private handleImpl?: (input: z.infer<typeof OnlookInstructionsTool.parameters>, editorEngine: EditorEngine) => Promise<any>
-    ) {
-        super();
-    }
-
-    async handle(input: z.infer<typeof OnlookInstructionsTool.parameters>, editorEngine: EditorEngine): Promise<any> {
-        if (this.handleImpl) {
-            return this.handleImpl(input, editorEngine);
-        }
-        throw new Error('OnlookInstructionsTool.handle must be implemented by providing handleImpl in constructor');
+    async handle(input: z.infer<typeof OnlookInstructionsTool.parameters>, editorEngine: EditorEngine): Promise<string> {
+        return ONLOOK_INSTRUCTIONS;
     }
 
     getLabel(input?: z.infer<typeof OnlookInstructionsTool.parameters>): string {

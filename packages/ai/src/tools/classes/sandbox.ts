@@ -1,27 +1,43 @@
 import { Icons } from '@onlook/ui/icons';
+import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
-import { ClientTool, type EditorEngine } from '../models/client';
+import { ClientTool } from '../models/client';
+import { BRANCH_ID_SCHEMA } from '../shared/type';
 
-export class SandboxTool extends ClientTool {
+export class SandboxTool implements ClientTool {
+    static readonly ALLOWED_SANDBOX_COMMANDS = z.enum(['restart_dev_server', 'read_dev_server_logs']);
     static readonly name = 'sandbox';
     static readonly description = 'Execute commands in a sandboxed environment';
     static readonly parameters = z.object({
-        command: z.string().describe('Command to execute in sandbox'),
-        branchId: z.string().optional().describe('The branch ID to operate on'),
+        command: SandboxTool.ALLOWED_SANDBOX_COMMANDS.describe('The allowed command to run'),
+        branchId: BRANCH_ID_SCHEMA,
     });
     static readonly icon = Icons.Cube;
 
-    constructor(
-        private handleImpl?: (input: z.infer<typeof SandboxTool.parameters>, editorEngine: EditorEngine) => Promise<any>
-    ) {
-        super();
-    }
+    async handle(args: z.infer<typeof SandboxTool.parameters>, editorEngine: EditorEngine): Promise<string> {
+        try {
+            const sandbox = editorEngine.branches.getSandboxById(args.branchId);
+            if (!sandbox) {
+                throw new Error(`Sandbox not found for branch ID: ${args.branchId}`);
+            }
 
-    async handle(input: z.infer<typeof SandboxTool.parameters>, editorEngine: EditorEngine): Promise<any> {
-        if (this.handleImpl) {
-            return this.handleImpl(input, editorEngine);
+            if (args.command === 'restart_dev_server') {
+                const success = await sandbox.session.restartDevServer();
+                if (success) {
+                    return 'Dev server restarted';
+                } else {
+                    return 'Failed to restart dev server';
+                }
+            } else if (args.command === 'read_dev_server_logs') {
+                const logs = await sandbox.session.readDevServerLogs();
+                return logs;
+            } else {
+                throw new Error('Invalid command');
+            }
+        } catch (error) {
+            console.error('Error handling sandbox tool:', error);
+            throw new Error('Error handling sandbox tool');
         }
-        throw new Error('SandboxTool.handle must be implemented by providing handleImpl in constructor');
     }
 
     getLabel(input?: z.infer<typeof SandboxTool.parameters>): string {

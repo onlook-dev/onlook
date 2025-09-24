@@ -1,28 +1,53 @@
 import { Icons } from '@onlook/ui/icons';
+import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
-import { ClientTool, type EditorEngine } from '../models/client';
+import { ClientTool } from '../models/client';
+import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class TypecheckTool extends ClientTool {
     static readonly name = 'typecheck';
-    static readonly description = 'Run TypeScript type checking';
+    static readonly description = 'Run TypeScript type checking. use to check after code edits, when type changes are suspected.';
     static readonly parameters = z.object({
-        branchId: z.string().optional().describe('The branch ID to operate on'),
+        branchId: BRANCH_ID_SCHEMA,
     });
     static readonly icon = Icons.MagnifyingGlass;
 
-    constructor(
-        private handleImpl?: (input: z.infer<typeof TypecheckTool.parameters>, editorEngine: EditorEngine) => Promise<any>
-    ) {
-        super();
-    }
+    async handle(
+        args: z.infer<typeof TypecheckTool.parameters>,
+        editorEngine: EditorEngine,
+    ): Promise<{
+        success: boolean;
+        error?: string;
+    }> {
+        try {
+            const sandbox = editorEngine.branches.getSandboxById(args.branchId);
+            if (!sandbox) {
+                return {
+                    success: false,
+                    error: `Sandbox not found for branch ID: ${args.branchId}`
+                };
+            }
 
-    async handle(input: z.infer<typeof TypecheckTool.parameters>, editorEngine: EditorEngine): Promise<any> {
-        if (this.handleImpl) {
-            return this.handleImpl(input, editorEngine);
+            // Run Next.js typecheck command
+            const result = await sandbox.session.runCommand('bunx tsc --noEmit');
+
+            if (result.success) {
+                return {
+                    success: true
+                };
+            } else {
+                return {
+                    success: false,
+                    error: result.error || result.output || 'Typecheck failed with unknown error'
+                };
+            }
+        } catch (error: any) {
+            return {
+                success: false,
+                error: error.message || error.toString()
+            };
         }
-        throw new Error('TypecheckTool.handle must be implemented by providing handleImpl in constructor');
     }
-
     getLabel(input?: z.infer<typeof TypecheckTool.parameters>): string {
         return 'Checking types';
     }

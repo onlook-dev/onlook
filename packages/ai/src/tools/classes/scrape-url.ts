@@ -1,12 +1,13 @@
 import { Icons } from '@onlook/ui/icons';
 import { z } from 'zod';
-import { ClientTool, type EditorEngine } from '../models/client';
+import { ClientTool } from '../models/client';
+import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 
-export class ScrapeUrlTool extends ClientTool {
+export class ScrapeUrlTool implements ClientTool {
     static readonly name = 'scrape_url';
     static readonly description = 'Scrape a URL and extract its content in various formats (markdown, HTML, JSON). Can extract clean, LLM-ready content from any website, handling dynamic content and anti-bot mechanisms.';
     static readonly parameters = z.object({
-        url: z.string().url().describe('The URL to scrape. Must be a valid HTTP or HTTPS URL.'),
+        url: z.url().describe('The URL to scrape. Must be a valid HTTP or HTTPS URL.'),
         formats: z
             .array(z.enum(['markdown', 'html', 'json']))
             .default(['markdown'])
@@ -32,17 +33,29 @@ export class ScrapeUrlTool extends ClientTool {
     });
     static readonly icon = Icons.Globe;
 
-    constructor(
-        private handleImpl?: (input: z.infer<typeof ScrapeUrlTool.parameters>, editorEngine: EditorEngine) => Promise<string>
-    ) {
-        super();
-    }
+    async handle(
+        args: z.infer<typeof ScrapeUrlTool.parameters>,
+        editorEngine: EditorEngine,
+    ): Promise<string> {
+        try {
+            const result = await editorEngine.api.scrapeUrl({
+                url: args.url,
+                formats: args.formats,
+                onlyMainContent: args.onlyMainContent,
+                includeTags: args.includeTags,
+                excludeTags: args.excludeTags,
+                waitFor: args.waitFor,
+            });
 
-    async handle(input: z.infer<typeof ScrapeUrlTool.parameters>, editorEngine: EditorEngine): Promise<string> {
-        if (this.handleImpl) {
-            return this.handleImpl(input, editorEngine);
+            if (!result.result) {
+                throw new Error(`Failed to scrape URL: ${result.error}`);
+            }
+
+            return result.result;
+        } catch (error) {
+            console.error('Error scraping URL:', error);
+            throw new Error(`Failed to scrape URL ${args.url}: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
-        throw new Error('ScrapeUrlTool.handle must be implemented by providing handleImpl in constructor');
     }
 
     getLabel(input?: z.infer<typeof ScrapeUrlTool.parameters>): string {

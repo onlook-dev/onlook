@@ -1,8 +1,10 @@
+import type { WebSearchResult } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
+import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
-import { ClientTool, type EditorEngine } from '../models/client';
+import { ClientTool } from '../models/client';
 
-export class WebSearchTool extends ClientTool {
+export class WebSearchTool implements ClientTool {
     static readonly name = 'web_search';
     static readonly description = 'Search the web for up-to-date information';
     static readonly parameters = z.object({
@@ -12,17 +14,24 @@ export class WebSearchTool extends ClientTool {
     });
     static readonly icon = Icons.MagnifyingGlass;
 
-    constructor(
-        private handleImpl?: (input: z.infer<typeof WebSearchTool.parameters>, editorEngine: EditorEngine) => Promise<any>
-    ) {
-        super();
-    }
-
-    async handle(input: z.infer<typeof WebSearchTool.parameters>, editorEngine: EditorEngine): Promise<any> {
-        if (this.handleImpl) {
-            return this.handleImpl(input, editorEngine);
+    async handle(
+        args: z.infer<typeof WebSearchTool.parameters>,
+        editorEngine: EditorEngine,
+    ): Promise<WebSearchResult> {
+        try {
+            const res = await editorEngine.api.webSearch({
+                query: args.query,
+                allowed_domains: args.allowed_domains,
+                blocked_domains: args.blocked_domains,
+            });
+            return res
+        } catch (error) {
+            console.error('Error searching web:', error);
+            return {
+                result: [],
+                error: error instanceof Error ? error.message : 'Unknown error',
+            };
         }
-        throw new Error('WebSearchTool.handle must be implemented by providing handleImpl in constructor');
     }
 
     getLabel(input?: z.infer<typeof WebSearchTool.parameters>): string {
