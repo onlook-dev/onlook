@@ -1,9 +1,9 @@
-import { configure, fs } from '@zenfs/core';
+import ZenFS, { configure } from '@zenfs/core';
 import { IndexedDB } from '@zenfs/dom';
 
 let configPromise: Promise<void> | null = null;
 
-export async function getFS(): Promise<typeof fs> {
+export async function getFS(): Promise<typeof ZenFS> {
     // Use a single promise to ensure configuration only happens once
     if (!configPromise) {
         configPromise = configure({
@@ -21,5 +21,5 @@ export async function getFS(): Promise<typeof fs> {
     }
 
     await configPromise;
-    return fs;
+    return ZenFS;
 }
