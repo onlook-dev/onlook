@@ -21,9 +21,9 @@ import {
     BoxModelIcon,
     ButtonIcon,
     ChatBubbleIcon,
+    CheckboxIcon,
     CheckCircledIcon,
     CheckIcon,
-    CheckboxIcon,
     ChevronDownIcon,
     ChevronRightIcon,
     ChevronUpIcon,
@@ -35,8 +35,8 @@ import {
     CommitIcon,
     ComponentInstanceIcon,
     CopyIcon,
-    CornerTopLeftIcon,
     CornersIcon,
+    CornerTopLeftIcon,
     CounterClockwiseClockIcon,
     Cross1Icon,
     Cross2Icon,
@@ -122,6 +122,7 @@ import {
     SquareCheckIcon,
     SquareXIcon,
 } from 'lucide-react';
+
 import { cn } from '../../utils';
 import H1Icon from './header-level-icons/h1Icon';
 import H2Icon from './header-level-icons/h2Icon';
@@ -259,7 +260,7 @@ export const Icons = {
             height="17"
             viewBox="0 0 139 17"
             fill="none"
-            className={cn('w-auto h-auto preserve-aspect-ratio dark:invert', className)}
+            className={cn('preserve-aspect-ratio h-auto w-auto dark:invert', className)}
             {...props}
         >
             <path
@@ -967,12 +968,12 @@ export const Icons = {
             className={className}
             letterClassName={cn('letter', {
                 'fill-foreground/50 dark:fill-foreground/50': !className?.includes(
-                    'fill-white dark:fill-primary',
+                    'dark:fill-primary fill-white',
                 ),
             })}
             levelClassName={cn('level', {
                 'fill-foreground dark:fill-foreground': !className?.includes(
-                    'fill-white dark:fill-primary',
+                    'dark:fill-primary fill-white',
                 ),
             })}
             {...props}
@@ -983,12 +984,12 @@ export const Icons = {
             className={className}
             letterClassName={cn('letter', {
                 'fill-foreground/50 dark:fill-foreground/50': !className?.includes(
-                    'fill-white dark:fill-primary',
+                    'dark:fill-primary fill-white',
                 ),
             })}
             levelClassName={cn('level', {
                 'fill-foreground dark:fill-foreground': !className?.includes(
-                    'fill-white dark:fill-primary',
+                    'dark:fill-primary fill-white',
                 ),
             })}
             {...props}
@@ -999,12 +1000,12 @@ export const Icons = {
             className={className}
             letterClassName={cn('letter', {
                 'fill-foreground/50 dark:fill-foreground/50': !className?.includes(
-                    'fill-white dark:fill-primary',
+                    'dark:fill-primary fill-white',
                 ),
             })}
             levelClassName={cn('level', {
                 'fill-foreground dark:fill-foreground': !className?.includes(
-                    'fill-white dark:fill-primary',
+                    'dark:fill-primary fill-white',
                 ),
             })}
             {...props}
@@ -1016,20 +1017,20 @@ export const Icons = {
             letterClassName={cn(
                 {
                     'fill-foreground/50 dark:fill-foreground/50': !className?.includes(
-                        'fill-white dark:fill-primary',
+                        'dark:fill-primary fill-white',
                     ),
                 },
                 className,
             )}
             levelClassName={cn(
                 {
-                    'stroke-[#313131] dark:stroke-[#CECECE] fill-none': !className?.includes(
-                        'fill-white dark:fill-primary',
+                    'fill-none stroke-[#313131] dark:stroke-[#CECECE]': !className?.includes(
+                        'dark:fill-primary fill-white',
                     ),
                 },
                 {
-                    'stroke-white dark:stroke-primary fill-none': className?.includes(
-                        'fill-white dark:fill-primary',
+                    'dark:stroke-primary fill-none stroke-white': className?.includes(
+                        'dark:fill-primary fill-white',
                     ),
                 },
             )}
@@ -1042,20 +1043,20 @@ export const Icons = {
             letterClassName={cn(
                 {
                     'fill-foreground/50 dark:fill-foreground/50': !className?.includes(
-                        'fill-white dark:fill-primary',
+                        'dark:fill-primary fill-white',
                     ),
                 },
                 className,
             )}
             levelClassName={cn(
                 {
-                    'stroke-[#313131] dark:stroke-[#CECECE] fill-none': !className?.includes(
-                        'fill-white dark:fill-primary',
+                    'fill-none stroke-[#313131] dark:stroke-[#CECECE]': !className?.includes(
+                        'dark:fill-primary fill-white',
                     ),
                 },
                 {
-                    'stroke-white dark:stroke-primary fill-none': className?.includes(
-                        'fill-white dark:fill-primary',
+                    'dark:stroke-primary fill-none stroke-white': className?.includes(
+                        'dark:fill-primary fill-white',
                     ),
                 },
             )}
@@ -1068,7 +1069,7 @@ export const Icons = {
             letterClassName={cn(
                 {
                     'fill-foreground/50 dark:fill-foreground/50': !className?.includes(
-                        'fill-white dark:fill-primary',
+                        'dark:fill-primary fill-white',
                     ),
                 },
                 className,
@@ -1076,7 +1077,7 @@ export const Icons = {
             levelClassName={cn(
                 {
                     'fill-[#313131] dark:fill-[#CECECE]': !className?.includes(
-                        'fill-white dark:fill-primary',
+                        'dark:fill-primary fill-white',
                     ),
                 },
                 className,
@@ -3664,4 +3665,4 @@ export const Icons = {
             <path d="M10.2486 2.375V5.375C10.2486 6.20343 10.9201 6.875 11.7486 6.875H14.7486M4.24609 7.4375L4.24859 3.5C4.24859 2.67157 4.92017 2 5.74859 2H9.62729C10.0251 2 10.4066 2.15803 10.6879 2.43934L14.6842 6.43566C14.9656 6.71697 15.1236 7.09849 15.1236 7.4963V14.375C15.1236 15.2034 14.452 15.875 13.6236 15.875H10.6548H8.7475M4.25 10.625V12.875M4.25 12.875V15.125M4.25 12.875H2M4.25 12.875H6.5" />
         </svg>
     ),
-} satisfies { [key: string]: React.FC<IconProps> };
+} satisfies Record<string, React.FC<IconProps>>;

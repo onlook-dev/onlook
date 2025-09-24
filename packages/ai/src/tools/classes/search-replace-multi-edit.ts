@@ -1,6 +1,8 @@
-import { Icons } from '@onlook/ui/icons';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
+
+import { Icons } from '@onlook/ui/icons';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
@@ -26,7 +28,10 @@ export class SearchReplaceMultiEditFileTool extends ClientTool {
     });
     static readonly icon = Icons.Pencil;
 
-    async handle(args: z.infer<typeof SearchReplaceMultiEditFileTool.parameters>, editorEngine: EditorEngine): Promise<string> {
+    async handle(
+        args: z.infer<typeof SearchReplaceMultiEditFileTool.parameters>,
+        editorEngine: EditorEngine,
+    ): Promise<string> {
         try {
             const sandbox = editorEngine.branches.getSandboxById(args.branchId);
             if (!sandbox) {
@@ -50,9 +55,14 @@ export class SearchReplaceMultiEditFileTool extends ClientTool {
                         throw new Error(`String not found in file: ${edit.old_string}`);
                     }
 
-                    const secondIndex = tempContent.indexOf(edit.old_string, firstIndex + edit.old_string.length);
+                    const secondIndex = tempContent.indexOf(
+                        edit.old_string,
+                        firstIndex + edit.old_string.length,
+                    );
                     if (secondIndex !== -1) {
-                        throw new Error(`Multiple occurrences found for "${edit.old_string}". Use replace_all=true or provide more context.`);
+                        throw new Error(
+                            `Multiple occurrences found for "${edit.old_string}". Use replace_all=true or provide more context.`,
+                        );
                     }
 
                     // Simulate the edit for next validation
@@ -70,7 +80,9 @@ export class SearchReplaceMultiEditFileTool extends ClientTool {
                 } else {
                     const index = content.indexOf(edit.old_string);
                     if (index === -1) {
-                        throw new Error(`String not found in file after previous edits: ${edit.old_string}`);
+                        throw new Error(
+                            `String not found in file after previous edits: ${edit.old_string}`,
+                        );
                     }
                     content = content.replace(edit.old_string, edit.new_string);
                 }
@@ -83,7 +95,9 @@ export class SearchReplaceMultiEditFileTool extends ClientTool {
 
             return `File ${args.file_path} edited with ${args.edits.length} changes`;
         } catch (error) {
-            throw new Error(`Cannot multi-edit file ${args.file_path}: ${(error as Error).message}`);
+            throw new Error(
+                `Cannot multi-edit file ${args.file_path}: ${(error as Error).message}`,
+            );
         }
     }
 

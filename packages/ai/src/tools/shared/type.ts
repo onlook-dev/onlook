@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const BRANCH_ID_SCHEMA = z
     .string()

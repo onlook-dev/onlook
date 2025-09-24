@@ -1,11 +1,14 @@
-import { Icons } from '@onlook/ui/icons';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
+
+import { Icons } from '@onlook/ui/icons';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 import { ClientTool } from '../models/client';
 
 export class ScrapeUrlTool extends ClientTool {
     static readonly toolName = 'scrape_url';
-    static readonly description = 'Scrape a URL and extract its content in various formats (markdown, HTML, JSON). Can extract clean, LLM-ready content from any website, handling dynamic content and anti-bot mechanisms.';
+    static readonly description =
+        'Scrape a URL and extract its content in various formats (markdown, HTML, JSON). Can extract clean, LLM-ready content from any website, handling dynamic content and anti-bot mechanisms.';
     static readonly parameters = z.object({
         url: z.url().describe('The URL to scrape. Must be a valid HTTP or HTTPS URL.'),
         formats: z
@@ -54,7 +57,9 @@ export class ScrapeUrlTool extends ClientTool {
             return result.result;
         } catch (error) {
             console.error('Error scraping URL:', error);
-            throw new Error(`Failed to scrape URL ${args.url}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            throw new Error(
+                `Failed to scrape URL ${args.url}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            );
         }
     }
 

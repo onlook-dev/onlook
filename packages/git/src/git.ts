@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import {
     currentBranch,
     add as gitAdd,
@@ -14,7 +15,6 @@ import {
     statusMatrix as gitStatusMatrix,
     resolveRef,
 } from 'isomorphic-git';
-import path from 'path';
 
 export interface GitCommit {
     oid: string;
@@ -86,7 +86,7 @@ export async function addAll(repoPath: string) {
     );
 }
 
-export async function status(repoPath: string, filepath: string = '.') {
+export async function status(repoPath: string, filepath = '.') {
     return await gitStatus({ fs, dir: repoPath, filepath });
 }
 

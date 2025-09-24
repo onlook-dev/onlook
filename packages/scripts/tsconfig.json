@@ -9,11 +9,6 @@
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true
     },
-    "include": [
-        "src/**/*",
-        "test/**/*"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
+    "include": ["src/**/*", "test/**/*"],
+    "exclude": ["node_modules"]
 }

@@ -1,12 +1,14 @@
-import type {
-    ChatMessage,
-    ErrorMessageContext,
-    FileMessageContext,
-    HighlightMessageContext,
-    MessageContext,
-    ProjectMessageContext,
+import { type FileUIPart } from 'ai';
+
+import {
+    type ChatMessage,
+    type ErrorMessageContext,
+    type FileMessageContext,
+    type HighlightMessageContext,
+    type MessageContext,
+    type ProjectMessageContext,
 } from '@onlook/models';
-import type { FileUIPart } from 'ai';
+
 import { ASK_MODE_SYSTEM_PROMPT } from './ask';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
@@ -94,7 +96,7 @@ export function getHydratedUserMessage(
     }
 
     if (errors.length > 0) {
-        let errorPrompt = getErrorsContent(errors);
+        const errorPrompt = getErrorsContent(errors);
         prompt += errorPrompt;
     }
 

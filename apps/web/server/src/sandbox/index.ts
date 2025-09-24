@@ -1,6 +1,8 @@
-export const start = async (sandboxId: string): Promise<{
-    previewUrl: string,
-    editorUrl: string
+export const start = async (
+    sandboxId: string,
+): Promise<{
+    previewUrl: string;
+    editorUrl: string;
 }> => {
     return {
         previewUrl: `http://localhost:8084`,

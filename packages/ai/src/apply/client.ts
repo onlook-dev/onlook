@@ -118,12 +118,7 @@ export async function applyCodeChange(
                           updateSnippet,
                           instruction,
                       )
-                    : await (applyFn as typeof applyCodeChangeWithRelace)(
-                          originalCode,
-                          updateSnippet,
-                          instruction,
-                          metadata,
-                      );
+                    : await applyFn(originalCode, updateSnippet, instruction, metadata);
             if (result) return result;
         } catch (error) {
             console.warn(`Code application failed with provider ${provider}:`, error);

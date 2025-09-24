@@ -1,5 +1,4 @@
 import * as React from 'react';
-
 import { mergeRefs } from 'react-merge-refs';
 
 export function useDraftValue<T>(

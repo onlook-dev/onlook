@@ -1,4 +1,5 @@
 import { DefaultSettings } from '@onlook/constants';
+
 /**
  * Validates folder rename operation
  */

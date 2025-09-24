@@ -1,6 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { numeric, pgTable, primaryKey, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
+
 import { canvases } from '../../schema';
 import { users } from './user';
 

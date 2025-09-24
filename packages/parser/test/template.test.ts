@@ -1,6 +1,5 @@
-import { NodePath } from '@babel/traverse';
+import { type NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import { CoreElementType, DynamicType } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import { getAstFromContent } from 'src';
 import { traverse } from 'src/packages';
@@ -10,6 +9,8 @@ import {
     getDynamicTypeInfo,
     isNodeElementArray,
 } from 'src/template-node/map';
+
+import { CoreElementType, DynamicType } from '@onlook/models';
 
 describe('Template Tests', () => {
     describe('createTemplateNodeMap', () => {

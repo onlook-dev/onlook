@@ -1,7 +1,9 @@
-import type { WebSearchResult } from '@onlook/models';
-import { Icons } from '@onlook/ui/icons';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
+
+import { type WebSearchResult } from '@onlook/models';
+import { Icons } from '@onlook/ui/icons';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 import { ClientTool } from '../models/client';
 
 export class WebSearchTool extends ClientTool {
@@ -24,7 +26,7 @@ export class WebSearchTool extends ClientTool {
                 allowed_domains: args.allowed_domains,
                 blocked_domains: args.blocked_domains,
             });
-            return res
+            return res;
         } catch (error) {
             console.error('Error searching web:', error);
             return {
@@ -36,9 +38,8 @@ export class WebSearchTool extends ClientTool {
 
     getLabel(input?: z.infer<typeof WebSearchTool.parameters>): string {
         if (input?.query) {
-            const truncatedQuery = input.query.length > 30
-                ? input.query.substring(0, 30) + '...'
-                : input.query;
+            const truncatedQuery =
+                input.query.length > 30 ? input.query.substring(0, 30) + '...' : input.query;
             return `Searching "${truncatedQuery}"`;
         }
         return 'Searching web';

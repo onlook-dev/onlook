@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import chalk from 'chalk';
 import ora from 'ora';
 import prompts from 'prompts';
-import chalk from 'chalk';
 
 interface EnvVariable {
     key: string;

@@ -1,4 +1,5 @@
-import { type t as T, types as t } from '../packages';
+import type { t as T } from '../packages';
+import { types as t } from '../packages';
 
 export function updateNodeTextContent(node: T.JSXElement, textContent: string): void {
     // Split the text content by newlines
@@ -6,7 +7,7 @@ export function updateNodeTextContent(node: T.JSXElement, textContent: string): 
 
     // If there's only one part (no newlines), handle as before
     if (parts.length === 1) {
-        const textNode = node.children.find((child) => t.isJSXText(child)) as T.JSXText | undefined;
+        const textNode = node.children.find((child) => t.isJSXText(child));
         if (textNode) {
             textNode.value = textContent;
         } else {

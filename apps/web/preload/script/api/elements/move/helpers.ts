@@ -4,7 +4,7 @@ export enum DisplayDirection {
 }
 
 export function getDisplayDirection(element: HTMLElement): DisplayDirection {
-    if (!element || !element.children || element.children.length < 2) {
+    if (!element?.children || element.children.length < 2) {
         return DisplayDirection.VERTICAL;
     }
 
@@ -15,7 +15,11 @@ export function getDisplayDirection(element: HTMLElement): DisplayDirection {
     const firstRect = firstChild?.getBoundingClientRect();
     const secondRect = secondChild?.getBoundingClientRect();
 
-    if (firstRect && secondRect && Math.abs(firstRect.left - secondRect.left) < Math.abs(firstRect.top - secondRect.top)) {
+    if (
+        firstRect &&
+        secondRect &&
+        Math.abs(firstRect.left - secondRect.left) < Math.abs(firstRect.top - secondRect.top)
+    ) {
         return DisplayDirection.VERTICAL;
     } else {
         return DisplayDirection.HORIZONTAL;

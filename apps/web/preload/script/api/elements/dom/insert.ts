@@ -1,6 +1,7 @@
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/constants';
-import type { DomElement, LayerNode } from '@onlook/models';
-import type { ActionElement, ActionLocation } from '@onlook/models/actions';
+import { type DomElement, type LayerNode } from '@onlook/models';
+import { type ActionElement, type ActionLocation } from '@onlook/models/actions';
+
 import { assertNever, getHtmlElement } from '../../../helpers';
 import { getInstanceId, getOid, getOrAssignDomId } from '../../../helpers/ids';
 import { buildLayerTree } from '../../dom';
@@ -85,7 +86,7 @@ function findNearestBlockLevelContainer(x: number, y: number): HTMLElement | nul
 export function insertElement(
     element: ActionElement,
     location: ActionLocation,
-): { domEl: DomElement, newMap: Map<string, LayerNode> | null } | undefined {
+): { domEl: DomElement; newMap: Map<string, LayerNode> | null } | undefined {
     const targetEl = getHtmlElement(location.targetDomId);
     if (!targetEl) {
         console.warn(`Target element not found: ${location.targetDomId}`);
@@ -117,7 +118,7 @@ export function insertElement(
             assertNever(location);
     }
 
-    const domEl = getDomElement(newEl, true)
+    const domEl = getDomElement(newEl, true);
     const newMap = buildLayerTree(newEl);
     return {
         domEl,
@@ -148,7 +149,9 @@ export function createElement(element: ActionElement) {
     return newEl;
 }
 
-export function removeElement(location: ActionLocation): { domEl: DomElement, newMap: Map<string, LayerNode> | null } | null {
+export function removeElement(
+    location: ActionLocation,
+): { domEl: DomElement; newMap: Map<string, LayerNode> | null } | null {
     const targetEl = getHtmlElement(location.targetDomId);
 
     if (!targetEl) {

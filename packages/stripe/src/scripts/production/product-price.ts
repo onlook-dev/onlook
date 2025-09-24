@@ -6,7 +6,7 @@ const createProductionProduct = async () => {
     const { product, priceMap } = await createProProductWithPrices(stripe);
     console.log('Product created:', product);
     console.log('Price map:', priceMap);
-}
+};
 
 if (import.meta.main) {
     console.log('Setting up product...');

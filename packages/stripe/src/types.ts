@@ -1,4 +1,4 @@
-import type { PriceKey } from "./constants";
+import { type PriceKey } from './constants';
 
 export enum ProductType {
     FREE = 'free',

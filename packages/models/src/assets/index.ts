@@ -21,12 +21,13 @@ interface ClassReplacement {
     newClass: string;
 }
 
-interface ThemeColors {
-    [key: string]: {
+type ThemeColors = Record<
+    string,
+    {
         value: string;
         line?: number;
-    };
-}
+    }
+>;
 
 interface ColorValue {
     name: string;
@@ -41,9 +42,7 @@ interface ColorValue {
     };
 }
 
-interface ParsedColors {
-    [key: string]: ColorValue;
-}
+type ParsedColors = Record<string, ColorValue>;
 
 interface ConfigResult {
     cssContent: string;

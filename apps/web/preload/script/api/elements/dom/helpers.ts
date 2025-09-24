@@ -1,6 +1,7 @@
 import { EditorAttributes } from '@onlook/constants';
-import type { CoreElementType, DomElement, DynamicType } from '@onlook/models';
-import type { ActionElement, ActionLocation } from '@onlook/models/actions';
+import { type CoreElementType, type DomElement, type DynamicType } from '@onlook/models';
+import { type ActionElement, type ActionLocation } from '@onlook/models/actions';
+
 import { getHtmlElement } from '../../../helpers';
 import { getInstanceId, getOid, getOrAssignDomId } from '../../../helpers/ids';
 import { getDomElement, getImmediateTextContent } from '../helpers';
@@ -83,9 +84,7 @@ export function getElementType(domId: string): {
     dynamicType: DynamicType | null;
     coreType: CoreElementType | null;
 } {
-    const el = document.querySelector(
-        `[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`,
-    ) as HTMLElement | null;
+    const el = document.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`);
 
     if (!el) {
         console.warn('No element found', { domId });

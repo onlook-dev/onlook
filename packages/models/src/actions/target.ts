@@ -1,4 +1,4 @@
-import type { StyleChange } from '../style';
+import { type StyleChange } from '../style';
 
 export type Change<T> = {
     updated: T;

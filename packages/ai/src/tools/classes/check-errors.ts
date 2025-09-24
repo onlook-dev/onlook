@@ -1,20 +1,18 @@
-import type { CheckErrorsResult } from '@onlook/models';
+import { type CheckErrorsResult, type CheckErrorsResult } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
-import type { ParsedError } from '@onlook/utility';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
-import { z } from 'zod';
+import { type ParsedError } from '@onlook/utility';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 import { ClientTool } from '../models/client';
 
 export class CheckErrorsTool extends ClientTool {
     static readonly toolName = 'check_errors';
-    static readonly description = 'Check for terminal errors similar to chat errors. Lists all current terminal errors from all branches.'
+    static readonly description =
+        'Check for terminal errors similar to chat errors. Lists all current terminal errors from all branches.';
     static readonly parameters = z.object({});
     static readonly icon = Icons.MagnifyingGlass;
 
-    async handle(
-        _params: unknown,
-        editorEngine: EditorEngine,
-    ): Promise<CheckErrorsResult> {
+    async handle(_params: unknown, editorEngine: EditorEngine): Promise<CheckErrorsResult> {
         const errors = editorEngine.branches.getAllErrors();
 
         if (errors.length === 0) {

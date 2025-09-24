@@ -1,15 +1,16 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { Branch as DbBranch } from '../schema';
 
-export const createDefaultBranch = (
-    {
-        projectId,
-        sandboxId,
-        overrides = {},
-    }: {
-        projectId: string; sandboxId: string; overrides?: Partial<DbBranch>
-    },
-): DbBranch => {
+import { type Branch as DbBranch } from '../schema';
+
+export const createDefaultBranch = ({
+    projectId,
+    sandboxId,
+    overrides = {},
+}: {
+    projectId: string;
+    sandboxId: string;
+    overrides?: Partial<DbBranch>;
+}): DbBranch => {
     return {
         id: uuidv4(),
         projectId,
@@ -24,4 +25,4 @@ export const createDefaultBranch = (
         sandboxId,
         ...overrides,
     };
-};  
+};

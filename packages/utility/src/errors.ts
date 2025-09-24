@@ -111,7 +111,7 @@ export class TerminalBuffer {
     private errorCallback?: (errorLines: string[]) => void;
     private successCallback?: () => void;
 
-    constructor(maxLines: number = 20) {
+    constructor(maxLines = 20) {
         this.maxLines = maxLines;
     }
 

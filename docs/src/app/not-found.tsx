@@ -1,5 +1,6 @@
-import { Icons } from '@onlook/ui/icons';
 import Link from 'next/link';
+
+import { Icons } from '@onlook/ui/icons';
 
 export default function NotFound() {
     return (
@@ -16,7 +17,7 @@ export default function NotFound() {
                 <div className="flex justify-center">
                     <Link
                         href="/"
-                        className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-primary inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2"
                     >
                         <Icons.ArrowLeft className="h-4 w-4" />
                         Back to documentation

@@ -1,6 +1,9 @@
+import type { CodesandboxProviderOptions } from './providers/codesandbox';
+import type { NodeFsProviderOptions } from './providers/nodefs';
 import { CodeProvider } from './providers';
-import { CodesandboxProvider, type CodesandboxProviderOptions } from './providers/codesandbox';
-import { NodeFsProvider, type NodeFsProviderOptions } from './providers/nodefs';
+import { CodesandboxProvider } from './providers/codesandbox';
+import { NodeFsProvider } from './providers/nodefs';
+
 export * from './providers';
 export { CodesandboxProvider } from './providers/codesandbox';
 export { NodeFsProvider } from './providers/nodefs';

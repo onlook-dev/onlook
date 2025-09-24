@@ -1,7 +1,8 @@
+import path from 'path';
+import isSubdir from 'is-subdir';
+
 import { NEXT_JS_FILE_EXTENSIONS } from '@onlook/constants';
 import { RouterType } from '@onlook/models';
-import isSubdir from 'is-subdir';
-import path from 'path';
 
 // Utility to normalize paths for comparison (handles Windows and POSIX)
 function normalize(p: string): string {

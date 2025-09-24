@@ -1,11 +1,11 @@
-import { EditorAttributes } from '@onlook/constants';
-import type { DomElement } from '@onlook/models';
+import { type DomElement, type DomElement } from '@onlook/models';
+
 import { getHtmlElement } from '../../helpers';
 import { getDomElement } from './helpers';
 
 export const getElementByDomId = (domId: string, getStyle: boolean): DomElement => {
     const el = getHtmlElement(domId) || document.body;
-    return getDomElement(el as HTMLElement, getStyle);
+    return getDomElement(el, getStyle);
 };
 
 export const getElementAtLoc = (x: number, y: number, getStyle: boolean): DomElement => {

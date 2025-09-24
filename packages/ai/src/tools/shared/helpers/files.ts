@@ -1,4 +1,7 @@
-export async function resolveDirectoryPath(inputPath: string | undefined, sandbox: any): Promise<string> {
+export async function resolveDirectoryPath(
+    inputPath: string | undefined,
+    sandbox: any,
+): Promise<string> {
     if (!inputPath) {
         // Get current working directory
         const pwdResult = await safeRunCommand(sandbox, 'pwd', '.');
@@ -10,7 +13,10 @@ export async function resolveDirectoryPath(inputPath: string | undefined, sandbo
         // Verify it's a directory
         const hasTestCommand = await isCommandAvailable(sandbox, 'test');
         if (hasTestCommand) {
-            const isDir = await safeRunCommand(sandbox, `test -d "${resolved.path}" && echo "dir" || echo "not_dir"`);
+            const isDir = await safeRunCommand(
+                sandbox,
+                `test -d "${resolved.path}" && echo "dir" || echo "not_dir"`,
+            );
             if (isDir.success && isDir.output.trim() === 'dir') {
                 return resolved.path;
             }
@@ -32,17 +38,25 @@ export async function resolveDirectoryPath(inputPath: string | undefined, sandbo
 }
 
 // Safe command execution with fallback handling
-export async function safeRunCommand(sandbox: any, command: string, fallbackValue?: string): Promise<{ success: boolean; output: string; isReliable: boolean }> {
+export async function safeRunCommand(
+    sandbox: any,
+    command: string,
+    fallbackValue?: string,
+): Promise<{ success: boolean; output: string; isReliable: boolean }> {
     try {
         const result = await sandbox.session.runCommand(command);
         // Some commands return success: false even when they work - check output too
         const hasOutput = result.output && result.output.trim().length > 0;
-        const isActuallySuccessful = result.success || (hasOutput && !result.output.includes('command not found') && !result.output.includes('not found'));
+        const isActuallySuccessful =
+            result.success ||
+            (hasOutput &&
+                !result.output.includes('command not found') &&
+                !result.output.includes('not found'));
 
         return {
             success: isActuallySuccessful,
             output: result.output || '',
-            isReliable: result.success // Track if the success flag is reliable
+            isReliable: result.success, // Track if the success flag is reliable
         };
     } catch (error) {
         if (fallbackValue !== undefined) {
@@ -54,12 +68,18 @@ export async function safeRunCommand(sandbox: any, command: string, fallbackValu
 
 // Check if a command is available
 export async function isCommandAvailable(sandbox: any, command: string): Promise<boolean> {
-    const result = await safeRunCommand(sandbox, `which ${command} 2>/dev/null || command -v ${command} 2>/dev/null`);
+    const result = await safeRunCommand(
+        sandbox,
+        `which ${command} 2>/dev/null || command -v ${command} 2>/dev/null`,
+    );
     return result.success && result.output.trim().length > 0;
 }
 
 // Utility functions for path resolution and fuzzy matching
-export async function resolvePath(inputPath: string, sandbox: any): Promise<{ path: string | null; wasFuzzy: boolean }> {
+export async function resolvePath(
+    inputPath: string,
+    sandbox: any,
+): Promise<{ path: string | null; wasFuzzy: boolean }> {
     // Check if test command is available
     const hasTestCommand = await isCommandAvailable(sandbox, 'test');
     const hasRealpathCommand = await isCommandAvailable(sandbox, 'realpath');
@@ -67,7 +87,10 @@ export async function resolvePath(inputPath: string, sandbox: any): Promise<{ pa
     // If already absolute path, try it first
     if (inputPath.startsWith('/')) {
         if (hasTestCommand) {
-            const result = await safeRunCommand(sandbox, `test -e "${inputPath}" && echo "exists" || echo "not_found"`);
+            const result = await safeRunCommand(
+                sandbox,
+                `test -e "${inputPath}" && echo "exists" || echo "not_found"`,
+            );
             if (result.success && result.output.trim() === 'exists') {
                 return { path: inputPath, wasFuzzy: false };
             }
@@ -85,7 +108,10 @@ export async function resolvePath(inputPath: string, sandbox: any): Promise<{ pa
     } else {
         // Try relative to current directory first
         if (hasTestCommand && hasRealpathCommand) {
-            const result = await safeRunCommand(sandbox, `test -e "${inputPath}" && realpath "${inputPath}" || echo "not_found"`);
+            const result = await safeRunCommand(
+                sandbox,
+                `test -e "${inputPath}" && realpath "${inputPath}" || echo "not_found"`,
+            );
             if (result.success && result.output.trim() !== 'not_found') {
                 const resolvedPath = result.output.trim();
                 // Only consider it fuzzy if the resolved path is significantly different from input
@@ -112,7 +138,7 @@ export async function resolvePath(inputPath: string, sandbox: any): Promise<{ pa
 
 export async function findFuzzyPath(inputPath: string, sandbox: any): Promise<string | null> {
     // Extract filename/directory name from path
-    const parts = inputPath.split('/').filter(p => p);
+    const parts = inputPath.split('/').filter((p) => p);
     const targetName = parts[parts.length - 1];
 
     if (!targetName) return null;
@@ -129,7 +155,10 @@ export async function findFuzzyPath(inputPath: string, sandbox: any): Promise<st
         const result = await safeRunCommand(sandbox, findCommand);
 
         if (result.success && result.output.trim()) {
-            const candidates = result.output.trim().split('\n').filter((line: string) => line.trim());
+            const candidates = result.output
+                .trim()
+                .split('\n')
+                .filter((line: string) => line.trim());
 
             // Simple scoring - prefer exact matches and shorter paths
             const scored = candidates.map((candidate: string) => {
@@ -141,7 +170,8 @@ export async function findFuzzyPath(inputPath: string, sandbox: any): Promise<st
                 // Partial match
                 else if (candidateName.includes(targetName)) score += 50;
                 // Case insensitive match
-                else if (candidateName.toLowerCase().includes(targetName.toLowerCase())) score += 25;
+                else if (candidateName.toLowerCase().includes(targetName.toLowerCase()))
+                    score += 25;
 
                 // Prefer shorter paths (less nested)
                 score -= candidate.split('/').length;
@@ -150,11 +180,17 @@ export async function findFuzzyPath(inputPath: string, sandbox: any): Promise<st
             });
 
             // Return the highest scored candidate
-            scored.sort((a: { path: string; score: number }, b: { path: string; score: number }) => b.score - a.score);
+            scored.sort(
+                (a: { path: string; score: number }, b: { path: string; score: number }) =>
+                    b.score - a.score,
+            );
             if (scored.length > 0 && scored[0] && scored[0].score > 0) {
                 // Convert to absolute path if realpath is available
                 if (hasRealpathCommand) {
-                    const resolveResult = await safeRunCommand(sandbox, `realpath "${scored[0].path}"`);
+                    const resolveResult = await safeRunCommand(
+                        sandbox,
+                        `realpath "${scored[0].path}"`,
+                    );
                     if (resolveResult.success) {
                         return resolveResult.output.trim();
                     }
@@ -170,9 +206,10 @@ export async function findFuzzyPath(inputPath: string, sandbox: any): Promise<st
             if (currentDirResult) {
                 const candidates = currentDirResult
                     .map((file: any) => file.name)
-                    .filter((name: string) =>
-                        name.includes(targetName) ||
-                        name.toLowerCase().includes(targetName.toLowerCase())
+                    .filter(
+                        (name: string) =>
+                            name.includes(targetName) ||
+                            name.toLowerCase().includes(targetName.toLowerCase()),
                     );
 
                 if (candidates.length > 0) {

@@ -1,5 +1,6 @@
 import type React from 'react';
-import { useCallback, useRef, type DependencyList } from 'react';
+import type { DependencyList } from 'react';
+import { useCallback, useRef } from 'react';
 
 interface UsePointerStrokeOptions<T extends Element, InitData> {
     onBegin: (e: React.PointerEvent<T>) => InitData;
@@ -58,7 +59,7 @@ export function usePointerStroke<T extends Element = Element, InitData = void>(
             lastY: y,
             initData,
         };
-    }, deps as DependencyList);
+    }, deps!);
 
     const onPointerMove = useCallback((e: React.PointerEvent<T>) => {
         if (!stateRef.current) {
@@ -103,7 +104,7 @@ export function usePointerStroke<T extends Element = Element, InitData = void>(
             deltaY: y - lastY,
             initData: stateRef.current.initData,
         });
-    }, deps as DependencyList);
+    }, deps!);
 
     const onPointerUp = useCallback((e: React.PointerEvent<T>) => {
         e.currentTarget.releasePointerCapture(e.pointerId);
@@ -122,7 +123,7 @@ export function usePointerStroke<T extends Element = Element, InitData = void>(
             initData: stateRef.current.initData,
         });
         stateRef.current = null;
-    }, deps as DependencyList);
+    }, deps!);
 
     return { onPointerDown, onPointerMove, onPointerUp };
 }

@@ -1,6 +1,7 @@
+import path from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import path from 'node:path';
+
 import { promptAndWriteApiKeys } from './api-keys';
 import { promptAndWriteBackendKeys } from './backend';
 

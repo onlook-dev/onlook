@@ -1,28 +1,29 @@
-import { relations } from "drizzle-orm";
-import { numeric, pgTable, text, uuid, varchar } from "drizzle-orm/pg-core";
-import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
-import { z } from "zod";
-import { branches } from "../project";
-import { canvases } from "./canvas";
+import { relations } from 'drizzle-orm';
+import { numeric, pgTable, text, uuid, varchar } from 'drizzle-orm/pg-core';
+import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
+import { z } from 'zod';
 
-export const frames = pgTable("frames", {
-    id: uuid("id").primaryKey().defaultRandom(),
-    canvasId: uuid("canvas_id")
+import { branches } from '../project';
+import { canvases } from './canvas';
+
+export const frames = pgTable('frames', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    canvasId: uuid('canvas_id')
         .notNull()
-        .references(() => canvases.id, { onDelete: "cascade", onUpdate: "cascade" }),
-    branchId: uuid("branch_id")
+        .references(() => canvases.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    branchId: uuid('branch_id')
         // .notNull() // will need to be null before final migration
-        .references(() => branches.id, { onDelete: "cascade", onUpdate: "cascade" }),
-    url: varchar("url").notNull(),
+        .references(() => branches.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    url: varchar('url').notNull(),
 
     // display data
-    x: numeric("x").notNull(),
-    y: numeric("y").notNull(),
-    width: numeric("width").notNull(),
-    height: numeric("height").notNull(),
+    x: numeric('x').notNull(),
+    y: numeric('y').notNull(),
+    width: numeric('width').notNull(),
+    height: numeric('height').notNull(),
 
     // deprecated
-    type: text("type"),
+    type: text('type'),
 }).enableRLS();
 
 export const frameInsertSchema = createInsertSchema(frames);

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+
 import { isErrorMessage, isSuccessMessage, TerminalBuffer } from '../src/errors';
 
 // Known React/Next.js error messages

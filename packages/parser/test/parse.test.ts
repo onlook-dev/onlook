@@ -1,6 +1,6 @@
-import { describe, expect, test } from 'bun:test';
 import fs from 'fs';
 import path from 'path';
+import { describe, expect, test } from 'bun:test';
 import { getAstFromContent, getContentFromAst } from 'src';
 
 const __dirname = import.meta.dir;

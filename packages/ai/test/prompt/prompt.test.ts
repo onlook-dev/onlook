@@ -1,8 +1,10 @@
-import { MessageContextType } from '@onlook/models';
-import { describe, expect, test } from 'bun:test';
 import path from 'path';
+import { describe, expect, test } from 'bun:test';
+
+import { MessageContextType } from '@onlook/models';
+
+import type { HydrateMessageOptions } from '../../src/prompt/provider';
 import {
-    type HydrateMessageOptions,
     getCreatePageSystemPrompt,
     getFilesContent,
     getHighlightsContent,

@@ -1,11 +1,12 @@
-import { buildLayerTree, processDom, type ProcessDomResult } from './dom';
+import type { ProcessDomResult } from './dom';
+import { buildLayerTree, processDom } from './dom';
 import {
     getChildrenCount,
     getElementAtLoc,
     getElementByDomId,
     getOffsetParent,
     getParentElement,
-    updateElementInstance
+    updateElementInstance,
 } from './elements';
 import { groupElements, ungroupElements } from './elements/dom/group';
 import {
@@ -19,7 +20,14 @@ import { insertImage, removeImage } from './elements/dom/image';
 import { getInsertLocation, insertElement, removeElement } from './elements/dom/insert';
 import { getRemoveAction } from './elements/dom/remove';
 import { getElementIndex, moveElement } from './elements/move';
-import { drag, dragAbsolute, endAllDrag, endDrag, endDragAbsolute, startDrag } from './elements/move/drag';
+import {
+    drag,
+    dragAbsolute,
+    endAllDrag,
+    endDrag,
+    endDragAbsolute,
+    startDrag,
+} from './elements/move/drag';
 import { getComputedStyleByDomId } from './elements/style';
 import { editText, isChildTextEditable, startEditingText, stopEditingText } from './elements/text';
 import { handleBodyReady } from './ready';
@@ -93,11 +101,11 @@ const rawMethods = {
     insertImage,
     removeImage,
     handleBodyReady,
-}
+};
 
 // Wrap all methods in a try/catch to prevent the preload script from crashing
 export const preloadMethods = Object.fromEntries(
-    Object.entries(rawMethods).map(([key, fn]) => [key, withTryCatch(fn)])
+    Object.entries(rawMethods).map(([key, fn]) => [key, withTryCatch(fn)]),
 ) as typeof rawMethods;
 
 export type PenpalChildMethods = typeof preloadMethods;

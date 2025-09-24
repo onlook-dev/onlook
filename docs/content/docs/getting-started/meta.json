@@ -1,8 +1,4 @@
 {
-  "title": "Getting Started",
-  "pages": [
-    "ui-overview",
-    "core-features",
-    "first-project"
-  ]
+    "title": "Getting Started",
+    "pages": ["ui-overview", "core-features", "first-project"]
 }

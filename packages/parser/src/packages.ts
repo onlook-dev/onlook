@@ -1,8 +1,6 @@
+import { type GeneratorOptions, type GeneratorOptions } from '@babel/generator';
 import { packages } from '@babel/standalone';
-
-import type * as t from '@babel/types';
-import type { NodePath } from '@babel/traverse';
-import type { GeneratorOptions } from '@babel/generator';
+import { type NodePath } from '@babel/traverse';
 
 export const { parse } = packages.parser;
 export const { generate } = packages.generator;

@@ -1,5 +1,5 @@
-import chalk from 'chalk';
 import fs from 'node:fs';
+import chalk from 'chalk';
 import prompts from 'prompts';
 
 interface ApiKeyConfig {
@@ -135,7 +135,7 @@ const removeOldApiKeyEntries = (content: string): string => {
  * @returns Description text or undefined
  */
 const extractDescription = (commentLine: string): string | undefined => {
-    const match = commentLine.match(/^#\s*(.+)/);
+    const match = /^#\s*(.+)/.exec(commentLine);
     return match?.[1]?.trim();
 };
 

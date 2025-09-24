@@ -1,6 +1,8 @@
-import { PriceKey } from '@onlook/stripe';
 import { relations } from 'drizzle-orm';
 import { integer, pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
+
+import { PriceKey } from '@onlook/stripe';
+
 import { products } from './product';
 
 export const priceKeys = pgEnum('price_keys', PriceKey);

@@ -1,6 +1,8 @@
-import { Icons } from '@onlook/ui/icons';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
+
+import { Icons } from '@onlook/ui/icons';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
@@ -26,7 +28,7 @@ export class TerminalCommandTool extends ClientTool {
             return {
                 output: '',
                 success: false,
-                error: `Sandbox not found for branch ID: ${args.branchId}`
+                error: `Sandbox not found for branch ID: ${args.branchId}`,
             };
         }
         return await sandbox.session.runCommand(args.command);

@@ -1,13 +1,14 @@
 import { describe, expect, test } from 'bun:test';
+
 import {
-    DEFAULT_EXCLUDED_PATTERNS,
-    FILE_TYPE_MAP,
-    buildShellExclusionPattern,
     addFindExclusions,
+    buildShellExclusionPattern,
+    DEFAULT_EXCLUDED_PATTERNS,
+    escapeForShell,
+    FILE_TYPE_MAP,
     filterExcludedPaths,
     getFileTypePattern,
-    escapeForShell,
-    isPathExcluded
+    isPathExcluded,
 } from '@onlook/ai/src/tools/shared/helpers/cli';
 
 describe('Tool Helpers', () => {
@@ -24,7 +25,7 @@ describe('Tool Helpers', () => {
 
         test('should be an array of strings', () => {
             expect(Array.isArray(DEFAULT_EXCLUDED_PATTERNS)).toBe(true);
-            DEFAULT_EXCLUDED_PATTERNS.forEach(pattern => {
+            DEFAULT_EXCLUDED_PATTERNS.forEach((pattern) => {
                 expect(typeof pattern).toBe('string');
             });
         });
@@ -69,7 +70,7 @@ describe('Tool Helpers', () => {
         test('should handle patterns with wildcards differently', () => {
             const patterns = ['test_dir', '*.log'];
             const pattern = buildShellExclusionPattern(patterns);
-            
+
             // Wildcard pattern
             expect(pattern).toContain('[[ "$f" != *.log ]]');
             // Regular directory pattern
@@ -142,9 +143,9 @@ describe('Tool Helpers', () => {
                 'src/utils.ts',
                 '.git/config',
                 'dist/bundle.js',
-                'app.log'
+                'app.log',
             ];
-            
+
             const filtered = filterExcludedPaths(paths);
             expect(filtered).toContain('src/index.ts');
             expect(filtered).toContain('src/utils.ts');
@@ -156,7 +157,7 @@ describe('Tool Helpers', () => {
         test('should handle custom exclusion patterns', () => {
             const paths = ['src/file.ts', 'test/file.test.ts', 'docs/readme.md'];
             const customPatterns = ['test', 'docs'];
-            
+
             const filtered = filterExcludedPaths(paths, customPatterns);
             expect(filtered).toContain('src/file.ts');
             expect(filtered).not.toContain('test/file.test.ts');
@@ -167,9 +168,9 @@ describe('Tool Helpers', () => {
             const paths = [
                 'project/src/index.ts',
                 'project/node_modules/lib/index.js',
-                'project/build/dist/app.js'
+                'project/build/dist/app.js',
             ];
-            
+
             const filtered = filterExcludedPaths(paths);
             expect(filtered).toContain('project/src/index.ts');
             expect(filtered).not.toContain('project/node_modules/lib/index.js');
@@ -181,9 +182,9 @@ describe('Tool Helpers', () => {
                 'src/.env.example',
                 '.git/hooks/pre-commit',
                 '.DS_Store',
-                'src/.gitignore'
+                'src/.gitignore',
             ];
-            
+
             const filtered = filterExcludedPaths(paths);
             expect(filtered).toContain('src/.env.example');
             expect(filtered).toContain('src/.gitignore');

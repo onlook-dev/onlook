@@ -1,6 +1,6 @@
-import { DefaultSettings } from '@onlook/constants';
-import type { UserSettings } from '@onlook/models';
-import type { UserSettings as DbUserSettings } from '../../schema';
+import { type UserSettings, type UserSettings } from '@onlook/models';
+
+import { type UserSettings as DbUserSettings } from '../../schema';
 
 export const fromDbUserSettings = (settings: DbUserSettings): UserSettings => {
     return {
@@ -14,7 +14,8 @@ export const fromDbUserSettings = (settings: DbUserSettings): UserSettings => {
             showMiniChat: settings.showMiniChat ?? DefaultSettings.CHAT_SETTINGS.showMiniChat,
         },
         editor: {
-            shouldWarnDelete: settings.shouldWarnDelete ?? DefaultSettings.EDITOR_SETTINGS.shouldWarnDelete,
+            shouldWarnDelete:
+                settings.shouldWarnDelete ?? DefaultSettings.EDITOR_SETTINGS.shouldWarnDelete,
         },
     };
 };

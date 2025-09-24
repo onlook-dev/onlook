@@ -1,8 +1,10 @@
-import { JS_FILE_EXTENSIONS } from '@onlook/constants';
-import { type FileOperations } from '@onlook/utility';
-import { describe, expect, test } from 'bun:test';
 import fs from 'fs';
 import path from 'path';
+import { describe, expect, test } from 'bun:test';
+
+import { JS_FILE_EXTENSIONS } from '@onlook/constants';
+import { type FileOperations } from '@onlook/utility';
+
 import { getAstFromContent, getContentFromAst } from '../src';
 import { addNextBuildConfig } from '../src/code-edit/next-config';
 
@@ -11,7 +13,7 @@ const __dirname = import.meta.dir;
 describe('Build Config Tests', () => {
     // Mock FileOperations for testing
     const createMockFileOps = (configFiles: Record<string, string>): FileOperations => {
-        let files = { ...configFiles };
+        const files = { ...configFiles };
 
         return {
             readFile: async (filePath: string) => {
@@ -64,7 +66,7 @@ describe('Build Config Tests', () => {
                 const modifiedContent = await fileOps.readFile(configFilename);
 
                 if (SHOULD_UPDATE_EXPECTED) {
-                    await Bun.write(expectedPath, modifiedContent as string);
+                    await Bun.write(expectedPath, modifiedContent!);
                 }
 
                 const expectedContent = await Bun.file(expectedPath).text();

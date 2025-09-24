@@ -1,4 +1,4 @@
-import type { PenpalChildMethods as PenpalChildMethodsType } from '@onlook/web-preload/script/api';
+import { type PenpalChildMethods as PenpalChildMethodsType } from '@onlook/web-preload/script/api';
 
 // Preload methods should be treated as promises
 export type PromisifiedPendpalChildMethods = {

@@ -1,9 +1,12 @@
-import { GlobTool } from '@onlook/ai/src/tools/classes/glob';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 
+import { GlobTool } from '@onlook/ai/src/tools/classes/glob';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 // Mock sandbox and session for testing
-const createMockSession = (commandResults: Record<string, { success: boolean; output: string; error?: string }>) => ({
+const createMockSession = (
+    commandResults: Record<string, { success: boolean; output: string; error?: string }>,
+) => ({
     runCommand: mock((command: string, callback?: any, ignoreError?: boolean) => {
         // Find matching command pattern or return default
         for (const [pattern, result] of Object.entries(commandResults)) {
@@ -13,18 +16,19 @@ const createMockSession = (commandResults: Record<string, { success: boolean; ou
         }
         // Default response for unknown commands
         return Promise.resolve({ success: false, output: '', error: 'Command not found' });
-    })
+    }),
 });
 
 const createMockSandbox = (commandResults: Record<string, any> = {}) => ({
-    session: createMockSession(commandResults)
+    session: createMockSession(commandResults),
 });
 
-const createMockEditorEngine = (sandbox: any): EditorEngine => ({
-    branches: {
-        getSandboxById: mock((id: string) => sandbox)
-    }
-} as any);
+const createMockEditorEngine = (sandbox: any): EditorEngine =>
+    ({
+        branches: {
+            getSandboxById: mock((id: string) => sandbox),
+        },
+    }) as any;
 
 describe('Glob Tool', () => {
     let mockSandbox: any;
@@ -44,7 +48,7 @@ describe('Glob Tool', () => {
             const engineWithoutSandbox = createMockEditorEngine(null);
             const args = {
                 branchId: 'nonexistent',
-                pattern: '*.js'
+                pattern: '*.js',
             };
 
             const globTool = new GlobTool();
@@ -55,7 +59,7 @@ describe('Glob Tool', () => {
         test('should validate empty pattern', async () => {
             const args = {
                 branchId: 'test-branch',
-                pattern: ''
+                pattern: '',
             };
 
             const globTool = new GlobTool();
@@ -66,7 +70,7 @@ describe('Glob Tool', () => {
         test('should validate whitespace-only pattern', async () => {
             const args = {
                 branchId: 'test-branch',
-                pattern: '   '
+                pattern: '   ',
             };
 
             const globTool = new GlobTool();
@@ -77,7 +81,7 @@ describe('Glob Tool', () => {
         test('should validate obviously invalid patterns', async () => {
             const args = {
                 branchId: 'test-branch',
-                pattern: 'test///'
+                pattern: 'test///',
             };
 
             const globTool = new GlobTool();
@@ -87,14 +91,14 @@ describe('Glob Tool', () => {
 
         test('should validate non-existent search path', async () => {
             mockSandbox = createMockSandbox({
-                'test -e "nonexistent"': { success: true, output: 'not_found' }
+                'test -e "nonexistent"': { success: true, output: 'not_found' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
                 pattern: '*.js',
-                path: 'nonexistent'
+                path: 'nonexistent',
             };
 
             const globTool = new GlobTool();
@@ -105,14 +109,14 @@ describe('Glob Tool', () => {
         test('should validate file instead of directory path', async () => {
             mockSandbox = createMockSandbox({
                 'test -e "file.txt"': { success: true, output: 'exists' },
-                'test -d "file.txt"': { success: true, output: 'not_dir' }
+                'test -d "file.txt"': { success: true, output: 'not_dir' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
                 pattern: '*.js',
-                path: 'file.txt'
+                path: 'file.txt',
             };
 
             const globTool = new GlobTool();
@@ -126,13 +130,13 @@ describe('Glob Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'test -d "nonexistent"': { success: true, output: 'not_found' }
+                'test -d "nonexistent"': { success: true, output: 'not_found' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: 'nonexistent/**/*.js'
+                pattern: 'nonexistent/**/*.js',
             };
 
             const globTool = new GlobTool();
@@ -145,13 +149,13 @@ describe('Glob Tool', () => {
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
                 'test -d "src"': { success: true, output: 'exists' },
-                'bash -c': { success: true, output: 'src/file1.js\nsrc/file2.js' }
+                'bash -c': { success: true, output: 'src/file1.js\nsrc/file2.js' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: 'src/**/*.js'
+                pattern: 'src/**/*.js',
             };
 
             const globTool = new GlobTool();
@@ -167,13 +171,13 @@ describe('Glob Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'bash -c': { success: true, output: 'src/file1.js\nsrc/file2.js' }
+                'bash -c': { success: true, output: 'src/file1.js\nsrc/file2.js' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '**/*.js'
+                pattern: '**/*.js',
             };
 
             const globTool = new GlobTool();
@@ -188,13 +192,13 @@ describe('Glob Tool', () => {
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
                 'bash -c': { success: false, output: '' },
-                'sh -c': { success: true, output: 'file1.js\nfile2.js' }
+                'sh -c': { success: true, output: 'file1.js\nfile2.js' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '*.js'
+                pattern: '*.js',
             };
 
             const globTool = new GlobTool();
@@ -210,13 +214,13 @@ describe('Glob Tool', () => {
                 'test -d "."': { success: true, output: 'dir' },
                 'bash -c': { success: false, output: '' },
                 'sh -c': { success: false, output: '' },
-                'find': { success: true, output: 'src/component.tsx\nsrc/utils.tsx' }
+                find: { success: true, output: 'src/component.tsx\nsrc/utils.tsx' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '**/*.tsx'
+                pattern: '**/*.tsx',
             };
 
             const globTool = new GlobTool();
@@ -231,13 +235,13 @@ describe('Glob Tool', () => {
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
                 'bash -c': { success: false, output: '' },
-                'find': { success: true, output: 'src/file.js' }
+                find: { success: true, output: 'src/file.js' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '**/*.{js,jsx}' // Complex pattern with brace expansion
+                pattern: '**/*.{js,jsx}', // Complex pattern with brace expansion
             };
 
             const globTool = new GlobTool();
@@ -249,7 +253,7 @@ describe('Glob Tool', () => {
             expect(mockSandbox.session.runCommand).not.toHaveBeenCalledWith(
                 expect.stringContaining('sh -c'),
                 expect.anything(),
-                expect.anything()
+                expect.anything(),
             );
         });
     });
@@ -258,7 +262,7 @@ describe('Glob Tool', () => {
         beforeEach(() => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
-                'test -d "."': { success: true, output: 'dir' }
+                'test -d "."': { success: true, output: 'dir' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
         });
@@ -273,7 +277,7 @@ describe('Glob Tool', () => {
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '*.js'
+                pattern: '*.js',
             };
 
             const globTool = new GlobTool();
@@ -286,14 +290,17 @@ describe('Glob Tool', () => {
         test('should handle double-star recursive patterns', async () => {
             mockSandbox.session.runCommand.mockImplementation((command: string) => {
                 if (command.includes('bash -c')) {
-                    return Promise.resolve({ success: true, output: 'src/app.js\nsrc/utils/helper.js' });
+                    return Promise.resolve({
+                        success: true,
+                        output: 'src/app.js\nsrc/utils/helper.js',
+                    });
                 }
                 return Promise.resolve({ success: true, output: 'exists' });
             });
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '**/*.js'
+                pattern: '**/*.js',
             };
 
             const globTool = new GlobTool();
@@ -306,7 +313,10 @@ describe('Glob Tool', () => {
         test('should handle brace expansion patterns', async () => {
             mockSandbox.session.runCommand.mockImplementation((command: string) => {
                 if (command.includes('test -e') || command.includes('test -d')) {
-                    return Promise.resolve({ success: true, output: command.includes('-d') ? 'dir' : 'exists' });
+                    return Promise.resolve({
+                        success: true,
+                        output: command.includes('-d') ? 'dir' : 'exists',
+                    });
                 }
                 if (command.includes('bash -c')) {
                     return Promise.resolve({ success: false, output: '' }); // Bash fails, forces fallback to find
@@ -319,7 +329,7 @@ describe('Glob Tool', () => {
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '*.{ts,tsx}'
+                pattern: '*.{ts,tsx}',
             };
 
             const globTool = new GlobTool();
@@ -339,7 +349,7 @@ describe('Glob Tool', () => {
 
             const args = {
                 branchId: 'test-branch',
-                pattern: 'test?.js'
+                pattern: 'test?.js',
             };
 
             const globTool = new GlobTool();
@@ -359,7 +369,7 @@ describe('Glob Tool', () => {
 
             const args = {
                 branchId: 'test-branch',
-                pattern: 'file[12].js'
+                pattern: 'file[12].js',
             };
 
             const globTool = new GlobTool();
@@ -375,14 +385,14 @@ describe('Glob Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "src"': { success: true, output: 'exists' },
                 'test -d "src"': { success: true, output: 'dir' },
-                'bash -c': { success: true, output: 'src/component.tsx\nsrc/utils.tsx' }
+                'bash -c': { success: true, output: 'src/component.tsx\nsrc/utils.tsx' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
                 pattern: '*.tsx',
-                path: 'src'
+                path: 'src',
             };
 
             const globTool = new GlobTool();
@@ -396,13 +406,13 @@ describe('Glob Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'bash -c': { success: true, output: 'app.js\nindex.js' }
+                'bash -c': { success: true, output: 'app.js\nindex.js' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '*.js'
+                pattern: '*.js',
             };
 
             const globTool = new GlobTool();
@@ -420,13 +430,13 @@ describe('Glob Tool', () => {
                 'test -d "."': { success: true, output: 'dir' },
                 'bash -c': { success: true, output: '' },
                 'sh -c': { success: true, output: '' },
-                'find': { success: false, output: '' }
+                find: { success: false, output: '' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '*.nonexistent'
+                pattern: '*.nonexistent',
             };
 
             const globTool = new GlobTool();
@@ -438,13 +448,16 @@ describe('Glob Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'bash -c': { success: true, output: 'src/app.js\nnode_modules/lib.js\n.git/config\ndist/bundle.js' }
+                'bash -c': {
+                    success: true,
+                    output: 'src/app.js\nnode_modules/lib.js\n.git/config\ndist/bundle.js',
+                },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '**/*'
+                pattern: '**/*',
             };
 
             const globTool = new GlobTool();
@@ -462,13 +475,13 @@ describe('Glob Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'bash -c': { success: true, output: largeOutput }
+                'bash -c': { success: true, output: largeOutput },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '*.js'
+                pattern: '*.js',
             };
 
             const globTool = new GlobTool();
@@ -482,13 +495,13 @@ describe('Glob Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'bash -c': { success: true, output: './src/app.js\r\n./src/utils.js\r\n' }
+                'bash -c': { success: true, output: './src/app.js\r\n./src/utils.js\r\n' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '*.js'
+                pattern: '*.js',
             };
 
             const globTool = new GlobTool();
@@ -503,13 +516,13 @@ describe('Glob Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'bash -c': { success: true, output: 'unique.js' }
+                'bash -c': { success: true, output: 'unique.js' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: 'unique.js'
+                pattern: 'unique.js',
             };
 
             const globTool = new GlobTool();
@@ -522,13 +535,13 @@ describe('Glob Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'bash -c': { success: true, output: 'file1.js\nfile2.js\nfile3.js' }
+                'bash -c': { success: true, output: 'file1.js\nfile2.js\nfile3.js' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '*.js'
+                pattern: '*.js',
             };
 
             const globTool = new GlobTool();
@@ -547,13 +560,13 @@ describe('Glob Tool', () => {
                 'test -d "."': { success: true, output: 'dir' },
                 'bash -c': { success: false, output: '' },
                 'sh -c': { success: false, output: '' },
-                'find': { success: true, output: 'app.js\nutils.ts' }
+                find: { success: true, output: 'app.js\nutils.ts' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '*.{js,ts}'
+                pattern: '*.{js,ts}',
             };
 
             const globTool = new GlobTool();
@@ -569,13 +582,13 @@ describe('Glob Tool', () => {
                 'test -d "."': { success: true, output: 'dir' },
                 'bash -c': { success: false, output: '' },
                 'sh -c': { success: false, output: '' },
-                'find': { success: true, output: 'src/deep/nested/file.js' }
+                find: { success: true, output: 'src/deep/nested/file.js' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '**/file.js'
+                pattern: '**/file.js',
             };
 
             const globTool = new GlobTool();
@@ -590,13 +603,13 @@ describe('Glob Tool', () => {
                 'test -d "."': { success: true, output: 'dir' },
                 'bash -c': { success: false, output: '' },
                 'sh -c': { success: false, output: '' },
-                'find': { success: true, output: 'test.js' }
+                find: { success: true, output: 'test.js' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: 'test.js'
+                pattern: 'test.js',
             };
 
             const globTool = new GlobTool();
@@ -613,13 +626,13 @@ describe('Glob Tool', () => {
                 'test -d "."': { success: true, output: 'dir' },
                 'bash -c': { success: false, output: '' },
                 'sh -c': { success: false, output: '' },
-                'find': { success: false, output: '' }
+                find: { success: false, output: '' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '*.js'
+                pattern: '*.js',
             };
 
             const globTool = new GlobTool();
@@ -635,7 +648,7 @@ describe('Glob Tool', () => {
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '*.js'
+                pattern: '*.js',
             };
 
             const globTool = new GlobTool();
@@ -649,13 +662,13 @@ describe('Glob Tool', () => {
                 'test -d "."': { success: true, output: 'dir' },
                 'bash -c': { success: false, output: '' },
                 'sh -c': { success: false, output: '' },
-                'find': { success: true, output: '' }
+                find: { success: true, output: '' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '*.{js'  // Missing closing brace
+                pattern: '*.{js', // Missing closing brace
             };
 
             const globTool = new GlobTool();
@@ -669,13 +682,13 @@ describe('Glob Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'bash -c': { success: true, output: '   \n  \n   ' }
+                'bash -c': { success: true, output: '   \n  \n   ' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '*.nonexistent'
+                pattern: '*.nonexistent',
             };
 
             const globTool = new GlobTool();
@@ -687,13 +700,13 @@ describe('Glob Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'bash -c': { success: true, output: 'my file.js' }
+                'bash -c': { success: true, output: 'my file.js' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: 'my*.js'
+                pattern: 'my*.js',
             };
 
             const globTool = new GlobTool();
@@ -706,13 +719,13 @@ describe('Glob Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'bash -c': { success: true, output: '  file1.js  \r\n\n  file2.js  \n\r  ' }
+                'bash -c': { success: true, output: '  file1.js  \r\n\n  file2.js  \n\r  ' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: '*.js'
+                pattern: '*.js',
             };
 
             const globTool = new GlobTool();

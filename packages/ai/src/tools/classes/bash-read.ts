@@ -1,6 +1,8 @@
-import { Icons } from '@onlook/ui/icons';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
+
+import { Icons } from '@onlook/ui/icons';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
@@ -45,7 +47,10 @@ export class BashReadTool extends ClientTool {
     });
     static readonly icon = Icons.EyeOpen;
 
-    async handle(args: z.infer<typeof BashReadTool.parameters>, editorEngine: EditorEngine): Promise<{
+    async handle(
+        args: z.infer<typeof BashReadTool.parameters>,
+        editorEngine: EditorEngine,
+    ): Promise<{
         output: string;
         success: boolean;
         error: string | null;
@@ -56,12 +61,13 @@ export class BashReadTool extends ClientTool {
                 return {
                     output: '',
                     success: false,
-                    error: `Sandbox not found for branch ID: ${args.branchId}`
+                    error: `Sandbox not found for branch ID: ${args.branchId}`,
                 };
             }
 
             // Use allowed commands from parameter or default to all enum values
-            const readOnlyCommands = args.allowed_commands || BashReadTool.ALLOWED_BASH_READ_COMMANDS.options;
+            const readOnlyCommands =
+                args.allowed_commands || BashReadTool.ALLOWED_BASH_READ_COMMANDS.options;
             const commandParts = args.command.trim().split(/\s+/);
             const baseCommand = commandParts[0] || '';
 
@@ -69,7 +75,7 @@ export class BashReadTool extends ClientTool {
                 return {
                     output: '',
                     success: false,
-                    error: `Command '${baseCommand}' is not allowed in read-only mode. Only ${readOnlyCommands.join(', ')} commands are permitted.`
+                    error: `Command '${baseCommand}' is not allowed in read-only mode. Only ${readOnlyCommands.join(', ')} commands are permitted.`,
                 };
             }
 
@@ -77,17 +83,16 @@ export class BashReadTool extends ClientTool {
             return {
                 output: result.output,
                 success: result.success,
-                error: result.error
+                error: result.error,
             };
         } catch (error: any) {
             return {
                 output: '',
                 success: false,
-                error: error.message || error.toString()
+                error: error.message || error.toString(),
             };
         }
     }
-
 
     getLabel(input?: z.infer<typeof BashReadTool.parameters>): string {
         if (input?.command) {

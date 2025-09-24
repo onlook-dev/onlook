@@ -1,6 +1,8 @@
-import Stripe from 'stripe';
+import type Stripe from 'stripe';
+
+import type { PriceConfig } from '../../constants';
 import { createStripeClient } from '../../client';
-import { PRO_PRODUCT_CONFIG, PriceKey, type PriceConfig } from '../../constants';
+import { PriceKey, PRO_PRODUCT_CONFIG } from '../../constants';
 import { createTestCustomerAndSubscribe } from './customer';
 import { cleanupExistingProduct } from './reset';
 
@@ -25,11 +27,7 @@ export const getProProductAndPrices = async () => {
     return { product, prices };
 };
 
-async function createPrices(
-    stripe: Stripe,
-    productId: string,
-    priceConfig: PriceConfig
-) {
+async function createPrices(stripe: Stripe, productId: string, priceConfig: PriceConfig) {
     const price = await stripe.prices.create({
         product: productId,
         currency: 'usd',
@@ -39,8 +37,8 @@ async function createPrices(
             interval: priceConfig.paymentInterval,
         },
         nickname: priceConfig.key,
-    })
-    return { key: priceConfig.key, price }
+    });
+    return { key: priceConfig.key, price };
 }
 
 export const createProProductWithPrices = async (stripe: Stripe) => {
@@ -67,7 +65,10 @@ export const setupProduct = async () => {
     await cleanupExistingProduct(stripe, productName);
 
     const { product, priceMap } = await createProProductWithPrices(stripe);
-    const { customer, subscription } = await createTestCustomerAndSubscribe(stripe, priceMap.get(PriceKey.PRO_MONTHLY_TIER_1)!);
+    const { customer, subscription } = await createTestCustomerAndSubscribe(
+        stripe,
+        priceMap.get(PriceKey.PRO_MONTHLY_TIER_1)!,
+    );
 
     // Upgrade the customer to the next tier
     await stripe.subscriptions.update(subscription.id, {

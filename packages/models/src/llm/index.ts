@@ -1,4 +1,4 @@
-import type { LanguageModel } from 'ai';
+import { type LanguageModel } from 'ai';
 
 export enum LLMProvider {
     ANTHROPIC = 'anthropic',

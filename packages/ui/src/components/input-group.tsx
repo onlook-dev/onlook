@@ -1,6 +1,8 @@
-import { Children, type ReactElement, cloneElement } from 'react';
-import type { DraftableInputProps } from './draftable-input';
+import  { type ReactElement } from 'react';
+import { Children, cloneElement } from 'react';
+
 import { cn } from '../utils';
+import { type DraftableInputProps } from './draftable-input';
 
 interface InputGroupProps {
     className?: string;

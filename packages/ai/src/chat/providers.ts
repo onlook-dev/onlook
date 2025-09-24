@@ -1,15 +1,10 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
-import {
-    ANTHROPIC_MODELS,
-    LLMProvider,
-    MODEL_MAX_TOKENS,
-    OPENROUTER_MODELS,
-    type InitialModelPayload,
-    type ModelConfig,
-} from '@onlook/models';
-import { assertNever } from '@onlook/utility';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import type { LanguageModel } from 'ai';
+import { type LanguageModel } from 'ai';
+
+import type { ANTHROPIC_MODELS, InitialModelPayload, ModelConfig } from '@onlook/models';
+import { LLMProvider, MODEL_MAX_TOKENS, OPENROUTER_MODELS } from '@onlook/models';
+import { assertNever } from '@onlook/utility';
 
 export async function initModel({
     provider: requestedProvider,
@@ -18,7 +13,7 @@ export async function initModel({
     let model: LanguageModel;
     let providerOptions: Record<string, any> | undefined;
     let headers: Record<string, string> | undefined;
-    let maxOutputTokens: number = MODEL_MAX_TOKENS[requestedModel];
+    const maxOutputTokens: number = MODEL_MAX_TOKENS[requestedModel];
 
     switch (requestedProvider) {
         case LLMProvider.ANTHROPIC:

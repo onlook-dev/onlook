@@ -1,11 +1,16 @@
-import { Icons } from '@onlook/ui/icons';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
+
+import { Icons } from '@onlook/ui/icons';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class SandboxTool extends ClientTool {
-    static readonly ALLOWED_SANDBOX_COMMANDS = z.enum(['restart_dev_server', 'read_dev_server_logs']);
+    static readonly ALLOWED_SANDBOX_COMMANDS = z.enum([
+        'restart_dev_server',
+        'read_dev_server_logs',
+    ]);
     static readonly toolName = 'sandbox';
     static readonly description = 'Execute commands in a sandboxed environment';
     static readonly parameters = z.object({
@@ -14,7 +19,10 @@ export class SandboxTool extends ClientTool {
     });
     static readonly icon = Icons.Cube;
 
-    async handle(args: z.infer<typeof SandboxTool.parameters>, editorEngine: EditorEngine): Promise<string> {
+    async handle(
+        args: z.infer<typeof SandboxTool.parameters>,
+        editorEngine: EditorEngine,
+    ): Promise<string> {
         try {
             const sandbox = editorEngine.branches.getSandboxById(args.branchId);
             if (!sandbox) {

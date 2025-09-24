@@ -62,7 +62,7 @@ export const generateUniqueBranchName = (baseName: string, existingNames: string
         .map((name) => name.match(numberedPattern))
         .filter((match) => match !== null)
         .map((match) => {
-            const numberStr = match![1]!;
+            const numberStr = match[1]!;
             // Only accept numbers that don't have leading zeros (except '0' itself)
             if (numberStr !== '0' && numberStr.startsWith('0')) {
                 return NaN;
@@ -107,7 +107,7 @@ export const generateUniqueBranchName = (baseName: string, existingNames: string
  */
 function extractTrueBaseName(name: string): string {
     const numberedPattern = /^(.+) \(\d+\)$/;
-    const match = name.match(numberedPattern);
+    const match = numberedPattern.exec(name);
     return match ? match[1]! : name;
 }
 

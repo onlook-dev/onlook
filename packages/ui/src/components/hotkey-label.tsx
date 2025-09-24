@@ -14,7 +14,7 @@ export function HotkeyLabel({ hotkey, className }: { hotkey: Hotkey; className?:
 
             <Kbd>
                 <span
-                    className="inline-grid grid-flow-col auto-cols-max gap-1.5 items-center text-xs [&_kbd]:text-[1.1em]"
+                    className="inline-grid auto-cols-max grid-flow-col items-center gap-1.5 text-xs [&_kbd]:text-[1.1em]"
                     dangerouslySetInnerHTML={{ __html: hotkey.readableCommand }}
                 />
             </Kbd>

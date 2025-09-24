@@ -4,7 +4,7 @@ export function getHtmlElement(domId: string): HTMLElement | null {
     return document.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`);
 }
 
-export function getDomIdSelector(domId: string, escape: boolean = false) {
+export function getDomIdSelector(domId: string, escape = false) {
     const selector = `[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`;
     if (!escape) {
         return selector;

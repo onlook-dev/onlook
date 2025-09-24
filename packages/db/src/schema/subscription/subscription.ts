@@ -1,20 +1,31 @@
-import { ScheduledSubscriptionAction, SubscriptionStatus } from '@onlook/stripe';
 import { relations } from 'drizzle-orm';
 import { pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+
+import { ScheduledSubscriptionAction, SubscriptionStatus } from '@onlook/stripe';
+
 import { users } from '../user/user';
 import { prices } from './price';
 import { products } from './product';
 
 export const subscriptionStatusEnum = pgEnum('subscription_status', SubscriptionStatus);
-export const scheduledSubscriptionAction = pgEnum('scheduled_subscription_action', ScheduledSubscriptionAction);
+export const scheduledSubscriptionAction = pgEnum(
+    'scheduled_subscription_action',
+    ScheduledSubscriptionAction,
+);
 
 export const subscriptions = pgTable('subscriptions', {
     id: uuid('id').primaryKey().defaultRandom(),
 
     // Relationships
-    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
-    productId: uuid('product_id').notNull().references(() => products.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
-    priceId: uuid('price_id').notNull().references(() => prices.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    userId: uuid('user_id')
+        .notNull()
+        .references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    productId: uuid('product_id')
+        .notNull()
+        .references(() => products.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    priceId: uuid('price_id')
+        .notNull()
+        .references(() => prices.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
 
     // Metadata
     startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
@@ -28,8 +39,12 @@ export const subscriptions = pgTable('subscriptions', {
     stripeSubscriptionItemId: text('stripe_subscription_item_id').notNull().unique(),
     stripeSubscriptionScheduleId: text('stripe_subscription_schedule_id'),
     // The current period start and end is used to determine if the subscription has renewed.
-    stripeCurrentPeriodStart: timestamp('stripe_current_period_start', { withTimezone: true }).notNull(),
-    stripeCurrentPeriodEnd: timestamp('stripe_current_period_end', { withTimezone: true }).notNull(),
+    stripeCurrentPeriodStart: timestamp('stripe_current_period_start', {
+        withTimezone: true,
+    }).notNull(),
+    stripeCurrentPeriodEnd: timestamp('stripe_current_period_end', {
+        withTimezone: true,
+    }).notNull(),
 
     // Scheduled price change
     scheduledAction: scheduledSubscriptionAction('scheduled_action'),

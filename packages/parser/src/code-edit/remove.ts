@@ -1,4 +1,5 @@
-import type { CodeRemove } from '@onlook/models/actions';
+import { type CodeRemove } from '@onlook/models/actions';
+
 import { type NodePath, type t as T } from '../packages';
 import { addKeyToElement, jsxFilter } from './helpers';
 

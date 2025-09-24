@@ -1,8 +1,10 @@
-import styled from '@emotion/styled';
-import { Color, mod } from '@onlook/utility';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
+import styled from '@emotion/styled';
 import tw from 'tailwind-styled-components';
+
+import { Color, mod } from '@onlook/utility';
+
 import { cn } from '../../utils';
 import { DraftableInput } from '../draftable-input';
 import { InputGroup } from '../input-group';
@@ -31,10 +33,10 @@ const InputsRow = ({
     const hslColor = color.hsl;
 
     return (
-        <div className="z-50 grid grid-cols-[48px_1fr_1fr_1fr_46px] gap-1 text-mini">
-            <div className="flex items-center justify-center gap-1 min-w-0 ">
+        <div className="text-mini z-50 grid grid-cols-[48px_1fr_1fr_1fr_46px] gap-1">
+            <div className="flex min-w-0 items-center justify-center gap-1">
                 <label
-                    className="text-small text-foreground-primary cursor-pointer hover:text-foreground-hover bg-background-secondary border-[0.5px] border-foreground-tertiary/50 hover:bg-background-hover w-full flex rounded-sm justify-center py-[0.5px] select-none"
+                    className="text-small text-foreground-primary hover:text-foreground-hover bg-background-secondary border-foreground-tertiary/50 hover:bg-background-hover flex w-full cursor-pointer justify-center rounded-sm border-[0.5px] py-[0.5px] select-none"
                     onClick={() =>
                         mode === 'hsl'
                             ? setMode('hsv')
@@ -49,9 +51,9 @@ const InputsRow = ({
                 </label>
             </div>
             {mode === 'hsl' ? (
-                <InputGroup className="grid grid-cols-subgrid col-span-3 gap-[1px]">
+                <InputGroup className="col-span-3 grid grid-cols-subgrid gap-[1px]">
                     <Input
-                        value={Math.round(hslColor['h'] * 100).toString()}
+                        value={Math.round(hslColor.h * 100).toString()}
                         onChangeValue={(valueString) => {
                             const value = mod(Number.parseInt(valueString) / 100, 1);
                             const newColor = Color.hsl({
@@ -64,7 +66,7 @@ const InputsRow = ({
                         }}
                     />
                     <Input
-                        value={Math.round(hslColor['s'] * 100).toString()}
+                        value={Math.round(hslColor.s * 100).toString()}
                         onChangeValue={(valueString) => {
                             const value = mod(Number.parseInt(valueString) / 100, 1);
                             const newColor = Color.hsl({
@@ -77,7 +79,7 @@ const InputsRow = ({
                         }}
                     />
                     <Input
-                        value={Math.round(hslColor['l'] * 100).toString()}
+                        value={Math.round(hslColor.l * 100).toString()}
                         onChangeValue={(valueString) => {
                             const value = mod(Number.parseInt(valueString) / 100, 1);
                             const newColor = Color.hsl({
@@ -91,7 +93,7 @@ const InputsRow = ({
                     />
                 </InputGroup>
             ) : mode === 'hsv' ? (
-                <InputGroup className="grid grid-cols-subgrid col-span-3 gap-[1px]">
+                <InputGroup className="col-span-3 grid grid-cols-subgrid gap-[1px]">
                     <Input
                         value={Math.round(color.h * 360).toString()}
                         onChangeValue={(hString) => {
@@ -103,7 +105,7 @@ const InputsRow = ({
                         }}
                     />
                     <Input
-                        value={Math.round(color['s'] * 100).toString()}
+                        value={Math.round(color.s * 100).toString()}
                         onChangeValue={(valueString) => {
                             const value = mod(Number.parseInt(valueString) / 100, 1);
                             const newColor = new Color({ ...color, s: value });
@@ -113,7 +115,7 @@ const InputsRow = ({
                         }}
                     />
                     <Input
-                        value={Math.round(color['v'] * 100).toString()}
+                        value={Math.round(color.v * 100).toString()}
                         onChangeValue={(valueString) => {
                             const value = mod(Number.parseInt(valueString) / 100, 1);
                             const newColor = new Color({ ...color, v: value });
@@ -124,9 +126,9 @@ const InputsRow = ({
                     />
                 </InputGroup>
             ) : mode === 'rgb' ? (
-                <InputGroup className="grid grid-cols-subgrid col-span-3 gap-[1px]">
+                <InputGroup className="col-span-3 grid grid-cols-subgrid gap-[1px]">
                     <Input
-                        value={Math.round(rgbColor['r'] * 255).toString()}
+                        value={Math.round(rgbColor.r * 255).toString()}
                         onChangeValue={(valueString) => {
                             const value = mod(Number.parseInt(valueString) / 255, 1);
                             const newColor = Color.rgb({
@@ -139,7 +141,7 @@ const InputsRow = ({
                         }}
                     />
                     <Input
-                        value={Math.round(rgbColor['g'] * 255).toString()}
+                        value={Math.round(rgbColor.g * 255).toString()}
                         onChangeValue={(valueString) => {
                             const value = mod(Number.parseInt(valueString) / 255, 1);
                             const newColor = Color.rgb({
@@ -152,7 +154,7 @@ const InputsRow = ({
                         }}
                     />
                     <Input
-                        value={Math.round(rgbColor['b'] * 255).toString()}
+                        value={Math.round(rgbColor.b * 255).toString()}
                         onChangeValue={(valueString) => {
                             const value = mod(Number.parseInt(valueString) / 255, 1);
                             const newColor = Color.rgb({
@@ -191,7 +193,7 @@ const InputsRow = ({
                     className="pr-3"
                 />
                 <span
-                    className="absolute right-[5px] top-1/2 transform -translate-y-1/2 text-foreground-tertiary"
+                    className="text-foreground-tertiary absolute top-1/2 right-[5px] -translate-y-1/2 transform"
                     style={{ userSelect: 'none' }}
                 >
                     %
@@ -269,7 +271,7 @@ export const ColorPicker: React.FC<{
     );
 
     return (
-        <div className={cn('w-[224px] flex flex-col gap-1.5 p-2', className)}>
+        <div className={cn('flex w-[224px] flex-col gap-1.5 p-2', className)}>
             <SVPicker
                 width={208}
                 height={160}
@@ -297,7 +299,7 @@ export const ColorPicker: React.FC<{
                     onMouseDown?.(updatedColor);
                 }}
             />
-            <div className="z-50 flex justify-between items-center">
+            <div className="z-50 flex items-center justify-between">
                 <EyeDropperBox>
                     <EyeDropperButton
                         onColorSelect={(newColor) => {

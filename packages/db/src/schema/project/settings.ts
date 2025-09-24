@@ -1,6 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { jsonb, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
+
 import { projects } from './project';
 
 export const projectSettings = pgTable('project_settings', {
@@ -24,4 +25,4 @@ export const projectSettingsRelations = relations(projectSettings, ({ one }) => 
 }));
 
 export type ProjectSettings = typeof projectSettings.$inferSelect;
-export type NewProjectSettings = typeof projectSettings.$inferInsert; 
+export type NewProjectSettings = typeof projectSettings.$inferInsert;

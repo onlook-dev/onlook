@@ -1,5 +1,6 @@
-import type { Frame as DbFrame } from '@onlook/db';
 import { v4 as uuidv4 } from 'uuid';
+
+import { type Frame as DbFrame } from '@onlook/db';
 
 export enum DefaultFrameType {
     DESKTOP = 'desktop',
@@ -20,26 +21,27 @@ export const DefaultMobileFrame = {
     height: '956',
 } as const;
 
-const DefaultFrame: Record<DefaultFrameType, { x: string; y: string; width: string; height: string }> = {
+const DefaultFrame: Record<
+    DefaultFrameType,
+    { x: string; y: string; width: string; height: string }
+> = {
     [DefaultFrameType.DESKTOP]: DefaultDesktopFrame,
     [DefaultFrameType.MOBILE]: DefaultMobileFrame,
 } as const;
 
-export const createDefaultFrame = (
-    {
-        canvasId,
-        branchId,
-        url,
-        type = DefaultFrameType.DESKTOP,
-        overrides,
-    }: {
-        canvasId: string;
-        branchId: string;
-        url: string;
-        type?: DefaultFrameType;
-        overrides?: Partial<DbFrame>
-    },
-): DbFrame => {
+export const createDefaultFrame = ({
+    canvasId,
+    branchId,
+    url,
+    type = DefaultFrameType.DESKTOP,
+    overrides,
+}: {
+    canvasId: string;
+    branchId: string;
+    url: string;
+    type?: DefaultFrameType;
+    overrides?: Partial<DbFrame>;
+}): DbFrame => {
     const defaultFrame = DefaultFrame[type];
     return {
         id: uuidv4(),

@@ -1,5 +1,12 @@
-import { EditorAttributes } from '@onlook/constants';
-import type { DomElement, EditTextResult, LayerNode } from '@onlook/models';
+import {
+    type DomElement,
+    type DomElement,
+    type EditTextResult,
+    type EditTextResult,
+    type LayerNode,
+    type LayerNode,
+} from '@onlook/models';
+
 import { getHtmlElement } from '../../helpers';
 import { buildLayerTree } from '../dom';
 import { getDomElement, restoreElementStyle } from './helpers';
@@ -26,18 +33,20 @@ export function startEditingText(domId: string): EditTextResult | null {
 
     let targetEl: HTMLElement | null = null;
     // Check for element type
-    const hasOnlyTextAndBreaks = childNodes.every(node =>
-        node.nodeType === Node.TEXT_NODE ||
-        (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName.toLowerCase() === 'br')
+    const hasOnlyTextAndBreaks = childNodes.every(
+        (node) =>
+            node.nodeType === Node.TEXT_NODE ||
+            (node.nodeType === Node.ELEMENT_NODE &&
+                (node as Element).tagName.toLowerCase() === 'br'),
     );
 
     if (childNodes.length === 0) {
-        targetEl = el as HTMLElement;
+        targetEl = el;
     } else if (childNodes.length === 1 && childNodes[0]?.nodeType === Node.TEXT_NODE) {
-        targetEl = el as HTMLElement;
+        targetEl = el;
     } else if (hasOnlyTextAndBreaks) {
         // Handle elements with text and <br> tags
-        targetEl = el as HTMLElement;
+        targetEl = el;
     }
 
     if (!targetEl) {
@@ -51,7 +60,10 @@ export function startEditingText(domId: string): EditTextResult | null {
     return { originalContent };
 }
 
-export function editText(domId: string, content: string): { domEl: DomElement, newMap: Map<string, LayerNode> | null } | null {
+export function editText(
+    domId: string,
+    content: string,
+): { domEl: DomElement; newMap: Map<string, LayerNode> | null } | null {
     const el = getHtmlElement(domId);
     if (!el) {
         console.warn('Edit text failed. No element for selector:', domId);

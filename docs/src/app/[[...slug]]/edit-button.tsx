@@ -1,7 +1,7 @@
 'use client';
 
-import { Button } from '@onlook/ui/button';
-import { ReactNode } from 'react';
+import  { type type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 interface EditButtonProps {
     href: string;
@@ -22,4 +22,4 @@ export function EditButton({ href, className, children }: EditButtonProps) {
             {children}
         </Button>
     );
-} 
+}

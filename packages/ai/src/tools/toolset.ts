@@ -1,5 +1,7 @@
-import { ChatType } from '@onlook/models';
 import { type InferUITools, type ToolSet } from 'ai';
+
+import { ChatType } from '@onlook/models';
+
 import {
     BashEditTool,
     BashReadTool,
@@ -57,10 +59,12 @@ const allToolClasses = [...readOnlyToolClasses, ...editOnlyToolClasses];
 
 export const readOnlyToolset: ToolSet = createToolSet(readOnlyToolClasses);
 export const allToolset: ToolSet = createToolSet(allToolClasses);
-export const TOOLS_MAP = new Map(allToolClasses.map(toolClass => [toolClass.toolName, toolClass]));
+export const TOOLS_MAP = new Map(
+    allToolClasses.map((toolClass) => [toolClass.toolName, toolClass]),
+);
 
 export function getToolClassesFromType(chatType: ChatType) {
-    return chatType === ChatType.ASK ? readOnlyToolClasses : allToolClasses
+    return chatType === ChatType.ASK ? readOnlyToolClasses : allToolClasses;
 }
 
 export function getToolSetFromType(chatType: ChatType) {

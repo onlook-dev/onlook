@@ -1,9 +1,12 @@
-import { GrepTool } from '@onlook/ai/src/tools/classes/grep';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 
+import { GrepTool } from '@onlook/ai/src/tools/classes/grep';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 // Mock sandbox and session for testing
-const createMockSession = (commandResults: Record<string, { success: boolean; output: string; error?: string }>) => ({
+const createMockSession = (
+    commandResults: Record<string, { success: boolean; output: string; error?: string }>,
+) => ({
     runCommand: mock((command: string, callback?: any, ignoreError?: boolean) => {
         // Find matching command pattern or return default
         for (const [pattern, result] of Object.entries(commandResults)) {
@@ -13,18 +16,19 @@ const createMockSession = (commandResults: Record<string, { success: boolean; ou
         }
         // Default response for unknown commands
         return Promise.resolve({ success: false, output: '', error: 'Command not found' });
-    })
+    }),
 });
 
 const createMockSandbox = (commandResults: Record<string, any> = {}) => ({
-    session: createMockSession(commandResults)
+    session: createMockSession(commandResults),
 });
 
-const createMockEditorEngine = (sandbox: any): EditorEngine => ({
-    branches: {
-        getSandboxById: mock((id: string) => sandbox)
-    }
-} as any);
+const createMockEditorEngine = (sandbox: any): EditorEngine =>
+    ({
+        branches: {
+            getSandboxById: mock((id: string) => sandbox),
+        },
+    }) as any;
 
 describe('Grep Tool', () => {
     let mockSandbox: any;
@@ -45,7 +49,7 @@ describe('Grep Tool', () => {
             const args = {
                 branchId: 'nonexistent',
                 pattern: 'test',
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, engineWithoutSandbox);
@@ -56,7 +60,7 @@ describe('Grep Tool', () => {
             const args = {
                 branchId: 'test-branch',
                 pattern: '',
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -67,7 +71,7 @@ describe('Grep Tool', () => {
             const args = {
                 branchId: 'test-branch',
                 pattern: '   ',
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -77,14 +81,14 @@ describe('Grep Tool', () => {
         test('should validate invalid regex pattern', async () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
-                'test -d "."': { success: true, output: 'dir' }
+                'test -d "."': { success: true, output: 'dir' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
                 pattern: '[invalid',
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -94,7 +98,7 @@ describe('Grep Tool', () => {
 
         test('should validate non-existent search path', async () => {
             mockSandbox = createMockSandbox({
-                'test -e "nonexistent"': { success: true, output: 'not_found' }
+                'test -e "nonexistent"': { success: true, output: 'not_found' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
@@ -102,7 +106,7 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'test',
                 path: 'nonexistent',
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -112,7 +116,7 @@ describe('Grep Tool', () => {
         test('should validate file instead of directory path', async () => {
             mockSandbox = createMockSandbox({
                 'test -e "file.txt"': { success: true, output: 'exists' },
-                'test -d "file.txt"': { success: true, output: 'not_dir' }
+                'test -d "file.txt"': { success: true, output: 'not_dir' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
@@ -120,7 +124,7 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'test',
                 path: 'file.txt',
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -133,7 +137,7 @@ describe('Grep Tool', () => {
             // Set up valid path for all parameter tests
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
-                'test -d "."': { success: true, output: 'dir' }
+                'test -d "."': { success: true, output: 'dir' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
         });
@@ -153,17 +157,22 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'test',
                 '-A': -1,
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
-            expect(result).toBe('Error: After context lines (-A) must be between 0 and 100, got -1');
+            expect(result).toBe(
+                'Error: After context lines (-A) must be between 0 and 100, got -1',
+            );
         });
 
         test('should allow -A parameter of 0', async () => {
             mockSandbox.session.runCommand.mockImplementation((command: string) => {
                 if (command.includes('test -e') || command.includes('test -d')) {
-                    return Promise.resolve({ success: true, output: command.includes('-d') ? 'dir' : 'exists' });
+                    return Promise.resolve({
+                        success: true,
+                        output: command.includes('-d') ? 'dir' : 'exists',
+                    });
                 }
                 if (command.includes('find')) {
                     return Promise.resolve({ success: true, output: '' });
@@ -174,18 +183,21 @@ describe('Grep Tool', () => {
             const args = {
                 branchId: 'test-branch',
                 pattern: 'test',
-                '-A': 0,  // 0 should be valid for context lines
-                output_mode: 'content' as const
+                '-A': 0, // 0 should be valid for context lines
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
-            expect(result).toContain('No matches found for text \'test\''); // Should pass validation and continue to search
+            expect(result).toContain("No matches found for text 'test'"); // Should pass validation and continue to search
         });
 
         test('should allow -B parameter of 0', async () => {
             mockSandbox.session.runCommand.mockImplementation((command: string) => {
                 if (command.includes('test -e') || command.includes('test -d')) {
-                    return Promise.resolve({ success: true, output: command.includes('-d') ? 'dir' : 'exists' });
+                    return Promise.resolve({
+                        success: true,
+                        output: command.includes('-d') ? 'dir' : 'exists',
+                    });
                 }
                 if (command.includes('find')) {
                     return Promise.resolve({ success: true, output: '' });
@@ -196,18 +208,21 @@ describe('Grep Tool', () => {
             const args = {
                 branchId: 'test-branch',
                 pattern: 'test',
-                '-B': 0,  // 0 should be valid for context lines
-                output_mode: 'content' as const
+                '-B': 0, // 0 should be valid for context lines
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
-            expect(result).toContain('No matches found for text \'test\''); // Should pass validation and continue to search
+            expect(result).toContain("No matches found for text 'test'"); // Should pass validation and continue to search
         });
 
         test('should allow -C parameter of 0', async () => {
             mockSandbox.session.runCommand.mockImplementation((command: string) => {
                 if (command.includes('test -e') || command.includes('test -d')) {
-                    return Promise.resolve({ success: true, output: command.includes('-d') ? 'dir' : 'exists' });
+                    return Promise.resolve({
+                        success: true,
+                        output: command.includes('-d') ? 'dir' : 'exists',
+                    });
                 }
                 if (command.includes('find')) {
                     return Promise.resolve({ success: true, output: '' });
@@ -218,12 +233,12 @@ describe('Grep Tool', () => {
             const args = {
                 branchId: 'test-branch',
                 pattern: 'test',
-                '-C': 0,  // 0 should be valid for context lines
-                output_mode: 'content' as const
+                '-C': 0, // 0 should be valid for context lines
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
-            expect(result).toContain('No matches found for text \'test\''); // Should pass validation and continue to search
+            expect(result).toContain("No matches found for text 'test'"); // Should pass validation and continue to search
         });
 
         test('should validate -B parameter range', async () => {
@@ -231,11 +246,13 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'test',
                 '-B': 101,
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
-            expect(result).toBe('Error: Before context lines (-B) must be between 0 and 100, got 101');
+            expect(result).toBe(
+                'Error: Before context lines (-B) must be between 0 and 100, got 101',
+            );
         });
 
         test('should validate -C parameter range', async () => {
@@ -243,7 +260,7 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'test',
                 '-C': -5,
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -265,8 +282,8 @@ describe('Grep Tool', () => {
             const args = {
                 branchId: 'test-branch',
                 pattern: 'test',
-                head_limit: 0,  // Now 0 should properly trigger validation
-                output_mode: 'content' as const
+                head_limit: 0, // Now 0 should properly trigger validation
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -279,11 +296,13 @@ describe('Grep Tool', () => {
                 pattern: 'test',
                 '-C': 2,
                 '-A': 1,
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
-            expect(result).toBe('Error: Cannot use -C (context) with -A (after) or -B (before) flags');
+            expect(result).toBe(
+                'Error: Cannot use -C (context) with -A (after) or -B (before) flags',
+            );
         });
     });
 
@@ -292,14 +311,17 @@ describe('Grep Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'find': { success: true, output: 'src/file1.ts:match line 1\nsrc/file2.ts:match line 2' }
+                find: {
+                    success: true,
+                    output: 'src/file1.ts:match line 1\nsrc/file2.ts:match line 2',
+                },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
                 pattern: 'test',
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -311,25 +333,25 @@ describe('Grep Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'find': { success: true, output: '' }
+                find: { success: true, output: '' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
                 pattern: 'nonexistent',
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
-            expect(result).toContain('No matches found for text \'nonexistent\'');
+            expect(result).toContain("No matches found for text 'nonexistent'");
         });
 
         test('should handle case insensitive search', async () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'find': { success: true, output: 'src/file.ts:Test Line' }
+                find: { success: true, output: 'src/file.ts:Test Line' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
@@ -337,7 +359,7 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'test',
                 '-i': true,
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -348,7 +370,7 @@ describe('Grep Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'find': { success: true, output: 'src/component.tsx:React component' }
+                find: { success: true, output: 'src/component.tsx:React component' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
@@ -356,7 +378,7 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'React',
                 type: 'tsx',
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -367,7 +389,7 @@ describe('Grep Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'find': { success: true, output: 'test/file.test.ts:test case' }
+                find: { success: true, output: 'test/file.test.ts:test case' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
@@ -375,7 +397,7 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'test',
                 glob: '*.test.ts',
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -387,7 +409,7 @@ describe('Grep Tool', () => {
         beforeEach(() => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
-                'test -d "."': { success: true, output: 'dir' }
+                'test -d "."': { success: true, output: 'dir' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
         });
@@ -403,7 +425,7 @@ describe('Grep Tool', () => {
             const args = {
                 branchId: 'test-branch',
                 pattern: 'test',
-                output_mode: 'files_with_matches' as const
+                output_mode: 'files_with_matches' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -414,7 +436,10 @@ describe('Grep Tool', () => {
         test('should handle count mode', async () => {
             mockSandbox.session.runCommand.mockImplementation((command: string) => {
                 if (command.includes('find')) {
-                    return Promise.resolve({ success: true, output: 'src/file1.ts:5\nsrc/file2.ts:3' });
+                    return Promise.resolve({
+                        success: true,
+                        output: 'src/file1.ts:5\nsrc/file2.ts:3',
+                    });
                 }
                 return Promise.resolve({ success: true, output: 'exists' });
             });
@@ -422,7 +447,7 @@ describe('Grep Tool', () => {
             const args = {
                 branchId: 'test-branch',
                 pattern: 'test',
-                output_mode: 'count' as const
+                output_mode: 'count' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -434,7 +459,10 @@ describe('Grep Tool', () => {
         test('should handle count mode with no matches', async () => {
             mockSandbox.session.runCommand.mockImplementation((command: string) => {
                 if (command.includes('find')) {
-                    return Promise.resolve({ success: true, output: 'src/file1.ts:0\nsrc/file2.ts:0' });
+                    return Promise.resolve({
+                        success: true,
+                        output: 'src/file1.ts:0\nsrc/file2.ts:0',
+                    });
                 }
                 return Promise.resolve({ success: true, output: 'exists' });
             });
@@ -442,11 +470,11 @@ describe('Grep Tool', () => {
             const args = {
                 branchId: 'test-branch',
                 pattern: 'nonexistent',
-                output_mode: 'count' as const
+                output_mode: 'count' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
-            expect(result).toContain('No matches found for \'nonexistent\'');
+            expect(result).toContain("No matches found for 'nonexistent'");
         });
     });
 
@@ -454,7 +482,7 @@ describe('Grep Tool', () => {
         beforeEach(() => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
-                'test -d "."': { success: true, output: 'dir' }
+                'test -d "."': { success: true, output: 'dir' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
         });
@@ -464,7 +492,7 @@ describe('Grep Tool', () => {
                 if (command.includes('-A 2')) {
                     return Promise.resolve({
                         success: true,
-                        output: 'src/file.ts:1:match line\nsrc/file.ts:2:after line 1\nsrc/file.ts:3:after line 2'
+                        output: 'src/file.ts:1:match line\nsrc/file.ts:2:after line 1\nsrc/file.ts:3:after line 2',
                     });
                 }
                 return Promise.resolve({ success: true, output: 'exists' });
@@ -474,7 +502,7 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'match',
                 '-A': 2,
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -488,7 +516,7 @@ describe('Grep Tool', () => {
                 if (command.includes('-B 1')) {
                     return Promise.resolve({
                         success: true,
-                        output: 'src/file.ts:1:before line\nsrc/file.ts:2:match line'
+                        output: 'src/file.ts:1:before line\nsrc/file.ts:2:match line',
                     });
                 }
                 return Promise.resolve({ success: true, output: 'exists' });
@@ -498,7 +526,7 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'match',
                 '-B': 1,
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -511,7 +539,7 @@ describe('Grep Tool', () => {
                 if (command.includes('-C 1')) {
                     return Promise.resolve({
                         success: true,
-                        output: 'src/file.ts:1:before\nsrc/file.ts:2:match\nsrc/file.ts:3:after'
+                        output: 'src/file.ts:1:before\nsrc/file.ts:2:match\nsrc/file.ts:3:after',
                     });
                 }
                 return Promise.resolve({ success: true, output: 'exists' });
@@ -521,7 +549,7 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'match',
                 '-C': 1,
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -535,7 +563,7 @@ describe('Grep Tool', () => {
                 if (command.includes('-n')) {
                     return Promise.resolve({
                         success: true,
-                        output: 'src/file.ts:42:match line'
+                        output: 'src/file.ts:42:match line',
                     });
                 }
                 return Promise.resolve({ success: true, output: 'exists' });
@@ -545,7 +573,7 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'match',
                 '-n': true,
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -556,7 +584,10 @@ describe('Grep Tool', () => {
             let capturedCommand = '';
             mockSandbox.session.runCommand.mockImplementation((command: string) => {
                 if (command.includes('test -e') || command.includes('test -d')) {
-                    return Promise.resolve({ success: true, output: command.includes('-d') ? 'dir' : 'exists' });
+                    return Promise.resolve({
+                        success: true,
+                        output: command.includes('-d') ? 'dir' : 'exists',
+                    });
                 }
                 if (command.includes('find')) {
                     capturedCommand = command;
@@ -569,7 +600,7 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'match',
                 '-A': 0,
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             await new GrepTool().handle(args, mockEngine);
@@ -580,7 +611,10 @@ describe('Grep Tool', () => {
             let capturedCommand = '';
             mockSandbox.session.runCommand.mockImplementation((command: string) => {
                 if (command.includes('test -e') || command.includes('test -d')) {
-                    return Promise.resolve({ success: true, output: command.includes('-d') ? 'dir' : 'exists' });
+                    return Promise.resolve({
+                        success: true,
+                        output: command.includes('-d') ? 'dir' : 'exists',
+                    });
                 }
                 if (command.includes('find')) {
                     capturedCommand = command;
@@ -593,7 +627,7 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'match',
                 '-B': 0,
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             await new GrepTool().handle(args, mockEngine);
@@ -604,7 +638,10 @@ describe('Grep Tool', () => {
             let capturedCommand = '';
             mockSandbox.session.runCommand.mockImplementation((command: string) => {
                 if (command.includes('test -e') || command.includes('test -d')) {
-                    return Promise.resolve({ success: true, output: command.includes('-d') ? 'dir' : 'exists' });
+                    return Promise.resolve({
+                        success: true,
+                        output: command.includes('-d') ? 'dir' : 'exists',
+                    });
                 }
                 if (command.includes('find')) {
                     capturedCommand = command;
@@ -617,7 +654,7 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'match',
                 '-C': 0,
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             await new GrepTool().handle(args, mockEngine);
@@ -631,15 +668,15 @@ describe('Grep Tool', () => {
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
                 'grep --help | grep -q "\\-P"': { success: true, output: 'yes' },
-                'find': { success: true, output: 'src/file.ts:multiline match' }
+                find: { success: true, output: 'src/file.ts:multiline match' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
-                pattern: 'line1.*line2',  // Remove literal newlines to avoid validation error
+                pattern: 'line1.*line2', // Remove literal newlines to avoid validation error
                 multiline: true,
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -651,7 +688,7 @@ describe('Grep Tool', () => {
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
                 'grep --help | grep -q "\\-P"': { success: true, output: 'no' },
-                'find': { success: true, output: 'src/file.ts:awk match' }
+                find: { success: true, output: 'src/file.ts:awk match' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
@@ -659,7 +696,7 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'multiline',
                 multiline: true,
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -669,7 +706,7 @@ describe('Grep Tool', () => {
         test('should validate multiline patterns with literal newlines', async () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
-                'test -d "."': { success: true, output: 'dir' }
+                'test -d "."': { success: true, output: 'dir' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
@@ -677,11 +714,13 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'line1\nline2',
                 multiline: true,
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
-            expect(result).toContain('Error: Multiline patterns with literal newlines are not fully supported');
+            expect(result).toContain(
+                'Error: Multiline patterns with literal newlines are not fully supported',
+            );
         });
     });
 
@@ -690,10 +729,10 @@ describe('Grep Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'find': {
+                find: {
                     success: true,
-                    output: Array.from({ length: 50 }, (_, i) => `file${i}.ts:match`).join('\n')
-                }
+                    output: Array.from({ length: 50 }, (_, i) => `file${i}.ts:match`).join('\n'),
+                },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
@@ -701,7 +740,7 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'match',
                 head_limit: 10,
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -712,17 +751,17 @@ describe('Grep Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'find': {
+                find: {
                     success: true,
-                    output: 'src/file.ts:line with \x07 bell and \x01 control'
-                }
+                    output: 'src/file.ts:line with \x07 bell and \x01 control',
+                },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
             const args = {
                 branchId: 'test-branch',
                 pattern: 'line',
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -736,7 +775,10 @@ describe('Grep Tool', () => {
         test('should handle command execution errors gracefully', async () => {
             mockSandbox.session.runCommand.mockImplementation((command: string) => {
                 if (command.includes('test -e') || command.includes('test -d')) {
-                    return Promise.resolve({ success: true, output: command.includes('-d') ? 'dir' : 'exists' });
+                    return Promise.resolve({
+                        success: true,
+                        output: command.includes('-d') ? 'dir' : 'exists',
+                    });
                 }
                 if (command.includes('find')) {
                     // Return failed command with no error message to test graceful handling
@@ -749,11 +791,11 @@ describe('Grep Tool', () => {
             const args = {
                 branchId: 'test-branch',
                 pattern: 'test',
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
-            expect(result).toContain('No matches found for text \'test\'');
+            expect(result).toContain("No matches found for text 'test'");
         });
 
         test('should handle unexpected errors', async () => {
@@ -765,7 +807,7 @@ describe('Grep Tool', () => {
             const args = {
                 branchId: 'test-branch',
                 pattern: 'test',
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
@@ -778,7 +820,7 @@ describe('Grep Tool', () => {
             mockSandbox = createMockSandbox({
                 'test -e "src"': { success: true, output: 'exists' },
                 'test -d "src"': { success: true, output: 'dir' },
-                'find': { success: true, output: '' }
+                find: { success: true, output: '' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
@@ -786,18 +828,18 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'nonexistent',
                 path: 'src',
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
-            expect(result).toContain('No matches found for text \'nonexistent\' in path \'src\'');
+            expect(result).toContain("No matches found for text 'nonexistent' in path 'src'");
         });
 
         test('should include file type filter in no-match message', async () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'find': { success: true, output: '' }
+                find: { success: true, output: '' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
@@ -805,18 +847,18 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'nonexistent',
                 type: 'ts',
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
-            expect(result).toContain('No matches found for text \'nonexistent\' among ts files');
+            expect(result).toContain("No matches found for text 'nonexistent' among ts files");
         });
 
         test('should include glob pattern in no-match message', async () => {
             mockSandbox = createMockSandbox({
                 'test -e "."': { success: true, output: 'exists' },
                 'test -d "."': { success: true, output: 'dir' },
-                'find': { success: true, output: '' }
+                find: { success: true, output: '' },
             });
             mockEngine = createMockEditorEngine(mockSandbox);
 
@@ -824,11 +866,13 @@ describe('Grep Tool', () => {
                 branchId: 'test-branch',
                 pattern: 'nonexistent',
                 glob: '*.test.ts',
-                output_mode: 'content' as const
+                output_mode: 'content' as const,
             };
 
             const result = await new GrepTool().handle(args, mockEngine);
-            expect(result).toContain('No matches found for text \'nonexistent\' among files matching \'*.test.ts\'');
+            expect(result).toContain(
+                "No matches found for text 'nonexistent' among files matching '*.test.ts'",
+            );
         });
     });
 });

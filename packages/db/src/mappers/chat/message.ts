@@ -1,5 +1,5 @@
-import type { Message as DbMessage } from "@onlook/db";
-import { type ChatMessage } from "@onlook/models";
+import { type Message as DbMessage } from '@onlook/db';
+import { type ChatMessage } from '@onlook/models';
 
 export const fromDbMessage = (message: DbMessage): ChatMessage => {
     return {
@@ -12,14 +12,15 @@ export const fromDbMessage = (message: DbMessage): ChatMessage => {
             usage: message.usage ?? undefined,
         },
         parts: message.parts ?? [],
-    }
-}
+    };
+};
 
 export const toDbMessage = (message: ChatMessage, conversationId: string): DbMessage => {
     const createdAt = message.metadata?.createdAt;
     return {
         id: message.id,
-        createdAt: createdAt instanceof Date ? createdAt : createdAt ? new Date(createdAt) : new Date(),
+        createdAt:
+            createdAt instanceof Date ? createdAt : createdAt ? new Date(createdAt) : new Date(),
         conversationId,
         context: message?.metadata?.context ?? [],
         parts: message.parts,
@@ -32,5 +33,5 @@ export const toDbMessage = (message: ChatMessage, conversationId: string): DbMes
         commitOid: null,
         snapshots: null,
         content: '',
-    }
-}
+    };
+};

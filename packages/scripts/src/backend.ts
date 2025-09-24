@@ -1,8 +1,10 @@
-import chalk from 'chalk';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import ora, { type Ora } from 'ora';
+import type { Ora } from 'ora';
+import chalk from 'chalk';
+import ora from 'ora';
+
 import { writeEnvFile } from './helpers';
 
 /**
@@ -184,8 +186,8 @@ const checkDockerRunning = async (): Promise<void> => {
  * @returns Extracted keys or null if not found
  */
 const extractSupabaseKeys = (output: string): BackendKeys | null => {
-    const anonMatch = output.match(/anon key: (ey[A-Za-z0-9_-]+[^\r\n]*)/);
-    const roleMatch = output.match(/service_role key: (ey[A-Za-z0-9_-]+[^\r\n]*)/);
+    const anonMatch = /anon key: (ey[A-Za-z0-9_-]+[^\r\n]*)/.exec(output);
+    const roleMatch = /service_role key: (ey[A-Za-z0-9_-]+[^\r\n]*)/.exec(output);
 
     const anonKey = anonMatch?.[1];
     const serviceRoleKey = roleMatch?.[1];

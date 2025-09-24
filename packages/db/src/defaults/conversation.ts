@@ -1,5 +1,6 @@
-import type { Conversation as DbConversation } from '@onlook/db';
 import { v4 as uuidv4 } from 'uuid';
+
+import { type Conversation as DbConversation } from '@onlook/db';
 
 export const createDefaultConversation = (projectId: string): DbConversation => {
     return {

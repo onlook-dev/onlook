@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test';
 import fs from 'node:fs';
 import path from 'node:path';
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 // Import actual functions to test
-import { getDbEnvContent, generateBackendEnvContent, CLIENT_BACKEND_KEYS } from '../src/backend';
-import { parseEnvContent, buildEnvFileContent, writeEnvFile } from '../src/helpers';
+import { CLIENT_BACKEND_KEYS, generateBackendEnvContent, getDbEnvContent } from '../src/backend';
+import { buildEnvFileContent, parseEnvContent, writeEnvFile } from '../src/helpers';
 
 describe('comprehensive functionality tests', () => {
     const testDir = path.join(__dirname, 'temp-comprehensive');
@@ -319,8 +319,8 @@ ANOTHER_KEY=another`;
     describe('Key extraction', () => {
         it('should extract Supabase keys from output correctly', () => {
             const extractSupabaseKeys = (output: string) => {
-                const anonMatch = output.match(/anon key: (ey[A-Za-z0-9_-]+[^\r\n]*)/);
-                const roleMatch = output.match(/service_role key: (ey[A-Za-z0-9_-]+[^\r\n]*)/);
+                const anonMatch = /anon key: (ey[A-Za-z0-9_-]+[^\r\n]*)/.exec(output);
+                const roleMatch = /service_role key: (ey[A-Za-z0-9_-]+[^\r\n]*)/.exec(output);
 
                 const anonKey = anonMatch?.[1];
                 const serviceRoleKey = roleMatch?.[1];

@@ -1,5 +1,6 @@
-import { cn } from '@onlook/ui/utils';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+
+import { cn } from '@onlook/ui/utils';
 
 export function useResizable({
     defaultWidth = 240,
@@ -107,7 +108,7 @@ export const ResizablePanel: React.FC<ResizablePanelProps> = ({
         <div
             style={{ width: `${width}px` }}
             className={cn(
-                'h-full relative',
+                'relative h-full',
                 isAnimating && 'transition-[width] duration-300 ease-in-out',
                 side === 'left' ? 'left-0' : 'right-0',
                 className,

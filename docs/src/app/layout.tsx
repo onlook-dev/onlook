@@ -1,13 +1,14 @@
 import './global.css';
 
-import { baseOptions } from '@/app/layout.config';
-import { source } from '@/lib/source';
-import { DocsLayout } from 'fumadocs-ui/layouts/docs';
-import { RootProvider } from 'fumadocs-ui/provider';
+import { type ReactNode } from 'react';
 import { Geist } from 'next/font/google';
 import Script from 'next/script';
-import type { ReactNode } from 'react';
+import { DocsLayout } from 'fumadocs-ui/layouts/docs';
+import { RootProvider } from 'fumadocs-ui/provider';
+
+import { baseOptions } from '@/app/layout.config';
 import RB2BLoader from '@/components/rb2b-loader';
+import { source } from '@/lib/source';
 
 const geist = Geist({
     subsets: ['latin'],
@@ -48,10 +49,13 @@ const isProduction = process.env.NODE_ENV === 'production';
 export default function Layout({ children }: { children: ReactNode }) {
     return (
         <html lang="en" className={geist.variable} suppressHydrationWarning>
-            <body className="flex flex-col min-h-screen">
+            <body className="flex min-h-screen flex-col">
                 {isProduction && (
                     <>
-                        <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="lazyOnload" />
+                        <Script
+                            src="https://z.onlook.com/cdn-cgi/zaraz/i.js"
+                            strategy="lazyOnload"
+                        />
                         <RB2BLoader />
                     </>
                 )}
@@ -64,4 +68,3 @@ export default function Layout({ children }: { children: ReactNode }) {
         </html>
     );
 }
-

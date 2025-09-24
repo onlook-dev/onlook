@@ -1,8 +1,9 @@
 'use client';
 
-import type { ToolUIPart } from 'ai';
+import { type ComponentProps, type ReactNode } from 'react';
+import { type ToolUIPart } from 'ai';
 import { CheckCircleIcon, CircleIcon, ClockIcon, WrenchIcon, XCircleIcon } from 'lucide-react';
-import type { ComponentProps, ReactNode } from 'react';
+
 import { Badge } from '../../components/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../components/collapsible';
 import { cn } from '../../utils/index';
@@ -12,7 +13,7 @@ export type ToolProps = ComponentProps<typeof Collapsible>;
 
 export const Tool = ({ className, ...props }: ToolProps) => (
     <Collapsible
-        className={cn('flex flex-col text-foreground-tertiary/80 p-0 my-1', className)}
+        className={cn('text-foreground-tertiary/80 my-1 flex flex-col p-0', className)}
         {...props}
     />
 );
@@ -27,7 +28,7 @@ export type ToolHeaderProps = {
     showStatus?: boolean;
 };
 
-const getStatusBadge = (status: ToolUIPart['state'], showLabel: boolean = false) => {
+const getStatusBadge = (status: ToolUIPart['state'], showLabel = false) => {
     const labels = {
         'input-streaming': 'Pending',
         'input-available': 'Running',
@@ -65,12 +66,12 @@ export const ToolHeader = ({
         {...props}
     >
         <div className="flex items-center gap-2">
-            {icon ? icon : <WrenchIcon className="size-4 text-muted-foreground" />}
+            {icon ? icon : <WrenchIcon className="text-muted-foreground size-4" />}
             <span
                 className={cn(
                     'text-regularPlus hover:text-foreground-tertiary truncate',
                     loading &&
-                        'bg-gradient-to-l from-white/20 via-white/90 to-white/20 bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer filter drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]',
+                        'animate-shimmer bg-gradient-to-l from-white/20 via-white/90 to-white/20 bg-[length:200%_100%] bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] filter',
                 )}
             >
                 {title ? title : type}
@@ -85,7 +86,7 @@ export type ToolContentProps = ComponentProps<typeof CollapsibleContent>;
 export const ToolContent = ({ className, ...props }: ToolContentProps) => (
     <CollapsibleContent
         className={cn(
-            'text-xs data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 text-popover-foreground outline-none data-[state=closed]:animate-out data-[state=open]:animate-in',
+            'data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 text-popover-foreground data-[state=closed]:animate-out data-[state=open]:animate-in text-xs outline-none',
             className,
         )}
         {...props}
@@ -98,10 +99,10 @@ export type ToolInputProps = ComponentProps<'div'> & {
 
 export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
     <div className={cn('space-y-2 overflow-hidden p-1', className)} {...props}>
-        <h4 className="font-medium text-muted-foreground text-xs capitalize tracking-wide">
+        <h4 className="text-muted-foreground text-xs font-medium tracking-wide capitalize">
             Parameters
         </h4>
-        <CodeBlock className="p-0 m-0" code={JSON.stringify(input, null, 2)} language="json" />
+        <CodeBlock className="m-0 p-0" code={JSON.stringify(input, null, 2)} language="json" />
     </div>
 );
 
@@ -125,7 +126,7 @@ export const ToolOutput = ({ className, output, errorText, ...props }: ToolOutpu
 
     return (
         <div className={cn('space-y-2 p-1', className)} {...props}>
-            <h4 className="font-medium text-muted-foreground text-xs capitalize tracking-wide">
+            <h4 className="text-muted-foreground text-xs font-medium tracking-wide capitalize">
                 {errorText ? 'Error' : 'Result'}
             </h4>
             <div

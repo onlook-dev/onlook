@@ -1,11 +1,13 @@
-import { Icons } from '@onlook/ui/icons';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
+
+import { Icons } from '@onlook/ui/icons';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 import { ClientTool } from '../models/client';
 import {
     addFindExclusions,
     buildShellExclusionPattern,
-    filterExcludedPaths
+    filterExcludedPaths,
 } from '../shared/helpers/cli';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
@@ -32,7 +34,10 @@ export class GlobTool extends ClientTool {
     });
     static readonly icon = Icons.MagnifyingGlass;
 
-    async handle(args: z.infer<typeof GlobTool.parameters>, editorEngine: EditorEngine): Promise<string> {
+    async handle(
+        args: z.infer<typeof GlobTool.parameters>,
+        editorEngine: EditorEngine,
+    ): Promise<string> {
         try {
             const sandbox = editorEngine.branches.getSandboxById(args.branchId);
             if (!sandbox) {
@@ -56,7 +61,6 @@ export class GlobTool extends ClientTool {
             }
 
             return await processAndFormatResults(result.output, pattern, searchPath, result.method);
-
         } catch (error) {
             return `Error: ${error instanceof Error ? error.message : String(error)}`;
         }
@@ -64,17 +68,19 @@ export class GlobTool extends ClientTool {
 
     getLabel(input?: z.infer<typeof GlobTool.parameters>): string {
         if (input?.pattern) {
-            const truncatedPattern = input.pattern.length > 30
-                ? input.pattern.substring(0, 30) + '...'
-                : input.pattern;
+            const truncatedPattern =
+                input.pattern.length > 30 ? input.pattern.substring(0, 30) + '...' : input.pattern;
             return 'Searching for ' + truncatedPattern;
         }
         return 'Searching';
     }
 }
 
-
-async function tryGlobApproaches(sandbox: any, searchPath: string, pattern: string): Promise<GlobResult> {
+async function tryGlobApproaches(
+    sandbox: any,
+    searchPath: string,
+    pattern: string,
+): Promise<GlobResult> {
     // Phase 1: Try bash with extended globbing (best option)
     const bashResult = await tryBashGlob(sandbox, searchPath, pattern);
     if (bashResult.success && bashResult.output.trim()) {
@@ -106,13 +112,13 @@ async function tryBashGlob(sandbox: any, searchPath: string, pattern: string): P
         return {
             success: result.success,
             output: result.output || '',
-            method: 'bash'
+            method: 'bash',
         };
     } catch (error) {
         return {
             success: false,
             output: '',
-            method: 'bash'
+            method: 'bash',
         };
     }
 }
@@ -129,13 +135,13 @@ async function tryShGlob(sandbox: any, searchPath: string, pattern: string): Pro
         return {
             success: result.success,
             output: result.output || '',
-            method: 'sh'
+            method: 'sh',
         };
     } catch (error) {
         return {
             success: false,
             output: '',
-            method: 'sh'
+            method: 'sh',
         };
     }
 }
@@ -150,11 +156,13 @@ async function tryFindGlob(sandbox: any, searchPath: string, pattern: string): P
         // Handle different pattern types
         if (pattern.includes('{') && pattern.includes('}')) {
             // Handle brace expansion patterns manually for find
-            const braceMatch = pattern.match(/^(.*)?\\{([^}]+)\\}(.*)$/);
-            if (braceMatch && braceMatch[2]) {
+            const braceMatch = /^(.*)?\\{([^}]+)\\}(.*)$/.exec(pattern);
+            if (braceMatch?.[2]) {
                 const [, prefix = '', extensions, suffix = ''] = braceMatch;
-                const extensionList = extensions.split(',').map(ext => ext.trim());
-                const nameConditions = extensionList.map(ext => `-name "${prefix}${ext}${suffix}"`).join(' -o ');
+                const extensionList = extensions.split(',').map((ext) => ext.trim());
+                const nameConditions = extensionList
+                    .map((ext) => `-name "${prefix}${ext}${suffix}"`)
+                    .join(' -o ');
 
                 findCommand += ` \\( ${nameConditions} \\)`;
             } else {
@@ -173,13 +181,13 @@ async function tryFindGlob(sandbox: any, searchPath: string, pattern: string): P
         return {
             success: result.success || result.output.trim().length > 0,
             output: result.output || '',
-            method: 'find'
+            method: 'find',
         };
     } catch (error) {
         return {
             success: false,
             output: '',
-            method: 'find'
+            method: 'find',
         };
     }
 }
@@ -196,8 +204,11 @@ function buildFullPattern(searchPath: string, pattern: string): string {
     return `${normalizedPath}/${normalizedPattern}`;
 }
 
-
-async function validateInputs(pattern: string, searchPath: string, sandbox: any): Promise<string | null> {
+async function validateInputs(
+    pattern: string,
+    searchPath: string,
+    sandbox: any,
+): Promise<string | null> {
     // Basic pattern validation
     if (!pattern.trim()) {
         return 'Error: Pattern cannot be empty';
@@ -209,13 +220,21 @@ async function validateInputs(pattern: string, searchPath: string, sandbox: any)
     }
 
     // Validate search path exists
-    const pathValidation = await sandbox.session.runCommand(`test -e "${searchPath}" && echo "exists" || echo "not_found"`, undefined, true);
+    const pathValidation = await sandbox.session.runCommand(
+        `test -e "${searchPath}" && echo "exists" || echo "not_found"`,
+        undefined,
+        true,
+    );
     if (pathValidation.success && pathValidation.output.trim() === 'not_found') {
         return `Error: Search path "${searchPath}" does not exist`;
     }
 
     // Check if it's a directory (not a file)
-    const dirValidation = await sandbox.session.runCommand(`test -d "${searchPath}" && echo "dir" || echo "not_dir"`, undefined, true);
+    const dirValidation = await sandbox.session.runCommand(
+        `test -d "${searchPath}" && echo "dir" || echo "not_dir"`,
+        undefined,
+        true,
+    );
     if (dirValidation.success && dirValidation.output.trim() === 'not_dir') {
         return `Error: Search path "${searchPath}" is not a directory`;
     }
@@ -223,7 +242,11 @@ async function validateInputs(pattern: string, searchPath: string, sandbox: any)
     // Validate pattern base directory exists (for patterns like "nonexistent/**/*")
     const patternBasePath = extractPatternBasePath(pattern, searchPath);
     if (patternBasePath && patternBasePath !== searchPath) {
-        const basePathValidation = await sandbox.session.runCommand(`test -d "${patternBasePath}" && echo "exists" || echo "not_found"`, undefined, true);
+        const basePathValidation = await sandbox.session.runCommand(
+            `test -d "${patternBasePath}" && echo "exists" || echo "not_found"`,
+            undefined,
+            true,
+        );
         if (basePathValidation.success && basePathValidation.output.trim() === 'not_found') {
             return `Error: Pattern base path "${patternBasePath}" does not exist`;
         }
@@ -232,19 +255,27 @@ async function validateInputs(pattern: string, searchPath: string, sandbox: any)
     return null; // All validations passed
 }
 
-async function processAndFormatResults(output: string, pattern: string, searchPath: string, method: 'bash' | 'sh' | 'find'): Promise<string> {
-    if (!output || !output.trim()) {
+async function processAndFormatResults(
+    output: string,
+    pattern: string,
+    searchPath: string,
+    method: 'bash' | 'sh' | 'find',
+): Promise<string> {
+    if (!output?.trim()) {
         return `No files found matching pattern "${pattern}" in path "${searchPath}"`;
     }
 
-    let lines = output.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    let lines = output
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
 
     // Additional filtering for any paths that slipped through
     lines = filterExcludedPaths(lines);
 
     // Clean up the output
-    const cleanLines = lines.map(line => line.replace(/\r/g, '').replace(/^\.\//, ''));
-    const finalLines = cleanLines.filter(line => line.length > 0);
+    const cleanLines = lines.map((line) => line.replace(/\r/g, '').replace(/^\.\//, ''));
+    const finalLines = cleanLines.filter((line) => line.length > 0);
 
     // Check for truncation (we use head -1000 in commands)
     const wasTruncated = lines.length >= 1000;

@@ -1,7 +1,9 @@
-import { ProjectRole } from '@onlook/models';
 import { relations } from 'drizzle-orm';
 import { pgEnum, pgTable, primaryKey, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
+
+import { ProjectRole } from '@onlook/models';
+
 import { projects } from '../project';
 import { users } from './user';
 

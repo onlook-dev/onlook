@@ -1,10 +1,24 @@
-import { createDefaultProject } from '@/defaults/project';
+import { v4 as uuidv4 } from 'uuid';
+
+import type {
+    Branch,
+    Conversation,
+    Message,
+    Price,
+    Product,
+    RateLimit,
+    Subscription,
+    User,
+} from '@onlook/db';
+import type { MessageContext } from '@onlook/models';
 import { Tags } from '@onlook/constants';
 import {
     branches,
     canvases,
     conversations,
-    createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas,
+    createDefaultCanvas,
+    createDefaultFrame,
+    createDefaultUserCanvas,
     deployments,
     frames,
     legacySubscriptions,
@@ -20,23 +34,12 @@ import {
     userCanvases,
     userProjects,
     users,
-    type Branch,
-    type Conversation,
-    type Message,
-    type Price,
-    type Product,
-    type RateLimit,
-    type Subscription,
-    type User
 } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
-import {
-    MessageContextType,
-    ProjectRole,
-    type MessageContext,
-} from '@onlook/models';
+import { MessageContextType, ProjectRole } from '@onlook/models';
 import { PriceKey, ProductType, SubscriptionStatus } from '@onlook/stripe';
-import { v4 as uuidv4 } from 'uuid';
+
+import { createDefaultProject } from '@/defaults/project';
 import { createDefaultBranch } from '../defaults/branch';
 import { SEED_USER } from './constants';
 
@@ -61,7 +64,7 @@ const project0 = createDefaultProject({
 
 const project1 = createDefaultProject({
     overrides: {
-        name: 'Mock Template (This doesn\'t work)',
+        name: "Mock Template (This doesn't work)",
         tags: [Tags.TEMPLATE],
     },
 });

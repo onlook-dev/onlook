@@ -1,8 +1,11 @@
-import { CoreElementType, DynamicType, type TemplateNode } from '@onlook/models';
+import type { TemplateNode } from '@onlook/models';
+import { CoreElementType, DynamicType } from '@onlook/models';
+
+import type { NodePath, t as T } from '../packages';
 import { getOidFromJsxElement } from '../code-edit/helpers';
 import { isReactFragment } from '../helpers';
 import { getExistingOid } from '../ids';
-import { type NodePath, type t as T, types as t, traverse } from '../packages';
+import { types as t, traverse } from '../packages';
 import { getAstFromContent } from '../parse';
 import { createTemplateNode } from './helpers';
 
@@ -15,7 +18,7 @@ export function createTemplateNodeMap({
     filename: string;
     branchId: string;
 }): Map<string, TemplateNode> {
-    const mapping: Map<string, TemplateNode> = new Map();
+    const mapping = new Map<string, TemplateNode>();
     const componentStack: string[] = [];
     const dynamicTypeStack: DynamicType[] = [];
 

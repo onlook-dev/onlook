@@ -1,8 +1,11 @@
-import { CodeActionType, type CodeGroup, type CodeUngroup } from '@onlook/models/actions';
+import type { CodeGroup, CodeUngroup } from '@onlook/models/actions';
+import { CodeActionType } from '@onlook/models/actions';
+
+import type { NodePath, t as T } from '../packages';
+import { types as t } from '../packages';
 import { addKeyToElement, getOidFromJsxElement, jsxFilter } from './helpers';
 import { createInsertedElement, insertAtIndex } from './insert';
 import { removeElementAtIndex } from './remove';
-import { type t as T, type NodePath, types as t } from '../packages';
 
 export function groupElementsInNode(path: NodePath<T.JSXElement>, element: CodeGroup): void {
     const children = path.node.children;

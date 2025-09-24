@@ -1,4 +1,4 @@
-import type { LayerNode } from '@onlook/models';
+import { type LayerNode } from '@onlook/models';
 
 export type PenpalParentMethods = {
     getFrameId: () => string;

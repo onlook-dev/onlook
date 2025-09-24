@@ -1,11 +1,13 @@
 import {
-    CoreElementType,
-    DynamicType,
     type ClassParsingResult,
+    type CoreElementType,
+    type DynamicType,
     type TemplateNode,
     type TemplateTag,
 } from '@onlook/models';
-import { types as t, type NodePath, type t as T } from '../packages';
+
+import type { NodePath, t as T } from '../packages';
+import { types as t } from '../packages';
 
 export function createTemplateNode(
     path: NodePath<T.JSXElement>,

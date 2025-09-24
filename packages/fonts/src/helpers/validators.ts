@@ -1,10 +1,5 @@
-import {
-    getAstFromContent,
-    types as t,
-    traverse,
-    type NodePath,
-    type t as T,
-} from '@onlook/parser';
+import type { NodePath, t as T } from '@onlook/parser';
+import { getAstFromContent, types as t, traverse } from '@onlook/parser';
 
 /**
  * Validates if an AST object property represents a Tailwind CSS theme configuration.

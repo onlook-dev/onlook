@@ -1,4 +1,4 @@
-import { penpalParent } from "..";
+import { penpalParent } from '..';
 
 export function setFrameId(frameId: string) {
     (window as any)._onlookFrameId = frameId;

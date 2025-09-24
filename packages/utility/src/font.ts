@@ -1,5 +1,6 @@
-import { DEFAULT, VARIANTS } from '@onlook/fonts';
 import { camelCase } from 'lodash';
+
+import { DEFAULT, VARIANTS } from '@onlook/fonts';
 
 /**
  * Extracts the actual font name from a font file name
@@ -14,7 +15,7 @@ interface FontParts {
 
 function extractFontParts(fileName: string): FontParts {
     // Remove file extension
-    let name = fileName.replace(/\.[^/.]+$/, '');
+    const name = fileName.replace(/\.[^/.]+$/, '');
 
     // Define common font weight and style terms
     const weightTerms = [

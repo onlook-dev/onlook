@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+
 import { shortenUuid } from '../src/id';
 
 describe('shortenUuid', () => {

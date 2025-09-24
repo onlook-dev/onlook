@@ -1,49 +1,51 @@
-import { type Price } from '@/schema/subscription/price';
-import type { Product } from '@/schema/subscription/product';
-import { rateLimits } from '@/schema/subscription/rate-limits';
-import { subscriptions, type Subscription } from '@/schema/subscription/subscription';
-import { usageRecords } from '@/schema/subscription/usage';
-import { users } from '@/schema/user/user';
+import { and, asc, count, eq, gte, lt } from 'drizzle-orm';
+import { type PgTransaction, type PgTransaction } from 'drizzle-orm/pg-core';
+import { v4 as uuid } from 'uuid';
+
 import { db } from '@onlook/db/src/client';
 import { UsageType } from '@onlook/models';
 import { SubscriptionStatus } from '@onlook/stripe';
 import { createStripeClient } from '@onlook/stripe/src/client';
-import { and, asc, count, eq, gte, lt } from 'drizzle-orm';
-import type { PgTransaction } from 'drizzle-orm/pg-core';
-import { v4 as uuid } from 'uuid';
+
+import { type Product } from '@/schema/subscription/product';
+import { type Subscription } from '@/schema/subscription/subscription';
+import { usageRecords } from '@/schema/subscription/usage';
+import { users } from '@/schema/user/user';
 
 interface StripeItem {
-    subscription: DbSubscription,
-    stripeSubscriptionItemId: string,
-    stripeCustomerId: string,
-    stripeCurrentPeriodStart: Date,
-    stripeCurrentPeriodEnd: Date,
+    subscription: DbSubscription;
+    stripeSubscriptionItemId: string;
+    stripeCustomerId: string;
+    stripeCurrentPeriodStart: Date;
+    stripeCurrentPeriodEnd: Date;
 }
 
 interface DbSubscription extends Subscription {
-    product: Product,
-    price: Price,
+    product: Product;
+    price: Price;
 }
 
 export const getAllSubscriptions = async (): Promise<DbSubscription[]> => {
-    const subs = (await db.query.subscriptions.findMany({
+    const subs = await db.query.subscriptions.findMany({
         // where: eq(subscriptions.status, SubscriptionStatus.ACTIVE),
         with: {
             product: true,
             price: true,
         },
         orderBy: asc(subscriptions.startedAt),
-    }));
+    });
 
     return subs;
-}
+};
 
 export const getStripeItems = async (subscriptions: DbSubscription[]) => {
     const stripe = createStripeClient();
     const items: StripeItem[] = [];
 
     for (const sub of subscriptions) {
-        const subscriptionItem = await stripe.subscriptionItems.retrieve(sub.stripeSubscriptionItemId);
+        const subscriptionItem = await stripe.subscriptionItems.retrieve(
+            sub.stripeSubscriptionItemId,
+        );
         const stripeCurrentPeriodStart = new Date(subscriptionItem.current_period_start * 1000);
         const stripeCurrentPeriodEnd = new Date(subscriptionItem.current_period_end * 1000);
         const stripeSubscription = await stripe.subscriptions.retrieve(sub.stripeSubscriptionId);
@@ -58,7 +60,7 @@ export const getStripeItems = async (subscriptions: DbSubscription[]) => {
     }
 
     return items;
-}
+};
 
 const insertRateLimit = async (tx: PgTransaction<any, any, any>, item: StripeItem) => {
     if (item.subscription.status !== SubscriptionStatus.ACTIVE) {
@@ -76,8 +78,8 @@ const insertRateLimit = async (tx: PgTransaction<any, any, any>, item: StripeIte
                 eq(usageRecords.userId, item.subscription.userId),
                 eq(usageRecords.type, UsageType.MESSAGE),
                 gte(usageRecords.timestamp, item.stripeCurrentPeriodStart),
-                lt(usageRecords.timestamp, item.stripeCurrentPeriodEnd)
-            )
+                lt(usageRecords.timestamp, item.stripeCurrentPeriodEnd),
+            ),
         );
 
     const usageCount = usageCountResult[0]?.count || 0;
@@ -93,13 +95,15 @@ const insertRateLimit = async (tx: PgTransaction<any, any, any>, item: StripeIte
         carryOverKey: uuid(),
         carryOverTotal: 0,
         stripeSubscriptionItemId: item.stripeSubscriptionItemId,
-    }
+    };
 
-    console.log(`Inserting rate limit for subscription ${item.subscription.id}: ${JSON.stringify(insertValue, null, 2)}`);
+    console.log(
+        `Inserting rate limit for subscription ${item.subscription.id}: ${JSON.stringify(insertValue, null, 2)}`,
+    );
 
     // Insert rate limit record
     await tx.insert(rateLimits).values(insertValue).onConflictDoNothing();
-}
+};
 
 export const backfillSubscriptions = async () => {
     console.log('Backfilling subscriptions...');
@@ -113,16 +117,22 @@ export const backfillSubscriptions = async () => {
         await db.transaction(async (tx) => {
             console.log(`Updating subscription ${item.subscription.id}`);
             // Update subscription
-            await tx.update(subscriptions).set({
-                stripeCurrentPeriodStart: item.stripeCurrentPeriodStart,
-                stripeCurrentPeriodEnd: item.stripeCurrentPeriodEnd,
-            }).where(eq(subscriptions.id, item.subscription.id));
+            await tx
+                .update(subscriptions)
+                .set({
+                    stripeCurrentPeriodStart: item.stripeCurrentPeriodStart,
+                    stripeCurrentPeriodEnd: item.stripeCurrentPeriodEnd,
+                })
+                .where(eq(subscriptions.id, item.subscription.id));
 
             console.log(`Updating user ${item.subscription.userId}`);
             // Update user
-            await tx.update(users).set({
-                stripeCustomerId: item.stripeCustomerId,
-            }).where(eq(users.id, item.subscription.userId))
+            await tx
+                .update(users)
+                .set({
+                    stripeCustomerId: item.stripeCustomerId,
+                })
+                .where(eq(users.id, item.subscription.userId));
 
             console.log(`Inserting rate limit for subscription ${item.subscription.id}`);
             // Insert rate limit based on usage records and subscription price
@@ -130,7 +140,7 @@ export const backfillSubscriptions = async () => {
             console.log(`Rate limit inserted for subscription ${item.subscription.id}`);
         });
     }
-}
+};
 
 (async () => {
     await backfillSubscriptions();

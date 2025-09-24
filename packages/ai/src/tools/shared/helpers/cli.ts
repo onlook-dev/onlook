@@ -19,35 +19,37 @@ export const DEFAULT_EXCLUDED_PATTERNS = [
     'logs',
     '*.log',
     '.DS_Store',
-    'Thumbs.db'
+    'Thumbs.db',
 ];
 
 // File type to extension mapping for filtering by language/type
 export const FILE_TYPE_MAP: Record<string, string> = {
-    'js': '*.js',
-    'ts': '*.ts',
-    'jsx': '*.jsx',
-    'tsx': '*.tsx',
-    'py': '*.py',
-    'java': '*.java',
-    'go': '*.go',
-    'rust': '*.rs',
-    'cpp': '*.cpp',
-    'c': '*.c',
-    'html': '*.html',
-    'css': '*.css',
-    'json': '*.json',
-    'xml': '*.xml',
-    'yaml': '*.yaml',
-    'yml': '*.yml'
+    js: '*.js',
+    ts: '*.ts',
+    jsx: '*.jsx',
+    tsx: '*.tsx',
+    py: '*.py',
+    java: '*.java',
+    go: '*.go',
+    rust: '*.rs',
+    cpp: '*.cpp',
+    c: '*.c',
+    html: '*.html',
+    css: '*.css',
+    json: '*.json',
+    xml: '*.xml',
+    yaml: '*.yaml',
+    yml: '*.yml',
 };
 
 /**
  * Build shell exclusion pattern for bash/sh glob operations
  * Returns a shell condition string that can be used in bash/sh commands
  */
-export function buildShellExclusionPattern(excludePatterns: string[] = DEFAULT_EXCLUDED_PATTERNS): string {
-    const conditions = excludePatterns.map(exclude => {
+export function buildShellExclusionPattern(
+    excludePatterns: string[] = DEFAULT_EXCLUDED_PATTERNS,
+): string {
+    const conditions = excludePatterns.map((exclude) => {
         if (exclude.includes('*')) {
             return `[[ "$f" != ${exclude} ]]`;
         } else {
@@ -64,7 +66,7 @@ export function buildShellExclusionPattern(excludePatterns: string[] = DEFAULT_E
  */
 export function addFindExclusions(
     findCommand: string,
-    excludePatterns: string[] = DEFAULT_EXCLUDED_PATTERNS
+    excludePatterns: string[] = DEFAULT_EXCLUDED_PATTERNS,
 ): string {
     let command = findCommand;
 
@@ -85,11 +87,11 @@ export function addFindExclusions(
  */
 export function filterExcludedPaths(
     paths: string[],
-    excludePatterns: string[] = DEFAULT_EXCLUDED_PATTERNS
+    excludePatterns: string[] = DEFAULT_EXCLUDED_PATTERNS,
 ): string[] {
-    return paths.filter(path => {
+    return paths.filter((path) => {
         const pathParts = path.split('/');
-        return !pathParts.some(part => excludePatterns.includes(part));
+        return !pathParts.some((part) => excludePatterns.includes(part));
     });
 }
 
@@ -115,8 +117,8 @@ export function escapeForShell(str: string): string {
  */
 export function isPathExcluded(
     path: string,
-    excludePatterns: string[] = DEFAULT_EXCLUDED_PATTERNS
+    excludePatterns: string[] = DEFAULT_EXCLUDED_PATTERNS,
 ): boolean {
     const pathParts = path.split('/');
-    return pathParts.some(part => excludePatterns.includes(part));
+    return pathParts.some((part) => excludePatterns.includes(part));
 }

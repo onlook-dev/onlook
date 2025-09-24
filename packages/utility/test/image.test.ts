@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+
 import { addImageFolderPrefix, stripImageFolderPrefix, urlToRelativePath } from '../src/image';
 
 describe('addImageFolderPrefix', () => {

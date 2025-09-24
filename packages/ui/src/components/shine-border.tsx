@@ -1,5 +1,6 @@
-import { cn } from '../utils';
 import { useEffect, useState } from 'react';
+
+import { cn } from '../utils';
 
 type TColorProp = string | string[];
 
@@ -68,7 +69,7 @@ export function ShineBorder({
                     } as React.CSSProperties
                 }
                 className={cn(
-                    `before:bg-shine-size before:absolute before:inset-0 before:aspect-square before:size-full before:rounded-(--border-radius) before:p-(--border-width) before:will-change-[background-position] before:content-[""] before:[-webkit-mask-composite:xor]! before:[mask-composite:exclude]! before:[background-image:var(--background-radial-gradient)] before:[background-size:300%_300%] before:[mask:var(--mask-linear-gradient)] before:opacity-0 before:transition-opacity before:duration-1000 motion-safe:before:animate-shine`,
+                    `before:bg-shine-size motion-safe:before:animate-shine before:absolute before:inset-0 before:aspect-square before:size-full before:rounded-(--border-radius) before:[background-image:var(--background-radial-gradient)] before:[background-size:300%_300%] before:[mask-composite:exclude]! before:p-(--border-width) before:opacity-0 before:transition-opacity before:duration-1000 before:will-change-[background-position] before:content-[""] before:[-webkit-mask-composite:xor]! before:[mask:var(--mask-linear-gradient)]`,
                     isShining && 'before:opacity-100',
                 )}
             ></div>

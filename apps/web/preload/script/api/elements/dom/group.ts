@@ -1,6 +1,7 @@
 import { EditorAttributes } from '@onlook/constants';
-import type { DomElement, LayerNode } from '@onlook/models';
-import type { ActionTarget, GroupContainer } from '@onlook/models/actions';
+import { type DomElement, type LayerNode } from '@onlook/models';
+import { type ActionTarget, type GroupContainer } from '@onlook/models/actions';
+
 import { getHtmlElement } from '../../../helpers';
 import { getOrAssignDomId } from '../../../helpers/ids';
 import { buildLayerTree } from '../../dom';
@@ -10,7 +11,7 @@ export function groupElements(
     parent: ActionTarget,
     container: GroupContainer,
     children: Array<ActionTarget>,
-): { domEl: DomElement, newMap: Map<string, LayerNode> | null } | null {
+): { domEl: DomElement; newMap: Map<string, LayerNode> | null } | null {
     const parentEl = getHtmlElement(parent.domId);
     if (!parentEl) {
         console.warn('Failed to find parent element', parent.domId);
@@ -59,7 +60,7 @@ export function groupElements(
 export function ungroupElements(
     parent: ActionTarget,
     container: GroupContainer,
-): { domEl: DomElement, newMap: Map<string, LayerNode> | null } | null {
+): { domEl: DomElement; newMap: Map<string, LayerNode> | null } | null {
     const parentEl = getHtmlElement(parent.domId);
     if (!parentEl) {
         console.warn(`Parent element not found: ${parent.domId}`);
@@ -82,7 +83,7 @@ export function ungroupElements(
 
     // Move all children of the container to the parent
     const children = Array.from(containerEl.children) as HTMLElement[];
-    children.forEach(child => {
+    children.forEach((child) => {
         parentEl.appendChild(child);
     });
 

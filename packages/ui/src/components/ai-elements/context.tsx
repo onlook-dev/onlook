@@ -1,8 +1,10 @@
 'use client';
 
-import type { LanguageModelUsage } from 'ai';
-import { type ComponentProps, createContext, useContext } from 'react';
+import type { ComponentProps } from 'react';
+import { createContext, useContext } from 'react';
+import { type LanguageModelUsage } from 'ai';
 import { estimateCost } from 'tokenlens';
+
 import { Button } from '../../components/button';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '../../components/hover-card';
 import { Progress } from '../../components/progress';
@@ -106,7 +108,7 @@ export const ContextTrigger = ({ children, ...props }: ContextTriggerProps) => {
             {children ?? (
                 <Button type="button" variant="ghost" {...props}>
                     <ContextIcon />
-                    <span className="text-xs font-medium text-muted-foreground">
+                    <span className="text-muted-foreground text-xs font-medium">
                         {renderedPercent}
                     </span>
                 </Button>
@@ -146,7 +148,7 @@ export const ContextContentHeader = ({ children, className, ...props }: ContextC
                 <>
                     <div className="flex items-center justify-between gap-3 text-xs">
                         <p>{displayPct}</p>
-                        <p className="font-mono text-muted-foreground">
+                        <p className="text-muted-foreground font-mono">
                             {used} / {total}
                         </p>
                     </div>
@@ -191,7 +193,7 @@ export const ContextContentFooter = ({ children, className, ...props }: ContextC
     return (
         <div
             className={cn(
-                'flex w-full items-center justify-between gap-3 bg-secondary p-3 text-xs',
+                'bg-secondary flex w-full items-center justify-between gap-3 p-3 text-xs',
                 className,
             )}
             {...props}
@@ -359,7 +361,7 @@ const TokensWithCost = ({
                       notation: 'compact',
                   }).format(tokens)}
             {showCost && costText ? (
-                <span className="ml-2 text-muted-foreground">• {costText}</span>
+                <span className="text-muted-foreground ml-2">• {costText}</span>
             ) : null}
         </span>
     );

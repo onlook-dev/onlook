@@ -1,9 +1,13 @@
-import type { DomElement, LayerNode } from '@onlook/models';
+import { type DomElement, type LayerNode } from '@onlook/models';
+
 import { getHtmlElement, isValidHtmlElement } from '../../../helpers';
 import { buildLayerTree } from '../../dom';
 import { getDomElement } from '../helpers';
 
-export function moveElement(domId: string, newIndex: number): { domEl: DomElement, newMap: Map<string, LayerNode> | null } | null {
+export function moveElement(
+    domId: string,
+    newIndex: number,
+): { domEl: DomElement; newMap: Map<string, LayerNode> | null } | null {
     const el = getHtmlElement(domId);
     if (!el) {
         console.warn(`Move element not found: ${domId}`);

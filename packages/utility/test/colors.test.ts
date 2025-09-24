@@ -1,5 +1,7 @@
-import { describe, it, expect } from 'bun:test';
-import { Color, type Palette } from '../src/color';
+import { describe, expect, it } from 'bun:test';
+
+import type { Palette } from '../src/color';
+import { Color } from '../src/color';
 
 describe('ColorUtil', () => {
     describe('Color From Hex-Like String', () => {

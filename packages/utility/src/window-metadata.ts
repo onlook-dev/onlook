@@ -1,5 +1,5 @@
 import { DEVICE_OPTIONS, Orientation, Theme } from '@onlook/constants';
-import type { WindowMetadata } from '@onlook/models';
+import { type WindowMetadata } from '@onlook/models';
 
 export const computeWindowMetadata = (width: string, height: string): WindowMetadata => {
     const numericWidth = Number(width);
@@ -19,7 +19,7 @@ const computeDevice = (width: number, height: number): string => {
     let matchedDevice = 'Custom';
 
     for (const category in DEVICE_OPTIONS) {
-        const devices = DEVICE_OPTIONS[category as keyof typeof DEVICE_OPTIONS];
+        const devices = DEVICE_OPTIONS[category];
 
         for (const deviceName in devices) {
             const resolution = devices[deviceName];
@@ -43,9 +43,9 @@ export const getDeviceType = (name: string): string => {
     }
 
     for (const category in DEVICE_OPTIONS) {
-        const devices = DEVICE_OPTIONS[category as keyof typeof DEVICE_OPTIONS];
+        const devices = DEVICE_OPTIONS[category];
 
-        if (devices && devices[name]) {
+        if (devices?.[name]) {
             switch (category) {
                 case 'Phone':
                     return 'Phone';

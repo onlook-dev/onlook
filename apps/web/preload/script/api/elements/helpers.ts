@@ -1,6 +1,7 @@
 import { EditorAttributes } from '@onlook/constants';
-import type { DomElement, ParentDomElement } from '@onlook/models';
-import type { ActionLocation } from '@onlook/models/actions';
+import { type DomElement, type ParentDomElement } from '@onlook/models';
+import { type ActionLocation } from '@onlook/models/actions';
+
 import { getInstanceId, getOid } from '../../helpers/ids';
 import { getFrameId } from '../state';
 import { getStyles } from './style';
@@ -33,21 +34,21 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
     const parent = el.parentElement;
     const parentDomElement: ParentDomElement | null = parent
         ? {
-            domId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string,
-            frameId: getFrameId(),
-            oid: parent.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string,
-            instanceId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID) as string,
-            rect: parent.getBoundingClientRect(),
-        }
+              domId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID)!,
+              frameId: getFrameId(),
+              oid: parent.getAttribute(EditorAttributes.DATA_ONLOOK_ID)!,
+              instanceId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID)!,
+              rect: parent.getBoundingClientRect(),
+          }
         : null;
 
     const rect = el.getBoundingClientRect();
     const styles = getStyle ? getStyles(el) : null;
     const domElement: DomElement = {
-        domId: el.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string,
-        oid: el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string,
+        domId: el.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID)!,
+        oid: el.getAttribute(EditorAttributes.DATA_ONLOOK_ID)!,
         frameId: getFrameId(),
-        instanceId: el.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID) as string,
+        instanceId: el.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID)!,
         rect,
         tagName: el.tagName,
         parent: parentDomElement,
@@ -78,7 +79,7 @@ export function getElementLocation(targetEl: HTMLElement): ActionLocation | unde
 
     const location: ActionLocation = {
         type: 'index',
-        targetDomId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string,
+        targetDomId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID)!,
         targetOid: getInstanceId(parent) || getOid(parent) || null,
         index: Array.from(targetEl.parentElement?.children || []).indexOf(targetEl),
         originalIndex: Array.from(targetEl.parentElement?.children || []).indexOf(targetEl),

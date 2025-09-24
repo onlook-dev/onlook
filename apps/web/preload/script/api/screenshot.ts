@@ -24,8 +24,8 @@ export async function captureScreenshot(): Promise<{
                 const stream = await navigator.mediaDevices.getDisplayMedia({
                     video: {
                         width: viewportWidth,
-                        height: viewportHeight
-                    } as MediaTrackConstraints
+                        height: viewportHeight,
+                    } as MediaTrackConstraints,
                 });
 
                 const video = document.createElement('video');
@@ -38,7 +38,7 @@ export async function captureScreenshot(): Promise<{
                         video.play();
                         video.oncanplay = () => {
                             context.drawImage(video, 0, 0, viewportWidth, viewportHeight);
-                            stream.getTracks().forEach(track => track.stop());
+                            stream.getTracks().forEach((track) => track.stop());
                             resolve();
                         };
                     };
@@ -46,7 +46,9 @@ export async function captureScreenshot(): Promise<{
 
                 // Convert canvas to base64 string with compression
                 const base64 = await compressImage(canvas);
-                console.log(`Screenshot captured - Size: ~${Math.round((base64.length * 0.75) / 1024)} KB`);
+                console.log(
+                    `Screenshot captured - Size: ~${Math.round((base64.length * 0.75) / 1024)} KB`,
+                );
                 return {
                     mimeType: 'image/jpeg',
                     data: base64,
@@ -61,7 +63,9 @@ export async function captureScreenshot(): Promise<{
 
         // Convert canvas to base64 string with compression
         const base64 = await compressImage(canvas);
-        console.log(`DOM screenshot captured - Size: ~${Math.round((base64.length * 0.75) / 1024)} KB`);
+        console.log(
+            `DOM screenshot captured - Size: ~${Math.round((base64.length * 0.75) / 1024)} KB`,
+        );
         return {
             mimeType: 'image/jpeg',
             data: base64,
@@ -150,7 +154,8 @@ async function renderDomToCanvas(context: CanvasRenderingContext2D, width: numbe
 
     // Get all visible elements in the viewport
     const elements = document.querySelectorAll('*');
-    const visibleElements: { element: HTMLElement; rect: DOMRect; styles: CSSStyleDeclaration }[] = [];
+    const visibleElements: { element: HTMLElement; rect: DOMRect; styles: CSSStyleDeclaration }[] =
+        [];
 
     // Filter and collect visible elements with their computed styles
     for (const element of elements) {
@@ -196,7 +201,7 @@ async function renderElement(
     context: CanvasRenderingContext2D,
     element: HTMLElement,
     rect: DOMRect,
-    styles: CSSStyleDeclaration
+    styles: CSSStyleDeclaration,
 ) {
     const { left, top, width, height } = rect;
 
@@ -207,7 +212,11 @@ async function renderElement(
 
     // Render background
     const backgroundColor = styles.backgroundColor;
-    if (backgroundColor && backgroundColor !== 'rgba(0, 0, 0, 0)' && backgroundColor !== 'transparent') {
+    if (
+        backgroundColor &&
+        backgroundColor !== 'rgba(0, 0, 0, 0)' &&
+        backgroundColor !== 'transparent'
+    ) {
         context.fillStyle = backgroundColor;
         context.fillRect(left, top, width, height);
     }

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+
 import { CssToTailwindTranslator } from '../src/tailwind';
 
 const translateWidth = (val: string) => {

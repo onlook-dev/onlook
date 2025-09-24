@@ -1,5 +1,5 @@
-import type { Frame } from '@onlook/models';
-import { describe, expect, test } from 'bun:test';
+import { type Frame, type Frame } from '@onlook/models';
+
 import { calculateNonOverlappingPosition } from '../src/frame';
 
 // Helper function to create a test frame

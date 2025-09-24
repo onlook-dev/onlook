@@ -1,6 +1,8 @@
-import { Icons } from '@onlook/ui/icons';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
+
+import { Icons } from '@onlook/ui/icons';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
@@ -22,7 +24,9 @@ export class BashEditTool extends ClientTool {
     static readonly parameters = z.object({
         command: z
             .string()
-            .describe('The command to execute that modifies files (mkdir, rm, mv, cp, chmod, etc.)'),
+            .describe(
+                'The command to execute that modifies files (mkdir, rm, mv, cp, chmod, etc.)',
+            ),
         allowed_commands: z
             .array(BashEditTool.ALLOWED_BASH_EDIT_COMMANDS)
             .optional()
@@ -40,7 +44,10 @@ export class BashEditTool extends ClientTool {
     });
     static readonly icon = Icons.Terminal;
 
-    async handle(args: z.infer<typeof BashEditTool.parameters>, editorEngine: EditorEngine): Promise<{
+    async handle(
+        args: z.infer<typeof BashEditTool.parameters>,
+        editorEngine: EditorEngine,
+    ): Promise<{
         output: string;
         success: boolean;
         error: string | null;
@@ -51,12 +58,13 @@ export class BashEditTool extends ClientTool {
                 return {
                     output: '',
                     success: false,
-                    error: `Sandbox not found for branch ID: ${args.branchId}`
+                    error: `Sandbox not found for branch ID: ${args.branchId}`,
                 };
             }
 
             // Use allowed commands from parameter or default to all enum values
-            const editCommands = args.allowed_commands || BashEditTool.ALLOWED_BASH_EDIT_COMMANDS.options;
+            const editCommands =
+                args.allowed_commands || BashEditTool.ALLOWED_BASH_EDIT_COMMANDS.options;
             const commandParts = args.command.trim().split(/\s+/);
             const baseCommand = commandParts[0] || '';
 
@@ -65,7 +73,7 @@ export class BashEditTool extends ClientTool {
                 return {
                     output: '',
                     success: false,
-                    error: `Command '${baseCommand}' is not allowed in edit mode. Only ${editCommands.join(', ')} commands are permitted.`
+                    error: `Command '${baseCommand}' is not allowed in edit mode. Only ${editCommands.join(', ')} commands are permitted.`,
                 };
             }
 
@@ -73,13 +81,13 @@ export class BashEditTool extends ClientTool {
             return {
                 output: result.output,
                 success: result.success,
-                error: result.error
+                error: result.error,
             };
         } catch (error: any) {
             return {
                 output: '',
                 success: false,
-                error: error.message || error.toString()
+                error: error.message || error.toString(),
             };
         }
     }

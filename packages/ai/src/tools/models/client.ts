@@ -1,4 +1,5 @@
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 import { BaseTool } from './base';
 
 export abstract class ClientTool extends BaseTool {

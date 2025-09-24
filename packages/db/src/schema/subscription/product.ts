@@ -1,7 +1,8 @@
-import { ProductType } from '@onlook/stripe';
 import { pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 
-export const productType = pgEnum('product_type', ProductType)
+import { ProductType } from '@onlook/stripe';
+
+export const productType = pgEnum('product_type', ProductType);
 
 export const products = pgTable('products', {
     id: uuid('id').primaryKey().defaultRandom(),

@@ -1,12 +1,15 @@
-import { Icons } from '@onlook/ui/icons';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
+
+import { Icons } from '@onlook/ui/icons';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class FuzzyEditFileTool extends ClientTool {
     static readonly toolName = 'fuzzy_edit_file';
-    static readonly description = 'Edit a file using fuzzy matching and natural language instructions';
+    static readonly description =
+        'Edit a file using fuzzy matching and natural language instructions';
     static readonly parameters = z.object({
         file_path: z.string().describe('The absolute path to the file to edit'),
         content: z.string()

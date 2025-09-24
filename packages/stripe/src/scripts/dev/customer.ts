@@ -1,4 +1,4 @@
-import Stripe from 'stripe';
+import type Stripe from 'stripe';
 
 export const createTestCustomerAndSubscribe = async (stripe: Stripe, price: Stripe.Price) => {
     console.log('Creating customer...');

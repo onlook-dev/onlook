@@ -7,22 +7,22 @@ Browser-based file system abstraction using ZenFS with IndexedDB storage.
 ### Basic Usage
 
 ```typescript
-import { FileSystem } from '@onlook/file-system';
+import { FileSystem } from "@onlook/file-system";
 
 // Create a file system instance with a root directory
-const fs = new FileSystem('/my-project');
+const fs = new FileSystem("/my-project");
 await fs.initialize();
 
 // Create files and directories
-await fs.createFile('/src/index.js', 'console.log("Hello World");');
-await fs.createDirectory('/src/components');
+await fs.createFile("/src/index.js", 'console.log("Hello World");');
+await fs.createDirectory("/src/components");
 
 // Read files (auto-detects text files and returns a string in that case)
-const content = await fs.readFile('/src/index.js');
+const content = await fs.readFile("/src/index.js");
 console.log(content); // "console.log("Hello World");"
 
 // List directory contents recursively
-const files = await fs.readDirectory('/');
+const files = await fs.readDirectory("/");
 ```
 
 ### React Hooks

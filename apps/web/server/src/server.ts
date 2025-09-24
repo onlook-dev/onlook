@@ -1,7 +1,9 @@
 import ws from '@fastify/websocket';
-import type { EditorServerOptions } from '@onlook/rpc';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import fastify from 'fastify';
+
+import { type EditorServerOptions } from '@onlook/rpc';
+
 import { appRouter } from './router';
 import { createContext } from './router/context';
 

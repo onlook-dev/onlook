@@ -1,4 +1,5 @@
-import type { WebSocketSession } from '@codesandbox/sdk';
+import { type WebSocketSession } from '@codesandbox/sdk';
+
 import { type SandboxFile } from '@onlook/models';
 import { isImageFile } from '@onlook/utility';
 

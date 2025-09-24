@@ -1,6 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
+
 import { projectInvitations } from '../project';
 import { usageRecords } from '../subscription';
 import { subscriptions } from '../subscription/subscription';

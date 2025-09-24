@@ -1,12 +1,10 @@
-import { Icons } from '@onlook/ui/icons';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
+
+import { Icons } from '@onlook/ui/icons';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 import { ClientTool } from '../models/client';
-import {
-    addFindExclusions,
-    escapeForShell,
-    getFileTypePattern
-} from '../shared/helpers/cli';
+import { addFindExclusions, escapeForShell, getFileTypePattern } from '../shared/helpers/cli';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 interface GrepResult {
@@ -17,12 +15,13 @@ interface GrepResult {
     wasTruncated: boolean;
 }
 
-
 export class GrepTool extends ClientTool {
     static readonly toolName = 'grep';
     static readonly description = 'Search for patterns in files using grep';
     static readonly parameters = z.object({
-        pattern: z.string().describe('The regular expression pattern to search for in file contents'),
+        pattern: z
+            .string()
+            .describe('The regular expression pattern to search for in file contents'),
         path: z
             .string()
             .optional()
@@ -56,7 +55,9 @@ export class GrepTool extends ClientTool {
         '-B': z
             .number()
             .optional()
-            .describe('Number of lines to show before each match (requires output_mode: "content")'),
+            .describe(
+                'Number of lines to show before each match (requires output_mode: "content")',
+            ),
         '-C': z
             .number()
             .optional()
@@ -72,7 +73,10 @@ export class GrepTool extends ClientTool {
     });
     static readonly icon = Icons.MagnifyingGlass;
 
-    async handle(args: z.infer<typeof GrepTool.parameters>, editorEngine: EditorEngine): Promise<string> {
+    async handle(
+        args: z.infer<typeof GrepTool.parameters>,
+        editorEngine: EditorEngine,
+    ): Promise<string> {
         try {
             const sandbox = editorEngine.branches.getSandboxById(args.branchId);
             if (!sandbox) {
@@ -82,7 +86,12 @@ export class GrepTool extends ClientTool {
             const searchPath = args.path || '.';
 
             // Enhanced input validation
-            const validationError = await validateGrepInputs(args.pattern, searchPath, args, sandbox);
+            const validationError = await validateGrepInputs(
+                args.pattern,
+                searchPath,
+                args,
+                sandbox,
+            );
             if (validationError) {
                 return validationError;
             }
@@ -95,30 +104,26 @@ export class GrepTool extends ClientTool {
             }
 
             return await processGrepResults(result, args.pattern, searchPath, args);
-
         } catch (error) {
             return `Error: ${error instanceof Error ? error.message : String(error)}`;
         }
     }
 
-
     getLabel(input?: z.infer<typeof GrepTool.parameters>): string {
         if (input?.pattern) {
-            const truncatedPattern = input.pattern.length > 30
-                ? input.pattern.substring(0, 30) + '...'
-                : input.pattern;
+            const truncatedPattern =
+                input.pattern.length > 30 ? input.pattern.substring(0, 30) + '...' : input.pattern;
             return 'Searching for ' + truncatedPattern;
         }
         return 'Searching';
     }
 }
 
-
 async function validateGrepInputs(
     pattern: string,
     searchPath: string,
     args: z.infer<typeof GrepTool.parameters>,
-    sandbox: any
+    sandbox: any,
 ): Promise<string | null> {
     // Pattern validation
     if (!pattern.trim()) {
@@ -143,7 +148,11 @@ async function validateGrepInputs(
     }
 
     // Path validation
-    const pathValidation = await sandbox.session.runCommand(`test -e "${searchPath}" && echo "exists" || echo "not_found"`, undefined, true);
+    const pathValidation = await sandbox.session.runCommand(
+        `test -e "${searchPath}" && echo "exists" || echo "not_found"`,
+        undefined,
+        true,
+    );
     if (pathValidation.success && pathValidation.output.trim() === 'not_found') {
         // Try fuzzy path matching
         const fuzzyPath = await findFuzzyPath(searchPath, sandbox);
@@ -154,7 +163,11 @@ async function validateGrepInputs(
     }
 
     // Check if it's a directory (not a file)
-    const dirValidation = await sandbox.session.runCommand(`test -d "${searchPath}" && echo "dir" || echo "not_dir"`, undefined, true);
+    const dirValidation = await sandbox.session.runCommand(
+        `test -d "${searchPath}" && echo "dir" || echo "not_dir"`,
+        undefined,
+        true,
+    );
     if (dirValidation.success && dirValidation.output.trim() === 'not_dir') {
         return `Error: Search path "${searchPath}" is not a directory`;
     }
@@ -204,7 +217,7 @@ function validateMultilinePattern(pattern: string): string | null {
 
 async function findFuzzyPath(inputPath: string, sandbox: any): Promise<string | null> {
     // Extract directory name from path for fuzzy matching
-    const parts = inputPath.split('/').filter(p => p);
+    const parts = inputPath.split('/').filter((p) => p);
     const targetName = parts[parts.length - 1];
 
     if (!targetName) return null;
@@ -214,7 +227,10 @@ async function findFuzzyPath(inputPath: string, sandbox: any): Promise<string | 
     const result = await sandbox.session.runCommand(findCommand, undefined, true);
 
     if (result.success && result.output.trim()) {
-        const candidates = result.output.trim().split('\n').filter((line: string) => line.trim());
+        const candidates = result.output
+            .trim()
+            .split('\n')
+            .filter((line: string) => line.trim());
 
         // Simple scoring - prefer exact matches and shorter paths
         const scored = candidates.map((candidate: string) => {
@@ -230,7 +246,10 @@ async function findFuzzyPath(inputPath: string, sandbox: any): Promise<string | 
             return { path: candidate, score };
         });
 
-        scored.sort((a: { path: string; score: number }, b: { path: string; score: number }) => b.score - a.score);
+        scored.sort(
+            (a: { path: string; score: number }, b: { path: string; score: number }) =>
+                b.score - a.score,
+        );
         if (scored.length > 0 && scored[0].score > 0) {
             return scored[0].path;
         }
@@ -239,9 +258,13 @@ async function findFuzzyPath(inputPath: string, sandbox: any): Promise<string | 
     return null;
 }
 
-async function executeGrepSearch(sandbox: any, searchPath: string, args: z.infer<typeof GrepTool.parameters>): Promise<GrepResult> {
+async function executeGrepSearch(
+    sandbox: any,
+    searchPath: string,
+    args: z.infer<typeof GrepTool.parameters>,
+): Promise<GrepResult> {
     // Build find command for file filtering
-    let findCommand = buildFindCommand(searchPath, args);
+    const findCommand = buildFindCommand(searchPath, args);
 
     // Build grep command
     const grepCommand = buildGrepCommand(args);
@@ -265,16 +288,18 @@ async function executeGrepSearch(sandbox: any, searchPath: string, args: z.infer
     const result = await sandbox.session.runCommand(command, undefined, true);
 
     // Determine if results were truncated
-    const wasTruncated = args.head_limit ?
-        (result.output ? result.output.split('\n').length >= args.head_limit : false) :
-        false;
+    const wasTruncated = args.head_limit
+        ? result.output
+            ? result.output.split('\n').length >= args.head_limit
+            : false
+        : false;
 
     return {
         success: result.success || (result.output && result.output.trim().length > 0),
         output: result.output || '',
         error: result.success ? undefined : result.error,
         isEmpty: !result.output || result.output.trim().length === 0,
-        wasTruncated
+        wasTruncated,
     };
 }
 
@@ -330,10 +355,14 @@ async function buildMultilineCommand(
     findCommand: string,
     grepFlags: string,
     args: z.infer<typeof GrepTool.parameters>,
-    sandbox: any
+    sandbox: any,
 ): Promise<string> {
     // Check if grep supports -P flag (Perl regex)
-    const perlSupport = await sandbox.session.runCommand('grep --help | grep -q "\\-P" && echo "yes" || echo "no"', undefined, true);
+    const perlSupport = await sandbox.session.runCommand(
+        'grep --help | grep -q "\\-P" && echo "yes" || echo "no"',
+        undefined,
+        true,
+    );
 
     if (perlSupport.success && perlSupport.output.trim() === 'yes') {
         // Use grep -P with -z for null-separated records
@@ -345,12 +374,11 @@ async function buildMultilineCommand(
     }
 }
 
-
 async function processGrepResults(
     result: GrepResult,
     pattern: string,
     searchPath: string,
-    args: z.infer<typeof GrepTool.parameters>
+    args: z.infer<typeof GrepTool.parameters>,
 ): Promise<string> {
     if (result.isEmpty) {
         // Provide specific message for no matches
@@ -403,7 +431,7 @@ function formatCountOutput(output: string, pattern: string): string {
     }
 
     // Add summary line
-    const formattedLines = lines.map(line => {
+    const formattedLines = lines.map((line) => {
         const parts = line.split(':');
         const count = parts[parts.length - 1];
         const filename = parts.slice(0, -1).join(':');

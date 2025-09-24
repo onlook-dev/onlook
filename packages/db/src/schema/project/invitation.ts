@@ -1,6 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { index, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
+
 import { projectRole, users } from '../user';
 import { projects } from './project';
 
@@ -22,7 +23,10 @@ export const projectInvitations = pgTable(
         updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
     },
     (table) => [
-        index('project_invitations_invitee_email_project_id_idx').on(table.inviteeEmail, table.projectId),
+        index('project_invitations_invitee_email_project_id_idx').on(
+            table.inviteeEmail,
+            table.projectId,
+        ),
     ],
 ).enableRLS();
 

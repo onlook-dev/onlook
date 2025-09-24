@@ -1,13 +1,16 @@
-import { Icons } from '@onlook/ui/icons';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
+
+import { Icons } from '@onlook/ui/icons';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 import { ClientTool } from '../models/client';
 import { isCommandAvailable, resolveDirectoryPath, safeRunCommand } from '../shared/helpers/files';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class ListFilesTool extends ClientTool {
     static readonly toolName = 'list_files';
-    static readonly description = 'List files and directories in a specified path. Supports both absolute and relative paths with fuzzy matching. Can filter by type and exclude patterns. Returns file paths with type information (file/directory). Only lists immediate children (non-recursive).';
+    static readonly description =
+        'List files and directories in a specified path. Supports both absolute and relative paths with fuzzy matching. Can filter by type and exclude patterns. Returns file paths with type information (file/directory). Only lists immediate children (non-recursive).';
     static readonly parameters = z.object({
         path: z
             .string()
@@ -102,7 +105,9 @@ export class ListFilesTool extends ClientTool {
             }
 
             // Parse the find output
-            const files = result.output.trim().split('\n')
+            const files = result.output
+                .trim()
+                .split('\n')
                 .filter((line: string) => line.trim())
                 .map((line: string) => {
                     const parts = line.split('|');
@@ -110,13 +115,15 @@ export class ListFilesTool extends ClientTool {
                     const type = parts[1] || '';
                     const size = parts[2] || '';
                     const modified = parts[3] || '';
-                    const relativePath = fullPath.replace(resolvedPath + '/', '').replace(resolvedPath, '.');
+                    const relativePath = fullPath
+                        .replace(resolvedPath + '/', '')
+                        .replace(resolvedPath, '.');
 
                     return {
                         path: relativePath === '.' ? '.' : relativePath,
-                        type: type === 'f' ? 'file' as const : 'directory' as const,
+                        type: type === 'f' ? ('file' as const) : ('directory' as const),
                         size: size ? parseInt(size, 10) : undefined,
-                        modified: modified || undefined
+                        modified: modified || undefined,
                     };
                 })
                 .filter((file: any) => file.path !== '.') // Remove the directory itself unless it's the only result
@@ -129,9 +136,10 @@ export class ListFilesTool extends ClientTool {
                 });
 
             return files;
-
         } catch (error) {
-            throw new Error(`Cannot list directory: ${error instanceof Error ? error.message : String(error)}`);
+            throw new Error(
+                `Cannot list directory: ${error instanceof Error ? error.message : String(error)}`,
+            );
         }
     }
 

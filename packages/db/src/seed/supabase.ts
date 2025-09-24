@@ -1,5 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
-import { SEED_USER } from "./constants";
+import { createClient } from '@supabase/supabase-js';
+
+import { SEED_USER } from './constants';
 
 export const seedSupabaseUser = async () => {
     console.log('Seeding Supabase user...');
@@ -10,7 +11,9 @@ export const seedSupabaseUser = async () => {
 
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-    const { data: { user: existingUser } } = await supabase.auth.admin.getUserById(SEED_USER.ID);
+    const {
+        data: { user: existingUser },
+    } = await supabase.auth.admin.getUserById(SEED_USER.ID);
 
     if (existingUser) {
         console.log('User already exists, skipping user creation');

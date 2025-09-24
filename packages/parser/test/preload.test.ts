@@ -1,14 +1,15 @@
-import * as t from '@babel/types';
-import { DEPRECATED_PRELOAD_SCRIPT_SRCS, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
-import { describe, expect, test } from 'bun:test';
 import fs from 'fs';
 import path from 'path';
+import * as t from '@babel/types';
+import { describe, expect, test } from 'bun:test';
 import {
     getAstFromContent,
     getContentFromAst,
     removeDeprecatedPreloadScripts,
     scanForPreloadScript,
 } from 'src';
+
+import { DEPRECATED_PRELOAD_SCRIPT_SRCS, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
 
 const __dirname = import.meta.dir;
 

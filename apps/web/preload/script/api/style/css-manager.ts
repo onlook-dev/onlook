@@ -1,11 +1,14 @@
+import  { type CssNode, type Declaration, type Raw, type Rule, type SelectorList } from 'css-tree';
+import { generate, parse, walk } from 'css-tree';
+
 import { EditorAttributes } from '@onlook/constants';
-import type { StyleChange } from '@onlook/models';
-import { generate, parse, walk, type CssNode, type Declaration, type Raw, type Rule, type SelectorList } from 'css-tree';
+import { type StyleChange } from '@onlook/models';
+
 import { getDomIdSelector } from '../../helpers';
 
 class CSSManager {
     private static instance: CSSManager;
-    private constructor() { }
+    private constructor() {}
 
     public injectDefaultStyles() {
         try {
@@ -60,9 +63,9 @@ class CSSManager {
             visit: 'Rule',
             enter: (node: CssNode) => {
                 if (node.type === 'Rule') {
-                    const rule = node as Rule;
+                    const rule = node;
                     if (rule.prelude.type === 'SelectorList') {
-                        (rule.prelude as SelectorList).children.forEach((selector) => {
+                        rule.prelude.children.forEach((selector) => {
                             const selectorText = generate(selector);
                             if (selectorText === selectorToFind) {
                                 matchingNodes.push(node);

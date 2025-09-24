@@ -1,5 +1,6 @@
 import { type Frame } from '@onlook/models';
-import type { Frame as DbFrame } from '../../schema';
+
+import { type Frame as DbFrame } from '../../schema';
 
 export const fromDbFrame = (dbFrame: DbFrame): Frame => {
     if (dbFrame.branchId === null) {

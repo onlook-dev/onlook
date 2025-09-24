@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+
 import { isRootLayoutFile, isSubdirectory } from '../src/path';
 
 describe('isSubdirectory', () => {

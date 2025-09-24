@@ -1,5 +1,6 @@
 import { DefaultSettings } from '@onlook/constants';
 import { type CodeInsertImage, type CodeRemoveImage } from '@onlook/models/actions';
+
 import { type NodePath, type t as T } from '../packages';
 import { addClassToNode } from './style';
 

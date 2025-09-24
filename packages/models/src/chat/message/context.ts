@@ -1,4 +1,4 @@
-import type { Branch } from '../../project';
+import { type Branch } from '../../project';
 
 export enum MessageContextType {
     FILE = 'file',

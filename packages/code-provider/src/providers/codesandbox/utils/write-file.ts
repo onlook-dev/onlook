@@ -1,6 +1,8 @@
-import { WebSocketSession } from '@codesandbox/sdk';
+import { type WebSocketSession } from '@codesandbox/sdk';
+
 import { normalizePath } from '@onlook/utility';
-import type { WriteFileInput, WriteFileOutput } from '../../../types';
+
+import { type WriteFileInput, type WriteFileOutput } from '../../../types';
 
 export async function writeFile(
     client: WebSocketSession,

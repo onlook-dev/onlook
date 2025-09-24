@@ -1,5 +1,6 @@
-import type { User } from '@onlook/models';
-import type { User as DbUser } from '../../schema';
+import { type User } from '@onlook/models';
+
+import { type User as DbUser } from '../../schema';
 
 export const toDbUser = (user: User): DbUser => {
     return {

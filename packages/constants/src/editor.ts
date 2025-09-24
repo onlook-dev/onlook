@@ -1,4 +1,5 @@
 import { Orientation, Theme } from './frame';
+
 export const APP_NAME = 'Onlook';
 export const APP_SCHEMA = 'onlook';
 export const HOSTING_DOMAIN = 'onlook.live';

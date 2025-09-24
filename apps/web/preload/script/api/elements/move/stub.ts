@@ -1,4 +1,5 @@
 import { EditorAttributes } from '@onlook/constants';
+
 import {
     DisplayDirection,
     findInsertionIndex as findFlexBlockInsertionIndex,
@@ -41,7 +42,9 @@ export function moveStub(el: HTMLElement, x: number, y: number) {
 
     const parentStyle = window.getComputedStyle(parent);
     const isGridLayout = parentStyle.display === 'grid';
-    const isFlexRow = !isGridLayout && parentStyle.display === 'flex' &&
+    const isFlexRow =
+        !isGridLayout &&
+        parentStyle.display === 'flex' &&
         (parentStyle.flexDirection === 'row' || parentStyle.flexDirection === '');
 
     if (isFlexRow) {

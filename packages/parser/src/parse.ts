@@ -1,6 +1,8 @@
 import { EditorAttributes } from '@onlook/constants';
+
+import  { type NodePath, type t as T } from './packages';
 import { isReactFragment } from './helpers';
-import { generate, type NodePath, parse, type t as T, types as t, traverse } from './packages';
+import { generate, parse, types as t, traverse } from './packages';
 
 export function getAstFromContent(content: string): T.File | null {
     try {
@@ -21,10 +23,7 @@ export function getAstFromContent(content: string): T.File | null {
     }
 }
 
-export function getAstFromCodeblock(
-    code: string,
-    stripIds: boolean = false,
-): T.JSXElement | undefined {
+export function getAstFromCodeblock(code: string, stripIds = false): T.JSXElement | undefined {
     const ast = getAstFromContent(code);
     if (!ast) {
         return;

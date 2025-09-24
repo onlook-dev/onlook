@@ -1,5 +1,5 @@
+import { type ComponentType } from 'react';
 import { tool } from 'ai';
-import type { ComponentType } from 'react';
 import { type z } from 'zod';
 
 export interface ToolIcon {

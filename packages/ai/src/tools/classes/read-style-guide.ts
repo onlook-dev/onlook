@@ -1,6 +1,8 @@
-import { Icons } from '@onlook/ui/icons';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
+
+import { Icons } from '@onlook/ui/icons';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 import { ClientTool } from '../models/client';
 
 export class ReadStyleGuideTool extends ClientTool {
@@ -9,7 +11,10 @@ export class ReadStyleGuideTool extends ClientTool {
     static readonly parameters = z.object({});
     static readonly icon = Icons.Brand;
 
-    async handle(_params: unknown, editorEngine: EditorEngine): Promise<{
+    async handle(
+        _params: unknown,
+        editorEngine: EditorEngine,
+    ): Promise<{
         configPath: string;
         cssPath: string;
         configContent: string;

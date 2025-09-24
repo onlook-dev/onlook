@@ -1,9 +1,8 @@
-import type { PreviewImg, Project } from '@onlook/models';
-import type { Project as DbProject } from '../../schema';
+import { type PreviewImg, type Project } from '@onlook/models';
 
-export const fromDbProject = (
-    dbProject: DbProject,
-): Project => {
+import { type Project as DbProject } from '../../schema';
+
+export const fromDbProject = (dbProject: DbProject): Project => {
     return {
         id: dbProject.id,
         name: dbProject.name,
@@ -18,7 +17,9 @@ export const fromDbProject = (
 };
 
 export const toDbProject = (project: Project): DbProject => {
-    const { previewImgUrl, previewImgPath, previewImgBucket, updatedPreviewImgAt } = toDbPreviewImg(project.metadata.previewImg);
+    const { previewImgUrl, previewImgPath, previewImgBucket, updatedPreviewImgAt } = toDbPreviewImg(
+        project.metadata.previewImg,
+    );
     return {
         id: project.id,
         name: project.name,
@@ -59,16 +60,16 @@ export function fromDbPreviewImg(dbProject: DbProject): PreviewImg | null {
 }
 
 export function toDbPreviewImg(previewImg: PreviewImg | null): {
-    previewImgUrl: string | null,
-    previewImgPath: string | null,
-    previewImgBucket: string | null,
-    updatedPreviewImgAt: Date | null,
+    previewImgUrl: string | null;
+    previewImgPath: string | null;
+    previewImgBucket: string | null;
+    updatedPreviewImgAt: Date | null;
 } {
-    let res: {
-        previewImgUrl: string | null,
-        previewImgPath: string | null,
-        previewImgBucket: string | null,
-        updatedPreviewImgAt: Date | null,
+    const res: {
+        previewImgUrl: string | null;
+        previewImgPath: string | null;
+        previewImgBucket: string | null;
+        updatedPreviewImgAt: Date | null;
     } = {
         previewImgUrl: null,
         previewImgPath: null,
@@ -82,7 +83,11 @@ export function toDbPreviewImg(previewImg: PreviewImg | null): {
 
     if (previewImg.type === 'url' && previewImg.url) {
         res.previewImgUrl = previewImg.url;
-    } else if (previewImg.type === 'storage' && previewImg.storagePath && previewImg.storagePath.path && previewImg.storagePath.bucket) {
+    } else if (
+        previewImg.type === 'storage' &&
+        previewImg.storagePath?.path &&
+        previewImg.storagePath.bucket
+    ) {
         res.previewImgPath = previewImg.storagePath.path;
         res.previewImgBucket = previewImg.storagePath.bucket;
     }

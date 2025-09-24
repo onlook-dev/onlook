@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+
 import { generateUniqueBranchName } from '../src/name';
 
 describe('generateUniqueBranchName', () => {

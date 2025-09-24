@@ -10,8 +10,8 @@ let useAllDefaultValues = false;
 let customTheme: CustomTheme = {};
 
 const hasNegative = (val: string): ['-' | '', string] => [
-    val[0] === '-' ? '-' : '',
-    val[0] === '-' ? val.slice(1) : val,
+    val.startsWith('-') ? '-' : '',
+    val.startsWith('-') ? val.slice(1) : val,
 ];
 const getCustomVal = (val: string) => {
     val = val.replace(/\s/g, '_');
@@ -1107,18 +1107,17 @@ export const propertyMap: Map<
                 return defaultVal;
             }
             const filterValConfig: Record<string, (v: string) => string> = {
-                blur: (v: string) => `blur-${customTheme['blur']?.[v] ?? `[${v}]`}`,
-                brightness: (v: string) =>
-                    `brightness-${customTheme['brightness']?.[v] ?? `[${v}]`}`,
-                contrast: (v: string) => `contrast-${customTheme['contrast']?.[v] ?? `[${v}]`}`,
-                grayscale: (v: string) => `grayscale-${customTheme['grayscale']?.[v] ?? `[${v}]`}`,
+                blur: (v: string) => `blur-${customTheme.blur?.[v] ?? `[${v}]`}`,
+                brightness: (v: string) => `brightness-${customTheme.brightness?.[v] ?? `[${v}]`}`,
+                contrast: (v: string) => `contrast-${customTheme.contrast?.[v] ?? `[${v}]`}`,
+                grayscale: (v: string) => `grayscale-${customTheme.grayscale?.[v] ?? `[${v}]`}`,
                 'hue-rotate': (v: string) => {
                     const t = hasNegative(v);
-                    return `${t[0]}hue-rotate-${customTheme['grayscale']?.[t[1]] ?? `[${t[1]}]`}`;
+                    return `${t[0]}hue-rotate-${customTheme.grayscale?.[t[1]] ?? `[${t[1]}]`}`;
                 },
-                invert: (v: string) => `invert-${customTheme['invert']?.[v] ?? `[${v}]`}`,
-                saturate: (v: string) => `saturate-${customTheme['saturate']?.[v] ?? `[${v}]`}`,
-                sepia: (v: string) => `sepia-${customTheme['sepia']?.[v] ?? `[${v}]`}`,
+                invert: (v: string) => `invert-${customTheme.invert?.[v] ?? `[${v}]`}`,
+                saturate: (v: string) => `saturate-${customTheme.saturate?.[v] ?? `[${v}]`}`,
+                sepia: (v: string) => `sepia-${customTheme.sepia?.[v] ?? `[${v}]`}`,
             };
             const vals = getCustomVal(val)
                 .replace(/\(.+?\)/g, (v) => v.replace(/_/g, ''))
@@ -3326,12 +3325,15 @@ const getResultCode = (it: CssCodeParse, prefix = '', config: TranslatorConfig) 
             if ((config.prefix?.length ?? 0) > 0) {
                 pipeVal = pipeVal
                     .split(' ')
-                    .map((v) => `${v[0] === '-' ? '-' : ''}${config.prefix}${v.replace(/^-/, '')}`)
+                    .map(
+                        (v) =>
+                            `${v.startsWith('-') ? '-' : ''}${config.prefix}${v.replace(/^-/, '')}`,
+                    )
                     .join(' ');
             }
             if (hasImportant) {
                 const getImportantVal = (v: string) => {
-                    if (v[0] === '[' && v[v.length - 1] === ']') {
+                    if (v.startsWith('[') && v.endsWith(']')) {
                         v = `${v.slice(0, -1)}!important]`;
                     } else {
                         v = `!${v}`;

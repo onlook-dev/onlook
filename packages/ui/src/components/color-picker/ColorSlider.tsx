@@ -1,6 +1,7 @@
-import { clamp } from 'lodash';
 import type React from 'react';
 import styled from '@emotion/styled';
+import { clamp } from 'lodash';
+
 import { usePointerStroke } from '../../hooks/use-pointer-stroke';
 import { checkPattern } from './checkPattern';
 

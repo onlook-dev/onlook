@@ -1,5 +1,6 @@
-import { motion, type HTMLMotionProps } from 'motion/react';
+import type { HTMLMotionProps } from 'motion/react';
 import * as React from 'react';
+import { motion } from 'motion/react';
 
 import { cn } from '../utils';
 

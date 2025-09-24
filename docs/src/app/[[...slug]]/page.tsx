@@ -1,16 +1,12 @@
+import { notFound } from 'next/navigation';
+import { createRelativeLink } from 'fumadocs-ui/mdx';
+import { DocsBody, DocsPage } from 'fumadocs-ui/page';
+
 import { source } from '@/lib/source';
 import { getMDXComponents } from '@/mdx-components';
-import { createRelativeLink } from 'fumadocs-ui/mdx';
-import {
-    DocsBody,
-    DocsPage
-} from 'fumadocs-ui/page';
-import { notFound } from 'next/navigation';
 import { EditGitHub } from './edit-gh';
 
-export default async function Page(props: {
-    params: Promise<{ slug?: string[] }>;
-}) {
+export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
     const params = await props.params;
     const page = source.getPage(params.slug);
     if (!page) notFound();
@@ -19,7 +15,7 @@ export default async function Page(props: {
 
     let filePath = '';
     if (page.file && typeof page.file === 'object' && 'path' in page.file) {
-        const path = page.file.path as string;
+        const path = page.file.path;
         filePath = path.replace(/^.*?\/content\//, 'content/');
     }
 
@@ -42,9 +38,7 @@ export async function generateStaticParams() {
     return source.generateParams();
 }
 
-export async function generateMetadata(props: {
-    params: Promise<{ slug?: string[] }>;
-}) {
+export async function generateMetadata(props: { params: Promise<{ slug?: string[] }> }) {
     const params = await props.params;
     const page = source.getPage(params.slug);
     if (!page) notFound();

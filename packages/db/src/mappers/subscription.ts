@@ -1,5 +1,16 @@
-import type { Price, Product, ScheduledChange, ScheduledSubscriptionAction, Subscription } from '@onlook/stripe';
-import type { Price as DbPrice, Product as DbProduct, Subscription as DbSubscription } from '../schema';
+import {
+    type Price,
+    type Product,
+    type ScheduledChange,
+    type ScheduledSubscriptionAction,
+    type Subscription,
+} from '@onlook/stripe';
+
+import {
+    type Price as DbPrice,
+    type Product as DbProduct,
+    type Subscription as DbSubscription,
+} from '../schema';
 
 export function fromDbSubscription(
     subscription: DbSubscription & {
@@ -15,7 +26,12 @@ export function fromDbSubscription(
         endedAt: subscription.endedAt,
         product: fromDbProduct(subscription.product),
         price: fromDbPrice(subscription.price),
-        scheduledChange: fromDbScheduledChange(scheduledPrice, subscription.scheduledAction, subscription.scheduledChangeAt, subscription.stripeSubscriptionScheduleId),
+        scheduledChange: fromDbScheduledChange(
+            scheduledPrice,
+            subscription.scheduledAction,
+            subscription.scheduledChangeAt,
+            subscription.stripeSubscriptionScheduleId,
+        ),
 
         stripeSubscriptionId: subscription.stripeSubscriptionId,
         stripeCustomerId: subscription.stripeCustomerId,
@@ -47,7 +63,6 @@ export function fromDbScheduledChange(
     scheduledChangeAt: Date | null,
     stripeSubscriptionScheduleId: string | null,
 ): ScheduledChange | null {
-
     if (!scheduledAction || !scheduledChangeAt) {
         return null;
     }

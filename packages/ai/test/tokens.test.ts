@@ -1,7 +1,10 @@
-import type { ChatMessage } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import { encode } from 'gpt-tokenizer';
+
+import { type ChatMessage } from '@onlook/models';
+
 import { countTokensWithRoles } from '../src/tokens/index.ts';
+
 type Part =
     | { type: 'text'; text: string }
     | { type: `tool-${string}`; input: unknown }

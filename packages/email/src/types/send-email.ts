@@ -1,4 +1,4 @@
-import type { Resend } from 'resend';
+import { type Resend } from 'resend';
 
 export interface SendEmailOptions {
     dryRun?: boolean;

@@ -1,4 +1,5 @@
-import type { DomElementStyles } from '@onlook/models';
+import { type DomElementStyles } from '@onlook/models';
+
 import { getHtmlElement, jsonClone } from '../../helpers';
 
 export function getStyles(element: HTMLElement): DomElementStyles {
@@ -24,7 +25,7 @@ export function getComputedStyleByDomId(domId: string): Record<string, string> {
     if (!element) {
         return {};
     }
-    return getElComputedStyle(element as HTMLElement);
+    return getElComputedStyle(element);
 }
 
 function getElComputedStyle(element: HTMLElement): Record<string, string> {

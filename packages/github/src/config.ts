@@ -7,12 +7,10 @@ export interface GitHubAppConfig {
 /**
  * Validate GitHub App configuration
  */
-export function validateGitHubAppConfig(config: Partial<GitHubAppConfig>): config is GitHubAppConfig {
-    return !!(
-        config.appId &&
-        config.privateKey &&
-        config.slug
-    );
+export function validateGitHubAppConfig(
+    config: Partial<GitHubAppConfig>,
+): config is GitHubAppConfig {
+    return !!(config.appId && config.privateKey && config.slug);
 }
 
 /**
@@ -27,7 +25,9 @@ export function getGitHubAppConfig(): GitHubAppConfig {
     };
 
     if (!validateGitHubAppConfig(config)) {
-        throw new Error('GitHub App configuration is missing or invalid. Please check your environment variables: GITHUB_APP_ID, GITHUB_APP_PRIVATE_KEY, GITHUB_APP_SLUG');
+        throw new Error(
+            'GitHub App configuration is missing or invalid. Please check your environment variables: GITHUB_APP_ID, GITHUB_APP_PRIVATE_KEY, GITHUB_APP_SLUG',
+        );
     }
 
     return config;

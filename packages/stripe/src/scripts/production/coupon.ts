@@ -1,4 +1,4 @@
-import Stripe from "stripe";
+import type Stripe from 'stripe';
 import { v4 as uuidv4 } from 'uuid';
 
 export const createCodeForCoupon = async (
@@ -21,13 +21,15 @@ export const createCodeForCoupon = async (
         id: promotionCode.id,
         code: promotionCode.code,
     };
-}
+};
 
-export const createLegacyCoupon = async (stripe: Stripe): Promise<{
+export const createLegacyCoupon = async (
+    stripe: Stripe,
+): Promise<{
     id: string;
     redeemBy: Date;
 }> => {
-    const redeemBy = Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 90); // 90 days from now
+    const redeemBy = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 90; // 90 days from now
     const coupon = await stripe.coupons.create({
         amount_off: 2500, // $25
         currency: 'usd',
@@ -35,11 +37,11 @@ export const createLegacyCoupon = async (stripe: Stripe): Promise<{
         name: 'Desktop Pro User',
         redeem_by: redeemBy,
         metadata: {
-            type: 'legacy'
+            type: 'legacy',
         },
     });
     return {
         id: coupon.id,
         redeemBy: new Date(redeemBy * 1000),
-    }
-}
+    };
+};

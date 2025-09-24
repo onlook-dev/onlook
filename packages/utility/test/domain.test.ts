@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+
 import { createSecureUrl } from '../src/domain';
 
 describe('createSecureUrl', () => {

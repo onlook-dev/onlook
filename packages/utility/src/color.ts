@@ -1,7 +1,8 @@
-import colorNamer from 'color-namer';
 import type cssColorNames from 'css-color-names';
+import colorNamer from 'color-namer';
 import { oklch, rgb } from 'culori';
 import parseCSSColor from 'parse-css-color';
+
 import { isNearEqual } from './math';
 
 export function isColorEmpty(colorValue: string) {
@@ -27,9 +28,10 @@ export function parseHslValue(value: string): Color | null {
         a = 1;
 
     if (value.includes('hsl')) {
-        const hslMatch = value.match(
-            /hsla?\(\s*([^,\s]+)(?:deg)?\s*[,\s]\s*([^,\s]+)%\s*[,\s]\s*([^,\s]+)%\s*(?:[,/]\s*([^)]+))?\s*\)/,
-        );
+        const hslMatch =
+            /hsla?\(\s*([^,\s]+)(?:deg)?\s*[,\s]\s*([^,\s]+)%\s*[,\s]\s*([^,\s]+)%\s*(?:[,/]\s*([^)]+))?\s*\)/.exec(
+                value,
+            );
 
         if (hslMatch) {
             // Parse hue with unit support
@@ -98,9 +100,10 @@ export function parseOklchValue(value: string): Color | null {
         a = 1;
 
     if (value.includes('oklch')) {
-        const oklchMatch = value.match(
-            /oklch\(\s*([^,\s]+)%?\s*[,\s]\s*([^,\s]+)\s*[,\s]\s*([^,\s]+)(?:deg)?\s*(?:[,/]\s*([^)]+))?\s*\)/,
-        );
+        const oklchMatch =
+            /oklch\(\s*([^,\s]+)%?\s*[,\s]\s*([^,\s]+)\s*[,\s]\s*([^,\s]+)(?:deg)?\s*(?:[,/]\s*([^)]+))?\s*\)/.exec(
+                value,
+            );
 
         if (oklchMatch) {
             l = oklchMatch[1]?.trim().endsWith('%')
@@ -152,9 +155,7 @@ export function parseOklchValue(value: string): Color | null {
 
 export interface Palette {
     name: string;
-    colors: {
-        [key: number]: string;
-    };
+    colors: Record<number, string>;
 }
 
 export class Color {
@@ -290,9 +291,7 @@ export class Color {
             },
         };
 
-        const intensityMap: {
-            [key: number]: number;
-        } = {
+        const intensityMap: Record<number, number> = {
             50: 0.9,
             100: 0.8,
             200: 0.595,

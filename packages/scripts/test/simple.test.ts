@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'bun:test';
 import fs from 'node:fs';
 import path from 'node:path';
+import { describe, expect, it } from 'bun:test';
 
 // Test helper functions that don't require complex mocking
 describe('basic functionality tests', () => {
@@ -91,8 +91,8 @@ EMPTY_KEY=
 
     it('should extract supabase keys from output', () => {
         const extractSupabaseKeys = (output: string) => {
-            const anon = output.match(/anon key: (ey[A-Za-z0-9_-]+[^\r\n]*)/);
-            const role = output.match(/service_role key: (ey[A-Za-z0-9_-]+[^\r\n]*)/);
+            const anon = /anon key: (ey[A-Za-z0-9_-]+[^\r\n]*)/.exec(output);
+            const role = /service_role key: (ey[A-Za-z0-9_-]+[^\r\n]*)/.exec(output);
             return anon?.[1] && role?.[1] ? { anonKey: anon[1], serviceRoleKey: role[1] } : null;
         };
 

@@ -1,4 +1,5 @@
-import { types as t, type t as T } from './packages';
+import type { t as T } from './packages';
+import { types as t } from './packages';
 
 export function isReactFragment(openingElement: T.JSXOpeningElement): boolean {
     const name = openingElement.name;
@@ -34,7 +35,7 @@ export function isObjectExpression(node: any): node is T.ObjectExpression {
 
 export const genASTParserOptionsByFileExtension = (
     fileExtension: string,
-    sourceType: string = 'module',
+    sourceType = 'module',
 ): object => {
     switch (fileExtension) {
         case '.ts':

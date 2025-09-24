@@ -1,8 +1,10 @@
-import { DeploymentStatus, DeploymentType } from '@onlook/models';
 import { relations } from 'drizzle-orm';
 import { integer, jsonb, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
 import { z } from 'zod';
+
+import { DeploymentStatus, DeploymentType } from '@onlook/models';
+
 import { projects } from '../project';
 import { users } from '../user/user';
 
@@ -11,8 +13,12 @@ export const deploymentType = pgEnum('deployment_type', DeploymentType);
 
 export const deployments = pgTable('deployments', {
     id: uuid('id').primaryKey(),
-    requestedBy: uuid('requested_by').references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }).notNull(),
-    projectId: uuid('project_id').references(() => projects.id, { onDelete: 'cascade', onUpdate: 'cascade' }).notNull(),
+    requestedBy: uuid('requested_by')
+        .references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' })
+        .notNull(),
+    projectId: uuid('project_id')
+        .references(() => projects.id, { onDelete: 'cascade', onUpdate: 'cascade' })
+        .notNull(),
     sandboxId: text('sandbox_id'),
     urls: text('urls').array(),
     type: deploymentType('type').notNull(),
@@ -43,7 +49,6 @@ export const deploymentRelations = relations(deployments, ({ one }) => ({
         references: [users.id],
     }),
 }));
-
 
 export const deploymentInsertSchema = createInsertSchema(deployments);
 export const deploymentUpdateSchema = createUpdateSchema(deployments, {

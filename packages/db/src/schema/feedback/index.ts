@@ -2,23 +2,32 @@ import { relations } from 'drizzle-orm';
 import { jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
+
 import { users } from '../user';
 
 // deprecated
 export const feedbacks = pgTable('feedbacks', {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
-    userId: uuid('user_id').references(() => users.id, { onDelete: 'set null', onUpdate: 'cascade' }),
+    userId: uuid('user_id').references(() => users.id, {
+        onDelete: 'set null',
+        onUpdate: 'cascade',
+    }),
     email: text('email'),
     message: text('message').notNull(),
     pageUrl: text('page_url'),
     userAgent: text('user_agent'),
-    attachments: jsonb('attachments').$type<Array<{
-        name: string;
-        size: number;
-        type: string;
-        url: string;
-        uploadedAt: string;
-    }>>().default([]).notNull(),
+    attachments: jsonb('attachments')
+        .$type<
+            Array<{
+                name: string;
+                size: number;
+                type: string;
+                url: string;
+                uploadedAt: string;
+            }>
+        >()
+        .default([])
+        .notNull(),
     metadata: jsonb('metadata').$type<Record<string, any>>().default({}).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 }).enableRLS();

@@ -1,8 +1,8 @@
-import type { Branch } from '@onlook/models';
+import { type Branch, type Branch } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { jsonClone } from '@onlook/utility/src/clone';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
-import { z } from 'zod';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 import { ClientTool } from '../models/client';
 
 export class ListBranchesTool extends ClientTool {
@@ -11,11 +11,14 @@ export class ListBranchesTool extends ClientTool {
     static readonly parameters = z.object({});
     static readonly icon = Icons.Branch;
 
-    async handle(_params: unknown, editorEngine: EditorEngine): Promise<{
+    async handle(
+        _params: unknown,
+        editorEngine: EditorEngine,
+    ): Promise<{
         branches: Branch[];
         activeBranchId: string | null;
     }> {
-        const branches = jsonClone(editorEngine.branches.allBranches)
+        const branches = jsonClone(editorEngine.branches.allBranches);
         return {
             branches,
             activeBranchId: editorEngine.branches.activeBranch?.id || null,

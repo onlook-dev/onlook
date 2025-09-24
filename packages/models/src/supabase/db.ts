@@ -395,9 +395,7 @@ export type Database = {
                 ];
             };
         };
-        Views: {
-            [_ in never]: never;
-        };
+        Views: Record<never, never>;
         Functions: {
             check_and_increment_usage: {
                 Args: {
@@ -719,9 +717,7 @@ export type Database = {
             usage_limit_reason: 'none' | 'daily' | 'monthly';
             usage_plan_values: 'basic' | 'pro';
         };
-        CompositeTypes: {
-            [_ in never]: never;
-        };
+        CompositeTypes: Record<never, never>;
     };
     storage: {
         Tables: {
@@ -937,9 +933,7 @@ export type Database = {
                 ];
             };
         };
-        Views: {
-            [_ in never]: never;
-        };
+        Views: Record<never, never>;
         Functions: {
             can_insert_object: {
                 Args: {
@@ -1031,12 +1025,8 @@ export type Database = {
                 }[];
             };
         };
-        Enums: {
-            [_ in never]: never;
-        };
-        CompositeTypes: {
-            [_ in never]: never;
-        };
+        Enums: Record<never, never>;
+        CompositeTypes: Record<never, never>;
     };
 };
 

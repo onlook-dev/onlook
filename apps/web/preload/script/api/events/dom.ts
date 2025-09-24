@@ -1,4 +1,5 @@
 import { EditorAttributes } from '@onlook/constants';
+
 import { penpalParent } from '../..';
 import { buildLayerTree } from '../dom';
 
@@ -52,12 +53,14 @@ export function listenForDomMutation() {
 
         if (added.size > 0 || removed.size > 0) {
             if (penpalParent) {
-                penpalParent.onWindowMutated({
-                    added: Object.fromEntries(added),
-                    removed: Object.fromEntries(removed)
-                }).catch((error: Error) => {
-                    console.error('Failed to send window mutation event:', error);
-                });
+                penpalParent
+                    .onWindowMutated({
+                        added: Object.fromEntries(added),
+                        removed: Object.fromEntries(removed),
+                    })
+                    .catch((error: Error) => {
+                        console.error('Failed to send window mutation event:', error);
+                    });
             }
         }
     });

@@ -1,6 +1,6 @@
-import { describe, expect, test } from 'bun:test';
 import fs from 'fs';
 import path from 'path';
+import { describe, expect, test } from 'bun:test';
 import { addOidsToAst, getAstFromContent, getContentFromAst } from 'src';
 
 const __dirname = import.meta.dir;
@@ -149,7 +149,7 @@ describe('addOidsToAst', () => {
 
             // Extract just the OID values
             const oidValues =
-                oidMatches?.map((match) => match.match(/data-oid="([^"]*)"/)?.[1]) || [];
+                oidMatches?.map((match) => /data-oid="([^"]*)"/.exec(match)?.[1]) || [];
             const uniqueOids = new Set(oidValues);
 
             expect(uniqueOids.size).toBe(4); // All OIDs should be unique
@@ -196,7 +196,7 @@ describe('addOidsToAst', () => {
 
             // Extract just the OID values
             const oidValues =
-                oidMatches?.map((match) => match.match(/data-oid="([^"]*)"/)?.[1]) || [];
+                oidMatches?.map((match) => /data-oid="([^"]*)"/.exec(match)?.[1]) || [];
             const uniqueOids = new Set(oidValues);
 
             expect(uniqueOids.size).toBe(5); // All OIDs should be unique

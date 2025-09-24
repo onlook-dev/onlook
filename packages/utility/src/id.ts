@@ -1,5 +1,6 @@
-import { EditorAttributes } from '@onlook/constants';
 import { customAlphabet } from 'nanoid';
+
+import { EditorAttributes } from '@onlook/constants';
 
 export const VALID_DATA_ATTR_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789-._:';
 

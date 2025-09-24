@@ -1,6 +1,8 @@
-import { Icons } from '@onlook/ui/icons';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
+
+import { Icons } from '@onlook/ui/icons';
+import { type EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+
 import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
@@ -14,7 +16,10 @@ export class WriteFileTool extends ClientTool {
     });
     static readonly icon = Icons.FilePlus;
 
-    async handle(args: z.infer<typeof WriteFileTool.parameters>, editorEngine: EditorEngine): Promise<string> {
+    async handle(
+        args: z.infer<typeof WriteFileTool.parameters>,
+        editorEngine: EditorEngine,
+    ): Promise<string> {
         try {
             const sandbox = editorEngine.branches.getSandboxById(args.branchId);
             if (!sandbox) {
