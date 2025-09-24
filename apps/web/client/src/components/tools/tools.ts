@@ -20,11 +20,14 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
             throw new Error(`Tool "${toolName}" is not available in ${currentChatMode} mode`);
         }
 
-
         if (!tool) {
             throw new Error(`Unknown tool call: ${toolName}`);
         }
-        output = await tool.handle(toolCall.input, editorEngine);
+        // Parse the input to the tool parameters. Throws if invalid.
+        const validatedInput = tool.parameters.parse(toolCall.input);
+        const toolInstance = new tool();
+        // Can force type with as any because we know the input is valid.
+        output = await toolInstance.handle(validatedInput as any, editorEngine);
     } catch (error) {
         output = 'error handling tool call ' + error;
     } finally {
