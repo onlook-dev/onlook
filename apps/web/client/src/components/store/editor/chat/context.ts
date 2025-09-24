@@ -12,6 +12,7 @@ import {
 import { assertNever, type ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
+import type { FrameData } from '../frames';
 
 export class ChatContext {
     private _context: MessageContext[] = [];
@@ -23,8 +24,13 @@ export class ChatContext {
 
     init() {
         this.selectedReactionDisposer = reaction(
-            () => this.editorEngine.elements.selected,
-            () => this.generateContextFromReaction().then((context) => (this.context = context)),
+            () => ({
+                elements: this.editorEngine.elements.selected,
+                frames: this.editorEngine.frames.selected,
+            }),
+            (
+                { elements, frames },
+            ) => this.generateContextFromReaction({ elements, frames }).then((context) => (this.context = context)),
         );
     }
 
@@ -57,18 +63,16 @@ export class ChatContext {
         return await this.getRefreshedContext(this.context);
     }
 
-    private async generateContextFromReaction(): Promise<MessageContext[]> {
-        const selected = this.editorEngine.elements.selected;
-
+    private async generateContextFromReaction({ elements, frames }: { elements: DomElement[], frames: FrameData[] }): Promise<MessageContext[]> {
         let highlightedContext: HighlightMessageContext[] = [];
-        if (selected.length) {
-            highlightedContext = await this.getHighlightedContext(selected);
+        if (elements.length) {
+            highlightedContext = await this.getHighlightedContext(elements);
         }
         const imageContext = await this.getImageContext();
 
         // Derived from highlighted context
         const fileContext = await this.getFileContext(highlightedContext);
-        const branchContext = this.getBranchContext(highlightedContext);
+        const branchContext = this.getBranchContext(highlightedContext, frames);
         const context = [...fileContext, ...highlightedContext, ...imageContext, ...branchContext];
         return context;
     }
@@ -132,9 +136,13 @@ export class ChatContext {
         return fileContext;
     }
 
-    getBranchContext(highlightedContext: HighlightMessageContext[]): BranchMessageContext[] {
-        // Get unique branch IDs from highlighted context
-        const uniqueBranchIds = new Set<string>();
+    getBranchContext(
+        highlightedContext: HighlightMessageContext[],
+        frames: FrameData[],
+    ): BranchMessageContext[] {
+        // Get unique branch IDs from selected elements and frames context
+        const uniqueBranchIds = new Set<string>(frames.map(frame => frame.frame.branchId));
+
         highlightedContext.forEach(highlight => {
             uniqueBranchIds.add(highlight.branchId);
         });
