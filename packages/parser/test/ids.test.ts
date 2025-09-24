@@ -665,5 +665,79 @@ describe('addOidsToAst', () => {
             const oidCount = (result.match(/data-oid=/g) || []).length;
             expect(oidCount).toBe(3);
         });
+
+        test('should handle combination of non-string and multiple oids', async () => {
+            const ast = getAstFromContent('<div>Content</div>');
+            if (!ast) throw new Error('Failed to parse input code');
+
+            // Manually add multiple oid attributes with mix of valid strings and invalid types
+            ast.program.body.forEach((statement) => {
+                if (statement.type === 'ExpressionStatement' && statement.expression.type === 'JSXElement') {
+                    const openingElement = statement.expression.openingElement;
+                    
+                    // Add first valid string oid
+                    const validOid1 = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: { type: 'StringLiteral', value: 'valid-string-1' },
+                    };
+                    
+                    // Add invalid numeric oid
+                    const invalidNumericOid = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: {
+                            type: 'JSXExpressionContainer',
+                            expression: { type: 'Literal', value: 456, raw: '456' },
+                        },
+                    };
+                    
+                    // Add second valid string oid
+                    const validOid2 = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: { type: 'StringLiteral', value: 'valid-string-2' },
+                    };
+                    
+                    // Add invalid boolean oid
+                    const invalidBooleanOid = {
+                        type: 'JSXAttribute',
+                        name: { type: 'JSXIdentifier', name: 'data-oid' },
+                        value: {
+                            type: 'JSXExpressionContainer',
+                            expression: { type: 'Literal', value: true, raw: 'true' },
+                        },
+                    };
+
+                    openingElement.attributes.push(
+                        validOid1 as any,
+                        invalidNumericOid as any, 
+                        validOid2 as any,
+                        invalidBooleanOid as any
+                    );
+                }
+            });
+
+            const { ast: astWithIds, modified } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, '<div>Content</div>');
+
+            expect(modified).toBe(true);
+            
+            // All original oids (both valid and invalid) should be removed
+            expect(result).not.toContain('data-oid="valid-string-1"');
+            expect(result).not.toContain('data-oid="valid-string-2"');
+            expect(result).not.toContain('data-oid={456}');
+            expect(result).not.toContain('data-oid={true}');
+            
+            // Should have exactly one data-oid attribute
+            const oidCount = (result.match(/data-oid=/g) || []).length;
+            expect(oidCount).toBe(1);
+            
+            // Should be a new valid 7-character string oid
+            const oidMatch = result.match(/data-oid="([^"]*)"/);
+            expect(oidMatch).not.toBeNull();
+            expect(oidMatch![1]).toHaveLength(7);
+            expect(typeof oidMatch![1]).toBe('string');
+        });
     });
 });
