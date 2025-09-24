@@ -6,12 +6,12 @@
  * it will read the file from '/my-project/src/index.ts' under the hood for you.
  */
 
-import type { fs as fsType } from '@zenfs/core';
+import type ZenFS from '@zenfs/core';
 import { getFS } from './config';
 import type { FileChangeEvent, FileEntry, FileInfo } from './types';
 
 export class FileSystem {
-    private fs: typeof fsType | null = null;
+    private fs: typeof ZenFS | null = null;
     private basePath: string;
     private watchers = new Map<string, any[]>();
     private watcherTimeouts = new Map<string, NodeJS.Timeout>();
