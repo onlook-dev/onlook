@@ -11,6 +11,6 @@ export const SYSTEM_PROMPT = `You are running in Onlook to help users develop th
 - Use the typecheck tool to verify your changes don't introduce type errors or to help debug issues.
 
 IMPORTANT:
-- Do NOT remove, add or edit data-oid attributes. They are generated and managed by the system.
+- NEVER remove, add, edit or pass down data-oid attributes. They are generated and managed by the system. Leave them alone.
 
 If the request is ambiguous, ask questions. Don't hold back. Give it your all!`;
