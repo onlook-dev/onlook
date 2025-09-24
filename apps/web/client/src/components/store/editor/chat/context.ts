@@ -140,14 +140,11 @@ export class ChatContext {
         highlightedContext: HighlightMessageContext[],
         frames: FrameData[],
     ): BranchMessageContext[] {
-        // Get unique branch IDs from highlighted context
-        const uniqueBranchIds = new Set<string>();
+        // Get unique branch IDs from selected elements and frames context
+        const uniqueBranchIds = new Set<string>(frames.map(frame => frame.frame.branchId));
+
         highlightedContext.forEach(highlight => {
             uniqueBranchIds.add(highlight.branchId);
-        });
-
-        frames.forEach((frame) => {
-            uniqueBranchIds.add(frame.frame.branchId);
         });
 
         // Get branch objects for each unique branch ID
