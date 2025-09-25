@@ -65,6 +65,21 @@ export const ResizeHandles = observer((
                 newHeight = Math.max(newHeight, minHeight);
             }
 
+            // Check for dimension snapping
+            const snapTarget = editorEngine.snap.calculateResizeSnapTarget(
+                frame.id,
+                frame.position,
+                { width: newWidth, height: newHeight }
+            );
+
+            if (snapTarget) {
+                newWidth = snapTarget.dimension.width;
+                newHeight = snapTarget.dimension.height;
+                editorEngine.snap.showSnapLines(snapTarget.snapLines);
+            } else {
+                editorEngine.snap.hideSnapLines();
+            }
+
             editorEngine.frames.updateAndSaveToStorage(frame.id, { dimension: { width: Math.round(newWidth), height: Math.round(newHeight) } });
             editorEngine.overlay.undebouncedRefresh();
         };
@@ -73,6 +88,7 @@ export const ResizeHandles = observer((
             e.preventDefault();
             e.stopPropagation();
             setIsResizing(false);
+            editorEngine.snap.hideSnapLines();
             window.removeEventListener('mousemove', resize as unknown as EventListener);
             window.removeEventListener('mouseup', stopResize as unknown as EventListener);
         };

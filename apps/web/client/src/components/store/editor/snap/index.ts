@@ -1,7 +1,7 @@
 import type { RectDimension, RectPosition } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
-import type { SnapBounds, SnapConfig, SnapFrame, SnapLine, SnapTarget } from './types';
+import type { SnapBounds, SnapConfig, SnapFrame, SnapLine, SnapTarget, ResizeSnapTarget } from './types';
 import { SnapLineType } from './types';
 
 const SNAP_CONFIG = {
@@ -236,5 +236,131 @@ export class SnapManager {
 
     setConfig(config: Partial<SnapConfig>): void {
         Object.assign(this.config, config);
+    }
+
+    calculateResizeSnapTarget(
+        resizeFrameId: string,
+        currentPosition: RectPosition,
+        currentDimension: RectDimension,
+    ): ResizeSnapTarget | null {
+        if (!this.config.enabled) {
+            return null;
+        }
+
+        const otherFrames = this.getSnapFrames(resizeFrameId);
+        
+        if (otherFrames.length === 0) {
+            return null;
+        }
+
+        const snapCandidates: Array<{ dimension: RectDimension; lines: SnapLine[]; distance: number }> = [];
+
+        for (const otherFrame of otherFrames) {
+            // Check for width matching
+            const widthDistance = Math.abs(currentDimension.width - otherFrame.dimension.width);
+            if (widthDistance <= this.config.threshold) {
+                const snapLine = this.createDimensionSnapLine(
+                    SnapLineType.WIDTH_MATCH,
+                    'vertical',
+                    otherFrame,
+                    currentPosition,
+                    currentDimension
+                );
+                
+                snapCandidates.push({
+                    dimension: { 
+                        width: otherFrame.dimension.width, 
+                        height: currentDimension.height 
+                    },
+                    lines: [snapLine],
+                    distance: widthDistance,
+                });
+            }
+
+            // Check for height matching
+            const heightDistance = Math.abs(currentDimension.height - otherFrame.dimension.height);
+            if (heightDistance <= this.config.threshold) {
+                const snapLine = this.createDimensionSnapLine(
+                    SnapLineType.HEIGHT_MATCH,
+                    'horizontal',
+                    otherFrame,
+                    currentPosition,
+                    currentDimension
+                );
+                
+                snapCandidates.push({
+                    dimension: { 
+                        width: currentDimension.width, 
+                        height: otherFrame.dimension.height 
+                    },
+                    lines: [snapLine],
+                    distance: heightDistance,
+                });
+            }
+        }
+
+        if (snapCandidates.length === 0) {
+            return null;
+        }
+
+        // Find the best candidate (closest match)
+        snapCandidates.sort((a, b) => a.distance - b.distance);
+        const bestCandidate = snapCandidates[0];
+
+        if (!bestCandidate || bestCandidate.distance > this.config.threshold) {
+            return null;
+        }
+
+        return {
+            dimension: bestCandidate.dimension,
+            snapLines: bestCandidate.lines,
+            distance: bestCandidate.distance,
+        };
+    }
+
+    private createDimensionSnapLine(
+        type: SnapLineType,
+        orientation: 'horizontal' | 'vertical',
+        otherFrame: SnapFrame,
+        currentPosition: RectPosition,
+        currentDimension: RectDimension,
+    ): SnapLine {
+        let position: number;
+        let start: number;
+        let end: number;
+
+        if (type === SnapLineType.WIDTH_MATCH) {
+            // Show vertical line at the right edge to indicate width matching
+            position = Math.max(
+                currentPosition.x + otherFrame.dimension.width,
+                otherFrame.position.x + otherFrame.dimension.width
+            );
+            start = Math.min(currentPosition.y, otherFrame.position.y) - SNAP_CONFIG.LINE_EXTENSION;
+            end = Math.max(
+                currentPosition.y + currentDimension.height,
+                otherFrame.position.y + otherFrame.dimension.height
+            ) + SNAP_CONFIG.LINE_EXTENSION;
+        } else {
+            // HEIGHT_MATCH: Show horizontal line at the bottom edge
+            position = Math.max(
+                currentPosition.y + otherFrame.dimension.height,
+                otherFrame.position.y + otherFrame.dimension.height
+            );
+            start = Math.min(currentPosition.x, otherFrame.position.x) - SNAP_CONFIG.LINE_EXTENSION;
+            end = Math.max(
+                currentPosition.x + currentDimension.width,
+                otherFrame.position.x + otherFrame.dimension.width
+            ) + SNAP_CONFIG.LINE_EXTENSION;
+        }
+
+        return {
+            id: `${type}-${otherFrame.id}-${Date.now()}`,
+            type,
+            orientation,
+            position,
+            start,
+            end,
+            frameIds: [otherFrame.id],
+        };
     }
 }
