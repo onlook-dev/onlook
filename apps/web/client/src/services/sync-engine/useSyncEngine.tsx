@@ -3,8 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { type Provider } from '@onlook/code-provider';
 import { type FileSystem } from '@onlook/file-system';
 
-import  { type SyncConfig } from './sync-engine';
-import { CodeProviderSync } from './sync-engine';
+import { CodeProviderSync, type SyncConfig } from './sync-engine';
 
 interface UseSyncEngineOptions {
     provider: Provider | null;
@@ -12,6 +11,11 @@ interface UseSyncEngineOptions {
     config?: SyncConfig;
 }
 
+/**
+ * TODO from @saddlepaddle:
+ * the hook needs to be turned into a singleton / throw an error probably (i.e. we don't allow for multiple sync engines with the same inputs to be created).
+ * Probably a source of bugs if we don't do this
+ */
 export function useSyncEngine({ provider, fs, config = {} }: UseSyncEngineOptions) {
     const [error, setError] = useState<Error | null>(null);
     const [isLoading, setIsLoading] = useState(false);

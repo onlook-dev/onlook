@@ -1,19 +1,19 @@
 'use client';
 
+import { AlertCircle, FileText, FolderPlus, Play, Square } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { AlertCircle, Play, Square, FileText, FolderPlus } from 'lucide-react';
 
 import type { Provider } from '@onlook/code-provider';
-import type { FileEntry } from '@onlook/file-system/hooks';
 import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
+import type { FileEntry } from '@onlook/file-system/hooks';
 import { useDirectory, useFile, useFS } from '@onlook/file-system/hooks';
 import { Alert, AlertDescription } from '@onlook/ui/alert';
 import { Badge } from '@onlook/ui/badge';
 
-import type { FileNode } from './_components/file-explorer';
 import { useSyncEngine } from '@/services/sync-engine/useSyncEngine';
 import { api } from '@/trpc/react';
 import { FileEditor } from './_components/file-editor';
+import type { FileNode } from './_components/file-explorer';
 import { FileExplorer } from './_components/file-explorer';
 import { SandboxManager } from './_components/sandbox-manager';
 
@@ -52,7 +52,7 @@ export default function TestSyncEnginePage() {
         loading: independentDirLoading,
         error: independentDirError,
     } = useDirectory(rootDir, '/');
-    
+
     // State for independent file browser
     const [selectedIndependentFile, setSelectedIndependentFile] = useState<string | null>(null);
     const {
@@ -137,7 +137,7 @@ export default function TestSyncEnginePage() {
                 providerOptions: {
                     codesandbox: {
                         sandboxId: id,
-                        userId: session.userId,
+                        userId: 'test',
                         initClient: true,
                         getSession: async (sandboxId) => {
                             // This will be called for reconnects
@@ -258,7 +258,7 @@ export default function TestSyncEnginePage() {
     // Get local files from useDirectory hook
     const localFiles = convertToFileNodes(localEntries ?? []);
     const independentFiles = convertToFileNodes(independentEntries ?? []);
-    
+
     // Create file handler
     const handleCreateFile = async (path: string, content?: string) => {
         if (!fs) return;
@@ -270,7 +270,7 @@ export default function TestSyncEnginePage() {
             alert(`Failed to create file: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     };
-    
+
     // Create directory handler
     const handleCreateDirectory = async (path: string) => {
         if (!fs) return;
@@ -294,7 +294,7 @@ export default function TestSyncEnginePage() {
             alert(`Failed to create file: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     };
-    
+
     const handleCreateIndependentDirectory = async (path: string) => {
         if (!independentFs) return;
         try {
