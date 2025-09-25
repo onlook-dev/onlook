@@ -1,8 +1,9 @@
-import type { ModelConfig } from '@onlook/models';
-import { stepCountIs, streamText, type ModelMessage, type ToolSet } from 'ai';
+import type { AgentType, ModelConfig } from '@onlook/models';
+import { type ModelMessage, type ToolSet } from 'ai';
+import { stepCountIs, streamText } from 'ai';
 
 export abstract class BaseAgent {
-    abstract readonly id: string;
+    abstract readonly agentType: AgentType;
     abstract readonly modelConfig: ModelConfig;
     abstract readonly systemPrompt: string;
     protected readonly toolSet: ToolSet

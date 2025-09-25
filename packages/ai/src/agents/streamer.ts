@@ -2,7 +2,7 @@ import type { ChatMessage, ChatMetadata } from "@onlook/models";
 import type { BaseAgent } from "./models";
 import { convertToStreamMessages } from "../stream";
 import { v4 as uuidv4 } from 'uuid';
-import type { streamText, UIMessageStreamOnFinishCallback, UIMessageStreamOptions } from "ai";
+import type { streamText, UIMessageStreamOptions } from "ai";
 
 export class AgentStreamer {
     private readonly agent: BaseAgent;

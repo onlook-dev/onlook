@@ -1,11 +1,10 @@
-import { ChatType, LLMProvider, OPENROUTER_MODELS, type ModelConfig } from '@onlook/models';
-import { initModel } from '../../chat/providers';
-import { getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt } from '../../prompt';
-import { getToolSetFromType } from '../../tools/toolset';
 import { BaseAgent } from '../models/base';
+import { getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '../../index';
+import { AgentType, ChatType, LLMProvider, OPENROUTER_MODELS, type ModelConfig } from '@onlook/models';
+import { getToolSetFromType } from '../../tools/toolset';
 
 export class RootAgent extends BaseAgent {
-    readonly id = 'root-agent';
+    readonly agentType = AgentType.ROOT;
     private readonly chatType: ChatType;
     readonly modelConfig: ModelConfig;
 

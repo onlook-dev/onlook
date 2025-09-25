@@ -4,7 +4,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { api } from '@/trpc/client';
 import { useChat as useAiChat } from '@ai-sdk/react';
-import { ChatType, type ChatMessage, type ChatSuggestion } from '@onlook/models';
+import { AgentType, ChatType, type ChatMessage, type ChatSuggestion } from '@onlook/models';
 import { jsonClone } from '@onlook/utility';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import { usePostHog } from 'posthog-js/react';
@@ -51,6 +51,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 body: {
                     conversationId,
                     projectId,
+                    agentType: AgentType.ROOT,
                 },
             }),
             onToolCall: async (toolCall) => {
@@ -89,6 +90,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                     chatType: type,
                     conversationId,
                     context,
+                    agentType: AgentType.ROOT,
                 },
             });
             void editorEngine.chat.conversation.generateTitle(content);
