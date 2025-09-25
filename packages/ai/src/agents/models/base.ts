@@ -1,14 +1,13 @@
 import type { ModelConfig } from '@onlook/models';
-import { type ModelMessage, type Tool, type ToolSet } from 'ai';
-import { stepCountIs, streamText } from 'ai';
+import { stepCountIs, streamText, type ModelMessage, type ToolSet } from 'ai';
 
 export abstract class BaseAgent {
     abstract readonly id: string;
     abstract readonly modelConfig: ModelConfig;
     abstract readonly systemPrompt: string;
-    protected readonly toolSet: ToolSet = {};
+    protected readonly toolSet: ToolSet
 
-    constructor(toolSet: ToolSet) {
+    constructor(toolSet: ToolSet = {}) {
         this.toolSet = toolSet;
     }
 

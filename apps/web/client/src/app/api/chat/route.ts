@@ -1,8 +1,8 @@
 import { api } from '@/trpc/server';
 import { trackEvent } from '@/utils/analytics/server';
-import { AgentStreamer, convertToStreamMessages, RootAgent } from '@onlook/ai';
+import { AgentStreamer, RootAgent } from '@onlook/ai';
 import { toDbMessage } from '@onlook/db';
-import { ChatType, type ChatMessage, type ChatMetadata } from '@onlook/models';
+import { ChatType, type ChatMessage } from '@onlook/models';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { checkMessageLimit, decrementUsage, errorHandler, getSupabaseUser, incrementUsage, repairToolCall } from './helpers';

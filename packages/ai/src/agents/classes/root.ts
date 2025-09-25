@@ -1,8 +1,8 @@
-import { type JSONValue, type LanguageModel, type ModelMessage, type ToolSet } from 'ai';
-import { BaseAgent } from '../models/base';
-import { getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '../../index';
 import { ChatType, LLMProvider, OPENROUTER_MODELS, type ModelConfig } from '@onlook/models';
+import { initModel } from '../../chat/providers';
+import { getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt } from '../../prompt';
 import { getToolSetFromType } from '../../tools/toolset';
+import { BaseAgent } from '../models/base';
 
 export class RootAgent extends BaseAgent {
     readonly id = 'root-agent';
