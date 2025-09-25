@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
 import { useFS } from './useFS';
 
 export function useFile(rootDir: string, path: string) {

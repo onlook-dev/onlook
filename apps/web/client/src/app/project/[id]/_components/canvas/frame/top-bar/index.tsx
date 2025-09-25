@@ -62,6 +62,13 @@ export const TopBar = observer(
                 time: Date.now()
             };
 
+            // If the clicked frame is not selected and this is not a multiselect operation,
+            // select it first to ensure we drag the correct frame
+            if (!editorEngine.frames.isSelected(frame.id) && !e.shiftKey) {
+                editorEngine.frames.select([frame], false);
+            }
+
+            // Get the currently selected frames after potential selection update
             const selectedFrames = editorEngine.frames.selected.map(frameData => frameData.frame);
             const framesToMove = selectedFrames.length > 0 ? selectedFrames : [frame];
 
