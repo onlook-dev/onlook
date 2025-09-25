@@ -6,6 +6,8 @@ import {
     ProviderTerminal,
     type CopyFileOutput,
     type CopyFilesInput,
+    type CreateDirectoryInput,
+    type CreateDirectoryOutput,
     type CreateProjectInput,
     type CreateProjectOutput,
     type CreateSessionInput,
@@ -109,6 +111,10 @@ export class NodeFsProvider extends Provider {
     }
 
     async copyFiles(input: CopyFilesInput): Promise<CopyFileOutput> {
+        return {};
+    }
+
+    async createDirectory(input: CreateDirectoryInput): Promise<CreateDirectoryOutput> {
         return {};
     }
 

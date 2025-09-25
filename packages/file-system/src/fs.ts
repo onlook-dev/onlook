@@ -236,21 +236,6 @@ export class FileSystem {
         await this.fs.promises.rm(fullPath, { recursive: true });
     }
 
-    /**
-     * Clears all contents of a directory. If no directory is specified,
-     * clears all contents of the root directory (but keeps the root itself).
-     * This provides a clean slate for the file system.
-     */
-    async clearDirectory(directory = ''): Promise<void> {
-        if (!this.fs) throw new Error('File system not initialized');
-
-        await this.deleteDirectory(directory);
-
-        await this.createDirectory(directory);
-
-        this.cleanup();
-    }
-
     async moveDirectory(from: string, to: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
 

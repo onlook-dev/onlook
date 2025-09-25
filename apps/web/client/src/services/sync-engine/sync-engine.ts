@@ -292,6 +292,8 @@ export class CodeProviderSync {
                         } else {
                             // Normal processing for non-rename events
                             for (const path of event.paths) {
+                                console.log(`[Sync] Raw sandbox event path: "${path}"`);
+                                
                                 // Normalize the path to remove any duplicate prefixes
                                 const normalizedPath = normalizePath(path);
                                 console.log(
@@ -299,43 +301,60 @@ export class CodeProviderSync {
                                 );
 
                                 if (!this.shouldSync(normalizedPath)) {
+                                    console.log(`[Sync] Skipping ${normalizedPath} - shouldSync returned false`);
                                     continue;
                                 }
 
                                 try {
-                                    const result = await this.provider.readFile({
+                                    // First check if it's a directory or file
+                                    console.log(`[Sync] Checking type for: ${normalizedPath}`);
+                                    const stat = await this.provider.statFile({
                                         args: { path: normalizedPath },
                                     });
-                                    const { file } = result;
+                                    console.log(`[Sync] Path ${normalizedPath} is type: ${stat.type}`);
 
-                                    console.log(
-                                        `[Sync] Processing file ${normalizedPath}, type: ${file.type}, content exists: ${!!file.content}`,
-                                    );
-
-                                    if (
-                                        (file.type === 'text' || file.type === 'binary') &&
-                                        file.content
-                                    ) {
+                                    if (stat.type === 'directory') {
+                                        // It's a directory, create it locally
                                         const localPath = normalizedPath;
+                                        await this.fs.createDirectory(localPath);
+                                        console.log(`[Sync] Created directory ${localPath} from sandbox`);
+                                    } else {
+                                        // It's a file, read and sync it
+                                        console.log(`[Sync] Reading file: ${normalizedPath}`);
+                                        const result = await this.provider.readFile({
+                                            args: { path: normalizedPath },
+                                        });
+                                        const { file } = result;
 
-                                        // Check if content has changed
-                                        const newHash = await hashContent(file.content);
-                                        const existingHash = this.fileHashes.get(localPath);
+                                        console.log(
+                                            `[Sync] Successfully read file ${normalizedPath}, type: ${file.type}, content exists: ${!!file.content}`,
+                                        );
 
-                                        if (newHash !== existingHash) {
-                                            await this.fs.writeFile(localPath, file.content);
-                                            this.fileHashes.set(localPath, newHash);
-                                            console.log(
-                                                `[Sync] ${event.type === 'add' ? 'Created' : 'Updated'} ${localPath} from sandbox`,
-                                            );
-                                        } else {
-                                            console.debug(
-                                                `[Sync] Skipping ${localPath} - content unchanged`,
-                                            );
+                                        if (
+                                            (file.type === 'text' || file.type === 'binary') &&
+                                            file.content
+                                        ) {
+                                            const localPath = normalizedPath;
+
+                                            // Check if content has changed
+                                            const newHash = await hashContent(file.content);
+                                            const existingHash = this.fileHashes.get(localPath);
+
+                                            if (newHash !== existingHash) {
+                                                await this.fs.writeFile(localPath, file.content);
+                                                this.fileHashes.set(localPath, newHash);
+                                                console.log(
+                                                    `[Sync] ${event.type === 'add' ? 'Created' : 'Updated'} ${localPath} from sandbox`,
+                                                );
+                                            } else {
+                                                console.debug(
+                                                    `[Sync] Skipping ${localPath} - content unchanged`,
+                                                );
+                                            }
                                         }
                                     }
                                 } catch (error) {
-                                    console.error(`[Sync] Error syncing ${normalizedPath}:`, error);
+                                    console.error(`[Sync] Error processing ${normalizedPath}:`, error);
                                 }
                             }
                         }
@@ -428,10 +447,17 @@ export class CodeProviderSync {
                     case 'update': {
                         // Check if it's a directory
                         const fileInfo = await this.fs.getInfo(path);
+                        console.log(`[Sync] Local path ${path} is directory: ${fileInfo.isDirectory}`);
+                        
                         if (fileInfo.isDirectory) {
                             // Create directory in provider
-                            // For now, providers don't have explicit mkdir, directories are created implicitly
-                            // when files are written to them
+                            console.log(`[Sync] Attempting to create directory in sandbox: ${sandboxPath}`);
+                            await this.provider.createDirectory({
+                                args: {
+                                    path: sandboxPath,
+                                },
+                            });
+                            console.log(`[Sync] Successfully created directory ${sandboxPath} in sandbox`);
                         } else {
                             // Read from local and write to provider
                             const content = await this.fs.readFile(path);

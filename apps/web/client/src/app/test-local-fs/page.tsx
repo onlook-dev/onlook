@@ -201,22 +201,6 @@ export default function TestLocalFSPage() {
         }
     };
 
-    const handleClearDirectory = async () => {
-        if (!fs) return;
-
-        if (confirm('Are you sure you want to clear all files? This cannot be undone.')) {
-            try {
-                await fs.clearDirectory('/');
-                setSelectedFile(null);
-            } catch (error) {
-                console.error('Failed to clear directory:', error);
-                alert(
-                    `Failed to clear: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                );
-            }
-        }
-    };
-
     const isBinaryFile = (content: string | Uint8Array | null) => {
         return (
             content === null ||
@@ -259,9 +243,6 @@ export default function TestLocalFSPage() {
                         >
                             <Plus className="mr-2 h-4 w-4" />
                             New Folder
-                        </Button>
-                        <Button onClick={handleClearDirectory} size="sm" variant="destructive">
-                            Clear All
                         </Button>
                     </div>
                 </div>
