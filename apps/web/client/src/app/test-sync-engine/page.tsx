@@ -45,6 +45,22 @@ export default function TestSyncEnginePage() {
         error: localDirError,
     } = useDirectory(rootDir, '/');
 
+    // Third independent file system instance (not part of sync engine)
+    const { fs: independentFs, isInitializing: independentFsInitializing, error: independentFsError } = useFS(rootDir);
+    const {
+        entries: independentEntries,
+        loading: independentDirLoading,
+        error: independentDirError,
+    } = useDirectory(rootDir, '/');
+    
+    // State for independent file browser
+    const [selectedIndependentFile, setSelectedIndependentFile] = useState<string | null>(null);
+    const {
+        content: independentFileContent,
+        loading: isLoadingIndependentContent,
+        error: independentFileError,
+    } = useFile(rootDir, selectedIndependentFile || '');
+
     // File browser state
     const [sandboxFiles, setSandboxFiles] = useState<FileNode[]>([]);
     const [selectedLocalFile, setSelectedLocalFile] = useState<string | null>(null);
@@ -97,10 +113,14 @@ export default function TestSyncEnginePage() {
         // Set up interval for refreshing
         const interval = setInterval(() => {
             void loadSandboxFiles(provider);
+            // Also refresh the selected file content if one is selected
+            if (selectedSandboxFile) {
+                void loadSandboxFileContent();
+            }
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [provider]);
+    }, [provider, selectedSandboxFile]);
 
     // Connect to sandbox
     const handleConnect = async (id: string) => {
@@ -237,6 +257,7 @@ export default function TestSyncEnginePage() {
 
     // Get local files from useDirectory hook
     const localFiles = convertToFileNodes(localEntries ?? []);
+    const independentFiles = convertToFileNodes(independentEntries ?? []);
 
     // Load file content from sandbox
     const loadSandboxFileContent = async () => {
@@ -418,6 +439,60 @@ export default function TestSyncEnginePage() {
         }
     };
 
+    // Save independent file
+    const handleSaveIndependentFile = async (content: string) => {
+        if (!independentFs || !selectedIndependentFile) return;
+
+        try {
+            await independentFs.writeFile(selectedIndependentFile, content);
+        } catch (error) {
+            console.error('Failed to save file:', error);
+            throw error;
+        }
+    };
+
+    // Delete independent file or directory
+    const handleDeleteIndependentFile = async (path: string) => {
+        if (!independentFs) return;
+
+        try {
+            const info = await independentFs.getInfo(path);
+
+            if (info.isDirectory) {
+                await independentFs.deleteDirectory(path);
+            } else {
+                await independentFs.deleteFile(path);
+            }
+
+            if (selectedIndependentFile === path) {
+                setSelectedIndependentFile(null);
+            }
+        } catch (error) {
+            console.error('Failed to delete independent file/directory:', error);
+            alert(`Failed to delete: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
+
+    // Rename independent file or directory
+    const handleRenameIndependentFile = async (oldPath: string, newName: string) => {
+        if (!independentFs) return;
+
+        try {
+            const lastSlash = oldPath.lastIndexOf('/');
+            const newPath =
+                lastSlash === -1 ? `/${newName}` : `${oldPath.substring(0, lastSlash)}/${newName}`;
+
+            await independentFs.moveFile(oldPath, newPath);
+
+            if (selectedIndependentFile === oldPath) {
+                setSelectedIndependentFile(newPath);
+            }
+        } catch (error) {
+            console.error('Failed to rename independent file/directory:', error);
+            alert(`Failed to rename: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
+
     return (
         <div className="flex h-screen flex-col bg-gray-950">
             {/* Header */}
@@ -453,15 +528,18 @@ export default function TestSyncEnginePage() {
             </div>
 
             {/* Error messages */}
-            {(connectionError || syncError || fsError || localDirError || localFileError) && (
+            {(connectionError || syncError || fsError || localDirError || localFileError || independentFsError || independentDirError || independentFileError) && (
                 <Alert variant="destructive" className="m-4">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                        <div> Connection Error: {connectionError}</div>
-                        <div>Sync Error: {syncError?.message}</div>
-                        <div>FileSystem Error: {fsError?.message}</div>
-                        <div>Local Directory Error: {localDirError?.message}</div>
-                        <div>Local File Error: {localFileError?.message}</div>
+                        {connectionError && <div>Connection Error: {connectionError}</div>}
+                        {syncError && <div>Sync Error: {syncError.message}</div>}
+                        {fsError && <div>FileSystem Error: {fsError.message}</div>}
+                        {localDirError && <div>Local Directory Error: {localDirError.message}</div>}
+                        {localFileError && <div>Local File Error: {localFileError.message}</div>}
+                        {independentFsError && <div>Independent FS Error: {independentFsError.message}</div>}
+                        {independentDirError && <div>Independent Dir Error: {independentDirError.message}</div>}
+                        {independentFileError && <div>Independent File Error: {independentFileError.message}</div>}
                     </AlertDescription>
                 </Alert>
             )}
@@ -469,7 +547,7 @@ export default function TestSyncEnginePage() {
             {/* Main content */}
             <div className="flex flex-1 overflow-hidden">
                 {/* Side Panel */}
-                <div className="w-80 overflow-hidden border-r border-gray-800">
+                <div className="w-64 overflow-hidden border-r border-gray-800">
                     <SandboxManager
                         sandboxId={sandboxId}
                         onSandboxChange={handleSandboxChange}
@@ -477,61 +555,93 @@ export default function TestSyncEnginePage() {
                     />
                 </div>
 
-                {/* Sandbox Files */}
-                <div className="flex flex-1 flex-col border-r border-gray-800">
-                    <div className="h-2/5 overflow-hidden border-b border-gray-800">
-                        <FileExplorer
-                            files={sandboxFiles}
-                            selectedPath={selectedSandboxFile}
-                            onSelectFile={setSelectedSandboxFile}
-                            onDeleteFile={handleDeleteSandboxFile}
-                            onRenameFile={handleRenameSandboxFile}
-                            title="Sandbox Files"
-                            emptyMessage={
-                                provider
-                                    ? 'No files in sandbox'
-                                    : 'Connect to a sandbox to view files'
-                            }
-                        />
+                {/* File browsers container */}
+                <div className="flex flex-1">
+                    {/* Sandbox Files */}
+                    <div className="flex flex-1 flex-col border-r border-gray-800">
+                        <div className="h-2/5 overflow-hidden border-b border-gray-800">
+                            <FileExplorer
+                                files={sandboxFiles}
+                                selectedPath={selectedSandboxFile}
+                                onSelectFile={setSelectedSandboxFile}
+                                onDeleteFile={handleDeleteSandboxFile}
+                                onRenameFile={handleRenameSandboxFile}
+                                title="Sandbox Files"
+                                emptyMessage={
+                                    provider
+                                        ? 'No files in sandbox'
+                                        : 'Connect to a sandbox to view files'
+                                }
+                            />
+                        </div>
+
+                        <div className="flex-1 overflow-hidden">
+                            <FileEditor
+                                fileName={selectedSandboxFile}
+                                content={sandboxFileContent}
+                                isLoading={isLoadingSandboxContent}
+                                isBinary={isBinaryFile(sandboxFileContent)}
+                                onSave={handleSaveSandboxFile}
+                            />
+                        </div>
                     </div>
 
-                    <div className="flex-1 overflow-hidden">
-                        <FileEditor
-                            fileName={selectedSandboxFile}
-                            content={sandboxFileContent}
-                            isLoading={isLoadingSandboxContent}
-                            isBinary={isBinaryFile(sandboxFileContent)}
-                            onSave={handleSaveSandboxFile}
-                        />
-                    </div>
-                </div>
+                    {/* Local Files (Sync Engine) */}
+                    <div className="flex flex-1 flex-col border-r border-gray-800">
+                        <div className="h-2/5 overflow-hidden border-b border-gray-800">
+                            <FileExplorer
+                                files={localFiles}
+                                selectedPath={selectedLocalFile}
+                                onSelectFile={setSelectedLocalFile}
+                                onDeleteFile={handleDeleteLocalFile}
+                                onRenameFile={handleRenameLocalFile}
+                                title="Local Files (Sync Engine)"
+                                emptyMessage={
+                                    fsInitializing || localDirLoading
+                                        ? 'Loading local files...'
+                                        : 'No local files (will populate after sync)'
+                                }
+                            />
+                        </div>
 
-                {/* Local Files */}
-                <div className="flex flex-1 flex-col">
-                    <div className="h-2/5 overflow-hidden border-b border-gray-800">
-                        <FileExplorer
-                            files={localFiles}
-                            selectedPath={selectedLocalFile}
-                            onSelectFile={setSelectedLocalFile}
-                            onDeleteFile={handleDeleteLocalFile}
-                            onRenameFile={handleRenameLocalFile}
-                            title="Local Files"
-                            emptyMessage={
-                                fsInitializing || localDirLoading
-                                    ? 'Loading local files...'
-                                    : 'No local files (will populate after sync)'
-                            }
-                        />
+                        <div className="flex-1 overflow-hidden">
+                            <FileEditor
+                                fileName={selectedLocalFile}
+                                content={typeof localFileContent === 'string' ? localFileContent : null}
+                                isLoading={isLoadingLocalContent}
+                                isBinary={isBinaryFile(localFileContent)}
+                                onSave={handleSaveLocalFile}
+                            />
+                        </div>
                     </div>
 
-                    <div className="flex-1 overflow-hidden">
-                        <FileEditor
-                            fileName={selectedLocalFile}
-                            content={typeof localFileContent === 'string' ? localFileContent : null}
-                            isLoading={isLoadingLocalContent}
-                            isBinary={isBinaryFile(localFileContent)}
-                            onSave={handleSaveLocalFile}
-                        />
+                    {/* Independent Local Files */}
+                    <div className="flex flex-1 flex-col">
+                        <div className="h-2/5 overflow-hidden border-b border-gray-800">
+                            <FileExplorer
+                                files={independentFiles}
+                                selectedPath={selectedIndependentFile}
+                                onSelectFile={setSelectedIndependentFile}
+                                onDeleteFile={handleDeleteIndependentFile}
+                                onRenameFile={handleRenameIndependentFile}
+                                title="Independent Local FS"
+                                emptyMessage={
+                                    independentFsInitializing || independentDirLoading
+                                        ? 'Loading independent files...'
+                                        : 'No files in independent FS'
+                                }
+                            />
+                        </div>
+
+                        <div className="flex-1 overflow-hidden">
+                            <FileEditor
+                                fileName={selectedIndependentFile}
+                                content={typeof independentFileContent === 'string' ? independentFileContent : null}
+                                isLoading={isLoadingIndependentContent}
+                                isBinary={isBinaryFile(independentFileContent)}
+                                onSave={handleSaveIndependentFile}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
