@@ -87,6 +87,21 @@ export default function TestSyncEnginePage() {
         }
     }, []); // Only on mount
 
+    // Auto-refresh sandbox files every second when connected
+    useEffect(() => {
+        if (!provider) return;
+
+        // Initial load
+        void loadSandboxFiles(provider);
+
+        // Set up interval for refreshing
+        const interval = setInterval(() => {
+            void loadSandboxFiles(provider);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [provider]);
+
     // Connect to sandbox
     const handleConnect = async (id: string) => {
         setIsConnecting(true);
@@ -120,9 +135,6 @@ export default function TestSyncEnginePage() {
 
             setProvider(providerClient);
             console.log('Connected successfully');
-
-            // Load sandbox files
-            await loadSandboxFiles(providerClient);
         } catch (error) {
             console.error('Failed to connect:', error);
             setConnectionError(error instanceof Error ? error.message : 'Failed to connect');
@@ -138,6 +150,7 @@ export default function TestSyncEnginePage() {
         setSandboxFiles([]);
         setSelectedSandboxFile(null);
         setSandboxFileContent(null);
+        setSelectedLocalFile(null);
     };
 
     // Handle sandbox change
@@ -146,7 +159,7 @@ export default function TestSyncEnginePage() {
             handleDisconnect();
             setSandboxId(newSandboxId);
             if (newSandboxId) {
-                handleConnect(newSandboxId);
+                void handleConnect(newSandboxId);
             }
         }
     };
@@ -164,15 +177,8 @@ export default function TestSyncEnginePage() {
                 setSandboxFiles([]);
             }
         } catch (error) {
-            console.error('Failed to load sandbox files:', error);
-            // Try to list files in /home/projects if root fails
-            try {
-                const files = await buildFileTree(provider, '/home/projects');
-                setSandboxFiles(files);
-            } catch (fallbackError) {
-                console.error('Failed to load files from fallback path:', fallbackError);
-                setSandboxFiles([]);
-            }
+            // Silently handle errors during refresh - files might be in transition
+            setSandboxFiles([]);
         }
     };
 
@@ -360,6 +366,58 @@ export default function TestSyncEnginePage() {
         }
     };
 
+    // Rename sandbox file or directory
+    const handleRenameSandboxFile = async (oldPath: string, newName: string) => {
+        if (!provider) return;
+
+        try {
+            // Calculate new path
+            const lastSlash = oldPath.lastIndexOf('/');
+            const newPath =
+                lastSlash === -1 ? newName : `${oldPath.substring(0, lastSlash)}/${newName}`;
+
+            await provider.renameFile({
+                args: {
+                    oldPath,
+                    newPath,
+                },
+            });
+
+            // Update selection if renamed file was selected
+            if (selectedSandboxFile === oldPath) {
+                setSelectedSandboxFile(newPath);
+            }
+
+            // Reload sandbox files
+            await loadSandboxFiles(provider);
+        } catch (error) {
+            console.error('Failed to rename sandbox file/directory:', error);
+            alert(`Failed to rename: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
+
+    // Rename local file or directory
+    const handleRenameLocalFile = async (oldPath: string, newName: string) => {
+        if (!fs) return;
+
+        try {
+            // Calculate new path
+            const lastSlash = oldPath.lastIndexOf('/');
+            const newPath =
+                lastSlash === -1 ? `/${newName}` : `${oldPath.substring(0, lastSlash)}/${newName}`;
+
+            await fs.moveFile(oldPath, newPath);
+
+            // Update selection if renamed file was selected
+            if (selectedLocalFile === oldPath) {
+                setSelectedLocalFile(newPath);
+            }
+        } catch (error) {
+            console.error('Failed to rename local file/directory:', error);
+            alert(`Failed to rename: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
+
     return (
         <div className="flex h-screen flex-col bg-gray-950">
             {/* Header */}
@@ -427,6 +485,7 @@ export default function TestSyncEnginePage() {
                             selectedPath={selectedSandboxFile}
                             onSelectFile={setSelectedSandboxFile}
                             onDeleteFile={handleDeleteSandboxFile}
+                            onRenameFile={handleRenameSandboxFile}
                             title="Sandbox Files"
                             emptyMessage={
                                 provider
@@ -455,6 +514,7 @@ export default function TestSyncEnginePage() {
                             selectedPath={selectedLocalFile}
                             onSelectFile={setSelectedLocalFile}
                             onDeleteFile={handleDeleteLocalFile}
+                            onRenameFile={handleRenameLocalFile}
                             title="Local Files"
                             emptyMessage={
                                 fsInitializing || localDirLoading

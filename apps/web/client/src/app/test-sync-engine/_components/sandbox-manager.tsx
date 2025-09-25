@@ -20,11 +20,18 @@ interface SandboxManagerProps {
 export function SandboxManager({ sandboxId, onSandboxChange, isConnected }: SandboxManagerProps) {
     const [inputSandboxId, setInputSandboxId] = useState('');
     const [isCreating, setIsCreating] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     
     const createSandbox = api.sandbox.create.useMutation({
         onSuccess: (data) => {
             onSandboxChange(data.sandboxId);
             setInputSandboxId('');
+        },
+    });
+    
+    const deleteSandbox = api.sandbox.delete.useMutation({
+        onSuccess: () => {
+            onSandboxChange(null);
         },
     });
     
@@ -57,11 +64,19 @@ export function SandboxManager({ sandboxId, onSandboxChange, isConnected }: Sand
         console.log('Fork sandbox:', sandboxId);
     };
     
-    const handleDelete = () => {
-        if (confirm('Are you sure you want to delete this sandbox?')) {
-            // TODO: Implement delete functionality
-            console.log('Delete sandbox:', sandboxId);
-            handleDisconnect();
+    const handleDelete = async () => {
+        if (!sandboxId) return;
+        
+        if (confirm('Are you sure you want to delete this sandbox? This action cannot be undone.')) {
+            setIsDeleting(true);
+            try {
+                await deleteSandbox.mutateAsync({ sandboxId });
+            } catch (error) {
+                console.error('Failed to delete sandbox:', error);
+                alert('Failed to delete sandbox. Please try again.');
+            } finally {
+                setIsDeleting(false);
+            }
         }
     };
     
@@ -155,10 +170,10 @@ export function SandboxManager({ sandboxId, onSandboxChange, isConnected }: Sand
                                             onClick={handleDelete}
                                             variant="outline"
                                             className="w-full text-red-500 hover:text-red-400"
-                                            disabled
+                                            disabled={isDeleting || !isConnected}
                                         >
                                             <Trash2 className="w-4 h-4 mr-2" />
-                                            Delete
+                                            {isDeleting ? 'Deleting...' : 'Delete'}
                                         </Button>
                                     </div>
                                     

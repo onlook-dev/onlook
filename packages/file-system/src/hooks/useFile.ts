@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
 import { useFS } from './useFS';
 
 export function useFile(rootDir: string, path: string) {
     const { fs, isInitializing, error: fsError } = useFS(rootDir);
-    const [content, setContent] = useState<string | Buffer | null>(null);
+    const [content, setContent] = useState<string | Uint8Array<ArrayBufferLike> | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
@@ -23,10 +24,10 @@ export function useFile(rootDir: string, path: string) {
             }
         };
 
-        loadFile();
+        void loadFile();
 
         return fs.watchFile(path, () => {
-            loadFile();
+            void loadFile();
         });
     }, [fs, path]);
 

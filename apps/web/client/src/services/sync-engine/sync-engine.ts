@@ -6,6 +6,7 @@
  */
 import { type Provider, type ProviderFileWatcher } from '@onlook/code-provider';
 import { type FileSystem } from '@onlook/file-system';
+
 import { normalizePath } from '@/components/store/editor/sandbox/helpers';
 
 export interface SyncConfig {
@@ -197,52 +198,134 @@ export class CodeProviderSync {
                     );
                     // Process based on event type
                     if (event.type === 'change' || event.type === 'add') {
-                        for (let path of event.paths) {
-                            // Normalize the path to remove any duplicate prefixes
-                            const normalizedPath = normalizePath(path);
-                            console.log(`[Sync] Path normalized from "${path}" to "${normalizedPath}"`);
-                            
-                            if (!this.shouldSync(normalizedPath)) {
-                                continue;
-                            }
+                        // Check if this is a rename (change event with 2 paths)
+                        if (
+                            event.type === 'change' &&
+                            event.paths.length === 2 &&
+                            event.paths[0] &&
+                            event.paths[1]
+                        ) {
+                            // This is likely a rename operation
+                            const oldPath = normalizePath(event.paths[0]);
+                            const newPath = normalizePath(event.paths[1]);
 
-                            try {
-                                const result = await this.provider.readFile({ args: { path: normalizedPath } });
-                                const { file } = result;
+                            console.log(`[Sync] Detected rename from "${oldPath}" to "${newPath}"`);
 
-                                console.debug(`[Sync] Processing file ${normalizedPath}, type: ${file.type}`);
-
-                                if (
-                                    (file.type === 'text' || file.type === 'binary') &&
-                                    file.content
-                                ) {
-                                    const localPath = normalizedPath;
-
-                                    // Check if content has changed
-                                    const newHash = await hashContent(file.content);
-                                    const existingHash = this.fileHashes.get(localPath);
-
-                                    if (newHash !== existingHash) {
-                                        await this.fs.writeFile(localPath, file.content);
-                                        this.fileHashes.set(localPath, newHash);
-                                        console.log(`[Sync] Updated ${localPath} from sandbox`);
-                                    } else {
-                                        console.debug(
-                                            `[Sync] Skipping ${localPath} - content unchanged`,
+                            if (this.shouldSync(oldPath) && this.shouldSync(newPath)) {
+                                try {
+                                    // Check if the old file exists locally
+                                    if (await this.fs.exists(oldPath)) {
+                                        // Rename the file locally
+                                        await this.fs.moveFile(oldPath, newPath);
+                                        console.log(
+                                            `[Sync] Renamed ${oldPath} to ${newPath} locally`,
                                         );
+
+                                        // Update hash tracking
+                                        const oldHash = this.fileHashes.get(oldPath);
+                                        if (oldHash) {
+                                            this.fileHashes.delete(oldPath);
+                                            this.fileHashes.set(newPath, oldHash);
+                                        }
+                                    } else {
+                                        // Old file doesn't exist, just create the new one
+                                        console.log(
+                                            `[Sync] Old file ${oldPath} doesn't exist locally, creating ${newPath}`,
+                                        );
+
+                                        try {
+                                            const result = await this.provider.readFile({
+                                                args: { path: newPath },
+                                            });
+                                            const { file } = result;
+
+                                            if (
+                                                (file.type === 'text' || file.type === 'binary') &&
+                                                file.content
+                                            ) {
+                                                await this.fs.writeFile(newPath, file.content);
+                                                const hash = await hashContent(file.content);
+                                                this.fileHashes.set(newPath, hash);
+                                                console.log(
+                                                    `[Sync] Created ${newPath} from sandbox`,
+                                                );
+                                            }
+                                        } catch (error) {
+                                            console.error(
+                                                `[Sync] Error creating ${newPath}:`,
+                                                error,
+                                            );
+                                        }
                                     }
+                                } catch (error) {
+                                    console.error(`[Sync] Error handling rename:`, error);
                                 }
-                            } catch (error) {
-                                console.error(`[Sync] Error syncing file ${normalizedPath}:`, error);
+                            }
+                        } else {
+                            // Normal processing for non-rename events
+                            for (const path of event.paths) {
+                                // Normalize the path to remove any duplicate prefixes
+                                const normalizedPath = normalizePath(path);
+                                console.log(
+                                    `[Sync] Path normalized from "${path}" to "${normalizedPath}"`,
+                                );
+
+                                if (!this.shouldSync(normalizedPath)) {
+                                    continue;
+                                }
+
+                                try {
+                                    const result = await this.provider.readFile({
+                                        args: { path: normalizedPath },
+                                    });
+                                    const { file } = result;
+
+                                    console.debug(
+                                        `[Sync] Processing file ${normalizedPath}, type: ${file.type}`,
+                                    );
+
+                                    if (
+                                        (file.type === 'text' || file.type === 'binary') &&
+                                        file.content
+                                    ) {
+                                        const localPath = normalizedPath;
+
+                                        // Check if content has changed
+                                        const newHash = await hashContent(file.content);
+                                        const existingHash = this.fileHashes.get(localPath);
+
+                                        if (newHash !== existingHash) {
+                                            await this.fs.writeFile(localPath, file.content);
+                                            this.fileHashes.set(localPath, newHash);
+                                            console.log(
+                                                `[Sync] ${event.type === 'add' ? 'Created' : 'Updated'} ${localPath} from sandbox`,
+                                            );
+                                        } else {
+                                            console.debug(
+                                                `[Sync] Skipping ${localPath} - content unchanged`,
+                                            );
+                                        }
+                                    }
+                                } catch (error) {
+                                    console.error(
+                                        `[Sync] Error syncing file ${normalizedPath}:`,
+                                        error,
+                                    );
+                                }
                             }
                         }
                     } else if (event.type === 'remove') {
-                        for (let path of event.paths) {
+                        for (const path of event.paths) {
                             // Normalize the path to remove any duplicate prefixes
                             const normalizedPath = normalizePath(path);
-                            console.log(`[Sync] Path normalized from "${path}" to "${normalizedPath}"`);
+                            console.log(
+                                `[Sync] Sandbox delete event - path normalized from "${path}" to "${normalizedPath}"`,
+                            );
 
                             if (!this.shouldSync(normalizedPath)) {
+                                console.debug(
+                                    `[Sync] Skipping sandbox delete for excluded path: ${normalizedPath}`,
+                                );
                                 continue;
                             }
 
@@ -253,25 +336,29 @@ export class CodeProviderSync {
                                 if (await this.fs.exists(localPath)) {
                                     // Check if it's a directory or file
                                     const fileInfo = await this.fs.getInfo(localPath);
-                                    
+
                                     if (fileInfo.isDirectory) {
                                         await this.fs.deleteDirectory(localPath);
-                                        console.log(`[Sync] Deleted directory ${localPath} from local`);
+                                        console.log(
+                                            `[Sync] Deleted directory ${localPath} from local (triggered by sandbox)`,
+                                        );
                                     } else {
                                         await this.fs.deleteFile(localPath);
-                                        console.log(`[Sync] Deleted file ${localPath} from local`);
+                                        console.log(
+                                            `[Sync] Deleted file ${localPath} from local (triggered by sandbox)`,
+                                        );
                                     }
                                 } else {
                                     console.log(
-                                        `[Sync] Path ${localPath} already deleted or doesn't exist`,
+                                        `[Sync] Path ${localPath} already deleted or doesn't exist locally`,
                                     );
                                 }
 
                                 // Remove hash regardless
                                 this.fileHashes.delete(localPath);
                             } catch (error) {
-                                console.error(
-                                    `[Sync] Error deleting ${normalizedPath}:`,
+                                console.debug(
+                                    `[Sync] Error deleting ${normalizedPath} locally:`,
                                     error instanceof Error ? error.message : 'Unknown error',
                                 );
                             }
@@ -302,10 +389,13 @@ export class CodeProviderSync {
             // Need to remove leading / for sandbox path
             const sandboxPath = path.startsWith('/') ? path.substring(1) : path;
             if (!this.shouldSync(sandboxPath)) {
+                console.debug(`[Sync] Skipping local ${type} for excluded path: ${path}`);
                 return;
             }
 
-            console.log(`[Sync] Local watcher event: ${type} for path: ${path}`);
+            console.log(
+                `[Sync] Local watcher event: ${type} for path: ${path} (sandbox: ${sandboxPath})`,
+            );
 
             try {
                 switch (type) {
@@ -337,19 +427,18 @@ export class CodeProviderSync {
                                     overwrite: true,
                                 },
                             });
-                            console.log(`[Sync] Pushed ${path} to sandbox`);
+                            console.log(
+                                `[Sync] Pushed ${path} to sandbox (${type === 'create' ? 'created' : 'updated'})`,
+                            );
                         }
                         break;
                     }
                     case 'delete': {
-                        // Check if this delete was triggered by a sandbox delete (to avoid loops)
-                        // If we don't have a hash for this file, it might have been deleted from sandbox
-                        if (!this.fileHashes.has(path)) {
-                            console.log(
-                                `[Sync] Skipping delete sync to sandbox - file was likely deleted from sandbox`,
-                            );
-                            break;
-                        }
+                        // Always attempt to sync local deletions to sandbox
+                        // The user initiated this deletion locally, so it should be reflected in the sandbox
+                        console.log(
+                            `[Sync] Processing local delete for ${path} -> sandbox path: ${sandboxPath}`,
+                        );
 
                         try {
                             await this.provider.deleteFiles({
@@ -358,16 +447,19 @@ export class CodeProviderSync {
                                     recursive: true,
                                 },
                             });
-                            console.log(`[Sync] Deleted ${sandboxPath} from sandbox`);
+                            console.log(`[Sync] Successfully deleted ${sandboxPath} from sandbox`);
                         } catch (error) {
-                            console.log(
-                                `[Sync] Failed to delete from sandbox (might already be deleted):`,
-                                error,
+                            console.debug(
+                                `[Sync] Failed to delete ${sandboxPath} from sandbox:`,
+                                error instanceof Error ? error.message : 'Unknown error',
                             );
                         }
 
-                        // Remove hash for deleted file
-                        this.fileHashes.delete(path);
+                        // Remove hash for deleted file (if it exists)
+                        if (this.fileHashes.has(path)) {
+                            this.fileHashes.delete(path);
+                            console.debug(`[Sync] Removed hash entry for deleted file: ${path}`);
+                        }
                         break;
                     }
                     case 'rename': {
@@ -376,12 +468,32 @@ export class CodeProviderSync {
                             const oldSandboxPath = event.oldPath.startsWith('/')
                                 ? event.oldPath.substring(1)
                                 : event.oldPath;
-                            await this.provider.renameFile({
-                                args: {
-                                    oldPath: oldSandboxPath,
-                                    newPath: sandboxPath,
-                                },
-                            });
+                            
+                            console.log(`[Sync] Local rename detected: "${event.oldPath}" -> "${path}"`);
+                            console.log(`[Sync] Sandbox rename: "${oldSandboxPath}" -> "${sandboxPath}"`);
+                            
+                            try {
+                                await this.provider.renameFile({
+                                    args: {
+                                        oldPath: oldSandboxPath,
+                                        newPath: sandboxPath,
+                                    },
+                                });
+                                console.log(`[Sync] Successfully renamed in sandbox`);
+                                
+                                // Update hash tracking for renamed files
+                                const oldHash = this.fileHashes.get(event.oldPath);
+                                if (oldHash) {
+                                    this.fileHashes.delete(event.oldPath);
+                                    this.fileHashes.set(path, oldHash);
+                                    console.log(`[Sync] Updated hash tracking for renamed path`);
+                                }
+                            } catch (error) {
+                                console.error(`[Sync] Failed to rename in sandbox:`, error);
+                                throw error; // Re-throw to be caught by outer try-catch
+                            }
+                        } else {
+                            console.warn(`[Sync] Rename event received without oldPath`);
                         }
                         break;
                     }

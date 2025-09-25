@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, File, Folder, Trash } from 'lucide-react';
+import { ChevronDown, ChevronRight, File, Folder, Trash, Edit2 } from 'lucide-react';
 
 import {
     ContextMenu,
@@ -11,12 +11,19 @@ import {
 } from '@onlook/ui/context-menu';
 import { ScrollArea } from '@onlook/ui/scroll-area';
 import { cn } from '@onlook/ui/utils';
+import { Input } from '@onlook/ui/input';
 
 export interface FileNode {
     name: string;
     path: string;
     type: 'file' | 'directory';
     children?: FileNode[];
+}
+
+export interface ContextMenuItem {
+    label: string;
+    icon: any;
+    onClick: (path: string) => void;
 }
 
 interface FileExplorerProps {
@@ -26,6 +33,8 @@ interface FileExplorerProps {
     title: string;
     emptyMessage?: string;
     onDeleteFile?: (path: string) => void;
+    onRenameFile?: (oldPath: string, newName: string) => void;
+    contextMenuItems?: ContextMenuItem[];
 }
 
 export function FileExplorer({
@@ -33,8 +42,10 @@ export function FileExplorer({
     selectedPath,
     onSelectFile,
     onDeleteFile,
+    onRenameFile,
     title,
     emptyMessage = 'No files found',
+    contextMenuItems = [],
 }: FileExplorerProps) {
     return (
         <div className="flex h-full flex-col">
@@ -53,6 +64,8 @@ export function FileExplorer({
                                 selectedPath={selectedPath}
                                 onSelectFile={onSelectFile}
                                 onDeleteFile={onDeleteFile}
+                                onRenameFile={onRenameFile}
+                                contextMenuItems={contextMenuItems}
                             />
                         )}
                     </div>
@@ -67,10 +80,12 @@ interface FileTreeProps {
     selectedPath: string | null;
     onSelectFile: (path: string) => void;
     onDeleteFile?: (path: string) => void;
+    onRenameFile?: (oldPath: string, newName: string) => void;
     level?: number;
+    contextMenuItems?: ContextMenuItem[];
 }
 
-function FileTree({ nodes, selectedPath, onSelectFile, onDeleteFile, level = 0 }: FileTreeProps) {
+function FileTree({ nodes, selectedPath, onSelectFile, onDeleteFile, onRenameFile, level = 0, contextMenuItems = [] }: FileTreeProps) {
     return (
         <div className="space-y-0.5">
             {nodes.map((node) => (
@@ -80,7 +95,9 @@ function FileTree({ nodes, selectedPath, onSelectFile, onDeleteFile, level = 0 }
                     selectedPath={selectedPath}
                     onSelectFile={onSelectFile}
                     onDeleteFile={onDeleteFile}
+                    onRenameFile={onRenameFile}
                     level={level}
+                    contextMenuItems={contextMenuItems}
                 />
             ))}
         </div>
@@ -92,7 +109,9 @@ interface FileTreeNodeProps {
     selectedPath: string | null;
     onSelectFile: (path: string) => void;
     onDeleteFile?: (path: string) => void;
+    onRenameFile?: (oldPath: string, newName: string) => void;
     level: number;
+    contextMenuItems?: ContextMenuItem[];
 }
 
 function FileTreeNode({
@@ -100,9 +119,13 @@ function FileTreeNode({
     selectedPath,
     onSelectFile,
     onDeleteFile,
+    onRenameFile,
     level,
+    contextMenuItems = [],
 }: FileTreeNodeProps) {
     const [isExpanded, setIsExpanded] = useState(level < 2);
+    const [isRenaming, setIsRenaming] = useState(false);
+    const [newName, setNewName] = useState(node.name);
     const isSelected = selectedPath === node.path;
     const isDirectory = node.type === 'directory';
     const hasChildren = isDirectory && node.children && node.children.length > 0;
@@ -117,6 +140,23 @@ function FileTreeNode({
 
     const handleDelete = () => {
         onDeleteFile?.(node.path);
+    };
+
+    const handleRename = () => {
+        setIsRenaming(true);
+        setNewName(node.name);
+    };
+
+    const handleRenameSubmit = () => {
+        if (newName.trim() && newName !== node.name) {
+            onRenameFile?.(node.path, newName.trim());
+        }
+        setIsRenaming(false);
+    };
+
+    const handleRenameCancel = () => {
+        setNewName(node.name);
+        setIsRenaming(false);
     };
 
     return (
@@ -149,14 +189,47 @@ function FileTreeNode({
                             <File className="h-4 w-4 flex-shrink-0 text-gray-400" />
                         )}
 
-                        <span className="truncate">{node.name}</span>
+                        {isRenaming ? (
+                            <Input
+                                value={newName}
+                                onChange={(e) => setNewName(e.target.value)}
+                                onKeyDown={(e) => {
+                                    e.stopPropagation();
+                                    if (e.key === 'Enter') {
+                                        handleRenameSubmit();
+                                    } else if (e.key === 'Escape') {
+                                        handleRenameCancel();
+                                    }
+                                }}
+                                onBlur={handleRenameSubmit}
+                                onClick={(e) => e.stopPropagation()}
+                                className="h-5 px-1 py-0 text-sm"
+                                autoFocus
+                            />
+                        ) : (
+                            <span className="truncate">{node.name}</span>
+                        )}
                     </button>
                 </ContextMenuTrigger>
                 <ContextMenuContent>
-                    <ContextMenuItem onClick={handleDelete} variant="destructive" className="gap-2">
-                        <Trash className="h-4 w-4" />
-                        Delete {isDirectory ? 'Folder' : 'File'}
-                    </ContextMenuItem>
+                    {onRenameFile && (
+                        <ContextMenuItem onClick={handleRename} className="gap-2">
+                            <Edit2 className="h-4 w-4" />
+                            Rename
+                        </ContextMenuItem>
+                    )}
+                    {contextMenuItems.map((item, index) => (
+                        <ContextMenuItem key={index} onClick={() => item.onClick(node.path)} className="gap-2">
+                            <item.icon className="h-4 w-4" />
+                            {item.label}
+                        </ContextMenuItem>
+                    ))}
+                    {onDeleteFile && (
+                        <ContextMenuItem onClick={handleDelete} variant="destructive" className="gap-2">
+                            <Trash className="h-4 w-4" />
+                            Delete {isDirectory ? 'Folder' : 'File'}
+                        </ContextMenuItem>
+                    )}
                 </ContextMenuContent>
             </ContextMenu>
 
@@ -166,7 +239,9 @@ function FileTreeNode({
                     selectedPath={selectedPath}
                     onSelectFile={onSelectFile}
                     onDeleteFile={onDeleteFile}
+                    onRenameFile={onRenameFile}
                     level={level + 1}
+                    contextMenuItems={contextMenuItems}
                 />
             )}
         </>

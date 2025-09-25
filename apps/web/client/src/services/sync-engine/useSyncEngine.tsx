@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { type Provider } from '@onlook/code-provider';
 import { type FileSystem } from '@onlook/file-system';
 
-import type { SyncConfig } from './sync-engine';
+import  { type SyncConfig } from './sync-engine';
 import { CodeProviderSync } from './sync-engine';
 
 interface UseSyncEngineOptions {
@@ -62,6 +62,7 @@ export function useSyncEngine({ provider, fs, config = {} }: UseSyncEngineOption
                 syncRef.current = null;
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [provider, fs, configKey]);
 
     return {

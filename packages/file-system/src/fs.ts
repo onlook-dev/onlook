@@ -30,7 +30,13 @@ export class FileSystem {
         this.fs = await getFS();
 
         // Ensure base directory exists
-        await this.fs.promises.mkdir(this.basePath, { recursive: true });
+        try {
+            await this.fs.promises.mkdir(this.basePath, { recursive: true });
+        } catch (error) {
+            if ((error as any)?.code !== 'EEXIST') {
+                throw error;
+            }
+        }
 
         this.isInitialized = true;
     }
@@ -291,19 +297,42 @@ export class FileSystem {
         const fullPath = this.resolvePath(path);
         const timeoutKey = `watch-file:${path}`;
 
-        const watcher = this.fs.watch(fullPath, (eventType, filename) => {
+        const watcher = this.fs.watch(fullPath, async (eventType, filename) => {
             // Clear any existing timeout
             const existingTimeout = this.watcherTimeouts.get(timeoutKey);
             if (existingTimeout) {
                 clearTimeout(existingTimeout);
             }
 
+            console.log(`[FileSystem] watchFile event: ${eventType} for ${path}`);
+
             // Debounce the callback. This is required since the watcher will fire off way before the file is actually written to, resulting in broken states.
-            const timeout = setTimeout(() => {
-                callback({
-                    type: eventType === 'rename' ? 'rename' : 'update',
-                    path,
-                });
+            const timeout = setTimeout(async () => {
+                // For rename events, check if the file exists to determine if it's a delete
+                if (eventType === 'rename') {
+                    try {
+                        await this.fs!.promises.stat(fullPath);
+                        // File exists, it's either a create or rename
+                        // For single file watching, we'll treat it as an update
+                        callback({
+                            type: 'update',
+                            path,
+                        });
+                    } catch (error) {
+                        // File doesn't exist, it was deleted
+                        console.log(`[FileSystem] Detected delete for ${path}`);
+                        callback({
+                            type: 'delete',
+                            path,
+                        });
+                    }
+                } else {
+                    // Change event is an update
+                    callback({
+                        type: 'update',
+                        path,
+                    });
+                }
                 this.watcherTimeouts.delete(timeoutKey);
             }, 50);
 
@@ -357,28 +386,57 @@ export class FileSystem {
                     clearTimeout(existingTimeout);
                 }
 
-                const timeout = setTimeout(() => {
-                    callback({
-                        type: eventType === 'rename' ? 'rename' : 'update',
-                        path: filePath,
-                    });
+                const timeout = setTimeout(async () => {
+                    const fullPath = this.resolvePath(filePath);
+
+                    // For rename events, check if the file exists to determine the actual event type
+                    if (eventType === 'rename') {
+                        try {
+                            const stats = await this.fs!.promises.stat(fullPath);
+
+                            // File exists - determine if it's create or update
+                            if (watchedPaths.has(fullPath)) {
+                                // Path was already being watched, so it's an update
+                                callback({
+                                    type: 'update',
+                                    path: filePath,
+                                });
+                            } else {
+                                // New path, it's a create
+                                console.log(`[FileSystem] Detected create for ${filePath}`);
+                                callback({
+                                    type: 'create',
+                                    path: filePath,
+                                });
+
+                                // If it's a new directory, start watching it
+                                if (stats.isDirectory()) {
+                                    await setupWatchersRecursive(fullPath);
+                                }
+                            }
+                        } catch (error) {
+                            // File doesn't exist, it was deleted
+                            console.log(`[FileSystem] Detected delete for ${filePath}`);
+                            callback({
+                                type: 'delete',
+                                path: filePath,
+                            });
+
+                            // Remove from watched paths if it was a directory
+                            watchedPaths.delete(fullPath);
+                        }
+                    } else {
+                        // Change event is an update
+                        callback({
+                            type: 'update',
+                            path: filePath,
+                        });
+                    }
+
                     this.watcherTimeouts.delete(timeoutKey);
                 }, 50);
 
                 this.watcherTimeouts.set(timeoutKey, timeout);
-
-                // If it's a new directory, start watching it
-                if (eventType === 'rename') {
-                    const fullPath = this.resolvePath(filePath);
-                    try {
-                        const stats = await this.fs!.promises.stat(fullPath);
-                        if (stats.isDirectory() && !watchedPaths.has(fullPath)) {
-                            await setupWatchersRecursive(fullPath);
-                        }
-                    } catch (err) {
-                        // File might have been deleted
-                    }
-                }
             });
 
             watchers.push(watcher);
