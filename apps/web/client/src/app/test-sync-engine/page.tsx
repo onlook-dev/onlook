@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AlertCircle, Play, Square } from 'lucide-react';
+import { AlertCircle, Play, Square, FileText, FolderPlus } from 'lucide-react';
 
 import type { Provider } from '@onlook/code-provider';
 import type { FileEntry } from '@onlook/file-system/hooks';
@@ -258,6 +258,53 @@ export default function TestSyncEnginePage() {
     // Get local files from useDirectory hook
     const localFiles = convertToFileNodes(localEntries ?? []);
     const independentFiles = convertToFileNodes(independentEntries ?? []);
+    
+    // Create file handler
+    const handleCreateFile = async (path: string, content?: string) => {
+        if (!fs) return;
+        try {
+            await fs.createFile(path, content || '// New file\n');
+            console.log(`Created file: ${path}`);
+        } catch (error) {
+            console.error('Failed to create file:', error);
+            alert(`Failed to create file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
+    
+    // Create directory handler
+    const handleCreateDirectory = async (path: string) => {
+        if (!fs) return;
+        try {
+            await fs.createDirectory(path);
+            console.log(`Created directory: ${path}`);
+        } catch (error) {
+            console.error('Failed to create directory:', error);
+            alert(`Failed to create directory: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
+
+    // Independent file system handlers
+    const handleCreateIndependentFile = async (path: string, content?: string) => {
+        if (!independentFs) return;
+        try {
+            await independentFs.createFile(path, content || '// New file\n');
+            console.log(`Created independent file: ${path}`);
+        } catch (error) {
+            console.error('Failed to create independent file:', error);
+            alert(`Failed to create file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
+    
+    const handleCreateIndependentDirectory = async (path: string) => {
+        if (!independentFs) return;
+        try {
+            await independentFs.createDirectory(path);
+            console.log(`Created independent directory: ${path}`);
+        } catch (error) {
+            console.error('Failed to create independent directory:', error);
+            alert(`Failed to create directory: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
 
     // Load file content from sandbox
     const loadSandboxFileContent = async () => {
@@ -325,6 +372,48 @@ export default function TestSyncEnginePage() {
         } catch (error) {
             console.error('Failed to save sandbox file:', error);
             throw error;
+        }
+    };
+
+    // Create sandbox file
+    const handleCreateSandboxFile = async (path: string, content?: string) => {
+        if (!provider) return;
+        try {
+            await provider.writeFile({
+                args: {
+                    path,
+                    content: content || '// New file\n',
+                    overwrite: false,
+                },
+            });
+            console.log(`Created sandbox file: ${path}`);
+            // Reload sandbox files
+            await loadSandboxFiles(provider);
+        } catch (error) {
+            console.error('Failed to create sandbox file:', error);
+            alert(`Failed to create file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
+
+    // Create sandbox directory
+    const handleCreateSandboxDirectory = async (path: string) => {
+        if (!provider) return;
+        try {
+            // Create a temporary file in the directory to force directory creation
+            const tempFilePath = `${path}/.gitkeep`;
+            await provider.writeFile({
+                args: {
+                    path: tempFilePath,
+                    content: '',
+                    overwrite: false,
+                },
+            });
+            console.log(`Created sandbox directory: ${path}`);
+            // Reload sandbox files
+            await loadSandboxFiles(provider);
+        } catch (error) {
+            console.error('Failed to create sandbox directory:', error);
+            alert(`Failed to create directory: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     };
 
@@ -572,6 +661,18 @@ export default function TestSyncEnginePage() {
                                         ? 'No files in sandbox'
                                         : 'Connect to a sandbox to view files'
                                 }
+                                contextMenuItems={provider ? [
+                                    {
+                                        label: 'Create File',
+                                        icon: FileText,
+                                        onClick: handleCreateSandboxFile,
+                                    },
+                                    {
+                                        label: 'Create Directory',
+                                        icon: FolderPlus,
+                                        onClick: handleCreateSandboxDirectory,
+                                    },
+                                ] : []}
                             />
                         </div>
 
@@ -601,6 +702,18 @@ export default function TestSyncEnginePage() {
                                         ? 'Loading local files...'
                                         : 'No local files (will populate after sync)'
                                 }
+                                contextMenuItems={[
+                                    {
+                                        label: 'Create File',
+                                        icon: FileText,
+                                        onClick: handleCreateFile,
+                                    },
+                                    {
+                                        label: 'Create Directory',
+                                        icon: FolderPlus,
+                                        onClick: handleCreateDirectory,
+                                    },
+                                ]}
                             />
                         </div>
 
@@ -630,6 +743,18 @@ export default function TestSyncEnginePage() {
                                         ? 'Loading independent files...'
                                         : 'No files in independent FS'
                                 }
+                                contextMenuItems={[
+                                    {
+                                        label: 'Create File',
+                                        icon: FileText,
+                                        onClick: handleCreateIndependentFile,
+                                    },
+                                    {
+                                        label: 'Create Directory',
+                                        icon: FolderPlus,
+                                        onClick: handleCreateIndependentDirectory,
+                                    },
+                                ]}
                             />
                         </div>
 

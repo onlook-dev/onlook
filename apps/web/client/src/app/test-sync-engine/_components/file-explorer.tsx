@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, File, Folder, Trash, Edit2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, File, Folder, Trash, Edit2, FileText, FolderPlus, Plus } from 'lucide-react';
 
 import {
     ContextMenu,
@@ -23,7 +23,7 @@ export interface FileNode {
 export interface ContextMenuItem {
     label: string;
     icon: any;
-    onClick: (path: string) => void;
+    onClick: (path: string, content?: string) => void;
 }
 
 interface FileExplorerProps {
@@ -50,7 +50,42 @@ export function FileExplorer({
     return (
         <div className="flex h-full flex-col">
             <div className="flex-shrink-0 border-b border-gray-800 px-4 py-3">
-                <h3 className="text-sm font-semibold text-gray-100">{title}</h3>
+                <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-gray-100">{title}</h3>
+                    <div className="flex gap-1">
+                        {contextMenuItems.find(item => item.label === 'Create File') && (
+                            <button
+                                onClick={() => {
+                                    const fileName = prompt('Enter file name:');
+                                    if (fileName) {
+                                        const content = prompt('Enter file content (optional):') || '';
+                                        const filePath = fileName.startsWith('/') ? fileName : `/${fileName}`;
+                                        contextMenuItems.find(item => item.label === 'Create File')?.onClick(filePath, content);
+                                    }
+                                }}
+                                className="rounded p-1 text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                                title="Create file"
+                            >
+                                <FileText className="h-4 w-4" />
+                            </button>
+                        )}
+                        {contextMenuItems.find(item => item.label === 'Create Directory') && (
+                            <button
+                                onClick={() => {
+                                    const dirName = prompt('Enter directory name:');
+                                    if (dirName) {
+                                        const dirPath = dirName.startsWith('/') ? dirName : `/${dirName}`;
+                                        contextMenuItems.find(item => item.label === 'Create Directory')?.onClick(dirPath);
+                                    }
+                                }}
+                                className="rounded p-1 text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                                title="Create directory"
+                            >
+                                <FolderPlus className="h-4 w-4" />
+                            </button>
+                        )}
+                    </div>
+                </div>
             </div>
 
             <div className="flex-1 overflow-hidden">
@@ -212,13 +247,44 @@ function FileTreeNode({
                     </button>
                 </ContextMenuTrigger>
                 <ContextMenuContent>
+                    {isDirectory && (
+                        <>
+                            <ContextMenuItem 
+                                onClick={() => {
+                                    const newFileName = prompt('Enter file name:');
+                                    if (newFileName) {
+                                        const content = prompt('Enter file content (optional):') || '';
+                                        const filePath = `${node.path}/${newFileName}`;
+                                        contextMenuItems.find(item => item.label === 'Create File')?.onClick(filePath, content);
+                                    }
+                                }} 
+                                className="gap-2"
+                            >
+                                <FileText className="h-4 w-4" />
+                                New File
+                            </ContextMenuItem>
+                            <ContextMenuItem 
+                                onClick={() => {
+                                    const newDirName = prompt('Enter directory name:');
+                                    if (newDirName) {
+                                        const dirPath = `${node.path}/${newDirName}`;
+                                        contextMenuItems.find(item => item.label === 'Create Directory')?.onClick(dirPath);
+                                    }
+                                }} 
+                                className="gap-2"
+                            >
+                                <FolderPlus className="h-4 w-4" />
+                                New Folder
+                            </ContextMenuItem>
+                        </>
+                    )}
                     {onRenameFile && (
                         <ContextMenuItem onClick={handleRename} className="gap-2">
                             <Edit2 className="h-4 w-4" />
                             Rename
                         </ContextMenuItem>
                     )}
-                    {contextMenuItems.map((item, index) => (
+                    {contextMenuItems.filter(item => item.label !== 'Create File' && item.label !== 'Create Directory').map((item, index) => (
                         <ContextMenuItem key={index} onClick={() => item.onClick(node.path)} className="gap-2">
                             <item.icon className="h-4 w-4" />
                             {item.label}

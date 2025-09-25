@@ -280,8 +280,8 @@ export class CodeProviderSync {
                                     });
                                     const { file } = result;
 
-                                    console.debug(
-                                        `[Sync] Processing file ${normalizedPath}, type: ${file.type}`,
+                                    console.log(
+                                        `[Sync] Processing file ${normalizedPath}, type: ${file.type}, content exists: ${!!file.content}`,
                                     );
 
                                     if (
@@ -307,10 +307,7 @@ export class CodeProviderSync {
                                         }
                                     }
                                 } catch (error) {
-                                    console.error(
-                                        `[Sync] Error syncing file ${normalizedPath}:`,
-                                        error,
-                                    );
+                                    console.error(`[Sync] Error syncing ${normalizedPath}:`, error);
                                 }
                             }
                         }
