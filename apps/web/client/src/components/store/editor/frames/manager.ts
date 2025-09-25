@@ -81,9 +81,25 @@ export class FramesManager {
     select(frames: Frame[], multiselect = false) {
         if (!multiselect) {
             this.deselectAll();
+            // Without multiselect, always ensure frames are selected
+            for (const frame of frames) {
+                this.updateFrameSelection(frame.id, true);
+            }
+        } else {
+            // With multiselect, toggle individual frames
+            for (const frame of frames) {
+                this.updateFrameSelection(frame.id, !this.isSelected(frame.id));
+            }
+        }
+        this.notify();
+    }
+
+    ensureSelected(frames: Frame[], multiselect = false) {
+        if (!multiselect) {
+            this.deselectAll();
         }
         for (const frame of frames) {
-            this.updateFrameSelection(frame.id, !this.isSelected(frame.id));
+            this.updateFrameSelection(frame.id, true);
         }
         this.notify();
     }

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useFS } from './useFS';
-import type { FileEntry } from '../types';
+import { useEffect, useState } from 'react';
+
+import { type FileEntry, type FileEntry } from '../types';
 
 export function useDirectory(rootDir: string, path: string) {
     const { fs, isInitializing, error: fsError } = useFS(rootDir);
