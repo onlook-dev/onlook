@@ -183,12 +183,45 @@ const checkDockerRunning = async (): Promise<void> => {
  * @param output - Raw output from Supabase startup command
  * @returns Extracted keys or null if not found
  */
-const extractSupabaseKeys = (output: string): BackendKeys | null => {
-    const anonMatch = output.match(/anon key: (ey[A-Za-z0-9_-]+[^\r\n]*)/);
-    const roleMatch = output.match(/service_role key: (ey[A-Za-z0-9_-]+[^\r\n]*)/);
+export const extractSupabaseKeys = (output: string): BackendKeys | null => {
+    let anonKey: string | undefined;
+    let serviceRoleKey: string | undefined;
 
-    const anonKey = anonMatch?.[1];
-    const serviceRoleKey = roleMatch?.[1];
+    // Try multiple possible formats for anon key
+    const anonPatterns = [
+        /anon key:\s*(ey[A-Za-z0-9_-]+[^\r\n]*)/i,           // Original format: "anon key: ..."
+        /anon_key:\s*(ey[A-Za-z0-9_-]+[^\r\n]*)/i,          // Underscore format: "anon_key: ..."
+        /anonymous key:\s*(ey[A-Za-z0-9_-]+[^\r\n]*)/i,     // Full word format: "anonymous key: ..."
+        /anon\s*[|]\s*(ey[A-Za-z0-9_-]+[^\r\n]*)/i,         // Table format: "anon | ..."
+        /"anon[^"]*":\s*"(ey[A-Za-z0-9_-]+[^"]*)"/i,        // JSON format: "anon": "..."
+    ];
+
+    // Try multiple possible formats for service role key
+    const serviceRolePatterns = [
+        /service_role key:\s*(ey[A-Za-z0-9_-]+[^\r\n]*)/i,  // Original format: "service_role key: ..."
+        /service_role_key:\s*(ey[A-Za-z0-9_-]+[^\r\n]*)/i, // Underscore format: "service_role_key: ..."
+        /service role key:\s*(ey[A-Za-z0-9_-]+[^\r\n]*)/i, // Space format: "service role key: ..."
+        /service_role\s*[|]\s*(ey[A-Za-z0-9_-]+[^\r\n]*)/i, // Table format: "service_role | ..."
+        /"service[^"]*":\s*"(ey[A-Za-z0-9_-]+[^"]*)"/i,     // JSON format: "service_role": "..."
+    ];
+
+    // Find anon key using any of the patterns
+    for (const pattern of anonPatterns) {
+        const match = output.match(pattern);
+        if (match && match[1]) {
+            anonKey = match[1].trim();
+            break;
+        }
+    }
+
+    // Find service role key using any of the patterns
+    for (const pattern of serviceRolePatterns) {
+        const match = output.match(pattern);
+        if (match && match[1]) {
+            serviceRoleKey = match[1].trim();
+            break;
+        }
+    }
 
     return anonKey && serviceRoleKey ? { anonKey, serviceRoleKey } : null;
 };
