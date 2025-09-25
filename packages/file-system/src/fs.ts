@@ -530,6 +530,37 @@ export class FileSystem {
         return files;
     }
 
+    async listAll(): Promise<Array<{ path: string; type: 'file' | 'directory' }>> {
+        if (!this.fs) throw new Error('File system not initialized');
+
+        const allPaths: Array<{ path: string; type: 'file' | 'directory' }> = [];
+
+        const listRecursive = async (dirPath: string): Promise<void> => {
+            try {
+                const entries = await this.fs!.promises.readdir(dirPath);
+
+                for (const entry of entries) {
+                    const entryPath = `${dirPath}/${entry}`;
+                    const stats = await this.fs!.promises.stat(entryPath);
+
+                    const relativePath = entryPath.substring(this.basePath.length);
+
+                    if (stats.isDirectory()) {
+                        allPaths.push({ path: relativePath, type: 'directory' });
+                        await listRecursive(entryPath);
+                    } else if (stats.isFile()) {
+                        allPaths.push({ path: relativePath, type: 'file' });
+                    }
+                }
+            } catch (err) {
+                // Ignore errors
+            }
+        };
+
+        await listRecursive(this.basePath);
+        return allPaths;
+    }
+
     cleanup(): void {
         // Clear all watchers
         for (const watchers of this.watchers.values()) {

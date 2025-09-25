@@ -76,43 +76,66 @@ export class CodeProviderSync {
     }
 
     private async pullFromSandbox(): Promise<void> {
-        const sandboxPaths = await this.getAllSandboxFiles('./');
-        const sandboxPathsSet = new Set(sandboxPaths.map((p) => (p.startsWith('/') ? p : `/${p}`)));
+        const sandboxEntries = await this.getAllSandboxFiles('./');
+        const sandboxEntriesSet = new Set(
+            sandboxEntries.map((e) => (e.path.startsWith('/') ? e.path : `/${e.path}`)),
+        );
 
-        const localFiles = await this.fs.listFiles();
+        const localEntries = await this.fs.listAll();
 
-        // Find files to delete (exist locally but not in sandbox)
-        const filesToDelete = localFiles.filter((localPath) => {
-            if (!this.shouldSync(localPath)) return false;
+        // Find entries to delete (exist locally but not in sandbox)
+        const entriesToDelete = localEntries.filter((entry) => {
+            if (!this.shouldSync(entry.path)) return false;
 
-            const sandboxPath = localPath.startsWith('/') ? localPath.substring(1) : localPath;
-            return !sandboxPathsSet.has(localPath) && !sandboxPathsSet.has(sandboxPath);
+            const sandboxPath = entry.path.startsWith('/') ? entry.path.substring(1) : entry.path;
+            return !sandboxEntriesSet.has(entry.path) && !sandboxEntriesSet.has(sandboxPath);
         });
 
-        for (const path of filesToDelete) {
+        for (const entry of entriesToDelete) {
             try {
-                await this.fs.deleteFile(path);
+                if (entry.type === 'file') {
+                    await this.fs.deleteFile(entry.path);
+                    console.log(`[Sync] Deleted file: ${entry.path}`);
+                } else {
+                    await this.fs.deleteDirectory(entry.path);
+                    console.log(`[Sync] Deleted directory: ${entry.path}`);
+                }
             } catch (error) {
                 console.debug(
-                    `[Sync] Failed to delete ${path}:`,
+                    `[Sync] Failed to delete ${entry.path}:`,
                     error instanceof Error ? error.message : 'Unknown error',
                 );
             }
         }
 
+        // Process sandbox entries
+        const directoriesToCreate = [];
         const filesToWrite = [];
-        for (const path of sandboxPaths) {
-            if (this.shouldSync(path)) {
+
+        for (const entry of sandboxEntries) {
+            if (entry.type === 'directory') {
+                directoriesToCreate.push(entry.path);
+            } else {
                 try {
-                    const result = await this.provider.readFile({ args: { path } });
+                    const result = await this.provider.readFile({ args: { path: entry.path } });
                     const { file } = result;
 
                     if ((file.type === 'text' || file.type === 'binary') && file.content) {
-                        filesToWrite.push({ path, content: file.content });
+                        filesToWrite.push({ path: entry.path, content: file.content });
                     }
                 } catch (error) {
-                    console.debug(`[Sync] Skipping ${path}:`, error);
+                    console.debug(`[Sync] Skipping ${entry.path}:`, error);
                 }
+            }
+        }
+
+        // Create directories first
+        for (const dirPath of directoriesToCreate) {
+            try {
+                await this.fs.createDirectory(dirPath);
+                console.log(`[Sync] Created directory: ${dirPath}`);
+            } catch (error) {
+                console.debug(`[Sync] Error creating directory ${dirPath}:`, error);
             }
         }
 
@@ -125,8 +148,10 @@ export class CodeProviderSync {
         }
     }
 
-    private async getAllSandboxFiles(dir: string): Promise<string[]> {
-        const files: string[] = [];
+    private async getAllSandboxFiles(
+        dir: string,
+    ): Promise<Array<{ path: string; type: 'file' | 'directory' }>> {
+        const files: Array<{ path: string; type: 'file' | 'directory' }> = [];
 
         try {
             const result = await this.provider.listFiles({ args: { path: dir } });
@@ -139,13 +164,16 @@ export class CodeProviderSync {
                 if (entry.type === 'directory') {
                     // Check if directory should be excluded
                     if (!this.excludes.includes(entry.name)) {
+                        if (this.shouldSync(fullPath)) {
+                            files.push({ path: fullPath, type: 'directory' });
+                        }
                         const subFiles = await this.getAllSandboxFiles(fullPath);
                         files.push(...subFiles);
                     }
                 } else {
                     // Only add files that should be synced
                     if (this.shouldSync(fullPath)) {
-                        files.push(fullPath);
+                        files.push({ path: fullPath, type: entry.type });
                     }
                 }
             }
@@ -465,10 +493,14 @@ export class CodeProviderSync {
                             const oldSandboxPath = event.oldPath.startsWith('/')
                                 ? event.oldPath.substring(1)
                                 : event.oldPath;
-                            
-                            console.log(`[Sync] Local rename detected: "${event.oldPath}" -> "${path}"`);
-                            console.log(`[Sync] Sandbox rename: "${oldSandboxPath}" -> "${sandboxPath}"`);
-                            
+
+                            console.log(
+                                `[Sync] Local rename detected: "${event.oldPath}" -> "${path}"`,
+                            );
+                            console.log(
+                                `[Sync] Sandbox rename: "${oldSandboxPath}" -> "${sandboxPath}"`,
+                            );
+
                             try {
                                 await this.provider.renameFile({
                                     args: {
@@ -477,7 +509,7 @@ export class CodeProviderSync {
                                     },
                                 });
                                 console.log(`[Sync] Successfully renamed in sandbox`);
-                                
+
                                 // Update hash tracking for renamed files
                                 const oldHash = this.fileHashes.get(event.oldPath);
                                 if (oldHash) {
