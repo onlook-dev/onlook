@@ -17,6 +17,8 @@ import {
     ProviderTerminal,
     type CopyFileOutput,
     type CopyFilesInput,
+    type CreateDirectoryInput,
+    type CreateDirectoryOutput,
     type CreateProjectInput,
     type CreateProjectOutput,
     type CreateSessionInput,
@@ -303,6 +305,14 @@ export class CodesandboxProvider extends Provider {
             input.args.recursive,
             input.args.overwrite,
         );
+        return {};
+    }
+
+    async createDirectory(input: CreateDirectoryInput): Promise<CreateDirectoryOutput> {
+        if (!this.client) {
+            throw new Error('Client not initialized');
+        }
+        await this.client.fs.mkdir(input.args.path);
         return {};
     }
 

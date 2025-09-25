@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
 import { FileSystem } from '../fs';
 
 export function useFS(rootDir: string) {
