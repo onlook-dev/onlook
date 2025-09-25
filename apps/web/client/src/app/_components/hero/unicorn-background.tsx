@@ -17,7 +17,7 @@ export function UnicornBackground() {
             transition={{ duration: 0.8, ease: 'easeOut', delay: 1 }}
         >
             <UnicornScene
-                jsonFilePath="scenes/flow-background.json"
+                jsonFilePath="/scenes/flow-background.json"
                 width="100%"
                 height="100%"
                 scale={1}
