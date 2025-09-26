@@ -1,4 +1,4 @@
-import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/code-tab/code-mirror-config';
+import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/code-tab/file-content/code-mirror-config';
 import { EditorTabValue } from '@onlook/models';
 import { convertToBase64 } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';

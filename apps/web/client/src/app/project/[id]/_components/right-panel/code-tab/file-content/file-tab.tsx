@@ -1,6 +1,5 @@
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import React from 'react';
 
 export interface FileTabProps {
     filename: string;
@@ -11,14 +10,14 @@ export interface FileTabProps {
     'data-active'?: boolean;
 }
 
-export const FileTab: React.FC<FileTabProps> = ({
+export const FileTab = ({
     filename,
     isActive = false,
     isDirty = false,
     onClick,
     onClose,
     'data-active': dataActive,
-}) => {
+}: FileTabProps) => {
     return (
         <div className="h-full pl-3 pr-3 relative group" data-active={dataActive}>
             <div className="absolute right-0 h-[50%] w-[0.5px] bg-foreground/10 top-1/2 -translate-y-1/2"></div>
@@ -27,7 +26,7 @@ export const FileTab: React.FC<FileTabProps> = ({
                     className={cn(
                         'text-sm h-full flex items-center focus:outline-none max-w-[150px]',
                         isActive
-                            ? isDirty 
+                            ? isDirty
                                 ? 'text-teal-300'
                                 : 'text-foreground'
                             : isDirty
