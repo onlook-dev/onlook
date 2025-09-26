@@ -82,6 +82,7 @@ export class CodeProviderSync {
         );
 
         const localEntries = await this.fs.listAll();
+        console.log('localEntries', localEntries);
 
         // Find entries to delete (exist locally but not in sandbox)
         const entriesToDelete = localEntries.filter((entry) => {
@@ -225,7 +226,7 @@ export class CodeProviderSync {
                         event.paths,
                     );
                     console.log(`[Sync] Full event object:`, event);
-                    
+
                     // Process based on event type
                     if (event.type === 'change' || event.type === 'add') {
                         // Check if this is a rename (change event with 2 paths)
@@ -295,7 +296,7 @@ export class CodeProviderSync {
                             // Normal processing for non-rename events
                             for (const path of event.paths) {
                                 console.log(`[Sync] Raw sandbox event path: "${path}"`);
-                                
+
                                 // Normalize the path to remove any duplicate prefixes
                                 const normalizedPath = normalizePath(path);
                                 console.log(
@@ -319,34 +320,34 @@ export class CodeProviderSync {
                                         // It's a directory, create it locally
                                         const localPath = normalizedPath;
                                         console.log(`[Sync] Creating directory ${localPath} from sandbox`);
-                                        
+
                                         try {
                                             await this.fs.createDirectory(localPath);
                                             console.log(`[Sync] Successfully created directory ${localPath} from sandbox`);
-                                            
+
                                             // After creating the directory, recursively sync all its contents
                                             // This is needed because sandbox watcher might only report parent directory creation
                                             console.log(`[Sync] Checking for nested contents in ${normalizedPath}`);
-                                            
+
                                             // Recursive function to sync directory contents
                                             const syncDirectoryContents = async (sandboxPath: string, localDirPath: string) => {
                                                 try {
                                                     const dirContents = await this.provider.listFiles({
                                                         args: { path: sandboxPath },
                                                     });
-                                                    
+
                                                     if (dirContents.files && dirContents.files.length > 0) {
                                                         console.log(`[Sync] Found ${dirContents.files.length} items in ${sandboxPath}:`, dirContents.files);
-                                                        
+
                                                         for (const item of dirContents.files) {
                                                             const itemSandboxPath = `${sandboxPath}/${item.name}`;
                                                             const itemLocalPath = `${localDirPath}/${item.name}`;
-                                                            
+
                                                             if (item.type === 'directory') {
                                                                 // Create subdirectory
                                                                 console.log(`[Sync] Creating subdirectory ${itemLocalPath}`);
                                                                 await this.fs.createDirectory(itemLocalPath);
-                                                                
+
                                                                 // Recursively sync its contents
                                                                 await syncDirectoryContents(itemSandboxPath, itemLocalPath);
                                                             } else if (item.type === 'file') {
@@ -376,7 +377,7 @@ export class CodeProviderSync {
                                                     console.error(`[Sync] Error listing contents of ${sandboxPath}:`, listError);
                                                 }
                                             };
-                                            
+
                                             // Start recursive sync
                                             await syncDirectoryContents(normalizedPath, localPath);
                                         } catch (dirError) {
@@ -514,7 +515,7 @@ export class CodeProviderSync {
                         // Check if it's a directory
                         const fileInfo = await this.fs.getInfo(path);
                         console.log(`[Sync] Local path ${path} is directory: ${fileInfo.isDirectory}`);
-                        
+
                         if (fileInfo.isDirectory) {
                             // Create directory in provider
                             console.log(`[Sync] Attempting to create directory in sandbox: ${sandboxPath}`);

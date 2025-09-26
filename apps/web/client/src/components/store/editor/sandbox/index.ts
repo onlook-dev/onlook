@@ -62,21 +62,27 @@ export class SandboxManager {
                 // }
 
                 if (provider) {
-                    if (this.sync) {
-                        this.sync?.stop();
-                        this.sync = null;
-                    }
-                    this.fs = new FileSystem(`/${this.editorEngine.projectId}/${this.branch.id}`);
-                    this.sync = new CodeProviderSync(provider, this.fs, {
-                        // TODO: add config
-                        exclude: EXCLUDED_SYNC_DIRECTORIES,
-                    });
-                    void this.sync.start();
+                    this.initializeFS(provider);
                 }
             },
         );
         // await this.fileSync.init();
     }
+
+    async initializeFS(provider: Provider) {
+        if (this.sync) {
+            this.sync?.stop();
+            this.sync = null;
+        }
+        this.fs = new FileSystem(`/${this.editorEngine.projectId}/${this.branch.id}`);
+        await this.fs.initialize();
+        this.sync = new CodeProviderSync(provider, this.fs, {
+            // TODO: add config
+            exclude: EXCLUDED_SYNC_DIRECTORIES,
+        });
+        await this.sync.start();
+    }
+
 
     get isIndexed() {
         return this._isIndexed;

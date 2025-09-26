@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { type FileNode } from '@onlook/models';
+import { type FileNode } from './types';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
@@ -98,10 +98,9 @@ const UnmemoizedFileTree = observer(forwardRef<any, FileTreeProps>(({ onFileSele
     const treeData = useMemo(() => {
         const buildFileTree = (files: string[]): FileNode[] => {
             const root: FileNode = {
-                id: 'root',
                 name: 'root',
                 path: '',
-                isDirectory: true,
+                type: 'directory',
                 children: [],
             };
 
@@ -118,12 +117,10 @@ const UnmemoizedFileTree = observer(forwardRef<any, FileTreeProps>(({ onFileSele
                         current = existingNode;
                     } else {
                         const newNode: FileNode = {
-                            id: filePath || `dir:${filePath}`, // Use path as stable ID
-                            name: part,
+                            name: filePath,
                             path: filePath,
-                            isDirectory: !isLast,
+                            type: !isLast ? 'directory' : 'file',
                             children: !isLast ? [] : undefined,
-                            extension: isLast ? path.extname(filePath) : undefined,
                         };
                         current.children?.push(newNode);
                         current = newNode;
@@ -146,8 +143,8 @@ const UnmemoizedFileTree = observer(forwardRef<any, FileTreeProps>(({ onFileSele
         selectFile: (filePath: string) => {
             const targetNode = findNodeByPath(treeData, filePath);
             if (targetNode && treeRef.current) {
-                treeRef.current.select(targetNode.id);
-                treeRef.current.scrollTo(targetNode.id);
+                treeRef.current.select(targetNode.path);
+                treeRef.current.scrollTo(targetNode.path);
             }
         }
     }), [treeData]);
@@ -155,7 +152,7 @@ const UnmemoizedFileTree = observer(forwardRef<any, FileTreeProps>(({ onFileSele
     // Helper function to find tree node by file path
     const findNodeByPath = (nodes: FileNode[], targetPath: string): FileNode | null => {
         for (const node of nodes) {
-            if (node.path === targetPath && !node.isDirectory) {
+            if (node.path === targetPath && node.type === 'file') {
                 return node;
             }
             if (node.children) {
@@ -176,8 +173,8 @@ const UnmemoizedFileTree = observer(forwardRef<any, FileTreeProps>(({ onFileSele
         if (targetNode) {
             setTimeout(() => {
                 if (treeRef.current) {
-                    treeRef.current.select(targetNode.id);
-                    treeRef.current.scrollTo(targetNode.id);
+                    treeRef.current.select(targetNode.path);
+                    treeRef.current.scrollTo(targetNode.path);
                 }
             }, 0);
         }
@@ -193,7 +190,7 @@ const UnmemoizedFileTree = observer(forwardRef<any, FileTreeProps>(({ onFileSele
         const filterNodes = (nodes: FileNode[]): FileNode[] => {
             return nodes.reduce<FileNode[]>((filtered, node) => {
                 const nameMatches = node.name.toLowerCase().includes(searchLower);
-                const hasContentMatches = !node.isDirectory && contentMatches.has(node.path);
+                const hasContentMatches = node.type === 'file' && contentMatches.has(node.path);
                 const childMatches = node.children ? filterNodes(node.children) : [];
 
                 if (nameMatches || hasContentMatches || childMatches.length > 0) {

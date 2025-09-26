@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import type { CodeRange, EditorFile } from '@/components/store/editor/ide';
-import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus';
 import { EditorView } from '@codemirror/view';
+import { useDirectory, useFile, useFS, type FileEntry } from '@onlook/file-system/hooks';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -15,15 +15,67 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { getMimeType } from '@onlook/utility';
 import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createSearchHighlight, getBasicSetup, getExtensions, scrollToFirstMatch } from './code-mirror-config';
 import { FileTab } from './file-tab';
 import { FileTree } from './file-tree';
 
 export const CodeTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const activeSandbox = editorEngine.branches.activeSandbox;
-    const files = activeSandbox.files;
+
+    // File system
+    const rootDir = `/${editorEngine.projectId}/${editorEngine.branches.activeBranch.id}`;
+    const { fs, isInitializing: fsInitializing, error: fsError } = useFS(rootDir);
+
+    // Use directory hook for local files
+    const {
+        entries: localEntries,
+        loading: localDirLoading,
+        error: localDirError,
+    } = useDirectory(rootDir, '/');
+
+    // File browser state
+    const [selectedFile, setSelectedFile] = useState<string | null>(null);
+    const [fileContent, setFileContent] = useState<string>('');
+    const [isEditing, setIsEditing] = useState(false);
+
+    // Use file hook for selected file
+    const {
+        content: loadedContent,
+        loading: isLoadingContent,
+        error: fileError,
+    } = useFile(rootDir, selectedFile || '');
+
+    // Update content when file loads
+    useEffect(() => {
+        if (typeof loadedContent === 'string') {
+            setFileContent(loadedContent);
+        } else if (loadedContent) {
+            setFileContent('[Binary file - cannot display]');
+        } else {
+            setFileContent('');
+        }
+        setIsEditing(false);
+    }, [loadedContent]);
+
+    // Convert FileEntry[] to FileNode[] format
+    const convertToFileNodes = (entries: FileEntry[]): FileNode[] => {
+        return entries.map((entry) => ({
+            name: entry.name,
+            path: entry.path,
+            type: entry.isDirectory ? 'directory' : 'file',
+            children: entry.children ? convertToFileNodes(entry.children) : undefined,
+        }));
+    };
+
+    const localFiles = convertToFileNodes(localEntries ?? []);
+
+    console.log('localFiles', localFiles);
+    // _____________________________________________________
+
+
+    // const activeSandbox = editorEngine.branches.activeSandbox;
+    // const files = activeSandbox.files;
     const ide = editorEngine.ide;
     const editorContainer = useRef<HTMLDivElement | null>(null);
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
@@ -205,82 +257,82 @@ export const CodeTab = observer(() => {
     }, [ide.searchTerm, ide.activeFile]);
 
     // Subscribe to file events
-    useEffect(() => {
-        const handleFileEvent = async (event: FileEvent) => {
-            // Only fetch all files when files are added/removed
-            if (event.type === 'add' || event.type === 'remove') {
-                ide.isFilesLoading = true;
-                try {
-                    await ide.refreshFiles();
-                } catch (error) {
-                    console.error('Error loading files:', error);
-                }
-            }
+    // useEffect(() => {
+    //     const handleFileEvent = async (event: FileEvent) => {
+    //         // Only fetch all files when files are added/removed
+    //         if (event.type === 'add' || event.type === 'remove') {
+    //             ide.isFilesLoading = true;
+    //             try {
+    //                 await ide.refreshFiles();
+    //             } catch (error) {
+    //                 console.error('Error loading files:', error);
+    //             }
+    //         }
 
-            if (event.type === 'change') {
-                if (ide.activeFile) {
-                    if (event.paths.includes(ide.activeFile.path)) {
-                        await loadNewContent(ide.activeFile.path);
-                    }
-                }
-            }
-        };
+    //         if (event.type === 'change') {
+    //             if (ide.activeFile) {
+    //                 if (event.paths.includes(ide.activeFile.path)) {
+    //                     await loadNewContent(ide.activeFile.path);
+    //                 }
+    //             }
+    //         }
+    //     };
 
-        // TODO: use fs hook
-        // const unsubscribe = activeSandbox.fileEventBus.subscribe('*', handleFileEvent);
+    //     // TODO: use fs hook
+    //     // const unsubscribe = activeSandbox.fileEventBus.subscribe('*', handleFileEvent);
 
-        return () => {
-            // unsubscribe();
-        };
-    }, [activeSandbox, ide.activeFile, editorEngine.branches.activeBranch.id]);
+    //     return () => {
+    //         // unsubscribe();
+    //     };
+    // }, [activeSandbox, ide.activeFile, editorEngine.branches.activeBranch.id]);
 
     // Load files when active sandbox changes
-    useEffect(() => {
-        const loadFilesForActiveSandbox = async () => {
-            if (!isSandboxReady) {
-                return;
-            }
+    // useEffect(() => {
+    //     const loadFilesForActiveSandbox = async () => {
+    //         if (!isSandboxReady) {
+    //             return;
+    //         }
 
-            // Preserve the currently active file path and highlight range before clearing
-            const activeFilePath = ide.activeFile?.path;
-            const savedHighlightRange = ide.highlightRange;
+    //         // Preserve the currently active file path and highlight range before clearing
+    //         const activeFilePath = ide.activeFile?.path;
+    //         const savedHighlightRange = ide.highlightRange;
 
-            // Clear existing files and editors when switching sandboxes
-            ide.clear();
-            editorViewsRef.current.forEach((view) => view.destroy());
-            editorViewsRef.current.clear();
+    //         // Clear existing files and editors when switching sandboxes
+    //         ide.clear();
+    //         editorViewsRef.current.forEach((view) => view.destroy());
+    //         editorViewsRef.current.clear();
 
-            // Reset file tree selection state
-            if (fileTreeRef.current?.deselectAll) {
-                fileTreeRef.current.deselectAll();
-            }
+    //         // Reset file tree selection state
+    //         if (fileTreeRef.current?.deselectAll) {
+    //             fileTreeRef.current.deselectAll();
+    //         }
 
-            ide.isFilesLoading = true;
-            try {
-                await ide.refreshFiles();
+    //         ide.isFilesLoading = true;
+    //         try {
+    //             await ide.refreshFiles();
 
-                // Reopen the previously active file if it exists in the new branch
-                if (activeFilePath) {
-                    const fileExists = files.some(file => file === activeFilePath);
-                    if (fileExists) {
-                        await loadFile(activeFilePath);
-                        // Restore the highlight range if it was preserved
-                        if (savedHighlightRange) {
-                            ide.setHighlightRange(savedHighlightRange);
-                        }
-                        // Update the file tree selection
-                        if (fileTreeRef.current?.selectFile) {
-                            fileTreeRef.current.selectFile(activeFilePath);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading files for active sandbox:', error);
-            }
-        };
+    //             // Reopen the previously active file if it exists in the new branch
+    //             if (activeFilePath) {
+    //                 const fileExists = files.some(file => file === activeFilePath);
+    //                 if (fileExists) {
+    //                     await loadFile(activeFilePath);
+    //                     // Restore the highlight range if it was preserved
+    //                     if (savedHighlightRange) {
+    //                         ide.setHighlightRange(savedHighlightRange);
+    //                     }
+    //                     // Update the file tree selection
+    //                     if (fileTreeRef.current?.selectFile) {
+    //                         fileTreeRef.current.selectFile(activeFilePath);
+    //                     }
+    //                 }
+    //             }
+    //         } catch (error) {
+    //             console.error('Error loading files for active sandbox:', error);
+    //         }
+    //     };
 
-        loadFilesForActiveSandbox();
-    }, [activeSandbox]);
+    //     loadFilesForActiveSandbox();
+    // }, [activeSandbox]);
 
     async function loadNewContent(filePath: string) {
         if (!isSandboxReady) {
