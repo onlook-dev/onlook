@@ -28,15 +28,17 @@ export const CodeTab = () => {
     // File browser state
     const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
+    // Local file management state using EditorFile interface
+    const [openedLocalFiles, setOpenedLocalFiles] = useState<EditorFile[]>([]);
+    const [activeLocalFile, setActiveLocalFile] = useState<EditorFile | null>(null);
+    const [showLocalUnsavedDialog, setShowLocalUnsavedDialog] = useState(false);
+
     // Use file hook for selected file
     const {
         content: loadedContent,
         loading: isLoadingContent,
         error: fileError,
     } = useFile(rootDir, selectedFile || '');
-
-    console.log('loadedContent', loadedContent);
-    console.log('selectedFile', selectedFile);
 
     // Convert FileEntry[] to FileNode[] format
     const convertToFileNodes = (entries: FileEntry[]): FileNode[] => {
@@ -49,22 +51,69 @@ export const CodeTab = () => {
     };
 
     const localFiles = convertToFileNodes(localEntries ?? []);
+
+    // Helper function to create EditorFile from local file data
+    const createLocalEditorFile = (filePath: string, content: string | Uint8Array | null): EditorFile => {
+        const fileName = filePath.split('/').pop() || filePath;
+        const fileExtension = fileName.includes('.') ? fileName.split('.').pop() || '' : '';
+        const stringContent = typeof content === 'string' ? content : '';
+
+        return {
+            id: filePath, // Use file path as unique ID
+            path: filePath,
+            filename: fileName,
+            content: stringContent,
+            language: fileExtension,
+            isDirty: false,
+            isBinary: typeof content !== 'string',
+            savedContent: stringContent,
+        };
+    };
+
+    // React to selectedFile changes - build local EditorFile and manage opened files
+    useEffect(() => {
+        if (!selectedFile || !loadedContent) return;
+
+        const newLocalFile = createLocalEditorFile(selectedFile, loadedContent);
+
+        // Check if file is already open
+        const existingFileIndex = openedLocalFiles.findIndex(f => f.path === selectedFile);
+
+        if (existingFileIndex >= 0) {
+            // File already open, just set as active and update content
+            const existingFile = openedLocalFiles[existingFileIndex];
+            if (existingFile) {
+                const updatedFile: EditorFile = {
+                    id: existingFile.id,
+                    filename: existingFile.filename,
+                    path: existingFile.path,
+                    language: existingFile.language,
+                    isDirty: existingFile.isDirty,
+                    isBinary: existingFile.isBinary,
+                    savedContent: existingFile.savedContent,
+                    content: newLocalFile.content
+                };
+                const updatedFiles = [...openedLocalFiles];
+                updatedFiles[existingFileIndex] = updatedFile;
+                setOpenedLocalFiles(updatedFiles);
+                setActiveLocalFile(updatedFile);
+            }
+        } else {
+            // Add new file to opened files
+            const updatedFiles = [...openedLocalFiles, newLocalFile];
+            setOpenedLocalFiles(updatedFiles);
+            setActiveLocalFile(newLocalFile);
+        }
+    }, [selectedFile, loadedContent]);
+
     // _____________________________________________________
 
-    // const activeSandbox = editorEngine.branches.activeSandbox;
-    // const files = activeSandbox.files;
     const ide = editorEngine.ide;
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const fileTabsContainerRef = useRef<HTMLDivElement>(null);
 
     // Helper function to check if sandbox is connected and ready
     const isSandboxReady = ide.isSandboxReady;
-
-    // Helper function to handle sandbox not ready scenarios
-    const handleSandboxNotReady = (operation: string): void => {
-        const message = `Cannot ${operation}: sandbox not connected`;
-        console.error(message);
-    };
 
     const getActiveEditorView = (): EditorView | undefined => {
         if (!ide.activeFile) {
@@ -114,7 +163,6 @@ export const CodeTab = () => {
         }
 
         if (!isSandboxReady) {
-            handleSandboxNotReady('get element code range');
             return null;
         }
 
@@ -271,13 +319,66 @@ export const CodeTab = () => {
     }
 
     async function getFilePathFromOid(oid: string): Promise<string | null> {
-        if (!isSandboxReady) {
-            handleSandboxNotReady('get file path from OID');
-            return null;
-        }
-
         return ide.getFilePathFromOid(oid);
     }
+
+    // Local file operations
+    const closeLocalFile = useCallback((fileId: string) => {
+        const fileToClose = openedLocalFiles.find(f => f.id === fileId);
+        if (fileToClose?.isDirty) {
+            setShowLocalUnsavedDialog(true);
+            return;
+        }
+
+        const editorView = editorViewsRef.current.get(fileId);
+        if (editorView) {
+            editorView.destroy();
+            editorViewsRef.current.delete(fileId);
+        }
+
+        const updatedFiles = openedLocalFiles.filter(f => f.id !== fileId);
+        setOpenedLocalFiles(updatedFiles);
+
+        // Set new active file if we closed the active one
+        if (activeLocalFile?.id === fileId) {
+            const newActiveFile = updatedFiles.length > 0 ? updatedFiles[updatedFiles.length - 1] || null : null;
+            setActiveLocalFile(newActiveFile);
+        }
+    }, [openedLocalFiles, activeLocalFile]);
+
+    const closeAllLocalFiles = () => {
+        const dirtyFiles = openedLocalFiles.filter((file) => file.isDirty);
+        if (dirtyFiles.length > 0) {
+            setShowLocalUnsavedDialog(true);
+            return;
+        }
+
+        editorViewsRef.current.forEach((view) => view.destroy());
+        editorViewsRef.current.clear();
+        setOpenedLocalFiles([]);
+        setActiveLocalFile(null);
+    };
+
+    const handleLocalFileTabSelect = (file: EditorFile) => {
+        setActiveLocalFile(file);
+        // Also update selectedFile to sync with file tree
+        setSelectedFile(file.path);
+    };
+
+    const updateLocalFileContent = (fileId: string, content: string) => {
+        const updatedFiles = openedLocalFiles.map(file =>
+            file.id === fileId
+                ? { ...file, content, isDirty: true }
+                : file
+        );
+        setOpenedLocalFiles(updatedFiles);
+
+        // Update active file if it's the one being updated
+        if (activeLocalFile?.id === fileId) {
+            const updatedActiveFile = { ...activeLocalFile, content, isDirty: true };
+            setActiveLocalFile(updatedActiveFile);
+        }
+    };
 
     const closeFile = useCallback((fileId: string) => {
         if (ide.openedFiles.find(f => f.id === fileId)?.isDirty) {
@@ -295,11 +396,6 @@ export const CodeTab = () => {
 
     const saveFile = async () => {
         if (!ide.activeFile) {
-            return;
-        }
-
-        if (!isSandboxReady) {
-            handleSandboxNotReady('save file');
             return;
         }
 
@@ -426,26 +522,23 @@ export const CodeTab = () => {
                 <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
                     <FileTabs
                         ref={fileTabsContainerRef}
-                        openedFiles={ide.openedFiles}
-                        activeFile={ide.activeFile}
+                        openedFiles={openedLocalFiles}
+                        activeFile={activeLocalFile}
                         isFilesVisible={ide.isFilesVisible}
                         onToggleFilesVisible={() => ide.isFilesVisible = !ide.isFilesVisible}
-                        onFileSelect={handleFileTabSelect}
-                        onCloseFile={closeFile}
-                        onCloseAllFiles={closeAllFiles}
+                        onFileSelect={handleLocalFileTabSelect}
+                        onCloseFile={closeLocalFile}
+                        onCloseAllFiles={closeAllLocalFiles}
                     />
                     <CodeEditorArea
                         editorViewsRef={editorViewsRef}
-                        openedFiles={ide.openedFiles}
-                        activeFile={ide.activeFile}
-                        showUnsavedDialog={ide.showUnsavedDialog}
+                        openedFiles={openedLocalFiles}
+                        activeFile={activeLocalFile}
+                        showUnsavedDialog={showLocalUnsavedDialog}
                         onSaveFile={saveFile}
-                        onUpdateFileContent={updateFileContent}
+                        onUpdateFileContent={updateLocalFileContent}
                         onDiscardChanges={discardChanges}
-                        onCancelUnsaved={() => {
-                            // ide.showUnsavedDialog = false;
-                            // ide.pendingCloseAll = false;
-                        }}
+                        onCancelUnsaved={() => { setShowLocalUnsavedDialog(false); }}
                     />
                 </div>
             </div>

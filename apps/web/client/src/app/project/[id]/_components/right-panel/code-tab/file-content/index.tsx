@@ -55,7 +55,7 @@ export const CodeEditorArea = ({
                 <UnsavedChangesDialog
                     onSave={onSaveFile}
                     onDiscard={() => onDiscardChanges(activeFile!.id)}
-                    onCancel={onCancelUnsaved}
+                    onCancel={() => { onCancelUnsaved(); }}
                 />
             )}
         </div>
