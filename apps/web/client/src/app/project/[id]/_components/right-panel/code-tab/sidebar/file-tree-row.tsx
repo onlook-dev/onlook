@@ -1,15 +1,10 @@
+import type { FileEntry } from '@onlook/file-system/hooks';
 import { cn } from '@onlook/ui/utils';
-import { forwardRef } from 'react';
 import type { RowRendererProps } from 'react-arborist';
-import type { FileNode } from '../shared/types';
 
-export const FileTreeRow = forwardRef<
-    HTMLDivElement,
-    RowRendererProps<FileNode> & { isHighlighted?: boolean }
->(({ attrs, children, isHighlighted }, ref) => {
+export const FileTreeRow = ({ attrs, children, isHighlighted }: RowRendererProps<FileEntry> & { isHighlighted?: boolean }) => {
     return (
         <div
-            ref={ref}
             {...attrs}
             className={cn(
                 'outline-none h-6 cursor-pointer min-w-0 w-auto rounded',
@@ -26,4 +21,4 @@ export const FileTreeRow = forwardRef<
             {children}
         </div>
     );
-});
+};

@@ -1,12 +1,3 @@
-export interface FileNode {
-    name: string;
-    path: string;
-    type: 'file' | 'directory';
-    children?: FileNode[];
-    depth?: number;
-    parentPath?: string | null;
-}
-
 export interface EditorFile {
     path: string;
     type: 'text' | 'binary';

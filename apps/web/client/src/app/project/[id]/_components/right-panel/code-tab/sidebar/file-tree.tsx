@@ -1,7 +1,7 @@
+import { type FileEntry } from '@onlook/file-system/hooks';
 import React, { forwardRef, memo, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
-import { type FileEntry } from '@onlook/file-system/hooks';
 import { FileTreeNode } from './file-tree-node';
 import { FileTreeRow } from './file-tree-row';
 import { FileTreeSearch } from './file-tree-search';
@@ -36,7 +36,7 @@ export const FileTree = memo(
         // Create flat entry index for efficient operations
         const { treeData, flatEntryIndex } = useMemo(() => {
             const flatIndex = new Map<string, FileEntry>();
-            
+
             const flattenEntries = (entries: FileEntry[]) => {
                 for (const entry of entries) {
                     flatIndex.set(entry.path, entry);
@@ -45,9 +45,9 @@ export const FileTree = memo(
                     }
                 }
             };
-            
+
             flattenEntries(fileEntries);
-            
+
             return {
                 treeData: fileEntries,
                 flatEntryIndex: flatIndex,
@@ -100,15 +100,15 @@ export const FileTree = memo(
 
             const searchLower = searchQuery.toLowerCase();
             const matchingPaths = new Set<string>();
-            
+
             // Find all matching entries using flat index
             for (const [path, entry] of flatEntryIndex) {
                 const nameMatches = entry.name.toLowerCase().includes(searchLower);
                 const pathMatches = path.toLowerCase().includes(searchLower);
-                
+
                 if (nameMatches || pathMatches) {
                     matchingPaths.add(path);
-                    
+
                     // Add all parent paths to ensure they're included
                     const pathSegments = path.split('/').filter(Boolean);
                     for (let i = 1; i < pathSegments.length; i++) {
@@ -117,7 +117,7 @@ export const FileTree = memo(
                     }
                 }
             }
-            
+
             // Build filtered tree structure
             const filterEntries = (entries: FileEntry[]): FileEntry[] => {
                 return entries.reduce<FileEntry[]>((filtered, entry) => {

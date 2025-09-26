@@ -13,27 +13,18 @@ import { FileTree } from './sidebar/file-tree';
 
 export const CodeTab = () => {
     const editorEngine = useEditorEngine();
-
-    // File system
     const rootDir = `/${editorEngine.projectId}/${editorEngine.branches.activeBranch.id}`;
-    // const { fs, isInitializing: fsInitializing, error: fsError } = useFS(rootDir);
 
-    // Use directory hook for local files
-    const {
-        entries: localEntries,
-        loading: localDirLoading,
-        error: localDirError,
-    } = useDirectory(rootDir, '/');
-
-    // File browser state
     const [selectedFile, setSelectedFile] = useState<string | null>(null);
-
-    // Local file management state using EditorFile interface
     const [openedLocalFiles, setOpenedLocalFiles] = useState<EditorFile[]>([]);
     const [activeLocalFile, setActiveLocalFile] = useState<EditorFile | null>(null);
     const [showLocalUnsavedDialog, setShowLocalUnsavedDialog] = useState(false);
 
-    // Use file hook for selected file
+    const {
+        entries: fileEntries,
+        loading: filesLoading,
+    } = useDirectory(rootDir, '/');
+
     const {
         content: loadedContent,
         loading: isLoadingContent,
@@ -492,8 +483,8 @@ export const CodeTab = () => {
             <div className="flex flex-1 min-h-0 overflow-hidden">
                 <FileTree
                     onFileSelect={handleFileTreeSelect}
-                    fileEntries={localEntries}
-                    isLoading={localDirLoading}
+                    fileEntries={fileEntries}
+                    isLoading={filesLoading}
                     selectedFilePath={selectedFile}
                 />
                 <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
