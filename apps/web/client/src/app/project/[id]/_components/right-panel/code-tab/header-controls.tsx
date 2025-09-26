@@ -9,11 +9,9 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { observer } from 'mobx-react-lite';
 import { FileModal } from './modals/file-modal';
 import { FolderModal } from './modals/folder-modal';
-import { UploadModal } from './modals/upload-modal';
 
 export const CodeControls = observer(() => {
     const editorEngine = useEditorEngine();
@@ -111,7 +109,6 @@ export const CodeControls = observer(() => {
             </div>
             <FileModal basePath={basePath} />
             <FolderModal basePath={basePath} />
-            <UploadModal basePath={basePath} />
         </>
     );
 }); 

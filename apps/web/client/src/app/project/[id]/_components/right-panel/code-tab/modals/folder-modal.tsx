@@ -18,7 +18,7 @@ import {
     createFolderInSandbox,
     doesFolderExist,
     validateFolderName,
-} from '../file-operations';
+} from '../shared/file-operations';
 
 interface FolderModalProps {
     basePath: string;

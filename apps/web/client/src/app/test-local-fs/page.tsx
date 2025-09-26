@@ -1,13 +1,11 @@
 'use client';
 
+import { AlertCircle, Copy, Edit2, Move, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { AlertCircle, Copy, Edit2, File, Folder, Move, Plus, Trash2 } from 'lucide-react';
 
-import  { type FileEntry } from '@onlook/file-system/hooks';
-import { useDirectory, useFile, useFS } from '@onlook/file-system/hooks';
+import { useDirectory, useFile, useFS, type FileEntry } from '@onlook/file-system/hooks';
 import { Alert, AlertDescription } from '@onlook/ui/alert';
 import { Button } from '@onlook/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@onlook/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -18,11 +16,9 @@ import {
 } from '@onlook/ui/dialog';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { Textarea } from '@onlook/ui/textarea';
 
-import  { type FileNode } from '../test-sync-engine/_components/file-explorer';
-import { FileExplorer } from '../test-sync-engine/_components/file-explorer';
+import { FileExplorer, type FileNode } from '../test-sync-engine/_components/file-explorer';
 
 // Use the same project configuration as test-sync-engine
 const PROJECT_ID = 'test-sync-project';

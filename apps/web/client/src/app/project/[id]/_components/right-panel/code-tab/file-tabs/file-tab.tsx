@@ -1,24 +1,31 @@
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import React from 'react';
+import { useEffect, useState } from 'react';
+import type { EditorFile } from '../shared/types';
+import { isDirty } from '../shared/utils';
 
 export interface FileTabProps {
-    filename: string;
-    isActive?: boolean;
-    isDirty?: boolean;
-    onClick?: () => void;
-    onClose?: () => void;
-    'data-active'?: boolean;
+    file: EditorFile;
+    isActive: boolean;
+    onClick: () => void;
+    onClose: () => void;
+    dataActive: boolean;
 }
 
-export const FileTab: React.FC<FileTabProps> = ({
-    filename,
-    isActive = false,
-    isDirty = false,
+export const FileTab = ({
+    file,
+    isActive,
     onClick,
     onClose,
-    'data-active': dataActive,
-}) => {
+    dataActive,
+}: FileTabProps) => {
+    const [isFileDirty, setIsFileDirty] = useState(false);
+    const filename = file.path.split('/').pop() || '';
+
+    useEffect(() => {
+        isDirty(file).then(setIsFileDirty);
+    }, [file.path, file.content, file.type, file.type === 'text' ? (file as TextEditorFile).originalHash : null]);
+
     return (
         <div className="h-full pl-3 pr-3 relative group" data-active={dataActive}>
             <div className="absolute right-0 h-[50%] w-[0.5px] bg-foreground/10 top-1/2 -translate-y-1/2"></div>
@@ -27,17 +34,17 @@ export const FileTab: React.FC<FileTabProps> = ({
                     className={cn(
                         'text-sm h-full flex items-center focus:outline-none max-w-[150px]',
                         isActive
-                            ? isDirty 
+                            ? isFileDirty
                                 ? 'text-teal-300'
                                 : 'text-foreground'
-                            : isDirty
+                            : isFileDirty
                                 ? 'text-teal-500'
                                 : 'text-foreground-secondary/50',
                     )}
                     onClick={onClick}
                 >
                     <span className="truncate">{filename}</span>
-                    {isDirty && (
+                    {isFileDirty && (
                         <span className={cn(
                             "ml-1 flex-shrink-0",
                             isActive ? "text-teal-300" : "text-teal-500"
@@ -48,7 +55,7 @@ export const FileTab: React.FC<FileTabProps> = ({
                     {isActive && (
                         <div className={cn(
                             "absolute bottom-0 left-0 w-full h-[2px]",
-                            isDirty ? "bg-teal-300" : "bg-foreground-hover"
+                            isFileDirty ? "bg-teal-300" : "bg-foreground-hover"
                         )}></div>
                     )}
                     {!isActive && (

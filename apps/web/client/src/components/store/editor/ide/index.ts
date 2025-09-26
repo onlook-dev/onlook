@@ -1,20 +1,10 @@
-import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/code-tab/code-mirror-config';
+import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/code-tab/file-content/code-mirror-config';
 import { EditorTabValue } from '@onlook/models';
 import { convertToBase64 } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import type { EditorEngine } from '../engine';
 
-export interface EditorFile {
-    id: string;
-    filename: string;
-    path: string;
-    content: string;
-    language: string;
-    isDirty: boolean;
-    isBinary: boolean;
-    savedContent: string;
-}
 
 export interface CodeRange {
     startLineNumber: number;

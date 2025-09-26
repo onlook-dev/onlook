@@ -21,12 +21,3 @@ export type FileToRequests = Map<
         content: string;
     }
 >;
-
-export interface FileNode {
-    id: string;
-    name: string;
-    path: string;
-    isDirectory: boolean;
-    children?: FileNode[];
-    extension?: string;
-}

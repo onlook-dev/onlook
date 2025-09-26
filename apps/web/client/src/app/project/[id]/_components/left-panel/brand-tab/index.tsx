@@ -110,20 +110,21 @@ export const BrandTab = observer(() => {
             }
         };
 
-        // Listen for file changes in the sandbox
-        const unsubscribe = editorEngine.activeSandbox.fileEventBus.subscribe('*', (event) => {
-            // Check if any of the changed files are Tailwind config files
-            const isTailwindConfigChange = event.paths.some(path =>
-                path.includes('tailwind.config') || path.includes('globals.css')
-            );
+        // TODO: use fs hook
+        // // Listen for file changes in the sandbox
+        // const unsubscribe = editorEngine.activeSandbox.fileEventBus.subscribe('*', (event) => {
+        //     // Check if any of the changed files are Tailwind config files
+        //     const isTailwindConfigChange = event.paths.some(path =>
+        //         path.includes('tailwind.config') || path.includes('globals.css')
+        //     );
 
-            if (isTailwindConfigChange && event.paths[0]) {
-                handleFileChange(event.paths[0]);
-            }
-        });
+        //     if (isTailwindConfigChange && event.paths[0]) {
+        //         handleFileChange(event.paths[0]);
+        //     }
+        // });
 
         return () => {
-            unsubscribe();
+            // unsubscribe();
         };
     }, [editorEngine.theme, editorEngine.activeSandbox]);
 
