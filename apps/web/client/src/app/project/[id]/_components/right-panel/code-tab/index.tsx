@@ -21,6 +21,7 @@ const createEditorFile = async (filePath: string, content: string | Uint8Array):
             path: filePath,
             content: content,
             type: 'binary',
+            originalHash: null,
         } satisfies BinaryEditorFile;
     } else if (typeof content === 'string') {
         const originalHash = await hashContent(content);
@@ -60,37 +61,46 @@ export const CodeTab = () => {
 
         const processFile = async () => {
             const newLocalFile = await createEditorFile(selectedFilePath, loadedContent);
-
-            // Check if file is already open
             const existingFileIndex = openedEditorFiles.findIndex(f => f.path === selectedFilePath);
 
             if (existingFileIndex >= 0) {
-                // File already open, just set as active and update content
-                const existingFile = openedEditorFiles[existingFileIndex];
-                if (existingFile) {
-                    const updatedFile: EditorFile = existingFile.type === 'text'
-                        ? {
-                            path: existingFile.path,
-                            type: existingFile.type,
-                            content: newLocalFile.content as string,
-                            originalHash: (existingFile as TextEditorFile).originalHash,
-                        } as TextEditorFile
-                        : {
-                            path: existingFile.path,
-                            type: existingFile.type,
-                            content: newLocalFile.content,
-                        } as BinaryEditorFile;
-                    const updatedFiles = [...openedEditorFiles];
-                    updatedFiles[existingFileIndex] = updatedFile;
-                    setOpenedEditorFiles(updatedFiles);
-                    setActiveEditorFile(updatedFile);
-                }
+                updateExistingFile(existingFileIndex, newLocalFile);
             } else {
-                // Add new file to opened files
-                const updatedFiles = [...openedEditorFiles, newLocalFile];
-                setOpenedEditorFiles(updatedFiles);
-                setActiveEditorFile(newLocalFile);
+                addNewFile(newLocalFile);
             }
+        };
+
+        const updateExistingFile = (index: number, newFile: EditorFile) => {
+            const existingFile = openedEditorFiles[index];
+            if (!existingFile) return;
+
+            const updatedFile = createUpdatedFile(existingFile, newFile);
+            const updatedFiles = [...openedEditorFiles];
+            updatedFiles[index] = updatedFile;
+
+            setOpenedEditorFiles(updatedFiles);
+            setActiveEditorFile(updatedFile);
+        };
+
+        const addNewFile = (newFile: EditorFile) => {
+            setOpenedEditorFiles(prev => [...prev, newFile]);
+            setActiveEditorFile(newFile);
+        };
+
+        const createUpdatedFile = (existing: EditorFile, newFile: EditorFile): EditorFile => {
+            if (existing.type === 'binary') {
+                return { ...existing, content: newFile.content };
+            }
+
+            const existingText = existing as TextEditorFile;
+            const newText = newFile as TextEditorFile;
+            const diskContentChanged = existingText.originalHash !== newText.originalHash;
+
+            return {
+                ...existingText,
+                content: diskContentChanged ? newText.content : existingText.content,
+                originalHash: diskContentChanged ? newText.originalHash : existingText.originalHash,
+            };
         };
 
         processFile();

@@ -24,7 +24,7 @@ export const FileTab = ({
 
     useEffect(() => {
         isDirty(file).then(setIsFileDirty);
-    }, [file]);
+    }, [file.path, file.content, file.type, file.type === 'text' ? (file as TextEditorFile).originalHash : null]);
 
     return (
         <div className="h-full pl-3 pr-3 relative group" data-active={dataActive}>

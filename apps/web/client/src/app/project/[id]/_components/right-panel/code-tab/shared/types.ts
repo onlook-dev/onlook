@@ -2,6 +2,7 @@ export interface EditorFile {
     path: string;
     type: 'text' | 'binary';
     content: string | Uint8Array;
+    originalHash: string | null;
 }
 
 export interface TextEditorFile extends EditorFile {
@@ -14,4 +15,5 @@ export interface TextEditorFile extends EditorFile {
 export interface BinaryEditorFile extends EditorFile {
     type: 'binary';
     content: Uint8Array;
+    originalHash: null;
 }

@@ -1,5 +1,5 @@
 import { EditorView } from '@codemirror/view';
-import { type RefObject, useEffect, useState } from 'react';
+import { type RefObject, useMemo } from 'react';
 import type { EditorFile } from '../shared/types';
 import { isDirty } from '../shared/utils';
 import { CodeEditor } from './code-editor';
@@ -25,15 +25,10 @@ export const CodeEditorArea = ({
     onDiscardChanges,
     onCancelUnsaved,
 }: CodeEditorAreaProps) => {
-    const [activeFileIsDirty, setActiveFileIsDirty] = useState(false);
-
-    // Compute dirty status for active file
-    useEffect(() => {
-        if (activeFile) {
-            isDirty(activeFile).then(setActiveFileIsDirty);
-        } else {
-            setActiveFileIsDirty(false);
-        }
+    console.log('activeFile', activeFile);
+    const activeFileIsDirty = useMemo(() => {
+        if (!activeFile) return false;
+        return isDirty(activeFile);
     }, [activeFile]);
 
     return (
