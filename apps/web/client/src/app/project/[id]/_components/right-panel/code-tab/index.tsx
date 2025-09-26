@@ -9,23 +9,31 @@ import { CodeEditorArea } from './file-content';
 import { createSearchHighlight, scrollToFirstMatch } from './file-content/code-mirror-config';
 import { FileTabs } from './file-tabs';
 import type { BinaryEditorFile, EditorFile, TextEditorFile } from './shared/types';
+import { isDirty } from './shared/utils';
 import { FileTree } from './sidebar/file-tree';
 
-// Check if file content differs from original
-async function isDirty(file: EditorFile): Promise<boolean> {
-    if (file.type === 'binary') {
-        return false; // Binary files are never considered dirty
-    }
 
-    if (file.type === 'text') {
-        const textFile = file as TextEditorFile;
-        const currentHash = await hashContent(textFile.content);
-        return currentHash !== textFile.originalHash;
-    }
+const createEditorFile = async (filePath: string, content: string | Uint8Array): Promise<EditorFile> => {
+    const isBinary = content instanceof Uint8Array;
 
-    return false;
+    if (isBinary) {
+        return {
+            path: filePath,
+            content: content,
+            type: 'binary',
+        } satisfies BinaryEditorFile;
+    } else if (typeof content === 'string') {
+        const originalHash = await hashContent(content);
+        return {
+            path: filePath,
+            content: content,
+            type: 'text',
+            originalHash,
+        } as TextEditorFile;
+    } else {
+        throw new Error('Invalid content type');
+    }
 }
-
 
 export const CodeTab = () => {
     const editorEngine = useEditorEngine();
@@ -36,7 +44,7 @@ export const CodeTab = () => {
     const [openedEditorFiles, setOpenedEditorFiles] = useState<EditorFile[]>([]);
     const [showLocalUnsavedDialog, setShowLocalUnsavedDialog] = useState(false);
 
-    const { fs, isInitializing: fsInitializing, error: fsError } = useFS(rootDir);
+    const { fs } = useFS(rootDir);
     const {
         entries: fileEntries,
         loading: filesLoading,
@@ -46,31 +54,8 @@ export const CodeTab = () => {
         content: loadedContent,
     } = useFile(rootDir, selectedFilePath || '');
 
-    const createEditorFile = async (filePath: string, content: string | Uint8Array): Promise<EditorFile> => {
-        const isBinary = content instanceof Uint8Array;
-
-        if (isBinary) {
-            return {
-                path: filePath,
-                content: content,
-                type: 'binary',
-            } satisfies BinaryEditorFile;
-        } else if (typeof content === 'string') {
-            const originalHash = await hashContent(content);
-            return {
-                path: filePath,
-                content: content,
-                type: 'text',
-                originalHash,
-            } as TextEditorFile;
-        } else {
-            throw new Error('Invalid content type');
-        }
-    }
-
     // React to loadedContent changes - build local EditorFile and manage opened files
     useEffect(() => {
-        console.log('loadedContent', loadedContent);
         if (!selectedFilePath || !loadedContent) return;
 
         const processFile = async () => {
@@ -378,6 +363,11 @@ export const CodeTab = () => {
             const newActiveFile = updatedFiles.length > 0 ? updatedFiles[updatedFiles.length - 1] || null : null;
             setActiveEditorFile(newActiveFile);
         }
+
+        // Clear selected file path if the closed file was selected
+        if (selectedFilePath === filePath) {
+            setSelectedFilePath(null);
+        }
     };
 
     const discardLocalFileChanges = (filePath: string) => {
@@ -400,11 +390,14 @@ export const CodeTab = () => {
                     onFileSelect={handleFileTreeSelect}
                     fileEntries={fileEntries}
                     isLoading={filesLoading}
-                    selectedFilePath={selectedFilePath}
+                    selectedFilePath={activeEditorFile?.path}
+                    onDeleteFile={() => { }}
+                    onRenameFile={() => { }}
+                    onRefresh={() => { }}
                 />
                 <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
                     <FileTabs
-                        selectedFilePath={selectedFilePath}
+                        selectedFilePath={activeEditorFile?.path}
                         openedFiles={openedEditorFiles}
                         activeFile={activeEditorFile}
                         isFilesVisible={ide.isFilesVisible}
@@ -421,7 +414,9 @@ export const CodeTab = () => {
                         onSaveFile={handleSaveFile}
                         onUpdateFileContent={updateLocalFileContent}
                         onDiscardChanges={discardLocalFileChanges}
-                        onCancelUnsaved={() => { setShowLocalUnsavedDialog(false); }}
+                        onCancelUnsaved={() => {
+                            setShowLocalUnsavedDialog(false);
+                        }}
                     />
                 </div>
             </div>

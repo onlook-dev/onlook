@@ -13,7 +13,6 @@ import type { NodeApi } from 'react-arborist';
 
 interface FileTreeNodeProps {
     node: NodeApi<FileEntry>;
-    isSelected: boolean;
     style: React.CSSProperties;
     onFileSelect?: (filePath: string, searchTerm?: string) => void;
 }
@@ -53,8 +52,9 @@ const getFileIcon = (path: string, isDirectory: boolean) => {
     }
 };
 
-export const FileTreeNode = ({ node, style, onFileSelect, isSelected }: FileTreeNodeProps) => {
+export const FileTreeNode = ({ node, style, onFileSelect }: FileTreeNodeProps) => {
     const isDirectory = node.data.isDirectory;
+    const isSelected = node.isSelected;
     const handleClick = (e: React.MouseEvent) => {
         if (isDirectory) {
             node.toggle();

@@ -11,26 +11,11 @@ import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { useEffect, useRef, useState } from 'react';
 import type { EditorFile } from '../shared/types';
+import { isDirty } from '../shared/utils';
 import { FileTab } from './file-tab';
-import { hashContent } from '@/services/sync-engine/sync-engine';
-
-// Check if file content differs from original
-async function isDirty(file: EditorFile): Promise<boolean> {
-    if (file.type === 'binary') {
-        return false; // Binary files are never considered dirty
-    }
-    
-    if (file.type === 'text') {
-        const textFile = file as import('../shared/types').TextEditorFile;
-        const currentHash = await hashContent(textFile.content);
-        return currentHash !== textFile.originalHash;
-    }
-    
-    return false;
-}
 
 interface FileTabsProps {
-    selectedFilePath: string | null;
+    selectedFilePath: string | null | undefined;
     openedFiles: EditorFile[];
     activeFile: EditorFile | null;
     isFilesVisible: boolean;
@@ -55,9 +40,9 @@ export const FileTabs = ({
 
     // Compute dirty status for all files
     useEffect(() => {
-        Promise.all(openedFiles.map(async file => ({ 
-            path: file.path, 
-            dirty: await isDirty(file) 
+        Promise.all(openedFiles.map(async file => ({
+            path: file.path,
+            dirty: await isDirty(file)
         }))).then(results => {
             setDirtyFiles(new Set(results.filter(r => r.dirty).map(r => r.path)));
         });

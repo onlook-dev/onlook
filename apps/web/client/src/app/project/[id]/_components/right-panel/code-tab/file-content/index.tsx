@@ -1,24 +1,9 @@
 import { EditorView } from '@codemirror/view';
 import { type RefObject, useEffect, useState } from 'react';
 import type { EditorFile } from '../shared/types';
+import { isDirty } from '../shared/utils';
 import { CodeEditor } from './code-editor';
 import { UnsavedChangesDialog } from './unsaved-changes-dialog';
-import { hashContent } from '@/services/sync-engine/sync-engine';
-
-// Check if file content differs from original
-async function isDirty(file: EditorFile): Promise<boolean> {
-    if (file.type === 'binary') {
-        return false; // Binary files are never considered dirty
-    }
-    
-    if (file.type === 'text') {
-        const textFile = file as import('../shared/types').TextEditorFile;
-        const currentHash = await hashContent(textFile.content);
-        return currentHash !== textFile.originalHash;
-    }
-    
-    return false;
-}
 interface CodeEditorAreaProps {
     openedFiles: EditorFile[];
     activeFile: EditorFile | null;
