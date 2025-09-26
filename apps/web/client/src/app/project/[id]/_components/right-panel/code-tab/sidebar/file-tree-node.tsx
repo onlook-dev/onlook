@@ -1,4 +1,3 @@
-import { useEditorEngine } from '@/components/store/editor';
 import {
     ContextMenu,
     ContextMenuContent,
@@ -8,39 +7,33 @@ import {
 } from '@onlook/ui/context-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import type { NodeApi } from 'react-arborist';
 import type { FileNode } from '../types';
 
 interface FileTreeNodeProps {
     node: NodeApi<FileNode>;
+    isSelected: boolean;
     style: React.CSSProperties;
-    files?: string[];
-    contentMatches?: Map<string, number>;
+    onFileSelect?: (filePath: string, searchTerm?: string) => void;
 }
 
-export const FileTreeNode = observer(({ node, style, files = [], contentMatches }: FileTreeNodeProps) => {
-    const editorEngine = useEditorEngine();
+export const FileTreeNode = ({ node, style, onFileSelect, isSelected }: FileTreeNodeProps) => {
     const isDirectory = node.data.type === 'directory';
 
-    const handleClick = async (e: React.MouseEvent) => {
+    const handleClick = (e: React.MouseEvent) => {
         if (isDirectory) {
             node.toggle();
             return;
         }
 
-        // Load the file into the editor
-        try {
-            const content = await editorEngine.activeSandbox.readFile(node.data.path);
-            if (content === null) {
-                throw new Error(`File content for ${node.data.path} not found`);
-            }
-            // This will be handled in the parent component
-            node.select();
-        } catch (error) {
-            console.error('Failed to load file:', error);
+        // Call the parent's file select callback
+        if (onFileSelect) {
+            onFileSelect(node.data.path);
         }
+
+        // Select the node in the tree
+        node.select();
     };
 
     // Get file icon based on extension
@@ -80,43 +73,43 @@ export const FileTreeNode = observer(({ node, style, files = [], contentMatches 
     };
 
     const menuItems = [
-        ...(isDirectory ? [
-            {
-                label: 'New File',
-                action: () => editorEngine.ide.fileModalOpen = true,
-                icon: <Icons.File className="mr-2 h-4 w-4" />,
-                separator: false,
-            },
-            {
-                label: 'New Folder',
-                action: () => editorEngine.ide.folderModalOpen = true,
-                icon: <Icons.Directory className="mr-2 h-4 w-4" />,
-                separator: true,
-            },
-        ] : []),
-        {
-            label: 'Open File',
-            action: handleClick,
-            icon: <Icons.File className="mr-2 h-4 w-4" />,
-            disabled: isDirectory,
-            separator: false,
-        },
-        {
-            label: 'Copy Path',
-            action: () => {
-                navigator.clipboard.writeText(node.data.path);
-            },
-            icon: <Icons.Copy className="mr-2 h-4 w-4" />,
-            separator: false,
-        },
-        {
-            label: 'Delete',
-            action: () => {
-                editorEngine.activeSandbox.delete(node.data.path, true);
-            },
-            icon: <Icons.Trash className="mr-2 h-4 w-4" />,
-            separator: false,
-        }
+        // ...(isDirectory ? [
+        //     {
+        //         label: 'New File',
+        //         action: () => editorEngine.ide.fileModalOpen = true,
+        //         icon: <Icons.File className="mr-2 h-4 w-4" />,
+        //         separator: false,
+        //     },
+        //     {
+        //         label: 'New Folder',
+        //         action: () => editorEngine.ide.folderModalOpen = true,
+        //         icon: <Icons.Directory className="mr-2 h-4 w-4" />,
+        //         separator: true,
+        //     },
+        // ] : []),
+        // {
+        //     label: 'Open File',
+        //     action: handleClick,
+        //     icon: <Icons.File className="mr-2 h-4 w-4" />,
+        //     disabled: isDirectory,
+        //     separator: false,
+        // },
+        // {
+        //     label: 'Copy Path',
+        //     action: () => {
+        //         navigator.clipboard.writeText(node.data.path);
+        //     },
+        //     icon: <Icons.Copy className="mr-2 h-4 w-4" />,
+        //     separator: false,
+        // },
+        // {
+        //     label: 'Delete',
+        //     action: () => {
+        //         editorEngine.activeSandbox.delete(node.data.path, true);
+        //     },
+        //     icon: <Icons.Trash className="mr-2 h-4 w-4" />,
+        //     separator: false,
+        // }
     ];
 
     return (
@@ -124,7 +117,10 @@ export const FileTreeNode = observer(({ node, style, files = [], contentMatches 
             <ContextMenuTrigger>
                 <div
                     style={style}
-                    className="flex items-center h-6 cursor-pointer hover:bg-background-hover rounded"
+                    className={cn(
+                        "flex items-center h-6 cursor-pointer rounded",
+                        isSelected ? 'hover:bg-red-500/90 dark:hover:bg-red-500/90' : ' hover:bg-background-hover ',
+                    )}
                     onClick={handleClick}
                 >
                     <span className="w-4 h-4 flex-none relative">
@@ -141,11 +137,11 @@ export const FileTreeNode = observer(({ node, style, files = [], contentMatches 
                     </span>
                     {getFileIcon()}
                     <span className="truncate">{node.data.name}</span>
-                    {!isDirectory && contentMatches?.has(node.data.path) && (
+                    {/* {!isDirectory && contentMatches?.has(node.data.path) && (
                         <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary/10 text-primary rounded-full font-medium min-w-[20px] text-center">
                             {contentMatches.get(node.data.path)}
                         </span>
-                    )}
+                    )} */}
                 </div>
             </ContextMenuTrigger>
             <ContextMenuContent>
@@ -167,4 +163,4 @@ export const FileTreeNode = observer(({ node, style, files = [], contentMatches 
             </ContextMenuContent>
         </ContextMenu>
     );
-});
+};

@@ -448,7 +448,6 @@ export const CodeTab = observer(() => {
                     isLoading={localDirLoading}
                     selectedFilePath={selectedFile}
                 />
-                {/* Editor section */}
                 <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
                     <FileTabs
                         ref={fileTabsContainerRef}
@@ -460,8 +459,6 @@ export const CodeTab = observer(() => {
                         onCloseFile={closeFile}
                         onCloseAllFiles={closeAllFiles}
                     />
-
-                    {/* Code Editor Area */}
                     <CodeEditorArea
                         editorViewsRef={editorViewsRef}
                         onSaveFile={saveFile}

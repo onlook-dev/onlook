@@ -274,7 +274,7 @@ export const FileTree = memo(
                                     />
                                 )}
                             >
-                                {(props) => <FileTreeNode {...props} />}
+                                {(props) => <FileTreeNode {...props} onFileSelect={onFileSelect} isSelected={props.node.isSelected} />}
                             </Tree>
                         )}
                     </div>
