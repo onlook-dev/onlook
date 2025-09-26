@@ -20,7 +20,7 @@ interface FileTreeNodeProps {
     contentMatches?: Map<string, number>;
 }
 
-export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style, files = [], contentMatches }) => {
+export const FileTreeNode = observer(({ node, style, files = [], contentMatches }: FileTreeNodeProps) => {
     const editorEngine = useEditorEngine();
     const isDirectory = node.data.type === 'directory';
 
@@ -79,8 +79,6 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style
         }
     };
 
-    const basePath = node.data.path;
-
     const menuItems = [
         ...(isDirectory ? [
             {
@@ -122,53 +120,51 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style
     ];
 
     return (
-        <>
-            <ContextMenu>
-                <ContextMenuTrigger>
-                    <div
-                        style={style}
-                        className="flex items-center h-6 cursor-pointer hover:bg-background-hover rounded"
-                        onClick={handleClick}
-                    >
-                        <span className="w-4 h-4 flex-none relative">
-                            {isDirectory && (
-                                <div className="w-4 h-4 flex items-center justify-center absolute z-50">
-                                    <motion.div
-                                        initial={false}
-                                        animate={{ rotate: node.isOpen ? 90 : 0 }}
-                                    >
-                                        <Icons.ChevronRight className="h-2.5 w-2.5" />
-                                    </motion.div>
-                                </div>
-                            )}
-                        </span>
-                        {getFileIcon()}
-                        <span className="truncate">{node.data.name}</span>
-                        {!isDirectory && contentMatches?.has(node.data.path) && (
-                            <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary/10 text-primary rounded-full font-medium min-w-[20px] text-center">
-                                {contentMatches.get(node.data.path)}
-                            </span>
+        <ContextMenu>
+            <ContextMenuTrigger>
+                <div
+                    style={style}
+                    className="flex items-center h-6 cursor-pointer hover:bg-background-hover rounded"
+                    onClick={handleClick}
+                >
+                    <span className="w-4 h-4 flex-none relative">
+                        {isDirectory && (
+                            <div className="w-4 h-4 flex items-center justify-center absolute z-50">
+                                <motion.div
+                                    initial={false}
+                                    animate={{ rotate: node.isOpen ? 90 : 0 }}
+                                >
+                                    <Icons.ChevronRight className="h-2.5 w-2.5" />
+                                </motion.div>
+                            </div>
                         )}
+                    </span>
+                    {getFileIcon()}
+                    <span className="truncate">{node.data.name}</span>
+                    {!isDirectory && contentMatches?.has(node.data.path) && (
+                        <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary/10 text-primary rounded-full font-medium min-w-[20px] text-center">
+                            {contentMatches.get(node.data.path)}
+                        </span>
+                    )}
+                </div>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+                {menuItems.map((item, index) => (
+                    <div key={item.label}>
+                        <ContextMenuItem
+                            onClick={item.action}
+                            className="cursor-pointer"
+                            disabled={item.disabled}
+                        >
+                            <span className={cn('flex w-full items-center gap-1')}>
+                                {item.icon}
+                                {item.label}
+                            </span>
+                        </ContextMenuItem>
+                        {item.separator && <ContextMenuSeparator />}
                     </div>
-                </ContextMenuTrigger>
-                <ContextMenuContent>
-                    {menuItems.map((item, index) => (
-                        <div key={item.label}>
-                            <ContextMenuItem
-                                onClick={item.action}
-                                className="cursor-pointer"
-                                disabled={item.disabled}
-                            >
-                                <span className={cn('flex w-full items-center gap-1')}>
-                                    {item.icon}
-                                    {item.label}
-                                </span>
-                            </ContextMenuItem>
-                            {item.separator && <ContextMenuSeparator />}
-                        </div>
-                    ))}
-                </ContextMenuContent>
-            </ContextMenu>
-        </>
+                ))}
+            </ContextMenuContent>
+        </ContextMenu>
     );
 });

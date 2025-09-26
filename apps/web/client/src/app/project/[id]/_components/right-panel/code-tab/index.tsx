@@ -105,17 +105,16 @@ export const CodeTab = observer(() => {
                 const filePath = await getFilePathFromOid(element?.oid || '');
 
                 if (filePath) {
-                    const file = await loadFile(filePath);
+                    // Update local selected file state which will trigger IDE sync
+                    setSelectedFile(filePath);
 
-                    // Only get range information if file was successfully loaded
-                    if (file) {
-                        // Gets range information for the selected element
+                    // Wait a bit for the file to load in IDE, then get range
+                    setTimeout(async () => {
                         const range = await getElementCodeRange(element);
-
                         if (range) {
                             ide.setHighlightRange(range);
                         }
-                    }
+                    }, 100);
                 }
             } catch (error) {
                 console.error('Error loading file for selected element:', error);
@@ -249,99 +248,42 @@ export const CodeTab = observer(() => {
         }
     }, [ide.searchTerm, ide.activeFile]);
 
-    // Subscribe to file events
-    // useEffect(() => {
-    //     const handleFileEvent = async (event: FileEvent) => {
-    //         // Only fetch all files when files are added/removed
-    //         if (event.type === 'add' || event.type === 'remove') {
-    //             ide.isFilesLoading = true;
-    //             try {
-    //                 await ide.refreshFiles();
-    //             } catch (error) {
-    //                 console.error('Error loading files:', error);
-    //             }
-    //         }
+    const handleFileTreeSelect = useCallback((filePath: string, searchTerm?: string) => {
+        // Update the local selected file state
+        setSelectedFile(filePath);
 
-    //         if (event.type === 'change') {
-    //             if (ide.activeFile) {
-    //                 if (event.paths.includes(ide.activeFile.path)) {
-    //                     await loadNewContent(ide.activeFile.path);
-    //                 }
-    //             }
-    //         }
-    //     };
-
-    //     // TODO: use fs hook
-    //     // const unsubscribe = activeSandbox.fileEventBus.subscribe('*', handleFileEvent);
-
-    //     return () => {
-    //         // unsubscribe();
-    //     };
-    // }, [activeSandbox, ide.activeFile, editorEngine.branches.activeBranch.id]);
-
-    // Load files when active sandbox changes
-    // useEffect(() => {
-    //     const loadFilesForActiveSandbox = async () => {
-    //         if (!isSandboxReady) {
-    //             return;
-    //         }
-
-    //         // Preserve the currently active file path and highlight range before clearing
-    //         const activeFilePath = ide.activeFile?.path;
-    //         const savedHighlightRange = ide.highlightRange;
-
-    //         // Clear existing files and editors when switching sandboxes
-    //         ide.clear();
-    //         editorViewsRef.current.forEach((view) => view.destroy());
-    //         editorViewsRef.current.clear();
-
-    //         // Reset file tree selection state
-    //         if (fileTreeRef.current?.deselectAll) {
-    //             fileTreeRef.current.deselectAll();
-    //         }
-
-    //         ide.isFilesLoading = true;
-    //         try {
-    //             await ide.refreshFiles();
-
-    //             // Reopen the previously active file if it exists in the new branch
-    //             if (activeFilePath) {
-    //                 const fileExists = files.some(file => file === activeFilePath);
-    //                 if (fileExists) {
-    //                     await loadFile(activeFilePath);
-    //                     // Restore the highlight range if it was preserved
-    //                     if (savedHighlightRange) {
-    //                         ide.setHighlightRange(savedHighlightRange);
-    //                     }
-    //                     // Update the file tree selection
-    //                     if (fileTreeRef.current?.selectFile) {
-    //                         fileTreeRef.current.selectFile(activeFilePath);
-    //                     }
-    //                 }
-    //             }
-    //         } catch (error) {
-    //             console.error('Error loading files for active sandbox:', error);
-    //         }
-    //     };
-
-    //     loadFilesForActiveSandbox();
-    // }, [activeSandbox]);
-
-    const loadFile = useCallback(async (filePath: string, searchTerm?: string): Promise<EditorFile | null> => {
-        if (!isSandboxReady) {
-            handleSandboxNotReady('load file');
-            return null;
+        // Store search term if provided for potential IDE usage
+        if (searchTerm) {
+            // Could store this in a ref or state if needed by IDE later
         }
+    }, []);
 
-        try {
-            return await ide.openFile(filePath, searchTerm, false);
-        } catch (error) {
-            console.error('Error loading file:', error);
-            return null;
+    // Sync selected file changes to IDE
+    useEffect(() => {
+        const syncSelectedFileToIDE = async () => {
+            if (!selectedFile || !isSandboxReady) {
+                return;
+            }
+
+            try {
+                // Load file in IDE when local selection changes
+                await ide.openFile(selectedFile, undefined, false);
+            } catch (error) {
+                console.error('Error syncing selected file to IDE:', error);
+            }
+        };
+
+        syncSelectedFileToIDE();
+    }, [selectedFile, isSandboxReady]);
+
+    // Sync IDE active file changes back to local state
+    useEffect(() => {
+        if (ide.activeFile?.path && ide.activeFile.path !== selectedFile) {
+            setSelectedFile(ide.activeFile.path);
         }
-    }, [isSandboxReady]);
+    }, [ide.activeFile?.path, selectedFile]);
 
-    function handleFileSelect(file: EditorFile) {
+    function handleFileTabSelect(file: EditorFile) {
         ide.setHighlightRange(null);
         ide.activeFile = file;
     }
@@ -409,12 +351,6 @@ export const CodeTab = observer(() => {
         toast('File saved!');
     };
 
-    const handleFileTreeSelect = async (nodes: any[]) => {
-        if (nodes.length > 0 && !nodes[0].data.isDirectory) {
-            await loadFile(nodes[0].data.path);
-            ide.setHighlightRange(null);
-        }
-    };
 
     function closeAllFiles() {
         const dirtyFiles = ide.openedFiles.filter((file) => file.isDirty);
@@ -507,7 +443,7 @@ export const CodeTab = observer(() => {
             <div className="flex flex-1 min-h-0 overflow-hidden">
                 <FileTree
                     ref={fileTreeRef}
-                    onFileSelect={loadFile}
+                    onFileSelect={handleFileTreeSelect}
                     fileNodes={localFiles}
                     isLoading={localDirLoading}
                     selectedFilePath={selectedFile}
@@ -520,7 +456,7 @@ export const CodeTab = observer(() => {
                         activeFile={ide.activeFile}
                         isFilesVisible={ide.isFilesVisible}
                         onToggleFilesVisible={() => ide.isFilesVisible = !ide.isFilesVisible}
-                        onFileSelect={handleFileSelect}
+                        onFileSelect={handleFileTabSelect}
                         onCloseFile={closeFile}
                         onCloseAllFiles={closeAllFiles}
                     />
