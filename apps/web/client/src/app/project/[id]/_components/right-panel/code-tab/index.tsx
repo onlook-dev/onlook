@@ -1,14 +1,14 @@
 import { useEditorEngine } from '@/components/store/editor';
 import type { CodeRange } from '@/components/store/editor/ide';
 import { EditorView } from '@codemirror/view';
-import { useDirectory, useFile, type FileEntry } from '@onlook/file-system/hooks';
+import { useDirectory, useFile } from '@onlook/file-system/hooks';
 import { toast } from '@onlook/ui/sonner';
 import { EditorSelection } from '@uiw/react-codemirror';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CodeEditorArea } from './file-content';
 import { createSearchHighlight, scrollToFirstMatch } from './file-content/code-mirror-config';
 import { FileTabs } from './file-tabs';
-import type { BinaryEditorFile, EditorFile, FileNode, TextEditorFile } from './shared/types';
+import type { BinaryEditorFile, EditorFile, TextEditorFile } from './shared/types';
 import { FileTree } from './sidebar/file-tree';
 
 export const CodeTab = () => {
@@ -39,18 +39,6 @@ export const CodeTab = () => {
         loading: isLoadingContent,
         error: fileError,
     } = useFile(rootDir, selectedFile || '');
-
-    // Convert FileEntry[] to FileNode[] format
-    const convertToFileNodes = (entries: FileEntry[]): FileNode[] => {
-        return entries.map((entry) => ({
-            name: entry.name,
-            path: entry.path,
-            type: entry.isDirectory ? 'directory' : 'file',
-            children: entry.children ? convertToFileNodes(entry.children) : undefined,
-        }));
-    };
-
-    const localFiles = convertToFileNodes(localEntries ?? []);
 
     // Helper function to create EditorFile from local file data
     const createLocalEditorFile = (filePath: string, content: string | Uint8Array): EditorFile => {
@@ -504,7 +492,7 @@ export const CodeTab = () => {
             <div className="flex flex-1 min-h-0 overflow-hidden">
                 <FileTree
                     onFileSelect={handleFileTreeSelect}
-                    fileNodes={localFiles}
+                    fileEntries={localEntries}
                     isLoading={localDirLoading}
                     selectedFilePath={selectedFile}
                 />

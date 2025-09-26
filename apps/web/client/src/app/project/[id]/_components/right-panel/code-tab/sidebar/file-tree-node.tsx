@@ -9,17 +9,17 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { motion } from 'motion/react';
 import type { NodeApi } from 'react-arborist';
-import type { FileNode } from '../shared/types';
+import type { FileEntry } from '@onlook/file-system/hooks';
 
 interface FileTreeNodeProps {
-    node: NodeApi<FileNode>;
+    node: NodeApi<FileEntry>;
     isSelected: boolean;
     style: React.CSSProperties;
     onFileSelect?: (filePath: string, searchTerm?: string) => void;
 }
 
 export const FileTreeNode = ({ node, style, onFileSelect, isSelected }: FileTreeNodeProps) => {
-    const isDirectory = node.data.type === 'directory';
+    const isDirectory = node.data.isDirectory;
 
     const handleClick = (e: React.MouseEvent) => {
         if (isDirectory) {

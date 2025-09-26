@@ -3,6 +3,8 @@ export interface FileNode {
     path: string;
     type: 'file' | 'directory';
     children?: FileNode[];
+    depth?: number;
+    parentPath?: string | null;
 }
 
 export interface EditorFile {

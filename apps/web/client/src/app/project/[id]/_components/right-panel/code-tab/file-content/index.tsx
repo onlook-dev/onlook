@@ -36,6 +36,8 @@ export const CodeEditorArea = ({
                         </div>
                     </div>
                 ) : (
+                    // Codemirror keeps track of editor history
+                    // having one for each opened file will make a better experience despite the overhead
                     openedFiles.map((file) => (
                         <CodeEditor
                             key={file.path}
