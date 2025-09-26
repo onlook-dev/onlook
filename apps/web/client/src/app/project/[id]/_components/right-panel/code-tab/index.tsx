@@ -3,9 +3,7 @@ import type { CodeRange, EditorFile } from '@/components/store/editor/ide';
 import { EditorView } from '@codemirror/view';
 import { useDirectory, useFile, type FileEntry } from '@onlook/file-system/hooks';
 import { toast } from '@onlook/ui/sonner';
-import { getMimeType } from '@onlook/utility';
 import { EditorSelection } from '@uiw/react-codemirror';
-import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CodeEditorArea } from './file-content';
 import { createSearchHighlight, scrollToFirstMatch } from './file-content/code-mirror-config';
@@ -13,7 +11,7 @@ import { FileTabs } from './file-tabs';
 import type { FileNode } from './shared/types';
 import { FileTree } from './sidebar/file-tree';
 
-export const CodeTab = observer(() => {
+export const CodeTab = () => {
     const editorEngine = useEditorEngine();
 
     // File system
@@ -29,8 +27,6 @@ export const CodeTab = observer(() => {
 
     // File browser state
     const [selectedFile, setSelectedFile] = useState<string | null>(null);
-    const [fileContent, setFileContent] = useState<string>('');
-    const [isEditing, setIsEditing] = useState(false);
 
     // Use file hook for selected file
     const {
@@ -39,17 +35,8 @@ export const CodeTab = observer(() => {
         error: fileError,
     } = useFile(rootDir, selectedFile || '');
 
-    // Update content when file loads
-    useEffect(() => {
-        if (typeof loadedContent === 'string') {
-            setFileContent(loadedContent);
-        } else if (loadedContent) {
-            setFileContent('[Binary file - cannot display]');
-        } else {
-            setFileContent('');
-        }
-        setIsEditing(false);
-    }, [loadedContent]);
+    console.log('loadedContent', loadedContent);
+    console.log('selectedFile', selectedFile);
 
     // Convert FileEntry[] to FileNode[] format
     const convertToFileNodes = (entries: FileEntry[]): FileNode[] => {
@@ -62,18 +49,13 @@ export const CodeTab = observer(() => {
     };
 
     const localFiles = convertToFileNodes(localEntries ?? []);
-
-    console.log('localFiles', localFiles);
     // _____________________________________________________
-
 
     // const activeSandbox = editorEngine.branches.activeSandbox;
     // const files = activeSandbox.files;
     const ide = editorEngine.ide;
-    const editorContainer = useRef<HTMLDivElement | null>(null);
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const fileTabsContainerRef = useRef<HTMLDivElement>(null);
-    const fileTreeRef = useRef<any>(null);
 
     // Helper function to check if sandbox is connected and ready
     const isSandboxReady = ide.isSandboxReady;
@@ -398,11 +380,6 @@ export const CodeTab = observer(() => {
         ide.showUnsavedDialog = false;
     }
 
-    const getFileUrl = (file: EditorFile) => {
-        const mime = getMimeType(file.filename.toLowerCase());
-        return `data:${mime};base64,${file.content}`;
-    };
-
     // Cleanup editor instances when component unmounts
     useEffect(() => {
         return () => {
@@ -410,7 +387,6 @@ export const CodeTab = observer(() => {
             editorViewsRef.current.clear();
         };
     }, []);
-
 
     const scrollToActiveTab = useCallback(() => {
         if (!fileTabsContainerRef.current || !ide.activeFile) return;
@@ -442,7 +418,6 @@ export const CodeTab = observer(() => {
         <div className="size-full flex flex-col">
             <div className="flex flex-1 min-h-0 overflow-hidden">
                 <FileTree
-                    ref={fileTreeRef}
                     onFileSelect={handleFileTreeSelect}
                     fileNodes={localFiles}
                     isLoading={localDirLoading}
@@ -461,13 +436,19 @@ export const CodeTab = observer(() => {
                     />
                     <CodeEditorArea
                         editorViewsRef={editorViewsRef}
+                        openedFiles={ide.openedFiles}
+                        activeFile={ide.activeFile}
+                        showUnsavedDialog={ide.showUnsavedDialog}
                         onSaveFile={saveFile}
                         onUpdateFileContent={updateFileContent}
                         onDiscardChanges={discardChanges}
-                        onGetFileUrl={getFileUrl}
+                        onCancelUnsaved={() => {
+                            // ide.showUnsavedDialog = false;
+                            // ide.pendingCloseAll = false;
+                        }}
                     />
                 </div>
             </div>
         </div>
     );
-});
+};

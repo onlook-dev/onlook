@@ -1,17 +1,18 @@
 import { useEditorEngine } from '@/components/store/editor';
 import type { EditorFile } from '@/components/store/editor/ide';
 import { EditorView } from '@codemirror/view';
+import { getMimeType } from '@onlook/utility/src/file';
 import CodeMirror from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
+import type { RefObject } from 'react';
 import { getBasicSetup, getExtensions } from './code-mirror-config';
 
 interface CodeEditorProps {
     file: EditorFile;
     isActive: boolean;
-    editorViewsRef: React.MutableRefObject<Map<string, EditorView>>;
+    editorViewsRef: RefObject<Map<string, EditorView>>;
     onSaveFile: () => Promise<void>;
     onUpdateFileContent: (fileId: string, content: string) => void;
-    onGetFileUrl: (file: EditorFile) => string;
 }
 
 export const CodeEditor = observer(({
@@ -20,10 +21,14 @@ export const CodeEditor = observer(({
     editorViewsRef,
     onSaveFile,
     onUpdateFileContent,
-    onGetFileUrl
 }: CodeEditorProps) => {
     const editorEngine = useEditorEngine();
     const ide = editorEngine.ide;
+
+    const getFileUrl = (file: EditorFile) => {
+        const mime = getMimeType(file.filename.toLowerCase());
+        return `data:${mime};base64,${file.content}`;
+    };
 
     return (
         <div
@@ -34,7 +39,7 @@ export const CodeEditor = observer(({
         >
             {file.isBinary ? (
                 <img
-                    src={onGetFileUrl(file)}
+                    src={getFileUrl(file)}
                     alt={file.filename}
                     className="w-full h-full object-contain p-5"
                 />

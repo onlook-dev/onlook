@@ -72,45 +72,12 @@ export const FileTreeNode = ({ node, style, onFileSelect, isSelected }: FileTree
         }
     };
 
-    const menuItems = [
-        // ...(isDirectory ? [
-        //     {
-        //         label: 'New File',
-        //         action: () => editorEngine.ide.fileModalOpen = true,
-        //         icon: <Icons.File className="mr-2 h-4 w-4" />,
-        //         separator: false,
-        //     },
-        //     {
-        //         label: 'New Folder',
-        //         action: () => editorEngine.ide.folderModalOpen = true,
-        //         icon: <Icons.Directory className="mr-2 h-4 w-4" />,
-        //         separator: true,
-        //     },
-        // ] : []),
-        // {
-        //     label: 'Open File',
-        //     action: handleClick,
-        //     icon: <Icons.File className="mr-2 h-4 w-4" />,
-        //     disabled: isDirectory,
-        //     separator: false,
-        // },
-        // {
-        //     label: 'Copy Path',
-        //     action: () => {
-        //         navigator.clipboard.writeText(node.data.path);
-        //     },
-        //     icon: <Icons.Copy className="mr-2 h-4 w-4" />,
-        //     separator: false,
-        // },
-        // {
-        //     label: 'Delete',
-        //     action: () => {
-        //         editorEngine.activeSandbox.delete(node.data.path, true);
-        //     },
-        //     icon: <Icons.Trash className="mr-2 h-4 w-4" />,
-        //     separator: false,
-        // }
-    ];
+    const menuItems: Array<{
+        label: string;
+        action: () => void;
+        icon: React.ReactElement;
+        separator: boolean;
+    }> = [];
 
     return (
         <ContextMenu>
@@ -150,7 +117,6 @@ export const FileTreeNode = ({ node, style, onFileSelect, isSelected }: FileTree
                         <ContextMenuItem
                             onClick={item.action}
                             className="cursor-pointer"
-                            disabled={item.disabled}
                         >
                             <span className={cn('flex w-full items-center gap-1')}>
                                 {item.icon}
