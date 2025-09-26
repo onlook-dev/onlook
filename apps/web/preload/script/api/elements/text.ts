@@ -96,7 +96,7 @@ function updateTextContent(el: HTMLElement, content: string): void {
 
 function extractTextContent(el: HTMLElement): string {
     let content = el.innerHTML;
-    content = content.replace(/<br\s*\/?>/gi, '\n');
+    content = content.replace(/<br[^>]*\/?>/gi, '\n');
     content = content.replace(/<[^>]*>/g, '');
     const textArea = document.createElement('textarea');
     textArea.innerHTML = content;
