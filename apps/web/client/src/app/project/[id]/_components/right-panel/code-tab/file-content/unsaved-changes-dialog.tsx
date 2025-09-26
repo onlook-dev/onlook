@@ -2,7 +2,7 @@ import { Button } from '@onlook/ui/button';
 
 interface UnsavedChangesDialogProps {
     onSave: () => Promise<void>;
-    onDiscard: () => Promise<void>;
+    onDiscard: () => void;
     onCancel: () => void;
 }
 

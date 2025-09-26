@@ -319,37 +319,26 @@ export const CodeTab = () => {
                     return;
                 }
 
-                const editorView = editorViewsRef.current.get(filePath);
-                if (editorView) {
-                    editorView.destroy();
-                    editorViewsRef.current.delete(filePath);
-                }
-
-                const updatedFiles = openedEditorFiles.filter(f => f.path !== filePath);
-                setOpenedEditorFiles(updatedFiles);
-
-                // Set new active file if we closed the active one
-                if (activeEditorFile?.path === filePath) {
-                    const newActiveFile = updatedFiles.length > 0 ? updatedFiles[updatedFiles.length - 1] || null : null;
-                    setActiveEditorFile(newActiveFile);
-                }
+                closeFileInternal(filePath);
             });
         }
-    }, [openedEditorFiles, activeEditorFile]);
+    }, [openedEditorFiles]);
 
     const closeAllLocalFiles = () => {
-        Promise.all(openedEditorFiles.map(file => isDirty(file))).then(dirtyChecks => {
-            const hasDirtyFiles = dirtyChecks.some(dirty => dirty);
+        Promise.all(openedEditorFiles.map(async file => ({
+            file,
+            dirty: await isDirty(file)
+        }))).then(fileStatuses => {
+            // Close clean files immediately
+            const cleanFiles = fileStatuses.filter(status => !status.dirty);
+            cleanFiles.forEach(status => closeFileInternal(status.file.path));
 
-            if (hasDirtyFiles) {
+            // Check if any dirty files remain
+            const dirtyFiles = fileStatuses.filter(status => status.dirty);
+            if (dirtyFiles.length > 0) {
                 setShowLocalUnsavedDialog(true);
                 return;
             }
-
-            editorViewsRef.current.forEach((view) => view.destroy());
-            editorViewsRef.current.clear();
-            setOpenedEditorFiles([]);
-            setActiveEditorFile(null);
         });
     };
 
@@ -374,48 +363,27 @@ export const CodeTab = () => {
         }
     };
 
-    const closeFile = useCallback((fileId: string) => {
-        if (ide.openedFiles.find(f => f.id === fileId)?.isDirty) {
-            ide.showUnsavedDialog = true;
-            return;
-        }
-
-        const editorView = editorViewsRef.current.get(fileId);
+    // Centralized function to close a file and clean up resources
+    const closeFileInternal = (filePath: string) => {
+        const editorView = editorViewsRef.current.get(filePath);
         if (editorView) {
             editorView.destroy();
-            editorViewsRef.current.delete(fileId);
-        }
-        ide.closeFile(fileId);
-    }, [ide]);
-
-    async function discardChanges(fileId: string) {
-        if (ide.pendingCloseAll) {
-            const file = ide.openedFiles.find((e) => e.id === fileId);
-            if (file) {
-                await ide.discardFileChanges(file.id);
-                closeFile(fileId);
-                ide.showUnsavedDialog = true;
-                const isDirty = ide.openedFiles.filter((val) => val.isDirty);
-                if (isDirty.length === 0) {
-                    ide.closeAllFiles();
-                    ide.pendingCloseAll = false;
-                    ide.showUnsavedDialog = false;
-                }
-                return;
-            }
-
-            ide.pendingCloseAll = false;
-            return;
+            editorViewsRef.current.delete(filePath);
         }
 
-        if (!ide.activeFile) {
-            return;
-        }
+        const updatedFiles = openedEditorFiles.filter(f => f.path !== filePath);
+        setOpenedEditorFiles(updatedFiles);
 
-        await ide.discardFileChanges(fileId);
-        closeFile(fileId);
-        ide.showUnsavedDialog = false;
-    }
+        if (activeEditorFile?.path === filePath) {
+            const newActiveFile = updatedFiles.length > 0 ? updatedFiles[updatedFiles.length - 1] || null : null;
+            setActiveEditorFile(newActiveFile);
+        }
+    };
+
+    const discardLocalFileChanges = (filePath: string) => {
+        closeFileInternal(filePath);
+        setShowLocalUnsavedDialog(false);
+    };
 
     // Cleanup editor instances when component unmounts
     useEffect(() => {
@@ -452,7 +420,7 @@ export const CodeTab = () => {
                         showUnsavedDialog={showLocalUnsavedDialog}
                         onSaveFile={handleSaveFile}
                         onUpdateFileContent={updateLocalFileContent}
-                        onDiscardChanges={discardChanges}
+                        onDiscardChanges={discardLocalFileChanges}
                         onCancelUnsaved={() => { setShowLocalUnsavedDialog(false); }}
                     />
                 </div>

@@ -26,7 +26,7 @@ interface CodeEditorAreaProps {
     editorViewsRef: RefObject<Map<string, EditorView>>;
     onSaveFile: () => Promise<void>;
     onUpdateFileContent: (fileId: string, content: string) => void;
-    onDiscardChanges: (fileId: string) => Promise<void>;
+    onDiscardChanges: (fileId: string) => void;
     onCancelUnsaved: () => void;
 }
 
