@@ -1,3 +1,4 @@
+import type { FileEntry } from '@onlook/file-system/hooks';
 import {
     ContextMenu,
     ContextMenuContent,
@@ -9,7 +10,6 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { motion } from 'motion/react';
 import type { NodeApi } from 'react-arborist';
-import type { FileEntry } from '@onlook/file-system/hooks';
 
 interface FileTreeNodeProps {
     node: NodeApi<FileEntry>;
@@ -45,27 +45,27 @@ export const FileTreeNode = ({ node, style, onFileSelect, isSelected }: FileTree
         }
 
         switch (extension) {
-            case '.js':
-            case '.jsx':
-            case '.ts':
-            case '.tsx':
+            case 'js':
+            case 'jsx':
+            case 'ts':
+            case 'tsx':
                 return <Icons.Code className="w-4 h-4 mr-2" />;
-            case '.css':
-            case '.scss':
-            case '.sass':
+            case 'css':
+            case 'scss':
+            case 'sass':
                 return <Icons.Box className="w-4 h-4 mr-2" />;
-            case '.html':
+            case 'html':
                 return <Icons.Frame className="w-4 h-4 mr-2" />;
-            case '.json':
+            case 'json':
                 return <Icons.Code className="w-4 h-4 mr-2" />;
-            case '.md':
-            case '.mdx':
+            case 'md':
+            case 'mdx':
                 return <Icons.Text className="w-4 h-4 mr-2" />;
-            case '.jpg':
-            case '.jpeg':
-            case '.png':
-            case '.gif':
-            case '.svg':
+            case 'jpg':
+            case 'jpeg':
+            case 'png':
+            case 'gif':
+            case 'svg':
                 return <Icons.Image className="w-4 h-4 mr-2" />;
             default:
                 return <Icons.File className="w-4 h-4 mr-2" />;
