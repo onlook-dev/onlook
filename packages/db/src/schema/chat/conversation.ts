@@ -23,11 +23,11 @@ export const conversations = pgTable("conversations", {
 }).enableRLS();
 
 export const conversationInsertSchema = createInsertSchema(conversations, {
-    agentType: z.enum(AgentType),
+    agentType: z.enum(AgentType).optional(),
 });
 export const conversationUpdateSchema = createUpdateSchema(conversations, {
     id: z.string().uuid(),
-    agentType: z.enum(AgentType),
+    agentType: z.enum(AgentType).optional(),
 });
 
 export const conversationRelations = relations(conversations, ({ one, many }) => ({
