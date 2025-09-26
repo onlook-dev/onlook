@@ -2,22 +2,23 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 
 export interface FileTabProps {
-    filename: string;
-    isActive?: boolean;
-    isDirty?: boolean;
-    onClick?: () => void;
-    onClose?: () => void;
-    'data-active'?: boolean;
+    filePath: string;
+    isActive: boolean;
+    isDirty: boolean;
+    onClick: () => void;
+    onClose: () => void;
+    dataActive: boolean;
 }
 
 export const FileTab = ({
-    filename,
-    isActive = false,
-    isDirty = false,
+    filePath,
+    isActive,
+    isDirty,
     onClick,
     onClose,
-    'data-active': dataActive,
+    dataActive,
 }: FileTabProps) => {
+    const filename = filePath.split('/').pop() || '';
     return (
         <div className="h-full pl-3 pr-3 relative group" data-active={dataActive}>
             <div className="absolute right-0 h-[50%] w-[0.5px] bg-foreground/10 top-1/2 -translate-y-1/2"></div>

@@ -12,7 +12,6 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { FileModal } from './modals/file-modal';
 import { FolderModal } from './modals/folder-modal';
-import { UploadModal } from './modals/upload-modal';
 
 export const CodeControls = observer(() => {
     const editorEngine = useEditorEngine();
@@ -110,7 +109,6 @@ export const CodeControls = observer(() => {
             </div>
             <FileModal basePath={basePath} />
             <FolderModal basePath={basePath} />
-            <UploadModal basePath={basePath} />
         </>
     );
 }); 

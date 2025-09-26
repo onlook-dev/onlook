@@ -9,7 +9,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { forwardRef, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { EditorFile } from '../shared/types';
 import { FileTab } from './file-tab';
 
@@ -38,7 +38,6 @@ export const FileTabs = ({
 
     // Scroll to active tab when it changes
     useEffect(() => {
-        console.log('selectedFile', selectedFilePath);
         if (!selectedFilePath) {
             return;
         }
@@ -110,15 +109,15 @@ export const FileTabs = ({
                 {openedFiles.map((file) => (
                     <FileTab
                         key={file.path}
-                        filename={file.path}
+                        filePath={file.path}
                         isActive={activeFile?.path === file.path}
                         isDirty={file.isDirty}
                         onClick={() => onFileSelect(file)}
                         onClose={() => onCloseFile(file.path)}
-                        data-active={activeFile?.path === file.path}
+                        dataActive={activeFile?.path === file.path}
                     />
                 ))}
             </div>
         </div>
     );
-});
+};
