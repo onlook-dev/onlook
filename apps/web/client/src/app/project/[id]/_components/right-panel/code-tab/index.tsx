@@ -161,13 +161,13 @@ export const CodeTab = observer(() => {
 
             // Create the selection and apply it in a single transaction
             const selection = EditorSelection.create([EditorSelection.range(startPos, endPos)]);
-            
+
             editorView.dispatch({
                 selection,
                 effects: [
                     EditorView.scrollIntoView(startPos, {
                         y: 'start',
-                        yMargin: 48 
+                        yMargin: 48
                     })
                 ],
                 userEvent: 'select.element'
@@ -226,10 +226,11 @@ export const CodeTab = observer(() => {
             }
         };
 
-        const unsubscribe = activeSandbox.fileEventBus.subscribe('*', handleFileEvent);
+        // TODO: use fs hook
+        // const unsubscribe = activeSandbox.fileEventBus.subscribe('*', handleFileEvent);
 
         return () => {
-            unsubscribe();
+            // unsubscribe();
         };
     }, [activeSandbox, ide.activeFile, editorEngine.branches.activeBranch.id]);
 

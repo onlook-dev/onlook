@@ -10,7 +10,7 @@ import { useDirectory, useFile, useFS } from '@onlook/file-system/hooks';
 import { Alert, AlertDescription } from '@onlook/ui/alert';
 import { Badge } from '@onlook/ui/badge';
 
-import { useSyncEngine } from '@/services/sync-engine/useSyncEngine';
+import { useSyncEngine } from '@/services/sync-engine/use-sync-engine';
 import { api } from '@/trpc/react';
 import { FileEditor } from './_components/file-editor';
 import type { FileNode } from './_components/file-explorer';

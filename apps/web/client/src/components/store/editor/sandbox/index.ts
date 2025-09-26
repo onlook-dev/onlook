@@ -1,30 +1,25 @@
+import { CodeProviderSync } from '@/services/sync-engine/sync-engine';
 import type {
     ListFilesOutputFile,
     Provider,
-    ProviderFileWatcher,
-    WatchEvent,
+    WatchEvent
 } from '@onlook/code-provider';
 import {
     EXCLUDED_SYNC_DIRECTORIES,
-    NEXT_JS_FILE_EXTENSIONS,
-    PRELOAD_SCRIPT_SRC,
+    NEXT_JS_FILE_EXTENSIONS
 } from '@onlook/constants';
+import { FileSystem } from '@onlook/file-system';
 import { RouterType, type Branch, type SandboxFile } from '@onlook/models';
 import {
     getBaseName,
     getDirName,
-    isImageFile,
-    isRootLayoutFile,
-    isSubdirectory
+    isRootLayoutFile
 } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import { env } from 'process';
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
-import { detectRouterTypeInSandbox } from '../pages/helper';
-import { FileEventBus } from './file-event-bus';
-import { FileSyncManager } from './file-sync';
 import { normalizePath } from './helpers';
 import { SessionManager } from './session';
 
@@ -32,17 +27,20 @@ const isDev = env.NODE_ENV === 'development';
 
 export class SandboxManager {
     readonly session: SessionManager;
-    readonly fileEventBus: FileEventBus = new FileEventBus();
+    // readonly fileEventBus: FileEventBus = new FileEventBus();
 
     // Add router configuration
     private _routerConfig: { type: RouterType; basePath: string } | null = null;
 
-    private fileWatcher: ProviderFileWatcher | null = null;
-    private fileSync: FileSyncManager;
+    // private fileWatcher: ProviderFileWatcher | null = null;
+    // private fileSync: FileSyncManager;
     private _isIndexed = false;
     private _isIndexing = false;
+    // private _discoveredFiles: string[] = [];
     private providerReactionDisposer?: () => void;
-    private _discoveredFiles: string[] = [];
+
+    private fs: FileSystem | null = null;
+    private sync: CodeProviderSync | null = null;
 
     constructor(
         private branch: Branch,
@@ -53,7 +51,7 @@ export class SandboxManager {
             this.branch,
             this.errorManager
         );
-        this.fileSync = new FileSyncManager(this.branch.projectId, this.branch.id);
+        // this.fileSync = new FileSyncManager(this.branch.projectId, this.branch.id);
         makeAutoObservable(this);
     }
 
@@ -61,13 +59,26 @@ export class SandboxManager {
         this.providerReactionDisposer = reaction(
             () => this.session.provider,
             (provider) => {
-                this._isIndexed = false;
+                // this._isIndexed = false;
+                // if (provider) {
+                //     this.index();
+                // }
+
                 if (provider) {
-                    this.index();
+                    if (this.sync) {
+                        this.sync?.stop();
+                        this.sync = null;
+                    }
+                    this.fs = new FileSystem(`/${this.editorEngine.projectId}/${this.branch.id}`);
+                    this.sync = new CodeProviderSync(provider, this.fs, {
+                        // TODO: add config
+                        exclude: EXCLUDED_SYNC_DIRECTORIES,
+                    });
+                    void this.sync.start();
                 }
             },
         );
-        await this.fileSync.init();
+        // await this.fileSync.init();
     }
 
     get isIndexed() {
@@ -87,139 +98,141 @@ export class SandboxManager {
     }
 
     async index(force = false) {
-        console.log(`[SandboxManager] Starting indexing for ${this.branch.projectId}/${this.branch.id}, force: ${force}`);
+        // console.log(`[SandboxManager] Starting indexing for ${this.branch.projectId}/${this.branch.id}, force: ${force}`);
 
-        if (this._isIndexing || (this._isIndexed && !force)) {
-            return;
-        }
+        // if (this._isIndexing || (this._isIndexed && !force)) {
+        //     return;
+        // }
 
-        if (!this.session.provider) {
-            console.error('No provider found for indexing');
-            return;
-        }
+        // if (!this.session.provider) {
+        //     console.error('No provider found for indexing');
+        //     return;
+        // }
 
-        this._isIndexing = true;
+        // this._isIndexing = true;
 
-        try {
-            // Detect router configuration first
-            if (!this._routerConfig) {
-                this._routerConfig = await detectRouterTypeInSandbox(this);
-            }
+        // try {
+        //     // Detect router configuration first
+        //     if (!this._routerConfig) {
+        //         this._routerConfig = await detectRouterTypeInSandbox(this);
+        //     }
 
-            // Get all file paths
-            const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES);
-            this._discoveredFiles = allFilePaths;
+        //     // Get all file paths
+        //     const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES);
+        //     this._discoveredFiles = allFilePaths;
 
-            // Process files in non-blocking batches
-            await this.processFilesInBatches(allFilePaths);
+        //     // Process files in non-blocking batches
+        //     await this.processFilesInBatches(allFilePaths);
 
-            await this.watchFiles();
-            this._isIndexed = true;
-        } catch (error) {
-            console.error('Error during indexing:', error);
-            throw error;
-        } finally {
-            this._isIndexing = false;
-        }
+        //     await this.watchFiles();
+        //     this._isIndexed = true;
+        // } catch (error) {
+        //     console.error('Error during indexing:', error);
+        //     throw error;
+        // } finally {
+        //     this._isIndexing = false;
+        // }
     }
 
     /**
      * Process files in non-blocking batches to avoid blocking the UI thread
      */
     private async processFilesInBatches(allFilePaths: string[], batchSize = 10): Promise<void> {
-        for (let i = 0; i < allFilePaths.length; i += batchSize) {
-            const batch = allFilePaths.slice(i, i + batchSize);
+        // for (let i = 0; i < allFilePaths.length; i += batchSize) {
+        //     const batch = allFilePaths.slice(i, i + batchSize);
 
-            // Process batch in parallel for better performance
-            const batchPromises = batch.map(async (filePath) => {
-                // Track image files first
-                if (isImageFile(filePath)) {
-                    this.fileSync.writeEmptyFile(filePath, 'binary');
-                    return;
-                }
+        //     // Process batch in parallel for better performance
+        //     const batchPromises = batch.map(async (filePath) => {
+        //         // Track image files first
+        //         if (isImageFile(filePath)) {
+        //             this.fileSync.writeEmptyFile(filePath, 'binary');
+        //             return;
+        //         }
 
-                // Check cache first
-                const cachedFile = this.fileSync.readCache(filePath);
-                if (cachedFile && cachedFile.content !== null) {
-                    if (this.isJsxFile(filePath)) {
-                        await this.processFileForMapping(cachedFile);
-                    }
-                } else {
-                    const file = await this.fileSync.readOrFetch(filePath, this.readRemoteFile.bind(this));
-                    if (file && this.isJsxFile(filePath)) {
-                        await this.processFileForMapping(file);
-                    }
-                }
-            });
+        //         // Check cache first
+        //         const cachedFile = this.fileSync.readCache(filePath);
+        //         if (cachedFile && cachedFile.content !== null) {
+        //             if (this.isJsxFile(filePath)) {
+        //                 await this.processFileForMapping(cachedFile);
+        //             }
+        //         } else {
+        //             const file = await this.fileSync.readOrFetch(filePath, this.readRemoteFile.bind(this));
+        //             if (file && this.isJsxFile(filePath)) {
+        //                 await this.processFileForMapping(file);
+        //             }
+        //         }
+        //     });
 
-            await Promise.all(batchPromises);
+        //     await Promise.all(batchPromises);
 
-            // Yield control to the event loop after each batch
-            if (i + batchSize < allFilePaths.length) {
-                await new Promise(resolve => setTimeout(resolve, 1));
-            }
-        }
+        //     // Yield control to the event loop after each batch
+        //     if (i + batchSize < allFilePaths.length) {
+        //         await new Promise(resolve => setTimeout(resolve, 1));
+        //     }
+        // }
     }
 
     /**
      * Optimized flat file discovery - similar to hosting manager approach
      */
     private async getAllFilePathsFlat(rootDir: string, excludeDirs: string[]): Promise<string[]> {
-        if (!this.session.provider) {
-            throw new Error('No provider available for file discovery');
-        }
+        return [];
+        // if (!this.session.provider) {
+        //     throw new Error('No provider available for file discovery');
+        // }
 
-        const allPaths: string[] = [];
-        const dirsToProcess = [rootDir];
+        // const allPaths: string[] = [];
+        // const dirsToProcess = [rootDir];
 
-        while (dirsToProcess.length > 0) {
-            const currentDir = dirsToProcess.shift()!;
-            try {
-                const { files } = await this.session.provider?.listFiles({
-                    args: {
-                        path: currentDir,
-                    },
-                });
+        // while (dirsToProcess.length > 0) {
+        //     const currentDir = dirsToProcess.shift()!;
+        //     try {
+        //         const { files } = await this.session.provider?.listFiles({
+        //             args: {
+        //                 path: currentDir,
+        //             },
+        //         });
 
-                for (const entry of files) {
-                    const fullPath = `${currentDir}/${entry.name}`;
-                    const normalizedPath = normalizePath(fullPath);
+        //         for (const entry of files) {
+        //             const fullPath = `${currentDir}/${entry.name}`;
+        //             const normalizedPath = normalizePath(fullPath);
 
-                    if (entry.type === 'directory') {
-                        // Skip excluded directories
-                        if (!excludeDirs.includes(entry.name)) {
-                            dirsToProcess.push(normalizedPath);
-                        }
-                        this.fileSync.updateDirectoryCache(normalizedPath);
-                    } else if (entry.type === 'file') {
-                        allPaths.push(normalizedPath);
-                    }
-                }
-            } catch (error) {
-                console.warn(`Error reading directory ${currentDir}:`, error);
-            }
-        }
+        //             if (entry.type === 'directory') {
+        //                 // Skip excluded directories
+        //                 if (!excludeDirs.includes(entry.name)) {
+        //                     dirsToProcess.push(normalizedPath);
+        //                 }
+        //                 this.fileSync.updateDirectoryCache(normalizedPath);
+        //             } else if (entry.type === 'file') {
+        //                 allPaths.push(normalizedPath);
+        //             }
+        //         }
+        //     } catch (error) {
+        //         console.warn(`Error reading directory ${currentDir}:`, error);
+        //     }
+        // }
 
-        return allPaths;
+        // return allPaths;
     }
 
     private async readRemoteFile(filePath: string): Promise<SandboxFile | null> {
-        if (!this.session.provider) {
-            console.error('No provider found for remote read');
-            throw new Error('No provider found for remote read');
-        }
+        return null;
+        // if (!this.session.provider) {
+        //     console.error('No provider found for remote read');
+        //     throw new Error('No provider found for remote read');
+        // }
 
-        try {
-            const { file } = await this.session.provider.readFile({
-                args: {
-                    path: filePath,
-                },
-            });
-            return file;
-        } catch (error) {
-            console.error(`Error reading remote file ${filePath}:`, error);
-            return null;
-        }
+        // try {
+        //     const { file } = await this.session.provider.readFile({
+        //         args: {
+        //             path: filePath,
+        //         },
+        //     });
+        //     return file;
+        // } catch (error) {
+        //     console.error(`Error reading remote file ${filePath}:`, error);
+        //     return null;
+        // }
     }
 
     private async writeRemoteFile(
@@ -227,78 +240,82 @@ export class SandboxManager {
         content: string | Uint8Array,
         overwrite = true,
     ): Promise<boolean> {
-        if (!this.session.provider) {
-            console.error('No provider found for remote write');
-            return false;
-        }
+        return false;
+        // if (!this.session.provider) {
+        //     console.error('No provider found for remote write');
+        //     return false;
+        // }
 
-        try {
-            const res = await this.session.provider.writeFile({
-                args: {
-                    path: filePath,
-                    content,
-                    overwrite,
-                },
-            });
-            return res.success;
-        } catch (error) {
-            console.error(`Error writing remote file ${filePath}:`, error);
-            return false;
-        }
+        // try {
+        //     const res = await this.session.provider.writeFile({
+        //         args: {
+        //             path: filePath,
+        //             content,
+        //             overwrite,
+        //         },
+        //     });
+        //     return res.success;
+        // } catch (error) {
+        //     console.error(`Error writing remote file ${filePath}:`, error);
+        //     return false;
+        // }
     }
 
     async readFile(path: string, remote = false): Promise<SandboxFile | null> {
-        const normalizedPath = normalizePath(path);
-        if (remote) {
-            return this.readRemoteFile(normalizedPath);
-        }
-        return this.fileSync.readOrFetch(normalizedPath, this.readRemoteFile.bind(this));
+        return null;
+        // const normalizedPath = normalizePath(path);
+        // if (remote) {
+        //     return this.readRemoteFile(normalizedPath);
+        // }
+        // return this.fileSync.readOrFetch(normalizedPath, this.readRemoteFile.bind(this));
     }
 
     async readFiles(paths: string[]): Promise<Record<string, SandboxFile>> {
-        const results = new Map<string, SandboxFile>();
-        for (const path of paths) {
-            const file = await this.readFile(path);
-            if (!file) {
-                console.error(`Failed to read file ${path}`);
-                continue;
-            }
-            results.set(path, file);
-        }
-        return Object.fromEntries(results);
+        return {};
+        // const results = new Map<string, SandboxFile>();
+        // for (const path of paths) {
+        //     const file = await this.readFile(path);
+        //     if (!file) {
+        //         console.error(`Failed to read file ${path}`);
+        //         continue;
+        //     }
+        //     results.set(path, file);
+        // }
+        // return Object.fromEntries(results);
     }
 
     async writeFile(path: string, content: string): Promise<boolean> {
-        const normalizedPath = normalizePath(path);
-        let writeContent = content;
+        return false;
+        // const normalizedPath = normalizePath(path);
+        // let writeContent = content;
 
-        // If the file is a JSX file, we need to process it for mapping before writing
-        if (this.isJsxFile(normalizedPath)) {
-            try {
-                const { newContent } = await this.editorEngine.templateNodes.processFileForMapping(
-                    this.branch.id,
-                    normalizedPath,
-                    content,
-                    this.routerConfig?.type,
-                );
-                writeContent = newContent;
-            } catch (error) {
-                console.error(`Error processing file ${normalizedPath}:`, error);
-            }
-        }
-        const success = await this.fileSync.write(
-            normalizedPath,
-            writeContent,
-            this.writeRemoteFile.bind(this),
-        );
+        // // If the file is a JSX file, we need to process it for mapping before writing
+        // if (this.isJsxFile(normalizedPath)) {
+        //     try {
+        //         const { newContent } = await this.editorEngine.templateNodes.processFileForMapping(
+        //             this.branch.id,
+        //             normalizedPath,
+        //             content,
+        //             this.routerConfig?.type,
+        //         );
+        //         writeContent = newContent;
+        //     } catch (error) {
+        //         console.error(`Error processing file ${normalizedPath}:`, error);
+        //     }
+        // }
+        // const success = await this.fileSync.write(
+        //     normalizedPath,
+        //     writeContent,
+        //     this.writeRemoteFile.bind(this),
+        // );
 
-        if (!success) {
-            return false;
-        }
+        // if (!success) {
+        //     return false;
+        // }
 
-        this.editorEngine.screenshot.captureScreenshot();
+        // this.editorEngine.screenshot.captureScreenshot();
 
-        return true;
+        // return true;
     }
 
     isJsxFile(filePath: string): boolean {
@@ -310,38 +327,42 @@ export class SandboxManager {
     }
 
     async writeBinaryFile(path: string, content: Buffer | Uint8Array): Promise<boolean> {
-        const normalizedPath = normalizePath(path);
-        try {
-            return this.fileSync.write(normalizedPath, content, this.writeRemoteFile.bind(this));
-        } catch (error) {
-            console.error(`Error writing binary file ${normalizedPath}:`, error);
-            return false;
-        }
+        return false;
+        // const normalizedPath = normalizePath(path);
+        // try {
+        //     return this.fileSync.write(normalizedPath, content, this.writeRemoteFile.bind(this));
+        // } catch (error) {
+        //     console.error(`Error writing binary file ${normalizedPath}:`, error);
+        //     return false;
+        // }
     }
 
     get files() {
-        return this._discoveredFiles;
+        return [];
+        // return this._discoveredFiles;
     }
 
     get directories() {
-        return this.fileSync.listAllDirectories();
+        return [];
+        // return this.fileSync.listAllDirectories();
     }
 
     listAllFiles() {
-        return this.fileSync.listAllFiles();
+        // return this.fileSync.listAllFiles();
     }
 
     async readDir(dir: string): Promise<ListFilesOutputFile[]> {
-        if (!this.session.provider) {
-            console.error('No provider found for read dir');
-            return Promise.resolve([]);
-        }
-        const { files } = await this.session.provider.listFiles({
-            args: {
-                path: dir,
-            },
-        });
-        return files;
+        return [];
+        // if (!this.session.provider) {
+        //     console.error('No provider found for read dir');
+        //     return Promise.resolve([]);
+        // }
+        // const { files } = await this.session.provider.listFiles({
+        //     args: {
+        //         path: dir,
+        //     },
+        // });
+        // return files;
     }
 
     async listFilesRecursively(
@@ -349,40 +370,41 @@ export class SandboxManager {
         ignoreDirs: string[] = [],
         ignoreExtensions: string[] = [],
     ): Promise<string[]> {
-        if (!this.session.provider) {
-            console.error('No provider found for list files recursively');
-            return [];
-        }
+        return [];
+        // if (!this.session.provider) {
+        //     console.error('No provider found for list files recursively');
+        //     return [];
+        // }
 
-        const results: string[] = [];
-        const { files } = await this.session.provider.listFiles({
-            args: {
-                path: dir,
-            },
-        });
+        // const results: string[] = [];
+        // const { files } = await this.session.provider.listFiles({
+        //     args: {
+        //         path: dir,
+        //     },
+        // });
 
-        for (const entry of files) {
-            const fullPath = `${dir}/${entry.name}`;
-            const normalizedPath = normalizePath(fullPath);
-            if (entry.type === 'directory') {
-                if (ignoreDirs.includes(entry.name)) {
-                    continue;
-                }
-                const subFiles = await this.listFilesRecursively(
-                    normalizedPath,
-                    ignoreDirs,
-                    ignoreExtensions,
-                );
-                results.push(...subFiles);
-            } else {
-                const extension = path.extname(entry.name);
-                if (ignoreExtensions.length > 0 && !ignoreExtensions.includes(extension)) {
-                    continue;
-                }
-                results.push(normalizedPath);
-            }
-        }
-        return results;
+        // for (const entry of files) {
+        //     const fullPath = `${dir}/${entry.name}`;
+        //     const normalizedPath = normalizePath(fullPath);
+        //     if (entry.type === 'directory') {
+        //         if (ignoreDirs.includes(entry.name)) {
+        //             continue;
+        //         }
+        //         const subFiles = await this.listFilesRecursively(
+        //             normalizedPath,
+        //             ignoreDirs,
+        //             ignoreExtensions,
+        //         );
+        //         results.push(...subFiles);
+        //     } else {
+        //         const extension = path.extname(entry.name);
+        //         if (ignoreExtensions.length > 0 && !ignoreExtensions.includes(extension)) {
+        //             continue;
+        //         }
+        //         results.push(normalizedPath);
+        //     }
+        // }
+        // return results;
     }
 
     // Download the code as a zip
@@ -412,162 +434,162 @@ export class SandboxManager {
     }
 
     async watchFiles() {
-        if (!this.session.provider) {
-            console.error('No provider found for watch files');
-            return;
-        }
+        // if (!this.session.provider) {
+        //     console.error('No provider found for watch files');
+        //     return;
+        // }
 
-        // Dispose of existing watcher if it exists
-        if (this.fileWatcher) {
-            // Stop previous watcher before starting a new one
-            await this.fileWatcher.stop();
-            this.fileWatcher = null;
-        }
+        // // Dispose of existing watcher if it exists
+        // if (this.fileWatcher) {
+        //     // Stop previous watcher before starting a new one
+        //     await this.fileWatcher.stop();
+        //     this.fileWatcher = null;
+        // }
 
-        // Convert ignored directories to glob patterns with ** wildcard
-        const excludePatterns = EXCLUDED_SYNC_DIRECTORIES.map((dir) => `${dir}/**`);
+        // // Convert ignored directories to glob patterns with ** wildcard
+        // const excludePatterns = EXCLUDED_SYNC_DIRECTORIES.map((dir) => `${dir}/**`);
 
-        const res = await this.session.provider.watchFiles({
-            args: {
-                path: './',
-                recursive: true,
-                excludes: excludePatterns,
-            },
-            onFileChange: async (event) => {
-                this.fileEventBus.publish({
-                    type: event.type,
-                    paths: event.paths,
-                    timestamp: Date.now(),
-                });
-                await this.handleFileChange(event);
-            },
-        });
+        // const res = await this.session.provider.watchFiles({
+        //     args: {
+        //         path: './',
+        //         recursive: true,
+        //         excludes: excludePatterns,
+        //     },
+        //     onFileChange: async (event) => {
+        //         this.fileEventBus.publish({
+        //             type: event.type,
+        //             paths: event.paths,
+        //             timestamp: Date.now(),
+        //         });
+        //         await this.handleFileChange(event);
+        //     },
+        // });
 
-        this.fileWatcher = res.watcher;
+        // this.fileWatcher = res.watcher;
     }
 
     async handleFileChange(event: WatchEvent) {
-        const eventType = event.type;
+        // const eventType = event.type;
 
-        if (eventType === 'remove') {
-            for (const path of event.paths) {
-                if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
-                    continue;
-                }
-                const normalizedPath = normalizePath(path);
+        // if (eventType === 'remove') {
+        //     for (const path of event.paths) {
+        //         if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
+        //             continue;
+        //         }
+        //         const normalizedPath = normalizePath(path);
 
-                const isDirectory = this.fileSync.hasDirectory(normalizedPath);
+        //         const isDirectory = this.fileSync.hasDirectory(normalizedPath);
 
-                if (isDirectory) {
-                    this.fileSync.deleteDir(normalizedPath);
-                    this.fileEventBus.publish({
-                        type: eventType,
-                        paths: [normalizedPath],
-                        timestamp: Date.now(),
-                    });
-                    continue;
-                }
+        //         if (isDirectory) {
+        //             this.fileSync.deleteDir(normalizedPath);
+        //             this.fileEventBus.publish({
+        //                 type: eventType,
+        //                 paths: [normalizedPath],
+        //                 timestamp: Date.now(),
+        //             });
+        //             continue;
+        //         }
 
-                await this.fileSync.delete(normalizedPath);
+        //         await this.fileSync.delete(normalizedPath);
 
-                this.fileEventBus.publish({
-                    type: eventType,
-                    paths: [normalizedPath],
-                    timestamp: Date.now(),
-                });
-            }
-            if (isDev && event.paths.some((path) => path.includes(PRELOAD_SCRIPT_SRC))) {
-                await this.editorEngine.preloadScript.ensurePreloadScriptFile();
-            }
-        } else if (eventType === 'change' || eventType === 'add') {
-            const provider = this.session.provider;
-            if (!provider) {
-                console.error('No provider found for handle file change');
-                return;
-            }
+        //         this.fileEventBus.publish({
+        //             type: eventType,
+        //             paths: [normalizedPath],
+        //             timestamp: Date.now(),
+        //         });
+        //     }
+        //     if (isDev && event.paths.some((path) => path.includes(PRELOAD_SCRIPT_SRC))) {
+        //         await this.editorEngine.preloadScript.ensurePreloadScriptFile();
+        //     }
+        // } else if (eventType === 'change' || eventType === 'add') {
+        //     const provider = this.session.provider;
+        //     if (!provider) {
+        //         console.error('No provider found for handle file change');
+        //         return;
+        //     }
 
-            if (event.paths.length === 2) {
-                await this.handleFileRenameEvent(event, provider);
-            }
+        //     if (event.paths.length === 2) {
+        //         await this.handleFileRenameEvent(event, provider);
+        //     }
 
-            for (const path of event.paths) {
-                if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
-                    continue;
-                }
-                const stat = await provider.statFile({
-                    args: {
-                        path,
-                    },
-                });
+        //     for (const path of event.paths) {
+        //         if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
+        //             continue;
+        //         }
+        //         const stat = await provider.statFile({
+        //             args: {
+        //                 path,
+        //             },
+        //         });
 
-                if (stat?.type === 'directory') {
-                    const normalizedPath = normalizePath(path);
-                    this.fileSync.updateDirectoryCache(normalizedPath);
-                    continue;
-                }
+        //         if (stat?.type === 'directory') {
+        //             const normalizedPath = normalizePath(path);
+        //             this.fileSync.updateDirectoryCache(normalizedPath);
+        //             continue;
+        //         }
 
-                const normalizedPath = normalizePath(path);
-                await this.handleFileChangedEvent(normalizedPath);
-                this.fileEventBus.publish({
-                    type: eventType,
-                    paths: [normalizedPath],
-                    timestamp: Date.now(),
-                });
-            }
-        }
+        //         const normalizedPath = normalizePath(path);
+        //         await this.handleFileChangedEvent(normalizedPath);
+        //         this.fileEventBus.publish({
+        //             type: eventType,
+        //             paths: [normalizedPath],
+        //             timestamp: Date.now(),
+        //         });
+        //     }
+        // }
     }
 
     async handleFileRenameEvent(event: WatchEvent, provider: Provider) {
-        // This mean rename a file or a folder, move a file or a folder
-        const [oldPath, newPath] = event.paths;
+        // // This mean rename a file or a folder, move a file or a folder
+        // const [oldPath, newPath] = event.paths;
 
-        if (!oldPath || !newPath) {
-            console.error('Invalid rename event', event);
-            return;
-        }
+        // if (!oldPath || !newPath) {
+        //     console.error('Invalid rename event', event);
+        //     return;
+        // }
 
-        const oldNormalizedPath = normalizePath(oldPath);
-        const newNormalizedPath = normalizePath(newPath);
+        // const oldNormalizedPath = normalizePath(oldPath);
+        // const newNormalizedPath = normalizePath(newPath);
 
-        const stat = await provider.statFile({
-            args: {
-                path: newPath,
-            },
-        });
+        // const stat = await provider.statFile({
+        //     args: {
+        //         path: newPath,
+        //     },
+        // });
 
-        if (stat.type === 'directory') {
-            await this.fileSync.renameDir(oldNormalizedPath, newNormalizedPath);
-        } else {
-            await this.fileSync.rename(oldNormalizedPath, newNormalizedPath);
-        }
+        // if (stat.type === 'directory') {
+        //     await this.fileSync.renameDir(oldNormalizedPath, newNormalizedPath);
+        // } else {
+        //     await this.fileSync.rename(oldNormalizedPath, newNormalizedPath);
+        // }
 
-        this.fileEventBus.publish({
-            type: 'rename',
-            paths: [oldPath, newPath],
-            timestamp: Date.now(),
-        });
-        return;
+        // this.fileEventBus.publish({
+        //     type: 'rename',
+        //     paths: [oldPath, newPath],
+        //     timestamp: Date.now(),
+        // });
+        // return;
     }
 
     async handleFileChangedEvent(normalizedPath: string) {
-        const cachedFile = this.fileSync.readCache(normalizedPath);
+        // const cachedFile = this.fileSync.readCache(normalizedPath);
 
-        // Always read the remote file and update the cache, regardless of file type
-        const remoteFile = await this.readRemoteFile(normalizedPath);
-        if (!remoteFile) {
-            console.error(`File content for ${normalizedPath} not found in remote`);
-            return;
-        }
+        // // Always read the remote file and update the cache, regardless of file type
+        // const remoteFile = await this.readRemoteFile(normalizedPath);
+        // if (!remoteFile) {
+        //     console.error(`File content for ${normalizedPath} not found in remote`);
+        //     return;
+        // }
 
-        // Always update the cache with the fresh remote file content
-        this.fileSync.updateCache(remoteFile);
+        // // Always update the cache with the fresh remote file content
+        // this.fileSync.updateCache(remoteFile);
 
-        // For text files, also process for mapping if content has changed
-        if (remoteFile.type === 'text' && this.isJsxFile(normalizedPath)) {
-            if (remoteFile.content !== cachedFile?.content) {
-                await this.processFileForMapping(remoteFile);
-            }
-        }
+        // // For text files, also process for mapping if content has changed
+        // if (remoteFile.type === 'text' && this.isJsxFile(normalizedPath)) {
+        //     if (remoteFile.content !== cachedFile?.content) {
+        //         await this.processFileForMapping(remoteFile);
+        //     }
+        // }
     }
 
     async processFileForMapping(file: SandboxFile) {
@@ -634,109 +656,112 @@ export class SandboxManager {
         recursive?: boolean,
         overwrite?: boolean,
     ): Promise<boolean> {
-        if (!this.session.provider) {
-            console.error('No provider found for copy');
-            return false;
-        }
+        return false;
+        // if (!this.session.provider) {
+        //     console.error('No provider found for copy');
+        //     return false;
+        // }
 
-        try {
-            const normalizedSourcePath = normalizePath(path);
-            const normalizedTargetPath = normalizePath(targetPath);
+        // try {
+        //     const normalizedSourcePath = normalizePath(path);
+        //     const normalizedTargetPath = normalizePath(targetPath);
 
-            // Check if source exists
-            const sourceExists = await this.fileExists(normalizedSourcePath);
-            if (!sourceExists) {
-                console.error(`Source ${normalizedSourcePath} does not exist`);
-                return false;
-            }
+        //     // Check if source exists
+        //     const sourceExists = await this.fileExists(normalizedSourcePath);
+        //     if (!sourceExists) {
+        //         console.error(`Source ${normalizedSourcePath} does not exist`);
+        //         return false;
+        //     }
 
-            await this.session.provider.copyFiles({
-                args: {
-                    sourcePath: normalizedSourcePath,
-                    targetPath: normalizedTargetPath,
-                    recursive,
-                    overwrite,
-                },
-            });
+        //     await this.session.provider.copyFiles({
+        //         args: {
+        //             sourcePath: normalizedSourcePath,
+        //             targetPath: normalizedTargetPath,
+        //             recursive,
+        //             overwrite,
+        //         },
+        //     });
 
-            // Read and cache the copied file
-            const copiedFile = await this.readRemoteFile(normalizedTargetPath);
-            if (copiedFile) {
-                this.fileSync.updateCache(copiedFile);
-            }
+        //     // Read and cache the copied file
+        //     const copiedFile = await this.readRemoteFile(normalizedTargetPath);
+        //     if (copiedFile) {
+        //         this.fileSync.updateCache(copiedFile);
+        //     }
 
-            return true;
-        } catch (error) {
-            console.error(`Error copying ${path} to ${targetPath}:`, error);
-            return false;
-        }
+        //     return true;
+        // } catch (error) {
+        //     console.error(`Error copying ${path} to ${targetPath}:`, error);
+        //     return false;
+        // }
     }
 
     async delete(path: string, recursive?: boolean): Promise<boolean> {
-        if (!this.session.provider) {
-            console.error('No provider found for delete file');
-            return false;
-        }
+        return false;
+        // if (!this.session.provider) {
+        //     console.error('No provider found for delete file');
+        //     return false;
+        // }
 
-        try {
-            const normalizedPath = normalizePath(path);
+        // try {
+        //     const normalizedPath = normalizePath(path);
 
-            // Check if file exists before attempting to delete
-            const exists = await this.fileExists(normalizedPath);
-            if (!exists) {
-                console.error(`File ${normalizedPath} does not exist`);
-                return false;
-            }
+        //     // Check if file exists before attempting to delete
+        //     const exists = await this.fileExists(normalizedPath);
+        //     if (!exists) {
+        //         console.error(`File ${normalizedPath} does not exist`);
+        //         return false;
+        //     }
 
-            // Delete the file using the filesystem API
-            await this.session.provider.deleteFiles({
-                args: {
-                    path: normalizedPath,
-                    recursive,
-                },
-            });
+        //     // Delete the file using the filesystem API
+        //     await this.session.provider.deleteFiles({
+        //         args: {
+        //             path: normalizedPath,
+        //             recursive,
+        //         },
+        //     });
 
-            // Clean up the file sync cache
-            await this.fileSync.delete(normalizedPath);
+        //     // Clean up the file sync cache
+        //     await this.fileSync.delete(normalizedPath);
 
-            // Publish file deletion event
-            this.fileEventBus.publish({
-                type: 'remove',
-                paths: [normalizedPath],
-                timestamp: Date.now(),
-            });
+        //     // Publish file deletion event
+        //     this.fileEventBus.publish({
+        //         type: 'remove',
+        //         paths: [normalizedPath],
+        //         timestamp: Date.now(),
+        //     });
 
-            console.log(`Successfully deleted file: ${normalizedPath}`);
-            return true;
-        } catch (error) {
-            console.error(`Error deleting file ${path}:`, error);
-            return false;
-        }
+        //     console.log(`Successfully deleted file: ${normalizedPath}`);
+        //     return true;
+        // } catch (error) {
+        //     console.error(`Error deleting file ${path}:`, error);
+        //     return false;
+        // }
     }
 
     async rename(oldPath: string, newPath: string): Promise<boolean> {
-        if (!this.session.provider) {
-            console.error('No provider found for rename');
-            return false;
-        }
+        return false;
+        // if (!this.session.provider) {
+        //     console.error('No provider found for rename');
+        //     return false;
+        // }
 
-        try {
-            const normalizedOldPath = normalizePath(oldPath);
-            const normalizedNewPath = normalizePath(newPath);
+        // try {
+        //     const normalizedOldPath = normalizePath(oldPath);
+        //     const normalizedNewPath = normalizePath(newPath);
 
-            await this.session.provider.renameFile({
-                args: {
-                    oldPath: normalizedOldPath,
-                    newPath: normalizedNewPath,
-                },
-            });
+        //     await this.session.provider.renameFile({
+        //         args: {
+        //             oldPath: normalizedOldPath,
+        //             newPath: normalizedNewPath,
+        //         },
+        //     });
 
-            // Note: Cache update handled by file watcher rename event
-            return true;
-        } catch (error) {
-            console.error(`Error renaming file ${oldPath} to ${newPath}:`, error);
-            return false;
-        }
+        //     // Note: Cache update handled by file watcher rename event
+        //     return true;
+        // } catch (error) {
+        //     console.error(`Error renaming file ${oldPath} to ${newPath}:`, error);
+        //     return false;
+        // }
     }
 
     /**
@@ -771,13 +796,18 @@ export class SandboxManager {
     clear() {
         this.providerReactionDisposer?.();
         this.providerReactionDisposer = undefined;
-        void this.fileWatcher?.stop();
-        this.fileWatcher = null;
-        this.fileSync.clear();
+        this.sync?.stop();
+        this.sync = null;
+        this.fs = null;
+
         this.session.clear();
         this._isIndexed = false;
         this._isIndexing = false;
         this._routerConfig = null;
-        this._discoveredFiles = [];
+
+        // void this.fileWatcher?.stop();
+        // this.fileWatcher = null;
+        // this.fileSync.clear();
+        // this._discoveredFiles = [];
     }
 }
