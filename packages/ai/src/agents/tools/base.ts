@@ -165,6 +165,7 @@ export abstract class BaseSubAgentTool<
         if (!this.conversationId) {
             const newConversation = await api.chat.conversation.upsert.mutate({
                 projectId: editorEngine.projectId,
+                agentType: this.agentType,
             });
             this.conversationId = newConversation.id;
         }
