@@ -1,14 +1,12 @@
 import { type InferUITools } from 'ai';
-// import { UserAgent } from '../agents/classes/user';
 import { createToolSet } from './toolset-utils';
 import { AgentType, ChatType } from '@onlook/models';
-import { allTools, rootTools, userTools } from '../agents/tool-lookup';
-// import { RootAgent } from '../agents';
+import { allTools, readOnlyRootTools, rootTools, userTools } from '../agents/tool-lookup';
 
 export function getAvailableTools(agentType: AgentType, chatType: ChatType) {
     switch (agentType) {
         case AgentType.ROOT:
-            return chatType === ChatType.ASK ? rootTools : rootTools;
+            return chatType === ChatType.ASK ? readOnlyRootTools : rootTools;
         case AgentType.USER:
             return userTools;
         default:

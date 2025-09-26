@@ -58,13 +58,27 @@ const streamResponseSchema = z.object({
     chatType: z.enum(ChatType).optional(),
     conversationId: z.string(),
     projectId: z.string(),
-}).refine((data) => {
-    // Only allow chatType if agentType is ROOT
-    if (data.chatType !== undefined && data.agentType !== AgentType.ROOT) {
-        return false;
+}).superRefine((data, ctx) => {
+    if (data.agentType === AgentType.ROOT) {
+        // chatType is required for ROOT agents
+        if (data.chatType === undefined) {
+            ctx.addIssue({
+                code: 'custom',
+                message: "chatType is required when agentType is ROOT",
+                path: ['chatType']
+            });
+        }
+    } else {
+        // chatType must be undefined for non-ROOT agents
+        if (data.chatType !== undefined) {
+            ctx.addIssue({
+                code: 'custom',
+                message: "chatType is forbidden when agentType is not ROOT",
+                path: ['chatType']
+            });
+        }
     }
-    return true;
-}, { message: "chatType is only allowed if agentType is root" });
+});
 
 export const streamResponse = async (req: NextRequest, userId: string) => {
     const body = await req.json();

@@ -21,7 +21,7 @@ export const allTools = [
     BashEditTool,
     SandboxTool,
     TerminalCommandTool,
-    UserAgentTool,
+    // UserAgentTool,
 ];
 
 
@@ -55,5 +55,5 @@ export const rootTools = [...readOnlyRootTools, ...editOnlyRootTools];
 
 export const userTools = [
     ListBranchesTool,
-    ListFilesTool,
+    // ListFilesTool,
 ]
