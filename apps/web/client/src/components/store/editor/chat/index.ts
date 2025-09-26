@@ -4,24 +4,29 @@ import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { ChatContext } from './context';
 import { ConversationManager } from './conversation';
+import { MultiChatManager } from './multi-chat-manager';
 
 export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
 export class ChatManager {
     conversation: ConversationManager;
     context: ChatContext;
+    multiChat: MultiChatManager;
 
     // Content sent from useChat hook
     _sendMessageAction: SendMessage | null = null;
     isStreaming = false;
+    private _streamingConversations: Set<string> = new Set();
 
     constructor(private editorEngine: EditorEngine) {
         this.context = new ChatContext(this.editorEngine);
         this.conversation = new ConversationManager(this.editorEngine);
+        this.multiChat = new MultiChatManager(this.editorEngine);
         makeAutoObservable(this);
     }
 
     init() {
         this.context.init();
+        this.multiChat.initializeWithCurrentConversation();
     }
 
     focusChatInput() {
@@ -32,8 +37,20 @@ export class ChatManager {
         return this.conversation.current?.id;
     }
 
-    setIsStreaming(isStreaming: boolean) {
+    setIsStreaming(isStreaming: boolean, conversationId?: string) {
         this.isStreaming = isStreaming;
+        
+        if (conversationId) {
+            if (isStreaming) {
+                this._streamingConversations.add(conversationId);
+            } else {
+                this._streamingConversations.delete(conversationId);
+            }
+        }
+    }
+
+    isConversationStreaming(conversationId: string): boolean {
+        return this._streamingConversations.has(conversationId);
     }
 
     setChatActions(sendMessage: SendMessage) {
@@ -51,5 +68,6 @@ export class ChatManager {
     clear() {
         this.context.clear();
         this.conversation.clear();
+        this.multiChat.clear();
     }
 }

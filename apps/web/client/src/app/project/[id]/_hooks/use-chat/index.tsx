@@ -43,7 +43,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
 
     const { addToolResult, messages, error, stop, setMessages, regenerate, status } =
         useAiChat<ChatMessage>({
-            id: 'user-chat',
+            id: `user-chat-${conversationId}`,
             messages: initialMessages,
             sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
             transport: new DefaultChatTransport({
@@ -68,8 +68,21 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const isStreaming = status === 'streaming' || status === 'submitted' || isExecutingToolCall;
 
     useEffect(() => {
-        editorEngine.chat.setIsStreaming(isStreaming);
-    }, [editorEngine.chat, isStreaming]);
+        editorEngine.chat.setIsStreaming(isStreaming, conversationId);
+        
+        // Update multi-chat status
+        if (isStreaming) {
+            editorEngine.chat.multiChat.setChatStatus(conversationId, 'loading');
+        } else {
+            // Set to unread if not the currently selected chat
+            const selectedChatId = editorEngine.chat.multiChat.selectedChatId;
+            if (selectedChatId !== conversationId) {
+                editorEngine.chat.multiChat.setChatStatus(conversationId, 'unread');
+            } else {
+                editorEngine.chat.multiChat.setChatStatus(conversationId, 'inactive');
+            }
+        }
+    }, [editorEngine.chat, isStreaming, conversationId]);
 
     // Store messages in a ref to avoid re-rendering sendMessage/editMessage
     const messagesRef = useRef(messages);

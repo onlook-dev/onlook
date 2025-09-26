@@ -28,7 +28,7 @@ export const RightPanel = observer(() => {
     const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
 
     const selectedTab = editorEngine.state.rightPanelTab;
-    const currentConversation = editorEngine.chat.conversation.current;
+    const currentConversation = editorEngine.chat.multiChat.selectedChat?.conversation || editorEngine.chat.conversation.current;
     const editPanelWidth = EDIT_PANEL_WIDTHS[selectedTab];
 
     return (

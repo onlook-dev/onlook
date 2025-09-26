@@ -1,6 +1,9 @@
+import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { Icons } from '@onlook/ui/icons/index';
-import { ChatTabContent } from './chat-tab-content';
+import { useEffect, useMemo, useState } from 'react';
+import { ChatConversation } from './chat-conversation';
+import { ChatHeader } from './chat-header';
 
 interface ChatTabProps {
     conversationId: string;
@@ -8,27 +11,42 @@ interface ChatTabProps {
 }
 
 export const ChatTab = ({ conversationId, projectId }: ChatTabProps) => {
-    const { data: initialMessages, isLoading } = api.chat.message.getAll.useQuery(
-        { conversationId: conversationId },
-        { enabled: !!conversationId },
-    );
+    const editorEngine = useEditorEngine();
+    
+    // Ensure the current conversation is added to multi-chat system
+    useEffect(() => {
+        const currentConversation = editorEngine.chat.conversation.current;
+        if (currentConversation && !editorEngine.chat.multiChat.getChatById(currentConversation.id)) {
+            editorEngine.chat.multiChat.addChat(currentConversation);
+        }
+    }, [editorEngine.chat, conversationId]);
 
-    if (!initialMessages || isLoading) {
-        return (
-            <div className="flex-1 flex items-center justify-center w-full h-full text-foreground-secondary" >
-                <Icons.LoadingSpinner className="animate-spin mr-2" />
-                <p>Loading messages...</p>
-            </div >
-        );
-    }
+    // Get current state without observer
+    const selectedChatId = editorEngine.chat.multiChat.selectedChatId;
+    const activeChats = editorEngine.chat.multiChat.activeChats;
+
+    // Memoize the chat conversations to prevent infinite re-renders
+    const chatConversations = useMemo(() => {
+        return activeChats.map((chat) => {
+            const isActive = selectedChatId === chat.id;
+            
+            return (
+                <ChatConversation
+                    key={chat.id}
+                    conversationId={chat.id}
+                    projectId={projectId}
+                    isActive={isActive}
+                />
+            );
+        });
+    }, [activeChats, selectedChatId, projectId]);
 
     return (
-        <ChatTabContent
-            // Used to force re-render the use-chat hook when the conversationId changes
-            key={conversationId}
-            conversationId={conversationId}
-            projectId={projectId}
-            initialMessages={initialMessages}
-        />
+        <div className="flex flex-col h-full">
+            <ChatHeader />
+            <div className="flex-1 overflow-hidden relative">
+                {chatConversations}
+            </div>
+        </div>
     );
 };
