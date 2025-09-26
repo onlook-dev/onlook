@@ -9,13 +9,11 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import type { EditorFile } from '../shared/types';
-import { isDirty } from '../shared/utils';
 import { FileTab } from './file-tab';
 
 interface FileTabsProps {
-    selectedFilePath: string | null | undefined;
     openedFiles: EditorFile[];
     activeFile: EditorFile | null;
     isFilesVisible: boolean;
@@ -26,7 +24,6 @@ interface FileTabsProps {
 }
 
 export const FileTabs = ({
-    selectedFilePath,
     openedFiles,
     activeFile,
     isFilesVisible,
@@ -36,25 +33,11 @@ export const FileTabs = ({
     onCloseAllFiles,
 }: FileTabsProps) => {
     const ref = useRef<HTMLDivElement>(null);
-    const [dirtyFiles, setDirtyFiles] = useState<Set<string>>(new Set());
-
-    // Compute dirty status for all files
-    useEffect(() => {
-        Promise.all(openedFiles.map(async file => ({
-            path: file.path,
-            dirty: await isDirty(file)
-        }))).then(results => {
-            setDirtyFiles(new Set(results.filter(r => r.dirty).map(r => r.path)));
-        });
-    }, [openedFiles]);
 
     // Scroll to active tab when it changes
     useEffect(() => {
-        if (!selectedFilePath) {
-            return;
-        }
         const container = ref.current;
-        if (!container) return;
+        if (!container || !activeFile?.path) return;
 
         // Wait for the file tabs to be rendered
         setTimeout(() => {
@@ -73,7 +56,7 @@ export const FileTabs = ({
                 }
             }
         }, 100);
-    }, [selectedFilePath]);
+    }, [activeFile?.path]);
 
     return (
         <div className="flex items-center justify-between h-11 pl-0 border-b-[0.5px] flex-shrink-0 relative">
@@ -121,9 +104,8 @@ export const FileTabs = ({
                 {openedFiles.map((file) => (
                     <FileTab
                         key={file.path}
-                        filePath={file.path}
+                        file={file}
                         isActive={activeFile?.path === file.path}
-                        isDirty={dirtyFiles.has(file.path)}
                         onClick={() => onFileSelect(file)}
                         onClose={() => onCloseFile(file.path)}
                         dataActive={activeFile?.path === file.path}

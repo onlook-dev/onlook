@@ -397,7 +397,6 @@ export const CodeTab = () => {
                 />
                 <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
                     <FileTabs
-                        selectedFilePath={activeEditorFile?.path}
                         openedFiles={openedEditorFiles}
                         activeFile={activeEditorFile}
                         isFilesVisible={ide.isFilesVisible}
