@@ -26,13 +26,11 @@ const UnmemoizedFileTree = observer(forwardRef<any, FileTreeProps>(({ onFileSele
     const [searchQuery, setSearchQuery] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
     const [contentMatches, setContentMatches] = useState<Map<string, number>>(new Map());
-    const [isSearching, setIsSearching] = useState(false);
     const treeRef = useRef<TreeApi<FileNode>>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const { ref: containerRef, width: filesWidth } = useResizeObserver();
     const { ref: treeContainerRef, height: filesHeight } = useResizeObserver();
-
 
     const isTextFile = useCallback((filePath: string): boolean => {
         const ext = path.extname(filePath).toLowerCase();
@@ -65,13 +63,9 @@ const UnmemoizedFileTree = observer(forwardRef<any, FileTreeProps>(({ onFileSele
     const performContentSearch = useCallback(async (query: string) => {
         if (!query.trim() || query.length < 2) {
             setContentMatches(new Map());
-            setIsSearching(false);
             return;
         }
-
-        setIsSearching(true);
         const matches = new Map<string, number>();
-
         const searchPromises = files
             .filter(isTextFile)
             .map(async (filePath) => {
@@ -83,7 +77,6 @@ const UnmemoizedFileTree = observer(forwardRef<any, FileTreeProps>(({ onFileSele
 
         await Promise.all(searchPromises);
         setContentMatches(matches);
-        setIsSearching(false);
     }, [files, isTextFile, searchFileContent]);
 
     useEffect(() => {

@@ -11,8 +11,6 @@ import {
 import { FileSystem } from '@onlook/file-system';
 import { RouterType, type Branch, type SandboxFile } from '@onlook/models';
 import {
-    getBaseName,
-    getDirName,
     isRootLayoutFile
 } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
@@ -20,7 +18,6 @@ import path from 'path';
 import { env } from 'process';
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
-import { normalizePath } from './helpers';
 import { SessionManager } from './session';
 
 const isDev = env.NODE_ENV === 'development';
@@ -628,26 +625,27 @@ export class SandboxManager {
 
 
     async fileExists(path: string): Promise<boolean> {
-        const normalizedPath = normalizePath(path);
+        return false;
+        // const normalizedPath = normalizePath(path);
 
-        if (!this.session.provider) {
-            console.error('No provider found for file existence check');
-            return false;
-        }
+        // if (!this.session.provider) {
+        //     console.error('No provider found for file existence check');
+        //     return false;
+        // }
 
-        try {
-            const dirPath = getDirName(normalizedPath);
-            const fileName = getBaseName(normalizedPath);
-            const { files } = await this.session.provider.listFiles({
-                args: {
-                    path: dirPath,
-                },
-            });
-            return files.some((entry) => entry.name === fileName);
-        } catch (error) {
-            console.error(`Error checking file existence ${normalizedPath}:`, error);
-            return false;
-        }
+        // try {
+        //     const dirPath = getDirName(normalizedPath);
+        //     const fileName = getBaseName(normalizedPath);
+        //     const { files } = await this.session.provider.listFiles({
+        //         args: {
+        //             path: dirPath,
+        //         },
+        //     });
+        //     return files.some((entry) => entry.name === fileName);
+        // } catch (error) {
+        //     console.error(`Error checking file existence ${normalizedPath}:`, error);
+        //     return false;
+        // }
     }
 
     async copy(
@@ -768,29 +766,30 @@ export class SandboxManager {
      * Gets the root layout path and router config
      */
     async getRootLayoutPath(): Promise<string | null> {
-        const routerConfig = this.routerConfig;
-        if (!routerConfig) {
-            console.log('Could not detect Next.js router type');
-            return null;
-        }
-
-        let layoutFileName: string;
-
-        if (routerConfig.type === RouterType.PAGES) {
-            layoutFileName = '_app';
-        } else {
-            layoutFileName = 'layout';
-        }
-
-        for (const extension of NEXT_JS_FILE_EXTENSIONS) {
-            const layoutPath = path.join(routerConfig.basePath, `${layoutFileName}${extension}`);
-            if (await this.fileExists(layoutPath)) {
-                return normalizePath(layoutPath);
-            }
-        }
-
-        console.log('Could not find layout file');
         return null;
+        // const routerConfig = this.routerConfig;
+        // if (!routerConfig) {
+        //     console.log('Could not detect Next.js router type');
+        //     return null;
+        // }
+
+        // let layoutFileName: string;
+
+        // if (routerConfig.type === RouterType.PAGES) {
+        //     layoutFileName = '_app';
+        // } else {
+        //     layoutFileName = 'layout';
+        // }
+
+        // for (const extension of NEXT_JS_FILE_EXTENSIONS) {
+        //     const layoutPath = path.join(routerConfig.basePath, `${layoutFileName}${extension}`);
+        //     if (await this.fileExists(layoutPath)) {
+        //         return normalizePath(layoutPath);
+        //     }
+        // }
+
+        // console.log('Could not find layout file');
+        // return null;
     }
 
     clear() {
