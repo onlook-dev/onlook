@@ -1,8 +1,8 @@
 import { useEditorEngine } from '@/components/store/editor';
 import type { CodeRange } from '@/components/store/editor/ide';
+import { hashContent } from '@/services/sync-engine/sync-engine';
 import { EditorView } from '@codemirror/view';
-import { useDirectory, useFile } from '@onlook/file-system/hooks';
-import { toast } from '@onlook/ui/sonner';
+import { useDirectory, useFile, useFS } from '@onlook/file-system/hooks';
 import { EditorSelection } from '@uiw/react-codemirror';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CodeEditorArea } from './file-content';
@@ -11,15 +11,32 @@ import { FileTabs } from './file-tabs';
 import type { BinaryEditorFile, EditorFile, TextEditorFile } from './shared/types';
 import { FileTree } from './sidebar/file-tree';
 
+// Check if file content differs from original
+async function isDirty(file: EditorFile): Promise<boolean> {
+    if (file.type === 'binary') {
+        return false; // Binary files are never considered dirty
+    }
+
+    if (file.type === 'text') {
+        const textFile = file as TextEditorFile;
+        const currentHash = await hashContent(textFile.content);
+        return currentHash !== textFile.originalHash;
+    }
+
+    return false;
+}
+
+
 export const CodeTab = () => {
     const editorEngine = useEditorEngine();
     const rootDir = `/${editorEngine.projectId}/${editorEngine.branches.activeBranch.id}`;
 
     const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
-    const [activeEditorFile, setActiveEdtiorFile] = useState<EditorFile | null>(null);
+    const [activeEditorFile, setActiveEditorFile] = useState<EditorFile | null>(null);
     const [openedEditorFiles, setOpenedEditorFiles] = useState<EditorFile[]>([]);
     const [showLocalUnsavedDialog, setShowLocalUnsavedDialog] = useState(false);
 
+    const { fs, isInitializing: fsInitializing, error: fsError } = useFS(rootDir);
     const {
         entries: fileEntries,
         loading: filesLoading,
@@ -29,24 +46,23 @@ export const CodeTab = () => {
         content: loadedContent,
     } = useFile(rootDir, selectedFilePath || '');
 
-    const createEditorFile = (filePath: string, content: string | Uint8Array): EditorFile => {
+    const createEditorFile = async (filePath: string, content: string | Uint8Array): Promise<EditorFile> => {
         const isBinary = content instanceof Uint8Array;
 
         if (isBinary) {
             return {
                 path: filePath,
                 content: content,
-                isDirty: false,
                 type: 'binary',
             } satisfies BinaryEditorFile;
         } else if (typeof content === 'string') {
+            const originalHash = await hashContent(content);
             return {
                 path: filePath,
                 content: content,
-                isDirty: false,
                 type: 'text',
-                originalContent: content,
-            } satisfies TextEditorFile;
+                originalHash,
+            } as TextEditorFile;
         } else {
             throw new Error('Invalid content type');
         }
@@ -54,36 +70,69 @@ export const CodeTab = () => {
 
     // React to loadedContent changes - build local EditorFile and manage opened files
     useEffect(() => {
+        console.log('loadedContent', loadedContent);
         if (!selectedFilePath || !loadedContent) return;
 
-        const newLocalFile = createEditorFile(selectedFilePath, loadedContent);
+        const processFile = async () => {
+            const newLocalFile = await createEditorFile(selectedFilePath, loadedContent);
 
-        // Check if file is already open
-        const existingFileIndex = openedEditorFiles.findIndex(f => f.path === selectedFilePath);
+            // Check if file is already open
+            const existingFileIndex = openedEditorFiles.findIndex(f => f.path === selectedFilePath);
 
-        if (existingFileIndex >= 0) {
-            // File already open, just set as active and update content
-            const existingFile = openedEditorFiles[existingFileIndex];
-            if (existingFile) {
-                const updatedFile: EditorFile = {
-                    path: existingFile.path,
-                    isDirty: existingFile.isDirty,
-                    type: existingFile.type,
-                    originalContent: existingFile.originalContent,
-                    content: newLocalFile.content
-                };
-                const updatedFiles = [...openedEditorFiles];
-                updatedFiles[existingFileIndex] = updatedFile;
+            if (existingFileIndex >= 0) {
+                // File already open, just set as active and update content
+                const existingFile = openedEditorFiles[existingFileIndex];
+                if (existingFile) {
+                    const updatedFile: EditorFile = existingFile.type === 'text'
+                        ? {
+                            path: existingFile.path,
+                            type: existingFile.type,
+                            content: newLocalFile.content as string,
+                            originalHash: (existingFile as TextEditorFile).originalHash,
+                        } as TextEditorFile
+                        : {
+                            path: existingFile.path,
+                            type: existingFile.type,
+                            content: newLocalFile.content,
+                        } as BinaryEditorFile;
+                    const updatedFiles = [...openedEditorFiles];
+                    updatedFiles[existingFileIndex] = updatedFile;
+                    setOpenedEditorFiles(updatedFiles);
+                    setActiveEditorFile(updatedFile);
+                }
+            } else {
+                // Add new file to opened files
+                const updatedFiles = [...openedEditorFiles, newLocalFile];
                 setOpenedEditorFiles(updatedFiles);
-                setActiveEdtiorFile(updatedFile);
+                setActiveEditorFile(newLocalFile);
             }
-        } else {
-            // Add new file to opened files
-            const updatedFiles = [...openedEditorFiles, newLocalFile];
-            setOpenedEditorFiles(updatedFiles);
-            setActiveEdtiorFile(newLocalFile);
-        }
+        };
+
+        processFile();
     }, [loadedContent]);
+
+    const handleSaveFile = async () => {
+        if (!fs || !selectedFilePath || !activeEditorFile) return;
+        try {
+            await fs.writeFile(selectedFilePath, activeEditorFile.content || '');
+
+            // Update originalHash to mark file as clean after successful save
+            if (activeEditorFile.type === 'text') {
+                const newHash = await hashContent(activeEditorFile.content);
+                const updatedFile = { ...activeEditorFile, originalHash: newHash };
+
+                // Update in opened files list
+                const updatedFiles = openedEditorFiles.map(file =>
+                    file.path === selectedFilePath ? updatedFile : file
+                );
+                setOpenedEditorFiles(updatedFiles);
+                setActiveEditorFile(updatedFile);
+            }
+        } catch (error) {
+            console.error('Failed to save file:', error);
+            alert(`Failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
 
     // OLD SHIT_____________________________________________________
     const ide = editorEngine.ide;
@@ -263,42 +312,49 @@ export const CodeTab = () => {
 
     const closeLocalFile = useCallback((filePath: string) => {
         const fileToClose = openedEditorFiles.find(f => f.path === filePath);
-        if (fileToClose?.isDirty) {
-            setShowLocalUnsavedDialog(true);
-            return;
-        }
+        if (fileToClose) {
+            isDirty(fileToClose).then(dirty => {
+                if (dirty) {
+                    setShowLocalUnsavedDialog(true);
+                    return;
+                }
 
-        const editorView = editorViewsRef.current.get(filePath);
-        if (editorView) {
-            editorView.destroy();
-            editorViewsRef.current.delete(filePath);
-        }
+                const editorView = editorViewsRef.current.get(filePath);
+                if (editorView) {
+                    editorView.destroy();
+                    editorViewsRef.current.delete(filePath);
+                }
 
-        const updatedFiles = openedEditorFiles.filter(f => f.path !== filePath);
-        setOpenedEditorFiles(updatedFiles);
+                const updatedFiles = openedEditorFiles.filter(f => f.path !== filePath);
+                setOpenedEditorFiles(updatedFiles);
 
-        // Set new active file if we closed the active one
-        if (activeEditorFile?.path === filePath) {
-            const newActiveFile = updatedFiles.length > 0 ? updatedFiles[updatedFiles.length - 1] || null : null;
-            setActiveEdtiorFile(newActiveFile);
+                // Set new active file if we closed the active one
+                if (activeEditorFile?.path === filePath) {
+                    const newActiveFile = updatedFiles.length > 0 ? updatedFiles[updatedFiles.length - 1] || null : null;
+                    setActiveEditorFile(newActiveFile);
+                }
+            });
         }
     }, [openedEditorFiles, activeEditorFile]);
 
     const closeAllLocalFiles = () => {
-        const dirtyFiles = openedEditorFiles.filter((file) => file.isDirty);
-        if (dirtyFiles.length > 0) {
-            setShowLocalUnsavedDialog(true);
-            return;
-        }
+        Promise.all(openedEditorFiles.map(file => isDirty(file))).then(dirtyChecks => {
+            const hasDirtyFiles = dirtyChecks.some(dirty => dirty);
 
-        editorViewsRef.current.forEach((view) => view.destroy());
-        editorViewsRef.current.clear();
-        setOpenedEditorFiles([]);
-        setActiveEdtiorFile(null);
+            if (hasDirtyFiles) {
+                setShowLocalUnsavedDialog(true);
+                return;
+            }
+
+            editorViewsRef.current.forEach((view) => view.destroy());
+            editorViewsRef.current.clear();
+            setOpenedEditorFiles([]);
+            setActiveEditorFile(null);
+        });
     };
 
     const handleLocalFileTabSelect = (file: EditorFile) => {
-        setActiveEdtiorFile(file);
+        setActiveEditorFile(file);
         // Also update selectedFile to sync with file tree
         setSelectedFilePath(file.path);
     };
@@ -306,15 +362,15 @@ export const CodeTab = () => {
     const updateLocalFileContent = (filePath: string, content: string) => {
         const updatedFiles = openedEditorFiles.map(file =>
             file.path === filePath
-                ? { ...file, content, isDirty: true }
+                ? { ...file, content }
                 : file
         );
         setOpenedEditorFiles(updatedFiles);
 
         // Update active file if it's the one being updated
         if (activeEditorFile?.path === filePath) {
-            const updatedActiveFile = { ...activeEditorFile, content, isDirty: true };
-            setActiveEdtiorFile(updatedActiveFile);
+            const updatedActiveFile = { ...activeEditorFile, content };
+            setActiveEditorFile(updatedActiveFile);
         }
     };
 
@@ -331,41 +387,6 @@ export const CodeTab = () => {
         }
         ide.closeFile(fileId);
     }, [ide]);
-
-    const saveFile = async () => {
-        if (!ide.activeFile) {
-            return;
-        }
-
-        if (ide.pendingCloseAll) {
-            const file = ide.openedFiles.find((f) => f.id === ide.activeFile?.id);
-            if (file) {
-                await ide.saveActiveFile();
-                closeFile(file.id);
-            }
-
-            const remainingDirty = ide.openedFiles.filter((f) => f.isDirty);
-            if (remainingDirty.length !== 0) {
-                ide.showUnsavedDialog = true;
-                return;
-            }
-
-            ide.closeAllFiles();
-            ide.pendingCloseAll = false;
-            ide.showUnsavedDialog = false;
-
-            return;
-        }
-
-        await ide.saveActiveFile();
-
-        if (ide.showUnsavedDialog) {
-            ide.showUnsavedDialog = false;
-            closeFile(ide.activeFile.id);
-        }
-
-        toast('File saved!');
-    };
 
     async function discardChanges(fileId: string) {
         if (ide.pendingCloseAll) {
@@ -429,7 +450,7 @@ export const CodeTab = () => {
                         openedFiles={openedEditorFiles}
                         activeFile={activeEditorFile}
                         showUnsavedDialog={showLocalUnsavedDialog}
-                        onSaveFile={saveFile}
+                        onSaveFile={handleSaveFile}
                         onUpdateFileContent={updateLocalFileContent}
                         onDiscardChanges={discardChanges}
                         onCancelUnsaved={() => { setShowLocalUnsavedDialog(false); }}

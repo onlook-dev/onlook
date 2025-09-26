@@ -16,7 +16,7 @@ export interface SyncConfig {
 
 const DEFAULT_EXCLUDES = ['node_modules', '.git', '.next', 'dist', 'build', '.turbo'];
 
-async function hashContent(content: string | Uint8Array): Promise<string> {
+export async function hashContent(content: string | Uint8Array): Promise<string> {
     const encoder = new TextEncoder();
     const data = typeof content === 'string' ? encoder.encode(content) : new Uint8Array(content);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);

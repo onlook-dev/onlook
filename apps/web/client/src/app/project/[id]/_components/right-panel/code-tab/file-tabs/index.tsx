@@ -9,9 +9,25 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { EditorFile } from '../shared/types';
 import { FileTab } from './file-tab';
+import { hashContent } from '@/services/sync-engine/sync-engine';
+
+// Check if file content differs from original
+async function isDirty(file: EditorFile): Promise<boolean> {
+    if (file.type === 'binary') {
+        return false; // Binary files are never considered dirty
+    }
+    
+    if (file.type === 'text') {
+        const textFile = file as import('../shared/types').TextEditorFile;
+        const currentHash = await hashContent(textFile.content);
+        return currentHash !== textFile.originalHash;
+    }
+    
+    return false;
+}
 
 interface FileTabsProps {
     selectedFilePath: string | null;
@@ -35,6 +51,17 @@ export const FileTabs = ({
     onCloseAllFiles,
 }: FileTabsProps) => {
     const ref = useRef<HTMLDivElement>(null);
+    const [dirtyFiles, setDirtyFiles] = useState<Set<string>>(new Set());
+
+    // Compute dirty status for all files
+    useEffect(() => {
+        Promise.all(openedFiles.map(async file => ({ 
+            path: file.path, 
+            dirty: await isDirty(file) 
+        }))).then(results => {
+            setDirtyFiles(new Set(results.filter(r => r.dirty).map(r => r.path)));
+        });
+    }, [openedFiles]);
 
     // Scroll to active tab when it changes
     useEffect(() => {
@@ -111,7 +138,7 @@ export const FileTabs = ({
                         key={file.path}
                         filePath={file.path}
                         isActive={activeFile?.path === file.path}
-                        isDirty={file.isDirty}
+                        isDirty={dirtyFiles.has(file.path)}
                         onClick={() => onFileSelect(file)}
                         onClose={() => onCloseFile(file.path)}
                         dataActive={activeFile?.path === file.path}
