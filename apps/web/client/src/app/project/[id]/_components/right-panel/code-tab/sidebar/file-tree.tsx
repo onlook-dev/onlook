@@ -34,7 +34,7 @@ export const FileTree = memo(
         const { ref: treeContainerRef, height: filesHeight } = useResizeObserver();
 
         // Create flat entry index for efficient operations
-        const { treeData, flatEntryIndex } = useMemo(() => {
+        const flatEntryIndex = useMemo(() => {
             const flatIndex = new Map<string, FileEntry>();
 
             const flattenEntries = (entries: FileEntry[]) => {
@@ -47,11 +47,7 @@ export const FileTree = memo(
             };
 
             flattenEntries(fileEntries);
-
-            return {
-                treeData: fileEntries,
-                flatEntryIndex: flatIndex,
-            };
+            return flatIndex;
         }, [fileEntries]);
 
         // Expose tree API to parent component
@@ -62,27 +58,23 @@ export const FileTree = memo(
                 }
             },
             selectFile: (filePath: string) => {
-                const targetEntry = findEntryByPath(filePath);
+                const entry = flatEntryIndex.get(filePath);
+                const targetEntry = entry && !entry.isDirectory ? entry : null;
                 if (targetEntry && treeRef.current) {
                     treeRef.current.select(targetEntry.path);
                     treeRef.current.scrollTo(targetEntry.path);
                 }
             }
-        }), [treeData]);
-
-        // Helper function to find file entry by path using flat index
-        const findEntryByPath = (targetPath: string): FileEntry | null => {
-            const entry = flatEntryIndex.get(targetPath);
-            return entry && !entry.isDirectory ? entry : null;
-        };
+        }), [flatEntryIndex]);
 
         // Sync tree selection with selected file
         useEffect(() => {
-            if (!selectedFilePath || !treeRef.current || !treeData.length) {
+            if (!selectedFilePath || !treeRef.current || !fileEntries.length) {
                 return;
             }
             // Find the exact entry that matches the file 
-            const targetEntry = findEntryByPath(selectedFilePath);
+            const entry = flatEntryIndex.get(selectedFilePath);
+            const targetEntry = entry && !entry.isDirectory ? entry : null;
             if (targetEntry) {
                 setTimeout(() => {
                     if (treeRef.current) {
@@ -91,11 +83,11 @@ export const FileTree = memo(
                     }
                 }, 0);
             }
-        }, [selectedFilePath, treeData]);
+        }, [selectedFilePath, fileEntries, flatEntryIndex]);
 
         const filteredFiles = useMemo(() => {
             if (!searchQuery.trim()) {
-                return treeData;
+                return fileEntries;
             }
 
             const searchLower = searchQuery.toLowerCase();
@@ -132,8 +124,8 @@ export const FileTree = memo(
                 }, []);
             };
 
-            return filterEntries(treeData);
-        }, [treeData, flatEntryIndex, searchQuery]);
+            return filterEntries(fileEntries);
+        }, [fileEntries, flatEntryIndex, searchQuery]);
 
         // Handle keyboard navigation
         const handleKeyDown = (e: React.KeyboardEvent) => {

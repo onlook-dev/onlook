@@ -32,6 +32,28 @@ export const CodeEditor = observer(({
         return `data:${mime};base64,${base64}`;
     };
 
+    const onCreateEditor = (editor: EditorView) => {
+        editorViewsRef.current.set(file.path, editor);
+        editor.dom.addEventListener('mousedown', () => {
+            if (ide.highlightRange) {
+                ide.setHighlightRange(null);
+            }
+        });
+        // If this file is the active file and we have a highlight range,
+        // trigger the highlight effect again
+        if (
+            ide.activeFile &&
+            ide.activeFile.path === file.path &&
+            ide.highlightRange
+        ) {
+            setTimeout(() => {
+                if (ide.highlightRange) {
+                    ide.setHighlightRange(ide.highlightRange);
+                }
+            }, 300);
+        }
+    }
+
     return (
         <div
             className="h-full"
@@ -63,29 +85,7 @@ export const CodeEditor = observer(({
                         onUpdateFileContent(file.path, value);
                     }}
                     className="h-full overflow-hidden"
-                    onCreateEditor={(editor) => {
-                        editorViewsRef.current.set(file.path, editor);
-
-                        editor.dom.addEventListener('mousedown', () => {
-                            if (ide.highlightRange) {
-                                ide.setHighlightRange(null);
-                            }
-                        });
-
-                        // If this file is the active file and we have a highlight range,
-                        // trigger the highlight effect again
-                        if (
-                            ide.activeFile &&
-                            ide.activeFile.path === file.path &&
-                            ide.highlightRange
-                        ) {
-                            setTimeout(() => {
-                                if (ide.highlightRange) {
-                                    ide.setHighlightRange(ide.highlightRange);
-                                }
-                            }, 300);
-                        }
-                    }}
+                    onCreateEditor={onCreateEditor}
                 />
             )}
         </div>

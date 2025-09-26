@@ -28,7 +28,6 @@ export const CodeEditorArea = ({
     return (
         <div className="flex-1 relative overflow-hidden">
             <div className="h-full">
-                {/* Empty state when no file is selected */}
                 {openedFiles.length === 0 || !activeFile ? (
                     <div className="absolute inset-0 flex items-center justify-center z-10">
                         <div className="text-center text-muted-foreground text-base">
@@ -50,8 +49,6 @@ export const CodeEditorArea = ({
                     ))
                 )}
             </div>
-
-            {/* Unsaved Changes Dialog */}
             {activeFile?.isDirty && showUnsavedDialog && (
                 <UnsavedChangesDialog
                     onSave={onSaveFile}
