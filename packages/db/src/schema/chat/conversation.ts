@@ -22,9 +22,12 @@ export const conversations = pgTable("conversations", {
     suggestions: jsonb("suggestions").$type<ChatSuggestion[]>().default([]),
 }).enableRLS();
 
-export const conversationInsertSchema = createInsertSchema(conversations);
+export const conversationInsertSchema = createInsertSchema(conversations, {
+    agentType: z.enum(AgentType),
+});
 export const conversationUpdateSchema = createUpdateSchema(conversations, {
     id: z.string().uuid(),
+    agentType: z.enum(AgentType),
 });
 
 export const conversationRelations = relations(conversations, ({ one, many }) => ({

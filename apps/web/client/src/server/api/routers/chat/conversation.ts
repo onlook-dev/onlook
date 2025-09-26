@@ -5,7 +5,7 @@ import {
     conversationUpdateSchema,
     fromDbConversation
 } from '@onlook/db';
-import { AgentType, LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
+import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
 import { generateText } from 'ai';
 import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
@@ -36,10 +36,7 @@ export const conversationRouter = createTRPCRouter({
     upsert: protectedProcedure
         .input(conversationInsertSchema)
         .mutation(async ({ ctx, input }) => {
-            const [conversation] = await ctx.db.insert(conversations).values({
-                ...input,
-                agentType: input.agentType as AgentType,
-            }).returning();
+            const [conversation] = await ctx.db.insert(conversations).values(input).returning();
             if (!conversation) {
                 throw new Error('Conversation not created');
             }
@@ -51,7 +48,6 @@ export const conversationRouter = createTRPCRouter({
             const [conversation] = await ctx.db.update(conversations)
                 .set({
                     ...input,
-                    agentType: input.agentType as AgentType,
                     updatedAt: new Date(),
                 })
                 .where(eq(conversations.id, input.id)).returning();
