@@ -1,9 +1,8 @@
-import type { EditorFile } from '@/components/store/editor/ide';
 import { EditorView } from '@codemirror/view';
 import { type RefObject } from 'react';
+import type { EditorFile } from '../shared/types';
 import { CodeEditor } from './code-editor';
 import { UnsavedChangesDialog } from './unsaved-changes-dialog';
-
 interface CodeEditorAreaProps {
     openedFiles: EditorFile[];
     activeFile: EditorFile | null;
@@ -39,9 +38,9 @@ export const CodeEditorArea = ({
                 ) : (
                     openedFiles.map((file) => (
                         <CodeEditor
-                            key={file.id}
+                            key={file.path}
                             file={file}
-                            isActive={activeFile?.id === file.id}
+                            isActive={activeFile?.path === file.path}
                             editorViewsRef={editorViewsRef}
                             onSaveFile={onSaveFile}
                             onUpdateFileContent={onUpdateFileContent}
@@ -54,7 +53,7 @@ export const CodeEditorArea = ({
             {activeFile?.isDirty && showUnsavedDialog && (
                 <UnsavedChangesDialog
                     onSave={onSaveFile}
-                    onDiscard={() => onDiscardChanges(activeFile!.id)}
+                    onDiscard={() => onDiscardChanges(activeFile.path)}
                     onCancel={() => { onCancelUnsaved(); }}
                 />
             )}

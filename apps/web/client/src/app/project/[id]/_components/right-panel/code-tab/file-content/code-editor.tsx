@@ -1,10 +1,10 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { EditorFile } from '@/components/store/editor/ide';
 import { EditorView } from '@codemirror/view';
 import { getMimeType } from '@onlook/utility/src/file';
 import CodeMirror from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import type { RefObject } from 'react';
+import type { BinaryEditorFile, EditorFile, TextEditorFile } from '../shared/types';
 import { getBasicSetup, getExtensions } from './code-mirror-config';
 
 interface CodeEditorProps {
@@ -25,9 +25,11 @@ export const CodeEditor = observer(({
     const editorEngine = useEditorEngine();
     const ide = editorEngine.ide;
 
-    const getFileUrl = (file: EditorFile) => {
-        const mime = getMimeType(file.filename.toLowerCase());
-        return `data:${mime};base64,${file.content}`;
+    const getFileUrl = (file: BinaryEditorFile) => {
+        const mime = getMimeType(file.path.toLowerCase());
+        // Convert Uint8Array to base64 string
+        const base64 = btoa(String.fromCharCode(...new Uint8Array(file.content)));
+        return `data:${mime};base64,${base64}`;
     };
 
     return (
@@ -37,31 +39,32 @@ export const CodeEditor = observer(({
                 display: isActive ? 'block' : 'none',
             }}
         >
-            {file.isBinary ? (
+            {file.type === 'binary' && (
                 <img
-                    src={getFileUrl(file)}
-                    alt={file.filename}
+                    src={getFileUrl(file as BinaryEditorFile)}
+                    alt={file.path}
                     className="w-full h-full object-contain p-5"
                 />
-            ) : (
+            )}
+            {file.type === 'text' && (
                 <CodeMirror
-                    key={file.id}
-                    value={file.content}
+                    key={file.path}
+                    value={(file as TextEditorFile).content}
                     height="100%"
                     theme="dark"
                     extensions={[
                         ...getBasicSetup(onSaveFile),
-                        ...getExtensions(file.language),
+                        ...getExtensions(file.path.split('.').pop() || ''),
                     ]}
                     onChange={(value) => {
                         if (ide.highlightRange) {
                             ide.setHighlightRange(null);
                         }
-                        onUpdateFileContent(file.id, value);
+                        onUpdateFileContent(file.path, value);
                     }}
                     className="h-full overflow-hidden"
                     onCreateEditor={(editor) => {
-                        editorViewsRef.current.set(file.id, editor);
+                        editorViewsRef.current.set(file.path, editor);
 
                         editor.dom.addEventListener('mousedown', () => {
                             if (ide.highlightRange) {
@@ -73,7 +76,7 @@ export const CodeEditor = observer(({
                         // trigger the highlight effect again
                         if (
                             ide.activeFile &&
-                            ide.activeFile.id === file.id &&
+                            ide.activeFile.path === file.path &&
                             ide.highlightRange
                         ) {
                             setTimeout(() => {

@@ -5,16 +5,6 @@ import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import type { EditorEngine } from '../engine';
 
-export interface EditorFile {
-    id: string;
-    filename: string;
-    path: string;
-    content: string;
-    language: string;
-    isDirty: boolean;
-    isBinary: boolean;
-    savedContent: string;
-}
 
 export interface CodeRange {
     startLineNumber: number;

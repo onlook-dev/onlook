@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { CodeRange, EditorFile } from '@/components/store/editor/ide';
+import type { CodeRange } from '@/components/store/editor/ide';
 import { EditorView } from '@codemirror/view';
 import { useDirectory, useFile, type FileEntry } from '@onlook/file-system/hooks';
 import { toast } from '@onlook/ui/sonner';
@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { CodeEditorArea } from './file-content';
 import { createSearchHighlight, scrollToFirstMatch } from './file-content/code-mirror-config';
 import { FileTabs } from './file-tabs';
-import type { FileNode } from './shared/types';
+import type { BinaryEditorFile, EditorFile, FileNode, TextEditorFile } from './shared/types';
 import { FileTree } from './sidebar/file-tree';
 
 export const CodeTab = () => {
@@ -53,22 +53,28 @@ export const CodeTab = () => {
     const localFiles = convertToFileNodes(localEntries ?? []);
 
     // Helper function to create EditorFile from local file data
-    const createLocalEditorFile = (filePath: string, content: string | Uint8Array | null): EditorFile => {
-        const fileName = filePath.split('/').pop() || filePath;
-        const fileExtension = fileName.includes('.') ? fileName.split('.').pop() || '' : '';
-        const stringContent = typeof content === 'string' ? content : '';
+    const createLocalEditorFile = (filePath: string, content: string | Uint8Array): EditorFile => {
+        const isBinary = content instanceof Uint8Array;
 
-        return {
-            id: filePath, // Use file path as unique ID
-            path: filePath,
-            filename: fileName,
-            content: stringContent,
-            language: fileExtension,
-            isDirty: false,
-            isBinary: typeof content !== 'string',
-            savedContent: stringContent,
-        };
-    };
+        if (isBinary) {
+            return {
+                path: filePath,
+                content: content,
+                isDirty: false,
+                type: 'binary',
+            } satisfies BinaryEditorFile;
+        } else if (typeof content === 'string') {
+            return {
+                path: filePath,
+                content: content,
+                isDirty: false,
+                type: 'text',
+                originalContent: content,
+            } satisfies TextEditorFile;
+        } else {
+            throw new Error('Invalid content type');
+        }
+    }
 
     // React to selectedFile changes - build local EditorFile and manage opened files
     useEffect(() => {
@@ -84,13 +90,10 @@ export const CodeTab = () => {
             const existingFile = openedLocalFiles[existingFileIndex];
             if (existingFile) {
                 const updatedFile: EditorFile = {
-                    id: existingFile.id,
-                    filename: existingFile.filename,
                     path: existingFile.path,
-                    language: existingFile.language,
                     isDirty: existingFile.isDirty,
-                    isBinary: existingFile.isBinary,
-                    savedContent: existingFile.savedContent,
+                    type: existingFile.type,
+                    originalContent: existingFile.originalContent,
                     content: newLocalFile.content
                 };
                 const updatedFiles = [...openedLocalFiles];
@@ -323,24 +326,24 @@ export const CodeTab = () => {
     }
 
     // Local file operations
-    const closeLocalFile = useCallback((fileId: string) => {
-        const fileToClose = openedLocalFiles.find(f => f.id === fileId);
+    const closeLocalFile = useCallback((filePath: string) => {
+        const fileToClose = openedLocalFiles.find(f => f.path === filePath);
         if (fileToClose?.isDirty) {
             setShowLocalUnsavedDialog(true);
             return;
         }
 
-        const editorView = editorViewsRef.current.get(fileId);
+        const editorView = editorViewsRef.current.get(filePath);
         if (editorView) {
             editorView.destroy();
-            editorViewsRef.current.delete(fileId);
+            editorViewsRef.current.delete(filePath);
         }
 
-        const updatedFiles = openedLocalFiles.filter(f => f.id !== fileId);
+        const updatedFiles = openedLocalFiles.filter(f => f.path !== filePath);
         setOpenedLocalFiles(updatedFiles);
 
         // Set new active file if we closed the active one
-        if (activeLocalFile?.id === fileId) {
+        if (activeLocalFile?.path === filePath) {
             const newActiveFile = updatedFiles.length > 0 ? updatedFiles[updatedFiles.length - 1] || null : null;
             setActiveLocalFile(newActiveFile);
         }
@@ -365,16 +368,16 @@ export const CodeTab = () => {
         setSelectedFile(file.path);
     };
 
-    const updateLocalFileContent = (fileId: string, content: string) => {
+    const updateLocalFileContent = (filePath: string, content: string) => {
         const updatedFiles = openedLocalFiles.map(file =>
-            file.id === fileId
+            file.path === filePath
                 ? { ...file, content, isDirty: true }
                 : file
         );
         setOpenedLocalFiles(updatedFiles);
 
         // Update active file if it's the one being updated
-        if (activeLocalFile?.id === fileId) {
+        if (activeLocalFile?.path === filePath) {
             const updatedActiveFile = { ...activeLocalFile, content, isDirty: true };
             setActiveLocalFile(updatedActiveFile);
         }
@@ -428,20 +431,6 @@ export const CodeTab = () => {
 
         toast('File saved!');
     };
-
-
-    function closeAllFiles() {
-        const dirtyFiles = ide.openedFiles.filter((file) => file.isDirty);
-        if (dirtyFiles.length > 0) {
-            ide.showUnsavedDialog = true;
-            ide.pendingCloseAll = true;
-            return;
-        }
-
-        editorViewsRef.current.forEach((view) => view.destroy());
-        editorViewsRef.current.clear();
-        ide.closeAllFiles();
-    }
 
     const updateFileContent = (fileId: string, content: string) => {
         ide.updateFileContent(fileId, content);

@@ -1,6 +1,5 @@
 'use client'
 
-import type { EditorFile } from '@/components/store/editor/ide';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -12,6 +11,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { forwardRef } from 'react';
+import type { EditorFile } from '../shared/types';
 import { FileTab } from './file-tab';
 
 interface FileTabsProps {
@@ -59,7 +59,7 @@ export const FileTabs = observer(forwardRef<HTMLDivElement, FileTabsProps>(({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="-mt-1">
                         <DropdownMenuItem
-                            onClick={() => activeFile && onCloseFile(activeFile.id)}
+                            onClick={() => activeFile && onCloseFile(activeFile.path)}
                             disabled={!activeFile}
                             className="cursor-pointer"
                         >
@@ -78,13 +78,13 @@ export const FileTabs = observer(forwardRef<HTMLDivElement, FileTabsProps>(({
             <div className="flex items-center h-full overflow-x-auto w-full ml-11 mr-10.5" ref={ref}>
                 {openedFiles.map((file) => (
                     <FileTab
-                        key={file.id}
-                        filename={file.filename}
-                        isActive={activeFile?.id === file.id}
+                        key={file.path}
+                        filename={file.path}
+                        isActive={activeFile?.path === file.path}
                         isDirty={file.isDirty}
                         onClick={() => onFileSelect(file)}
-                        onClose={() => onCloseFile(file.id)}
-                        data-active={activeFile?.id === file.id}
+                        onClose={() => onCloseFile(file.path)}
+                        data-active={activeFile?.path === file.path}
                     />
                 ))}
             </div>
