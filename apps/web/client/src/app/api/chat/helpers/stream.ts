@@ -8,7 +8,7 @@ export async function getModelFromType(chatType: ChatType) {
     switch (chatType) {
         case ChatType.CREATE:
         case ChatType.FIX:
-            model = await initModel({
+            model = initModel({
                 provider: LLMProvider.OPENROUTER,
                 model: OPENROUTER_MODELS.OPEN_AI_GPT_5,
             });
@@ -16,7 +16,7 @@ export async function getModelFromType(chatType: ChatType) {
         case ChatType.ASK:
         case ChatType.EDIT:
         default:
-            model = await initModel({
+            model = initModel({
                 provider: LLMProvider.OPENROUTER,
                 model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
             });
@@ -60,7 +60,7 @@ export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: Too
         `Invalid parameter for tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.input)}, attempting to fix`,
     );
 
-    const { model } = await initModel({
+    const { model } = initModel({
         provider: LLMProvider.OPENROUTER,
         model: OPENROUTER_MODELS.OPEN_AI_GPT_5_NANO,
     });

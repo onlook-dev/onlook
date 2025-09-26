@@ -73,7 +73,7 @@ export const conversationRouter = createTRPCRouter({
             content: z.string(),
         }))
         .mutation(async ({ ctx, input }) => {
-            const { model, providerOptions, headers } = await initModel({
+            const { model, providerOptions, headers } = initModel({
                 provider: LLMProvider.OPENROUTER,
                 model: OPENROUTER_MODELS.CLAUDE_3_5_HAIKU,
             });

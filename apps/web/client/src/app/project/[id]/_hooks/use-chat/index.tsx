@@ -32,6 +32,7 @@ interface UseChatProps {
     projectId: string;
     initialMessages: ChatMessage[];
 }
+const agentType = AgentType.ROOT;
 
 export function useChat({ conversationId, projectId, initialMessages }: UseChatProps) {
     const editorEngine = useEditorEngine();
@@ -40,6 +41,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const [suggestions, setSuggestions] = useState<ChatSuggestion[]>([]);
     const [finishReason, setFinishReason] = useState<string | null>(null);
     const [isExecutingToolCall, setIsExecutingToolCall] = useState(false);
+
 
     const { addToolResult, messages, error, stop, setMessages, regenerate, status } =
         useAiChat<ChatMessage>({
@@ -51,12 +53,12 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 body: {
                     conversationId,
                     projectId,
-                    agentType: AgentType.ROOT,
+                    agentType,
                 },
             }),
             onToolCall: async (toolCall) => {
                 setIsExecutingToolCall(true);
-                void handleToolCall(toolCall.toolCall, editorEngine, addToolResult).then(() => {
+                void handleToolCall(agentType, toolCall.toolCall, editorEngine, addToolResult).then(() => {
                     setIsExecutingToolCall(false);
                 });
             },
@@ -90,7 +92,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                     chatType: type,
                     conversationId,
                     context,
-                    agentType: AgentType.ROOT,
+                    agentType,
                 },
             });
             void editorEngine.chat.conversation.generateTitle(content);

@@ -1,70 +1,22 @@
-import { ChatType } from '@onlook/models';
-import { type InferUITools, type ToolSet } from 'ai';
-import {
-    BashEditTool,
-    BashReadTool,
-    CheckErrorsTool,
-    FuzzyEditFileTool,
-    GlobTool,
-    GrepTool,
-    ListBranchesTool,
-    ListFilesTool,
-    OnlookInstructionsTool,
-    ReadFileTool,
-    ReadStyleGuideTool,
-    SandboxTool,
-    ScrapeUrlTool,
-    SearchReplaceEditTool,
-    SearchReplaceMultiEditFileTool,
-    TerminalCommandTool,
-    TypecheckTool,
-    WebSearchTool,
-    WriteFileTool,
-} from './classes';
+import { type InferUITools } from 'ai';
+// import { UserAgent } from '../agents/classes/user';
+import { createToolSet } from './toolset-utils';
+import { AgentType, ChatType } from '@onlook/models';
+import { allTools, rootTools, userTools } from '../agents/tool-lookup';
+// import { RootAgent } from '../agents';
 
-// Helper function to convert tool classes to ToolSet
-function createToolSet(toolClasses: Array<{ toolName: string; getAITool: () => any }>): ToolSet {
-    return toolClasses.reduce((acc, toolClass) => {
-        acc[toolClass.toolName] = toolClass.getAITool();
-        return acc;
-    }, {} as ToolSet);
+export function getAvailableTools(agentType: AgentType, chatType: ChatType) {
+    switch (agentType) {
+        case AgentType.ROOT:
+            return chatType === ChatType.ASK ? rootTools : rootTools;
+        case AgentType.USER:
+            return userTools;
+        default:
+            throw new Error(`Agent type ${agentType} not supported`);
+    }
 }
 
-const readOnlyToolClasses = [
-    ListFilesTool,
-    ReadFileTool,
-    BashReadTool,
-    OnlookInstructionsTool,
-    ReadStyleGuideTool,
-    ListBranchesTool,
-    ScrapeUrlTool,
-    WebSearchTool,
-    GlobTool,
-    GrepTool,
-    TypecheckTool,
-    CheckErrorsTool,
-];
-const editOnlyToolClasses = [
-    SearchReplaceEditTool,
-    SearchReplaceMultiEditFileTool,
-    FuzzyEditFileTool,
-    WriteFileTool,
-    BashEditTool,
-    SandboxTool,
-    TerminalCommandTool,
-];
-const allToolClasses = [...readOnlyToolClasses, ...editOnlyToolClasses];
+export const TOOLS_MAP = new Map(allTools.map(toolClass => [toolClass.toolName, toolClass]));
+const allToolSet = createToolSet(allTools);
 
-export const readOnlyToolset: ToolSet = createToolSet(readOnlyToolClasses);
-export const allToolset: ToolSet = createToolSet(allToolClasses);
-export const TOOLS_MAP = new Map(allToolClasses.map(toolClass => [toolClass.toolName, toolClass]));
-
-export function getToolClassesFromType(chatType: ChatType) {
-    return chatType === ChatType.ASK ? readOnlyToolClasses : allToolClasses
-}
-
-export function getToolSetFromType(chatType: ChatType) {
-    return chatType === ChatType.ASK ? readOnlyToolset : allToolset;
-}
-
-export type ChatTools = InferUITools<typeof allToolset>;
+export type ChatTools = InferUITools<typeof allToolSet>;

@@ -89,9 +89,9 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                 usageRecord = await incrementUsage(req, traceId);
             }
 
-            agent = await RootAgent.create(chatType!);
+            agent = new RootAgent(chatType!);
         } else if (agentType === AgentType.USER) {
-            agent = await UserAgent.create();
+            agent = new UserAgent();
         } else {
             // agent = new WeatherAgent();
             throw new Error('Agent type not supported');

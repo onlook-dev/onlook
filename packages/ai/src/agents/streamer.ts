@@ -16,7 +16,7 @@ export class AgentStreamer {
     async streamText(messages: ChatMessage[], { streamTextConfig, toUIMessageStreamResponseConfig }: { streamTextConfig: Omit<Partial<Parameters<typeof streamText>[0]>, 'model' | 'headers' | 'tools' | 'stopWhen' | 'messages' | 'prompt'>, toUIMessageStreamResponseConfig: UIMessageStreamOptions<ChatMessage> }) {
         const conversationId = this.conversationId;
 
-        const result = await this.agent.streamText(convertToStreamMessages(messages), streamTextConfig);
+        const result = this.agent.streamText(convertToStreamMessages(messages), streamTextConfig);
 
         return result.toUIMessageStreamResponse<ChatMessage>({
             originalMessages: messages,

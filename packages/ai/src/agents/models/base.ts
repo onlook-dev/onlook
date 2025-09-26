@@ -1,23 +1,20 @@
 import type { AgentType, ModelConfig } from '@onlook/models';
-import { type ModelMessage, type ToolSet } from 'ai';
+import { type ModelMessage } from 'ai';
 import { stepCountIs, streamText } from 'ai';
+import { createToolSet, type BaseTool } from '../../tools';
 
 export abstract class BaseAgent {
     abstract readonly agentType: AgentType;
     abstract readonly modelConfig: ModelConfig;
     abstract readonly systemPrompt: string;
-    protected readonly toolSet: ToolSet
+    abstract readonly tools: Array<typeof BaseTool>;
 
-    constructor(toolSet: ToolSet = {}) {
-        this.toolSet = toolSet;
+    constructor() {
+
     }
 
     getSystemPrompt() {
         return this.systemPrompt;
-    }
-
-    getToolSet() {
-        return this.toolSet;
     }
 
     // Default streamText configuration - can be overridden by subclasses
@@ -37,16 +34,10 @@ export abstract class BaseAgent {
         return streamText({
             model: this.modelConfig.model,
             headers: this.modelConfig.headers,
-            tools: this.getToolSet(),
+            tools: createToolSet(this.tools),
             stopWhen: stepCountIs(config.maxSteps),
-            messages: [
-                {
-                    role: 'system',
-                    content: this.getSystemPrompt(),
-                    providerOptions: this.modelConfig.providerOptions,
-                },
-                ...messages
-            ],
+            system: this.getSystemPrompt(),
+            messages,
             ...additionalConfig,
         })
     }
