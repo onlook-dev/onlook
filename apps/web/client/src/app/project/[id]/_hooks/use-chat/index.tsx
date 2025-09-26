@@ -141,6 +141,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 body: {
                     chatType,
                     conversationId,
+                    agentType,
                 },
             });
 
