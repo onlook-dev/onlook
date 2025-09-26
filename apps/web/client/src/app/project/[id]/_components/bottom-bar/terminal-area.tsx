@@ -14,38 +14,38 @@ import { Terminal } from './terminal';
 export const TerminalArea = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
     const branches = editorEngine.branches;
+    const activeBranch = branches.activeBranch;
 
-    // Collect terminal sessions from all branches
-    const allTerminalSessions = new Map<string, { name: string; branchName: string; branchId: string; sessionId: string; session: any }>();
+    // Only collect terminal sessions from the currently active branch
+    const activeBranchTerminalSessions = new Map<string, { name: string; branchName: string; branchId: string; sessionId: string; session: any }>();
     let activeSessionId: string | null = null;
 
-    for (const branch of branches.allBranches) {
+    if (activeBranch) {
         try {
-            const branchData = branches.getBranchById(branch.id);
-            if (!branchData) continue;
+            const branchData = branches.getBranchById(activeBranch.id);
+            if (branchData) {
+                // Get the sandbox manager for this branch
+                const sandbox = branches.getSandboxById(activeBranch.id);
+                if (sandbox?.session?.terminalSessions) {
+                    for (const [sessionId, session] of sandbox.session.terminalSessions) {
+                        const key = `${activeBranch.id}-${sessionId}`;
+                        activeBranchTerminalSessions.set(key, {
+                            name: session.name,
+                            branchName: activeBranch.name,
+                            branchId: activeBranch.id,
+                            sessionId: sessionId,
+                            session: session
+                        });
 
-            // Get the sandbox manager for this branch
-            const sandbox = branches.getSandboxById(branch.id);
-            if (!sandbox?.session?.terminalSessions) continue;
-
-            for (const [sessionId, session] of sandbox.session.terminalSessions) {
-                const key = `${branch.id}-${sessionId}`;
-                allTerminalSessions.set(key, {
-                    name: session.name,
-                    branchName: branch.name,
-                    branchId: branch.id,
-                    sessionId: sessionId,
-                    session: session
-                });
-
-                // Set active session if this is the currently active branch and session
-                if (branch.id === branches.activeBranch.id && sessionId === sandbox.session.activeTerminalSessionId) {
-                    activeSessionId = key;
+                        // Set active session if this is the currently active session
+                        if (sessionId === sandbox.session.activeTerminalSessionId) {
+                            activeSessionId = key;
+                        }
+                    }
                 }
             }
         } catch (error) {
-            // Skip branches that aren't properly initialized
-            continue;
+            // Skip if branch isn't properly initialized
         }
     }
 
@@ -79,9 +79,16 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -10 }}
                         transition={{ duration: 0.7 }}
-                        className="text-small text-foreground-secondary ml-2 select-none"
+                        className="text-small text-foreground-secondary ml-2 select-none flex items-center gap-1"
                     >
                         Terminal
+                        {activeBranch && (
+                            <>
+                                <span className="ml-1">•</span>
+                                <Icons.Branch className="h-4 w-4 ml-0.5" />
+                                <span className="text-mini">{activeBranch.name}</span>
+                            </>
+                        )}
                     </motion.span>
                     <div className="flex items-center gap-1">
                         <motion.div layout>{/* <RunButton /> */}</motion.div>
@@ -90,7 +97,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                             <TooltipTrigger asChild>
                                 <button
                                     onClick={() => setTerminalHidden(!terminalHidden)}
-                                    className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50 rounded-md border border-transparent"
+                                    className="h-9 w-9 flex items-center justify-center hover:text-foreground-primary text-foreground-tertiary hover:bg-accent/50 rounded-md border border-transparent"
                                 >
                                     <Icons.ChevronDown />
                                 </button>
@@ -106,14 +113,16 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                     terminalHidden ? 'h-0 w-0 invisible' : 'h-[22rem] w-[37rem]',
                 )}
             >
-                {allTerminalSessions.size > 0 ? (
+                {!activeBranch ? (
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                        <span className="text-sm">Select a branch to view the terminal</span>
+                    </div>
+                ) : activeBranchTerminalSessions.size > 0 ? (
                     <Tabs defaultValue={'cli'} value={activeSessionId || ''} onValueChange={(value) => {
                         // Extract branch and session from the combined key
-                        const terminalData = allTerminalSessions.get(value);
+                        const terminalData = activeBranchTerminalSessions.get(value);
                         if (terminalData) {
-                            // Switch to the branch first
-                            editorEngine.branches.switchToBranch(terminalData.branchId);
-                            // Then set the active terminal session for that branch
+                            // Set the active terminal session for the current branch
                             const sandbox = branches.getSandboxById(terminalData.branchId);
                             if (sandbox) {
                                 sandbox.session.activeTerminalSessionId = terminalData.sessionId;
@@ -122,16 +131,20 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                     }}
                         className="w-full h-full">
                         <TabsList className="w-full h-8 rounded-none border-b border-border overflow-x-auto justify-start">
-                            {Array.from(allTerminalSessions).map(([key, terminalData]) => (
-                                <TabsTrigger key={key} value={key} className="flex-1">
+                            {Array.from(activeBranchTerminalSessions).map(([key, terminalData]) => (
+                                <TabsTrigger 
+                                    key={key} 
+                                    value={key} 
+                                    className="flex-1 [&:not([data-state=active])]:hover:bg-accent/50 [&:not([data-state=active])]:hover:text-foreground-primary"
+                                >
                                     <span className="truncate">
-                                        {terminalData.name} • {terminalData.branchName}
+                                        {terminalData.name}
                                     </span>
                                 </TabsTrigger>
                             ))}
                         </TabsList>
                         <div className="w-full h-full overflow-auto">
-                            {Array.from(allTerminalSessions).map(([key, terminalData]) => (
+                            {Array.from(activeBranchTerminalSessions).map(([key, terminalData]) => (
                                 <TabsContent key={key} forceMount value={key} className="h-full" hidden={activeSessionId !== key}>
                                     <Terminal hidden={terminalHidden} terminalSessionId={terminalData.sessionId} branchId={terminalData.branchId} />
                                 </TabsContent>
@@ -140,7 +153,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                     </Tabs>
                 ) : (
                     <div className="flex items-center justify-center h-full text-muted-foreground">
-                        <span className="text-sm">No terminal sessions available</span>
+                        <span className="text-sm">No terminal sessions available for this branch</span>
                     </div>
                 )}
             </div >

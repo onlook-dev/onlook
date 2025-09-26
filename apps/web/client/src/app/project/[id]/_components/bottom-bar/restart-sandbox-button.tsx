@@ -143,7 +143,7 @@ export const RestartSandboxButton = observer(({
                             : restarting
                                 ? "text-foreground-tertiary bg-accent/30"
                                 : !disabled
-                                    ? "hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50"
+                                    ? "hover:text-foreground-primary text-foreground-tertiary hover:bg-accent/50"
                                     : "text-foreground-disabled cursor-not-allowed opacity-50",
                         className
                     )}

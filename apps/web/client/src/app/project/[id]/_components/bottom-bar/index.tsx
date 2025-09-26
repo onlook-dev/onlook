@@ -34,24 +34,24 @@ const TOOLBAR_ITEMS = ({ t }: { t: ReturnType<typeof useTranslations> }) => [
         label: t(transKeys.editor.toolbar.tools.pan.name),
         tooltip: t(transKeys.editor.toolbar.tools.pan.tooltip),
     },
-    {
-        mode: EditorMode.INSERT_DIV,
-        icon: Icons.Square,
-        hotkey: Hotkey.INSERT_DIV,
-        disabled: false,
-        draggable: true,
-        label: t(transKeys.editor.toolbar.tools.insertDiv.name),
-        tooltip: t(transKeys.editor.toolbar.tools.insertDiv.tooltip),
-    },
-    {
-        mode: EditorMode.INSERT_TEXT,
-        icon: Icons.Text,
-        hotkey: Hotkey.INSERT_TEXT,
-        disabled: false,
-        draggable: true,
-        label: t(transKeys.editor.toolbar.tools.insertText.name),
-        tooltip: t(transKeys.editor.toolbar.tools.insertText.tooltip),
-    },
+    // {
+    //     mode: EditorMode.INSERT_DIV,
+    //     icon: Icons.Square,
+    //     hotkey: Hotkey.INSERT_DIV,
+    //     disabled: false,
+    //     draggable: true,
+    //     label: t(transKeys.editor.toolbar.tools.insertDiv.name),
+    //     tooltip: t(transKeys.editor.toolbar.tools.insertDiv.tooltip),
+    // },
+    // {
+    //     mode: EditorMode.INSERT_TEXT,
+    //     icon: Icons.Text,
+    //     hotkey: Hotkey.INSERT_TEXT,
+    //     disabled: false,
+    //     draggable: true,
+    //     label: t(transKeys.editor.toolbar.tools.insertText.name),
+    //     tooltip: t(transKeys.editor.toolbar.tools.insertText.tooltip),
+    // },
 ];
 
 export const BottomBar = observer(() => {
@@ -88,40 +88,43 @@ export const BottomBar = observer(() => {
                     }}
                 >
                     <TerminalArea>
-                        <ToggleGroup
-                            type="single"
-                            value={editorEngine.state.editorMode}
-                            onValueChange={(value) => {
-                                if (value) {
-                                    editorEngine.state.editorMode = value as EditorMode;
-                                }
-                            }}
-                            className="gap-0.5"
-                        >
-                            {toolbarItems.map((item) => (
-                                <Tooltip key={item.mode}>
-                                    <TooltipTrigger asChild>
-                                        <ToggleGroupItem
-                                            value={item.mode}
-                                            variant="default"
-                                            aria-label={item.hotkey.description}
-                                            disabled={item.disabled}
-                                            className={cn(
-                                                "h-9 w-9 flex items-center justify-center rounded-md border border-transparent transition-all duration-150 ease-in-out",
-                                                editorEngine.state.editorMode === item.mode
-                                                    ? "bg-background-tertiary/50 text-foreground-primary hover:text-foreground-primary"
-                                                    : "text-foreground-tertiary hover:text-foreground-hover hover:bg-background-tertiary/50"
-                                            )}
-                                        >
-                                            <item.icon />
-                                        </ToggleGroupItem>
-                                    </TooltipTrigger>
-                                    <TooltipContent sideOffset={5} hideArrow>
-                                        <HotkeyLabel hotkey={item.hotkey} />
-                                    </TooltipContent>
-                                </Tooltip>
-                            ))}
-                        </ToggleGroup>
+                        <div className="flex items-center gap-1">
+                            <ToggleGroup
+                                type="single"
+                                value={editorEngine.state.editorMode}
+                                onValueChange={(value) => {
+                                    if (value) {
+                                        editorEngine.state.editorMode = value as EditorMode;
+                                    }
+                                }}
+                                className="gap-0.5"
+                            >
+                                {toolbarItems.map((item) => (
+                                    <Tooltip key={item.mode}>
+                                        <TooltipTrigger asChild>
+                                            <ToggleGroupItem
+                                                value={item.mode}
+                                                variant="default"
+                                                aria-label={item.hotkey.description}
+                                                disabled={item.disabled}
+                                                className={cn(
+                                                    "h-9 w-9 flex items-center justify-center rounded-md border border-transparent transition-all duration-150 ease-in-out",
+                                                    editorEngine.state.editorMode === item.mode
+                                                        ? "bg-background-tertiary/50 text-foreground-primary hover:text-foreground-primary"
+                                                        : "text-foreground-tertiary hover:text-foreground-hover hover:bg-background-tertiary/50"
+                                                )}
+                                            >
+                                                <item.icon />
+                                            </ToggleGroupItem>
+                                        </TooltipTrigger>
+                                        <TooltipContent sideOffset={5} hideArrow>
+                                            <HotkeyLabel hotkey={item.hotkey} />
+                                        </TooltipContent>
+                                    </Tooltip>
+                                ))}
+                            </ToggleGroup>
+                            <div className="h-6 w-px bg-border mx-1" />
+                        </div>
                     </TerminalArea>
                 </motion.div>
         </AnimatePresence>
