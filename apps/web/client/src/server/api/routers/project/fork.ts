@@ -154,20 +154,17 @@ function createDefaultFramesForDefaultBranch(
         type: DefaultFrameType.DESKTOP,
     });
 
-    const mobileFrame = createDefaultFrame({
-        canvasId,
-        branchId: defaultBranchMap.newBranch.id,
-        url: defaultBranchMap.newSandboxUrl,
-        type: DefaultFrameType.MOBILE,
-    });
-
-    return [desktopFrame, mobileFrame];
+    return [desktopFrame];
 }
 
 export const fork = protectedProcedure
     .input(z.object({
         projectId: z.uuid(),
         name: z.string().optional(),
+        canvasPosition: z.object({
+            x: z.number(),
+            y: z.number(),
+        }).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
         // 1. Get the source project with canvas, frames, and branches
@@ -190,7 +187,27 @@ export const fork = protectedProcedure
 
         validateSourceProject(sourceProject);
 
-        // 2. Fork all branches and create sandbox projects
+        // 2. Get user's most recent canvas position if not provided
+        let canvasPosition = input.canvasPosition;
+        if (!canvasPosition) {
+            // Get the user's most recent canvas position from their projects
+            const userCanvas = await ctx.db.query.userCanvases.findFirst({
+                where: eq(userCanvases.userId, ctx.user.id),
+                // We'll get the first available canvas position for the user
+            });
+            
+            if (userCanvas) {
+                canvasPosition = {
+                    x: Number(userCanvas.x),
+                    y: Number(userCanvas.y),
+                };
+            } else {
+                // Fallback to default position
+                canvasPosition = { x: 270, y: 120 };
+            }
+        }
+
+        // 3. Fork all branches and create sandbox projects
         const branchMapping = await forkAllBranches(
             sourceProject.branches,
             sourceProject.name
@@ -230,11 +247,11 @@ export const fork = protectedProcedure
                 };
                 await tx.insert(canvases).values(newCanvas);
 
-                // Create user canvas with default positioning
+                // Create user canvas with positioning
                 const newUserCanvas = createDefaultUserCanvas(ctx.user.id, newCanvas.id, {
-                    x: '120',
-                    y: '120',
-                    scale: '0.56',
+                    x: canvasPosition.x.toString(),
+                    y: canvasPosition.y.toString(),
+                    scale: '0.7',
                 });
                 await tx.insert(userCanvases).values(newUserCanvas);
 
@@ -266,9 +283,9 @@ export const fork = protectedProcedure
                 await tx.insert(canvases).values(newCanvas);
 
                 const newUserCanvas = createDefaultUserCanvas(ctx.user.id, newCanvas.id, {
-                    x: '120',
-                    y: '120',
-                    scale: '0.56',
+                    x: canvasPosition.x.toString(),
+                    y: canvasPosition.y.toString(),
+                    scale: '0.7',
                 });
                 await tx.insert(userCanvases).values(newUserCanvas);
 

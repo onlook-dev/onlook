@@ -270,9 +270,9 @@ export const projectRouter = createTRPCRouter({
                 await tx.insert(canvases).values(newCanvas);
 
                 const newUserCanvas = createDefaultUserCanvas(input.userId, newCanvas.id, {
-                    x: '120',
+                    x: '270',
                     y: '120',
-                    scale: '0.56',
+                    scale: '0.7',
                 });
                 await tx.insert(userCanvases).values(newUserCanvas);
 
@@ -284,13 +284,6 @@ export const projectRouter = createTRPCRouter({
                     type: DefaultFrameType.DESKTOP,
                 });
                 await tx.insert(frames).values(desktopFrame);
-                const mobileFrame = createDefaultFrame({
-                    canvasId: newCanvas.id,
-                    branchId: newBranch.id,
-                    url: input.sandboxUrl,
-                    type: DefaultFrameType.MOBILE,
-                });
-                await tx.insert(frames).values(mobileFrame);
 
                 // 6. Create the default chat conversation
                 await tx.insert(conversations).values(createDefaultConversation(newProject.id));

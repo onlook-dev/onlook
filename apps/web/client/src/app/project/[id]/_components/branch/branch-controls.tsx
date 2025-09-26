@@ -26,18 +26,7 @@ export function BranchControls({
     const [isCreatingBlank, setIsCreatingBlank] = useState(false);
 
     const handleForkBranch = async () => {
-        if (isForking) return;
-
-        try {
-            setIsForking(true);
-            await editorEngine.branches.forkBranch(branch.id);
-            onForkBranch?.();
-            onClose?.();
-        } catch (error) {
-            console.error("Failed to fork branch:", error);
-        } finally {
-            setIsForking(false);
-        }
+        onForkBranch?.();
     };
 
     const handleCreateBlankSandbox = async () => {

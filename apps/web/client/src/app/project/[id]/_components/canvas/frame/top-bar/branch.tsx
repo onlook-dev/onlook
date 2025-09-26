@@ -12,6 +12,7 @@ import { cn } from "@onlook/ui/utils";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { BranchControls } from "../../../branch/branch-controls";
+import { ForkBranchDialog } from "../../../branch/fork-branch-dialog";
 import { HoverOnlyTooltip } from "../../../editor-bar/hover-tooltip";
 
 interface BranchDisplayProps {
@@ -25,37 +26,65 @@ export const BranchDisplay = observer(({ frame, tooltipSide = "top", buttonSize 
     const editorEngine = useEditorEngine();
     const frameBranch = editorEngine.branches.getBranchById(frame.branchId);
     const [isOpen, setIsOpen] = useState(false);
+    const [showForkDialog, setShowForkDialog] = useState(false);
+    const [isForking, setIsForking] = useState(false);
 
     if (!frameBranch) {
         return null;
     }
 
+    const handleForkWithName = async (name: string) => {
+        if (isForking) return;
+
+        try {
+            setIsForking(true);
+            await editorEngine.branches.forkBranch(frameBranch.id, name);
+            setShowForkDialog(false);
+            setIsOpen(false); // Close the dropdown too
+        } catch (error) {
+            console.error("Failed to fork branch:", error);
+        } finally {
+            setIsForking(false);
+        }
+    };
+
     return (
-        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-            <HoverOnlyTooltip content="Branch" side={tooltipSide} className="mb-1" hideArrow>
-                <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size={buttonSize}
-                        className={cn(
-                            "h-auto px-2 py-1 text-xs hover:!bg-transparent focus:!bg-transparent active:!bg-transparent",
-                            buttonClassName
-                        )}
-                    >
-                        <Icons.Branch />
-                        <div className="flex items-center gap-1.5 max-w-24 truncate">
-                            <span className="truncate">{frameBranch.name}</span>
-                        </div>
-                    </Button>
-                </DropdownMenuTrigger>
-            </HoverOnlyTooltip>
-            <DropdownMenuSeparator />
-            <DropdownMenuContent align="start" className="w-[320px] p-0">
-                <BranchControls 
-                    branch={frameBranch} 
-                    onClose={() => setIsOpen(false)}
-                />
-            </DropdownMenuContent>
-        </DropdownMenu >
+        <>
+            <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+                <HoverOnlyTooltip content="Branch" side={tooltipSide} className="mb-1" hideArrow>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size={buttonSize}
+                            className={cn(
+                                "h-auto px-2 py-1 text-xs hover:!bg-transparent focus:!bg-transparent active:!bg-transparent",
+                                buttonClassName
+                            )}
+                        >
+                            <Icons.Branch />
+                            <div className="flex items-center gap-1.5 max-w-24 truncate">
+                                <span className="truncate">{frameBranch.name}</span>
+                            </div>
+                        </Button>
+                    </DropdownMenuTrigger>
+                </HoverOnlyTooltip>
+                <DropdownMenuSeparator />
+                <DropdownMenuContent align="start" className="w-[320px] p-0">
+                    <BranchControls 
+                        branch={frameBranch} 
+                        onClose={() => setIsOpen(false)}
+                        onForkBranch={() => setShowForkDialog(true)}
+                    />
+                </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <ForkBranchDialog
+                isOpen={showForkDialog}
+                onClose={() => setShowForkDialog(false)}
+                onConfirm={handleForkWithName}
+                defaultName={`${frameBranch.name} (Copy)`}
+                isLoading={isForking}
+            />
+        </>
     );
 });

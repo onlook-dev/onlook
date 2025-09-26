@@ -20,6 +20,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { ForkNameDialog } from './fork-name-dialog';
 import { LazyImage } from "./lazy-image";
 
 interface TemplateModalProps {
@@ -53,6 +54,7 @@ export function TemplateModal({
     const { data: branches } = api.branch.getByProjectId.useQuery({ projectId: templateProject.id, onlyDefault: true });
     const { setIsAuthModalOpen } = useAuthContext();
     const [isCreatingProject, setIsCreatingProject] = useState(false);
+    const [showForkNameDialog, setShowForkNameDialog] = useState(false);
     const router = useRouter();
 
     const handleUseTemplate = async () => {
@@ -67,14 +69,21 @@ export function TemplateModal({
             return;
         }
 
+        setShowForkNameDialog(true);
+    };
+
+    const handleForkWithName = async (name: string) => {
         setIsCreatingProject(true);
         try {
             const newProject = await forkTemplate({
                 projectId: templateProject.id,
+                name,
+                // canvasPosition is optional - backend will use user's most recent position if not provided
             });
 
             if (newProject) {
                 toast.success(`Created new project from ${title} template!`);
+                setShowForkNameDialog(false);
                 onClose();
                 router.push(`${Routes.PROJECT}/${newProject.id}`);
             }
@@ -111,7 +120,8 @@ export function TemplateModal({
     };
 
     return (
-        <AnimatePresence>
+        <>
+            <AnimatePresence>
             {isOpen && (
                 <motion.div
                     className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -249,6 +259,15 @@ export function TemplateModal({
                 </motion.div>
             )}
         </AnimatePresence>
+        
+        <ForkNameDialog
+            isOpen={showForkNameDialog}
+            onClose={() => setShowForkNameDialog(false)}
+            onConfirm={handleForkWithName}
+            defaultName={`${title} (Copy)`}
+            isLoading={isCreatingProject}
+        />
+        </>
     );
 }
 

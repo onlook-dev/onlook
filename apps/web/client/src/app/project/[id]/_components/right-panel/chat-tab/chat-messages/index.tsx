@@ -13,7 +13,7 @@ import { Icons } from '@onlook/ui/icons';
 import { assertNever } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { AssistantMessage } from './assistant-message';
 import { ErrorMessage } from './error-message';
 import { UserMessage } from './user-message';
@@ -33,6 +33,13 @@ export const ChatMessages = observer(({
 }: ChatMessagesProps) => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
+    const conversationRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (conversationRef.current) {
+            conversationRef.current.scrollTop = conversationRef.current.scrollHeight;
+        }
+    }, [messages.length, isStreaming]);
 
     const renderMessage = useCallback(
         (message: ChatMessage, index: number) => {
@@ -75,7 +82,7 @@ export const ChatMessages = observer(({
     }
 
     return (
-        <Conversation className="h-full w-full">
+        <Conversation ref={conversationRef} className="h-full w-full">
             <ConversationContent className="p-0 m-0">
                 {messages.map((message, index) => renderMessage(message, index))}
                 {error && <ErrorMessage error={error} />}

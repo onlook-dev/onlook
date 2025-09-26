@@ -37,7 +37,7 @@ export enum EditorAttributes {
 
 export const DefaultSettings = {
     SCALE: 0.7,
-    PAN_POSITION: { x: 175, y: 100 },
+    PAN_POSITION: { x: 270, y: 100 },
     URL: 'http://localhost:3000/',
     ASPECT_RATIO_LOCKED: false,
     DEVICE: 'Custom:Custom',

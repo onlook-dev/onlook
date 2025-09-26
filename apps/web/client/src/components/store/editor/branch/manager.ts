@@ -135,7 +135,7 @@ export class BranchManager {
         return [];
     }
 
-    async forkBranch(branchId: string): Promise<void> {
+    async forkBranch(branchId: string, customName?: string): Promise<void> {
         if (!branchId) {
             throw new Error('No active branch to fork');
         }
@@ -147,8 +147,29 @@ export class BranchManager {
 
         try {
             toast.loading(`Forking branch "${branch.name}"...`);
+            
+            // Get the frame position of the branch being forked
+            const branchFrames = this.editorEngine.frames.getAll().filter(frameView => 
+                frameView.frame.branchId === branchId
+            );
+            
+            let framePosition;
+            if (branchFrames.length > 0) {
+                const frame = branchFrames[0].frame;
+                framePosition = {
+                    x: frame.position.x,
+                    y: frame.position.y,
+                    width: frame.dimension.width,
+                    height: frame.dimension.height,
+                };
+            }
+
             // Call the fork API
-            const result = await api.branch.fork.mutate({ branchId });
+            const result = await api.branch.fork.mutate({ 
+                branchId,
+                framePosition,
+                customName,
+            });
 
             // Add the new branch to the local branch map
             const errorManager = new ErrorManager(result.branch);

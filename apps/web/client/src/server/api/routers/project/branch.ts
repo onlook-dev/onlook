@@ -86,6 +86,13 @@ export const branchRouter = createTRPCRouter({
         .input(
             z.object({
                 branchId: z.uuid(),
+                framePosition: z.object({
+                    x: z.number(),
+                    y: z.number(),
+                    width: z.number(),
+                    height: z.number(),
+                }).optional(),
+                customName: z.string().optional(),
             }),
         )
         .mutation(async ({ ctx, input }) => {
@@ -112,7 +119,8 @@ export const branchRouter = createTRPCRouter({
                 const existingNames = existingBranches.map(branch => branch.name);
 
                 // Generate unique branch name
-                const branchName: string = generateUniqueBranchName(sourceBranch.name, existingNames);
+                const baseName = input.customName || sourceBranch.name;
+                const branchName: string = generateUniqueBranchName(baseName, existingNames);
 
                 // Fork the sandbox using code provider
                 const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
@@ -159,13 +167,20 @@ export const branchRouter = createTRPCRouter({
                         // Get existing frames for smart positioning
                         const existingFrames = await getExistingFrames(tx, canvas.id);
 
-                        // Use the first frame from the source branch as reference, or default dimensions
+                        // Use provided frame position or fallback to source branch frame
                         let frameWidth = 1200;
                         let frameHeight = 800;
                         let baseX = 100;
                         let baseY = 100;
 
-                        if (sourceBranch.frames && sourceBranch.frames.length > 0 && sourceBranch.frames[0]) {
+                        if (input.framePosition) {
+                            // Use the provided current frame position
+                            frameWidth = input.framePosition.width;
+                            frameHeight = input.framePosition.height;
+                            baseX = input.framePosition.x;
+                            baseY = input.framePosition.y;
+                        } else if (sourceBranch.frames && sourceBranch.frames.length > 0 && sourceBranch.frames[0]) {
+                            // Fallback to first frame from source branch
                             const sourceFrame = sourceBranch.frames[0];
                             frameWidth = parseInt(sourceFrame.width) || frameWidth;
                             frameHeight = parseInt(sourceFrame.height) || frameHeight;
@@ -179,7 +194,7 @@ export const branchRouter = createTRPCRouter({
                             branchId: newBranchId,
                             canvasId: canvas.id,
                             position: {
-                                x: baseX + frameWidth + 100, // Initial offset to the right
+                                x: baseX + frameWidth + 100, // Much smaller offset to the right
                                 y: baseY,
                             },
                             dimension: {
@@ -189,8 +204,62 @@ export const branchRouter = createTRPCRouter({
                             url: previewUrl,
                         };
 
-                        // Calculate non-overlapping position
-                        const optimalPosition = calculateNonOverlappingPosition(proposedFrame, existingFrames);
+                        // For branch forking, we want to place it to the right of the source branch
+                        // Use a simpler approach that prioritizes right-side placement
+                        let optimalPosition = proposedFrame.position;
+                        
+                        console.log('Branch fork positioning:', {
+                            sourceBranch: sourceBranch.name,
+                            baseX,
+                            baseY,
+                            frameWidth,
+                            frameHeight,
+                            proposedPosition: proposedFrame.position,
+                            existingFramesCount: existingFrames.length
+                        });
+                        
+                        // Check if the proposed position overlaps with existing frames
+                        const hasOverlap = existingFrames.some(existingFrame => {
+                            if (existingFrame.id === proposedFrame.id) return false;
+                            
+                            const proposed = {
+                                left: proposedFrame.position.x,
+                                top: proposedFrame.position.y,
+                                right: proposedFrame.position.x + proposedFrame.dimension.width,
+                                bottom: proposedFrame.position.y + proposedFrame.dimension.height,
+                            };
+                            
+                            const existing = {
+                                left: existingFrame.position.x - 10, // Much smaller spacing for branch forking
+                                top: existingFrame.position.y - 10,
+                                right: existingFrame.position.x + existingFrame.dimension.width + 10,
+                                bottom: existingFrame.position.y + existingFrame.dimension.height + 10,
+                            };
+                            
+                            return (
+                                proposed.left < existing.right &&
+                                proposed.right > existing.left &&
+                                proposed.top < existing.bottom &&
+                                proposed.bottom > existing.top
+                            );
+                        });
+                        
+                        // If there's an overlap, find the rightmost position and place to the right
+                        if (hasOverlap) {
+                            let rightmostX = baseX;
+                            for (const frame of existingFrames) {
+                                const frameRight = frame.position.x + frame.dimension.width;
+                                if (frameRight > rightmostX) {
+                                    rightmostX = frameRight;
+                                }
+                            }
+                            optimalPosition = {
+                                x: rightmostX + 100, // Place much closer to the right of the rightmost frame
+                                y: baseY, // Keep the same Y position as the source branch
+                            };
+                        }
+                        
+                        console.log('Final branch position:', optimalPosition);
 
                         const newFrame = createDefaultFrame({
                             canvasId: canvas.id,
