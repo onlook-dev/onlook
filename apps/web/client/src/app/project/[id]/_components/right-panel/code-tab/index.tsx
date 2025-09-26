@@ -367,10 +367,6 @@ export const CodeTab = () => {
         toast('File saved!');
     };
 
-    const updateFileContent = (fileId: string, content: string) => {
-        ide.updateFileContent(fileId, content);
-    };
-
     async function discardChanges(fileId: string) {
         if (ide.pendingCloseAll) {
             const file = ide.openedFiles.find((e) => e.id === fileId);
