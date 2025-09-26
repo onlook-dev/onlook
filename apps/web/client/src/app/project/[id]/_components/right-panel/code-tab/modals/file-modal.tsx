@@ -18,8 +18,8 @@ import {
     createFileInSandbox,
     doesFileExist,
     validateFileName,
-} from '../file-operations';
-import { getFileTemplate } from '../file-templates';
+} from '../shared/file-operations';
+import { getFileTemplate } from '../shared/file-templates';
 
 interface FileModalProps {
     basePath: string;

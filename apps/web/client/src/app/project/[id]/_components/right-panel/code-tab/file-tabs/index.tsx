@@ -12,7 +12,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { forwardRef } from 'react';
-import { FileTab } from './file-content/file-tab';
+import { FileTab } from './file-tab';
 
 interface FileTabsProps {
     openedFiles: EditorFile[];

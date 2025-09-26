@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import React, { forwardRef, memo, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
-import { type FileNode } from '../types';
+import { type FileNode } from '../shared/types';
 import { FileTreeNode } from './file-tree-node';
 import { FileTreeRow } from './file-tree-row';
 

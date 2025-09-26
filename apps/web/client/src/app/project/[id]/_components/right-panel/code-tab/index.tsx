@@ -7,11 +7,11 @@ import { getMimeType } from '@onlook/utility';
 import { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CodeEditorArea } from './file-content/code-editor-area';
+import { CodeEditorArea } from './file-content';
 import { createSearchHighlight, scrollToFirstMatch } from './file-content/code-mirror-config';
 import { FileTabs } from './file-tabs';
+import type { FileNode } from './shared/types';
 import { FileTree } from './sidebar/file-tree';
-import type { FileNode } from './types';
 
 export const CodeTab = observer(() => {
     const editorEngine = useEditorEngine();

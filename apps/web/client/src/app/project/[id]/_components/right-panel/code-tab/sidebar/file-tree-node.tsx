@@ -9,7 +9,7 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { motion } from 'motion/react';
 import type { NodeApi } from 'react-arborist';
-import type { FileNode } from '../types';
+import type { FileNode } from '../shared/types';
 
 interface FileTreeNodeProps {
     node: NodeApi<FileNode>;
