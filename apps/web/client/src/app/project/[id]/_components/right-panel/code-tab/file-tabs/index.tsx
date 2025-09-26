@@ -9,12 +9,12 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { observer } from 'mobx-react-lite';
-import { forwardRef } from 'react';
+import { forwardRef, useEffect, useRef } from 'react';
 import type { EditorFile } from '../shared/types';
 import { FileTab } from './file-tab';
 
 interface FileTabsProps {
+    selectedFilePath: string | null;
     openedFiles: EditorFile[];
     activeFile: EditorFile | null;
     isFilesVisible: boolean;
@@ -24,7 +24,8 @@ interface FileTabsProps {
     onCloseAllFiles: () => void;
 }
 
-export const FileTabs = observer(forwardRef<HTMLDivElement, FileTabsProps>(({
+export const FileTabs = ({
+    selectedFilePath,
     openedFiles,
     activeFile,
     isFilesVisible,
@@ -32,7 +33,37 @@ export const FileTabs = observer(forwardRef<HTMLDivElement, FileTabsProps>(({
     onFileSelect,
     onCloseFile,
     onCloseAllFiles,
-}, ref) => {
+}: FileTabsProps) => {
+    const ref = useRef<HTMLDivElement>(null);
+
+    // Scroll to active tab when it changes
+    useEffect(() => {
+        console.log('selectedFile', selectedFilePath);
+        if (!selectedFilePath) {
+            return;
+        }
+        const container = ref.current;
+        if (!container) return;
+
+        // Wait for the file tabs to be rendered
+        setTimeout(() => {
+            const activeTab = container.querySelector('[data-active="true"]');
+            if (activeTab) {
+                const containerRect = container.getBoundingClientRect();
+                const tabRect = activeTab.getBoundingClientRect();
+
+                // Calculate if the tab is outside the visible area
+                if (tabRect.left < containerRect.left) {
+                    // Tab is to the left of the visible area
+                    container.scrollLeft += tabRect.left - containerRect.left;
+                } else if (tabRect.right > containerRect.right) {
+                    // Tab is to the right of the visible area
+                    container.scrollLeft += tabRect.right - containerRect.right;
+                }
+            }
+        }, 100);
+    }, [selectedFilePath]);
+
     return (
         <div className="flex items-center justify-between h-11 pl-0 border-b-[0.5px] flex-shrink-0 relative">
             <div className="absolute left-0 top-0 bottom-0 z-20 border-r-[0.5px] h-full flex items-center p-1 bg-background">
@@ -90,6 +121,4 @@ export const FileTabs = observer(forwardRef<HTMLDivElement, FileTabsProps>(({
             </div>
         </div>
     );
-}));
-
-FileTabs.displayName = 'FileTabs';
+});

@@ -15,9 +15,9 @@ export const CodeTab = () => {
     const editorEngine = useEditorEngine();
     const rootDir = `/${editorEngine.projectId}/${editorEngine.branches.activeBranch.id}`;
 
-    const [selectedFile, setSelectedFile] = useState<string | null>(null);
-    const [openedLocalFiles, setOpenedLocalFiles] = useState<EditorFile[]>([]);
-    const [activeLocalFile, setActiveLocalFile] = useState<EditorFile | null>(null);
+    const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
+    const [activeEditorFile, setActiveEdtiorFile] = useState<EditorFile | null>(null);
+    const [openedEditorFiles, setOpenedEditorFiles] = useState<EditorFile[]>([]);
     const [showLocalUnsavedDialog, setShowLocalUnsavedDialog] = useState(false);
 
     const {
@@ -27,12 +27,9 @@ export const CodeTab = () => {
 
     const {
         content: loadedContent,
-        loading: isLoadingContent,
-        error: fileError,
-    } = useFile(rootDir, selectedFile || '');
+    } = useFile(rootDir, selectedFilePath || '');
 
-    // Helper function to create EditorFile from local file data
-    const createLocalEditorFile = (filePath: string, content: string | Uint8Array): EditorFile => {
+    const createEditorFile = (filePath: string, content: string | Uint8Array): EditorFile => {
         const isBinary = content instanceof Uint8Array;
 
         if (isBinary) {
@@ -55,18 +52,18 @@ export const CodeTab = () => {
         }
     }
 
-    // React to selectedFile changes - build local EditorFile and manage opened files
+    // React to loadedContent changes - build local EditorFile and manage opened files
     useEffect(() => {
-        if (!selectedFile || !loadedContent) return;
+        if (!selectedFilePath || !loadedContent) return;
 
-        const newLocalFile = createLocalEditorFile(selectedFile, loadedContent);
+        const newLocalFile = createEditorFile(selectedFilePath, loadedContent);
 
         // Check if file is already open
-        const existingFileIndex = openedLocalFiles.findIndex(f => f.path === selectedFile);
+        const existingFileIndex = openedEditorFiles.findIndex(f => f.path === selectedFilePath);
 
         if (existingFileIndex >= 0) {
             // File already open, just set as active and update content
-            const existingFile = openedLocalFiles[existingFileIndex];
+            const existingFile = openedEditorFiles[existingFileIndex];
             if (existingFile) {
                 const updatedFile: EditorFile = {
                     path: existingFile.path,
@@ -75,27 +72,24 @@ export const CodeTab = () => {
                     originalContent: existingFile.originalContent,
                     content: newLocalFile.content
                 };
-                const updatedFiles = [...openedLocalFiles];
+                const updatedFiles = [...openedEditorFiles];
                 updatedFiles[existingFileIndex] = updatedFile;
-                setOpenedLocalFiles(updatedFiles);
-                setActiveLocalFile(updatedFile);
+                setOpenedEditorFiles(updatedFiles);
+                setActiveEdtiorFile(updatedFile);
             }
         } else {
             // Add new file to opened files
-            const updatedFiles = [...openedLocalFiles, newLocalFile];
-            setOpenedLocalFiles(updatedFiles);
-            setActiveLocalFile(newLocalFile);
+            const updatedFiles = [...openedEditorFiles, newLocalFile];
+            setOpenedEditorFiles(updatedFiles);
+            setActiveEdtiorFile(newLocalFile);
         }
-    }, [selectedFile, loadedContent]);
+    }, [loadedContent]);
 
-    // _____________________________________________________
-
+    // OLD SHIT_____________________________________________________
     const ide = editorEngine.ide;
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
-    const fileTabsContainerRef = useRef<HTMLDivElement>(null);
 
     // Helper function to check if sandbox is connected and ready
-    const isSandboxReady = ide.isSandboxReady;
 
     const getActiveEditorView = (): EditorView | undefined => {
         if (!ide.activeFile) {
@@ -119,7 +113,7 @@ export const CodeTab = () => {
 
                 if (filePath) {
                     // Update local selected file state which will trigger IDE sync
-                    setSelectedFile(filePath);
+                    setSelectedFilePath(filePath);
 
                     // Wait a bit for the file to load in IDE, then get range
                     setTimeout(async () => {
@@ -141,10 +135,6 @@ export const CodeTab = () => {
 
     async function getElementCodeRange(element: any): Promise<CodeRange | null> {
         if (!ide.activeFile || !element.oid) {
-            return null;
-        }
-
-        if (!isSandboxReady) {
             return null;
         }
 
@@ -260,53 +250,19 @@ export const CodeTab = () => {
         }
     }, [ide.searchTerm, ide.activeFile]);
 
-    const handleFileTreeSelect = useCallback((filePath: string, searchTerm?: string) => {
-        // Update the local selected file state
-        setSelectedFile(filePath);
-
-        // Store search term if provided for potential IDE usage
+    const handleFileTreeSelect = (filePath: string, searchTerm?: string) => {
+        setSelectedFilePath(filePath);
         if (searchTerm) {
-            // Could store this in a ref or state if needed by IDE later
+            //    TODO: Reimplement search term handling
         }
-    }, []);
-
-    // Sync selected file changes to IDE
-    useEffect(() => {
-        const syncSelectedFileToIDE = async () => {
-            if (!selectedFile || !isSandboxReady) {
-                return;
-            }
-
-            try {
-                // Load file in IDE when local selection changes
-                await ide.openFile(selectedFile, undefined, false);
-            } catch (error) {
-                console.error('Error syncing selected file to IDE:', error);
-            }
-        };
-
-        syncSelectedFileToIDE();
-    }, [selectedFile, isSandboxReady]);
-
-    // Sync IDE active file changes back to local state
-    useEffect(() => {
-        if (ide.activeFile?.path && ide.activeFile.path !== selectedFile) {
-            setSelectedFile(ide.activeFile.path);
-        }
-    }, [ide.activeFile?.path, selectedFile]);
-
-    function handleFileTabSelect(file: EditorFile) {
-        ide.setHighlightRange(null);
-        ide.activeFile = file;
-    }
+    };
 
     async function getFilePathFromOid(oid: string): Promise<string | null> {
         return ide.getFilePathFromOid(oid);
     }
 
-    // Local file operations
     const closeLocalFile = useCallback((filePath: string) => {
-        const fileToClose = openedLocalFiles.find(f => f.path === filePath);
+        const fileToClose = openedEditorFiles.find(f => f.path === filePath);
         if (fileToClose?.isDirty) {
             setShowLocalUnsavedDialog(true);
             return;
@@ -318,18 +274,18 @@ export const CodeTab = () => {
             editorViewsRef.current.delete(filePath);
         }
 
-        const updatedFiles = openedLocalFiles.filter(f => f.path !== filePath);
-        setOpenedLocalFiles(updatedFiles);
+        const updatedFiles = openedEditorFiles.filter(f => f.path !== filePath);
+        setOpenedEditorFiles(updatedFiles);
 
         // Set new active file if we closed the active one
-        if (activeLocalFile?.path === filePath) {
+        if (activeEditorFile?.path === filePath) {
             const newActiveFile = updatedFiles.length > 0 ? updatedFiles[updatedFiles.length - 1] || null : null;
-            setActiveLocalFile(newActiveFile);
+            setActiveEdtiorFile(newActiveFile);
         }
-    }, [openedLocalFiles, activeLocalFile]);
+    }, [openedEditorFiles, activeEditorFile]);
 
     const closeAllLocalFiles = () => {
-        const dirtyFiles = openedLocalFiles.filter((file) => file.isDirty);
+        const dirtyFiles = openedEditorFiles.filter((file) => file.isDirty);
         if (dirtyFiles.length > 0) {
             setShowLocalUnsavedDialog(true);
             return;
@@ -337,28 +293,28 @@ export const CodeTab = () => {
 
         editorViewsRef.current.forEach((view) => view.destroy());
         editorViewsRef.current.clear();
-        setOpenedLocalFiles([]);
-        setActiveLocalFile(null);
+        setOpenedEditorFiles([]);
+        setActiveEdtiorFile(null);
     };
 
     const handleLocalFileTabSelect = (file: EditorFile) => {
-        setActiveLocalFile(file);
+        setActiveEdtiorFile(file);
         // Also update selectedFile to sync with file tree
-        setSelectedFile(file.path);
+        setSelectedFilePath(file.path);
     };
 
     const updateLocalFileContent = (filePath: string, content: string) => {
-        const updatedFiles = openedLocalFiles.map(file =>
+        const updatedFiles = openedEditorFiles.map(file =>
             file.path === filePath
                 ? { ...file, content, isDirty: true }
                 : file
         );
-        setOpenedLocalFiles(updatedFiles);
+        setOpenedEditorFiles(updatedFiles);
 
         // Update active file if it's the one being updated
-        if (activeLocalFile?.path === filePath) {
-            const updatedActiveFile = { ...activeLocalFile, content, isDirty: true };
-            setActiveLocalFile(updatedActiveFile);
+        if (activeEditorFile?.path === filePath) {
+            const updatedActiveFile = { ...activeEditorFile, content, isDirty: true };
+            setActiveEdtiorFile(updatedActiveFile);
         }
     };
 
@@ -452,32 +408,6 @@ export const CodeTab = () => {
         };
     }, []);
 
-    const scrollToActiveTab = useCallback(() => {
-        if (!fileTabsContainerRef.current || !ide.activeFile) return;
-
-        const container = fileTabsContainerRef.current;
-        const activeTab = container.querySelector('[data-active="true"]');
-
-        if (activeTab) {
-            const containerRect = container.getBoundingClientRect();
-            const tabRect = activeTab.getBoundingClientRect();
-
-            // Calculate if the tab is outside the visible area
-            if (tabRect.left < containerRect.left) {
-                // Tab is to the left of the visible area
-                container.scrollLeft += tabRect.left - containerRect.left;
-            } else if (tabRect.right > containerRect.right) {
-                // Tab is to the right of the visible area
-                container.scrollLeft += tabRect.right - containerRect.right;
-            }
-        }
-    }, [ide.activeFile]);
-
-    // Scroll to active tab when it changes
-    useEffect(() => {
-        scrollToActiveTab();
-    }, [ide.activeFile, scrollToActiveTab]);
-
     return (
         <div className="size-full flex flex-col">
             <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -485,13 +415,13 @@ export const CodeTab = () => {
                     onFileSelect={handleFileTreeSelect}
                     fileEntries={fileEntries}
                     isLoading={filesLoading}
-                    selectedFilePath={selectedFile}
+                    selectedFilePath={selectedFilePath}
                 />
                 <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
                     <FileTabs
-                        ref={fileTabsContainerRef}
-                        openedFiles={openedLocalFiles}
-                        activeFile={activeLocalFile}
+                        selectedFilePath={selectedFilePath}
+                        openedFiles={openedEditorFiles}
+                        activeFile={activeEditorFile}
                         isFilesVisible={ide.isFilesVisible}
                         onToggleFilesVisible={() => ide.isFilesVisible = !ide.isFilesVisible}
                         onFileSelect={handleLocalFileTabSelect}
@@ -500,8 +430,8 @@ export const CodeTab = () => {
                     />
                     <CodeEditorArea
                         editorViewsRef={editorViewsRef}
-                        openedFiles={openedLocalFiles}
-                        activeFile={activeLocalFile}
+                        openedFiles={openedEditorFiles}
+                        activeFile={activeEditorFile}
                         showUnsavedDialog={showLocalUnsavedDialog}
                         onSaveFile={saveFile}
                         onUpdateFileContent={updateLocalFileContent}
