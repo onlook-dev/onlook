@@ -18,58 +18,53 @@ interface FileTreeNodeProps {
     onFileSelect?: (filePath: string, searchTerm?: string) => void;
 }
 
+const getFileIcon = (path: string, isDirectory: boolean) => {
+    const extension = path.split('.').pop()?.toLowerCase();
+
+    if (isDirectory) {
+        return <Icons.Directory className="w-4 h-4 mr-2" />;
+    }
+
+    switch (extension) {
+        case 'js':
+        case 'jsx':
+        case 'ts':
+        case 'tsx':
+            return <Icons.Code className="w-4 h-4 mr-2" />;
+        case 'css':
+        case 'scss':
+        case 'sass':
+            return <Icons.Box className="w-4 h-4 mr-2" />;
+        case 'html':
+            return <Icons.Frame className="w-4 h-4 mr-2" />;
+        case 'json':
+            return <Icons.Code className="w-4 h-4 mr-2" />;
+        case 'md':
+        case 'mdx':
+            return <Icons.Text className="w-4 h-4 mr-2" />;
+        case 'jpg':
+        case 'jpeg':
+        case 'png':
+        case 'gif':
+        case 'svg':
+            return <Icons.Image className="w-4 h-4 mr-2" />;
+        default:
+            return <Icons.File className="w-4 h-4 mr-2" />;
+    }
+};
+
 export const FileTreeNode = ({ node, style, onFileSelect, isSelected }: FileTreeNodeProps) => {
     const isDirectory = node.data.isDirectory;
-
     const handleClick = (e: React.MouseEvent) => {
         if (isDirectory) {
             node.toggle();
             return;
         }
-
-        // Call the parent's file select callback
         if (onFileSelect) {
             onFileSelect(node.data.path);
         }
-
         // Select the node in the tree
         node.select();
-    };
-
-    // Get file icon based on extension
-    const getFileIcon = () => {
-        const extension = node.data.path.split('.').pop()?.toLowerCase();
-
-        if (isDirectory) {
-            return <Icons.Directory className="w-4 h-4 mr-2" />;
-        }
-
-        switch (extension) {
-            case 'js':
-            case 'jsx':
-            case 'ts':
-            case 'tsx':
-                return <Icons.Code className="w-4 h-4 mr-2" />;
-            case 'css':
-            case 'scss':
-            case 'sass':
-                return <Icons.Box className="w-4 h-4 mr-2" />;
-            case 'html':
-                return <Icons.Frame className="w-4 h-4 mr-2" />;
-            case 'json':
-                return <Icons.Code className="w-4 h-4 mr-2" />;
-            case 'md':
-            case 'mdx':
-                return <Icons.Text className="w-4 h-4 mr-2" />;
-            case 'jpg':
-            case 'jpeg':
-            case 'png':
-            case 'gif':
-            case 'svg':
-                return <Icons.Image className="w-4 h-4 mr-2" />;
-            default:
-                return <Icons.File className="w-4 h-4 mr-2" />;
-        }
     };
 
     const menuItems: Array<{
@@ -102,7 +97,7 @@ export const FileTreeNode = ({ node, style, onFileSelect, isSelected }: FileTree
                             </div>
                         )}
                     </span>
-                    {getFileIcon()}
+                    {getFileIcon(node.data.path, isDirectory)}
                     <span className="truncate">{node.data.name}</span>
                     {/* {!isDirectory && contentMatches?.has(node.data.path) && (
                         <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary/10 text-primary rounded-full font-medium min-w-[20px] text-center">
