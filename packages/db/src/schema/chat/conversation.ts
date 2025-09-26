@@ -26,7 +26,7 @@ export const conversationInsertSchema = createInsertSchema(conversations, {
     agentType: z.enum(AgentType).optional(),
 });
 export const conversationUpdateSchema = createUpdateSchema(conversations, {
-    id: z.string().uuid(),
+    id: z.uuid(),
     agentType: z.enum(AgentType).optional(),
 });
 
