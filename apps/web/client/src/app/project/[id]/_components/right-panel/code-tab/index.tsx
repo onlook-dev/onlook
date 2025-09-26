@@ -2,23 +2,14 @@ import { useEditorEngine } from '@/components/store/editor';
 import type { CodeRange, EditorFile } from '@/components/store/editor/ide';
 import { EditorView } from '@codemirror/view';
 import { useDirectory, useFile, type FileEntry } from '@onlook/file-system/hooks';
-import { Button } from '@onlook/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from '@onlook/ui/dropdown-menu';
-import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { getMimeType } from '@onlook/utility';
 import { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CodeEditorArea } from './file-content/code-editor-area';
 import { createSearchHighlight, scrollToFirstMatch } from './file-content/code-mirror-config';
-import { FileTab } from './file-content/file-tab';
+import { FileTabs } from './file-tabs';
 import { FileTree } from './sidebar/file-tree';
 import type { FileNode } from './types';
 
@@ -336,19 +327,6 @@ export const CodeTab = observer(() => {
     //     loadFilesForActiveSandbox();
     // }, [activeSandbox]);
 
-    async function loadNewContent(filePath: string) {
-        if (!isSandboxReady) {
-            handleSandboxNotReady('load new content');
-            return;
-        }
-
-        try {
-            await ide.loadNewContent(filePath);
-        } catch (error) {
-            console.error('Error loading new content:', error);
-        }
-    }
-
     const loadFile = useCallback(async (filePath: string, searchTerm?: string): Promise<EditorFile | null> => {
         if (!isSandboxReady) {
             handleSandboxNotReady('load file');
@@ -526,101 +504,37 @@ export const CodeTab = observer(() => {
 
     return (
         <div className="size-full flex flex-col">
+            <div className="flex flex-1 min-h-0 overflow-hidden">
+                <FileTree
+                    ref={fileTreeRef}
+                    onFileSelect={loadFile}
+                    fileNodes={localFiles}
+                    isLoading={localDirLoading}
+                    selectedFilePath={selectedFile}
+                />
+                {/* Editor section */}
+                <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+                    <FileTabs
+                        ref={fileTabsContainerRef}
+                        openedFiles={ide.openedFiles}
+                        activeFile={ide.activeFile}
+                        isFilesVisible={ide.isFilesVisible}
+                        onToggleFilesVisible={() => ide.isFilesVisible = !ide.isFilesVisible}
+                        onFileSelect={handleFileSelect}
+                        onCloseFile={closeFile}
+                        onCloseAllFiles={closeAllFiles}
+                    />
 
-            {/* Show connection status when sandbox is not ready */}
-            {!isSandboxReady ? (
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="animate-spin h-8 w-8 border-2 border-foreground-hover rounded-full border-t-transparent"></div>
-                        <span className="text-sm text-muted-foreground">
-                            Connecting to sandbox...
-                        </span>
-                    </div>
+                    {/* Code Editor Area */}
+                    <CodeEditorArea
+                        editorViewsRef={editorViewsRef}
+                        onSaveFile={saveFile}
+                        onUpdateFileContent={updateFileContent}
+                        onDiscardChanges={discardChanges}
+                        onGetFileUrl={getFileUrl}
+                    />
                 </div>
-            ) : (
-                <div className="flex flex-1 min-h-0 overflow-hidden">
-                    {ide.isFilesVisible && (
-                        <FileTree
-                            ref={fileTreeRef}
-                            onFileSelect={loadFile}
-                            fileNodes={localFiles}
-                            title="Local Files"
-                            emptyMessage={localDirLoading ? "Loading files..." : "No files found"}
-                            isLoading={localDirLoading}
-                            selectedFilePath={selectedFile}
-                        />
-                    )}
-
-                    {/* Editor section */}
-                    <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-                        {/* File tabs */}
-                        <div className="flex items-center justify-between h-11 pl-0 border-b-[0.5px] flex-shrink-0 relative">
-                            <div className="absolute left-0 top-0 bottom-0 z-20 border-r-[0.5px] h-full flex items-center p-1 bg-background">
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => ide.isFilesVisible = !ide.isFilesVisible}
-                                            className="text-muted-foreground hover:text-foreground"
-                                        >
-                                            {ide.isFilesVisible ? <Icons.SidebarLeftCollapse /> : <Icons.SidebarLeftExpand />}
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="bottom" className="mt-1" hideArrow>
-                                        {ide.isFilesVisible ? 'Collapse sidebar' : 'Expand sidebar'}
-                                    </TooltipContent>
-                                </Tooltip>
-                            </div>
-                            <div className="absolute right-0 top-0 bottom-0 z-20 flex items-center h-full border-l-[0.5px] p-1 bg-background w-11">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger className="text-muted-foreground hover:text-foreground hover:bg-foreground/5 p-1 rounded h-full w-full flex items-center justify-center px-2.5">
-                                        <Icons.DotsHorizontal className="h-4 w-4" />
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="-mt-1">
-                                        <DropdownMenuItem
-                                            onClick={() => ide.activeFile && closeFile(ide.activeFile.id)}
-                                            disabled={!ide.activeFile}
-                                            className="cursor-pointer"
-                                        >
-                                            Close file
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            onClick={() => closeAllFiles()}
-                                            disabled={ide.openedFiles.length === 0}
-                                            className="cursor-pointer"
-                                        >
-                                            Close all
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                            <div className="flex items-center h-full overflow-x-auto w-full ml-11 mr-10.5" ref={fileTabsContainerRef}>
-                                {ide.openedFiles.map((file) => (
-                                    <FileTab
-                                        key={file.id}
-                                        filename={file.filename}
-                                        isActive={ide.activeFile?.id === file.id}
-                                        isDirty={file.isDirty}
-                                        onClick={() => handleFileSelect(file)}
-                                        onClose={() => closeFile(file.id)}
-                                        data-active={ide.activeFile?.id === file.id}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Code Editor Area */}
-                        <CodeEditorArea
-                            editorViewsRef={editorViewsRef}
-                            onSaveFile={saveFile}
-                            onUpdateFileContent={updateFileContent}
-                            onDiscardChanges={discardChanges}
-                            onGetFileUrl={getFileUrl}
-                        />
-                    </div>
-                </div>
-            )}
+            </div>
         </div>
     );
 });
