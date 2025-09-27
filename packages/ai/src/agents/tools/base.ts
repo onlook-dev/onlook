@@ -1,10 +1,9 @@
 import type { AgentType, ChatMessage } from '@onlook/models';
+import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
-import { ClientTool, type OnToolCallHandler } from '../../tools/models/client';
 import { z } from 'zod';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
-import { api } from '@onlook/web-client/src/trpc/client';
+import { ClientTool, type OnToolCallHandler } from '../../tools/models/client';
 import { OnlookChat } from '../onlook-chat';
 
 export type ToolsAgentInput = {
@@ -162,19 +161,21 @@ export abstract class BaseSubAgentTool<
     async handle(input: TInput, editorEngine: EditorEngine, getOnToolCall: OnToolCallHandler): Promise<TOutput> {
         const message = this.createMessage(input);
 
+        let conversationId = this.conversationId;
         if (!this.conversationId) {
-            const newConversation = await api.chat.conversation.upsert.mutate({
-                projectId: editorEngine.projectId,
+            const newConversation = await editorEngine.chat.conversation.upsertConversationInStorage({
                 agentType: this.agentType,
             });
             this.conversationId = newConversation.id;
+            conversationId = newConversation.id;
         }
 
         const agentResponse = await this.messageAndGetFinalResponse(message, editorEngine, getOnToolCall);
         let response = "";
 
-        if (agentResponse.metadata?.error !== null) {
-            response = JSON.stringify(agentResponse.metadata!.error, null, 2);
+        const error = agentResponse.metadata?.error;
+        if (!!error) {
+            response = JSON.stringify(error, null, 2);
         }
 
         // Get the last step/part regardless of type
@@ -186,8 +187,8 @@ export abstract class BaseSubAgentTool<
         }
 
         return {
-            conversationId: this.conversationId,
+            conversationId: conversationId as string,
             response,
-        } as TOutput;
+        } satisfies TOutput;
     }
 }

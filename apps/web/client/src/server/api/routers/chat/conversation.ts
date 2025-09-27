@@ -36,7 +36,13 @@ export const conversationRouter = createTRPCRouter({
     upsert: protectedProcedure
         .input(conversationInsertSchema)
         .mutation(async ({ ctx, input }) => {
-            const [conversation] = await ctx.db.insert(conversations).values(input).returning();
+            const [conversation] = await ctx.db.insert(conversations).values(input).onConflictDoUpdate({
+                target: [conversations.id],
+                set: {
+                    ...input,
+                    updatedAt: new Date(),
+                },
+            }).returning();
             if (!conversation) {
                 throw new Error('Conversation not created');
             }
