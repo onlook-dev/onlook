@@ -57,7 +57,7 @@ const findRepositoryRoot = (): string => {
 
     throw new Error(
         `Unable to find repository root. Searched from ${__dirname} up to ${fsRoot}. ` +
-            `Expected to find .git directory or package.json file.`,
+        `Expected to find .git directory or package.json file.`,
     );
 };
 
@@ -184,8 +184,8 @@ const checkDockerRunning = async (): Promise<void> => {
  * @returns Extracted keys or null if not found
  */
 const extractSupabaseKeys = (output: string): BackendKeys | null => {
-    const anonMatch = output.match(/anon key: (ey[A-Za-z0-9_-]+[^\r\n]*)/);
-    const roleMatch = output.match(/service_role key: (ey[A-Za-z0-9_-]+[^\r\n]*)/);
+    const anonMatch = output.match(/Publishable key: (sb_[A-Za-z0-9_-]+)/);
+    const roleMatch = output.match(/Secret key: (sb_[A-Za-z0-9_-]+)/);
 
     const anonKey = anonMatch?.[1];
     const serviceRoleKey = roleMatch?.[1];
