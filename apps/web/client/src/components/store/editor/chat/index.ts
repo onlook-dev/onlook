@@ -4,11 +4,13 @@ import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { ChatContext } from './context';
 import { ConversationManager } from './conversation';
+import { MessageQueue } from './queue';
 
 export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
 export class ChatManager {
     conversation: ConversationManager;
     context: ChatContext;
+    queue: MessageQueue;
 
     // Content sent from useChat hook
     _sendMessageAction: SendMessage | null = null;
@@ -17,6 +19,7 @@ export class ChatManager {
     constructor(private editorEngine: EditorEngine) {
         this.context = new ChatContext(this.editorEngine);
         this.conversation = new ConversationManager(this.editorEngine);
+        this.queue = new MessageQueue(this.editorEngine);
         makeAutoObservable(this);
     }
 
@@ -51,5 +54,6 @@ export class ChatManager {
     clear() {
         this.context.clear();
         this.conversation.clear();
+        this.queue.clear();
     }
 }

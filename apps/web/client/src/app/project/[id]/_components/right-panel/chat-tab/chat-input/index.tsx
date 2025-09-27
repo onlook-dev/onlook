@@ -96,7 +96,7 @@ export const ChatInput = observer(({
         return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
     }, []);
 
-    const disabled = isStreaming
+    const disabled = false; // Allow input while streaming
     const inputEmpty = !inputValue || inputValue.trim().length === 0;
 
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -139,22 +139,33 @@ export const ChatInput = observer(({
             console.warn('Empty message');
             return;
         }
-        if (isStreaming) {
-            console.warn('Already waiting for response');
-            return;
-        }
+        
         const savedInput = inputValue.trim();
+        
         try {
-            await onSendMessage(savedInput, chatMode);
+            if (isStreaming) {
+                // Queue the message if streaming
+                const queuedMessage = editorEngine.chat.queue.enqueue(savedInput, chatMode);
+                console.log('Message queued:', queuedMessage);
+            } else {
+                // Send immediately if not streaming
+                await onSendMessage(savedInput, chatMode);
+            }
+            // Clear input
             setInputValue('');
         } catch (error) {
             console.error('Error sending message', error);
             toast.error('Failed to send message. Please try again.');
-            setInputValue(savedInput);
         }
     }
 
     const getPlaceholderText = () => {
+        if (isStreaming && editorEngine.chat.queue.length > 0) {
+            return `${editorEngine.chat.queue.length} message${editorEngine.chat.queue.length > 1 ? 's' : ''} queued - type to add more...`;
+        }
+        if (isStreaming) {
+            return 'Type to queue message while AI responds...';
+        }
         if (chatMode === ChatType.ASK) {
             return 'Ask a question about your project...';
         }
@@ -424,10 +435,11 @@ export const ChatInput = observer(({
                             size={'icon'}
                             variant={'secondary'}
                             className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
-                            disabled={inputEmpty || disabled}
+                            disabled={inputEmpty}
                             onClick={() => void sendMessage()}
+                            title={isStreaming ? 'Queue message' : 'Send message'}
                         >
-                            <Icons.ArrowRight />
+                            {isStreaming ? <Icons.CounterClockwiseClock /> : <Icons.ArrowRight />}
                         </Button>
                     )}
                 </div>
