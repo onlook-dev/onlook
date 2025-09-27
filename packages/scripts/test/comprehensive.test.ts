@@ -27,20 +27,26 @@ describe('comprehensive functionality tests', () => {
             const mockKeys = {
                 anonKey: 'test_anon_key_placeholder_string_123',
                 serviceRoleKey: 'test_service_key_placeholder_string_456',
+                publishableKey: 'test_publishable_key_placeholder_string_789',
+                secretKey: 'test_secret_key_placeholder_string_012',
             };
 
             // We need to test the actual function, but it's not exported
             // Let's create a similar test with the expected output format
             const expectedContent = `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
 NEXT_PUBLIC_SUPABASE_ANON_KEY=${mockKeys.anonKey}
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${mockKeys.publishableKey}
+SUPABASE_SERVICE_ROLE_KEY=${mockKeys.serviceRoleKey}
 SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
 
             // Verify the expected format matches our requirements
             const lines = expectedContent.split('\n');
-            expect(lines).toHaveLength(3);
+            expect(lines).toHaveLength(5);
             expect(lines[0]).toBe('NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321');
             expect(lines[1]).toBe(`NEXT_PUBLIC_SUPABASE_ANON_KEY=${mockKeys.anonKey}`);
-            expect(lines[2]).toBe(
+            expect(lines[2]).toBe(`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${mockKeys.publishableKey}`);
+            expect(lines[3]).toBe(`SUPABASE_SERVICE_ROLE_KEY=${mockKeys.serviceRoleKey}`);
+            expect(lines[4]).toBe(
                 'SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres',
             );
 
@@ -53,21 +59,25 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
             const mockKeys = {
                 anonKey: 'test_anon_key_placeholder_string_123',
                 serviceRoleKey: 'test_service_key_placeholder_string_456',
+                publishableKey: 'test_publishable_key_placeholder_string_789',
+                secretKey: 'test_secret_key_placeholder_string_012',
             };
 
             const dbContent = getDbEnvContent(mockKeys);
             const expectedContent = `SUPABASE_URL=http://127.0.0.1:54321
 SUPABASE_SERVICE_ROLE_KEY=${mockKeys.serviceRoleKey}
+SUPABASE_SECRET_KEY=${mockKeys.secretKey}
 SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
 
             expect(dbContent).toBe(expectedContent);
 
             // Verify structure
             const lines = dbContent.split('\n');
-            expect(lines).toHaveLength(3);
+            expect(lines).toHaveLength(4);
             expect(lines[0]).toBe('SUPABASE_URL=http://127.0.0.1:54321');
             expect(lines[1]).toBe(`SUPABASE_SERVICE_ROLE_KEY=${mockKeys.serviceRoleKey}`);
-            expect(lines[2]).toBe(
+            expect(lines[2]).toBe(`SUPABASE_SECRET_KEY=${mockKeys.secretKey}`);
+            expect(lines[3]).toBe(
                 'SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres',
             );
 
@@ -80,15 +90,19 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
             const emptyKeys = {
                 anonKey: '',
                 serviceRoleKey: '',
+                publishableKey: '',
+                secretKey: '',
             };
 
             const dbContent = getDbEnvContent(emptyKeys);
             const expectedContent = `SUPABASE_URL=http://127.0.0.1:54321
 SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_SECRET_KEY=
 SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
 
             expect(dbContent).toBe(expectedContent);
             expect(dbContent).toContain('SUPABASE_SERVICE_ROLE_KEY=');
+            expect(dbContent).toContain('SUPABASE_SECRET_KEY=');
         });
     });
 
@@ -487,6 +501,8 @@ MAX_UPLOAD_SIZE=52428800`;
             const mockKeys = {
                 anonKey: 'test_anon_key_placeholder_string_abc',
                 serviceRoleKey: 'test_service_key_placeholder_string_def',
+                publishableKey: 'test_publishable_key_placeholder_string_ghi',
+                secretKey: 'test_secret_key_placeholder_string_jkl',
             };
 
             // Test the actual function with actual config
@@ -494,13 +510,15 @@ MAX_UPLOAD_SIZE=52428800`;
 
             const expectedContent = `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
 NEXT_PUBLIC_SUPABASE_ANON_KEY=${mockKeys.anonKey}
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${mockKeys.publishableKey}
+SUPABASE_SERVICE_ROLE_KEY=${mockKeys.serviceRoleKey}
 SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
 
             expect(clientContent).toBe(expectedContent);
 
             // Verify clean output
             expect(clientContent).not.toContain('#');
-            expect(clientContent.split('\n')).toHaveLength(3);
+            expect(clientContent.split('\n')).toHaveLength(5);
             expect(clientContent).not.toMatch(/\n\s*\n/);
         });
 
@@ -765,14 +783,16 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
 
         it('should handle backend key generation with invalid or missing keys', () => {
             const invalidKeyScenarios = [
-                { anonKey: '', serviceRoleKey: 'valid_service_key' }, // Empty anon key
-                { anonKey: 'valid_anon_key', serviceRoleKey: '' }, // Empty service key
-                { anonKey: '', serviceRoleKey: '' }, // Both empty
-                { anonKey: 'invalid_key', serviceRoleKey: 'also_invalid' }, // Both invalid format
-                { anonKey: 'ey', serviceRoleKey: 'ey' }, // Both too short
+                { anonKey: '', serviceRoleKey: 'valid_service_key', publishableKey: '', secretKey: '' }, // Empty anon key
+                { anonKey: 'valid_anon_key', serviceRoleKey: '', publishableKey: '', secretKey: '' }, // Empty service key
+                { anonKey: '', serviceRoleKey: '', publishableKey: '', secretKey: '' }, // All empty
+                { anonKey: 'invalid_key', serviceRoleKey: 'also_invalid', publishableKey: 'invalid_pub', secretKey: 'invalid_sec' }, // All invalid format
+                { anonKey: 'ey', serviceRoleKey: 'ey', publishableKey: 'ey', secretKey: 'ey' }, // All too short
                 {
                     anonKey: 'test_very_long_anon_key_placeholder_' + 'x'.repeat(100),
                     serviceRoleKey: 'test_very_long_service_key_placeholder_' + 'y'.repeat(100),
+                    publishableKey: 'test_very_long_publishable_key_placeholder_' + 'z'.repeat(100),
+                    secretKey: 'test_very_long_secret_key_placeholder_' + 'w'.repeat(100),
                 }, // Very long keys
             ];
 
@@ -787,6 +807,7 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
                 const dbContent = getDbEnvContent(scenario);
                 expect(dbContent).toContain('SUPABASE_URL=http://127.0.0.1:54321');
                 expect(dbContent).toContain(`SUPABASE_SERVICE_ROLE_KEY=${scenario.serviceRoleKey}`);
+                expect(dbContent).toContain(`SUPABASE_SECRET_KEY=${scenario.secretKey}`);
                 expect(dbContent).toContain(
                     'SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres',
                 );
