@@ -83,56 +83,11 @@ export abstract class BaseSubAgentTool<
                 onToolCall(this.agentType, onlookChat.addToolResult.bind(onlookChat))(toolCall);
             },
             onFinish: (options) => {
-                const { message, messages } = options;
-                console.log("OnlookChat - Finish:", options);
-                console.log("OnlookChat - Message parts:", JSON.stringify(message.parts, null, 2));
-
-                // Update our internal messages with the final state
-                this.messages = messages as ChatMessage[];
-
-                // Check if this message has any tool calls that are not yet completed
-                const toolCallParts = message.parts.filter(part => part.type.startsWith('tool-'));
-                console.log("OnlookChat - Tool call parts:", toolCallParts.map(p => ({ type: p.type, state: (p as any).state })));
-
-                // Check if there are any text parts that are still streaming (not "done")
-                const hasStreamingText = message.parts.some(part =>
-                    part.type === 'text' && (part as any).state && (part as any).state !== 'done'
-                );
-
-                // Check if there are any tool calls that are incomplete
-                const hasIncompleteToolCalls = message.role === 'assistant' &&
-                    toolCallParts.some(part => {
-                        const state = (part as any).state;
-                        // A tool call is incomplete if it's in 'call' state or doesn't have output available
-                        return part.type === 'tool-call' || (state && state !== 'output-available' && state !== 'output-error');
-                    });
-
-                const isIncomplete = hasStreamingText || hasIncompleteToolCalls;
-
-                console.log("OnlookChat - Has streaming text:", hasStreamingText);
-                console.log("OnlookChat - Has incomplete tool calls:", hasIncompleteToolCalls);
-                console.log("OnlookChat - Is incomplete:", isIncomplete, onlookChat.status);
-
-                // Check if this looks like a complete conversation by looking at the message structure
-                // A complete conversation should have:
-                // 1. No incomplete tool calls
-                // 2. No streaming text
-                // 3. The last part should be either completed text or completed tool output
-                const lastPart = message.parts[message.parts.length - 1];
-                const lastPartComplete = lastPart &&
-                    (lastPart.type === 'text' && (lastPart as any).state === 'done');
-
-                console.log("OnlookChat - Last part:", { type: lastPart?.type, state: (lastPart as any)?.state });
-                console.log("OnlookChat - Last part complete:", lastPartComplete);
-
-                if (!isIncomplete && lastPartComplete) {
-                    // This is the final assistant message with no pending tool calls or streaming text
-                    console.log("OnlookChat - Resolving with final message", onlookChat.status);
-                    promiseResolve(message as ChatMessage);
-                } else {
-                    console.log("OnlookChat - Message is incomplete, waiting for completion", onlookChat.status);
+                const { message } = options;
+                const finishReason = message.metadata?.finishReason;
+                if (finishReason && finishReason !== 'tool-calls') {
+                    promiseResolve(message);
                 }
-                // If there are pending tool calls, don't resolve yet - let sendAutomaticallyWhen handle it
             },
             onError: (error) => {
                 console.error("OnlookChat - Error during streaming:", error);

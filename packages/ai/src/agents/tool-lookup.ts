@@ -55,5 +55,5 @@ export const rootTools = [...readOnlyRootTools, ...editOnlyRootTools];
 
 export const userTools = [
     ListBranchesTool,
-    // ListFilesTool,
+    ListFilesTool,
 ]
