@@ -21,10 +21,6 @@ export async function handleToolCall(agentType: AgentType, toolCall: ToolCall<st
 
             throw new Error(`Tool "${toolName}" is not available in ${currentChatMode} mode!!!!`);
         }
-
-        if (!tool) {
-            throw new Error(`Unknown tool call: ${toolName}`);
-        }
         // Parse the input to the tool parameters. Throws if invalid.
         const validatedInput = tool.parameters.parse(toolCall.input);
         const toolInstance = new tool();
