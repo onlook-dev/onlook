@@ -204,8 +204,6 @@ const checkDockerRunning = async (): Promise<void> => {
 const extractSupabaseKeys = (output: string): BackendKeys | null => {
     const anonMatch = output.match(/ANON_KEY="([^"]+)"/);
     const serviceRoleKeyMatch = output.match(/SERVICE_ROLE_KEY="([^"]+)"/);
-
-    // Extract old format keys (PUBLISHABLE_KEY, SECRET_KEY)
     const publishableKeyMatch = output.match(/PUBLISHABLE_KEY="([^"]+)"/);
     const secretKeyMatch = output.match(/SECRET_KEY="([^"]+)"/);
 
