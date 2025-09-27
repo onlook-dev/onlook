@@ -184,11 +184,11 @@ const checkDockerRunning = async (): Promise<void> => {
  * @returns Extracted keys or null if not found
  */
 const extractSupabaseKeys = (output: string): BackendKeys | null => {
-    const anonMatch = output.match(/anon key: (ey[A-Za-z0-9_-]+[^\r\n]*)/);
-    const roleMatch = output.match(/service_role key: (ey[A-Za-z0-9_-]+[^\r\n]*)/);
+    const anonMatch = output.match(/Publishable key: ([^\r\n]+)/);
+    const roleMatch = output.match(/Secret key: ([^\r\n]+)/);
 
-    const anonKey = anonMatch?.[1];
-    const serviceRoleKey = roleMatch?.[1];
+    const anonKey = anonMatch?.[1]?.trim();
+    const serviceRoleKey = roleMatch?.[1]?.trim();
 
     return anonKey && serviceRoleKey ? { anonKey, serviceRoleKey } : null;
 };
