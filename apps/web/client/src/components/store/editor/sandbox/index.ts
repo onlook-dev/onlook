@@ -1,43 +1,28 @@
 import { CodeProviderSync } from '@/services/sync-engine/sync-engine';
 import type {
     ListFilesOutputFile,
-    Provider,
-    WatchEvent
+    Provider
 } from '@onlook/code-provider';
 import {
-    EXCLUDED_SYNC_DIRECTORIES,
-    NEXT_JS_FILE_EXTENSIONS
+    EXCLUDED_SYNC_DIRECTORIES
 } from '@onlook/constants';
 import { FileSystem } from '@onlook/file-system';
 import { RouterType, type Branch, type SandboxFile } from '@onlook/models';
-import {
-    isRootLayoutFile
-} from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
-import path from 'path';
-import { env } from 'process';
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
 import { SessionManager } from './session';
 
-const isDev = env.NODE_ENV === 'development';
-
 export class SandboxManager {
     readonly session: SessionManager;
-    // readonly fileEventBus: FileEventBus = new FileEventBus();
-
-    // Add router configuration
-    private _routerConfig: { type: RouterType; basePath: string } | null = null;
-
-    // private fileWatcher: ProviderFileWatcher | null = null;
-    // private fileSync: FileSyncManager;
     private _isIndexed = false;
     private _isIndexing = false;
-    // private _discoveredFiles: string[] = [];
-    private providerReactionDisposer?: () => void;
 
+    private providerReactionDisposer?: () => void;
     private fs: FileSystem | null = null;
     private sync: CodeProviderSync | null = null;
+
+    // private _routerConfig: { type: RouterType; basePath: string } | null = null;
 
     constructor(
         private branch: Branch,
@@ -48,7 +33,6 @@ export class SandboxManager {
             this.branch,
             this.errorManager
         );
-        // this.fileSync = new FileSyncManager(this.branch.projectId, this.branch.id);
         makeAutoObservable(this);
     }
 
@@ -56,20 +40,14 @@ export class SandboxManager {
         this.providerReactionDisposer = reaction(
             () => this.session.provider,
             (provider) => {
-                // this._isIndexed = false;
-                // if (provider) {
-                //     this.index();
-                // }
-
                 if (provider) {
-                    this.initializeFS(provider);
+                    this.initializeSyncEngine(provider);
                 }
             },
         );
-        // await this.fileSync.init();
     }
 
-    async initializeFS(provider: Provider) {
+    async initializeSyncEngine(provider: Provider) {
         if (this.sync) {
             this.sync?.stop();
             this.sync = null;
@@ -77,12 +55,11 @@ export class SandboxManager {
         this.fs = new FileSystem(`/${this.editorEngine.projectId}/${this.branch.id}`);
         await this.fs.initialize();
         this.sync = new CodeProviderSync(provider, this.fs, {
-            // TODO: add config
+            // TODO: add missing configs
             exclude: EXCLUDED_SYNC_DIRECTORIES,
         });
         await this.sync.start();
     }
-
 
     get isIndexed() {
         return this._isIndexed;
@@ -93,7 +70,8 @@ export class SandboxManager {
     }
 
     get routerConfig(): { type: RouterType; basePath: string } | null {
-        return this._routerConfig;
+        return null;
+        // return this._routerConfig;
     }
 
     get errors() {
@@ -214,7 +192,6 @@ export class SandboxManager {
         //         console.warn(`Error reading directory ${currentDir}:`, error);
         //     }
         // }
-
         // return allPaths;
     }
 
@@ -248,7 +225,6 @@ export class SandboxManager {
         //     console.error('No provider found for remote write');
         //     return false;
         // }
-
         // try {
         //     const res = await this.session.provider.writeFile({
         //         args: {
@@ -319,14 +295,6 @@ export class SandboxManager {
         // this.editorEngine.screenshot.captureScreenshot();
 
         // return true;
-    }
-
-    isJsxFile(filePath: string): boolean {
-        const extension = path.extname(filePath);
-        if (!extension || !NEXT_JS_FILE_EXTENSIONS.includes(extension)) {
-            return false;
-        }
-        return true;
     }
 
     async writeBinaryFile(path: string, content: Buffer | Uint8Array): Promise<boolean> {
@@ -435,200 +403,6 @@ export class SandboxManager {
             return null;
         }
     }
-
-    async watchFiles() {
-        // if (!this.session.provider) {
-        //     console.error('No provider found for watch files');
-        //     return;
-        // }
-
-        // // Dispose of existing watcher if it exists
-        // if (this.fileWatcher) {
-        //     // Stop previous watcher before starting a new one
-        //     await this.fileWatcher.stop();
-        //     this.fileWatcher = null;
-        // }
-
-        // // Convert ignored directories to glob patterns with ** wildcard
-        // const excludePatterns = EXCLUDED_SYNC_DIRECTORIES.map((dir) => `${dir}/**`);
-
-        // const res = await this.session.provider.watchFiles({
-        //     args: {
-        //         path: './',
-        //         recursive: true,
-        //         excludes: excludePatterns,
-        //     },
-        //     onFileChange: async (event) => {
-        //         this.fileEventBus.publish({
-        //             type: event.type,
-        //             paths: event.paths,
-        //             timestamp: Date.now(),
-        //         });
-        //         await this.handleFileChange(event);
-        //     },
-        // });
-
-        // this.fileWatcher = res.watcher;
-    }
-
-    async handleFileChange(event: WatchEvent) {
-        // const eventType = event.type;
-
-        // if (eventType === 'remove') {
-        //     for (const path of event.paths) {
-        //         if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
-        //             continue;
-        //         }
-        //         const normalizedPath = normalizePath(path);
-
-        //         const isDirectory = this.fileSync.hasDirectory(normalizedPath);
-
-        //         if (isDirectory) {
-        //             this.fileSync.deleteDir(normalizedPath);
-        //             this.fileEventBus.publish({
-        //                 type: eventType,
-        //                 paths: [normalizedPath],
-        //                 timestamp: Date.now(),
-        //             });
-        //             continue;
-        //         }
-
-        //         await this.fileSync.delete(normalizedPath);
-
-        //         this.fileEventBus.publish({
-        //             type: eventType,
-        //             paths: [normalizedPath],
-        //             timestamp: Date.now(),
-        //         });
-        //     }
-        //     if (isDev && event.paths.some((path) => path.includes(PRELOAD_SCRIPT_SRC))) {
-        //         await this.editorEngine.preloadScript.ensurePreloadScriptFile();
-        //     }
-        // } else if (eventType === 'change' || eventType === 'add') {
-        //     const provider = this.session.provider;
-        //     if (!provider) {
-        //         console.error('No provider found for handle file change');
-        //         return;
-        //     }
-
-        //     if (event.paths.length === 2) {
-        //         await this.handleFileRenameEvent(event, provider);
-        //     }
-
-        //     for (const path of event.paths) {
-        //         if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
-        //             continue;
-        //         }
-        //         const stat = await provider.statFile({
-        //             args: {
-        //                 path,
-        //             },
-        //         });
-
-        //         if (stat?.type === 'directory') {
-        //             const normalizedPath = normalizePath(path);
-        //             this.fileSync.updateDirectoryCache(normalizedPath);
-        //             continue;
-        //         }
-
-        //         const normalizedPath = normalizePath(path);
-        //         await this.handleFileChangedEvent(normalizedPath);
-        //         this.fileEventBus.publish({
-        //             type: eventType,
-        //             paths: [normalizedPath],
-        //             timestamp: Date.now(),
-        //         });
-        //     }
-        // }
-    }
-
-    async handleFileRenameEvent(event: WatchEvent, provider: Provider) {
-        // // This mean rename a file or a folder, move a file or a folder
-        // const [oldPath, newPath] = event.paths;
-
-        // if (!oldPath || !newPath) {
-        //     console.error('Invalid rename event', event);
-        //     return;
-        // }
-
-        // const oldNormalizedPath = normalizePath(oldPath);
-        // const newNormalizedPath = normalizePath(newPath);
-
-        // const stat = await provider.statFile({
-        //     args: {
-        //         path: newPath,
-        //     },
-        // });
-
-        // if (stat.type === 'directory') {
-        //     await this.fileSync.renameDir(oldNormalizedPath, newNormalizedPath);
-        // } else {
-        //     await this.fileSync.rename(oldNormalizedPath, newNormalizedPath);
-        // }
-
-        // this.fileEventBus.publish({
-        //     type: 'rename',
-        //     paths: [oldPath, newPath],
-        //     timestamp: Date.now(),
-        // });
-        // return;
-    }
-
-    async handleFileChangedEvent(normalizedPath: string) {
-        // const cachedFile = this.fileSync.readCache(normalizedPath);
-
-        // // Always read the remote file and update the cache, regardless of file type
-        // const remoteFile = await this.readRemoteFile(normalizedPath);
-        // if (!remoteFile) {
-        //     console.error(`File content for ${normalizedPath} not found in remote`);
-        //     return;
-        // }
-
-        // // Always update the cache with the fresh remote file content
-        // this.fileSync.updateCache(remoteFile);
-
-        // // For text files, also process for mapping if content has changed
-        // if (remoteFile.type === 'text' && this.isJsxFile(normalizedPath)) {
-        //     if (remoteFile.content !== cachedFile?.content) {
-        //         await this.processFileForMapping(remoteFile);
-        //     }
-        // }
-    }
-
-    async processFileForMapping(file: SandboxFile) {
-        try {
-            if (file.type === 'binary' || !this.isJsxFile(file.path)) {
-                return;
-            }
-
-            // If this is a layout file, ensure the preload script file exists
-            if (isRootLayoutFile(file.path, this.routerConfig?.type)) {
-                try {
-                    await this.editorEngine.preloadScript.ensurePreloadScriptFile();
-                } catch (error) {
-                    console.warn(
-                        `[SandboxManager] Failed to ensure preload script file for layout ${file.path}:`,
-                        error,
-                    );
-                    // Continue processing even if preload script file check fails
-                }
-            }
-
-            const { modified, newContent } = await this.editorEngine.templateNodes.processFileForMapping(
-                this.branch.id,
-                file.path,
-                file.content,
-                this.routerConfig?.type,
-            );
-
-            if (modified && file.content !== newContent) {
-                await this.writeFile(file.path, newContent);
-            }
-        } catch (error) {
-            console.error(`Error processing file ${file.path}:`, error);
-        }
-    }
-
 
     async fileExists(path: string): Promise<boolean> {
         return false;
@@ -808,8 +582,8 @@ export class SandboxManager {
         this.session.clear();
         this._isIndexed = false;
         this._isIndexing = false;
-        this._routerConfig = null;
 
+        // this._routerConfig = null;
         // void this.fileWatcher?.stop();
         // this.fileWatcher = null;
         // this.fileSync.clear();
