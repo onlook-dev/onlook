@@ -4,7 +4,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { api } from '@/trpc/client';
 import { useChat as useAiChat } from '@ai-sdk/react';
-import { ChatType, type ChatMessage, type ChatSuggestion } from '@onlook/models';
+import { AgentType, ChatType, type ChatMessage, type ChatSuggestion } from '@onlook/models';
 import { jsonClone } from '@onlook/utility';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import { usePostHog } from 'posthog-js/react';
@@ -32,6 +32,7 @@ interface UseChatProps {
     projectId: string;
     initialMessages: ChatMessage[];
 }
+const agentType = AgentType.ROOT;
 
 export function useChat({ conversationId, projectId, initialMessages }: UseChatProps) {
     const editorEngine = useEditorEngine();
@@ -40,6 +41,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const [suggestions, setSuggestions] = useState<ChatSuggestion[]>([]);
     const [finishReason, setFinishReason] = useState<string | null>(null);
     const [isExecutingToolCall, setIsExecutingToolCall] = useState(false);
+
 
     const { addToolResult, messages, error, stop, setMessages, regenerate, status } =
         useAiChat<ChatMessage>({
@@ -51,11 +53,12 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 body: {
                     conversationId,
                     projectId,
+                    agentType,
                 },
             }),
             onToolCall: async (toolCall) => {
                 setIsExecutingToolCall(true);
-                void handleToolCall(toolCall.toolCall, editorEngine, addToolResult).then(() => {
+                void handleToolCall(agentType, toolCall.toolCall, editorEngine, addToolResult).then(() => {
                     setIsExecutingToolCall(false);
                 });
             },
@@ -89,6 +92,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                     chatType: type,
                     conversationId,
                     context,
+                    agentType,
                 },
             });
             void editorEngine.chat.conversation.generateTitle(content);
@@ -137,6 +141,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 body: {
                     chatType,
                     conversationId,
+                    agentType,
                 },
             });
 
