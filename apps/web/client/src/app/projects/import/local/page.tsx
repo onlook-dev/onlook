@@ -37,20 +37,20 @@ const Page = () => {
                 backgroundImage: `url(${backgroundUrl})`,
             }}
         >
-            <div className="flex items-center justify-between px-12 py-4">
+            <div className="flex items-center justify-between px-4 sm:px-8 lg:px-12 py-4">
                 <Link href={Routes.HOME}>
                     <Icons.OnlookTextLogo className="h-3" />
                 </Link>
                 <CancelButton />
             </div>
-            <div className="relative w-full h-full flex items-center justify-center">
-                <div className="relative z-10">
+            <div className="relative w-full h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
+                <div className="relative z-10 w-full max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl">
                     <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
                         <MotionCard
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
-                            className="w-[30rem] min-h-[12rem] overflow-hidden p-0 border border-primary/20 rounded-lg shadow-lg !bg-background"
+                            className="w-full min-h-[12rem] overflow-hidden p-0 border border-primary/20 rounded-lg shadow-lg !bg-background"
                         >
                             <motion.div ref={ref} layout="position" className="flex flex-col">
                                 <AnimatePresence
