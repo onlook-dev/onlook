@@ -116,13 +116,11 @@ export abstract class BaseSubAgentTool<
     async handle(input: TInput, editorEngine: EditorEngine, getOnToolCall: OnToolCallHandler): Promise<TOutput> {
         const message = this.createMessage(input);
 
-        let conversationId = this.conversationId;
         if (!this.conversationId) {
             const newConversation = await editorEngine.chat.conversation.upsertConversationInStorage({
                 agentType: this.agentType,
             });
             this.conversationId = newConversation.id;
-            conversationId = newConversation.id;
         }
 
         const agentResponse = await this.messageAndGetFinalResponse(message, editorEngine, getOnToolCall);
@@ -142,8 +140,8 @@ export abstract class BaseSubAgentTool<
         }
 
         return {
-            conversationId: conversationId as string,
+            conversationId: this.conversationId!,
             response,
-        } satisfies TOutput;
+        } as TOutput;
     }
 }
