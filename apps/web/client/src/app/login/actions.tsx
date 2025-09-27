@@ -38,12 +38,11 @@ export async function login(provider: SignInMethod.GITHUB | SignInMethod.GOOGLE)
 }
 
 export async function devLogin() {
-    if (process.env.NODE_ENV !== 'development') {
+    if (env.NODE_ENV !== 'development') {
         throw new Error('Dev login is only available in development mode');
     }
 
     const supabase = await createClient();
-
     const { data: { session } } = await supabase.auth.getSession();
 
     if (session) {

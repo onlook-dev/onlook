@@ -61,11 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
             await devLogin();
         } catch (error) {
-            toast.error('Error signing in with password', {
-                description: error instanceof Error ? error.message : 'Please try again.',
-            });
             console.error('Error signing in with password:', error);
-            throw new Error('Error signing in with password');
         } finally {
             setSigningInMethod(null);
         }
