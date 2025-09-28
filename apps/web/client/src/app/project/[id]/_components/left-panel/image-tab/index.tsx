@@ -1,9 +1,10 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
-import { useDirectory, useFile } from '@onlook/file-system/hooks';
+import { useDirectory, useFile, useFS } from '@onlook/file-system/hooks';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from '@onlook/ui/breadcrumb';
 import { Button } from '@onlook/ui/button';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { isImageFile } from '@onlook/utility/src/file';
@@ -87,6 +88,10 @@ export const ImagesTab = observer(() => {
     // State for active folder and search
     const [activeFolder, setActiveFolder] = useState('/public');
     const [search, setSearch] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
+    
+    // File system hook for writing files
+    const { fs } = useFS(rootDir);
 
     // Get directory entries for the root
     const { entries: rootEntries, loading, error } = useDirectory(rootDir, activeFolder);
@@ -114,6 +119,37 @@ export const ImagesTab = observer(() => {
     const handleFolderClick = (folder: any) => {
         const newPath = activeFolder === '/' ? `/${folder.name}` : `${activeFolder}/${folder.name}`;
         navigateToFolder(newPath);
+    };
+
+    // Handle file upload
+    const handleUpload = async (files: FileList) => {
+        if (!fs || !files.length) return;
+        
+        setIsUploading(true);
+        try {
+            for (const file of Array.from(files)) {
+                // Check if it's an image file
+                if (!isImageFile(file.name)) {
+                    console.warn(`Skipping non-image file: ${file.name}`);
+                    continue;
+                }
+                
+                // Read file content
+                const arrayBuffer = await file.arrayBuffer();
+                const uint8Array = new Uint8Array(arrayBuffer);
+                
+                // Create file path in active folder
+                const filePath = activeFolder === '/' ? `/${file.name}` : `${activeFolder}/${file.name}`;
+                
+                // Write file to filesystem
+                await fs.writeFile(filePath, uint8Array);
+            }
+        } catch (error) {
+            console.error('Failed to upload files:', error);
+            // You could add a toast notification here
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     // Get images in the active folder
@@ -145,22 +181,57 @@ export const ImagesTab = observer(() => {
 
     return (
         <div className="w-full h-full flex flex-col gap-3 p-3">
-            {/* Search */}
-            <div className="relative">
-                <Input
-                    placeholder="Search images..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="h-8 text-xs pr-8"
-                />
-                {search && (
-                    <button
-                        onClick={() => setSearch('')}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground-secondary hover:text-foreground-primary"
-                    >
-                        <Icons.CrossS className="w-3 h-3" />
-                    </button>
-                )}
+            {/* Search and Upload */}
+            <div className="flex gap-2">
+                <div className="relative flex-1">
+                    <Input
+                        placeholder="Search images..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="h-8 text-xs pr-8"
+                    />
+                    {search && (
+                        <button
+                            onClick={() => setSearch('')}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground-secondary hover:text-foreground-primary"
+                        >
+                            <Icons.CrossS className="w-3 h-3" />
+                        </button>
+                    )}
+                </div>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="default"
+                            size="icon"
+                            className="h-8 w-8 text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
+                            onClick={() => {
+                                // Create a file input to handle uploads
+                                const input = document.createElement('input');
+                                input.type = 'file';
+                                input.multiple = true;
+                                input.accept = 'image/*';
+                                input.onchange = (e) => {
+                                    const files = (e.target as HTMLInputElement).files;
+                                    if (files) handleUpload(files);
+                                };
+                                input.click();
+                            }}
+                            disabled={isUploading}
+                        >
+                            {isUploading ? (
+                                <Icons.Reload className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Icons.Plus className="w-4 h-4" />
+                            )}
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipPortal>
+                        <TooltipContent>
+                            <p>Upload image{isUploading ? 's...' : ''}</p>
+                        </TooltipContent>
+                    </TooltipPortal>
+                </Tooltip>
             </div>
             {/* Breadcrumb Navigation */}
             <div className="flex flex-col gap-2">
