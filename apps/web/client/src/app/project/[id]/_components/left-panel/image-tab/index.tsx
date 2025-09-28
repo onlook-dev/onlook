@@ -15,23 +15,37 @@ const ImageItem = ({ image, rootDir }: { image: any; rootDir: string }) => {
     const { content, loading } = useFile(rootDir, image.path);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     
-    // Convert binary content to data URL for display
+    // Convert content to data URL for display
     useEffect(() => {
-        if (!content || typeof content === 'string') {
+        if (!content) {
             setImageUrl(null);
             return;
         }
         
-        // Create blob from binary content
-        const blob = new Blob([content], { type: image.mimeType || 'image/*' });
+        // Handle SVG files (text content)
+        if (typeof content === 'string' && image.name.toLowerCase().endsWith('.svg')) {
+            // Create data URL for SVG
+            const svgDataUrl = `data:image/svg+xml;base64,${btoa(content)}`;
+            setImageUrl(svgDataUrl);
+            return;
+        }
+        
+        // Handle other text files (shouldn't happen for images, but just in case)
+        if (typeof content === 'string') {
+            setImageUrl(null);
+            return;
+        }
+        
+        // Handle binary content (PNG, JPG, etc.)
+        const blob = new Blob([content as BlobPart], { type: image.mimeType || 'image/*' });
         const url = URL.createObjectURL(blob);
         setImageUrl(url);
         
-        // Clean up function to revoke object URL
+        // Clean up function to revoke object URL (only for blob URLs)
         return () => {
             URL.revokeObjectURL(url);
         };
-    }, [content, image.mimeType]);
+    }, [content, image.mimeType, image.name]);
     
     if (loading) {
         return (
