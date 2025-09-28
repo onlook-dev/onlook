@@ -2,6 +2,7 @@ import type { Branch } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { PostHog } from 'posthog-js';
 import { ActionManager } from './action';
+import { ApiManager } from './api';
 import { AstManager } from './ast';
 import { BranchManager } from './branch';
 import { CanvasManager } from './canvas';
@@ -13,7 +14,6 @@ import { FontManager } from './font';
 import { FrameEventManager } from './frame-events';
 import { FramesManager } from './frames';
 import { GroupManager } from './group';
-import { IDEManager } from './ide';
 import { ImageManager } from './image';
 import { InsertManager } from './insert';
 import { MoveManager } from './move';
@@ -29,7 +29,6 @@ import { TemplateNodeManager } from './template-nodes';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { VersionsManager } from './version';
-import { ApiManager } from './api';
 
 export class EditorEngine {
     readonly projectId: string;
@@ -57,7 +56,6 @@ export class EditorEngine {
     readonly action: ActionManager = new ActionManager(this);
     readonly style: StyleManager = new StyleManager(this);
     readonly code: CodeManager = new CodeManager(this);
-    readonly ide: IDEManager = new IDEManager(this);
     readonly versions: VersionsManager = new VersionsManager(this);
     readonly chat: ChatManager = new ChatManager(this);
     readonly image: ImageManager = new ImageManager(this);
@@ -113,7 +111,6 @@ export class EditorEngine {
         this.pages.clear();
         this.chat.clear();
         this.code.clear();
-        this.ide.clear();
         this.branches.clear();
         this.frameEvent.clear();
         this.screenshot.clear();

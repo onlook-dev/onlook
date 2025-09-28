@@ -1,12 +1,9 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { CodeRange } from '@/components/store/editor/ide';
 import { hashContent } from '@/services/sync-engine/sync-engine';
 import { EditorView } from '@codemirror/view';
 import { useDirectory, useFile, useFS } from '@onlook/file-system/hooks';
-import { EditorSelection } from '@uiw/react-codemirror';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CodeEditorArea } from './file-content';
-import { createSearchHighlight, scrollToFirstMatch } from './file-content/code-mirror-config';
 import { FileTabs } from './file-tabs';
 import type { BinaryEditorFile, EditorFile, TextEditorFile } from './shared/types';
 import { isDirty } from './shared/utils';
@@ -39,6 +36,7 @@ const createEditorFile = async (filePath: string, content: string | Uint8Array):
 export const CodeTab = () => {
     const editorEngine = useEditorEngine();
     const rootDir = `/${editorEngine.projectId}/${editorEngine.branches.activeBranch.id}`;
+    const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
 
     const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
     const [activeEditorFile, setActiveEditorFile] = useState<EditorFile | null>(null);
@@ -106,6 +104,17 @@ export const CodeTab = () => {
         processFile();
     }, [loadedContent]);
 
+    useEffect(() => {
+        // TODO: Create highlight range based on selected element
+    }, [editorEngine.elements.selected]);
+
+    const handleFileTreeSelect = (filePath: string, searchTerm?: string) => {
+        setSelectedFilePath(filePath);
+        if (searchTerm) {
+            //    TODO: Reimplement search term handling
+        }
+    };
+
     const handleSaveFile = async () => {
         if (!fs || !selectedFilePath || !activeEditorFile) return;
         try {
@@ -128,182 +137,6 @@ export const CodeTab = () => {
             alert(`Failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     };
-
-    // OLD SHIT_____________________________________________________
-    const ide = editorEngine.ide;
-    const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
-
-    // Helper function to check if sandbox is connected and ready
-
-    const getActiveEditorView = (): EditorView | undefined => {
-        if (!ide.activeFile) {
-            return undefined;
-        }
-        return editorViewsRef.current.get(ide.activeFile.id);
-    };
-
-    useEffect(() => {
-        const checkSelectedElement = async () => {
-            const selectedElements = editorEngine.elements.selected;
-            if (selectedElements.length === 0) {
-                return;
-            }
-
-            const element = selectedElements[0];
-            ide.isLoading = true;
-
-            try {
-                const filePath = await getFilePathFromOid(element?.oid || '');
-
-                if (filePath) {
-                    // Update local selected file state which will trigger IDE sync
-                    setSelectedFilePath(filePath);
-
-                    // Wait a bit for the file to load in IDE, then get range
-                    setTimeout(async () => {
-                        const range = await getElementCodeRange(element);
-                        if (range) {
-                            ide.setHighlightRange(range);
-                        }
-                    }, 100);
-                }
-            } catch (error) {
-                console.error('Error loading file for selected element:', error);
-            } finally {
-                ide.isLoading = false;
-            }
-        };
-
-        checkSelectedElement();
-    }, [editorEngine.elements.selected]);
-
-    async function getElementCodeRange(element: any): Promise<CodeRange | null> {
-        if (!ide.activeFile || !element.oid) {
-            return null;
-        }
-
-        try {
-            const templateNode = editorEngine.templateNodes.getTemplateNode(element.oid);
-            if (templateNode?.startTag) {
-                return {
-                    startLineNumber: templateNode.startTag.start.line,
-                    startColumn: templateNode.startTag.start.column,
-                    endLineNumber: templateNode.endTag?.end.line || templateNode.startTag.end.line,
-                    endColumn: templateNode.endTag?.end.column || templateNode.startTag.end.column,
-                };
-            }
-        } catch (error) {
-            console.error('Error getting element code range:', error);
-        }
-        return null;
-    }
-
-    useEffect(() => {
-        if (!ide.activeFile || !ide.highlightRange) {
-            return;
-        }
-
-        const editorView = getActiveEditorView();
-        if (!editorView) {
-            return;
-        }
-
-        try {
-            // Calculate positions for scrolling
-            const lines = ide.activeFile!.content.split('\n');
-
-            // Safety check - validate line numbers are within bounds
-            if (
-                ide.highlightRange.startLineNumber > lines.length ||
-                ide.highlightRange.endLineNumber > lines.length ||
-                ide.highlightRange.startLineNumber < 1 ||
-                ide.highlightRange.endLineNumber < 1
-            ) {
-                console.warn('Highlight range out of bounds, clearing selection');
-                ide.setHighlightRange(null);
-                return;
-            }
-
-            // Calculate start position
-            let startPos = 0;
-            for (let i = 0; i < ide.highlightRange.startLineNumber - 1; i++) {
-                startPos += (lines[i]?.length || 0) + 1; // +1 for newline
-            }
-            startPos += ide.highlightRange.startColumn;
-
-            // Calculate end position
-            let endPos = 0;
-            for (let i = 0; i < ide.highlightRange.endLineNumber - 1; i++) {
-                endPos += (lines[i]?.length || 0) + 1; // +1 for newline
-            }
-            endPos += ide.highlightRange.endColumn;
-
-            if (
-                startPos >= ide.activeFile!.content.length ||
-                endPos > ide.activeFile!.content.length ||
-                startPos < 0 ||
-                endPos < 0
-            ) {
-                console.warn('Highlight position out of bounds, clearing selection');
-                ide.setHighlightRange(null);
-                return;
-            }
-
-            // Create the selection and apply it in a single transaction
-            const selection = EditorSelection.create([EditorSelection.range(startPos, endPos)]);
-
-            editorView.dispatch({
-                selection,
-                effects: [
-                    EditorView.scrollIntoView(startPos, {
-                        y: 'start',
-                        yMargin: 48
-                    })
-                ],
-                userEvent: 'select.element'
-            });
-
-            // Force the editor to focus
-            editorView.focus();
-        } catch (error) {
-            console.error('Error applying highlight:', error);
-            ide.setHighlightRange(null);
-        }
-    }, [ide.highlightRange, ide.activeFile]);
-
-    useEffect(() => {
-        if (!ide.activeFile || !ide.searchTerm) {
-            return;
-        }
-
-        const editorView = getActiveEditorView();
-        if (!editorView) {
-            return;
-        }
-
-        try {
-            editorView.dispatch({
-                effects: createSearchHighlight(ide.searchTerm)
-            });
-
-            setTimeout(() => {
-                scrollToFirstMatch(editorView, ide.searchTerm);
-            }, 100);
-        } catch (error) {
-            console.error('Error applying search highlight:', error);
-        }
-    }, [ide.searchTerm, ide.activeFile]);
-
-    const handleFileTreeSelect = (filePath: string, searchTerm?: string) => {
-        setSelectedFilePath(filePath);
-        if (searchTerm) {
-            //    TODO: Reimplement search term handling
-        }
-    };
-
-    async function getFilePathFromOid(oid: string): Promise<string | null> {
-        return ide.getFilePathFromOid(oid);
-    }
 
     const closeLocalFile = useCallback((filePath: string) => {
         const fileToClose = openedEditorFiles.find(f => f.path === filePath);
@@ -409,8 +242,6 @@ export const CodeTab = () => {
                     <FileTabs
                         openedFiles={openedEditorFiles}
                         activeFile={activeEditorFile}
-                        isFilesVisible={ide.isFilesVisible}
-                        onToggleFilesVisible={() => ide.isFilesVisible = !ide.isFilesVisible}
                         onFileSelect={handleLocalFileTabSelect}
                         onCloseFile={closeLocalFile}
                         onCloseAllFiles={closeAllLocalFiles}

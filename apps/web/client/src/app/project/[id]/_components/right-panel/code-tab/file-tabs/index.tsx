@@ -9,15 +9,13 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { EditorFile } from '../shared/types';
 import { FileTab } from './file-tab';
 
 interface FileTabsProps {
     openedFiles: EditorFile[];
     activeFile: EditorFile | null;
-    isFilesVisible: boolean;
-    onToggleFilesVisible: () => void;
     onFileSelect: (file: EditorFile) => void;
     onCloseFile: (fileId: string) => void;
     onCloseAllFiles: () => void;
@@ -26,13 +24,12 @@ interface FileTabsProps {
 export const FileTabs = ({
     openedFiles,
     activeFile,
-    isFilesVisible,
-    onToggleFilesVisible,
     onFileSelect,
     onCloseFile,
     onCloseAllFiles,
 }: FileTabsProps) => {
     const ref = useRef<HTMLDivElement>(null);
+    const [isFilesVisible, setIsFilesVisible] = useState(true);
 
     // Scroll to active tab when it changes
     useEffect(() => {
@@ -66,7 +63,7 @@ export const FileTabs = ({
                         <Button
                             variant="ghost"
                             size="icon"
-                            onClick={onToggleFilesVisible}
+                            onClick={() => setIsFilesVisible(!isFilesVisible)}
                             className="text-muted-foreground hover:text-foreground"
                         >
                             {isFilesVisible ? <Icons.SidebarLeftCollapse /> : <Icons.SidebarLeftExpand />}
