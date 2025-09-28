@@ -16,7 +16,6 @@ export const ImagesTab = observer(() => {
     // File system hooks
     const { fs, isInitializing, error: fsError } = useFS(rootDir);
     const { entries: allEntries, loading: entriesLoading, error: entriesError } = useDirectory(rootDir, imagesPath);
-    console.log('allEntries', allEntries);
     const [isReady, setIsReady] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -63,14 +62,8 @@ export const ImagesTab = observer(() => {
             // Get all images from the active path (imagesPath = '/public')
             const imagesInActiveFolder = imageFiles.filter(file => {
                 // For the active folder (/public), match files like /public/image.png
-                return file.path.startsWith(imagesPath + '/') && 
-                       file.path.indexOf('/', imagesPath.length + 1) === -1; // Direct children only
-            });
-
-            console.log('getImagesInFolder (simplified):', {
-                imagesPath,
-                allImageFiles: imageFiles,
-                filteredImages: imagesInActiveFolder
+                return file.path.startsWith(imagesPath + '/') &&
+                    file.path.indexOf('/', imagesPath.length + 1) === -1; // Direct children only
             });
 
             // Convert FileEntry to ImageContentData format

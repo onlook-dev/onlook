@@ -57,7 +57,12 @@ export const ImageItem = ({ image }: { image: ImageContentData }) => {
                 )}
             >
                 <img
-                    className="w-full h-full object-cover rounded-lg"
+                    className={cn(
+                        "w-full h-full rounded-lg",
+                        image.mimeType === 'image/svg+xml' 
+                            ? "object-contain p-2" 
+                            : "object-cover"
+                    )}
                     src={`data:${image.mimeType};base64,${image.content}`}
                     alt={image.fileName}
                     loading="lazy"

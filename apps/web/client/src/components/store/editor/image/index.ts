@@ -232,19 +232,30 @@ export class ImageManager {
                 return null;
             }
 
-            // Read the binary file using the sandbox
-            const file = await this.editorEngine.activeSandbox.readFile(imagePath);
-            if (!file || file.type === 'text' || !file.content) {
-                console.warn(`Failed to read binary data for ${imagePath}`);
-                return null;
-            }
-
             // Determine MIME type based on file extension
             const mimeType = getMimeType(imagePath);
 
-            // Convert binary data to base64
-            const base64Data = convertToBase64(file.content);
-            const content = `data:${mimeType};base64,${base64Data}`;
+            // Read the file using the sandbox
+            const file = await this.editorEngine.activeSandbox.readFile(imagePath);
+            if (!file || !file.content) {
+                console.warn(`Failed to read data for ${imagePath}`);
+                return null;
+            }
+
+            let content: string;
+
+            // Handle SVG files more efficiently by reading as text if available
+            if (mimeType === 'image/svg+xml' && file.type === 'text' && typeof file.content === 'string') {
+                // For SVG files read as text, create a data URL directly
+                content = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(file.content)}`;
+            } else if (file.type === 'binary' && file.content instanceof Uint8Array) {
+                // For binary files, convert to base64
+                const base64Data = convertToBase64(file.content);
+                content = `data:${mimeType};base64,${base64Data}`;
+            } else {
+                console.warn(`Unexpected file type or content format for ${imagePath}`);
+                return null;
+            }
 
             return {
                 originPath: imagePath,

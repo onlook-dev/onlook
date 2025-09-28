@@ -24,8 +24,6 @@ const Folder = ({ handlers }: FolderProps) => {
     // Get all images from the active path
     const allImages = handlers.getImagesInFolder();
     
-    console.log('Folder component - all images:', allImages);
-    
     // Filter images based on search
     const filteredImages = useMemo(() => {
         if (!search.trim()) return allImages;
