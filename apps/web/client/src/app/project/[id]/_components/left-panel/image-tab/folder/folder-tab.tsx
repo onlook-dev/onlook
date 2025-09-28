@@ -10,9 +10,9 @@ interface FolderTabProps {
     isDisabled: boolean;
     rootDir: FolderNode;
     handlers?: {
-        handleRenameFolder: () => void;
-        handleDeleteFolder: () => void;
-        handleMoveToFolder: () => void;
+        handleRenameFolder: (oldPath: string, newName: string) => Promise<void>;
+        handleDeleteFolder: (folderPath: string) => Promise<void>;
+        handleMoveToFolder: (sourcePath: string, targetPath: string) => Promise<void>;
     };
 }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { DefaultSettings } from '@onlook/constants';
-import { type FolderNode } from '@onlook/models';
+import { type FolderNode, type ImageContentData } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
@@ -23,17 +23,17 @@ export const rootDir: FolderNode = {
 
 interface FolderProps {
     handlers: {
-        handleCreateFolder: () => void;
-        handleRenameFolder: () => void;
-        handleDeleteFolder: () => void;
-        handleMoveToFolder: () => void;
-        handleRenameImage: () => void;
-        handleDeleteImage: () => void;
-        handleMoveImageToFolder: () => void;
-        handleUpload: () => void;
+        handleCreateFolder: (parentPath?: string) => Promise<void>;
+        handleRenameFolder: (oldPath: string, newName: string) => Promise<void>;
+        handleDeleteFolder: (folderPath: string) => Promise<void>;
+        handleMoveToFolder: (sourcePath: string, targetPath: string) => Promise<void>;
+        handleRenameImage: (oldPath: string, newName: string) => Promise<void>;
+        handleDeleteImage: (imagePath: string) => Promise<void>;
+        handleMoveImageToFolder: (imagePath: string, targetFolderPath: string) => Promise<void>;
+        handleUpload: (files: FileList) => Promise<void>;
         handleRefresh: () => void;
-        getChildFolders: () => any[];
-        getImagesInFolder: () => any[];
+        getChildFolders: (parentFolder?: FolderNode) => FolderNode[];
+        getImagesInFolder: (folder?: FolderNode) => ImageContentData[];
     };
 }
 
@@ -196,7 +196,7 @@ const Folder = ({ handlers }: FolderProps) => {
                             variant={'default'}
                             size={'icon'}
                             className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
-                            onClick={handleCreateFolder}
+                            onClick={() => handleCreateFolder()}
                             disabled={isAnyOperationLoading}
                         >
                             <Icons.DirectoryPlus className="h-4 w-4" />
@@ -214,7 +214,18 @@ const Folder = ({ handlers }: FolderProps) => {
                             variant={'default'}
                             size={'icon'}
                             className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
-                            onClick={handleUpload}
+                            onClick={() => {
+                                // Create a file input to handle uploads
+                                const input = document.createElement('input');
+                                input.type = 'file';
+                                input.multiple = true;
+                                input.accept = 'image/*';
+                                input.onchange = (e) => {
+                                    const files = (e.target as HTMLInputElement).files;
+                                    if (files) handleUpload(files);
+                                };
+                                input.click();
+                            }}
                             disabled={isAnyOperationLoading}
                         >
                             <Icons.Plus className="w-4 h-4" />

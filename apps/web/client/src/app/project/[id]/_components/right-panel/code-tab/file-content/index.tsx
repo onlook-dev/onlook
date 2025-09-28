@@ -25,7 +25,6 @@ export const CodeEditorArea = ({
     onDiscardChanges,
     onCancelUnsaved,
 }: CodeEditorAreaProps) => {
-    console.log('activeFile', activeFile);
     const activeFileIsDirty = useMemo(() => {
         if (!activeFile) return false;
         return isDirty(activeFile);

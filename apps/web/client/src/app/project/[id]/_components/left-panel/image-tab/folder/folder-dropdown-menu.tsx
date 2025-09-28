@@ -30,9 +30,9 @@ export const FolderDropdownMenu = memo(
         alwaysVisible?: boolean;
         className?: string;
         handlers: {
-            handleRenameFolder: () => void;
-            handleDeleteFolder: () => void;
-            handleMoveToFolder: () => void;
+            handleRenameFolder: (oldPath: string, newName: string) => Promise<void>;
+            handleDeleteFolder: (folderPath: string) => Promise<void>;
+            handleMoveToFolder: (sourcePath: string, targetPath: string) => Promise<void>;
         };
     }) => {
         const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -52,7 +52,7 @@ export const FolderDropdownMenu = memo(
 
         const handleFolderSelect = useCallback(
             (targetFolder: FolderNode) => {
-                handleMoveToFolder();
+                handleMoveToFolder(folder.fullPath, targetFolder.fullPath);
             },
             [handleMoveToFolder, folder],
         );
@@ -93,7 +93,7 @@ export const FolderDropdownMenu = memo(
                             <Button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleRenameFolder();
+                                    handleRenameFolder(folder.fullPath, folder.name);
                                 }}
                                 variant={'ghost'}
                                 className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
@@ -111,7 +111,7 @@ export const FolderDropdownMenu = memo(
                                 className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleDeleteFolder();
+                                    handleDeleteFolder(folder.fullPath);
                                 }}
                                 disabled={isDisabled}
                             >

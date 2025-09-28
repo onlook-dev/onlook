@@ -11,11 +11,11 @@ interface FolderListProps {
     rootDir: FolderNode;
     showCreateButton: boolean;
     handlers: {
-        handleCreateFolder: () => void;
-        getImagesInFolder: () => any[];
-        handleRenameFolder: () => void;
-        handleDeleteFolder: () => void;
-        handleMoveToFolder: () => void;
+        handleCreateFolder: (parentPath?: string) => Promise<void>;
+        getImagesInFolder: (folder?: FolderNode) => any[];
+        handleRenameFolder: (oldPath: string, newName: string) => Promise<void>;
+        handleDeleteFolder: (folderPath: string) => Promise<void>;
+        handleMoveToFolder: (sourcePath: string, targetPath: string) => Promise<void>;
     };
 }
 
@@ -55,7 +55,7 @@ export const FolderList = memo(
                         variant="default"
                         size="icon"
                         className="p-2.5 w-full h-fit gap-2 bg-gray-800 hover:bg-gray-700 text-white font-normal"
-                        onClick={handleCreateFolder}
+                        onClick={() => handleCreateFolder()}
                         disabled={isOperating}
                     >
                         <Icons.DirectoryPlus className="h-4 w-4" />
