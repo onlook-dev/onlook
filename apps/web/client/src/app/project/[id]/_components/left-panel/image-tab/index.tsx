@@ -46,74 +46,8 @@ export const ImagesTab = observer(() => {
         return { folders, imageFiles };
     }, [allEntries, checkIsImageFile]);
 
-    // Real handlers using file system operations
+    // Simplified handlers for single active path
     const handlers = useMemo(() => ({
-        handleCreateFolder: async (parentPath?: string) => {
-            if (!fs) return;
-            // This would be implemented when folder creation UI is connected
-            console.log('Create folder in:', parentPath || imagesPath);
-        },
-
-        handleRenameFolder: async (oldPath: string, newName: string) => {
-            if (!fs) return;
-            try {
-                const parentPath = oldPath.substring(0, oldPath.lastIndexOf('/'));
-                const newPath = `${parentPath}/${newName}`;
-                await fs.moveFile(oldPath, newPath);
-            } catch (error) {
-                setError(`Failed to rename folder: ${error instanceof Error ? error.message : 'Unknown error'}`);
-            }
-        },
-
-        handleDeleteFolder: async (folderPath: string) => {
-            if (!fs) return;
-            try {
-                await fs.deleteDirectory(folderPath);
-            } catch (error) {
-                setError(`Failed to delete folder: ${error instanceof Error ? error.message : 'Unknown error'}`);
-            }
-        },
-
-        handleMoveToFolder: async (sourcePath: string, targetPath: string) => {
-            if (!fs) return;
-            try {
-                await fs.moveFile(sourcePath, targetPath);
-            } catch (error) {
-                setError(`Failed to move: ${error instanceof Error ? error.message : 'Unknown error'}`);
-            }
-        },
-
-        handleRenameImage: async (oldPath: string, newName: string) => {
-            if (!fs) return;
-            try {
-                const parentPath = oldPath.substring(0, oldPath.lastIndexOf('/'));
-                const newPath = `${parentPath}/${newName}`;
-                await fs.moveFile(oldPath, newPath);
-            } catch (error) {
-                setError(`Failed to rename image: ${error instanceof Error ? error.message : 'Unknown error'}`);
-            }
-        },
-
-        handleDeleteImage: async (imagePath: string) => {
-            if (!fs) return;
-            try {
-                await fs.deleteFile(imagePath);
-            } catch (error) {
-                setError(`Failed to delete image: ${error instanceof Error ? error.message : 'Unknown error'}`);
-            }
-        },
-
-        handleMoveImageToFolder: async (imagePath: string, targetFolderPath: string) => {
-            if (!fs) return;
-            try {
-                const fileName = imagePath.substring(imagePath.lastIndexOf('/') + 1);
-                const newPath = `${targetFolderPath}/${fileName}`;
-                await fs.moveFile(imagePath, newPath);
-            } catch (error) {
-                setError(`Failed to move image: ${error instanceof Error ? error.message : 'Unknown error'}`);
-            }
-        },
-
         handleUpload: async (files: FileList) => {
             if (!fs) return;
             // Handle file upload - would read files and write to filesystem
@@ -122,37 +56,32 @@ export const ImagesTab = observer(() => {
 
         handleRefresh: () => {
             // The useDirectory hook automatically refreshes via file watching
-            // But we could force a refresh here if needed
             setError(null);
         },
 
-        getChildFolders: (parentFolder?: FolderNode) => {
-            // Return folders filtered by parent path
-            if (!parentFolder || parentFolder.fullPath === imagesPath) {
-                return folders;
-            }
-            return folders.filter(folder =>
-                folder.fullPath.startsWith(parentFolder.fullPath + '/')
-            );
-        },
+        getImagesInFolder: () => {
+            // Get all images from the active path (imagesPath = '/public')
+            const imagesInActiveFolder = imageFiles.filter(file => {
+                // For the active folder (/public), match files like /public/image.png
+                return file.path.startsWith(imagesPath + '/') && 
+                       file.path.indexOf('/', imagesPath.length + 1) === -1; // Direct children only
+            });
 
-        getImagesInFolder: (folder?: FolderNode) => {
-            // Return images in the specified folder converted to ImageContentData
-            const folderPath = folder?.fullPath || imagesPath;
-            const imagesInFolder = imageFiles.filter(file =>
-                file.path.startsWith(folderPath + '/') &&
-                file.path.indexOf('/', folderPath.length + 1) === -1 // Direct children only
-            );
+            console.log('getImagesInFolder (simplified):', {
+                imagesPath,
+                allImageFiles: imageFiles,
+                filteredImages: imagesInActiveFolder
+            });
 
             // Convert FileEntry to ImageContentData format
-            return imagesInFolder.map(file => ({
+            return imagesInActiveFolder.map(file => ({
                 originPath: file.path,
                 content: '', // Content would be loaded when needed
                 fileName: file.name,
                 mimeType: getMimeType(file.name),
             }));
         },
-    }), [fs, folders, imageFiles, imagesPath]);
+    }), [fs, imageFiles, imagesPath]);
 
     // Use useEffect to set loading and error states to avoid infinite re-renders
     useEffect(() => {

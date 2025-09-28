@@ -1,90 +1,38 @@
 'use client';
 
-import { DefaultSettings } from '@onlook/constants';
-import { type FolderNode, type ImageContentData } from '@onlook/models';
+import { type ImageContentData } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
-import { Separator } from '@onlook/ui/separator';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import { useRef, useState } from 'react';
-import { FolderDropdownMenu } from './folder-dropdown-menu';
-import { FolderList } from './folder-list';
-
-interface FolderPathItem {
-    folder: FolderNode;
-    name: string;
-}
-
-export const rootDir: FolderNode = {
-    name: DefaultSettings.IMAGE_FOLDER,
-    fullPath: DefaultSettings.IMAGE_FOLDER,
-};
+import { useRef, useState, useMemo } from 'react';
+import { ImageList } from '../image-list';
 
 interface FolderProps {
     handlers: {
-        handleCreateFolder: (parentPath?: string) => Promise<void>;
-        handleRenameFolder: (oldPath: string, newName: string) => Promise<void>;
-        handleDeleteFolder: (folderPath: string) => Promise<void>;
-        handleMoveToFolder: (sourcePath: string, targetPath: string) => Promise<void>;
-        handleRenameImage: (oldPath: string, newName: string) => Promise<void>;
-        handleDeleteImage: (imagePath: string) => Promise<void>;
-        handleMoveImageToFolder: (imagePath: string, targetFolderPath: string) => Promise<void>;
         handleUpload: (files: FileList) => Promise<void>;
         handleRefresh: () => void;
-        getChildFolders: (parentFolder?: FolderNode) => FolderNode[];
-        getImagesInFolder: (folder?: FolderNode) => ImageContentData[];
+        getImagesInFolder: () => ImageContentData[];
     };
 }
 
 const Folder = ({ handlers }: FolderProps) => {
     const inputRef = useRef<HTMLInputElement>(null);
-    const breadcrumbsRef = useRef<HTMLDivElement>(null);
-
-    // Stub state
-    const [currentFolder, setCurrentFolder] = useState<FolderNode>(rootDir);
-    const [folderPath, setFolderPath] = useState<FolderPathItem[]>([]);
-    const [childFolders, setChildFolders] = useState<FolderNode[]>([]);
     const [search, setSearch] = useState('');
     const [isOperating] = useState(false);
-    const [isLoading] = useState(false);
 
-    // Stub images data
-    const stubImages: any[] = [];
-    const filteredImages = stubImages;
-
-    // Stub handlers
-    const handleSelectFolder = async (folder: FolderNode) => {
-        if (currentFolder) {
-            setFolderPath((prev) => [...prev, { folder: currentFolder, name: currentFolder.name }]);
-        }
-        setCurrentFolder(folder);
-    };
-
-    const handleGoBack = () => {
-        if (folderPath.length > 0) {
-            const previousFolder = folderPath[folderPath.length - 1];
-            if (previousFolder) {
-                setCurrentFolder(previousFolder.folder);
-                setFolderPath((prev) => prev.slice(0, -1));
-            }
-        } else {
-            setCurrentFolder(rootDir);
-        }
-    };
-
-    const handleBreadcrumbClick = (index: number) => {
-        if (index === -1) {
-            setCurrentFolder(rootDir);
-            setFolderPath([]);
-        } else {
-            const targetFolder = folderPath[index];
-            if (targetFolder) {
-                setCurrentFolder(targetFolder.folder);
-                setFolderPath((prev) => prev.slice(0, index));
-            }
-        }
-    };
+    // Get all images from the active path
+    const allImages = handlers.getImagesInFolder();
+    
+    console.log('Folder component - all images:', allImages);
+    
+    // Filter images based on search
+    const filteredImages = useMemo(() => {
+        if (!search.trim()) return allImages;
+        return allImages.filter(image => 
+            image.fileName.toLowerCase().includes(search.toLowerCase())
+        );
+    }, [allImages, search]);
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearch(e.target.value);
@@ -100,74 +48,11 @@ const Folder = ({ handlers }: FolderProps) => {
         }
     };
 
-    const { handleCreateFolder, handleRefresh, handleUpload, getChildFolders } = handlers;
-
-    const canGoBack = folderPath.length > 0 || currentFolder !== rootDir;
+    const { handleRefresh, handleUpload } = handlers;
     const isAnyOperationLoading = isOperating;
-    const showCreateButton = !!currentFolder && currentFolder === rootDir;
 
     return (
         <div className="flex flex-col gap-2 h-full">
-            {/* Navigation Header */}
-            {canGoBack && (
-                <>
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleGoBack}
-                            disabled={!canGoBack}
-                            className="h-8 w-8 relative z-10"
-                        >
-                            <Icons.ArrowLeft className="h-4 w-4" />
-                        </Button>
-
-                        {/* Breadcrumbs Container with Fade Gradient */}
-                        <div className="relative flex-1 min-w-0">
-                            {/* Fade Gradient Overlay */}
-                            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background-primary to-transparent z-10 pointer-events-none" />
-
-                            {/* Breadcrumbs */}
-                            <div
-                                ref={breadcrumbsRef}
-                                className="flex items-center gap-1 text-sm text-gray-200 overflow-x-auto scrollbar-hide scroll-smooth"
-                            >
-                                {folderPath.map((pathItem, index) => (
-                                    <div key={index} className="flex items-center gap-1">
-                                        <Icons.ChevronRight className="h-3 w-3 text-gray-400" />
-                                        <button
-                                            onClick={() => handleBreadcrumbClick(index)}
-                                            className="hover:text-white transition-colors whitespace-nowrap"
-                                        >
-                                            {pathItem.name}
-                                        </button>
-                                    </div>
-                                ))}
-
-                                {currentFolder && currentFolder !== rootDir && (
-                                    <div className="flex items-center gap-1">
-                                        <Icons.ChevronRight className="h-3 w-3 text-gray-400" />
-                                        <span className="font-medium text-white whitespace-nowrap">
-                                            {currentFolder.name}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {currentFolder && (
-                            <FolderDropdownMenu
-                                rootDir={rootDir}
-                                folder={currentFolder}
-                                className="bg-gray-700"
-                                alwaysVisible={true}
-                                handlers={handlers}
-                            />
-                        )}
-                    </div>
-                    <Separator />
-                </>
-            )}
             <div className="flex flex-row items-center gap-2 m-0">
                 <div className="relative min-w-0 flex-1">
                     <Input
@@ -190,24 +75,6 @@ const Folder = ({ handlers }: FolderProps) => {
                         </button>
                     )}
                 </div>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant={'default'}
-                            size={'icon'}
-                            className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
-                            onClick={() => handleCreateFolder()}
-                            disabled={isAnyOperationLoading}
-                        >
-                            <Icons.DirectoryPlus className="h-4 w-4" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipPortal>
-                        <TooltipContent>
-                            <p>Create a folder</p>
-                        </TooltipContent>
-                    </TooltipPortal>
-                </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
@@ -237,31 +104,28 @@ const Folder = ({ handlers }: FolderProps) => {
                         </TooltipContent>
                     </TooltipPortal>
                 </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant={'default'}
+                            size={'icon'}
+                            className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
+                            onClick={handleRefresh}
+                            disabled={isAnyOperationLoading}
+                        >
+                            <Icons.Reload className="w-4 h-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipPortal>
+                        <TooltipContent>
+                            <p>Refresh Images</p>
+                        </TooltipContent>
+                    </TooltipPortal>
+                </Tooltip>
             </div>
 
-            {/* Folder Content */}
-            <FolderList
-                childFolders={childFolders}
-                folder={currentFolder}
-                showCreateButton={showCreateButton}
-                onSelectFolder={handleSelectFolder}
-                rootDir={rootDir}
-                handlers={handlers}
-            />
-
             {/* Images Section */}
-            {isLoading ? (
-                <div className="flex items-center justify-center h-32 text-xs text-foreground-primary/50">
-                    <div className="flex items-center gap-2">
-                        <Icons.Reload className="w-4 h-4 animate-spin" />
-                        Loading images...
-                    </div>
-                </div>
-            ) : (
-                <div className="flex items-center justify-center h-32 text-xs text-foreground-primary/50">
-                    No images found
-                </div>
-            )}
+            <ImageList images={filteredImages} currentFolder="/public" />
         </div>
     );
 };

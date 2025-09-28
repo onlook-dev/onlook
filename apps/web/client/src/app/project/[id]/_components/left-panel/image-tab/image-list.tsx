@@ -63,35 +63,23 @@ export const ImageList = memo(({ images, currentFolder }: ImageListProps) => {
                         {error}
                     </div>
                 )}
-                {images.length === 0 && !isDragging && (
+                {images.length === 0 && (
                     <div className="h-full w-full flex items-center justify-center text-center opacity-70">
                         <Button
                             onClick={handleClickAddButton}
                             variant={'default'}
                             className="p-2.5 w-full h-fit gap-2 bg-gray-800 hover:bg-gray-700 text-white font-normal"
                         >
-                            <Icons.Plus className="w-4 h-4" />
-                            Add your first image
+                            <Icons.Plus />
+                            <span>Add an Image</span>
                         </Button>
                     </div>
                 )}
-                {isDragging && (
-                    <div className="h-full w-full flex items-center justify-center text-center">
-                        <div className="flex flex-col items-center gap-2">
-                            <Icons.Upload className="w-8 h-8 text-teal-500" />
-                            <p className="text-sm text-teal-600 dark:text-teal-400">
-                                Drop images here to upload
-                            </p>
-                        </div>
-                    </div>
-                )}
-                {images.length > 0 && !isDragging && (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 overflow-y-auto">
-                        {images.map((image) => (
-                            <ImageItem key={image.originPath} image={image} />
-                        ))}
-                    </div>
-                )}
+                <div className="w-full grid grid-cols-2 gap-3 p-0 overflow-y-auto">
+                    {images.map((image) => (
+                        <ImageItem key={image.originPath} image={image} />
+                    ))}
+                </div>
             </div>
         </div>
     );

@@ -4,6 +4,7 @@ import type { EditorFile } from '../shared/types';
 import { isDirty } from '../shared/utils';
 import { CodeEditor } from './code-editor';
 import { UnsavedChangesDialog } from './unsaved-changes-dialog';
+
 interface CodeEditorAreaProps {
     openedFiles: EditorFile[];
     activeFile: EditorFile | null;
