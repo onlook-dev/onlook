@@ -1,29 +1,31 @@
-import { useEditorEngine } from '@/components/store/editor';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 import Folder from './folder';
-import { FolderProvider } from './providers/folder-provider';
-import { ImagesProvider, useImagesContext } from './providers/images-provider';
 
-export const ImagesTab = () => {
-    return (
-        <ImagesProvider>
-            <FolderProvider>
-                <ImagesTabContent />
-            </FolderProvider>
-        </ImagesProvider>
-    );
+// Stub data at top level
+const stubFolders: any[] = [];
+const stubImages: any[] = [];
+
+// Stub handlers
+const stubHandlers = {
+    handleCreateFolder: () => {},
+    handleRenameFolder: () => {},
+    handleDeleteFolder: () => {},
+    handleMoveToFolder: () => {},
+    handleRenameImage: () => {},
+    handleDeleteImage: () => {},
+    handleMoveImageToFolder: () => {},
+    handleUpload: () => {},
+    handleRefresh: () => {},
+    getChildFolders: () => stubFolders,
+    getImagesInFolder: () => stubImages,
 };
 
-const ImagesTabContent = observer(() => {
-    const editorEngine = useEditorEngine();
-    const isIndexing = editorEngine.activeSandbox.isIndexing;
-    const {
-        renameOperations: { renameState },
-        uploadOperations,
-    } = useImagesContext();
+export const ImagesTab = () => {
+    const [isReady, setIsReady] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    if (isIndexing) {
+    if (!isReady) {
         return (
             <div className="w-full h-full flex items-center justify-center gap-2">
                 <Icons.Reload className="w-4 h-4 animate-spin" />
@@ -34,17 +36,12 @@ const ImagesTabContent = observer(() => {
 
     return (
         <div className="w-full h-full flex flex-col gap-2 p-3 overflow-x-hidden">
-            {uploadOperations.uploadState.error && (
+            {error && (
                 <div className="mb-2 px-3 py-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-md">
-                    {uploadOperations.uploadState.error}
+                    {error}
                 </div>
             )}
-            {renameState.error && (
-                <div className="mb-2 px-3 py-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-md">
-                    {renameState.error}
-                </div>
-            )}
-            <Folder />
+            <Folder handlers={stubHandlers} />
         </div>
     );
-});
+};

@@ -9,41 +9,34 @@ import {
 import { Button } from '@onlook/ui/button';
 import { Input } from '@onlook/ui/input';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { cn } from '@onlook/ui/utils';
-import { useFolderContext } from '../../providers/folder-provider';
 
-export const FolderRenameModal = observer(() => {
-    const { renameState, handleRenameInputChange, onRenameFolder, handleRenameModalToggle } =
-        useFolderContext();
-
-    const [inputValue, setInputValue] = useState(renameState.newFolderName);
-
-    useEffect(() => {
-        setInputValue(renameState.newFolderName);
-    }, [renameState.newFolderName, renameState.folderToRename]);
+export const FolderRenameModal = () => {
+    // Stub state
+    const [isOpen, setIsOpen] = useState(false);
+    const [isLoading] = useState(false);
+    const [inputValue, setInputValue] = useState('Example Folder Renamed');
+    const stubFolderToRename = { name: 'Example Folder' };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setInputValue(value);
-        handleRenameInputChange(value);
+        setInputValue(e.target.value);
     };
 
     const handleRename = async () => {
-        if (!renameState.isLoading && inputValue.trim()) {
-            await onRenameFolder();
+        if (!isLoading && inputValue.trim()) {
+            // Stub rename logic
         }
     };
 
     const handleClose = () => {
-        if (!renameState.isLoading) {
-            handleRenameModalToggle();
+        if (!isLoading) {
+            setIsOpen(false);
         }
     };
 
     const handleKeyDown = async (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && inputValue.trim() && !renameState.isLoading) {
+        if (e.key === 'Enter' && inputValue.trim() && !isLoading) {
             await handleRename();
         }
         if (e.key === 'Escape') {
@@ -52,13 +45,14 @@ export const FolderRenameModal = observer(() => {
     };
 
     return (
-        <AlertDialog open={!!renameState.folderToRename} onOpenChange={handleClose}>
+        <AlertDialog open={isOpen} onOpenChange={handleClose}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Rename Folder</AlertDialogTitle>
-                    <AlertDialogDescription>Enter a new name for the folder</AlertDialogDescription>
+                    <AlertDialogDescription>
+                        Enter a new name for &quot;{stubFolderToRename.name}&quot;.
+                    </AlertDialogDescription>
                 </AlertDialogHeader>
-
                 <div className="py-4">
                     <Input
                         value={inputValue}
@@ -66,32 +60,25 @@ export const FolderRenameModal = observer(() => {
                         onKeyDown={handleKeyDown}
                         placeholder="Folder name"
                         className={cn(
-                            renameState.error && 'border-red-500 focus-visible:ring-red-500',
+                            "w-full",
+                            isLoading && "opacity-50 cursor-not-allowed"
                         )}
-                        disabled={renameState.isLoading}
+                        disabled={isLoading}
                         autoFocus
                     />
-                    {renameState.error && (
-                        <p className="text-sm text-red-500 mt-2">{renameState.error}</p>
-                    )}
                 </div>
-
                 <AlertDialogFooter>
-                    <Button
-                        variant={'ghost'}
-                        onClick={handleClose}
-                        disabled={renameState.isLoading}
-                    >
+                    <Button variant="ghost" onClick={handleClose} disabled={isLoading}>
                         Cancel
                     </Button>
                     <Button
-                        variant={'default'}
                         onClick={handleRename}
-                        disabled={renameState.isLoading || !inputValue.trim()}
+                        disabled={isLoading || !inputValue.trim()}
+                        className="min-w-[80px]"
                     >
-                        {renameState.isLoading ? (
+                        {isLoading ? (
                             <>
-                                <Icons.Reload className="w-4 h-4 animate-spin mr-2" />
+                                <Icons.LoadingSpinner className="w-4 h-4 animate-spin mr-2" />
                                 Renaming...
                             </>
                         ) : (
@@ -102,4 +89,4 @@ export const FolderRenameModal = observer(() => {
             </AlertDialogContent>
         </AlertDialog>
     );
-});
+};

@@ -1,6 +1,5 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
 import { DefaultSettings } from '@onlook/constants';
 import { type FolderNode } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
@@ -8,22 +7,9 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { DeleteImageModal } from '../delete-modal';
-import { useFolderImages } from '../hooks/use-folder-images';
-import { useImageSearch } from '../hooks/use-image-search';
-import { ImageList } from '../image-list';
-import { MoveImageModal } from '../move-modal';
-import { useFolderContext } from '../providers/folder-provider';
-import { useImagesContext } from '../providers/images-provider';
-import { RenameImageModal } from '../rename-modal';
+import { useRef, useState } from 'react';
 import { FolderDropdownMenu } from './folder-dropdown-menu';
 import { FolderList } from './folder-list';
-import { FolderCreateModal } from './modal/folder-create-modal';
-import { FolderDeleteModal } from './modal/folder-delete-modal';
-import { FolderMoveModal } from './modal/folder-move-modal';
-import { FolderRenameModal } from './modal/folder-rename-modal';
 
 interface FolderPathItem {
     folder: FolderNode;
@@ -35,34 +21,39 @@ export const rootDir: FolderNode = {
     fullPath: DefaultSettings.IMAGE_FOLDER,
 };
 
-const Folder = observer(() => {
+interface FolderProps {
+    handlers: {
+        handleCreateFolder: () => void;
+        handleRenameFolder: () => void;
+        handleDeleteFolder: () => void;
+        handleMoveToFolder: () => void;
+        handleRenameImage: () => void;
+        handleDeleteImage: () => void;
+        handleMoveImageToFolder: () => void;
+        handleUpload: () => void;
+        handleRefresh: () => void;
+        getChildFolders: () => any[];
+        getImagesInFolder: () => any[];
+    };
+}
+
+const Folder = ({ handlers }: FolderProps) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const breadcrumbsRef = useRef<HTMLDivElement>(null);
-    const editorEngine = useEditorEngine();
 
-    const { uploadOperations, isOperating } = useImagesContext();
+    // Stub state
     const [currentFolder, setCurrentFolder] = useState<FolderNode>(rootDir);
     const [folderPath, setFolderPath] = useState<FolderPathItem[]>([]);
     const [childFolders, setChildFolders] = useState<FolderNode[]>([]);
+    const [search, setSearch] = useState('');
+    const [isOperating] = useState(false);
+    const [isLoading] = useState(false);
 
-    const folders = useMemo(
-        () => editorEngine.activeSandbox.directories.filter((dir) => dir.startsWith(rootDir.fullPath)),
-        [editorEngine.activeSandbox.directories, rootDir.fullPath],
-    );
+    // Stub images data
+    const stubImages: any[] = [];
+    const filteredImages = stubImages;
 
-    const { folderImagesState } = useFolderImages(currentFolder);
-
-    const { search, filteredImages, handleSearchClear, handleSearchChange, handleKeyDown } =
-        useImageSearch({
-            imageAssets: folderImagesState.images,
-        });
-
-    const {
-        handleCreateFolder,
-        isOperating: isFolderOperating,
-        getChildFolders,
-    } = useFolderContext();
-
+    // Stub handlers
     const handleSelectFolder = async (folder: FolderNode) => {
         if (currentFolder) {
             setFolderPath((prev) => [...prev, { folder: currentFolder, name: currentFolder.name }]);
@@ -95,34 +86,24 @@ const Folder = observer(() => {
         }
     };
 
-    const loadDirData = async (folder: FolderNode) => {
-        const childFolders = getChildFolders(folder);
-        setChildFolders(childFolders);
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearch(e.target.value);
     };
 
-    useEffect(() => {
-        if (currentFolder && folders.length > 0) {
-            loadDirData(currentFolder);
-        }
-    }, [currentFolder, folders]);
+    const handleSearchClear = () => {
+        setSearch('');
+    };
 
-    // Auto-scroll breadcrumbs to the right when folder path changes
-    useEffect(() => {
-        if (breadcrumbsRef.current) {
-            breadcrumbsRef.current.scrollLeft = breadcrumbsRef.current.scrollWidth;
-        }
-    }, [folderPath]);
-
-    const handleKeyDownWithRef = (e: React.KeyboardEvent) => {
-        handleKeyDown(e);
+    const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Escape') {
             inputRef.current?.blur();
         }
     };
 
-    const canGoBack = folderPath.length > 0 || currentFolder !== rootDir;
-    const isAnyOperationLoading = isOperating || isFolderOperating;
+    const { handleCreateFolder, handleRefresh, handleUpload, getChildFolders } = handlers;
 
+    const canGoBack = folderPath.length > 0 || currentFolder !== rootDir;
+    const isAnyOperationLoading = isOperating;
     const showCreateButton = !!currentFolder && currentFolder === rootDir;
 
     return (
@@ -180,6 +161,7 @@ const Folder = observer(() => {
                                 folder={currentFolder}
                                 className="bg-gray-700"
                                 alwaysVisible={true}
+                                handlers={handlers}
                             />
                         )}
                     </div>
@@ -194,7 +176,7 @@ const Folder = observer(() => {
                         placeholder="Search images"
                         value={search}
                         onChange={handleSearchChange}
-                        onKeyDown={handleKeyDownWithRef}
+                        onKeyDown={handleKeyDown}
                         disabled={isAnyOperationLoading}
                     />
 
@@ -214,7 +196,7 @@ const Folder = observer(() => {
                             variant={'default'}
                             size={'icon'}
                             className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
-                            onClick={() => handleCreateFolder(currentFolder)}
+                            onClick={handleCreateFolder}
                             disabled={isAnyOperationLoading}
                         >
                             <Icons.DirectoryPlus className="h-4 w-4" />
@@ -232,24 +214,7 @@ const Folder = observer(() => {
                             variant={'default'}
                             size={'icon'}
                             className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
-                            onClick={() => editorEngine.image.scanImages()}
-                        >
-                            <Icons.Reload className="w-4 h-4" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipPortal>
-                        <TooltipContent>
-                            <p>Refresh Images</p>
-                        </TooltipContent>
-                    </TooltipPortal>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant={'default'}
-                            size={'icon'}
-                            className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
-                            onClick={uploadOperations.handleClickAddButton}
+                            onClick={handleUpload}
                             disabled={isAnyOperationLoading}
                         >
                             <Icons.Plus className="w-4 h-4" />
@@ -270,10 +235,11 @@ const Folder = observer(() => {
                 showCreateButton={showCreateButton}
                 onSelectFolder={handleSelectFolder}
                 rootDir={rootDir}
+                handlers={handlers}
             />
 
             {/* Images Section */}
-            {folderImagesState.isLoading ? (
+            {isLoading ? (
                 <div className="flex items-center justify-center h-32 text-xs text-foreground-primary/50">
                     <div className="flex items-center gap-2">
                         <Icons.Reload className="w-4 h-4 animate-spin" />
@@ -281,20 +247,12 @@ const Folder = observer(() => {
                     </div>
                 </div>
             ) : (
-                <ImageList images={filteredImages} currentFolder={currentFolder.fullPath} />
+                <div className="flex items-center justify-center h-32 text-xs text-foreground-primary/50">
+                    No images found
+                </div>
             )}
-            {/* Image Operation Modals */}
-            <DeleteImageModal />
-            <RenameImageModal />
-            <MoveImageModal />
-
-            {/* Folder Operation Modals */}
-            <FolderRenameModal />
-            <FolderDeleteModal />
-            <FolderMoveModal />
-            <FolderCreateModal />
         </div>
     );
-});
+};
 
 export default Folder;

@@ -3,7 +3,6 @@ import { ScrollArea } from '@onlook/ui/scroll-area';
 import { cn } from '@onlook/ui/utils';
 import { useState } from 'react';
 import type { FolderNode } from '@onlook/models';
-import { useFolderContext } from '../providers/folder-provider';
 
 interface FolderTreeItemProps {
     folder: FolderNode;
@@ -23,8 +22,8 @@ const FolderTreeItem = ({
     asMenuContent = false,
 }: FolderTreeItemProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const { getChildFolders } = useFolderContext();
-    const children = getChildFolders(folder);
+    // Stub - no children folders
+    const children: FolderNode[] = [];
 
     const isSelected = selectedFolder?.fullPath === folder.fullPath;
 

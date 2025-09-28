@@ -8,60 +8,50 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
-import { useFolderContext } from '../../providers/folder-provider';
+import { useState } from 'react';
 
-export const FolderMoveModal = observer(() => {
-    const { moveState, handleMoveModalToggle, onMoveFolder } = useFolderContext();
+export const FolderMoveModal = () => {
+    // Stub state
+    const [isOpen, setIsOpen] = useState(false);
+    const [isLoading] = useState(false);
+    const stubFolderToMove = { name: 'Source Folder' };
+    const stubTargetFolder = { name: 'Destination Folder' };
 
     const handleMove = async () => {
-        if (!moveState.isLoading) {
-            await onMoveFolder();
+        if (!isLoading) {
+            // Stub move logic
         }
     };
 
     const handleClose = () => {
-        if (!moveState.isLoading) {
-            handleMoveModalToggle();
+        if (!isLoading) {
+            setIsOpen(false);
         }
     };
 
-    const folder = moveState.folderToMove;
-    const targetFolder = moveState.targetFolder;
-
     return (
-        <AlertDialog open={!!(moveState.folderToMove && moveState.targetFolder)} onOpenChange={handleClose}>
+        <AlertDialog open={isOpen} onOpenChange={handleClose}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Move Folder</AlertDialogTitle>
                     <AlertDialogDescription>
-                        {folder && targetFolder && (
-                            <>
-                                Are you sure you want to move &quot;{folder.name}&quot; to &quot;{targetFolder.name || 'root'}&quot; folder?
-                                <span className="block mt-2 text-sm">
-                                    This will move the folder to the selected folder location.
-                                </span>
-                            </>
-                        )}
+                        Are you sure you want to move &quot;{stubFolderToMove.name}&quot; to &quot;{stubTargetFolder.name}&quot;?
+                        <span className="block mt-2 text-sm">
+                            This will move the folder and all its contents to the selected location.
+                        </span>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <Button 
-                        variant={'ghost'} 
-                        onClick={handleClose} 
-                        disabled={moveState.isLoading}
-                    >
+                    <Button variant="ghost" onClick={handleClose} disabled={isLoading}>
                         Cancel
                     </Button>
                     <Button
-                        variant={'default'}
-                        className="rounded-md text-sm"
                         onClick={handleMove}
-                        disabled={moveState.isLoading}
+                        disabled={isLoading}
                     >
-                        {moveState.isLoading ? (
+                        {isLoading ? (
                             <>
-                                <Icons.Reload className="w-4 h-4 animate-spin mr-2" />
+                                <Icons.LoadingSpinner className="w-4 h-4 animate-spin mr-2" />
                                 Moving...
                             </>
                         ) : (
@@ -72,4 +62,4 @@ export const FolderMoveModal = observer(() => {
             </AlertDialogContent>
         </AlertDialog>
     );
-}); 
+};

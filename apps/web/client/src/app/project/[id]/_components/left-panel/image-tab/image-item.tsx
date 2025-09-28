@@ -1,191 +1,89 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { EditorTabValue, type ImageContentData, type FolderNode } from '@onlook/models';
+import { type ImageContentData } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';
-import { useCallback, useMemo } from 'react';
-import { useImageDragDrop } from './hooks/use-image-drag-drop';
+import { useState } from 'react';
 import { ImageDropdownMenu } from './image-dropdown-menu';
-import { useImagesContext } from './providers/images-provider';
 import { Icons } from '@onlook/ui/icons/index';
-import { observer } from 'mobx-react-lite';
 
-export const ImageItem = observer(({ image }: { image: ImageContentData }) => {
-    const editorEngine = useEditorEngine();
-    const { onImageDragStart, onImageDragEnd, onImageMouseDown, onImageMouseUp } =
-        useImageDragDrop();
-    const {
-        renameOperations,
-        deleteOperations,
-        moveOperations,
-        isOperating,
-    } = useImagesContext();
+export const ImageItem = ({ image }: { image: ImageContentData }) => {
+    // Stub state
+    const [selectedImage] = useState<ImageContentData | null>(null);
+    const [isSelectingImage] = useState(false);
+    const [previewImage] = useState<ImageContentData | null>(null);
+    const [isOperating] = useState(false);
     
-    const selectedImage = editorEngine.image.selectedImage;
-    const isSelectingImage = editorEngine.image.isSelectingImage;
-    const previewImage = editorEngine.image.previewImage;
+    // Stub handlers
+    const handleClick = () => {
+        // Stub click handler
+    };
 
-    const { renameState, handleRenameImage, handleRenameModalToggle, handleRenameInputBlur } =
-        renameOperations;
+    const handleDoubleClick = () => {
+        // Stub double click handler  
+    };
 
-    const { handleDeleteImage } = deleteOperations;
+    const handleDragStart = () => {
+        // Stub drag start
+    };
 
-    const { moveState, handleSelectTargetFolder, handleMoveImage } = moveOperations;
+    const handleDragEnd = () => {
+        // Stub drag end
+    };
 
-    const isImageRenaming = renameState.imageToRename === image.fileName;
+    const handleMouseDown = () => {
+        // Stub mouse down
+    };
+
+    const handleMouseUp = () => {
+        // Stub mouse up
+    };
+
     const isSelected = selectedImage?.originPath === image.originPath;
-    const isDisabled = isOperating;
-
-    const handleMoveToFolder = useCallback(
-        (targetFolder: FolderNode) => {
-            if (!isDisabled) {
-                handleMoveImage(image, targetFolder);
-            }
-        },
-        [handleMoveImage, image, isDisabled],
-    );
-
-    const handleOpenFolder = useCallback(async () => {
-        if (!image.originPath) {
-            return;
-        }
-        editorEngine.state.rightPanelTab = EditorTabValue.DEV;
-
-        await editorEngine.ide.openFile(image.originPath);
-    }, [editorEngine.state, editorEngine.ide, image.originPath]);
-
-    const handleDragStart = useCallback(
-        (e: React.DragEvent<HTMLDivElement>) => {
-            if (isDisabled) {
-                e.preventDefault();
-                return;
-            }
-            onImageDragStart(e, image);
-        },
-        [onImageDragStart, image, isDisabled],
-    );
-
-    const handleRenameBlur = useCallback(
-        (e: React.FocusEvent<HTMLInputElement>) => {
-            handleRenameInputBlur(e.target.value);
-        },
-        [handleRenameInputBlur],
-    );
-
-    const handleRenameKeyDown = useCallback(
-        (e: React.KeyboardEvent<HTMLInputElement>) => {
-            if (e.key === 'Enter') {
-                e.currentTarget.blur();
-            }
-            if (e.key === 'Escape') {
-                handleRenameModalToggle();
-            }
-        },
-        [handleRenameModalToggle],
-    );
-
-    const handleRename = useCallback(() => {
-        if (!isDisabled) {
-            handleRenameImage(image);
-        }
-    }, [handleRenameImage, image, isDisabled]);
-
-    const handleDelete = useCallback(() => {
-        if (!isDisabled) {
-            handleDeleteImage(image);
-        }
-    }, [handleDeleteImage, image, isDisabled]);
-
-    const handleMouseDown = useCallback(() => {
-        if (!isDisabled) {
-            onImageMouseDown();
-        }
-    }, [onImageMouseDown, isDisabled]);
-
-    const handleMouseUp = useCallback(() => {
-        if (!isDisabled) {
-            onImageMouseUp();
-        }
-    }, [onImageMouseUp, isDisabled]);
-
-    const handleMouseEnter = useCallback(() => {
-        if (!isDisabled && isSelectingImage) {
-            editorEngine.image.setPreviewImage(image);
-        }
-    }, [isDisabled, isSelectingImage, editorEngine.image, image]);
-
-    const handleMouseLeave = useCallback(() => {
-        if (!isDisabled && isSelectingImage) {
-            editorEngine.image.setPreviewImage(null);
-        }
-    }, [isDisabled, isSelectingImage, editorEngine.image]);
-
-    const handleClick = useCallback(() => {
-        if (!isDisabled && isSelectingImage) {
-            editorEngine.image.setSelectedImage(image);
-        }
-    }, [isDisabled, isSelectingImage, image, editorEngine.image]);
-
-    const defaultValue = useMemo(() => {
-        return image.fileName.replace(/\.[^/.]+$/, '');
-    }, [image.fileName]);
+    const isPreview = previewImage?.originPath === image.originPath;
 
     return (
         <div
-            className={cn('relative group w-full', isDisabled && 'opacity-50 pointer-events-none')}
-            draggable={!isDisabled}
+            className={cn(
+                'group relative flex flex-col items-center justify-center p-2 rounded-md cursor-pointer transition-all duration-200',
+                'hover:bg-gray-100 dark:hover:bg-gray-800',
+                isSelected && 'bg-blue-100 dark:bg-blue-900/30 ring-2 ring-blue-500',
+                isPreview && 'ring-2 ring-yellow-500',
+                isOperating && 'opacity-50 pointer-events-none'
+            )}
+            onClick={handleClick}
+            onDoubleClick={handleDoubleClick}
             onDragStart={handleDragStart}
-            onDragEnd={onImageDragEnd}
+            onDragEnd={handleDragEnd}
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            onClick={handleClick}
+            draggable
         >
-            <div
-                className={cn(
-                    'w-full aspect-square flex flex-col justify-center rounded-lg overflow-hidden items-center cursor-move border-[0.5px] border-border',
-                    isSelected && 'border-2 border-red-500 p-1.5 rounded-xl cursor-pointer',
-                    previewImage?.originPath === image.originPath && 'border-2 border-red-500 p-1.5 rounded-xl cursor-pointer',
-                )}
-            >
+            <div className="relative w-16 h-16 rounded-md overflow-hidden bg-gray-200 dark:bg-gray-700">
                 <img
-                    className="w-full h-full object-cover rounded-lg"
-                    src={image.content}
+                    src={`data:${image.mimeType};base64,${image.content}`}
                     alt={image.fileName}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
                 />
-            </div>
-            <span className="text-xs block w-full text-center truncate mt-1">
-                {isImageRenaming ? (
-                    <input
-                        type="text"
-                        className="w-full p-1 text-center bg-background-active rounded "
-                        defaultValue={defaultValue}
-                        autoFocus
-                        onBlur={handleRenameBlur}
-                        onKeyDown={handleRenameKeyDown}
-                        disabled={isDisabled}
-                    />
-                ) : (
-                    image.fileName
+                {isSelectingImage && (
+                    <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
+                        <Icons.LoadingSpinner className="w-4 h-4 animate-spin text-blue-500" />
+                    </div>
                 )}
-            </span>
-            {!isSelectingImage && (
-                <ImageDropdownMenu
-                    image={image}
-                    handleRenameImage={handleRename}
-                    handleDeleteImage={handleDelete}
-                    handleOpenFolder={handleOpenFolder}
-                    handleMoveToFolder={handleMoveToFolder}
-                    isDisabled={isDisabled}
-                    selectedTargetFolder={moveState.targetFolder}
-                    onSelectTargetFolder={handleSelectTargetFolder}
-                />
-            )}
-            {isSelected && (
-                <div className="bg-black-85 rounded-lg absolute bottom-7.5 right-2.5 p-1">
-                    <Icons.CheckCircled className="w-3 h-3" />
+            </div>
+            
+            <div className="mt-2 text-xs text-center">
+                <div className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-16">
+                    {image.fileName}
+                </div>
+                <div className="text-gray-500 dark:text-gray-400 text-xs">
+                    {image.mimeType.split('/')[1]?.toUpperCase() || 'IMAGE'}
+                </div>
+            </div>
+
+            {!isOperating && (
+                <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ImageDropdownMenu image={image} />
                 </div>
             )}
         </div>
     );
-});
-
+};

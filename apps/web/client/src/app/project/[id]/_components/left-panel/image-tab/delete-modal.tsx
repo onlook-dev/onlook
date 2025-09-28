@@ -1,4 +1,3 @@
-import { useEditorEngine } from '@/components/store/editor';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -9,28 +8,24 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { useImagesContext } from './providers/images-provider';
+import { useState } from 'react';
 
 export const DeleteImageModal = () => {
-    const editorEngine = useEditorEngine();
-    const { deleteOperations } = useImagesContext();
-    const { deleteState, onDeleteImage, handleDeleteModalToggle } = deleteOperations;
-
+    // Stub state
+    const [isOpen, setIsOpen] = useState(false);
+    const [isLoading] = useState(false);
+    
+    // Stub handlers
     const handleDelete = async () => {
-        if (!deleteState.isLoading) {
-            await onDeleteImage();
-        }
+        // Stub delete logic
     };
 
     const handleClose = () => {
-        if (!deleteState.isLoading) {
-            editorEngine.overlay.clearUI();
-            handleDeleteModalToggle();
-        }
+        setIsOpen(false);
     };
 
     return (
-        <AlertDialog open={!!deleteState.imageToDelete} onOpenChange={handleClose}>
+        <AlertDialog open={isOpen} onOpenChange={handleClose}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>{'Delete this image?'}</AlertDialogTitle>
@@ -39,16 +34,16 @@ export const DeleteImageModal = () => {
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <Button variant={'ghost'} onClick={handleClose} disabled={deleteState.isLoading}>
+                    <Button variant={'ghost'} onClick={handleClose} disabled={isLoading}>
                         Cancel
                     </Button>
                     <Button
                         variant={'destructive'}
                         className="rounded-md text-sm"
                         onClick={handleDelete}
-                        disabled={deleteState.isLoading}
+                        disabled={isLoading}
                     >
-                        {deleteState.isLoading ? (
+                        {isLoading ? (
                             <>
                                 <Icons.LoadingSpinner className="w-4 h-4 animate-spin mr-2" />
                                 Deleting
@@ -61,4 +56,4 @@ export const DeleteImageModal = () => {
             </AlertDialogContent>
         </AlertDialog>
     );
-}
+};

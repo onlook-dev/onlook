@@ -9,6 +9,11 @@ interface FolderTabProps {
     onSelect: () => void;
     isDisabled: boolean;
     rootDir: FolderNode;
+    handlers?: {
+        handleRenameFolder: () => void;
+        handleDeleteFolder: () => void;
+        handleMoveToFolder: () => void;
+    };
 }
 
 export default function FolderTab({
@@ -16,7 +21,8 @@ export default function FolderTab({
     totalImages,
     onSelect,
     isDisabled,
-    rootDir
+    rootDir,
+    handlers
 }: FolderTabProps) {
 
     return (
@@ -35,11 +41,14 @@ export default function FolderTab({
                 <span className="text-xs text-gray-200">{totalImages} image{totalImages !== 1 ? 's' : ''}</span>
             </div>
             
-            <FolderDropdownMenu
-                rootDir={rootDir}
-                folder={folder}
-                isDisabled={isDisabled}
-            />
+            {handlers && (
+                <FolderDropdownMenu
+                    rootDir={rootDir}
+                    folder={folder}
+                    isDisabled={isDisabled}
+                    handlers={handlers}
+                />
+            )}
         </div>
     );
 }

@@ -8,39 +8,39 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { useImagesContext } from './providers/images-provider';
+import { useState } from 'react';
 
 export const RenameImageModal = () => {
-    const { renameOperations } = useImagesContext();
-    const { renameState, onRenameImage, handleRenameModalToggle } = renameOperations;
+    // Stub state
+    const [isOpen, setIsOpen] = useState(false);
+    const [isLoading] = useState(false);
+    const [newImageName] = useState('example-renamed.png');
+    const stubImageToRename = 'example.png';
 
+    // Stub handlers
     const handleRename = async () => {
-        if (!renameState.isLoading) {
-            await onRenameImage(renameState.newImageName);
-        }
+        // Stub rename logic
     };
 
     const handleClose = () => {
-        if (!renameState.isLoading) {
-            handleRenameModalToggle();
-        }
+        setIsOpen(false);
     };
 
     return (
-        <AlertDialog open={!!renameState.imageToRename && !!renameState.newImageName && renameState.newImageName !== renameState.imageToRename} onOpenChange={handleClose}>
+        <AlertDialog open={isOpen} onOpenChange={handleClose}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Rename Image</AlertDialogTitle>
                     <AlertDialogDescription>
-                        {`Rename image to "${renameState.newImageName}"`}
+                        {`Rename image to "${newImageName}"`}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <Button variant={'ghost'} onClick={handleClose} disabled={renameState.isLoading}>
+                    <Button variant={'ghost'} onClick={handleClose} disabled={isLoading}>
                         Cancel
                     </Button>
-                    <Button variant={'default'} onClick={handleRename} disabled={renameState.isLoading}>
-                        {renameState.isLoading ? (
+                    <Button variant={'default'} onClick={handleRename} disabled={isLoading}>
+                        {isLoading ? (
                             <>
                                 <Icons.Reload className="w-4 h-4 animate-spin mr-2" />
                                 Renaming...

@@ -2,12 +2,7 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { memo } from 'react';
 import FolderTab from './folder-tab';
-import { FolderDeleteModal } from './modal/folder-delete-modal';
-import { FolderMoveModal } from './modal/folder-move-modal';
-import { FolderRenameModal } from './modal/folder-rename-modal';
 import type { FolderNode } from '@onlook/models';
-import { useFolderContext } from '../providers/folder-provider';
-import { FolderCreateModal } from './modal/folder-create-modal';
 
 interface FolderListProps {
     childFolders: FolderNode[];
@@ -15,11 +10,20 @@ interface FolderListProps {
     folder: FolderNode;
     rootDir: FolderNode;
     showCreateButton: boolean;
+    handlers: {
+        handleCreateFolder: () => void;
+        getImagesInFolder: () => any[];
+        handleRenameFolder: () => void;
+        handleDeleteFolder: () => void;
+        handleMoveToFolder: () => void;
+    };
 }
 
 export const FolderList = memo(
-    ({ childFolders, onSelectFolder, folder, showCreateButton, rootDir }: FolderListProps) => {
-        const { handleCreateFolder, isOperating, getImagesInFolder } = useFolderContext();
+    ({ childFolders, onSelectFolder, folder, showCreateButton, rootDir, handlers }: FolderListProps) => {
+        // Stub state and handlers
+        const isOperating = false;
+        const { handleCreateFolder, getImagesInFolder } = handlers;
 
         if (!childFolders.length) {
             return null;
@@ -33,10 +37,15 @@ export const FolderList = memo(
                         <FolderTab
                             key={item.fullPath || index}
                             folder={item}
-                            totalImages={getImagesInFolder(item).length}
+                            totalImages={getImagesInFolder().length}
                             onSelect={() => onSelectFolder(item)}
                             isDisabled={isOperating}
                             rootDir={rootDir}
+                            handlers={{
+                                handleRenameFolder: handlers.handleRenameFolder,
+                                handleDeleteFolder: handlers.handleDeleteFolder,
+                                handleMoveToFolder: handlers.handleMoveToFolder,
+                            }}
                         />
                     ))}
                 </div>
@@ -46,7 +55,7 @@ export const FolderList = memo(
                         variant="default"
                         size="icon"
                         className="p-2.5 w-full h-fit gap-2 bg-gray-800 hover:bg-gray-700 text-white font-normal"
-                        onClick={() => handleCreateFolder(folder)}
+                        onClick={handleCreateFolder}
                         disabled={isOperating}
                     >
                         <Icons.DirectoryPlus className="h-4 w-4" />
