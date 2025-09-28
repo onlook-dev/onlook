@@ -14,6 +14,7 @@ import { FontManager } from './font';
 import { FrameEventManager } from './frame-events';
 import { FramesManager } from './frames';
 import { GroupManager } from './group';
+import { IdeManager } from './ide';
 import { ImageManager } from './image';
 import { InsertManager } from './insert';
 import { MoveManager } from './move';
@@ -69,6 +70,7 @@ export class EditorEngine {
     readonly snap: SnapManager = new SnapManager(this);
     readonly templateNodes: TemplateNodeManager;
     readonly api: ApiManager = new ApiManager(this);
+    readonly ide: IdeManager = new IdeManager(this);
 
     constructor(projectId: string, posthog: PostHog) {
         this.projectId = projectId;

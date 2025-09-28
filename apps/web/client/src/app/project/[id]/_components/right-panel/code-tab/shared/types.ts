@@ -17,3 +17,10 @@ export interface BinaryEditorFile extends EditorFile {
     content: Uint8Array;
     originalHash: null;
 }
+
+export interface HighlightRange {
+    startLineNumber: number;
+    startColumn: number;
+    endLineNumber: number;
+    endColumn: number;
+}

@@ -13,26 +13,26 @@ import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import path from 'path';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
-    createFileInSandbox,
-    doesFileExist,
-    validateFileName,
+    createFileInSandbox
 } from '../shared/file-operations';
 import { getFileTemplate } from '../shared/file-templates';
 
 interface FileModalProps {
     basePath: string;
+    show: boolean;
+    setShow: (show: boolean) => void;
     onSuccess?: () => void;
 }
 
 export const FileModal = observer(({
     basePath,
+    show,
+    setShow,
     onSuccess,
 }: FileModalProps) => {
     const editorEngine = useEditorEngine();
-    const files = editorEngine.activeSandbox.files;
-    const open = editorEngine.ide.fileModalOpen;
 
     const [name, setName] = useState('');
     const [warning, setWarning] = useState('');
@@ -49,35 +49,6 @@ export const FileModal = observer(({
     const loadingText = 'Creating file...';
     const placeholder = 'component.tsx';
 
-    // Reset name when modal opens
-    useEffect(() => {
-        if (open) {
-            setName('');
-            setWarning('');
-        }
-    }, [open]);
-
-    useEffect(() => {
-        if (!name) {
-            setWarning('');
-            return;
-        }
-
-        const { valid, error } = validateFileName(name);
-
-        if (!valid) {
-            setWarning(error ?? 'Invalid file name');
-            return;
-        }
-
-        if (doesFileExist(files, fullPath)) {
-            setWarning('This file already exists');
-            return;
-        }
-
-        setWarning('');
-    }, [name, fullPath, files]);
-
     const handleSubmit = async () => {
         if (!name || warning) return;
 
@@ -89,7 +60,7 @@ export const FileModal = observer(({
             toast(`File "${name}" created successfully!`);
 
             setName('');
-            editorEngine.ide.fileModalOpen = false;
+            setShow(false);
             onSuccess?.();
         } catch (error) {
             console.error('Failed to create file:', error);
@@ -103,7 +74,7 @@ export const FileModal = observer(({
     const displayPath = basePath === '' ? '/' : `/${basePath}`;
 
     return (
-        <Dialog open={open} onOpenChange={(isOpen) => editorEngine.ide.fileModalOpen = isOpen}>
+        <Dialog open={show} onOpenChange={(isOpen) => setShow(isOpen)}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
@@ -150,7 +121,7 @@ export const FileModal = observer(({
                 <DialogFooter>
                     <Button
                         variant="ghost"
-                        onClick={() => editorEngine.ide.fileModalOpen = false}
+                        onClick={() => setShow(false)}
                         disabled={isLoading}
                     >
                         Cancel

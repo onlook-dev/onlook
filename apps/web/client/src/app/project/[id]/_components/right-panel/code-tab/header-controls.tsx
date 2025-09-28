@@ -12,22 +12,17 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { FileModal } from './modals/file-modal';
 import { FolderModal } from './modals/folder-modal';
+import { useState } from 'react';
 
-export const CodeControls = observer(() => {
-    const editorEngine = useEditorEngine();
-    const isDirty = editorEngine.ide.activeFile?.isDirty ?? false;
+export const CodeControls = () => {
+    const [isDirty, setIsDirty] = useState(false);
+    const [showFileModal, setShowFileModal] = useState(false);
+    const [showUploadModal, setShowUploadModal] = useState(false);
+    const [showFolderModal, setShowFolderModal] = useState(false);
 
     const saveFile = () => {
-        void editorEngine.ide.saveActiveFile();
+        // Mock
     };
-
-    const basePath = (() => {
-        const activeFilePath = editorEngine.ide.activeFile?.path ?? '';
-        if (!activeFilePath) return '';
-
-        const lastSlash = activeFilePath.lastIndexOf('/');
-        return lastSlash > 0 ? activeFilePath.substring(0, lastSlash) : '';
-    })();
 
     return (
         <>
@@ -48,14 +43,14 @@ export const CodeControls = observer(() => {
                         <DropdownMenuContent align="start">
                             <DropdownMenuItem
                                 className="cursor-pointer"
-                                onClick={() => editorEngine.ide.fileModalOpen = true}
+                                onClick={() => setShowFileModal(true)}
                             >
                                 <Icons.FilePlus className="h-4 w-4 mr-2" />
                                 Create new file
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 className="cursor-pointer"
-                                onClick={() => editorEngine.ide.uploadModalOpen = true}
+                                onClick={() => setShowUploadModal(true)}
                             >
                                 <Icons.Upload className="h-4 w-4 mr-2" />
                                 Upload file
@@ -71,7 +66,7 @@ export const CodeControls = observer(() => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => editorEngine.ide.folderModalOpen = true}
+                            onClick={() => setShowFolderModal(true)}
                             className="p-2 w-fit h-fit hover:bg-background-onlook cursor-pointer"
                         >
                             <Icons.DirectoryPlus className="h-4 w-4" />
@@ -107,8 +102,8 @@ export const CodeControls = observer(() => {
                     </TooltipContent>
                 </Tooltip>
             </div>
-            <FileModal basePath={basePath} />
-            <FolderModal basePath={basePath} />
+            <FileModal basePath={'test'} show={showFileModal} setShow={setShowFileModal} />
+            <FolderModal basePath={'test'} show={showFolderModal} setShow={setShowFolderModal} />
         </>
     );
-}); 
+};

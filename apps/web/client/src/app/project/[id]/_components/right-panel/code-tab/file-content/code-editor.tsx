@@ -1,9 +1,8 @@
-import { useEditorEngine } from '@/components/store/editor';
 import { EditorView } from '@codemirror/view';
 import { getMimeType } from '@onlook/utility/src/file';
 import CodeMirror from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
-import type { RefObject } from 'react';
+import { type RefObject } from 'react';
 import type { BinaryEditorFile, EditorFile, TextEditorFile } from '../shared/types';
 import { getBasicSetup, getExtensions } from './code-mirror-config';
 
@@ -22,9 +21,6 @@ export const CodeEditor = observer(({
     onSaveFile,
     onUpdateFileContent,
 }: CodeEditorProps) => {
-    const editorEngine = useEditorEngine();
-    const ide = editorEngine.ide;
-
     const getFileUrl = (file: BinaryEditorFile) => {
         const mime = getMimeType(file.path.toLowerCase());
         // Convert Uint8Array to base64 string
@@ -34,24 +30,7 @@ export const CodeEditor = observer(({
 
     const onCreateEditor = (editor: EditorView) => {
         editorViewsRef.current.set(file.path, editor);
-        editor.dom.addEventListener('mousedown', () => {
-            if (ide.highlightRange) {
-                ide.setHighlightRange(null);
-            }
-        });
-        // If this file is the active file and we have a highlight range,
-        // trigger the highlight effect again
-        if (
-            ide.activeFile &&
-            ide.activeFile.path === file.path &&
-            ide.highlightRange
-        ) {
-            setTimeout(() => {
-                if (ide.highlightRange) {
-                    ide.setHighlightRange(ide.highlightRange);
-                }
-            }, 300);
-        }
+        // TODO: Add highlight range on create
     }
 
     return (
@@ -79,9 +58,6 @@ export const CodeEditor = observer(({
                         ...getExtensions(file.path.split('.').pop() || ''),
                     ]}
                     onChange={(value) => {
-                        if (ide.highlightRange) {
-                            ide.setHighlightRange(null);
-                        }
                         onUpdateFileContent(file.path, value);
                     }}
                     className="h-full overflow-hidden"

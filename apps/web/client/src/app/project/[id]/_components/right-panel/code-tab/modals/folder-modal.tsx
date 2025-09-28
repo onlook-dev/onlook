@@ -13,25 +13,25 @@ import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import path from 'path';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
-    createFolderInSandbox,
-    doesFolderExist,
-    validateFolderName,
+    createFolderInSandbox
 } from '../shared/file-operations';
 
 interface FolderModalProps {
     basePath: string;
+    show: boolean;
+    setShow: (show: boolean) => void;
     onSuccess?: () => void;
 }
 
 export const FolderModal = observer(({
     basePath,
+    show,
+    setShow,
     onSuccess,
 }: FolderModalProps) => {
     const editorEngine = useEditorEngine();
-    const files = editorEngine.activeSandbox.files;
-    const open = editorEngine.ide.folderModalOpen;
 
     const [name, setName] = useState('');
     const [warning, setWarning] = useState('');
@@ -43,35 +43,6 @@ export const FolderModal = observer(({
         return path.join(basePath, name).replace(/\\/g, '/');
     }, [basePath, name]);
 
-    // Reset name when modal opens
-    useEffect(() => {
-        if (open) {
-            setName('');
-            setWarning('');
-        }
-    }, [open]);
-
-    useEffect(() => {
-        if (!name) {
-            setWarning('');
-            return;
-        }
-
-        const { valid, error } = validateFolderName(name);
-
-        if (!valid) {
-            setWarning(error ?? 'Invalid folder name');
-            return;
-        }
-
-        if (doesFolderExist(files, fullPath)) {
-            setWarning('This folder already exists');
-            return;
-        }
-
-        setWarning('');
-    }, [name, fullPath, files]);
-
     const handleSubmit = async () => {
         if (!name || warning) return;
 
@@ -82,7 +53,7 @@ export const FolderModal = observer(({
             toast(`Folder "${name}" created successfully!`);
 
             setName('');
-            editorEngine.ide.folderModalOpen = false;
+            setShow(false);
             onSuccess?.();
         } catch (error) {
             console.error('Failed to create folder:', error);
@@ -96,7 +67,7 @@ export const FolderModal = observer(({
     const displayPath = basePath === '' ? '/' : `/${basePath}`;
 
     return (
-        <Dialog open={open} onOpenChange={(isOpen) => editorEngine.ide.folderModalOpen = isOpen}>
+        <Dialog open={show} onOpenChange={(isOpen) => setShow(isOpen)}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Create New Folder</DialogTitle>
@@ -143,7 +114,7 @@ export const FolderModal = observer(({
                 <DialogFooter>
                     <Button
                         variant="ghost"
-                        onClick={() => editorEngine.ide.folderModalOpen = false}
+                        onClick={() => setShow(false)}
                         disabled={isLoading}
                     >
                         Cancel
