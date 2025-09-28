@@ -22,8 +22,6 @@ export class SandboxManager {
     private fs: FileSystem | null = null;
     private sync: CodeProviderSync | null = null;
 
-    // private _routerConfig: { type: RouterType; basePath: string } | null = null;
-
     constructor(
         private branch: Branch,
         private readonly editorEngine: EditorEngine,
@@ -55,7 +53,6 @@ export class SandboxManager {
         this.fs = new FileSystem(`/${this.editorEngine.projectId}/${this.branch.id}`);
         await this.fs.initialize();
         this.sync = new CodeProviderSync(provider, this.fs, {
-            // TODO: add missing configs
             exclude: EXCLUDED_SYNC_DIRECTORIES,
         });
         await this.sync.start();
