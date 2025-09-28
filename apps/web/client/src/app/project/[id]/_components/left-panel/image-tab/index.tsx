@@ -1,14 +1,70 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
-import { useDirectory } from '@onlook/file-system/hooks';
+import { useDirectory, useFile } from '@onlook/file-system/hooks';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from '@onlook/ui/breadcrumb';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { isImageFile } from '@onlook/utility/src/file';
 import { observer } from 'mobx-react-lite';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
+// Image component that fetches content using useFile hook
+const ImageItem = ({ image, rootDir }: { image: any; rootDir: string }) => {
+    const { content, loading } = useFile(rootDir, image.path);
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
+    
+    // Convert binary content to data URL for display
+    useEffect(() => {
+        if (!content || typeof content === 'string') {
+            setImageUrl(null);
+            return;
+        }
+        
+        // Create blob from binary content
+        const blob = new Blob([content], { type: image.mimeType || 'image/*' });
+        const url = URL.createObjectURL(blob);
+        setImageUrl(url);
+        
+        // Clean up function to revoke object URL
+        return () => {
+            URL.revokeObjectURL(url);
+        };
+    }, [content, image.mimeType]);
+    
+    if (loading) {
+        return (
+            <div className="aspect-square bg-background-secondary rounded-md border border-border-primary flex items-center justify-center">
+                <Icons.Reload className="w-4 h-4 animate-spin text-foreground-secondary" />
+            </div>
+        );
+    }
+    
+    if (!imageUrl) {
+        return (
+            <div className="aspect-square bg-background-secondary rounded-md border border-border-primary flex items-center justify-center">
+                <Icons.Image className="w-4 h-4 text-foreground-secondary" />
+            </div>
+        );
+    }
+    
+    return (
+        <div className="aspect-square bg-background-secondary rounded-md border border-border-primary overflow-hidden cursor-pointer hover:border-border-onlook transition-colors">
+            <img
+                src={imageUrl}
+                alt={image.name}
+                className="w-full h-full object-cover"
+                loading="lazy"
+            />
+            <div className="p-1 bg-background-primary/80 backdrop-blur-sm">
+                <div className="text-xs text-foreground-primary truncate" title={image.name}>
+                    {image.name}
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -145,22 +201,11 @@ export const ImagesTab = observer(() => {
             <div className="flex-1 overflow-auto">
                 <div className="grid grid-cols-2 gap-2">
                     {images.map((image) => (
-                        <div
+                        <ImageItem
                             key={image.path}
-                            className="aspect-square bg-background-secondary rounded-md border border-border-primary overflow-hidden cursor-pointer hover:border-border-onlook transition-colors"
-                        >
-                            <img
-                                src={`/api/project/file?path=${encodeURIComponent(image.path)}`}
-                                alt={image.name}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                            />
-                            <div className="p-1 bg-background-primary/80 backdrop-blur-sm">
-                                <div className="text-xs text-foreground-primary truncate" title={image.name}>
-                                    {image.name}
-                                </div>
-                            </div>
-                        </div>
+                            image={image}
+                            rootDir={rootDir}
+                        />
                     ))}
                 </div>
                 {images.length === 0 && (
