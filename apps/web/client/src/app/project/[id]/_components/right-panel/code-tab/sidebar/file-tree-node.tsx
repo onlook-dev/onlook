@@ -23,6 +23,7 @@ import { cn } from '@onlook/ui/utils';
 import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import type { NodeApi } from 'react-arborist';
+import { FileIcon } from './file-icon';
 
 interface FileTreeNodeProps {
     node: NodeApi<FileEntry>;
@@ -31,41 +32,6 @@ interface FileTreeNodeProps {
     onRenameFile: (oldPath: string, newPath: string) => void;
     onDeleteFile: (path: string) => void;
 }
-
-const getFileIcon = (path: string, isDirectory: boolean) => {
-    const extension = path.split('.').pop()?.toLowerCase();
-
-    if (isDirectory) {
-        return <Icons.Directory className="w-4 h-4 mr-2" />;
-    }
-
-    switch (extension) {
-        case 'js':
-        case 'jsx':
-        case 'ts':
-        case 'tsx':
-            return <Icons.Code className="w-4 h-4 mr-2" />;
-        case 'css':
-        case 'scss':
-        case 'sass':
-            return <Icons.Box className="w-4 h-4 mr-2" />;
-        case 'html':
-            return <Icons.Frame className="w-4 h-4 mr-2" />;
-        case 'json':
-            return <Icons.Code className="w-4 h-4 mr-2" />;
-        case 'md':
-        case 'mdx':
-            return <Icons.Text className="w-4 h-4 mr-2" />;
-        case 'jpg':
-        case 'jpeg':
-        case 'png':
-        case 'gif':
-        case 'svg':
-            return <Icons.Image className="w-4 h-4 mr-2" />;
-        default:
-            return <Icons.File className="w-4 h-4 mr-2" />;
-    }
-};
 
 export const FileTreeNode = ({
     node, style, onFileSelect, onRenameFile, onDeleteFile
@@ -189,7 +155,7 @@ export const FileTreeNode = ({
                             </div>
                         )}
                     </span>
-                    {getFileIcon(node.data.path, isDirectory)}
+                    <FileIcon path={node.data.path} isDirectory={isDirectory} />
                     {isEditing ? (
                         <input
                             ref={inputRef}
