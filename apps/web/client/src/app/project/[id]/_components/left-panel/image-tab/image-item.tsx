@@ -3,6 +3,7 @@
 import { useFile } from '@onlook/file-system/hooks';
 import type { ImageContentData } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
+import { getMimeType } from '@onlook/utility';
 import { useEffect, useState } from 'react';
 
 interface ImageItemProps {
@@ -78,8 +79,8 @@ export const ImageItem = ({ image, rootDir, onImageDragStart, onImageDragEnd, on
         }
         const imageContentData: ImageContentData = {
             fileName: image.name,
-            content: 'test',
-            mimeType: 'test',
+            content: content as string,
+            mimeType: getMimeType(image.name),
             originPath: image.path,
         };
         onImageDragStart(e, imageContentData);
