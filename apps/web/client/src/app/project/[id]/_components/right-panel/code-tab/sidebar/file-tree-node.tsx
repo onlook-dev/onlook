@@ -200,7 +200,7 @@ export const FileTreeNode = ({
                     )} */}
                 </div>
             </ContextMenuTrigger>
-            {isDirectory && <ContextMenuContent>
+            {!isDirectory && <ContextMenuContent>
                 {menuItems.map((item, index) => (
                     <div key={item.label}>
                         <ContextMenuItem

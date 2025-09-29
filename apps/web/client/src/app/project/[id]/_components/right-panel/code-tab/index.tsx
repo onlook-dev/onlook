@@ -39,7 +39,6 @@ export const CodeTab = () => {
     const editorEngine = useEditorEngine();
     const rootDir = `/${editorEngine.projectId}/${editorEngine.branches.activeBranch.id}`;
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
-    const codeControlsRef = useRef<HTMLDivElement>(null);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
@@ -291,9 +290,9 @@ export const CodeTab = () => {
         <div className="size-full flex flex-row flex-1 min-h-0 relative">
             {/* Absolute position for encapsulation */}
             <div className="absolute right-2 -top-9">
-                <CodeControls 
+                <CodeControls
                     isDirty={hasUnsavedChanges}
-                    currentPath={getCurrentPath()}
+                    currentPath={activeEditorFile?.path ?? rootDir}
                     onSave={handleSaveFile}
                     onRefresh={refreshFileTree}
                 />

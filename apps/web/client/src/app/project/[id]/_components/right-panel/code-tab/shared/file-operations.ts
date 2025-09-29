@@ -1,5 +1,3 @@
-import type { SandboxManager } from '@/components/store/editor/sandbox';
-import type { Provider } from '@onlook/code-provider';
 
 // System reserved names (Windows compatibility)
 export const RESERVED_NAMES: string[] = [
@@ -85,60 +83,4 @@ export const validateFolderName = (folderName: string): { valid: boolean; error?
     }
 
     return { valid: true };
-};
-
-export const doesFileExist = (files: string[], filePath: string): boolean => {
-    const normalizedPath = filePath.replace(/\\/g, '/');
-    return files.some((file) => file.replace(/\\/g, '/') === normalizedPath);
-};
-
-export const doesFolderExist = (files: string[], folderPath: string): boolean => {
-    const normalizedFolderPath = folderPath.replace(/\\/g, '/');
-
-    const cleanFolderPath = normalizedFolderPath.replace(/\/$/, '');
-
-    return files.some((file) => {
-        const normalizedFile = file.replace(/\\/g, '/');
-
-        return normalizedFile.startsWith(cleanFolderPath + '/');
-    });
-};
-
-export const createFileInSandbox = async (
-    provider: Provider | null,
-    filePath: string,
-    content: string = '',
-    sandboxManager: SandboxManager,
-): Promise<void> => {
-    try {
-        if (!provider) {
-            throw new Error('No sandbox provider available');
-        }
-        await sandboxManager.writeFile(filePath, content);
-    } catch (error) {
-        console.error('Error creating file:', error);
-        throw error;
-    }
-};
-
-export const createFolderInSandbox = async (
-    provider: Provider | null,
-    folderPath: string,
-    sandboxManager: SandboxManager,
-): Promise<void> => {
-    try {
-        if (!provider) {
-            throw new Error('No sandbox provider available');
-        }
-
-        // Creates folder by creating a .gitkeep file inside it
-        // This automatically creates the directory structure and ensures
-        // the empty directory is discoverable and tracked by Git
-        const gitkeepPath = `${folderPath}/.gitkeep`.replace(/\\/g, '/');
-        const gitkeepContent = '# This folder was created by Onlook\n';
-        await sandboxManager.writeFile(gitkeepPath, gitkeepContent);
-    } catch (error) {
-        console.error('Error creating folder:', error);
-        throw error;
-    }
 };

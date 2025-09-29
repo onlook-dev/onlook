@@ -15,7 +15,6 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import path from 'path';
 import { useCallback, useEffect, useState } from 'react';
-import { createFileInSandbox } from '../shared/file-operations';
 
 interface UploadModalProps {
     basePath: string;
@@ -74,7 +73,7 @@ export const UploadModal = observer(({
             for (let i = 0; i < selectedFiles.length; i++) {
                 const file = selectedFiles[i];
                 if (!file) continue;
-                
+
                 const fileName = file.name;
                 const fullPath = path.join(currentPath, fileName).replace(/\\/g, '/');
 
@@ -174,7 +173,7 @@ export const UploadModal = observer(({
                                 className="hidden"
                                 disabled={isLoading}
                             />
-                            
+
                             <div className="text-center">
                                 {selectedFiles && selectedFiles.length > 0 ? (
                                     <div className="space-y-2">

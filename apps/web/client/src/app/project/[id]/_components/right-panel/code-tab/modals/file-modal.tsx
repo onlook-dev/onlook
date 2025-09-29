@@ -15,9 +15,6 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import path from 'path';
 import { useEffect, useMemo, useState } from 'react';
-import {
-    createFileInSandbox
-} from '../shared/file-operations';
 import { getFileTemplate } from '../shared/file-templates';
 
 interface FileModalProps {
