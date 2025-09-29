@@ -24,7 +24,6 @@
         "test": "bun --filter '*' test",
         "docs": "bun --filter @onlook/docs dev",
         "backend:start": "bun --filter @onlook/backend start",
-        "backend:status": "bun --filter @onlook/backend status",
         "db:gen": "bun --filter @onlook/db db:gen",
         "db:push": "cd packages/db && bun db:push",
         "db:seed": "cd packages/db && bun db:seed",
