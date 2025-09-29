@@ -1,3 +1,5 @@
+'use client';
+
 import type { FileEntry } from '@onlook/file-system/hooks';
 import {
     ContextMenu,
@@ -9,12 +11,15 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { motion } from 'motion/react';
+import { useState } from 'react';
 import type { NodeApi } from 'react-arborist';
 
 interface FileTreeNodeProps {
     node: NodeApi<FileEntry>;
     style: React.CSSProperties;
-    onFileSelect?: (filePath: string, searchTerm?: string) => void;
+    onFileSelect: (filePath: string, searchTerm?: string) => void;
+    onRenameFile: (oldPath: string, newName: string) => void;
+    onDeleteFile: (path: string) => void;
 }
 
 const getFileIcon = (path: string, isDirectory: boolean) => {
@@ -52,10 +57,15 @@ const getFileIcon = (path: string, isDirectory: boolean) => {
     }
 };
 
-export const FileTreeNode = ({ node, style, onFileSelect }: FileTreeNodeProps) => {
+export const FileTreeNode = ({
+    node, style, onFileSelect, onRenameFile, onDeleteFile
+}: FileTreeNodeProps) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editingName, setEditingName] = useState(node.data.name);
     const isDirectory = node.data.isDirectory;
-    const isSelected = node.isSelected;
     const handleClick = (e: React.MouseEvent) => {
+        if (isEditing) return;
+
         if (isDirectory) {
             node.toggle();
             return;
@@ -67,23 +77,60 @@ export const FileTreeNode = ({ node, style, onFileSelect }: FileTreeNodeProps) =
         node.select();
     };
 
+    const handleRename = () => {
+        setIsEditing(true);
+        setEditingName(node.data.name);
+    };
+
+    const handleBlur = () => {
+        if (editingName.trim() && editingName !== node.data.name) {
+            onRenameFile(node.data.name, editingName.trim());
+        }
+        setIsEditing(false);
+        setEditingName(node.data.name);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            handleBlur();
+        } else if (e.key === 'Escape') {
+            setIsEditing(false);
+            setEditingName(node.data.name);
+        }
+    };
+
     const menuItems: Array<{
         label: string;
         action: () => void;
         icon: React.ReactElement;
         separator: boolean;
-    }> = [];
+        className?: string;
+    }> = [
+            {
+                label: 'Rename',
+                action: handleRename,
+                icon: <Icons.Edit className="w-4 h-4" />,
+                separator: false,
+            },
+            {
+                label: 'Delete',
+                action: () => {
+                    onDeleteFile(node.data.path);
+                },
+                icon: <Icons.Trash className="w-4 h-4 text-red-500" />,
+                separator: false,
+                className: 'text-red-500',
+            }
+        ];
 
     return (
         <ContextMenu>
             <ContextMenuTrigger>
                 <div
                     style={style}
-                    className={cn(
-                        "flex items-center h-6 cursor-pointer rounded",
-                        isSelected ? 'hover:bg-red-500/90 dark:hover:bg-red-500/90' : ' hover:bg-background-hover ',
-                    )}
+                    className="flex items-center h-6 cursor-pointer rounded"
                     onClick={handleClick}
+                    onDoubleClick={(e) => handleRename()}
                 >
                     <span className="w-4 h-4 flex-none relative">
                         {isDirectory && (
@@ -98,7 +145,19 @@ export const FileTreeNode = ({ node, style, onFileSelect }: FileTreeNodeProps) =
                         )}
                     </span>
                     {getFileIcon(node.data.path, isDirectory)}
-                    <span className="truncate">{node.data.name}</span>
+                    {isEditing ? (
+                        <input
+                            type="text"
+                            value={editingName}
+                            onChange={(e) => setEditingName(e.target.value)}
+                            onBlur={handleBlur}
+                            onKeyDown={handleKeyDown}
+                            className="truncate bg-transparent rounded-[1px] outline-2 outline-rounded outline-border-primary outline-offset-2 px-0"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    ) : (
+                        <span className="truncate">{node.data.name}</span>
+                    )}
                     {/* {!isDirectory && contentMatches?.has(node.data.path) && (
                         <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary/10 text-primary rounded-full font-medium min-w-[20px] text-center">
                             {contentMatches.get(node.data.path)}
@@ -113,7 +172,7 @@ export const FileTreeNode = ({ node, style, onFileSelect }: FileTreeNodeProps) =
                             onClick={item.action}
                             className="cursor-pointer"
                         >
-                            <span className={cn('flex w-full items-center gap-1')}>
+                            <span className={cn('flex w-full items-center gap-1', item.className)}>
                                 {item.icon}
                                 {item.label}
                             </span>
@@ -122,6 +181,6 @@ export const FileTreeNode = ({ node, style, onFileSelect }: FileTreeNodeProps) =
                     </div>
                 ))}
             </ContextMenuContent>
-        </ContextMenu>
+        </ContextMenu >
     );
 };

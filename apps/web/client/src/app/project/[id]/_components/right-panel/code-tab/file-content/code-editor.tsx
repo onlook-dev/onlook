@@ -1,5 +1,5 @@
 import { EditorView } from '@codemirror/view';
-import { getMimeType } from '@onlook/utility/src/file';
+import { convertToBase64, getMimeType } from '@onlook/utility/src/file';
 import CodeMirror from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { type RefObject } from 'react';
@@ -23,8 +23,7 @@ export const CodeEditor = observer(({
 }: CodeEditorProps) => {
     const getFileUrl = (file: BinaryEditorFile) => {
         const mime = getMimeType(file.path.toLowerCase());
-        // Convert Uint8Array to base64 string
-        const base64 = btoa(String.fromCharCode(...new Uint8Array(file.content)));
+        const base64 = convertToBase64(new Uint8Array(file.content));
         return `data:${mime};base64,${base64}`;
     };
 

@@ -2,6 +2,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { hashContent } from '@/services/sync-engine/sync-engine';
 import { EditorView } from '@codemirror/view';
 import { useDirectory, useFile, useFS } from '@onlook/file-system/hooks';
+import { toast } from '@onlook/ui/sonner';
 import { motion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CodeEditorArea } from './file-content';
@@ -219,6 +220,26 @@ export const CodeTab = () => {
         setShowLocalUnsavedDialog(false);
     };
 
+    const handleRenameFile = (oldPath: string, newName: string) => {
+        if (!fs) return;
+        try {
+            fs.moveFile(oldPath, newName);
+        } catch (error) {
+            console.error('Failed to rename file:', error);
+            toast.error(`Failed to rename: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
+
+    const handleDeleteFile = (path: string) => {
+        if (!fs) return;
+        try {
+            fs.deleteFile(path);
+        } catch (error) {
+            console.error('Failed to delete file:', error);
+            toast.error(`Failed to delete: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
+
     // Cleanup editor instances when component unmounts
     useEffect(() => {
         return () => {
@@ -247,8 +268,8 @@ export const CodeTab = () => {
                         fileEntries={fileEntries}
                         isLoading={filesLoading}
                         selectedFilePath={activeEditorFile?.path}
-                        onDeleteFile={() => { }}
-                        onRenameFile={() => { }}
+                        onDeleteFile={handleDeleteFile}
+                        onRenameFile={handleRenameFile}
                         onRefresh={() => { }}
                     />
                 </motion.div>

@@ -1,7 +1,5 @@
-import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
-import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { forwardRef } from 'react';
 
 interface FileTreeSearchProps {
@@ -12,12 +10,12 @@ interface FileTreeSearchProps {
     onKeyDown: (e: React.KeyboardEvent) => void;
 }
 
-export const FileTreeSearch = forwardRef<HTMLInputElement, FileTreeSearchProps>(({ 
-    searchQuery, 
-    isLoading, 
-    onSearchChange, 
-    onRefresh, 
-    onKeyDown 
+export const FileTreeSearch = forwardRef<HTMLInputElement, FileTreeSearchProps>(({
+    searchQuery,
+    isLoading,
+    onSearchChange,
+    onRefresh,
+    onKeyDown
 }, ref) => {
 
     const handleRefresh = () => {
@@ -55,28 +53,6 @@ export const FileTreeSearch = forwardRef<HTMLInputElement, FileTreeSearchProps>(
                         </button>
                     )}
                 </div>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant={'default'}
-                            size={'icon'}
-                            className="p-2 w-fit h-8 text-foreground-tertiary hover:text-foreground-hover hover:border-border-onlook bg-background-none hover:bg-background-onlook"
-                            disabled={isLoading}
-                            onClick={handleRefresh}
-                        >
-                            {isLoading ? (
-                                <div className="animate-spin h-4 w-4 border-2 border-foreground-primary rounded-full border-t-transparent"></div>
-                            ) : (
-                                <Icons.Reload />
-                            )}
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipPortal>
-                        <TooltipContent>
-                            <p>{isLoading ? 'Loading files...' : 'Refresh files'}</p>
-                        </TooltipContent>
-                    </TooltipPortal>
-                </Tooltip>
             </div>
         </div>
     );

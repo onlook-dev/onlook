@@ -225,7 +225,7 @@ export const FileTree = ({
                                 />
                             )}
                         >
-                            {(props) => <FileTreeNode {...props} onFileSelect={onFileSelect} />}
+                            {(props) => <FileTreeNode {...props} onFileSelect={onFileSelect} onRenameFile={onRenameFile} onDeleteFile={onDeleteFile} />}
                         </Tree>
                     )}
                 </div>

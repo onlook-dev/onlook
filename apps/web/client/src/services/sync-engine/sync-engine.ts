@@ -82,7 +82,6 @@ export class CodeProviderSync {
         );
 
         const localEntries = await this.fs.listAll();
-        console.log('localEntries', localEntries);
 
         // Find entries to delete (exist locally but not in sandbox)
         const entriesToDelete = localEntries.filter((entry) => {
@@ -134,7 +133,6 @@ export class CodeProviderSync {
         for (const dirPath of directoriesToCreate) {
             try {
                 await this.fs.createDirectory(dirPath);
-                console.log(`[Sync] Created directory: ${dirPath}`);
             } catch (error) {
                 console.debug(`[Sync] Error creating directory ${dirPath}:`, error);
             }
