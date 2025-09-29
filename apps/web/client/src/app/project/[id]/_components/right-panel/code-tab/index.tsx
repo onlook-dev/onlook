@@ -249,53 +249,51 @@ export const CodeTab = () => {
     }, []);
 
     return (
-        <div className="size-full flex flex-col">
-            <div className="flex flex-1 min-h-0 overflow-hidden">
-                <motion.div
-                    initial={false}
-                    animate={{
-                        width: isSidebarOpen ? "auto" : 0,
-                        opacity: isSidebarOpen ? 1 : 0
+        <div className="size-full flex flex-row flex-1 min-h-0 overflow-hidden">
+            <motion.div
+                initial={false}
+                animate={{
+                    width: isSidebarOpen ? "auto" : 0,
+                    opacity: isSidebarOpen ? 1 : 0
+                }}
+                transition={{
+                    duration: 0.3,
+                    ease: [0.4, 0.0, 0.2, 1]
+                }}
+                className="overflow-hidden flex-shrink-0"
+                style={{ minWidth: 0 }}>
+                <FileTree
+                    onFileSelect={handleFileTreeSelect}
+                    fileEntries={fileEntries}
+                    isLoading={filesLoading}
+                    selectedFilePath={activeEditorFile?.path}
+                    onDeleteFile={handleDeleteFile}
+                    onRenameFile={handleRenameFile}
+                    onRefresh={() => { }}
+                />
+            </motion.div>
+            <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+                <FileTabs
+                    openedFiles={openedEditorFiles}
+                    activeFile={activeEditorFile}
+                    isSidebarOpen={isSidebarOpen}
+                    setIsSidebarOpen={setIsSidebarOpen}
+                    onFileSelect={handleLocalFileTabSelect}
+                    onCloseFile={closeLocalFile}
+                    onCloseAllFiles={closeAllLocalFiles}
+                />
+                <CodeEditorArea
+                    editorViewsRef={editorViewsRef}
+                    openedFiles={openedEditorFiles}
+                    activeFile={activeEditorFile}
+                    showUnsavedDialog={showLocalUnsavedDialog}
+                    onSaveFile={handleSaveFile}
+                    onUpdateFileContent={updateLocalFileContent}
+                    onDiscardChanges={discardLocalFileChanges}
+                    onCancelUnsaved={() => {
+                        setShowLocalUnsavedDialog(false);
                     }}
-                    transition={{
-                        duration: 0.3,
-                        ease: [0.4, 0.0, 0.2, 1]
-                    }}
-                    className="overflow-hidden flex-shrink-0"
-                    style={{ minWidth: 0 }}>
-                    <FileTree
-                        onFileSelect={handleFileTreeSelect}
-                        fileEntries={fileEntries}
-                        isLoading={filesLoading}
-                        selectedFilePath={activeEditorFile?.path}
-                        onDeleteFile={handleDeleteFile}
-                        onRenameFile={handleRenameFile}
-                        onRefresh={() => { }}
-                    />
-                </motion.div>
-                <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-                    <FileTabs
-                        openedFiles={openedEditorFiles}
-                        activeFile={activeEditorFile}
-                        isSidebarOpen={isSidebarOpen}
-                        setIsSidebarOpen={setIsSidebarOpen}
-                        onFileSelect={handleLocalFileTabSelect}
-                        onCloseFile={closeLocalFile}
-                        onCloseAllFiles={closeAllLocalFiles}
-                    />
-                    <CodeEditorArea
-                        editorViewsRef={editorViewsRef}
-                        openedFiles={openedEditorFiles}
-                        activeFile={activeEditorFile}
-                        showUnsavedDialog={showLocalUnsavedDialog}
-                        onSaveFile={handleSaveFile}
-                        onUpdateFileContent={updateLocalFileContent}
-                        onDiscardChanges={discardLocalFileChanges}
-                        onCancelUnsaved={() => {
-                            setShowLocalUnsavedDialog(false);
-                        }}
-                    />
-                </div>
+                />
             </div>
         </div>
     );
