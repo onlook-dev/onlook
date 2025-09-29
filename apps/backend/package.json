@@ -8,7 +8,7 @@
         "reset": "supabase db reset",
         "db:gen": "supabase gen types --lang=typescript --local --schema public > ../../packages/supabase/src/types/db.ts",
         "test": "cd supabase/functions/api && deno test",
-        "status": "supabase status -o env"
+        "status": "supabase status -o json"
     },
     "dependencies": {},
     "devDependencies": {
