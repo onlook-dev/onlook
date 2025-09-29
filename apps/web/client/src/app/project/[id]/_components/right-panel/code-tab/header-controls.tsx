@@ -8,23 +8,44 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { forwardRef, useState } from 'react';
+import { useState } from 'react';
 import { FileModal } from './modals/file-modal';
 import { FolderModal } from './modals/folder-modal';
+import { UploadModal } from './modals/upload-modal';
 
-export const CodeControls = forwardRef<HTMLDivElement>((props, ref) => {
-    const [isDirty, setIsDirty] = useState(false);
+interface CodeControlsProps {
+    isDirty: boolean;
+    currentPath: string;
+    onSave: () => Promise<void>;
+    onRefresh: () => void;
+}
+
+export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh }: CodeControlsProps) => {
     const [showFileModal, setShowFileModal] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showFolderModal, setShowFolderModal] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
-    const saveFile = () => {
-        // Mock
+    const handleSave = async () => {
+        if (!isDirty || isSaving) return;
+
+        try {
+            setIsSaving(true);
+            await onSave();
+        } catch (error) {
+            console.error('Failed to save file:', error);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleModalSuccess = () => {
+        onRefresh();
     };
 
     return (
         <>
-            <div ref={ref} className="flex flex-row items-center transition-opacity duration-200">
+            <div className="flex flex-row items-center transition-opacity duration-200">
                 <Tooltip>
                     <DropdownMenu>
                         <TooltipTrigger asChild>
@@ -79,8 +100,8 @@ export const CodeControls = forwardRef<HTMLDivElement>((props, ref) => {
                         <Button
                             variant="secondary"
                             size="icon"
-                            onClick={saveFile}
-                            disabled={!isDirty}
+                            onClick={handleSave}
+                            disabled={!isDirty || isSaving}
                             className={cn(
                                 "px-1.5 py-0.75 w-fit h-fit cursor-pointer mr-0.5 ml-1",
                                 isDirty
@@ -88,20 +109,40 @@ export const CodeControls = forwardRef<HTMLDivElement>((props, ref) => {
                                     : "hover:bg-background-onlook hover:text-teal-200"
                             )}
                         >
-                            <Icons.Save className={cn(
-                                "h-4 w-4",
-                                isDirty && "text-teal-200 group-hover:text-teal-100"
-                            )} />
-                            <span className="text-small">Save</span>
+                            {isSaving ? (
+                                <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <Icons.Save className={cn(
+                                    "h-4 w-4",
+                                    isDirty && "text-teal-200 group-hover:text-teal-100"
+                                )} />
+                            )}
+                            <span className="text-small">{isSaving ? 'Saving...' : 'Save'}</span>
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" hideArrow>
-                        <p>Save changes</p>
+                        <p>{isSaving ? 'Saving changes...' : 'Save changes'}</p>
                     </TooltipContent>
                 </Tooltip>
             </div>
-            <FileModal basePath={'test'} show={showFileModal} setShow={setShowFileModal} />
-            <FolderModal basePath={'test'} show={showFolderModal} setShow={setShowFolderModal} />
+            <FileModal
+                basePath={currentPath}
+                show={showFileModal}
+                setShow={setShowFileModal}
+                onSuccess={handleModalSuccess}
+            />
+            <FolderModal
+                basePath={currentPath}
+                show={showFolderModal}
+                setShow={setShowFolderModal}
+                onSuccess={handleModalSuccess}
+            />
+            <UploadModal
+                basePath={currentPath}
+                show={showUploadModal}
+                setShow={setShowUploadModal}
+                onSuccess={handleModalSuccess}
+            />
         </>
     );
-});
+};

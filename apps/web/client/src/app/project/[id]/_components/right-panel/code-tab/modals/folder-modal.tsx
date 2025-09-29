@@ -9,11 +9,12 @@ import {
     DialogTitle,
 } from '@onlook/ui/dialog';
 import { Input } from '@onlook/ui/input';
+import { Label } from '@onlook/ui/label';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import path from 'path';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     createFolderInSandbox
 } from '../shared/file-operations';
@@ -34,14 +35,20 @@ export const FolderModal = observer(({
     const editorEngine = useEditorEngine();
 
     const [name, setName] = useState('');
+    const [currentPath, setCurrentPath] = useState(basePath);
     const [warning, setWarning] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isComposing, setIsComposing] = useState(false);
 
+    // Update currentPath when basePath prop changes
+    useEffect(() => {
+        setCurrentPath(basePath);
+    }, [basePath]);
+
     const fullPath = useMemo(() => {
         if (!name) return '';
-        return path.join(basePath, name).replace(/\\/g, '/');
-    }, [basePath, name]);
+        return path.join(currentPath, name).replace(/\\/g, '/');
+    }, [currentPath, name]);
 
     const handleSubmit = async () => {
         if (!name || warning) return;
@@ -53,6 +60,8 @@ export const FolderModal = observer(({
             toast(`Folder "${name}" created successfully!`);
 
             setName('');
+            setCurrentPath(basePath);
+            setWarning('');
             setShow(false);
             onSuccess?.();
         } catch (error) {
@@ -64,7 +73,7 @@ export const FolderModal = observer(({
         }
     };
 
-    const displayPath = basePath === '' ? '/' : `/${basePath}`;
+    const displayPath = currentPath === '' ? '/' : `/${currentPath}`;
 
     return (
         <Dialog open={show} onOpenChange={(isOpen) => setShow(isOpen)}>
@@ -72,15 +81,31 @@ export const FolderModal = observer(({
                 <DialogHeader>
                     <DialogTitle>Create New Folder</DialogTitle>
                     <DialogDescription>
-                        Create a new folder in{' '}
-                        <code className="bg-background-secondary px-1 py-0.5 rounded text-xs">
-                            {displayPath}
-                        </code>
+                        Create a new folder
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-4 py-4">
                     <div className="space-y-2">
+                        <Label htmlFor="path">
+                            Directory Path
+                        </Label>
+                        <Input
+                            id="path"
+                            value={currentPath}
+                            onChange={(e) => setCurrentPath(e.target.value)}
+                            placeholder="/"
+                            disabled={isLoading}
+                            className="text-sm"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Path where the folder will be created
+                        </p>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="name">
+                            Folder Name
+                        </Label>
                         <Input
                             id="name"
                             value={name}

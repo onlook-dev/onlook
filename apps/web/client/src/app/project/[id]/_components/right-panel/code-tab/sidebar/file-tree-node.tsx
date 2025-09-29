@@ -80,12 +80,11 @@ export const FileTreeNode = ({
     };
 
     const handleRename = () => {
+        if (node.data.isDirectory) return;
+        if (isEditing) return;
+
         setIsEditing(true);
         setEditingName(node.data.name);
-
-        setTimeout(() => {
-
-        }, 500);
     };
 
     useEffect(() => {
@@ -97,6 +96,12 @@ export const FileTreeNode = ({
         if (!isEditing) {
             return;
         }
+
+        // Don't focus if already focused
+        if (document.activeElement === input) {
+            return;
+        }
+
         input.focus();
         const filename = node.data.name;
         const lastDotIndex = filename.lastIndexOf('.');
@@ -195,7 +200,7 @@ export const FileTreeNode = ({
                     )} */}
                 </div>
             </ContextMenuTrigger>
-            <ContextMenuContent>
+            {isDirectory && <ContextMenuContent>
                 {menuItems.map((item, index) => (
                     <div key={item.label}>
                         <ContextMenuItem
@@ -210,7 +215,7 @@ export const FileTreeNode = ({
                         {item.separator && <ContextMenuSeparator />}
                     </div>
                 ))}
-            </ContextMenuContent>
+            </ContextMenuContent>}
         </ContextMenu >
     );
 };

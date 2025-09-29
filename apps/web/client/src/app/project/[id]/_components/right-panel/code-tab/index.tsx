@@ -46,6 +46,7 @@ export const CodeTab = () => {
     const [activeEditorFile, setActiveEditorFile] = useState<EditorFile | null>(null);
     const [openedEditorFiles, setOpenedEditorFiles] = useState<EditorFile[]>([]);
     const [showLocalUnsavedDialog, setShowLocalUnsavedDialog] = useState(false);
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
     const { fs } = useFS(rootDir);
     const {
@@ -111,6 +112,42 @@ export const CodeTab = () => {
     useEffect(() => {
         // TODO: Create highlight range based on selected element
     }, [editorEngine.elements.selected]);
+
+    // Track dirty state of opened files
+    useEffect(() => {
+        const checkDirtyState = async () => {
+            if (openedEditorFiles.length === 0) {
+                setHasUnsavedChanges(false);
+                return;
+            }
+
+            const dirtyChecks = await Promise.all(
+                openedEditorFiles.map(file => isDirty(file))
+            );
+            setHasUnsavedChanges(dirtyChecks.some(dirty => dirty));
+        };
+
+        checkDirtyState();
+    }, [openedEditorFiles]);
+
+    const refreshFileTree = () => {
+        // Force refresh of file entries
+        // This will cause the file tree to re-render with updated file list
+        // Note: The useDirectory hook automatically handles file watching,
+        // but this provides an explicit refresh mechanism for after file operations
+        setTimeout(() => {
+            // Simple state update to trigger re-render
+            setSelectedFilePath(prev => prev);
+        }, 100);
+    };
+
+    // Get current directory from selected file path or default to root
+    const getCurrentPath = () => {
+        if (!selectedFilePath) return '';
+        const parts = selectedFilePath.split('/');
+        parts.pop(); // Remove filename to get directory
+        return parts.join('/');
+    };
 
     const handleFileTreeSelect = (filePath: string, searchTerm?: string) => {
         setSelectedFilePath(filePath);
@@ -254,7 +291,12 @@ export const CodeTab = () => {
         <div className="size-full flex flex-row flex-1 min-h-0 relative">
             {/* Absolute position for encapsulation */}
             <div className="absolute right-2 -top-9">
-                <CodeControls />
+                <CodeControls 
+                    isDirty={hasUnsavedChanges}
+                    currentPath={getCurrentPath()}
+                    onSave={handleSaveFile}
+                    onRefresh={refreshFileTree}
+                />
             </div>
 
             <motion.div
