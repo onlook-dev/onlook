@@ -2,13 +2,13 @@ import { useEditorEngine } from '@/components/store/editor';
 import { hashContent } from '@/services/sync-engine/sync-engine';
 import { EditorView } from '@codemirror/view';
 import { useDirectory, useFile, useFS } from '@onlook/file-system/hooks';
+import { motion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CodeEditorArea } from './file-content';
 import { FileTabs } from './file-tabs';
 import type { BinaryEditorFile, EditorFile, TextEditorFile } from './shared/types';
 import { isDirty } from './shared/utils';
 import { FileTree } from './sidebar/file-tree';
-
 
 const createEditorFile = async (filePath: string, content: string | Uint8Array): Promise<EditorFile> => {
     const isBinary = content instanceof Uint8Array;
@@ -38,6 +38,7 @@ export const CodeTab = () => {
     const rootDir = `/${editorEngine.projectId}/${editorEngine.branches.activeBranch.id}`;
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
 
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
     const [activeEditorFile, setActiveEditorFile] = useState<EditorFile | null>(null);
     const [openedEditorFiles, setOpenedEditorFiles] = useState<EditorFile[]>([]);
@@ -229,19 +230,34 @@ export const CodeTab = () => {
     return (
         <div className="size-full flex flex-col">
             <div className="flex flex-1 min-h-0 overflow-hidden">
-                <FileTree
-                    onFileSelect={handleFileTreeSelect}
-                    fileEntries={fileEntries}
-                    isLoading={filesLoading}
-                    selectedFilePath={activeEditorFile?.path}
-                    onDeleteFile={() => { }}
-                    onRenameFile={() => { }}
-                    onRefresh={() => { }}
-                />
+                <motion.div
+                    initial={false}
+                    animate={{
+                        width: isSidebarOpen ? "auto" : 0,
+                        opacity: isSidebarOpen ? 1 : 0
+                    }}
+                    transition={{
+                        duration: 0.3,
+                        ease: [0.4, 0.0, 0.2, 1]
+                    }}
+                    className="overflow-hidden flex-shrink-0"
+                    style={{ minWidth: 0 }}>
+                    <FileTree
+                        onFileSelect={handleFileTreeSelect}
+                        fileEntries={fileEntries}
+                        isLoading={filesLoading}
+                        selectedFilePath={activeEditorFile?.path}
+                        onDeleteFile={() => { }}
+                        onRenameFile={() => { }}
+                        onRefresh={() => { }}
+                    />
+                </motion.div>
                 <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
                     <FileTabs
                         openedFiles={openedEditorFiles}
                         activeFile={activeEditorFile}
+                        isSidebarOpen={isSidebarOpen}
+                        setIsSidebarOpen={setIsSidebarOpen}
                         onFileSelect={handleLocalFileTabSelect}
                         onCloseFile={closeLocalFile}
                         onCloseAllFiles={closeAllLocalFiles}

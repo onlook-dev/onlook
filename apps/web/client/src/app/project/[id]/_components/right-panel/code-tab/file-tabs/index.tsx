@@ -9,13 +9,15 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import type { EditorFile } from '../shared/types';
 import { FileTab } from './file-tab';
 
 interface FileTabsProps {
     openedFiles: EditorFile[];
     activeFile: EditorFile | null;
+    isSidebarOpen: boolean;
+    setIsSidebarOpen: (isSidebarOpen: boolean) => void;
     onFileSelect: (file: EditorFile) => void;
     onCloseFile: (fileId: string) => void;
     onCloseAllFiles: () => void;
@@ -24,12 +26,13 @@ interface FileTabsProps {
 export const FileTabs = ({
     openedFiles,
     activeFile,
+    isSidebarOpen,
+    setIsSidebarOpen,
     onFileSelect,
     onCloseFile,
     onCloseAllFiles,
 }: FileTabsProps) => {
     const ref = useRef<HTMLDivElement>(null);
-    const [isFilesVisible, setIsFilesVisible] = useState(true);
 
     // Scroll to active tab when it changes
     useEffect(() => {
@@ -63,14 +66,14 @@ export const FileTabs = ({
                         <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => setIsFilesVisible(!isFilesVisible)}
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                             className="text-muted-foreground hover:text-foreground"
                         >
-                            {isFilesVisible ? <Icons.SidebarLeftCollapse /> : <Icons.SidebarLeftExpand />}
+                            {isSidebarOpen ? <Icons.SidebarLeftCollapse /> : <Icons.SidebarLeftExpand />}
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="mt-1" hideArrow>
-                        {isFilesVisible ? 'Collapse sidebar' : 'Expand sidebar'}
+                        {isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
                     </TooltipContent>
                 </Tooltip>
             </div>
