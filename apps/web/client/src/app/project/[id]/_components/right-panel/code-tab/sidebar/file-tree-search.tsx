@@ -32,28 +32,24 @@ export const FileTreeSearch = forwardRef<HTMLInputElement, FileTreeSearchProps>(
     };
 
     return (
-        <div className="p-1.5 flex-shrink-0">
-            <div className="flex flex-row justify-between items-center gap-1 mb-2 pb-1.5 border-b-[0.5px] border-border-primary">
-                <div className="relative flex-grow">
-                    <Input
-                        ref={ref}
-                        className="h-8 text-small pr-8 focus-visible:ring-1 focus-visible:ring-border-secondary/50 focus-visible:ring-offset-0"
-                        placeholder="Search files"
-                        value={searchQuery}
-                        disabled={isLoading}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        onKeyDown={onKeyDown}
-                    />
-                    {searchQuery && (
-                        <button
-                            className="absolute right-[1px] top-[1px] bottom-[1px] aspect-square hover:bg-background-onlook active:bg-transparent flex items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] group"
-                            onClick={clearSearch}
-                        >
-                            <Icons.CrossS className="h-3 w-3 text-foreground-primary/50 group-hover:text-foreground-primary" />
-                        </button>
-                    )}
-                </div>
-            </div>
+        <div className="h-11 flex flex-row relative flex-shrink-0 justify-between items-center border-border-primary border-b-[0.5px] mb-2">
+            <Input
+                ref={ref}
+                className="m-2 h-8 text-small pr-8 focus-visible:ring-1 focus-visible:ring-border-secondary/50 focus-visible:ring-offset-0"
+                placeholder="Search files"
+                value={searchQuery}
+                disabled={isLoading}
+                onChange={(e) => onSearchChange(e.target.value)}
+                onKeyDown={onKeyDown}
+            />
+            {searchQuery && (
+                <button
+                    className="absolute right-[1px] top-[1px] bottom-[1px] aspect-square hover:bg-background-onlook active:bg-transparent flex items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] group"
+                    onClick={clearSearch}
+                >
+                    <Icons.CrossS className="h-3 w-3 text-foreground-primary/50 group-hover:text-foreground-primary" />
+                </button>
+            )}
         </div>
     );
 });
