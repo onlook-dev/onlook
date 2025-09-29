@@ -2,6 +2,16 @@
 
 import type { FileEntry } from '@onlook/file-system/hooks';
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle
+} from '@onlook/ui/alert-dialog';
+import {
     ContextMenu,
     ContextMenuContent,
     ContextMenuItem,
@@ -62,6 +72,7 @@ export const FileTreeNode = ({
 }: FileTreeNodeProps) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editingName, setEditingName] = useState(node.data.name);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const isDirectory = node.data.isDirectory;
 
@@ -149,7 +160,7 @@ export const FileTreeNode = ({
             {
                 label: 'Delete',
                 action: () => {
-                    onDeleteFile(node.data.path);
+                    setShowDeleteDialog(true);
                 },
                 icon: <Icons.Trash className="w-4 h-4 text-red-500" />,
                 separator: false,
@@ -216,6 +227,32 @@ export const FileTreeNode = ({
                     </div>
                 ))}
             </ContextMenuContent>
+
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete {isDirectory ? 'Folder' : 'File'}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete "{node.data.name}"?
+                            {isDirectory
+                                ? ' This will permanently delete the folder and all its contents.'
+                                : ' This action cannot be undone.'}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                onDeleteFile(node.data.path);
+                                setShowDeleteDialog(false);
+                            }}
+                            className="bg-red-600 hover:bg-red-700 text-primary"
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </ContextMenu >
     );
 };
