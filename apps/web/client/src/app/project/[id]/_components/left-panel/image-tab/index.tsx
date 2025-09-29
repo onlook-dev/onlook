@@ -5,10 +5,10 @@ import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { BreadcrumbNavigation } from './breadcrumb-navigation';
 import { FolderList } from './folder-list';
-import { ImageGrid } from './image-grid';
-import { SearchUploadBar } from './search-upload-bar';
 import { useImageOperations } from './hooks/use-image-operations';
 import { useNavigation } from './hooks/use-navigation';
+import { ImageGrid } from './image-grid';
+import { SearchUploadBar } from './search-upload-bar';
 
 export const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
