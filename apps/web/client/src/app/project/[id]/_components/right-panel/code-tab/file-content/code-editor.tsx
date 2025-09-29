@@ -3,7 +3,7 @@ import { convertToBase64, getMimeType } from '@onlook/utility/src/file';
 import CodeMirror from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { type RefObject } from 'react';
-import type { BinaryEditorFile, EditorFile, TextEditorFile } from '../shared/types';
+import type { BinaryEditorFile, EditorFile } from '../shared/types';
 import { getBasicSetup, getExtensions } from './code-mirror-config';
 
 interface CodeEditorProps {
@@ -46,10 +46,10 @@ export const CodeEditor = observer(({
                     className="w-full h-full object-contain p-5"
                 />
             )}
-            {file.type === 'text' && (
+            {file.type === 'text' && typeof file.content === 'string' && (
                 <CodeMirror
                     key={file.path}
-                    value={(file as TextEditorFile).content}
+                    value={file.content}
                     height="100%"
                     theme="dark"
                     extensions={[

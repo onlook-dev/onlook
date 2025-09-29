@@ -18,7 +18,7 @@ interface FileTreeNodeProps {
     node: NodeApi<FileEntry>;
     style: React.CSSProperties;
     onFileSelect: (filePath: string, searchTerm?: string) => void;
-    onRenameFile: (oldPath: string, newName: string) => void;
+    onRenameFile: (oldPath: string, newPath: string) => void;
     onDeleteFile: (path: string) => void;
 }
 
@@ -84,7 +84,8 @@ export const FileTreeNode = ({
 
     const handleBlur = () => {
         if (editingName.trim() && editingName !== node.data.name) {
-            onRenameFile(node.data.name, editingName.trim());
+            const newPath = node.data.path.replace(node.data.name, editingName.trim());
+            onRenameFile(node.data.path, newPath);
         }
         setIsEditing(false);
         setEditingName(node.data.name);
