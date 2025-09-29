@@ -1,4 +1,3 @@
-import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import {
     Dialog,
@@ -10,29 +9,25 @@ import {
 } from '@onlook/ui/dialog';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
-import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
 import path from 'path';
 import { useEffect, useMemo, useState } from 'react';
-import {
-    createFolderInSandbox
-} from '../shared/file-operations';
 
 interface FolderModalProps {
     basePath: string;
     show: boolean;
     setShow: (show: boolean) => void;
     onSuccess?: () => void;
+    onCreateFolder: (folderPath: string) => Promise<void>;
 }
 
-export const FolderModal = observer(({
+export const FolderModal = ({
     basePath,
     show,
     setShow,
     onSuccess,
+    onCreateFolder,
 }: FolderModalProps) => {
-    const editorEngine = useEditorEngine();
 
     const [name, setName] = useState('');
     const [currentPath, setCurrentPath] = useState(basePath);
@@ -56,8 +51,7 @@ export const FolderModal = observer(({
         try {
             setIsLoading(true);
 
-            await createFolderInSandbox(editorEngine.activeSandbox.session.provider, fullPath, editorEngine.activeSandbox);
-            toast(`Folder "${name}" created successfully!`);
+            await onCreateFolder(fullPath);
 
             setName('');
             setCurrentPath(basePath);
@@ -155,4 +149,4 @@ export const FolderModal = observer(({
             </DialogContent>
         </Dialog>
     );
-}); 
+}; 

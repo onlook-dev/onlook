@@ -139,13 +139,13 @@ export const FileTreeNode = ({
         icon: React.ReactElement;
         separator: boolean;
         className?: string;
-    }> = [
-            {
+    } | null> = [
+            !isDirectory ? {
                 label: 'Rename',
                 action: handleRename,
                 icon: <Icons.Edit className="w-4 h-4" />,
                 separator: false,
-            },
+            } : null,
             {
                 label: 'Delete',
                 action: () => {
@@ -200,8 +200,8 @@ export const FileTreeNode = ({
                     )} */}
                 </div>
             </ContextMenuTrigger>
-            {!isDirectory && <ContextMenuContent>
-                {menuItems.map((item, index) => (
+            <ContextMenuContent>
+                {menuItems.filter(item => item !== null).map((item, index) => (
                     <div key={item.label}>
                         <ContextMenuItem
                             onClick={item.action}
@@ -215,7 +215,7 @@ export const FileTreeNode = ({
                         {item.separator && <ContextMenuSeparator />}
                     </div>
                 ))}
-            </ContextMenuContent>}
+            </ContextMenuContent>
         </ContextMenu >
     );
 };

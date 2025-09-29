@@ -18,9 +18,11 @@ interface CodeControlsProps {
     currentPath: string;
     onSave: () => Promise<void>;
     onRefresh: () => void;
+    onCreateFile: (filePath: string, content?: string) => Promise<void>;
+    onCreateFolder: (folderPath: string) => Promise<void>;
 }
 
-export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh }: CodeControlsProps) => {
+export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreateFile, onCreateFolder }: CodeControlsProps) => {
     const [showFileModal, setShowFileModal] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showFolderModal, setShowFolderModal] = useState(false);
@@ -130,18 +132,21 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh }: CodeCo
                 show={showFileModal}
                 setShow={setShowFileModal}
                 onSuccess={handleModalSuccess}
+                onCreateFile={onCreateFile}
             />
             <FolderModal
                 basePath={currentPath}
                 show={showFolderModal}
                 setShow={setShowFolderModal}
                 onSuccess={handleModalSuccess}
+                onCreateFolder={onCreateFolder}
             />
             <UploadModal
                 basePath={currentPath}
                 show={showUploadModal}
                 setShow={setShowUploadModal}
                 onSuccess={handleModalSuccess}
+                onCreateFile={onCreateFile}
             />
         </>
     );

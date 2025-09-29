@@ -278,6 +278,28 @@ export const CodeTab = () => {
         }
     };
 
+    const handleCreateFile = async (filePath: string, content: string = '') => {
+        if (!fs) throw new Error('File system not available');
+        try {
+            await fs.writeFile(filePath, content);
+            toast(`File "${filePath.split('/').pop()}" created successfully!`);
+        } catch (error) {
+            console.error('Failed to create file:', error);
+            throw error;
+        }
+    };
+
+    const handleCreateFolder = async (folderPath: string) => {
+        if (!fs) throw new Error('File system not available');
+        try {
+            await fs.createDirectory(folderPath);
+            toast(`Folder "${folderPath.split('/').pop()}" created successfully!`);
+        } catch (error) {
+            console.error('Failed to create folder:', error);
+            throw error;
+        }
+    };
+
     // Cleanup editor instances when component unmounts
     useEffect(() => {
         return () => {
@@ -292,9 +314,11 @@ export const CodeTab = () => {
             <div className="absolute right-2 -top-9">
                 <CodeControls
                     isDirty={hasUnsavedChanges}
-                    currentPath={activeEditorFile?.path ?? rootDir}
+                    currentPath={getCurrentPath()}
                     onSave={handleSaveFile}
                     onRefresh={refreshFileTree}
+                    onCreateFile={handleCreateFile}
+                    onCreateFolder={handleCreateFolder}
                 />
             </div>
 

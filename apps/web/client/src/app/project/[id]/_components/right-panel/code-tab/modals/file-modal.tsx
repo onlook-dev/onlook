@@ -1,4 +1,3 @@
-import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import {
     Dialog,
@@ -10,9 +9,7 @@ import {
 } from '@onlook/ui/dialog';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
-import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
 import path from 'path';
 import { useEffect, useMemo, useState } from 'react';
 import { getFileTemplate } from '../shared/file-templates';
@@ -22,15 +19,16 @@ interface FileModalProps {
     show: boolean;
     setShow: (show: boolean) => void;
     onSuccess?: () => void;
+    onCreateFile: (filePath: string, content?: string) => Promise<void>;
 }
 
-export const FileModal = observer(({
+export const FileModal = ({
     basePath,
     show,
     setShow,
     onSuccess,
+    onCreateFile,
 }: FileModalProps) => {
-    const editorEngine = useEditorEngine();
 
     const [name, setName] = useState('');
     const [currentPath, setCurrentPath] = useState(basePath);
@@ -60,8 +58,7 @@ export const FileModal = observer(({
             setIsLoading(true);
 
             const content = getFileTemplate(name);
-            await createFileInSandbox(editorEngine.activeSandbox.session.provider, fullPath, content, editorEngine.activeSandbox);
-            toast(`File "${name}" created successfully!`);
+            await onCreateFile(fullPath, content);
 
             setName('');
             setCurrentPath(basePath);
@@ -159,4 +156,4 @@ export const FileModal = observer(({
             </DialogContent>
         </Dialog>
     );
-}); 
+}; 

@@ -1,4 +1,3 @@
-import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import {
     Dialog,
@@ -12,7 +11,6 @@ import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
 import path from 'path';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -21,15 +19,16 @@ interface UploadModalProps {
     show: boolean;
     setShow: (show: boolean) => void;
     onSuccess?: () => void;
+    onCreateFile: (filePath: string, content?: string) => Promise<void>;
 }
 
-export const UploadModal = observer(({
+export const UploadModal = ({
     basePath,
     show,
     setShow,
     onSuccess,
+    onCreateFile,
 }: UploadModalProps) => {
-    const editorEngine = useEditorEngine();
 
     const [currentPath, setCurrentPath] = useState(basePath);
     const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
@@ -85,12 +84,7 @@ export const UploadModal = observer(({
                     reader.readAsText(file);
                 });
 
-                await createFileInSandbox(
-                    editorEngine.activeSandbox.session.provider,
-                    fullPath,
-                    content,
-                    editorEngine.activeSandbox
-                );
+                await onCreateFile(fullPath, content);
             }
 
             const fileCount = selectedFiles.length;
@@ -233,4 +227,4 @@ export const UploadModal = observer(({
             </DialogContent>
         </Dialog>
     );
-});
+};
