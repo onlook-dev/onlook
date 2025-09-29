@@ -81,10 +81,15 @@ export const customDarkTheme = EditorView.theme({
         backgroundColor: '#0a0a0a !important',
         color: '#6b7280 !important',
         border: 'none !important',
-        borderRight: '1px solid #1f2937 !important'
+        borderRight: '1px solid #1f2937 !important',
+        width: '45px !important'
+    },
+    ".cm-foldGutter": {
+        width: '12px !important'
     },
     '.cm-gutterElement': {
-        color: '#6b7280'
+        color: '#6b7280',
+        width: '12px !important'
     },
     '.cm-lineNumbers .cm-gutterElement': {
         color: '#6b7280',
