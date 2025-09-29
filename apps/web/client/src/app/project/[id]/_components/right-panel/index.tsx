@@ -15,7 +15,6 @@ import { ChatControls } from './chat-tab/controls';
 import { ChatHistory } from './chat-tab/history';
 import { ChatPanelDropdown } from './chat-tab/panel-dropdown';
 import { CodeTab } from './code-tab';
-import { CodeControls } from './code-tab/header-controls';
 
 const EDIT_PANEL_WIDTHS = {
     [EditorTabValue.CHAT]: 352,
@@ -76,7 +75,6 @@ export const RightPanel = observer(() => {
                             </TabsTrigger>
                         </div>
                         {selectedTab === EditorTabValue.CHAT && <ChatControls />}
-                        {selectedTab === EditorTabValue.DEV && <CodeControls />}
                     </TabsList>
                     <ChatHistory isOpen={isChatHistoryOpen} onOpenChange={setIsChatHistoryOpen} />
                     <TabsContent
@@ -95,7 +93,7 @@ export const RightPanel = observer(() => {
                     <TabsContent
                         forceMount
                         className={cn(
-                            'h-full overflow-y-auto',
+                            'h-full',
                             editorEngine.state.rightPanelTab !== EditorTabValue.DEV && 'hidden',
                         )}
                         value={EditorTabValue.DEV}

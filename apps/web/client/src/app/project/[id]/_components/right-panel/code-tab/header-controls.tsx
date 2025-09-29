@@ -1,4 +1,3 @@
-import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -9,12 +8,11 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
+import { forwardRef, useState } from 'react';
 import { FileModal } from './modals/file-modal';
 import { FolderModal } from './modals/folder-modal';
-import { useState } from 'react';
 
-export const CodeControls = () => {
+export const CodeControls = forwardRef<HTMLDivElement>((props, ref) => {
     const [isDirty, setIsDirty] = useState(false);
     const [showFileModal, setShowFileModal] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
@@ -26,7 +24,7 @@ export const CodeControls = () => {
 
     return (
         <>
-            <div className="flex flex-row items-center transition-opacity duration-200">
+            <div ref={ref} className="flex flex-row items-center transition-opacity duration-200">
                 <Tooltip>
                     <DropdownMenu>
                         <TooltipTrigger asChild>
@@ -106,4 +104,4 @@ export const CodeControls = () => {
             <FolderModal basePath={'test'} show={showFolderModal} setShow={setShowFolderModal} />
         </>
     );
-};
+});

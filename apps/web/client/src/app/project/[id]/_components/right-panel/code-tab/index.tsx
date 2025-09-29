@@ -7,6 +7,7 @@ import { motion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CodeEditorArea } from './file-content';
 import { FileTabs } from './file-tabs';
+import { CodeControls } from './header-controls';
 import type { BinaryEditorFile, EditorFile, TextEditorFile } from './shared/types';
 import { isDirty } from './shared/utils';
 import { FileTree } from './sidebar/file-tree';
@@ -38,6 +39,7 @@ export const CodeTab = () => {
     const editorEngine = useEditorEngine();
     const rootDir = `/${editorEngine.projectId}/${editorEngine.branches.activeBranch.id}`;
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
+    const codeControlsRef = useRef<HTMLDivElement>(null);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
@@ -249,7 +251,12 @@ export const CodeTab = () => {
     }, []);
 
     return (
-        <div className="size-full flex flex-row flex-1 min-h-0 overflow-hidden">
+        <div className="size-full flex flex-row flex-1 min-h-0 relative">
+            {/* Absolute position for encapsulation */}
+            <div className="absolute right-2 -top-9">
+                <CodeControls />
+            </div>
+
             <motion.div
                 initial={false}
                 animate={{
@@ -260,7 +267,7 @@ export const CodeTab = () => {
                     duration: 0.3,
                     ease: [0.4, 0.0, 0.2, 1]
                 }}
-                className="overflow-hidden flex-shrink-0"
+                className="flex-shrink-0 overflow-y-auto"
                 style={{ minWidth: 0 }}>
                 <FileTree
                     onFileSelect={handleFileTreeSelect}

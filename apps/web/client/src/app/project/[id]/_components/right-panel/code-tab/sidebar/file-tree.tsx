@@ -168,7 +168,7 @@ export const FileTree = ({
     const filesTreeDimensions = useMemo(
         () => ({
             width: filesWidth ?? 224, // Match w-56 container width (224px)
-            height: filesHeight ?? 300,
+            height: (filesHeight ?? 300) - 10,
         }),
         [filesWidth, filesHeight],
     );
