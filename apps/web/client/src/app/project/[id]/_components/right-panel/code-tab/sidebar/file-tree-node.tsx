@@ -11,7 +11,7 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { motion } from 'motion/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { NodeApi } from 'react-arborist';
 
 interface FileTreeNodeProps {
@@ -84,10 +84,30 @@ export const FileTreeNode = ({
         setEditingName(node.data.name);
 
         setTimeout(() => {
-            inputRef.current?.focus();
-            inputRef.current?.select();
+
         }, 500);
     };
+
+    useEffect(() => {
+        const input = inputRef.current;
+        if (!input) {
+            return;
+        }
+
+        if (!isEditing) {
+            return;
+        }
+        input.focus();
+        const filename = node.data.name;
+        const lastDotIndex = filename.lastIndexOf('.');
+        if (lastDotIndex > 0 && !isDirectory) {
+            // Select from start to before the last dot (extension)
+            input?.setSelectionRange(0, lastDotIndex);
+        } else {
+            // If no extension or is directory, select all
+            input?.select();
+        }
+    }, [inputRef.current]);
 
     const handleBlur = () => {
         if (editingName.trim() && editingName !== node.data.name) {
