@@ -7,13 +7,13 @@ import { BreadcrumbNavigation } from './breadcrumb-navigation';
 import { FolderList } from './folder-list';
 import { ImageGrid } from './image-grid';
 import { SearchUploadBar } from './search-upload-bar';
-import { useImageOperations } from './use-image-operations';
-import { useNavigation } from './use-navigation';
+import { useImageOperations } from './hooks/use-image-operations';
+import { useNavigation } from './hooks/use-navigation';
 
 export const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
     const rootDir = `/${editorEngine.projectId}/${editorEngine.branches.activeBranch.id}`;
-    
+
     // Navigation state and handlers
     const {
         activeFolder,
@@ -24,7 +24,7 @@ export const ImagesTab = observer(() => {
         handleFolderClick,
         filterImages,
     } = useNavigation('/public');
-    
+
     // Image operations and data
     const {
         folders,
@@ -34,7 +34,7 @@ export const ImagesTab = observer(() => {
         isUploading,
         handleUpload,
     } = useImageOperations(rootDir, activeFolder);
-    
+
     // Filter images based on search
     const images = filterImages(allImages);
 
@@ -63,17 +63,17 @@ export const ImagesTab = observer(() => {
                 isUploading={isUploading}
                 onUpload={handleUpload}
             />
-            
+
             <BreadcrumbNavigation
                 breadcrumbSegments={breadcrumbSegments}
                 onNavigate={navigateToFolder}
             />
-            
+
             <FolderList
                 folders={folders}
                 onFolderClick={handleFolderClick}
             />
-            
+
             <ImageGrid
                 images={images}
                 rootDir={rootDir}
