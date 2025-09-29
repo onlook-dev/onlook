@@ -11,7 +11,7 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { motion } from 'motion/react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { NodeApi } from 'react-arborist';
 
 interface FileTreeNodeProps {
@@ -62,7 +62,9 @@ export const FileTreeNode = ({
 }: FileTreeNodeProps) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editingName, setEditingName] = useState(node.data.name);
+    const inputRef = useRef<HTMLInputElement>(null);
     const isDirectory = node.data.isDirectory;
+
     const handleClick = (e: React.MouseEvent) => {
         if (isEditing) return;
 
@@ -80,6 +82,11 @@ export const FileTreeNode = ({
     const handleRename = () => {
         setIsEditing(true);
         setEditingName(node.data.name);
+
+        setTimeout(() => {
+            inputRef.current?.focus();
+            inputRef.current?.select();
+        }, 500);
     };
 
     const handleBlur = () => {
@@ -92,6 +99,7 @@ export const FileTreeNode = ({
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
+        e.stopPropagation();
         if (e.key === 'Enter') {
             handleBlur();
         } else if (e.key === 'Escape') {
@@ -148,6 +156,7 @@ export const FileTreeNode = ({
                     {getFileIcon(node.data.path, isDirectory)}
                     {isEditing ? (
                         <input
+                            ref={inputRef}
                             type="text"
                             value={editingName}
                             onChange={(e) => setEditingName(e.target.value)}
