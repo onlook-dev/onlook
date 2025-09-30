@@ -33,7 +33,7 @@ export function initModel({
             providerOptions = {
                 openrouter: { transforms: ['middle-out'] },
             };
-            const isClaude = requestedModel === OPENROUTER_MODELS.CLAUDE_4_SONNET;
+            const isClaude = requestedModel === OPENROUTER_MODELS.CLAUDE_4_SONNET || requestedModel === OPENROUTER_MODELS.CLAUDE_4_5_SONNET || requestedModel === OPENROUTER_MODELS.CLAUDE_3_5_HAIKU;
             providerOptions = isClaude
                 ? { ...providerOptions, anthropic: { cacheControl: { type: 'ephemeral' } } }
                 : providerOptions;
