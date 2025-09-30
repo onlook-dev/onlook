@@ -22,7 +22,7 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
 
     // Check if sandbox is connecting for this frame's branch
     const branchData = editorEngine.branches.getBranchDataById(frame.branchId);
-    const isConnecting = branchData?.sandbox?.session?.isConnecting || branchData?.sandbox?.isIndexing || false;
+    const isConnecting = branchData?.sandbox?.session?.isConnecting || false;
 
     // Timeout for connection attempts
     useEffect(() => {
@@ -33,7 +33,7 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
 
         const timeoutId = setTimeout(() => {
             const currentBranchData = editorEngine.branches.getBranchDataById(frame.branchId);
-            const stillConnecting = currentBranchData?.sandbox?.session?.isConnecting || currentBranchData?.sandbox?.isIndexing || false;
+            const stillConnecting = currentBranchData?.sandbox?.session?.isConnecting || false;
 
             if (stillConnecting) {
                 setHasTimedOut(true);

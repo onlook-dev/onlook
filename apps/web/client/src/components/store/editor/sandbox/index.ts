@@ -90,14 +90,6 @@ export class SandboxManager {
         return null;
     }
 
-    get isIndexed() {
-        return true;
-    }
-
-    get isIndexing() {
-        return false;
-    }
-
     get errors() {
         return this.errorManager.errors;
     }

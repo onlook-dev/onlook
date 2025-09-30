@@ -20,7 +20,6 @@ export class PagesManager {
     private activeRoutesByFrameId: Record<string, string> = {};
     private currentPath = '';
     private groupedRoutes = '';
-    private _isScanning = false;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -30,15 +29,15 @@ export class PagesManager {
         reaction(
             () => {
                 return {
-                    isIndexing: this.editorEngine.activeSandbox.isIndexing,
-                    isIndexed: this.editorEngine.activeSandbox.isIndexed,
+                    state: this.editorEngine.state,
+                    session: this.editorEngine.activeSandbox.session,
                 };
             },
-            (sandboxStatus) => {
-                if (this.editorEngine.state.leftPanelTab !== LeftPanelTabValue.PAGES) {
+            ({ state, session }) => {
+                if (state.leftPanelTab !== LeftPanelTabValue.PAGES) {
                     return;
                 }
-                if (sandboxStatus.isIndexed && !sandboxStatus.isIndexing) {
+                if (session) {
                     this.scanPages();
                 }
             },
@@ -52,10 +51,6 @@ export class PagesManager {
     get activeRoute(): string | undefined {
         const frame = this.getActiveFrame();
         return frame ? this.activeRoutesByFrameId[frame.frame.id] : undefined;
-    }
-
-    get isScanning() {
-        return this._isScanning;
     }
 
     private getActiveFrame(): FrameData | undefined {
@@ -136,31 +131,12 @@ export class PagesManager {
 
     async scanPages() {
         try {
-            if (this._isScanning) {
-                return;
-            }
-            this._isScanning = true;
-            if (this.editorEngine.activeSandbox.session.provider) {
-                try {
-                    const realPages = await scanPagesFromSandbox(this.editorEngine.activeSandbox);
-
-                    this.setPages(realPages);
-                    this._isScanning = false;
-                    return;
-                } catch (error) {
-                    console.error('Failed to scan pages from sandbox:', error);
-                    this.setPages([]);
-                    this._isScanning = false;
-                }
-            } else {
-                console.log('Sandbox provider not available');
-                this.setPages([]);
-            }
+            const realPages = await scanPagesFromSandbox(this.editorEngine.activeSandbox);
+            this.setPages(realPages);
+            return;
         } catch (error) {
-            console.error('Failed to scan pages:', error);
+            console.error('Failed to scan pages from sandbox:', error);
             this.setPages([]);
-        } finally {
-            this._isScanning = false;
         }
     }
 

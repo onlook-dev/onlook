@@ -49,16 +49,13 @@ export class FontManager {
         // React to sandbox connection status
         this.sandboxReactionDisposer = reaction(
             () => {
-                return {
-                    isIndexing: this.editorEngine.activeSandbox.isIndexing,
-                    isIndexed: this.editorEngine.activeSandbox.isIndexed,
-                };
+                return this.editorEngine.activeSandbox.session;
             },
-            (sandboxStatus) => {
+            (session) => {
                 if (this.editorEngine.state.leftPanelTab !== LeftPanelTabValue.BRAND) {
                     return;
                 }
-                if (sandboxStatus.isIndexed && !sandboxStatus.isIndexing) {
+                if (session) {
                     this.loadInitialFonts();
                     this.getCurrentDefaultFont();
                     this.syncFontsWithConfigs();

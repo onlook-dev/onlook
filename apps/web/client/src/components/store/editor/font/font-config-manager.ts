@@ -28,9 +28,9 @@ export class FontConfigManager {
 
     init() {
         this.indexedReactionDisposer = reaction(
-            () => this.editorEngine.activeSandbox.isIndexed,
-            async (isIndexedFiles) => {
-                if (isIndexedFiles) {
+            () => this.editorEngine.activeSandbox.session,
+            async (session) => {
+                if (session) {
                     await this.updateFontConfigPath();
                 }
             },
@@ -270,10 +270,6 @@ export class FontConfigManager {
         const sandbox = this.editorEngine.activeSandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
-            return;
-        }
-
-        if (sandbox.isIndexing) {
             return;
         }
 
