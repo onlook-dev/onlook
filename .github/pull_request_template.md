@@ -12,8 +12,7 @@
 
 - [ ] Bug fix
 - [ ] New feature
-- [ ] Documentation update
-- [ ] Release
+- [ ] Documentation
 - [ ] Refactor
 - [ ] Other (please describe):
 
