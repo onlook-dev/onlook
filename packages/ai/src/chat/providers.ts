@@ -11,10 +11,10 @@ import { assertNever } from '@onlook/utility';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import type { LanguageModel } from 'ai';
 
-export async function initModel({
+export function initModel({
     provider: requestedProvider,
     model: requestedModel,
-}: InitialModelPayload): Promise<ModelConfig> {
+}: InitialModelPayload): ModelConfig {
     let model: LanguageModel;
     let providerOptions: Record<string, any> | undefined;
     let headers: Record<string, string> | undefined;
@@ -22,10 +22,10 @@ export async function initModel({
 
     switch (requestedProvider) {
         case LLMProvider.ANTHROPIC:
-            model = await getAnthropicProvider(requestedModel);
+            model = getAnthropicProvider(requestedModel);
             break;
         case LLMProvider.OPENROUTER:
-            model = await getOpenRouterProvider(requestedModel);
+            model = getOpenRouterProvider(requestedModel);
             headers = {
                 'HTTP-Referer': 'https://onlook.com',
                 'X-Title': 'Onlook',
@@ -33,7 +33,7 @@ export async function initModel({
             providerOptions = {
                 openrouter: { transforms: ['middle-out'] },
             };
-            const isClaude = requestedModel === OPENROUTER_MODELS.CLAUDE_4_SONNET;
+            const isClaude = requestedModel === OPENROUTER_MODELS.CLAUDE_4_SONNET || requestedModel === OPENROUTER_MODELS.CLAUDE_4_5_SONNET || requestedModel === OPENROUTER_MODELS.CLAUDE_3_5_HAIKU;
             providerOptions = isClaude
                 ? { ...providerOptions, anthropic: { cacheControl: { type: 'ephemeral' } } }
                 : providerOptions;
@@ -50,12 +50,12 @@ export async function initModel({
     };
 }
 
-async function getAnthropicProvider(model: ANTHROPIC_MODELS): Promise<LanguageModel> {
+function getAnthropicProvider(model: ANTHROPIC_MODELS): LanguageModel {
     const anthropic = createAnthropic();
     return anthropic(model);
 }
 
-async function getOpenRouterProvider(model: OPENROUTER_MODELS): Promise<LanguageModel> {
+function getOpenRouterProvider(model: OPENROUTER_MODELS): LanguageModel {
     if (!process.env.OPENROUTER_API_KEY) {
         throw new Error('OPENROUTER_API_KEY must be set');
     }

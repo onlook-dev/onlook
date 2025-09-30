@@ -1,23 +1,29 @@
-import { ChatType, LLMProvider, OPENROUTER_MODELS, type ModelConfig } from '@onlook/models';
-import { initModel } from '../../chat/providers';
-import { getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt } from '../../prompt';
-import { getToolSetFromType } from '../../tools/toolset';
+import { AgentType, ChatType, LLMProvider, OPENROUTER_MODELS, type ModelConfig } from '@onlook/models';
+import { getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '../../index';
 import { BaseAgent } from '../models/base';
+import { readOnlyRootTools, rootTools } from '../tool-lookup';
+
+export function getToolFromType(chatType: ChatType) {
+    return chatType === ChatType.ASK ? readOnlyRootTools : rootTools;
+}
 
 export class RootAgent extends BaseAgent {
-    readonly id = 'root-agent';
+    readonly agentType = AgentType.ROOT;
     private readonly chatType: ChatType;
     readonly modelConfig: ModelConfig;
 
-    constructor(chatType: ChatType, modelConfig: ModelConfig) {
-        super(getToolSetFromType(chatType));
-
+    constructor(chatType: ChatType) {
+        super();
         this.chatType = chatType;
-        this.modelConfig = modelConfig;
+        this.modelConfig = this.getModelFromType(chatType);
     }
 
     get systemPrompt(): string {
         return this.getSystemPromptFromType(this.chatType);
+    }
+
+    get tools() {
+        return getToolFromType(this.chatType);
     }
 
     private getSystemPromptFromType(chatType: ChatType): string {
@@ -32,25 +38,20 @@ export class RootAgent extends BaseAgent {
         }
     }
 
-    static async create(chatType: ChatType): Promise<RootAgent> {
-        const modelConfig = await RootAgent.getModelFromType(chatType);
-        return new RootAgent(chatType, modelConfig);
-    }
-
-    private static async getModelFromType(chatType: ChatType): Promise<ModelConfig> {
+    private getModelFromType(chatType: ChatType): ModelConfig {
         switch (chatType) {
             case ChatType.CREATE:
             case ChatType.FIX:
-                return await initModel({
+                return initModel({
                     provider: LLMProvider.OPENROUTER,
                     model: OPENROUTER_MODELS.OPEN_AI_GPT_5,
                 });
             case ChatType.ASK:
             case ChatType.EDIT:
             default:
-                return await initModel({
+                return initModel({
                     provider: LLMProvider.OPENROUTER,
-                    model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+                    model: OPENROUTER_MODELS.CLAUDE_4_5_SONNET,
                 });
         }
     }

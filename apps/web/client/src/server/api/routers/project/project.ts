@@ -321,7 +321,7 @@ export const projectRouter = createTRPCRouter({
         }))
         .mutation(async ({ ctx, input }): Promise<string> => {
             try {
-                const { model, providerOptions, headers } = await initModel({
+                const { model, providerOptions, headers } = initModel({
                     provider: LLMProvider.OPENROUTER,
                     model: OPENROUTER_MODELS.OPEN_AI_GPT_5_NANO,
                 });
