@@ -6,10 +6,11 @@ import {
     EXCLUDED_SYNC_DIRECTORIES
 } from '@onlook/constants';
 import { FileSystem, type FileEntry } from '@onlook/file-system';
-import { RouterType, type Branch } from '@onlook/models';
+import { type Branch } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
+import { detectRouterConfig } from '../pages/helper';
 import { SessionManager } from './session';
 
 export class SandboxManager {
@@ -41,9 +42,14 @@ export class SandboxManager {
         );
     }
 
-    getRootLayoutPath() {
+    async layoutPath() {
         // TODO: find the root layout path
         return 'src/app/layout.tsx';
+    }
+
+    async getRouterConfig() {
+        if (!this.fs) throw new Error('File system not initialized');
+        return await detectRouterConfig(this.fs);
     }
 
     async initializeSyncEngine(provider: Provider) {
@@ -66,11 +72,6 @@ export class SandboxManager {
 
     get isIndexing() {
         return false;
-    }
-
-    get routerConfig(): { type: RouterType; basePath: string } | null {
-        return null;
-        // return this._routerConfig;
     }
 
     get errors() {

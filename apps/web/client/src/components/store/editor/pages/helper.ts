@@ -5,7 +5,7 @@ import { RouterType } from '@onlook/models';
 import type { T } from '@onlook/parser';
 import { generate, getAstFromContent, t, traverse } from '@onlook/parser';
 
-import type { FileEntry } from '@onlook/file-system';
+import type { FileEntry, FileSystem } from '@onlook/file-system';
 import type { SandboxManager } from '../sandbox';
 import { formatContent } from '../sandbox/helpers';
 
@@ -418,7 +418,7 @@ const scanPagesDirectory = async (
 
 export const scanPagesFromSandbox = async (sandboxManager: SandboxManager): Promise<PageNode[]> => {
     // Use router config from sandbox manager
-    const routerConfig = sandboxManager.routerConfig;
+    const routerConfig = await sandboxManager.getRouterConfig();
 
     if (!routerConfig) {
         console.log('No Next.js router detected, returning empty pages');
@@ -432,17 +432,17 @@ export const scanPagesFromSandbox = async (sandboxManager: SandboxManager): Prom
     }
 };
 
-export const detectRouterTypeInSandbox = async (
-    sandboxManager: SandboxManager,
+export const detectRouterConfig = async (
+    fs: FileSystem,
 ): Promise<{ type: RouterType; basePath: string } | null> => {
     // Check for App Router
     for (const appPath of APP_ROUTER_PATHS) {
         try {
-            const entries = await sandboxManager.readDir(appPath);
+            const entries = await fs.readDirectory(appPath);
             if (entries && entries.length > 0) {
                 // Check for layout file (required for App Router)
                 const hasLayout = entries.some(
-                    (entry) =>
+                    (entry: FileEntry) =>
                         !entry.isDirectory &&
                         entry.name.startsWith('layout.') &&
                         ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
@@ -460,11 +460,11 @@ export const detectRouterTypeInSandbox = async (
     // Check for Pages Router if App Router not found
     for (const pagesPath of PAGES_ROUTER_PATHS) {
         try {
-            const entries: FileEntry[] = await sandboxManager.readDir(pagesPath);
+            const entries: FileEntry[] = await fs.readDirectory(pagesPath);
             if (entries && entries.length > 0) {
                 // Check for index file (common in Pages Router)
                 const hasIndex = entries.some(
-                    (entry) =>
+                    (entry: FileEntry) =>
                         !entry.isDirectory &&
                         entry.name.startsWith('index.') &&
                         ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
@@ -544,7 +544,7 @@ export const createPageInSandbox = async (
     pagePath: string,
 ): Promise<void> => {
     try {
-        const routerConfig = sandboxManager.routerConfig;
+        const routerConfig = await sandboxManager.getRouterConfig();
 
         if (!routerConfig) {
             throw new Error('Could not detect Next.js router type');
@@ -582,7 +582,7 @@ export const deletePageInSandbox = async (
     isDir: boolean,
 ): Promise<void> => {
     try {
-        const routerConfig = sandboxManager.routerConfig;
+        const routerConfig = await sandboxManager.getRouterConfig();
 
         if (!routerConfig) {
             throw new Error('Could not detect Next.js router type');
@@ -628,7 +628,7 @@ export const renamePageInSandbox = async (
     newName: string,
 ): Promise<void> => {
     try {
-        const routerConfig = sandboxManager.routerConfig;
+        const routerConfig = await sandboxManager.getRouterConfig();
 
         if (!routerConfig || routerConfig.type !== RouterType.APP) {
             throw new Error('Page renaming is only supported for App Router projects.');
@@ -671,7 +671,7 @@ export const duplicatePageInSandbox = async (
     targetPath: string,
 ): Promise<void> => {
     try {
-        const routerConfig = sandboxManager.routerConfig;
+        const routerConfig = await sandboxManager.getRouterConfig();
 
         if (!routerConfig || routerConfig.type !== RouterType.APP) {
             throw new Error('Page duplication is only supported for App Router projects.');
@@ -739,7 +739,7 @@ export const updatePageMetadataInSandbox = async (
     pagePath: string,
     metadata: PageMetadata,
 ): Promise<void> => {
-    const routerConfig = sandboxManager.routerConfig;
+    const routerConfig = await sandboxManager.getRouterConfig();
 
     if (!routerConfig) {
         throw new Error('Could not detect Next.js router type');
