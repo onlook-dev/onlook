@@ -30,6 +30,8 @@ import {
     TYPECHECK_TOOL_NAME,
     UPLOAD_IMAGE_TOOL_NAME,
     type UPLOAD_IMAGE_TOOL_PARAMETERS,
+    VIEW_IMAGE_TOOL_NAME,
+    type VIEW_IMAGE_TOOL_PARAMETERS,
     WEB_SEARCH_TOOL_NAME,
     type WEB_SEARCH_TOOL_PARAMETERS,
     WRITE_FILE_TOOL_NAME,
@@ -62,6 +64,7 @@ const TOOL_ICONS: Record<string, any> = {
     [TYPECHECK_TOOL_NAME]: Icons.MagnifyingGlass,
     [LIST_BRANCHES_TOOL_NAME]: Icons.Branch,
     [GLOB_TOOL_NAME]: Icons.MagnifyingGlass,
+    [VIEW_IMAGE_TOOL_NAME]: Icons.Image,
     [UPLOAD_IMAGE_TOOL_NAME]: Icons.Image,
 } as const;
 
@@ -220,6 +223,14 @@ const getLabel = (toolName: string, toolPart: ToolUIPart) => {
                 return 'Reading Onlook instructions';
             case TYPECHECK_TOOL_NAME:
                 return 'Checking types';
+            case VIEW_IMAGE_TOOL_NAME: {
+                const params = toolPart.input as z.infer<typeof VIEW_IMAGE_TOOL_PARAMETERS>;
+                if (params?.image_reference) {
+                    return 'Viewing image ' + truncateString(params.image_reference);
+                } else {
+                    return 'Viewing image';
+                }
+            }
             case UPLOAD_IMAGE_TOOL_NAME: {
                 const params = toolPart.input as z.infer<typeof UPLOAD_IMAGE_TOOL_PARAMETERS>;
                 if (params?.image_reference) {

@@ -110,7 +110,7 @@ export function getHydratedUserMessage(
         .join('\n');
     prompt += wrapXml('instruction', textContent);
 
-    // Add image references to prompt (but don't send image data yet)
+    // Add image references to prompt (but doesnt send image data yet)
     // AI will decide whether to view or upload them using tools
     if (images.length > 0) {
         const imageList = images
