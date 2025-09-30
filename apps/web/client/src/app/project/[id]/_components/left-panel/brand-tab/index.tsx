@@ -7,8 +7,6 @@ import ColorPanel from './color-panel';
 import FontPanel from './font-panel';
 import SystemFont from './font-panel/system-font';
 
-
-
 interface ColorSquareProps {
     color: string;
 }

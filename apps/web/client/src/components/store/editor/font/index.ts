@@ -5,10 +5,9 @@ import type { Font } from '@onlook/models/assets';
 import { generate } from '@onlook/parser';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
-import type { FileEvent } from '../sandbox/file-event-bus';
 import { addFontToConfig, ensureFontConfigFileExists, getFontConfigPath, readFontConfigFile, removeFontFromConfig, scanExistingFonts, scanFontConfig } from './font-config-manager';
 import { FontSearchManager } from './font-search-manager';
-import { FontUploadManager } from './font-upload-manager';
+import { uploadFonts } from './font-upload-manager';
 import { addFontVariableToRootLayout, getCurrentDefaultFont, removeFontVariableFromRootLayout, updateDefaultFontInRootLayout, } from './layout-manager';
 import {
     addFontToTailwindConfig,
@@ -21,57 +20,23 @@ export class FontManager {
     private _fontFamilies: Font[] = [];
     private _defaultFont: string | null = null;
     private _isScanning = false;
+    private _isUploading = false;
     private previousFonts: Font[] = [];
-    private fontConfigFileWatcher: (() => void) | null = null;
 
     // Managers
     private fontSearchManager: FontSearchManager;
-    private fontUploadManager: FontUploadManager;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
 
         // Initialize managers
         this.fontSearchManager = new FontSearchManager();
-        this.fontUploadManager = new FontUploadManager(editorEngine);
     }
 
     init() {
         this.loadInitialFonts();
         this.getCurrentDefaultFont();
         this.syncFontsWithConfigs();
-        this.setupFontConfigFileWatcher();
-    }
-
-    private setupFontConfigFileWatcher(): void {
-        if (this.fontConfigFileWatcher) {
-            this.fontConfigFileWatcher();
-        }
-
-        // TODO: Use fs watcher
-        // this.fontConfigFileWatcher = this.editorEngine.activeSandbox.fileEventBus.subscribe(
-        //     '*',
-        //     this.handleFileEvent.bind(this),
-        // );
-    }
-
-    private async handleFileEvent(event: FileEvent): Promise<void> {
-        try {
-            const { paths } = event;
-            const fontConfigPath = await getFontConfigPath(this.editorEngine);
-
-            if (!fontConfigPath) {
-                return;
-            }
-
-            if (!paths.some((path) => path.includes(fontConfigPath))) {
-                return;
-            }
-
-            await this.syncFontsWithConfigs();
-        } catch (error) {
-            console.error('Error handling file event in FontManager:', error);
-        }
     }
 
     private async loadInitialFonts(): Promise<void> {
@@ -208,6 +173,7 @@ export class FontManager {
     }
 
     async uploadFonts(fontFiles: FontUploadFile[]): Promise<boolean> {
+        this._isUploading = true;
         try {
             const routerConfig = await this.editorEngine.activeSandbox.getRouterConfig();
             if (!routerConfig?.basePath) {
@@ -228,7 +194,8 @@ export class FontManager {
                 return false;
             }
 
-            const result = await this.fontUploadManager.uploadFonts(
+            const result = await uploadFonts(
+                this.editorEngine,
                 fontFiles,
                 routerConfig.basePath,
                 fontConfig.ast,
@@ -249,6 +216,8 @@ export class FontManager {
         } catch (error) {
             console.error('Error uploading fonts:', error);
             return false;
+        } finally {
+            this._isUploading = false;
         }
     }
 
@@ -290,7 +259,7 @@ export class FontManager {
     }
 
     get isUploading(): boolean {
-        return this.fontUploadManager.isUploading;
+        return this._isUploading;
     }
 
     get isScanning(): boolean {
@@ -391,11 +360,9 @@ export class FontManager {
         this._fontFamilies = [];
         this._defaultFont = null;
         this._isScanning = false;
-
-        // Clear managers
+        this._isUploading = false;
         this.fontSearchManager.clear();
         this.fontSearchManager.updateFontsList([]);
-        this.fontUploadManager.clear();
     }
 
 }

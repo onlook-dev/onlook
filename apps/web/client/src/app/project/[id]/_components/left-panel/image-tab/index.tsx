@@ -41,8 +41,8 @@ export const ImagesTab = observer(() => {
     if (loading) {
         return (
             <div className="w-full h-full flex items-center justify-center gap-2">
-                <Icons.Reload className="w-4 h-4 animate-spin" />
-                Loading...
+                <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
+                Loading images...
             </div>
         );
     }
