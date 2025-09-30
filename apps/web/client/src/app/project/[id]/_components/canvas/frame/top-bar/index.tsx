@@ -56,13 +56,25 @@ export const TopBar = observer(
         }, [isSelected, editorEngine.canvas.scale, frame.dimension.width]);
 
         const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+            // Ignore right clicks or other button presses
+            if (e.button !== 0) return;
+
+            // Prevent text selection and default behaviors
+            e.preventDefault();
+
             mouseDownRef.current = {
                 x: e.clientX,
                 y: e.clientY,
                 time: Date.now()
             };
 
-            const selectedFrames = editorEngine.frames.selected.map(frameData => frameData.frame);
+            // If not multiselect and the clicked frame is not selected, select it first
+            if (!editorEngine.frames.isSelected(frame.id) && !e.shiftKey) {
+                editorEngine.frames.select([frame], false);
+            }
+
+            // Capture the selected frames after a possible selection update
+            const selectedFrames = editorEngine.frames.selected.map((frameData) => frameData.frame);
             const framesToMove = selectedFrames.length > 0 ? selectedFrames : [frame];
 
             createMouseMoveHandler(e, {
@@ -97,7 +109,7 @@ export const TopBar = observer(
             const currentTime = Date.now();
             const timeDiff = currentTime - mouseDownRef.current.time;
             const distance = Math.sqrt(
-                Math.pow(e.clientX - mouseDownRef.current.x, 2) + 
+                Math.pow(e.clientX - mouseDownRef.current.x, 2) +
                 Math.pow(e.clientY - mouseDownRef.current.y, 2)
             );
 
