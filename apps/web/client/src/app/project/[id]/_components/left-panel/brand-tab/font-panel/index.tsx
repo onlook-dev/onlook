@@ -28,6 +28,10 @@ const FontPanel = observer(() => {
         setIsUploadModalOpen(true);
     };
 
+    useEffect(() => {
+        editorEngine.font.init();
+    }, []);
+
     const handleFontUpload = async (fonts: FontFile[]) => {
         try {
             const success = await fontManager.uploadFonts(fonts);

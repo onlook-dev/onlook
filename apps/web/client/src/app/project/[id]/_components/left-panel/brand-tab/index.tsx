@@ -24,14 +24,6 @@ export const BrandTab = observer(() => {
     const editorEngine = useEditorEngine();
     const [brandColors, setBrandColors] = useState<string[]>([]);
 
-    useEffect(() => {
-        if (editorEngine.font.fontConfigPath) {
-            editorEngine.font.scanFonts();
-        }
-        // Pre-load theme configuration to avoid delay when opening color panel
-        editorEngine.theme.scanConfig();
-    }, [editorEngine.font.fontConfigPath, editorEngine.theme]);
-
     // Get project brand colors
     useEffect(() => {
         const loadBrandColors = async () => {

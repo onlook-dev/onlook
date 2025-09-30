@@ -135,9 +135,6 @@ export class FontUploadManager {
         }
     }
 
-    /**
-     * Clears the uploading state
-     */
     clear(): void {
         this._isUploading = false;
     }

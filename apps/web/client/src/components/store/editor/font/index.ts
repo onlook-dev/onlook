@@ -1,15 +1,15 @@
 'use client';
 
-import { LeftPanelTabValue, type CodeDiff, type FontUploadFile } from '@onlook/models';
+import { type CodeDiff, type FontUploadFile } from '@onlook/models';
 import type { Font } from '@onlook/models/assets';
 import { generate } from '@onlook/parser';
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { FileEvent } from '../sandbox/file-event-bus';
-import { FontConfigManager } from './font-config-manager';
+import { addFontToConfig, ensureFontConfigFileExists, getFontConfigPath, readFontConfigFile, removeFontFromConfig, scanExistingFonts, scanFontConfig } from './font-config-manager';
 import { FontSearchManager } from './font-search-manager';
 import { FontUploadManager } from './font-upload-manager';
-import { LayoutManager } from './layout-manager';
+import { addFontVariableToRootLayout, getCurrentDefaultFont, removeFontVariableFromRootLayout, updateDefaultFontInRootLayout, } from './layout-manager';
 import {
     addFontToTailwindConfig,
     ensureTailwindConfigExists,
@@ -26,43 +26,21 @@ export class FontManager {
 
     // Managers
     private fontSearchManager: FontSearchManager;
-    private fontConfigManager: FontConfigManager;
-    private layoutManager: LayoutManager;
     private fontUploadManager: FontUploadManager;
-
-    private sandboxReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
 
         // Initialize managers
         this.fontSearchManager = new FontSearchManager();
-        this.fontConfigManager = new FontConfigManager(editorEngine);
-        this.layoutManager = new LayoutManager(editorEngine);
         this.fontUploadManager = new FontUploadManager(editorEngine);
     }
 
     init() {
-        // Initialize sub-managers
-        this.fontConfigManager.init();
-
-        // React to sandbox connection status
-        this.sandboxReactionDisposer = reaction(
-            () => {
-                return this.editorEngine.activeSandbox.session;
-            },
-            (session) => {
-                if (this.editorEngine.state.leftPanelTab !== LeftPanelTabValue.BRAND) {
-                    return;
-                }
-                if (session) {
-                    this.loadInitialFonts();
-                    this.getCurrentDefaultFont();
-                    this.syncFontsWithConfigs();
-                    this.setupFontConfigFileWatcher();
-                }
-            },
-        );
+        this.loadInitialFonts();
+        this.getCurrentDefaultFont();
+        this.syncFontsWithConfigs();
+        this.setupFontConfigFileWatcher();
     }
 
     private setupFontConfigFileWatcher(): void {
@@ -80,7 +58,7 @@ export class FontManager {
     private async handleFileEvent(event: FileEvent): Promise<void> {
         try {
             const { paths } = event;
-            const fontConfigPath = this.fontConfigManager.fontConfigPath;
+            const fontConfigPath = await getFontConfigPath(this.editorEngine);
 
             if (!fontConfigPath) {
                 return;
@@ -96,10 +74,6 @@ export class FontManager {
         }
     }
 
-    get fontConfigPath(): string | null {
-        return this.fontConfigManager.fontConfigPath;
-    }
-
     private async loadInitialFonts(): Promise<void> {
         await this.fontSearchManager.loadInitialFonts();
     }
@@ -113,8 +87,13 @@ export class FontManager {
                 await this.addFonts(existedFonts);
             }
 
+            const fontConfigPath = await getFontConfigPath(this.editorEngine);
+            if (!fontConfigPath) {
+                console.error('No font config path found');
+                return [];
+            }
             // Scan fonts from config file
-            const fonts = await this.fontConfigManager.scanFonts();
+            const fonts = await scanFontConfig(fontConfigPath, this.editorEngine);
             this._fonts = fonts;
 
             // Update font search manager with current fonts
@@ -140,7 +119,7 @@ export class FontManager {
                 return [];
             }
 
-            return await this.fontConfigManager.scanExistingFonts(layoutPath);
+            return await scanExistingFonts(layoutPath, this.editorEngine);
         } catch (error) {
             console.error('Error scanning existing fonts:', error);
             return [];
@@ -152,7 +131,12 @@ export class FontManager {
      */
     async addFont(font: Font): Promise<boolean> {
         try {
-            const success = await this.fontConfigManager.addFont(font);
+            const fontConfigPath = await getFontConfigPath(this.editorEngine);
+            if (!fontConfigPath) {
+                console.error('No font config path found');
+                return false;
+            }
+            const success = await addFontToConfig(font, fontConfigPath, this.editorEngine);
             if (success) {
                 // Update the fonts array
                 this._fonts.push(font);
@@ -180,7 +164,12 @@ export class FontManager {
 
     async removeFont(font: Font): Promise<CodeDiff | false> {
         try {
-            const result = await this.fontConfigManager.removeFont(font);
+            const fontConfigPath = await getFontConfigPath(this.editorEngine);
+            if (!fontConfigPath) {
+                console.error('No font config path found');
+                return false;
+            }
+            const result = await removeFontFromConfig(font, fontConfigPath, this.editorEngine);
 
             if (result) {
                 // Remove from fonts array
@@ -205,8 +194,7 @@ export class FontManager {
     async setDefaultFont(font: Font): Promise<boolean> {
         try {
             this._defaultFont = font.id;
-
-            const codeDiff = await this.layoutManager.updateDefaultFontInRootLayout(font);
+            const codeDiff = await updateDefaultFontInRootLayout(font, this.editorEngine);
 
             if (codeDiff) {
                 await this.editorEngine.activeSandbox.writeFile(codeDiff.path, codeDiff.generated);
@@ -229,7 +217,12 @@ export class FontManager {
 
             await this.ensureConfigFilesExist();
 
-            const fontConfig = await this.fontConfigManager.readFontConfigFile();
+            const fontConfigPath = await getFontConfigPath(this.editorEngine);
+            if (!fontConfigPath) {
+                console.error('No font config path found');
+                return false;
+            }
+            const fontConfig = await readFontConfigFile(fontConfigPath, this.editorEngine);
             if (!fontConfig) {
                 console.error('Failed to read font config file');
                 return false;
@@ -243,11 +236,11 @@ export class FontManager {
 
             if (result.success) {
                 const { code } = generate(result.fontConfigAst);
-                if (!this.fontConfigManager.fontConfigPath) {
+                if (!fontConfigPath) {
                     return false;
                 }
                 await this.editorEngine.activeSandbox.writeFile(
-                    this.fontConfigManager.fontConfigPath,
+                    fontConfigPath,
                     code,
                 );
             }
@@ -312,31 +305,12 @@ export class FontManager {
         return this.fontSearchManager.hasMoreFonts;
     }
 
-    clear(): void {
-        this.sandboxReactionDisposer?.();
-        this.sandboxReactionDisposer = undefined;
-        this._fonts = [];
-        this.previousFonts = [];
-        this._fontFamilies = [];
-        this._defaultFont = null;
-        this._isScanning = false;
-
-        // Clear managers
-        this.fontSearchManager.clear();
-        this.fontSearchManager.updateFontsList([]);
-        this.fontUploadManager.clear();
-        this.fontConfigManager.clear();
-
-        // Clean up file watcher
-        this.cleanupFontConfigFileWatcher();
-    }
-
     /**
      * Gets the default font from the project
      */
     private async getCurrentDefaultFont(): Promise<string | null> {
         try {
-            const defaultFont = await this.layoutManager.getCurrentDefaultFont();
+            const defaultFont = await getCurrentDefaultFont(this.editorEngine);
             if (defaultFont) {
                 this._defaultFont = defaultFont;
             }
@@ -352,10 +326,6 @@ export class FontManager {
      */
     private async syncFontsWithConfigs(): Promise<void> {
         const sandbox = this.editorEngine.activeSandbox;
-        if (!sandbox) {
-            console.error('No sandbox session found');
-            return;
-        }
 
         try {
             const currentFonts = await this.scanFonts();
@@ -371,14 +341,14 @@ export class FontManager {
             if (removedFonts.length > 0) {
                 for (const font of removedFonts) {
                     await removeFontFromTailwindConfig(font, sandbox);
-                    await this.layoutManager.removeFontVariableFromRootLayout(font.id);
+                    await removeFontVariableFromRootLayout(font.id, this.editorEngine);
                 }
             }
 
             if (addedFonts.length > 0) {
                 for (const font of addedFonts) {
                     await addFontToTailwindConfig(font, sandbox);
-                    await this.layoutManager.addFontVariableToRootLayout(font.id);
+                    await addFontVariableToRootLayout(font.id, this.editorEngine);
                 }
             }
 
@@ -403,17 +373,29 @@ export class FontManager {
             console.error('No sandbox session found');
             return;
         }
+        const fontConfigPath = await getFontConfigPath(this.editorEngine);
+        if (!fontConfigPath) {
+            console.error('No font config path found');
+            return;
+        }
 
         await Promise.all([
-            this.fontConfigManager.ensureFontConfigFileExists(),
+            ensureFontConfigFileExists(fontConfigPath, this.editorEngine),
             ensureTailwindConfigExists(sandbox),
         ]);
     }
 
-    private cleanupFontConfigFileWatcher(): void {
-        if (this.fontConfigFileWatcher) {
-            this.fontConfigFileWatcher();
-            this.fontConfigFileWatcher = null;
-        }
+    clear() {
+        this._fonts = [];
+        this.previousFonts = [];
+        this._fontFamilies = [];
+        this._defaultFont = null;
+        this._isScanning = false;
+
+        // Clear managers
+        this.fontSearchManager.clear();
+        this.fontSearchManager.updateFontsList([]);
+        this.fontUploadManager.clear();
     }
+
 }
