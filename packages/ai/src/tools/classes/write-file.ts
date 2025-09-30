@@ -2,6 +2,7 @@ import { Icons } from '@onlook/ui/icons';
 import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
 import { ClientTool } from '../models/client';
+import { getFileSystem } from '../shared/helpers/files';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class WriteFileTool extends ClientTool {
@@ -16,11 +17,8 @@ export class WriteFileTool extends ClientTool {
 
     async handle(args: z.infer<typeof WriteFileTool.parameters>, editorEngine: EditorEngine): Promise<string> {
         try {
-            const sandbox = editorEngine.branches.getSandboxById(args.branchId);
-            if (!sandbox) {
-                throw new Error(`Sandbox not found for branch ID: ${args.branchId}`);
-            }
-            await sandbox.writeFile(args.file_path, args.content);
+            const fileSystem = await getFileSystem(editorEngine.projectId, args.branchId);
+            await fileSystem.writeFile(args.file_path, args.content);
             return `File ${args.file_path} written successfully`;
         } catch (error) {
             throw new Error(`Cannot write file ${args.file_path}: ${error}`);

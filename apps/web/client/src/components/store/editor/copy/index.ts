@@ -73,10 +73,6 @@ export class CopyManager {
             return;
         }
 
-        if (await this.pasteImageFromClipboard()) {
-            return;
-        }
-
         if (!this.copied) {
             console.warn('Nothing to paste');
             return;
@@ -123,28 +119,6 @@ export class CopyManager {
         };
 
         await this.editorEngine.action.run(action);
-    }
-
-    async pasteImageFromClipboard(): Promise<boolean> {
-        try {
-            const clipboard = await navigator.clipboard.read();
-            for (const item of clipboard) {
-                const imageType = item.types.find((type) => type.startsWith('image/'));
-                if (imageType) {
-                    const blob = await item.getType(imageType);
-                    const reader = new FileReader();
-                    reader.readAsDataURL(blob);
-                    reader.onloadend = async () => {
-                        const base64data = reader.result as string;
-                        await this.editorEngine.image.paste(base64data, imageType);
-                    };
-                    return true;
-                }
-            }
-        } catch (error) {
-            console.error('Failed to read clipboard:', error);
-        }
-        return false;
     }
 
     async cut() {

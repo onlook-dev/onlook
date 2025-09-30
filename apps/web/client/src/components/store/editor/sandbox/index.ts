@@ -78,7 +78,7 @@ export class SandboxManager {
         return this.fs.readFile(path);
     }
 
-    async writeFile(path: string, content: string): Promise<void> {
+    async writeFile(path: string, content: string | Uint8Array): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
         return this.fs.writeFile(path, content);
     }

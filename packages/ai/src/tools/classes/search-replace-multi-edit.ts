@@ -2,6 +2,7 @@ import { Icons } from '@onlook/ui/icons';
 import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
 import { ClientTool } from '../models/client';
+import { getFileSystem } from '../shared/helpers/files';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class SearchReplaceMultiEditFileTool extends ClientTool {
@@ -28,11 +29,8 @@ export class SearchReplaceMultiEditFileTool extends ClientTool {
 
     async handle(args: z.infer<typeof SearchReplaceMultiEditFileTool.parameters>, editorEngine: EditorEngine): Promise<string> {
         try {
-            const sandbox = editorEngine.branches.getSandboxById(args.branchId);
-            if (!sandbox) {
-                throw new Error(`Sandbox not found for branch ID: ${args.branchId}`);
-            }
-            const file = await sandbox.readFile(args.file_path);
+            const fileSystem = await getFileSystem(editorEngine.projectId, args.branchId);
+            const file = await fileSystem.readFile(args.file_path);
             if (!file || typeof file !== 'string') {
                 throw new Error(`Cannot read file ${args.file_path}: file not found or not text`);
             }
@@ -76,7 +74,7 @@ export class SearchReplaceMultiEditFileTool extends ClientTool {
                 }
             }
 
-            await sandbox.writeFile(args.file_path, content);
+            await fileSystem.writeFile(args.file_path, content);
             return `File ${args.file_path} edited with ${args.edits.length} changes`;
         } catch (error) {
             throw new Error(`Cannot multi-edit file ${args.file_path}: ${(error as Error).message}`);

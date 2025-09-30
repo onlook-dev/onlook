@@ -4,6 +4,7 @@ import type { EditorEngine } from '@onlook/web-client/src/components/store/edito
 import { z } from 'zod';
 import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
+import { getFileSystem } from '../shared/helpers/files';
 
 export class ReadFileTool extends ClientTool {
     static readonly toolName = 'read_file';
@@ -36,10 +37,7 @@ export class ReadFileTool extends ClientTool {
         lines: number;
     }> {
         try {
-            const rootDir = `/${editorEngine.projectId}/${args.branchId}`;
-            const fileSystem = new FileSystem(rootDir);
-            await fileSystem.initialize();
-
+            const fileSystem = await getFileSystem(editorEngine.projectId, args.branchId);
             let file = await fileSystem.readFile(args.file_path);
 
             if (typeof file !== 'string') {

@@ -1,4 +1,11 @@
+import { FileSystem } from "@onlook/file-system";
 import type { SandboxManager } from "@onlook/web-client/src/components/store/editor/sandbox";
+
+export async function getFileSystem(projectId: string, branchId: string): Promise<FileSystem> {
+    const fileSystem = new FileSystem(`/${projectId}/${branchId}`);
+    await fileSystem.initialize();
+    return fileSystem;
+}
 
 export async function resolveDirectoryPath(inputPath: string | undefined, sandbox: SandboxManager): Promise<string> {
     if (!inputPath) {

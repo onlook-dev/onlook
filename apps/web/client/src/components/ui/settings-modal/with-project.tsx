@@ -112,7 +112,6 @@ export const SettingsModalWithProjects = observer(() => {
     useEffect(() => {
         if (stateManager.isSettingsModalOpen) {
             editorEngine.pages.scanPages();
-            editorEngine.image.scanImages();
         }
     }, [stateManager.isSettingsModalOpen]);
 

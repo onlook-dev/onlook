@@ -1,9 +1,3 @@
-import * as pathModule from 'path';
-import { camelCase } from 'lodash';
-import { makeAutoObservable } from 'mobx';
-
-import type { FontConfig, FontUploadFile } from '@onlook/models';
-import type { T } from '@onlook/parser';
 import { DefaultSettings } from '@onlook/constants';
 import {
     createFontSrcObjects,
@@ -12,9 +6,13 @@ import {
     hasLocalFontImport,
     mergeLocalFontSources,
 } from '@onlook/fonts';
+import type { FontConfig, FontUploadFile } from '@onlook/models';
+import type { T } from '@onlook/parser';
 import { t } from '@onlook/parser';
 import { getFontFileName } from '@onlook/utility';
-
+import { camelCase } from 'lodash';
+import { makeAutoObservable } from 'mobx';
+import * as pathModule from 'path';
 import type { EditorEngine } from '../engine';
 
 export class FontUploadManager {
@@ -99,7 +97,7 @@ export class FontUploadManager {
                 );
 
                 const buffer = Buffer.from(fontFile.file.buffer);
-                await this.editorEngine.activeSandbox.writeBinaryFile(filePath, buffer);
+                await this.editorEngine.activeSandbox.writeFile(filePath, buffer);
 
                 return {
                     path: `./fonts/${fileName}.${fontFile.file.name.split('.').pop()}`,

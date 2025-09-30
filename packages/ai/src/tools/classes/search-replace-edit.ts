@@ -2,6 +2,7 @@ import { Icons } from '@onlook/ui/icons';
 import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
 import { ClientTool } from '../models/client';
+import { getFileSystem } from '../shared/helpers/files';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class SearchReplaceEditTool extends ClientTool {
@@ -18,11 +19,9 @@ export class SearchReplaceEditTool extends ClientTool {
 
     async handle(args: z.infer<typeof SearchReplaceEditTool.parameters>, editorEngine: EditorEngine): Promise<string> {
         try {
-            const sandbox = editorEngine.branches.getSandboxById(args.branchId);
-            if (!sandbox) {
-                throw new Error(`Sandbox not found for branch ID: ${args.branchId}`);
-            }
-            const file = await sandbox.readFile(args.file_path);
+
+            const fileSystem = await getFileSystem(editorEngine.projectId, args.branchId);
+            const file = await fileSystem.readFile(args.file_path);
             if (!file || typeof file !== 'string') {
                 throw new Error(`Cannot read file ${args.file_path}: file not found or not text`);
             }
@@ -44,8 +43,7 @@ export class SearchReplaceEditTool extends ClientTool {
                 newContent = file.replace(args.old_string, args.new_string);
             }
 
-            await sandbox.writeFile(args.file_path, newContent);
-
+            await fileSystem.writeFile(args.file_path, newContent);
             return `File ${args.file_path} edited successfully`;
         } catch (error) {
             throw new Error(`Cannot edit file ${args.file_path}: ${error}`);

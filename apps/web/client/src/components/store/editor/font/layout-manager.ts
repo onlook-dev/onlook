@@ -1,8 +1,6 @@
 import { camelCase } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 
-import type { CodeDiff, Font } from '@onlook/models';
-import type { T } from '@onlook/parser';
 import {
     addFontImportToFile,
     createStringLiteralWithFont,
@@ -13,6 +11,8 @@ import {
     updateClassNameWithFontVar,
     updateTemplateLiteralWithFontClass,
 } from '@onlook/fonts';
+import type { CodeDiff, Font } from '@onlook/models';
+import type { T } from '@onlook/parser';
 import { generate, getAstFromContent, t, traverse } from '@onlook/parser';
 
 import type { EditorEngine } from '../engine';
@@ -58,9 +58,10 @@ export class LayoutManager {
                         return false;
                     }
                     await this.editorEngine.activeSandbox.writeFile(layoutPath, newContent);
+                    return true;
                 }
             }
-            return true;
+            return false;
         } catch (error) {
             console.error(`Error adding font variable to layout:`, error);
             return false;
@@ -107,7 +108,8 @@ export class LayoutManager {
                 if (!newContent) {
                     return false;
                 }
-                return await this.editorEngine.activeSandbox.writeFile(layoutPath, newContent);
+                await this.editorEngine.activeSandbox.writeFile(layoutPath, newContent);
+                return true;
             }
             return false;
         } catch (error) {
@@ -224,11 +226,11 @@ export class LayoutManager {
 
         try {
             const file = await sandbox.readFile(filePath);
-            if (!file || file.type === 'binary') {
+            if (!file || typeof file !== 'string') {
                 console.error(`Failed to read file: ${filePath}`);
                 return null;
             }
-            const content = file.content;
+            const content = file;
             const ast = getAstFromContent(content);
             if (!ast) {
                 throw new Error(`Failed to parse file ${filePath}`);
@@ -281,7 +283,7 @@ export class LayoutManager {
     private async getLayoutContext(): Promise<
         { layoutPath: string; targetElements: string[]; layoutContent: string } | undefined
     > {
-        const layoutPath = await this.editorEngine.activeSandbox.getRootLayoutPath();
+        const layoutPath = normalizePath(await this.editorEngine.activeSandbox.getRootLayoutPath());
         const routerConfig = this.editorEngine.activeSandbox.routerConfig;
 
         if (!layoutPath || !routerConfig) {
@@ -290,13 +292,13 @@ export class LayoutManager {
         }
 
         const file = await this.editorEngine.activeSandbox.readFile(layoutPath);
-        if (!file || file.type === 'binary') {
+        if (!file || typeof file !== 'string') {
             console.error(`Failed to read file: ${layoutPath}`);
             return;
         }
 
         const targetElements = getFontRootElements(routerConfig.type);
-        const layoutContent = file.content;
+        const layoutContent = file;
 
         return { layoutPath, targetElements, layoutContent };
     }

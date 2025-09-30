@@ -1,8 +1,6 @@
 import { camelCase } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
 
-import type { CodeDiff, Font } from '@onlook/models';
-import type { T } from '@onlook/parser';
 import {
     addGoogleFontSpecifier,
     generateFontVariableExport,
@@ -11,7 +9,9 @@ import {
     removeFontDeclaration,
     validateGoogleFontSetup,
 } from '@onlook/fonts';
+import type { CodeDiff, Font } from '@onlook/models';
 import { RouterType } from '@onlook/models';
+import type { T } from '@onlook/parser';
 import { generate, getAstFromContent, t } from '@onlook/parser';
 
 import type { EditorEngine } from '../engine';
@@ -77,12 +77,12 @@ export class FontConfigManager {
 
         try {
             const file = await sandbox.readFile(normalizedLayoutPath);
-            if (!file || file.type === 'binary') {
+            if (!file || typeof file !== 'string') {
                 console.log(`Layout file is empty or doesn't exist: ${layoutPath}`);
                 return [];
             }
 
-            const result = migrateFontsFromLayout(file.content);
+            const result = migrateFontsFromLayout(file);
 
             if (result.fonts.length > 0) {
                 await sandbox.writeFile(normalizedLayoutPath, result.layoutContent);
@@ -147,14 +147,10 @@ export class FontConfigManager {
                 return false;
             }
 
-            const success = await this.editorEngine.activeSandbox.writeFile(
+            await this.editorEngine.activeSandbox.writeFile(
                 this.fontConfigPath,
                 code,
             );
-
-            if (!success) {
-                throw new Error('Failed to write font configuration');
-            }
 
             return true;
         } catch (error) {
@@ -191,14 +187,10 @@ export class FontConfigManager {
                     path: this.fontConfigPath,
                 };
 
-                const success = await this.editorEngine.activeSandbox.writeFile(
+                await this.editorEngine.activeSandbox.writeFile(
                     this.fontConfigPath,
                     code,
                 );
-                if (!success) {
-                    throw new Error('Failed to write font configuration');
-                }
-
                 // Delete font files if this is a custom font
                 if (fontFilesToDelete.length > 0) {
                     const routerConfig = this.editorEngine.activeSandbox.routerConfig;
@@ -209,7 +201,7 @@ export class FontConfigManager {
 
                     await Promise.all(
                         fontFilesToDelete.map((file) =>
-                            this.editorEngine.activeSandbox.delete(
+                            this.editorEngine.activeSandbox.deleteFile(
                                 normalizePath(routerConfig.basePath + '/' + file),
                             ),
                         ),
@@ -253,11 +245,11 @@ export class FontConfigManager {
         }
 
         const file = await sandbox.readFile(this.fontConfigPath);
-        if (!file || file.type === 'binary') {
+        if (!file || typeof file !== 'string') {
             console.error("Font config file is empty or doesn't exist");
             return;
         }
-        const content = file.content;
+        const content = file;
 
         // Parse the file content using Babel
         const ast = getAstFromContent(content);
