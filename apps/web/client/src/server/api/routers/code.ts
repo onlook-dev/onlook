@@ -6,7 +6,7 @@ import Exa from 'exa-js';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
-export const codeRouter = createTRPCRouter({
+export const utilsRouter = createTRPCRouter({
     applyDiff: protectedProcedure
         .input(z.object({
             originalCode: z.string(),

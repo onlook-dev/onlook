@@ -33,7 +33,7 @@ export const CodeControls = observer(() => {
 
     return (
         <>
-            <div className="flex flex-row opacity-50 transition-opacity duration-200 group-hover/panel:opacity-100">
+            <div className="flex flex-row items-center transition-opacity duration-200">
                 <Tooltip>
                     <DropdownMenu>
                         <TooltipTrigger asChild>
@@ -66,7 +66,6 @@ export const CodeControls = observer(() => {
                     </DropdownMenu>
                     <TooltipContent side="bottom" hideArrow>
                         <p>Create or Upload File</p>
-                        <TooltipArrow className="fill-foreground" />
                     </TooltipContent>
                 </Tooltip>
                 <Tooltip>
@@ -82,20 +81,19 @@ export const CodeControls = observer(() => {
                     </TooltipTrigger>
                     <TooltipContent side="bottom" hideArrow>
                         <p>New Folder</p>
-                        <TooltipArrow className="fill-foreground" />
                     </TooltipContent>
                 </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
-                            variant="ghost"
+                            variant="secondary"
                             size="icon"
                             onClick={saveFile}
                             disabled={!isDirty}
                             className={cn(
-                                "p-2 w-fit h-fit cursor-pointer",
+                                "px-1.5 py-0.75 w-fit h-fit cursor-pointer mr-0.5 ml-1",
                                 isDirty
-                                    ? "text-teal-200 hover:text-teal-100 hover:bg-teal-500"
+                                    ? "text-background-primary hover:text-teal-100 hover:bg-teal-500 bg-foreground-primary"
                                     : "hover:bg-background-onlook hover:text-teal-200"
                             )}
                         >
@@ -103,11 +101,11 @@ export const CodeControls = observer(() => {
                                 "h-4 w-4",
                                 isDirty && "text-teal-200 group-hover:text-teal-100"
                             )} />
+                            <span className="text-small">Save</span>
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" hideArrow>
                         <p>Save changes</p>
-                        <TooltipArrow className="fill-foreground" />
                     </TooltipContent>
                 </Tooltip>
             </div>

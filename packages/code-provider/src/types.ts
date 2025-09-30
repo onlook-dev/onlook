@@ -92,6 +92,13 @@ export interface CopyFilesInput {
 }
 export interface CopyFileOutput {}
 
+export interface CreateDirectoryInput {
+    args: {
+        path: string;
+    };
+}
+export interface CreateDirectoryOutput {}
+
 export interface WatchEvent {
     type: 'add' | 'change' | 'remove';
     paths: string[];
@@ -189,6 +196,7 @@ export abstract class Provider {
     abstract readFile(input: ReadFileInput): Promise<ReadFileOutput>;
     abstract downloadFiles(input: DownloadFilesInput): Promise<DownloadFilesOutput>;
     abstract copyFiles(input: CopyFilesInput): Promise<CopyFileOutput>;
+    abstract createDirectory(input: CreateDirectoryInput): Promise<CreateDirectoryOutput>;
     abstract watchFiles(input: WatchFilesInput): Promise<WatchFilesOutput>;
     abstract createTerminal(input: CreateTerminalInput): Promise<CreateTerminalOutput>;
     abstract getTask(input: GetTaskInput): Promise<GetTaskOutput>;

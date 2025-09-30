@@ -1,9 +1,9 @@
 import {
     getAstFromContent,
-    types as t,
+    t,
     traverse,
     type NodePath,
-    type t as T,
+    type T,
 } from '@onlook/parser';
 
 /**

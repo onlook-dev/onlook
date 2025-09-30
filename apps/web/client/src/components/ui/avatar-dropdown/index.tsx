@@ -19,6 +19,7 @@ import { getInitials } from '@onlook/utility';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { UsageSection } from './plans';
+import { SettingsTabValue } from '../settings-modal/helpers';
 
 export const CurrentUserAvatar = ({ className }: { className?: string }) => {
     const stateManager = useStateManager();
@@ -40,11 +41,13 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
     };
 
     const handleOpenSubscription = () => {
-        stateManager.isSubscriptionModalOpen = true;
+        stateManager.settingsTab = SettingsTabValue.SUBSCRIPTION;
+        stateManager.isSettingsModalOpen = true;
         setOpen(false);
     };
 
     const handleOpenSettings = () => {
+        stateManager.settingsTab = SettingsTabValue.PREFERENCES;
         stateManager.isSettingsModalOpen = true;
         setOpen(false);
     };

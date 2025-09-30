@@ -36,7 +36,13 @@ export const conversationRouter = createTRPCRouter({
     upsert: protectedProcedure
         .input(conversationInsertSchema)
         .mutation(async ({ ctx, input }) => {
-            const [conversation] = await ctx.db.insert(conversations).values(input).returning();
+            const [conversation] = await ctx.db.insert(conversations).values(input).onConflictDoUpdate({
+                target: [conversations.id],
+                set: {
+                    ...input,
+                    updatedAt: new Date(),
+                },
+            }).returning();
             if (!conversation) {
                 throw new Error('Conversation not created');
             }
@@ -45,10 +51,11 @@ export const conversationRouter = createTRPCRouter({
     update: protectedProcedure
         .input(conversationUpdateSchema)
         .mutation(async ({ ctx, input }) => {
-            const [conversation] = await ctx.db.update({
-                ...conversations,
-                updatedAt: new Date(),
-            }).set(input)
+            const [conversation] = await ctx.db.update(conversations)
+                .set({
+                    ...input,
+                    updatedAt: new Date(),
+                })
                 .where(eq(conversations.id, input.id)).returning();
             if (!conversation) {
                 throw new Error('Conversation not updated');
@@ -68,7 +75,7 @@ export const conversationRouter = createTRPCRouter({
             content: z.string(),
         }))
         .mutation(async ({ ctx, input }) => {
-            const { model, providerOptions, headers } = await initModel({
+            const { model, providerOptions, headers } = initModel({
                 provider: LLMProvider.OPENROUTER,
                 model: OPENROUTER_MODELS.CLAUDE_3_5_HAIKU,
             });

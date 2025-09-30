@@ -3,7 +3,7 @@
 import { Icons } from '@onlook/ui/icons';
 import { useEffect, useState } from 'react';
 
-const DEFAULT_STAR_COUNT = 20550;
+const DEFAULT_STAR_COUNT = 22000;
 const DEFAULT_CONTRIBUTORS_COUNT = 90;
 
 const formatStarCount = (count: number): string => {

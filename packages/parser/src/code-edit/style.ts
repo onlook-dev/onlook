@@ -1,5 +1,7 @@
 import { customTwMerge } from '@onlook/utility';
-import { type t as T, types as t } from '../packages';
+
+import type { T } from '../packages';
+import { t } from '../packages';
 
 export function addClassToNode(node: T.JSXElement, className: string): void {
     const openingElement = node.openingElement;

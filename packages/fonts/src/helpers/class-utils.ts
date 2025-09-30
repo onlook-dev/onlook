@@ -1,4 +1,5 @@
-import { types as t, type t as T } from '@onlook/parser';
+import type { T } from '@onlook/parser';
+import { t } from '@onlook/parser';
 
 const FONT_WEIGHT_REGEX =
     /font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)/;
@@ -21,7 +22,7 @@ export function findFontClass(classString: string): string | null {
  * Filters out font-related classes from a className string, keeping only font weight classes
  */
 export function filterFontClasses(className: string): string[] {
-    return className.split(' ').filter((c) => !c.startsWith('font-') || c.match(FONT_WEIGHT_REGEX));
+    return className.split(' ').filter((c) => !c.startsWith('font-') || FONT_WEIGHT_REGEX.exec(c));
 }
 
 /**
@@ -86,7 +87,7 @@ export function removeFontsFromClassName(
         removeAll?: boolean;
     },
 ): boolean {
-    if (!classNameAttr || !classNameAttr.value) {
+    if (!classNameAttr?.value) {
         return false;
     }
 

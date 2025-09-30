@@ -29,6 +29,7 @@ import { TemplateNodeManager } from './template-nodes';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { VersionsManager } from './version';
+import { ApiManager } from './api';
 
 export class EditorEngine {
     readonly projectId: string;
@@ -69,6 +70,7 @@ export class EditorEngine {
     readonly screenshot: ScreenshotManager = new ScreenshotManager(this);
     readonly snap: SnapManager = new SnapManager(this);
     readonly templateNodes: TemplateNodeManager;
+    readonly api: ApiManager = new ApiManager(this);
 
     constructor(projectId: string, posthog: PostHog) {
         this.projectId = projectId;

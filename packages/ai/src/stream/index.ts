@@ -1,5 +1,5 @@
 import { type ChatMessage } from '@onlook/models';
-import { convertToModelMessages, type ModelMessage } from 'ai';
+import { convertToModelMessages, type ModelMessage, type ToolUIPart } from 'ai';
 import { getHydratedUserMessage, type HydrateMessageOptions } from '../prompt';
 
 export function convertToStreamMessages(messages: ChatMessage[]): ModelMessage[] {
@@ -59,7 +59,7 @@ export const ensureToolCallResults = (parts: ChatMessage['parts']): ChatMessage[
     // First pass: identify which tool calls already have results
     parts.forEach((part) => {
         if (part.type?.startsWith('tool-')) {
-            const toolPart = part as any;
+            const toolPart = part as ToolUIPart;
             if (toolPart.toolCallId && toolPart.state === 'output-available') {
                 toolResultIds.add(toolPart.toolCallId);
             }
@@ -69,7 +69,7 @@ export const ensureToolCallResults = (parts: ChatMessage['parts']): ChatMessage[
     // Second pass: update parts that need stub results
     return parts.map((part) => {
         if (part.type?.startsWith('tool-')) {
-            const toolPart = part as any;
+            const toolPart = part as ToolUIPart;
             if (
                 toolPart.toolCallId &&
                 (toolPart.state === 'input-available' || toolPart.state === 'input-streaming') &&

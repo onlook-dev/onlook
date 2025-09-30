@@ -49,7 +49,7 @@ export function TemplateModal({
     onUnmarkTemplate,
     user,
 }: TemplateModalProps) {
-    const { mutateAsync: forkTemplate } = api.project.forkTemplate.useMutation();
+    const { mutateAsync: forkTemplate } = api.project.fork.useMutation();
     const { data: branches } = api.branch.getByProjectId.useQuery({ projectId: templateProject.id, onlyDefault: true });
     const { setIsAuthModalOpen } = useAuthContext();
     const [isCreatingProject, setIsCreatingProject] = useState(false);

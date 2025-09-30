@@ -162,6 +162,9 @@ describe('SandboxManager', () => {
             preloadScript: {
                 ensurePreloadScriptFile: mock(async () => { }),
             },
+            templateNodes: {
+                processFileForMapping: mock(async () => ({ newContent: '<div id="123">Modified Component</div>' })),
+            },
         };
 
         mockErrorManager = {

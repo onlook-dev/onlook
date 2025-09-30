@@ -1,16 +1,20 @@
 'use client';
 
-import { ProcessedFileType, type NextJsProjectValidation, type ProcessedFile } from '@/app/projects/types';
-import { api } from '@/trpc/react';
-import { Routes } from '@/utils/constants';
-import { CodeProvider, createCodeProviderClient, Provider } from '@onlook/code-provider';
+import type { ReactNode } from 'react';
+import { createContext, useContext, useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+import type { Provider } from '@onlook/code-provider';
+import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
 import { NEXT_JS_FILE_EXTENSIONS, SandboxTemplates, Templates } from '@onlook/constants';
 import { RouterType } from '@onlook/models';
 import { generate, getAstFromContent, injectPreloadScript } from '@onlook/parser';
 import { isRootLayoutFile, isTargetFile } from '@onlook/utility';
-import { useRouter } from 'next/navigation';
-import type { ReactNode } from 'react';
-import { createContext, useContext, useState } from 'react';
+
+import type { NextJsProjectValidation, ProcessedFile } from '@/app/projects/types';
+import { ProcessedFileType } from '@/app/projects/types';
+import { api } from '@/trpc/react';
+import { Routes } from '@/utils/constants';
 
 export interface Project {
     name: string;
@@ -44,7 +48,11 @@ const ProjectCreationContext = createContext<ProjectCreationContextValue | undef
 export function detectPortFromPackageJson(packageJsonFile: ProcessedFile | undefined): number {
     const defaultPort = 3000;
 
-    if (!packageJsonFile || typeof packageJsonFile.content !== 'string' || packageJsonFile.type !== ProcessedFileType.TEXT) {
+    if (
+        !packageJsonFile ||
+        typeof packageJsonFile.content !== 'string' ||
+        packageJsonFile.type !== ProcessedFileType.TEXT
+    ) {
         return defaultPort;
     }
 
@@ -80,10 +88,7 @@ interface ProjectCreationProviderProps {
     totalSteps: number;
 }
 
-export const ProjectCreationProvider = ({
-    children,
-    totalSteps,
-}: ProjectCreationProviderProps) => {
+export const ProjectCreationProvider = ({ children, totalSteps }: ProjectCreationProviderProps) => {
     const router = useRouter();
     const [currentStep, setCurrentStep] = useState(0);
     const [projectData, setProjectDataState] = useState<Partial<Project>>({
@@ -116,7 +121,7 @@ export const ProjectCreationProvider = ({
             }
 
             const packageJsonFile = projectData.files.find(
-                (f) => f.path.endsWith('package.json') && f.type === ProcessedFileType.TEXT
+                (f) => f.path.endsWith('package.json') && f.type === ProcessedFileType.TEXT,
             );
 
             const template = SandboxTemplates[Templates.BLANK];
@@ -176,32 +181,38 @@ export const ProjectCreationProvider = ({
     const validateNextJsProject = async (
         files: ProcessedFile[],
     ): Promise<NextJsProjectValidation> => {
-        const packageJsonFile = files.find((f) => f.path.endsWith('package.json') && f.type === ProcessedFileType.TEXT);
+        const packageJsonFile = files.find(
+            (f) => f.path.endsWith('package.json') && f.type === ProcessedFileType.TEXT,
+        );
 
-        if (!packageJsonFile) {
+        if (!packageJsonFile?.content || typeof packageJsonFile.content !== 'string') {
             return { isValid: false, error: 'No package.json found' };
         }
 
         try {
-            const packageJson = JSON.parse(packageJsonFile.content as string);
-            const hasNext = packageJson.dependencies?.next || packageJson.devDependencies?.next;
+            const packageJson = JSON.parse(packageJsonFile.content) as Record<string, unknown>;
+            const dependencies = packageJson.dependencies as Record<string, string> | undefined;
+            const devDependencies = packageJson.devDependencies as
+                | Record<string, string>
+                | undefined;
+            const hasNext = dependencies?.next ?? devDependencies?.next;
             if (!hasNext) {
                 return { isValid: false, error: 'Next.js not found in dependencies' };
             }
 
-            const hasReact = packageJson.dependencies?.react || packageJson.devDependencies?.react;
+            const hasReact = dependencies?.react ?? devDependencies?.react;
             if (!hasReact) {
                 return { isValid: false, error: 'React not found in dependencies' };
             }
 
             let routerType: RouterType = RouterType.PAGES;
 
-            const hasAppLayout = files.some(
-                (f) => isTargetFile(f.path, {
+            const hasAppLayout = files.some((f) =>
+                isTargetFile(f.path, {
                     fileName: 'layout',
                     targetExtensions: NEXT_JS_FILE_EXTENSIONS,
                     potentialPaths: ['app', 'src/app'],
-                })
+                }),
             );
 
             if (hasAppLayout) {
@@ -226,7 +237,6 @@ export const ProjectCreationProvider = ({
         }
     };
 
-
     const nextStep = () => {
         if (currentStep < totalSteps - 2) {
             // -2 because we have 2 final steps
@@ -235,7 +245,7 @@ export const ProjectCreationProvider = ({
         } else {
             // This is the final step, so we should finalize the project
             setCurrentStep((prev) => prev + 1);
-            finalizeProject();
+            void finalizeProject();
         }
     };
 
@@ -260,7 +270,7 @@ export const ProjectCreationProvider = ({
 
     const retry = () => {
         setError(null);
-        finalizeProject();
+        void finalizeProject();
     };
 
     const cancel = () => {
@@ -323,10 +333,7 @@ export const uploadToSandbox = async (files: ProcessedFile[], provider: Provider
                         const modifiedAst = injectPreloadScript(ast);
                         content = generate(modifiedAst, {}, content).code;
                     } catch (parseError) {
-                        console.warn(
-                            'Failed to add script config to layout.tsx:',
-                            parseError,
-                        );
+                        console.warn('Failed to add script config to layout.tsx:', parseError);
                     }
                 }
                 await provider.writeFile({

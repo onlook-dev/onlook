@@ -6,8 +6,8 @@ import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import type { ParsedError } from '@onlook/utility';
-import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
+import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 import type { SendMessage } from '../../../_hooks/use-chat';
 

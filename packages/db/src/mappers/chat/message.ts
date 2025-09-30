@@ -9,6 +9,7 @@ export const fromDbMessage = (message: DbMessage): ChatMessage => {
             createdAt: message.createdAt,
             context: message.context ?? [],
             checkpoints: message.checkpoints ?? [],
+            usage: message.usage ?? undefined,
         },
         parts: message.parts ?? [],
     }
@@ -24,6 +25,7 @@ export const toDbMessage = (message: ChatMessage, conversationId: string): DbMes
         parts: message.parts,
         role: message.role,
         checkpoints: message.metadata?.checkpoints ?? [],
+        usage: message.metadata?.usage ?? null,
 
         // deprecated
         applied: null,

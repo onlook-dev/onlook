@@ -1,14 +1,12 @@
 import { api } from '@/trpc/server';
 import { trackEvent } from '@/utils/analytics/server';
-import { convertToStreamMessages, getToolSetFromType } from '@onlook/ai';
+import { AgentStreamer, BaseAgent, RootAgent, UserAgent } from '@onlook/ai';
 import { toDbMessage } from '@onlook/db';
-import { ChatType, type ChatMessage, type ChatMetadata } from '@onlook/models';
-import { stepCountIs, streamText } from 'ai';
+import { AgentType, ChatType } from '@onlook/models';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, incrementUsage, repairToolCall } from './helpers';
-
-const MAX_STEPS = 20;
+import { checkMessageLimit, decrementUsage, errorHandler, getSupabaseUser, incrementUsage, repairToolCall } from './helpers';
+import { z } from 'zod';
 
 export async function POST(req: NextRequest) {
     try {
@@ -54,14 +52,24 @@ export async function POST(req: NextRequest) {
     }
 }
 
+const streamResponseSchema = z.object({
+    agentType: z.enum(AgentType).optional().default(AgentType.ROOT),
+    messages: z.array(z.any()),
+    chatType: z.enum(ChatType).optional(),
+    conversationId: z.string(),
+    projectId: z.string(),
+}).refine((data) => {
+    // Only allow chatType if agentType is ROOT
+    if (data.chatType !== undefined && data.agentType !== AgentType.ROOT) {
+        return false;
+    }
+    return true;
+}, { message: "chatType is only allowed if agentType is root" });
+
 export const streamResponse = async (req: NextRequest, userId: string) => {
     const body = await req.json();
-    const { messages, chatType, conversationId, projectId } = body as {
-        messages: ChatMessage[],
-        chatType: ChatType,
-        conversationId: string,
-        projectId: string,
-    };
+    const { agentType, messages, chatType, conversationId, projectId } = streamResponseSchema.parse(body);
+
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
     // If the call below fails, the user will not be penalized.
@@ -74,69 +82,53 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         const lastUserMessage = messages.findLast((message) => message.role === 'user');
         const traceId = lastUserMessage?.id ?? uuidv4();
 
-        if (chatType === ChatType.EDIT) {
-            usageRecord = await incrementUsage(req, traceId);
-        }
-        const modelConfig = await getModelFromType(chatType);
-        const { model, providerOptions, headers } = modelConfig;
-        const systemPrompt = getSystemPromptFromType(chatType);
-        const tools = getToolSetFromType(chatType);
+        // Create RootAgent instance
+        let agent: BaseAgent;
+        if (agentType === AgentType.ROOT) {
+            if (chatType === ChatType.EDIT) {
+                usageRecord = await incrementUsage(req, traceId);
+            }
 
-        const result = streamText({
-            model,
-            headers,
-            tools,
-            stopWhen: stepCountIs(MAX_STEPS),
-            messages: [
-                {
-                    role: 'system',
-                    content: systemPrompt,
-                    providerOptions,
+            agent = new RootAgent(chatType!);
+        } else if (agentType === AgentType.USER) {
+            agent = new UserAgent();
+        } else {
+            // agent = new WeatherAgent();
+            throw new Error('Agent type not supported');
+        }
+        const streamer = new AgentStreamer(agent, conversationId);
+
+        return streamer.streamText(messages, {
+            streamTextConfig: {
+                experimental_telemetry: {
+                    isEnabled: true,
+                    metadata: {
+                        conversationId,
+                        projectId,
+                        userId,
+                        agentType: agentType ?? AgentType.ROOT,
+                        chatType: chatType ?? "null",
+                        tags: ['chat'],
+                        langfuseTraceId: traceId,
+                        sessionId: conversationId,
+                    },
                 },
-                ...convertToStreamMessages(messages),
-            ],
-            experimental_telemetry: {
-                isEnabled: true,
-                metadata: {
-                    conversationId,
-                    projectId,
-                    userId,
-                    chatType: chatType,
-                    tags: ['chat'],
-                    langfuseTraceId: traceId,
-                    sessionId: conversationId,
+                experimental_repairToolCall: repairToolCall,
+                onError: async (error) => {
+                    console.error('Error in chat stream call', error);
+                    // if there was an error with the API, do not penalize the user
+                    await decrementUsage(req, usageRecord);
+
+                    // Ensure the stream stops on error by re-throwing
+                    if (error instanceof Error) {
+                        throw error;
+                    } else {
+                        const errorMessage = typeof error === 'string' ? error : JSON.stringify(error);
+                        throw new Error(errorMessage);
+                    }
                 },
             },
-            experimental_repairToolCall: repairToolCall,
-            onError: async (error) => {
-                console.error('Error in chat stream call', error);
-                // if there was an error with the API, do not penalize the user
-                await decrementUsage(req, usageRecord);
-
-                // Ensure the stream stops on error by re-throwing
-                if (error instanceof Error) {
-                    throw error;
-                } else {
-                    const errorMessage = typeof error === 'string' ? error : JSON.stringify(error);
-                    throw new Error(errorMessage);
-                }
-            }
-        })
-
-        return result.toUIMessageStreamResponse<ChatMessage>(
-            {
-                originalMessages: messages,
-                generateMessageId: () => uuidv4(),
-                messageMetadata: ({ part }) => {
-                    return {
-                        createdAt: new Date(),
-                        conversationId,
-                        context: [],
-                        checkpoints: [],
-                        finishReason: part.type === 'finish-step' ? part.finishReason : undefined,
-                        usage: part.type === 'finish-step' ? part.usage : undefined,
-                    } satisfies ChatMetadata;
-                },
+            toUIMessageStreamResponseConfig: {
                 onFinish: async ({ messages: finalMessages }) => {
                     const messagesToStore = finalMessages
                         .filter(msg =>
@@ -150,8 +142,8 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                     });
                 },
                 onError: errorHandler,
-            }
-        );
+            },
+        });
     } catch (error) {
         console.error('Error in streamResponse setup', error);
         // If there was an error setting up the stream and we incremented usage, revert it

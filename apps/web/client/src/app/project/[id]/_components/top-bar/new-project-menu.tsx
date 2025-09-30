@@ -20,7 +20,11 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-export const NewProjectMenu = observer(() => {
+interface NewProjectMenuProps {
+    onShowCloneDialog: (open: boolean) => void;
+}
+
+export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuProps) => {
     const editorEngine = useEditorEngine();
     const { data: user } = api.user.get.useQuery();
     const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
@@ -124,6 +128,15 @@ export const NewProjectMenu = observer(() => {
                     <div className="flex flex-row center items-center group">
                         <Icons.Upload className="mr-2" />
                         {t(transKeys.projects.actions.import)}
+                    </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    onClick={() => onShowCloneDialog(true)}
+                    className="cursor-pointer"
+                >
+                    <div className="flex flex-row center items-center group">
+                        <Icons.Copy className="mr-2" />
+                        Clone this project
                     </div>
                 </DropdownMenuItem>
             </DropdownMenuSubContent>

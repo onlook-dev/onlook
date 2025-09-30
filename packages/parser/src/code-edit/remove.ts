@@ -1,5 +1,6 @@
 import type { CodeRemove } from '@onlook/models/actions';
-import { type NodePath, type t as T } from '../packages';
+
+import type { NodePath, T } from '../packages';
 import { addKeyToElement, jsxFilter } from './helpers';
 
 export function removeElementFromNode(path: NodePath<T.JSXElement>, element: CodeRemove): void {

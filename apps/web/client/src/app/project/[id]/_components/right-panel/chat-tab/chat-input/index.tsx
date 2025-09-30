@@ -7,6 +7,7 @@ import { transKeys } from '@/i18n/keys';
 import type { ChatMessage, ChatSuggestion } from '@onlook/models';
 import { ChatType, EditorTabValue, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
+
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
@@ -16,11 +17,12 @@ import { cn } from '@onlook/ui/utils';
 import { compressImageInBrowser } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { validateImageLimit } from '../context-pills/helpers';
 import { InputContextPills } from '../context-pills/input-context-pills';
 import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
+import { ChatContextWindow } from './chat-context';
 import { ChatModeToggle } from './chat-mode-toggle';
 
 interface ChatInputProps {
@@ -46,6 +48,7 @@ export const ChatInput = observer(({
     const [isDragging, setIsDragging] = useState(false);
     const chatMode = editorEngine.state.chatMode;
     const [inputValue, setInputValue] = useState('');
+    const lastUsageMessage = useMemo(() => messages.findLast(msg => msg.metadata?.usage), [messages]);
 
     const focusInput = () => {
         requestAnimationFrame(() => {
@@ -306,6 +309,7 @@ export const ChatInput = observer(({
         editorEngine.state.chatMode = mode;
     };
 
+
     return (
         <div
             className={cn(
@@ -349,10 +353,7 @@ export const ChatInput = observer(({
                 }}
             />
             <div className="flex flex-col w-full p-4">
-                <div className="flex flex-row flex-wrap items-center gap-1.5 mb-1">
-                    {/* <ContextWheel /> */}
-                    <InputContextPills />
-                </div>
+                <InputContextPills />
                 <Textarea
                     ref={textareaRef}
                     disabled={disabled}
@@ -393,6 +394,7 @@ export const ChatInput = observer(({
                         onChatModeChange={handleChatModeChange}
                         disabled={disabled}
                     />
+                    {lastUsageMessage?.metadata?.usage && <ChatContextWindow usage={lastUsageMessage?.metadata?.usage} />}
                 </div>
                 <div className="flex flex-row items-center gap-1.5">
                     <ActionButtons

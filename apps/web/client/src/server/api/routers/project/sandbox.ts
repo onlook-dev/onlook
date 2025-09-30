@@ -1,8 +1,14 @@
-import { CodeProvider, createCodeProviderClient, getStaticCodeProvider } from '@onlook/code-provider';
-import { getSandboxPreviewUrl } from '@onlook/constants';
-import { shortenUuid } from '@onlook/utility/src/id';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+
+import {
+    CodeProvider,
+    createCodeProviderClient,
+    getStaticCodeProvider,
+} from '@onlook/code-provider';
+import { getSandboxPreviewUrl, SandboxTemplates, Templates } from '@onlook/constants';
+import { shortenUuid } from '@onlook/utility/src/id';
+
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 function getProvider({
@@ -10,9 +16,9 @@ function getProvider({
     userId,
     provider = CodeProvider.CodeSandbox,
 }: {
-    sandboxId: string,
-    provider?: CodeProvider,
-    userId?: undefined | string,
+    sandboxId: string;
+    provider?: CodeProvider;
+    userId?: undefined | string;
 }) {
     if (provider === CodeProvider.CodeSandbox) {
         return createCodeProviderClient(CodeProvider.CodeSandbox, {
@@ -33,6 +39,33 @@ function getProvider({
 }
 
 export const sandboxRouter = createTRPCRouter({
+    create: protectedProcedure
+        .input(
+            z.object({
+                title: z.string().optional(),
+            }),
+        )
+        .mutation(async ({ input, ctx }) => {
+            // Create a new sandbox using the static provider
+            const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
+
+            // Use the empty Next.js template
+            const template = SandboxTemplates[Templates.EMPTY_NEXTJS];
+
+            const newSandbox = await CodesandboxProvider.createProject({
+                source: 'template',
+                id: template.id,
+                title: input.title || 'Onlook Test Sandbox',
+                description: 'Test sandbox for Onlook sync engine',
+                tags: ['onlook-test'],
+            });
+
+            return {
+                sandboxId: newSandbox.id,
+                previewUrl: getSandboxPreviewUrl(newSandbox.id, template.port),
+            };
+        }),
+
     start: protectedProcedure
         .input(
             z.object({
@@ -64,7 +97,7 @@ export const sandboxRouter = createTRPCRouter({
             try {
                 await provider.pauseProject({});
             } finally {
-                await provider.destroy().catch(() => { });
+                await provider.destroy().catch(() => {});
             }
         }),
     list: protectedProcedure.input(z.object({ sandboxId: z.string() })).query(async ({ input }) => {
@@ -97,7 +130,9 @@ export const sandboxRouter = createTRPCRouter({
 
             for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
                 try {
-                    const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
+                    const CodesandboxProvider = await getStaticCodeProvider(
+                        CodeProvider.CodeSandbox,
+                    );
                     const sandbox = await CodesandboxProvider.createProject({
                         source: 'template',
                         id: input.sandbox.id,
@@ -117,7 +152,9 @@ export const sandboxRouter = createTRPCRouter({
                     lastError = error instanceof Error ? error : new Error(String(error));
 
                     if (attempt < MAX_RETRY_ATTEMPTS) {
-                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, Math.pow(2, attempt) * 1000),
+                        );
                     }
                 }
             }
@@ -139,7 +176,7 @@ export const sandboxRouter = createTRPCRouter({
             try {
                 await provider.stopProject({});
             } finally {
-                await provider.destroy().catch(() => { });
+                await provider.destroy().catch(() => {});
             }
         }),
     createFromGitHub: protectedProcedure
@@ -156,7 +193,9 @@ export const sandboxRouter = createTRPCRouter({
 
             for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
                 try {
-                    const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
+                    const CodesandboxProvider = await getStaticCodeProvider(
+                        CodeProvider.CodeSandbox,
+                    );
                     const sandbox = await CodesandboxProvider.createProjectFromGit({
                         repoUrl: input.repoUrl,
                         branch: input.branch,
@@ -172,7 +211,9 @@ export const sandboxRouter = createTRPCRouter({
                     lastError = error instanceof Error ? error : new Error(String(error));
 
                     if (attempt < MAX_RETRY_ATTEMPTS) {
-                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, Math.pow(2, attempt) * 1000),
+                        );
                     }
                 }
             }

@@ -1,6 +1,6 @@
 import { trackEvent } from '@/utils/analytics/server';
 import { callUserWebhook } from '@/utils/n8n/webhook';
-import { fromDbUser, userInsertSchema, users, type User } from '@onlook/db';
+import { authUsers, fromDbUser, userInsertSchema, users, type User } from '@onlook/db';
 import { extractNames } from '@onlook/utility';
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { eq } from 'drizzle-orm';
@@ -95,6 +95,9 @@ export const userRouter = createTRPCRouter({
             return user ?? null;
         }),
     settings: userSettingsRouter,
+    delete: protectedProcedure.mutation(async ({ ctx }) => {
+        await ctx.db.delete(authUsers).where(eq(authUsers.id, ctx.user.id));
+    }),
 });
 
 function getUserName(authUser: SupabaseUser) {

@@ -13,8 +13,8 @@
     },
     "scripts": {
         "clean": "rm -rf node_modules",
-        "lint": "eslint --fix .",
-        "format": "prettier --write .",
+        "lint": "eslint . --max-warnings 0",
+        "format": "eslint --fix .",
         "typecheck": "tsc --noEmit"
     },
     "keywords": [
@@ -28,7 +28,10 @@
     "license": "Apache-2.0",
     "homepage": "https://onlook.com",
     "devDependencies": {
-        "@onlook/typescript": "*"
+        "@onlook/eslint": "*",
+        "@onlook/typescript": "*",
+        "eslint": "^9.0.0",
+        "typescript": "^5.5.4"
     },
     "dependencies": {
         "@onlook/parser": "*",

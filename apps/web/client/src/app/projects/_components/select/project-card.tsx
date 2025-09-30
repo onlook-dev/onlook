@@ -7,7 +7,7 @@ import { timeAgo } from '@onlook/utility';
 import { motion } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
 import { EditAppButton } from '../edit-app';
-import { Settings } from '../settings';
+import { SettingsDropdown } from '../settings';
 
 export function ProjectCard({
     project,
@@ -68,7 +68,7 @@ export function ProjectCard({
                 <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
 
                 <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30">
-                    <Settings project={project} refetch={refetch} />
+                    <SettingsDropdown project={project} refetch={refetch} />
                 </div>
 
                 <div className="absolute inset-0 flex items-center justify-center bg-background/30 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto z-20">

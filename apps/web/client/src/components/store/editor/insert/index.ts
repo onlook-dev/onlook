@@ -95,6 +95,7 @@ export class InsertManager {
         const origin = getRelativeMousePositionToFrameView(e, frameView);
         await this.insertElement(frameView, newRect, origin);
         this.drawOrigin = undefined;
+        this.editorEngine.state.editorMode = EditorMode.DESIGN;
     }
 
     private updateInsertRect(pos: ElementPosition) {
