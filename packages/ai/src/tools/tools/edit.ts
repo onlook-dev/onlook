@@ -73,3 +73,40 @@ export const fuzzyEditFileTool = tool({
         'Edit the contents of a file with fuzzy matching instead of search and replace. This should be used as a fallback when the search and replace tool fails. It calls another agent to do the actual editing.',
     inputSchema: FUZZY_EDIT_FILE_TOOL_PARAMETERS,
 });
+
+export const VIEW_IMAGE_TOOL_NAME = 'view_image';
+export const VIEW_IMAGE_TOOL_PARAMETERS = z.object({
+    image_reference: z
+        .string()
+        .describe(
+            'Reference to an image in the chat context (use the display name or index number)',
+        ),
+});
+export const viewImageTool = tool({
+    description:
+        "Retrieves and views an image from the chat context for analysis. Use this tool when the user asks you to analyze, describe, or work with an image they've attached. The image data will be returned so you can see and analyze its contents. This does NOT save the image to the project.",
+    inputSchema: VIEW_IMAGE_TOOL_PARAMETERS,
+});
+
+export const UPLOAD_IMAGE_TOOL_NAME = 'upload_image';
+export const UPLOAD_IMAGE_TOOL_PARAMETERS = z.object({
+    image_reference: z
+        .string()
+        .describe(
+            'Reference to an image in the chat context (use the display name or index number)',
+        ),
+    destination_path: z
+        .string()
+        .optional()
+        .describe('Destination path within the project (default: "public/assets/images")'),
+    filename: z
+        .string()
+        .optional()
+        .describe('Custom filename (without extension). If not provided, a UUID will be generated'),
+    branchId: BRANCH_ID_SCHEMA,
+});
+export const uploadImageTool = tool({
+    description:
+        "Uploads an image from the chat context to the project's file system. Use this tool when the user asks you to save, add, or upload an image to their project. The image will be stored in the project's public directory and can be referenced in code. After uploading, you can use the file path in your code changes.",
+    inputSchema: UPLOAD_IMAGE_TOOL_PARAMETERS,
+});

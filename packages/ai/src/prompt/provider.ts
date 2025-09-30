@@ -6,7 +6,6 @@ import type {
     MessageContext,
     ProjectMessageContext,
 } from '@onlook/models';
-import type { FileUIPart } from 'ai';
 import { ASK_MODE_SYSTEM_PROMPT } from './ask';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
@@ -111,16 +110,17 @@ export function getHydratedUserMessage(
         .join('\n');
     prompt += wrapXml('instruction', textContent);
 
-    userParts.push({ type: 'text', text: prompt });
-
+    // Add image references to prompt (but don't send image data yet)
+    // AI will decide whether to view or upload them using tools
     if (images.length > 0) {
-        const attachments: FileUIPart[] = images.map((i) => ({
-            type: 'file',
-            mediaType: i.mimeType,
-            url: i.content,
-        }));
-        userParts = userParts.concat(attachments);
+        const imageList = images
+            .map((img, idx) => `${idx + 1}. "${img.displayName}" (${img.mimeType})`)
+            .join('\n');
+        const imagesPrompt = `The user has attached ${images.length} image(s) to this message:\n${imageList}\n\nYou can:\n- Use the "view_image" tool to analyze the image content\n- Use the "upload_image" tool to save it to the project\n\nDetermine the appropriate action based on the user's request.`;
+        prompt += wrapXml('available-images', imagesPrompt);
     }
+
+    userParts.push({ type: 'text', text: prompt });
 
     return {
         id,

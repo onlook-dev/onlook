@@ -33,6 +33,10 @@ import {
     terminalCommandTool,
     TYPECHECK_TOOL_NAME,
     typecheckTool,
+    UPLOAD_IMAGE_TOOL_NAME,
+    uploadImageTool,
+    VIEW_IMAGE_TOOL_NAME,
+    viewImageTool,
     WEB_SEARCH_TOOL_NAME,
     webSearchTool,
     WRITE_FILE_TOOL_NAME,
@@ -62,6 +66,8 @@ export const BUILD_TOOL_SET: ToolSet = {
     [SANDBOX_TOOL_NAME]: sandboxTool,
     [TERMINAL_COMMAND_TOOL_NAME]: terminalCommandTool,
     [TYPECHECK_TOOL_NAME]: typecheckTool,
+    [VIEW_IMAGE_TOOL_NAME]: viewImageTool,
+    [UPLOAD_IMAGE_TOOL_NAME]: uploadImageTool,
 };
 
 export type ChatTools = InferUITools<typeof BUILD_TOOL_SET>;

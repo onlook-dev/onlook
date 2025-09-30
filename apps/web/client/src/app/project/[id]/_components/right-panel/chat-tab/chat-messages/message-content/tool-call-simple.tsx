@@ -28,6 +28,8 @@ import {
     TODO_WRITE_TOOL_NAME,
     type TODO_WRITE_TOOL_PARAMETERS,
     TYPECHECK_TOOL_NAME,
+    UPLOAD_IMAGE_TOOL_NAME,
+    type UPLOAD_IMAGE_TOOL_PARAMETERS,
     WEB_SEARCH_TOOL_NAME,
     type WEB_SEARCH_TOOL_PARAMETERS,
     WRITE_FILE_TOOL_NAME,
@@ -60,6 +62,7 @@ const TOOL_ICONS: Record<string, any> = {
     [TYPECHECK_TOOL_NAME]: Icons.MagnifyingGlass,
     [LIST_BRANCHES_TOOL_NAME]: Icons.Branch,
     [GLOB_TOOL_NAME]: Icons.MagnifyingGlass,
+    [UPLOAD_IMAGE_TOOL_NAME]: Icons.Image,
 } as const;
 
 export function ToolCallSimple({
@@ -217,6 +220,14 @@ const getLabel = (toolName: string, toolPart: ToolUIPart) => {
                 return 'Reading Onlook instructions';
             case TYPECHECK_TOOL_NAME:
                 return 'Checking types';
+            case UPLOAD_IMAGE_TOOL_NAME: {
+                const params = toolPart.input as z.infer<typeof UPLOAD_IMAGE_TOOL_PARAMETERS>;
+                if (params?.image_reference) {
+                    return 'Uploading image ' + truncateString(params.image_reference);
+                } else {
+                    return 'Uploading image';
+                }
+            }
             default:
                 return toolName?.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
         }

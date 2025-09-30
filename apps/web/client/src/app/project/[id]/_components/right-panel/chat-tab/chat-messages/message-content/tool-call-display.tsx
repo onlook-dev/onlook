@@ -8,6 +8,8 @@ import {
     TERMINAL_COMMAND_TOOL_NAME, TERMINAL_COMMAND_TOOL_PARAMETERS, TODO_WRITE_TOOL_NAME,
     type TODO_WRITE_TOOL_PARAMETERS,
     TYPECHECK_TOOL_NAME,
+    UPLOAD_IMAGE_TOOL_NAME,
+    type UPLOAD_IMAGE_TOOL_PARAMETERS,
     WEB_SEARCH_TOOL_NAME,
     type WEB_SEARCH_TOOL_PARAMETERS,
     WRITE_FILE_TOOL_NAME,
@@ -87,6 +89,39 @@ export const ToolCallDisplay = ({
                 />
             );
         }
+    }
+
+    if (toolName === UPLOAD_IMAGE_TOOL_NAME) {
+        const args = toolPart.input as z.infer<typeof UPLOAD_IMAGE_TOOL_PARAMETERS> | null;
+        const result = toolPart.output as string | null;
+        return (
+            <div className="flex flex-col gap-2 p-3 border rounded-lg bg-background-secondary">
+                <div className="flex items-center gap-2">
+                    <Icons.Image className="w-4 h-4" />
+                    <span className="text-sm font-medium">Upload Image</span>
+                </div>
+                {args?.image_reference && (
+                    <div className="text-xs text-foreground-secondary">
+                        Image: {args.image_reference}
+                    </div>
+                )}
+                {args?.destination_path && (
+                    <div className="text-xs text-foreground-secondary">
+                        Destination: {args.destination_path}
+                    </div>
+                )}
+                {args?.filename && (
+                    <div className="text-xs text-foreground-secondary">
+                        Filename: {args.filename}
+                    </div>
+                )}
+                {result && (
+                    <div className="text-xs text-green-600 mt-1">
+                        {result}
+                    </div>
+                )}
+            </div>
+        );
     }
 
     if (toolName === WRITE_FILE_TOOL_NAME) {

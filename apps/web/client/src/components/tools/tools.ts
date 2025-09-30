@@ -32,6 +32,10 @@ import {
     TERMINAL_COMMAND_TOOL_PARAMETERS,
     TYPECHECK_TOOL_NAME,
     TYPECHECK_TOOL_PARAMETERS,
+    UPLOAD_IMAGE_TOOL_NAME,
+    UPLOAD_IMAGE_TOOL_PARAMETERS,
+    VIEW_IMAGE_TOOL_NAME,
+    VIEW_IMAGE_TOOL_PARAMETERS,
     WEB_SEARCH_TOOL_NAME,
     WEB_SEARCH_TOOL_PARAMETERS,
     WRITE_FILE_TOOL_NAME,
@@ -56,6 +60,8 @@ import {
     handleSearchReplaceMultiEditFileTool,
     handleTerminalCommandTool,
     handleTypecheckTool,
+    handleUploadImageTool,
+    handleViewImageTool,
     handleWebSearchTool,
     handleWriteFileTool
 } from './handlers';
@@ -180,6 +186,18 @@ const TOOL_HANDLERS: ClientToolMap = {
         inputSchema: CHECK_ERRORS_TOOL_PARAMETERS,
         handler: async (args: z.infer<typeof CHECK_ERRORS_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
             handleCheckErrors(args, editorEngine),
+    },
+    [VIEW_IMAGE_TOOL_NAME]: {
+        name: VIEW_IMAGE_TOOL_NAME,
+        inputSchema: VIEW_IMAGE_TOOL_PARAMETERS,
+        handler: async (args: z.infer<typeof VIEW_IMAGE_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
+            handleViewImageTool(args, editorEngine),
+    },
+    [UPLOAD_IMAGE_TOOL_NAME]: {
+        name: UPLOAD_IMAGE_TOOL_NAME,
+        inputSchema: UPLOAD_IMAGE_TOOL_PARAMETERS,
+        handler: async (args: z.infer<typeof UPLOAD_IMAGE_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
+            handleUploadImageTool(args, editorEngine),
     },
 };
 
