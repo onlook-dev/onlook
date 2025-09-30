@@ -41,6 +41,11 @@ export class SandboxManager {
         );
     }
 
+    getRootLayoutPath() {
+        // TODO: find the root layout path
+        return 'src/app/layout.tsx';
+    }
+
     async initializeSyncEngine(provider: Provider) {
         if (this.sync) {
             this.sync?.stop();

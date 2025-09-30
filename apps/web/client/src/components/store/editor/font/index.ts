@@ -73,10 +73,11 @@ export class FontManager {
             this.fontConfigFileWatcher();
         }
 
-        this.fontConfigFileWatcher = this.editorEngine.activeSandbox.fileEventBus.subscribe(
-            '*',
-            this.handleFileEvent.bind(this),
-        );
+        // TODO: Use fs watcher
+        // this.fontConfigFileWatcher = this.editorEngine.activeSandbox.fileEventBus.subscribe(
+        //     '*',
+        //     this.handleFileEvent.bind(this),
+        // );
     }
 
     private async handleFileEvent(event: FileEvent): Promise<void> {
