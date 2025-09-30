@@ -1,6 +1,6 @@
-import { BaseAgent } from '../models/base';
-import { getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel, UserAgentTool } from '../../index';
 import { AgentType, ChatType, LLMProvider, OPENROUTER_MODELS, type ModelConfig } from '@onlook/models';
+import { getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '../../index';
+import { BaseAgent } from '../models/base';
 import { readOnlyRootTools, rootTools } from '../tool-lookup';
 
 export function getToolFromType(chatType: ChatType) {
@@ -51,7 +51,7 @@ export class RootAgent extends BaseAgent {
             default:
                 return initModel({
                     provider: LLMProvider.OPENROUTER,
-                    model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+                    model: OPENROUTER_MODELS.CLAUDE_4_5_SONNET,
                 });
         }
     }
