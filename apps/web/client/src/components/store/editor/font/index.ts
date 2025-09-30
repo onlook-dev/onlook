@@ -137,7 +137,7 @@ export class FontManager {
      */
     private async scanExistingFonts(): Promise<Font[] | undefined> {
         try {
-            const layoutPath = await this.editorEngine.activeSandbox.getRootLayoutPath();
+            const layoutPath = await this.editorEngine.activeSandbox.getLayoutPath();
             if (!layoutPath) {
                 console.log('Could not get layout path');
                 return [];
@@ -224,7 +224,7 @@ export class FontManager {
 
     async uploadFonts(fontFiles: FontUploadFile[]): Promise<boolean> {
         try {
-            const routerConfig = this.editorEngine.activeSandbox.routerConfig;
+            const routerConfig = await this.editorEngine.activeSandbox.getRouterConfig();
             if (!routerConfig?.basePath) {
                 console.error('Could not get base path');
                 return false;

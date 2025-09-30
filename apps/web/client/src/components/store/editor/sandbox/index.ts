@@ -3,11 +3,14 @@ import type {
     Provider
 } from '@onlook/code-provider';
 import {
-    EXCLUDED_SYNC_DIRECTORIES
+    EXCLUDED_SYNC_DIRECTORIES,
+    NEXT_JS_FILE_EXTENSIONS
 } from '@onlook/constants';
 import { FileSystem, type FileEntry } from '@onlook/file-system';
-import { type Branch } from '@onlook/models';
+import { RouterType, type Branch } from '@onlook/models';
+import { normalizePath } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
+import path from 'path';
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
 import { detectRouterConfig } from '../pages/helper';
@@ -42,11 +45,6 @@ export class SandboxManager {
         );
     }
 
-    async layoutPath() {
-        // TODO: find the root layout path
-        return 'src/app/layout.tsx';
-    }
-
     async getRouterConfig() {
         if (!this.fs) throw new Error('File system not initialized');
         return await detectRouterConfig(this.fs);
@@ -64,6 +62,32 @@ export class SandboxManager {
             exclude: EXCLUDED_SYNC_DIRECTORIES,
         });
         await this.sync.start();
+    }
+
+    async getLayoutPath(): Promise<string | null> {
+        const routerConfig = await this.getRouterConfig()
+        if (!routerConfig) {
+            console.log('Could not detect Next.js router type');
+            return null;
+        }
+
+        let layoutFileName: string;
+
+        if (routerConfig.type === RouterType.PAGES) {
+            layoutFileName = '_app';
+        } else {
+            layoutFileName = 'layout';
+        }
+
+        for (const extension of NEXT_JS_FILE_EXTENSIONS) {
+            const layoutPath = path.join(routerConfig.basePath, `${layoutFileName}${extension}`);
+            if (await this.fileExists(layoutPath)) {
+                return normalizePath(layoutPath);
+            }
+        }
+
+        console.log('Could not find layout file');
+        return null;
     }
 
     get isIndexed() {

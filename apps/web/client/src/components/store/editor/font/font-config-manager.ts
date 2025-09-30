@@ -193,7 +193,7 @@ export class FontConfigManager {
                 );
                 // Delete font files if this is a custom font
                 if (fontFilesToDelete.length > 0) {
-                    const routerConfig = this.editorEngine.activeSandbox.routerConfig;
+                    const routerConfig = await this.editorEngine.activeSandbox.getRouterConfig();
                     if (!routerConfig?.basePath) {
                         console.error('Could not get base path');
                         return false;
@@ -293,7 +293,7 @@ export class FontConfigManager {
      * Updates the font config path based on the detected router configuration
      */
     private async updateFontConfigPath(): Promise<void> {
-        const routerConfig = this.editorEngine.activeSandbox.routerConfig;
+        const routerConfig = await this.editorEngine.activeSandbox.getRouterConfig();
 
         if (routerConfig) {
             let fontConfigPath: string;

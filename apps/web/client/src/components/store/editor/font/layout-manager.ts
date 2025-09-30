@@ -283,8 +283,8 @@ export class LayoutManager {
     private async getLayoutContext(): Promise<
         { layoutPath: string; targetElements: string[]; layoutContent: string } | undefined
     > {
-        const layoutPath = normalizePath(await this.editorEngine.activeSandbox.getRootLayoutPath());
-        const routerConfig = this.editorEngine.activeSandbox.routerConfig;
+        const layoutPath = await this.editorEngine.activeSandbox.getLayoutPath();
+        const routerConfig = await this.editorEngine.activeSandbox.getRouterConfig();
 
         if (!layoutPath || !routerConfig) {
             console.error('Could not get layout path or router config');
