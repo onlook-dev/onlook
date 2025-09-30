@@ -59,33 +59,13 @@ export class UploadImageTool extends ClientTool {
 
                 console.warn(`No exact match for "${args.image_reference}", using most recent image: ${mostRecentImage.displayName}`);
 
-                const mimeType = mostRecentImage.mimeType;
-                const extension = this.getExtensionFromMimeType(mimeType);
-
-                const filename = args.filename ? `${args.filename}.${extension}` : `${uuidv4()}.${extension}`;
-                const destinationPath = args.destination_path || 'public/assets/images';
-                const fullPath = `${destinationPath}/${filename}`;
-
-                const base64Data = mostRecentImage.content.replace(/^data:image\/[a-z]+;base64,/, '');
-                const binaryData = this.base64ToUint8Array(base64Data);
-
-                await sandbox.writeBinaryFile(fullPath, binaryData);
+                const fullPath = await this.uploadImageToSandbox(mostRecentImage, args, sandbox);
                 await editorEngine.image.scanImages();
 
                 return `Image "${mostRecentImage.displayName}" uploaded successfully to ${fullPath}`;
             }
 
-            const mimeType = imageContext.mimeType;
-            const extension = this.getExtensionFromMimeType(mimeType);
-
-            const filename = args.filename ? `${args.filename}.${extension}` : `${uuidv4()}.${extension}`;
-            const destinationPath = args.destination_path || 'public/assets/images';
-            const fullPath = `${destinationPath}/${filename}`;
-
-            const base64Data = imageContext.content.replace(/^data:image\/[a-z]+;base64,/, '');
-            const binaryData = this.base64ToUint8Array(base64Data);
-
-            await sandbox.writeBinaryFile(fullPath, binaryData);
+            const fullPath = await this.uploadImageToSandbox(imageContext, args, sandbox);
             await editorEngine.image.scanImages();
 
             return `Image "${imageContext.displayName}" uploaded successfully to ${fullPath}`;
@@ -99,6 +79,22 @@ export class UploadImageTool extends ClientTool {
             return 'Uploading image ' + input.image_reference.substring(0, 20);
         }
         return 'Uploading image';
+    }
+
+    private async uploadImageToSandbox(
+        imageContext: Extract<import('@onlook/models').MessageContext, { type: MessageContextType.IMAGE }>,
+        args: z.infer<typeof UploadImageTool.parameters>,
+        sandbox: any
+    ): Promise<string> {
+        const mimeType = imageContext.mimeType;
+        const extension = this.getExtensionFromMimeType(mimeType);
+        const filename = args.filename ? `${args.filename}.${extension}` : `${uuidv4()}.${extension}`;
+        const destinationPath = args.destination_path || 'public/assets/images';
+        const fullPath = `${destinationPath}/${filename}`;
+        const base64Data = imageContext.content.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, '');
+        const binaryData = this.base64ToUint8Array(base64Data);
+        await sandbox.writeBinaryFile(fullPath, binaryData);
+        return fullPath;
     }
 
     private getExtensionFromMimeType(mimeType: string): string {
