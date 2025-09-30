@@ -53,7 +53,7 @@ export class ReadFileTool extends ClientTool {
             }
 
             // Try reading with the resolved path first
-            let file = await sandbox.readFile(resolvedPath, true);
+            let file = await sandbox.readFile(resolvedPath);
 
             // If that fails and we have a different resolved path, provide helpful error
             if (!file && resolvedPath !== args.file_path) {
@@ -79,7 +79,7 @@ export class ReadFileTool extends ClientTool {
                 throw new Error(`Cannot read file ${resolvedPath}: file not accessible`);
             }
 
-            if (file.type !== 'text') {
+            if (typeof file !== 'string') {
                 // Try to read as binary and check if it's actually readable text
                 const hasHeadCommand = await isCommandAvailable(sandbox, 'head');
                 const hasCatCommand = await isCommandAvailable(sandbox, 'cat');
@@ -100,7 +100,7 @@ export class ReadFileTool extends ClientTool {
                 throw new Error(`Cannot read file ${resolvedPath}: file is not text`);
             }
 
-            const lines = file.content.split('\n');
+            const lines = file.split('\n');
             const totalLines = lines.length;
 
             // Helper function to add fuzzy matching warning - only for actual fuzzy matches

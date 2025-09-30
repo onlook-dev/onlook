@@ -87,11 +87,11 @@ export class ChatContext {
                     console.error('No file content found for file', c.path);
                     return c;
                 }
-                if (fileContent.type === 'binary') {
+                if (fileContent instanceof Uint8Array) {
                     console.error('File is binary', c.path);
                     return c;
                 }
-                return { ...c, content: fileContent.content } satisfies FileMessageContext;
+                return { ...c, content: fileContent } satisfies FileMessageContext;
             } else if (c.type === MessageContextType.HIGHLIGHT && c.oid) {
                 const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(c.oid);
                 if (codeBlock === null) {
@@ -121,15 +121,15 @@ export class ChatContext {
         });
 
         for (const [filePath, branchId] of filePathToBranch) {
-            const file = await this.editorEngine.activeSandbox.readFile(filePath);
-            if (file === null || file.type === 'binary') {
+            const content = await this.editorEngine.activeSandbox.readFile(filePath);
+            if (content === null || content instanceof Uint8Array) {
                 continue;
             }
             fileContext.push({
                 type: MessageContextType.FILE,
                 displayName: filePath,
                 path: filePath,
-                content: file.content,
+                content: content,
                 branchId: branchId,
             });
         }
@@ -270,8 +270,8 @@ export class ChatContext {
         try {
             const pagePaths = ['./app/page.tsx', './src/app/page.tsx'];
             for (const pagePath of pagePaths) {
-                const file = await this.editorEngine.activeSandbox.readFile(pagePath);
-                if (file && file.type === 'text') {
+                const fileContent = await this.editorEngine.activeSandbox.readFile(pagePath);
+                if (typeof fileContent === 'string') {
                     const activeBranchId = this.editorEngine.branches.activeBranch?.id;
                     if (!activeBranchId) {
                         console.error('No active branch found for default page context');
@@ -280,7 +280,7 @@ export class ChatContext {
                     const defaultPageContext: FileMessageContext = {
                         type: MessageContextType.FILE,
                         path: pagePath,
-                        content: file.content,
+                        content: fileContent,
                         displayName: pagePath.split('/').pop() || 'page.tsx',
                         branchId: activeBranchId,
                     }

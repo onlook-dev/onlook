@@ -42,7 +42,7 @@ Make sure there's enough context for the other model to understand where the cha
             throw new Error('Error reading file');
         }
 
-        if (originalFile.type === 'binary') {
+        if (typeof originalFile !== 'string') {
             throw new Error('Binary files are not supported for editing');
         }
 
@@ -52,7 +52,7 @@ Make sure there's enough context for the other model to understand where the cha
         };
 
         const updatedContent = await editorEngine.api.applyDiff({
-            originalCode: originalFile.content,
+            originalCode: originalFile,
             updateSnippet: args.content,
             instruction: args.instruction,
             metadata,
@@ -61,10 +61,7 @@ Make sure there's enough context for the other model to understand where the cha
             throw new Error('Error applying code change: ' + updatedContent.error);
         }
 
-        const result = await sandbox.writeFile(args.file_path, updatedContent.result);
-        if (!result) {
-            throw new Error('Error editing file');
-        }
+        await sandbox.writeFile(args.file_path, updatedContent.result);
         return 'File edited!';
     }
 

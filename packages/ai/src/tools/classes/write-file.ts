@@ -20,10 +20,7 @@ export class WriteFileTool extends ClientTool {
             if (!sandbox) {
                 throw new Error(`Sandbox not found for branch ID: ${args.branchId}`);
             }
-            const result = await sandbox.writeFile(args.file_path, args.content);
-            if (!result) {
-                throw new Error(`Failed to write file ${args.file_path}`);
-            }
+            await sandbox.writeFile(args.file_path, args.content);
             return `File ${args.file_path} written successfully`;
         } catch (error) {
             throw new Error(`Cannot write file ${args.file_path}: ${error}`);

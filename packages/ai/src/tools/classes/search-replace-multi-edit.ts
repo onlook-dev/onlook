@@ -33,11 +33,11 @@ export class SearchReplaceMultiEditFileTool extends ClientTool {
                 throw new Error(`Sandbox not found for branch ID: ${args.branchId}`);
             }
             const file = await sandbox.readFile(args.file_path);
-            if (!file || file.type !== 'text') {
+            if (!file || typeof file !== 'string') {
                 throw new Error(`Cannot read file ${args.file_path}: file not found or not text`);
             }
 
-            const originalContent = file.content;
+            const originalContent = file;
             let content = originalContent;
 
             // Validate only the first non-replace_all edit against original content
@@ -76,11 +76,7 @@ export class SearchReplaceMultiEditFileTool extends ClientTool {
                 }
             }
 
-            const result = await sandbox.writeFile(args.file_path, content);
-            if (!result) {
-                throw new Error(`Failed to write file ${args.file_path}`);
-            }
-
+            await sandbox.writeFile(args.file_path, content);
             return `File ${args.file_path} edited with ${args.edits.length} changes`;
         } catch (error) {
             throw new Error(`Cannot multi-edit file ${args.file_path}: ${(error as Error).message}`);

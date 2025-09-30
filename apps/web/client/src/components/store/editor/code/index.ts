@@ -90,15 +90,15 @@ export class CodeManager {
             if (!templateNode) {
                 throw new Error(`Template node not found for oid: ${request.oid}`);
             }
-            const file = await this.editorEngine.activeSandbox.readFile(templateNode.path);
-            if (!file || file.type === 'binary') {
+            const fileContent = await this.editorEngine.activeSandbox.readFile(templateNode.path);
+            if (!fileContent || fileContent instanceof Uint8Array) {
                 throw new Error(`Failed to read file: ${templateNode.path}`);
             }
             const path = templateNode.path;
 
             let groupedRequest = requestByFile.get(path);
             if (!groupedRequest) {
-                groupedRequest = { oidToRequest: new Map(), content: file.content };
+                groupedRequest = { oidToRequest: new Map(), content: fileContent };
             }
             groupedRequest.oidToRequest.set(request.oid, request);
             requestByFile.set(path, groupedRequest);

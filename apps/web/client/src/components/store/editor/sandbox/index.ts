@@ -1,13 +1,12 @@
 import { CodeProviderSync } from '@/services/sync-engine/sync-engine';
 import type {
-    ListFilesOutputFile,
     Provider
 } from '@onlook/code-provider';
 import {
     EXCLUDED_SYNC_DIRECTORIES
 } from '@onlook/constants';
-import { FileSystem } from '@onlook/file-system';
-import { RouterType, type Branch, type SandboxFile } from '@onlook/models';
+import { FileSystem, type FileEntry } from '@onlook/file-system';
+import { RouterType, type Branch } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
@@ -15,14 +14,9 @@ import { SessionManager } from './session';
 
 export class SandboxManager {
     readonly session: SessionManager;
-    private _isIndexed = false;
-    private _isIndexing = false;
-
     private providerReactionDisposer?: () => void;
     private fs: FileSystem | null = null;
     private sync: CodeProviderSync | null = null;
-
-    // private _routerConfig: { type: RouterType; basePath: string } | null = null;
 
     constructor(
         private branch: Branch,
@@ -62,11 +56,11 @@ export class SandboxManager {
     }
 
     get isIndexed() {
-        return this._isIndexed;
+        return true;
     }
 
     get isIndexing() {
-        return this._isIndexing;
+        return false;
     }
 
     get routerConfig(): { type: RouterType; basePath: string } | null {
@@ -78,43 +72,64 @@ export class SandboxManager {
         return this.errorManager.errors;
     }
 
-    async readFile(path: string, remote = false): Promise<SandboxFile | null> {
-        return null;
+    async readFile(path: string): Promise<string | Uint8Array> {
+        if (!this.fs) throw new Error('File system not initialized');
+        return this.fs.readFile(path);
     }
 
-    async readFiles(paths: string[]): Promise<Record<string, SandboxFile>> {
-        return {};
+    async readFiles(paths: string[]): Promise<(string | Uint8Array | undefined)[]> {
+        if (!this.fs) throw new Error('File system not initialized');
+        return await Promise.all(paths.map(path => this.fs?.readFile(path)));
     }
 
-    async writeFile(path: string, content: string): Promise<boolean> {
-        return false;
-    }
-
-    async writeBinaryFile(path: string, content: Buffer | Uint8Array): Promise<boolean> {
-        return false;
-    }
-
-    get files() {
-        return [];
-    }
-
-    get directories() {
-        return [];
+    async writeFile(path: string, content: string): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+        return this.fs.writeFile(path, content);
     }
 
     listAllFiles() {
+        if (!this.fs) throw new Error('File system not initialized');
+        return this.fs.listAll();
     }
 
-    async readDir(dir: string): Promise<ListFilesOutputFile[]> {
-        return [];
+    async readDir(dir: string): Promise<FileEntry[]> {
+        if (!this.fs) throw new Error('File system not initialized');
+        return this.fs.readDirectory(dir);
     }
 
     async listFilesRecursively(
-        dir: string,
-        ignoreDirs: string[] = [],
-        ignoreExtensions: string[] = [],
+        dir: string
     ): Promise<string[]> {
-        return [];
+        if (!this.fs) throw new Error('File system not initialized');
+        return this.fs.listFiles(dir);
+    }
+
+    async fileExists(path: string): Promise<boolean> {
+        if (!this.fs) throw new Error('File system not initialized');
+        return this.fs?.exists(path);
+    }
+
+    async copy(
+        path: string,
+        targetPath: string,
+    ): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+        return this.fs.copyFile(path, targetPath)
+    }
+
+    async deleteFile(path: string): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+        return this.fs.deleteFile(path);
+    }
+
+    async deleteDirectory(path: string): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+        return this.fs.deleteDirectory(path);
+    }
+
+    async rename(oldPath: string, newPath: string): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+        return this.fs.moveFile(oldPath, newPath);
     }
 
     // Download the code as a zip
@@ -143,43 +158,12 @@ export class SandboxManager {
         }
     }
 
-    async fileExists(path: string): Promise<boolean> {
-        return false;
-    }
-
-    async copy(
-        path: string,
-        targetPath: string,
-        recursive?: boolean,
-        overwrite?: boolean,
-    ): Promise<boolean> {
-        return false;
-    }
-
-    async delete(path: string, recursive?: boolean): Promise<boolean> {
-        return false;
-    }
-
-    async rename(oldPath: string, newPath: string): Promise<boolean> {
-        return false;
-    }
-
-    /**
-     * Gets the root layout path and router config
-     */
-    async getRootLayoutPath(): Promise<string | null> {
-        return null;
-    }
-
     clear() {
         this.providerReactionDisposer?.();
         this.providerReactionDisposer = undefined;
         this.sync?.stop();
         this.sync = null;
         this.fs = null;
-
         this.session.clear();
-        this._isIndexed = false;
-        this._isIndexing = false;
     }
 }

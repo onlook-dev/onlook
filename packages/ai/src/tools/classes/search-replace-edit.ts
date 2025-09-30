@@ -23,31 +23,28 @@ export class SearchReplaceEditTool extends ClientTool {
                 throw new Error(`Sandbox not found for branch ID: ${args.branchId}`);
             }
             const file = await sandbox.readFile(args.file_path);
-            if (!file || file.type !== 'text') {
+            if (!file || typeof file !== 'string') {
                 throw new Error(`Cannot read file ${args.file_path}: file not found or not text`);
             }
 
             let newContent: string;
             if (args.replace_all) {
-                newContent = file.content.replaceAll(args.old_string, args.new_string);
+                newContent = file.replaceAll(args.old_string, args.new_string);
             } else {
-                const firstIndex = file.content.indexOf(args.old_string);
+                const firstIndex = file.indexOf(args.old_string);
                 if (firstIndex === -1) {
                     throw new Error(`String not found in file: ${args.old_string}`);
                 }
 
-                const secondIndex = file.content.indexOf(args.old_string, firstIndex + args.old_string.length);
+                const secondIndex = file.indexOf(args.old_string, firstIndex + args.old_string.length);
                 if (secondIndex !== -1) {
                     throw new Error(`Multiple occurrences found. Use replace_all=true or provide more context.`);
                 }
 
-                newContent = file.content.replace(args.old_string, args.new_string);
+                newContent = file.replace(args.old_string, args.new_string);
             }
 
-            const result = await sandbox.writeFile(args.file_path, newContent);
-            if (!result) {
-                throw new Error(`Failed to write file ${args.file_path}`);
-            }
+            await sandbox.writeFile(args.file_path, newContent);
 
             return `File ${args.file_path} edited successfully`;
         } catch (error) {
