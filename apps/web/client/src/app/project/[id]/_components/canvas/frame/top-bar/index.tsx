@@ -109,7 +109,7 @@ export const TopBar = observer(
             const currentTime = Date.now();
             const timeDiff = currentTime - mouseDownRef.current.time;
             const distance = Math.sqrt(
-                Math.pow(e.clientX - mouseDownRef.current.x, 2) + 
+                Math.pow(e.clientX - mouseDownRef.current.x, 2) +
                 Math.pow(e.clientY - mouseDownRef.current.y, 2)
             );
 
