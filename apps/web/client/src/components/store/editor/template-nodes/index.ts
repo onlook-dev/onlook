@@ -193,12 +193,12 @@ export class TemplateNodeManager {
             return null;
         }
 
-        if (file.type === 'binary') {
+        if (typeof file !== 'string') {
             console.error(`File ${templateNode.path} is a binary file`);
             return null;
         }
 
-        return await getContentFromTemplateNode(templateNode, file.content);
+        return await getContentFromTemplateNode(templateNode, file);
     }
 
     getBranchTemplateNodes(branchId: string): Map<string, TemplateNode> {

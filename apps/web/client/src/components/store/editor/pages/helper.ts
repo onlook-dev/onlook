@@ -227,15 +227,10 @@ export const scanAppDirectory = async (
     );
 
     if (pageFile) {
-        const fileReadPromises: Array<Promise<FileEntry | null>> = [];
-
-        fileReadPromises.push(sandboxManager.readFile(`${dir}/${pageFile.name}`));
-
-        if (layoutFile) {
-            fileReadPromises.push(sandboxManager.readFile(`${dir}/${layoutFile.name}`));
-        } else {
-            fileReadPromises.push(Promise.resolve(null));
-        }
+        const fileEntries: (FileEntry | null)[] = [
+            pageFile,
+            layoutFile || null
+        ];
 
         const childPromises = childDirectories.map((entry) => {
             const fullPath = `${dir}/${entry.name}`;
@@ -243,14 +238,10 @@ export const scanAppDirectory = async (
             return scanAppDirectory(sandboxManager, fullPath, relativePath);
         });
 
-        const [fileResults, childResults] = await Promise.all([
-            Promise.all(fileReadPromises),
-            Promise.all(childPromises),
-        ]);
-
+        const childResults = await Promise.all(childPromises);
         const children = childResults.flat();
 
-        const { pageMetadata, layoutMetadata } = await getPageAndLayoutMetadata(fileResults, sandboxManager);
+        const { pageMetadata, layoutMetadata } = await getPageAndLayoutMetadata(fileEntries, sandboxManager, dir);
 
         const metadata = {
             ...layoutMetadata,
@@ -1059,6 +1050,7 @@ const getPageAndLayoutFiles = (entries: FileEntry[]) => {
 const getPageAndLayoutMetadata = async (
     fileResults: (FileEntry | null)[],
     sandboxManager: SandboxManager,
+    dir?: string,
 ): Promise<{
     pageMetadata: PageMetadata | undefined;
     layoutMetadata: PageMetadata | undefined;
@@ -1074,16 +1066,19 @@ const getPageAndLayoutMetadata = async (
 
     if (pageFileResult && !pageFileResult.isDirectory) {
         try {
-            const fileContent = await sandboxManager.readFile(pageFileResult.path);
+            const filePath = dir ? `${dir}/${pageFileResult.name}` : pageFileResult.path;
+            const fileContent = await sandboxManager.readFile(filePath);
             pageMetadata = await extractMetadata(fileContent);
         } catch (error) {
             console.error(`Error reading page file ${pageFileResult.path}:`, error);
         }
     }
 
-    if (layoutFileResult && layoutFileResult.type === 'text') {
+    if (layoutFileResult && !layoutFileResult.isDirectory) {
         try {
-            layoutMetadata = await extractMetadata(layoutFileResult.content);
+            const filePath = dir ? `${dir}/${layoutFileResult.name}` : layoutFileResult.path;
+            const fileContent = await sandboxManager.readFile(filePath);
+            layoutMetadata = await extractMetadata(fileContent);
         } catch (error) {
             console.error(`Error reading layout file ${layoutFileResult.path}:`, error);
         }

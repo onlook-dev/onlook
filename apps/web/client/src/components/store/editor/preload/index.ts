@@ -1,9 +1,9 @@
 import { LOCAL_PRELOAD_SCRIPT_SRC, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
-import type { SandboxFile } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { normalizePath } from '../sandbox/helpers';
 
+// TODO: Should be a collection of helpers
 export class PreloadScriptManager {
     constructor(private readonly editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -23,13 +23,13 @@ export class PreloadScriptManager {
             }
             // check if the file exists in the public folder
             const publicScriptPath = normalizePath(`public${LOCAL_PRELOAD_SCRIPT_SRC}`);
-            const existingFile = await this.editorEngine.activeSandbox.readFile(publicScriptPath);
+            const fileContent = await this.editorEngine.activeSandbox.readFile(publicScriptPath);
 
-            if (existingFile && existingFile.type === 'text' && existingFile.content.length > 0) {
+            if (fileContent && typeof fileContent === 'string' && fileContent.length > 0) {
                 return true;
             }
 
-            const success = await this.copyPreloadScriptToPublic(existingFile);
+            const success = await this.copyPreloadScriptToPublic(fileContent);
             if (!success) {
                 console.error('[PreloadScriptManager] Failed to copy preload script to public');
                 return false;
@@ -45,7 +45,7 @@ export class PreloadScriptManager {
     /**
      * Copy the preload script content to the CodeSandbox project
      */
-    private async copyPreloadScriptToPublic(existingFile: SandboxFile | null): Promise<boolean> {
+    private async copyPreloadScriptToPublic(existingFile: string | Uint8Array | null): Promise<boolean> {
         try {
             if (!this.editorEngine.activeSandbox.session.provider) {
                 console.error('[PreloadScriptManager] No sandbox provider available for preload script file check');
@@ -67,19 +67,19 @@ export class PreloadScriptManager {
                 return false;
             }
             // if the file exists and has content, check if the content is the same
-            if (existingFile && existingFile.type === 'text' && existingFile.content.length > 0) {
-                if (existingFile.content === scriptContent) {
+            if (existingFile && typeof existingFile === 'string' && existingFile.length > 0) {
+                if (existingFile === scriptContent) {
                     return true;
                 }
             }
 
             // Write the script content to the CodeSandbox project 
-            const writeSuccess = await this.editorEngine.activeSandbox.writeFile(
+            await this.editorEngine.activeSandbox.writeFile(
                 `public${LOCAL_PRELOAD_SCRIPT_SRC}`,
                 scriptContent,
             );
 
-            return writeSuccess;
+            return true;
         } catch (error) {
             console.error('[PreloadScriptManager] Error copying preload script to public:', error);
             return false;
