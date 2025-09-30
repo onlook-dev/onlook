@@ -665,25 +665,28 @@ export class ThemeManager {
         return undefined;
     }
 
-    getConfigPath(): {
+    async getConfigPath(): Promise<{
         configPath: string | null;
         cssPath: string | null;
-    } {
-        const list: string[] = this.editorEngine.activeSandbox.listAllFiles();
+    }> {
+        const list: {
+            path: string;
+            type: "file" | "directory";
+        }[] = await this.editorEngine.activeSandbox.listAllFiles();
 
         if (!list.length) {
             return { configPath: null, cssPath: null };
         }
 
-        const configPath = list.find((file: string) => file.includes('tailwind.config')) ?? null;
-        const cssPath = list.find((file: string) => file.includes('globals.css')) ?? null;
+        const configPath = list.find((file) => file.path.includes('tailwind.config')) ?? null;
+        const cssPath = list.find((file) => file.path.includes('globals.css')) ?? null;
 
-        return { configPath, cssPath };
+        return { configPath: configPath?.path ?? null, cssPath: cssPath?.path ?? null };
     }
 
     async scanTailwindConfig() {
         try {
-            const { configPath, cssPath } = this.getConfigPath();
+            const { configPath, cssPath } = await this.getConfigPath();
 
             if (!configPath || !cssPath) {
                 return null;
@@ -691,8 +694,8 @@ export class ThemeManager {
 
             const configFile = await this.editorEngine.activeSandbox.readFile(configPath);
             const cssFile = await this.editorEngine.activeSandbox.readFile(cssPath);
-            const configContent = configFile && configFile.type === 'text' ? extractColorsFromTailwindConfig(configFile.content) : '';
-            const cssContent = cssFile && cssFile.type === 'text' ? extractTailwindCssVariables(cssFile.content) : '';
+            const configContent = configFile && typeof configFile === 'string' ? extractColorsFromTailwindConfig(configFile) : '';
+            const cssContent = cssFile && typeof cssFile === 'string' ? extractTailwindCssVariables(cssFile) : '';
             return {
                 configPath,
                 configContent,
@@ -954,7 +957,7 @@ export class ThemeManager {
     }
 
     async initializeTailwindColorContent(): Promise<ColorUpdate | null> {
-        const { configPath, cssPath } = this.getConfigPath();
+        const { configPath, cssPath } = await this.getConfigPath();
         if (!configPath || !cssPath) {
             return null;
         }
@@ -964,7 +967,7 @@ export class ThemeManager {
             return null;
         }
 
-        if (files[configPath].type === 'binary' || files[cssPath].type === 'binary') {
+        if (typeof files[configPath] !== 'string' || typeof files[cssPath] !== 'string') {
             throw new Error('Config or CSS file is a binary file');
         }
 

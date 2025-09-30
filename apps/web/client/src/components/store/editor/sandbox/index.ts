@@ -74,12 +74,8 @@ export class SandboxManager {
 
     async readFile(path: string): Promise<string | Uint8Array> {
         if (!this.fs) throw new Error('File system not initialized');
+        console.log('Reading file', path);
         return this.fs.readFile(path);
-    }
-
-    async readFiles(paths: string[]): Promise<(string | Uint8Array | undefined)[]> {
-        if (!this.fs) throw new Error('File system not initialized');
-        return await Promise.all(paths.map(path => this.fs?.readFile(path)));
     }
 
     async writeFile(path: string, content: string): Promise<void> {

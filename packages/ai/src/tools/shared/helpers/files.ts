@@ -1,4 +1,6 @@
-export async function resolveDirectoryPath(inputPath: string | undefined, sandbox: any): Promise<string> {
+import type { SandboxManager } from "@onlook/web-client/src/components/store/editor/sandbox";
+
+export async function resolveDirectoryPath(inputPath: string | undefined, sandbox: SandboxManager): Promise<string> {
     if (!inputPath) {
         // Get current working directory
         const pwdResult = await safeRunCommand(sandbox, 'pwd', '.');
@@ -32,12 +34,12 @@ export async function resolveDirectoryPath(inputPath: string | undefined, sandbo
 }
 
 // Safe command execution with fallback handling
-export async function safeRunCommand(sandbox: any, command: string, fallbackValue?: string): Promise<{ success: boolean; output: string; isReliable: boolean }> {
+export async function safeRunCommand(sandbox: SandboxManager, command: string, fallbackValue?: string): Promise<{ success: boolean; output: string; isReliable: boolean }> {
     try {
         const result = await sandbox.session.runCommand(command);
         // Some commands return success: false even when they work - check output too
-        const hasOutput = result.output && result.output.trim().length > 0;
-        const isActuallySuccessful = result.success || (hasOutput && !result.output.includes('command not found') && !result.output.includes('not found'));
+        const hasOutput = !!result.output && result.output.trim().length > 0;
+        const isActuallySuccessful = result.success ?? (hasOutput && !result.output.includes('command not found') && !result.output.includes('not found'));
 
         return {
             success: isActuallySuccessful,
@@ -53,13 +55,13 @@ export async function safeRunCommand(sandbox: any, command: string, fallbackValu
 }
 
 // Check if a command is available
-export async function isCommandAvailable(sandbox: any, command: string): Promise<boolean> {
+export async function isCommandAvailable(sandbox: SandboxManager, command: string): Promise<boolean> {
     const result = await safeRunCommand(sandbox, `which ${command} 2>/dev/null || command -v ${command} 2>/dev/null`);
     return result.success && result.output.trim().length > 0;
 }
 
 // Utility functions for path resolution and fuzzy matching
-export async function resolvePath(inputPath: string, sandbox: any): Promise<{ path: string | null; wasFuzzy: boolean }> {
+export async function resolvePath(inputPath: string, sandbox: SandboxManager): Promise<{ path: string | null; wasFuzzy: boolean }> {
     // Check if test command is available
     const hasTestCommand = await isCommandAvailable(sandbox, 'test');
     const hasRealpathCommand = await isCommandAvailable(sandbox, 'realpath');
@@ -74,7 +76,7 @@ export async function resolvePath(inputPath: string, sandbox: any): Promise<{ pa
         } else {
             // Fallback: try to read the file directly to check existence
             try {
-                const file = await sandbox.readFile(inputPath, true);
+                const file = await sandbox.readFile(inputPath);
                 if (file) {
                     return { path: inputPath, wasFuzzy: false };
                 }
@@ -95,7 +97,7 @@ export async function resolvePath(inputPath: string, sandbox: any): Promise<{ pa
         } else {
             // Fallback: try the relative path as-is first
             try {
-                const file = await sandbox.readFile(inputPath, true);
+                const file = await sandbox.readFile(inputPath);
                 if (file) {
                     return { path: inputPath, wasFuzzy: false };
                 }
@@ -110,7 +112,7 @@ export async function resolvePath(inputPath: string, sandbox: any): Promise<{ pa
     return { path: fuzzyResult, wasFuzzy: fuzzyResult !== null };
 }
 
-export async function findFuzzyPath(inputPath: string, sandbox: any): Promise<string | null> {
+export async function findFuzzyPath(inputPath: string, sandbox: SandboxManager): Promise<string | null> {
     // Extract filename/directory name from path
     const parts = inputPath.split('/').filter(p => p);
     const targetName = parts[parts.length - 1];
