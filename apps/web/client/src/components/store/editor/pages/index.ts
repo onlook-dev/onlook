@@ -1,6 +1,5 @@
-import { LeftPanelTabValue } from '@onlook/models';
 import type { PageMetadata, PageNode } from '@onlook/models/pages';
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
 import {
@@ -20,28 +19,34 @@ export class PagesManager {
     private activeRoutesByFrameId: Record<string, string> = {};
     private currentPath = '';
     private groupedRoutes = '';
+    private _isScanning = false;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
-    init() {
-        reaction(
-            () => {
-                return {
-                    state: this.editorEngine.state,
-                    session: this.editorEngine.activeSandbox.session,
-                };
-            },
-            ({ state, session }) => {
-                if (state.leftPanelTab !== LeftPanelTabValue.PAGES) {
-                    return;
-                }
-                if (session) {
-                    this.scanPages();
-                }
-            },
-        );
+    init() { }
+
+    async scanPages() {
+        try {
+            if (this._isScanning) {
+                return;
+            }
+            this._isScanning = true;
+            const realPages = await scanPagesFromSandbox(this.editorEngine.activeSandbox);
+            this.setPages(realPages);
+            return;
+        } catch (error) {
+            console.error('Failed to scan pages from sandbox:', error);
+            this.setPages([]);
+        } finally {
+            this._isScanning = false;
+        }
+    }
+
+
+    get isScanning() {
+        return this._isScanning;
     }
 
     get tree() {
@@ -129,16 +134,6 @@ export class PagesManager {
         }
     }
 
-    async scanPages() {
-        try {
-            const realPages = await scanPagesFromSandbox(this.editorEngine.activeSandbox);
-            this.setPages(realPages);
-            return;
-        } catch (error) {
-            console.error('Failed to scan pages from sandbox:', error);
-            this.setPages([]);
-        }
-    }
 
     public async createPage(baseRoute: string, pageName: string): Promise<void> {
         const { valid, error } = validateNextJsRoute(pageName);

@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { DefaultSettings } from '@onlook/constants';
-import type { PageMetadata } from '@onlook/models';
+import { type PageMetadata } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { createSecureUrl } from '@onlook/utility';
