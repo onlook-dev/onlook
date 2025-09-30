@@ -1,12 +1,9 @@
-import type { EditorEngine } from '@/components/store/editor/engine';
-import {
-    type Action,
-    type CodeDiffRequest,
-    type FileToRequests
-} from '@onlook/models';
+import { type Action, type CodeDiffRequest, type FileToRequests } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { assertNever } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
+
+import { type EditorEngine } from '@/components/store/editor/engine';
 import {
     getEditTextRequests,
     getGroupRequests,
@@ -30,7 +27,7 @@ export class CodeManager {
         try {
             // TODO: This is a hack to write code, we should refactor this
             if (action.type === 'write-code' && action.diffs[0]) {
-                await this.editorEngine.activeSandbox.writeFile(
+                await this.editorEngine.codeEditor.writeFile(
                     action.diffs[0].path,
                     action.diffs[0].generated,
                 );
@@ -51,7 +48,7 @@ export class CodeManager {
         const groupedRequests = await this.groupRequestByFile(requests);
         const codeDiffs = await processGroupedRequests(groupedRequests);
         for (const diff of codeDiffs) {
-            await this.editorEngine.activeSandbox.writeFile(diff.path, diff.generated);
+            await this.editorEngine.codeEditor.writeFile(diff.path, diff.generated);
         }
     }
 
@@ -86,15 +83,15 @@ export class CodeManager {
         const requestByFile: FileToRequests = new Map();
 
         for (const request of requests) {
-            const templateNode = this.editorEngine.templateNodes.getTemplateNode(request.oid);
-            if (!templateNode) {
-                throw new Error(`Template node not found for oid: ${request.oid}`);
+            const metadata = await this.editorEngine.codeEditor.getJsxElementMetadata(request.oid);
+            if (!metadata) {
+                throw new Error(`Metadata not found for oid: ${request.oid}`);
             }
-            const fileContent = await this.editorEngine.activeSandbox.readFile(templateNode.path);
+            const fileContent = await this.editorEngine.codeEditor.readFile(metadata.path);
             if (!fileContent || fileContent instanceof Uint8Array) {
-                throw new Error(`Failed to read file: ${templateNode.path}`);
+                throw new Error(`Failed to read file: ${metadata.path}`);
             }
-            const path = templateNode.path;
+            const path = metadata.path;
 
             let groupedRequest = requestByFile.get(path);
             if (!groupedRequest) {

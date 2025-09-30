@@ -7,12 +7,14 @@ import type { EditorEngine } from '../engine';
 import { ErrorManager } from '../error';
 import { HistoryManager } from '../history';
 import { SandboxManager } from '../sandbox';
+import { CodeEditorApi } from '@/services/code-editor-api';
 
 interface BranchData {
     branch: Branch;
     sandbox: SandboxManager;
     history: HistoryManager;
     error: ErrorManager;
+    codeEditor: CodeEditorApi;
 }
 
 export class BranchManager {
@@ -29,21 +31,25 @@ export class BranchManager {
     initBranches(branches: Branch[]): void {
         this.reactionDisposer?.();
         this.reactionDisposer = null;
-        for (const { sandbox, history, error } of this.branchMap.values()) {
+        for (const { sandbox, history, error, codeEditor } of this.branchMap.values()) {
             sandbox.clear();
             history.clear();
             error.clear();
+            void codeEditor.cleanup();
         }
         this.branchMap.clear();
         for (const branch of branches) {
             const errorManager = new ErrorManager(branch);
             const sandboxManager = new SandboxManager(branch, this.editorEngine, errorManager);
             const historyManager = new HistoryManager(this.editorEngine);
+            const codeEditorApi = new CodeEditorApi(this.editorEngine.projectId, branch.id);
+            void codeEditorApi.initialize();
             this.branchMap.set(branch.id, {
                 branch,
                 sandbox: sandboxManager,
                 history: historyManager,
                 error: errorManager,
+                codeEditor: codeEditorApi,
             });
         }
         // Preserve previous selection if still present; else default; else first; else null
@@ -61,6 +67,7 @@ export class BranchManager {
     async init(): Promise<void> {
         for (const branchData of this.branchMap.values()) {
             await branchData.sandbox.init();
+            await branchData.codeEditor.initialize();
         }
         this.setupActiveFrameReaction();
     }
@@ -106,6 +113,10 @@ export class BranchManager {
 
     get activeError(): ErrorManager {
         return this.activeBranchData.error;
+    }
+
+    get activeCodeEditor(): CodeEditorApi {
+        return this.activeBranchData.codeEditor;
     }
 
     async switchToBranch(branchId: string): Promise<void> {
@@ -154,15 +165,18 @@ export class BranchManager {
             const errorManager = new ErrorManager(result.branch);
             const sandboxManager = new SandboxManager(result.branch, this.editorEngine, errorManager);
             const historyManager = new HistoryManager(this.editorEngine);
+            const codeEditorApi = new CodeEditorApi(this.editorEngine.projectId, result.branch.id);
             this.branchMap.set(result.branch.id, {
                 branch: result.branch,
                 sandbox: sandboxManager,
                 history: historyManager,
                 error: errorManager,
+                codeEditor: codeEditorApi,
             });
 
-            // Initialize the new sandbox
-            sandboxManager.init();
+            // Initialize the new sandbox and code editor
+            await sandboxManager.init();
+            await codeEditorApi.initialize();
 
             // Add the created frames to the frame manager
             if (result.frames && result.frames.length > 0) {
@@ -216,15 +230,19 @@ export class BranchManager {
             const errorManager = new ErrorManager(result.branch);
             const sandboxManager = new SandboxManager(result.branch, this.editorEngine, errorManager);
             const historyManager = new HistoryManager(this.editorEngine);
+            const codeEditorApi = new CodeEditorApi(this.editorEngine.projectId, result.branch.id);
             this.branchMap.set(result.branch.id, {
                 branch: result.branch,
                 sandbox: sandboxManager,
                 history: historyManager,
                 error: errorManager,
+                codeEditor: codeEditorApi,
             });
 
-            // Initialize the new sandbox
+            // Initialize the new sandbox and code editor
             await sandboxManager.init();
+            await codeEditorApi.initialize();
+            await codeEditorApi.buildIndex();
 
             // Add the created frames to the frame manager
             if (result.frames && result.frames.length > 0) {
@@ -266,7 +284,7 @@ export class BranchManager {
         }
     }
 
-    removeBranch(branchId: string): void {
+    async removeBranch(branchId: string): Promise<void> {
         const branchData = this.branchMap.get(branchId);
         if (branchData) {
             // Remove all frames associated with this branch
@@ -278,12 +296,13 @@ export class BranchManager {
                 this.editorEngine.frames.delete(frameState.frame.id);
             }
 
-            // Clean up the sandbox, history, and error manager
+            // Clean up the sandbox, history, error manager, and code editor
             branchData.sandbox.clear();
             branchData.history.clear();
             branchData.error.clear();
-            // Clean up template nodes for this branch
-            this.editorEngine.templateNodes.clearBranch(branchId);
+            
+            // Clean up the entire branch directory
+            await branchData.codeEditor.cleanup();
             // Remove from the map
             this.branchMap.delete(branchId);
 
@@ -298,13 +317,14 @@ export class BranchManager {
         }
     }
 
-    clear(): void {
+    async clear(): Promise<void> {
         this.reactionDisposer?.();
         this.reactionDisposer = null;
         for (const branchData of this.branchMap.values()) {
             branchData.sandbox.clear();
             branchData.history.clear();
             branchData.error.clear();
+            await branchData.codeEditor.cleanup();
         }
         this.branchMap.clear();
         this.currentBranchId = null;

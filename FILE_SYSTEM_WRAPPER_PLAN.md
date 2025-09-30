@@ -258,6 +258,78 @@ class CodeEditorApi {
       │   └── cde789jkl.json
       └── ... (up to 256 shards)
 ```
+## Architecture Decision: Wrapper vs Separate Service
+
+### Option 1: Light Wrapper Around FileSystem (Proposed)
+```typescript
+class CodeEditorApi extends FileSystem {
+  constructor(basePath: string) {
+    super(basePath);
+  }
+  
+  // Override writeFile to add OID processing
+  async writeFile(path: string, content: string | Buffer): Promise<boolean> {
+    if (isJsxFile(path) && typeof content === 'string') {
+      const processedContent = await this.processWithOids(content);
+      return super.writeFile(path, processedContent);
+    }
+    return super.writeFile(path, content);
+  }
+  
+  // New methods for JSX metadata
+  async getJsxElementMetadata(oid: string): Promise<JsxElementMetadata | undefined> {
+    // Uses this.readFile() internally
+  }
+}
+```
+
+**Pros:**
+- Inherits all FileSystem functionality automatically
+- Clear relationship - "CodeEditorApi IS A FileSystem with extras"
+- Less code duplication
+- Easy to maintain consistency
+
+**Cons:**
+- Tight coupling to FileSystem implementation
+- Harder to mock/test in isolation
+- May inherit unwanted behaviors
+
+### Option 2: Separate Service with FileSystem Dependency
+```typescript
+class CodeEditorApi {
+  constructor(private fs: FileSystem) {}
+  
+  async writeFile(path: string, content: string | Buffer): Promise<boolean> {
+    if (isJsxFile(path) && typeof content === 'string') {
+      content = await this.processWithOids(content);
+    }
+    return this.fs.writeFile(path, content);
+  }
+  
+  // Delegate other methods
+  async readFile(path: string): Promise<string> {
+    return this.fs.readFile(path);
+  }
+}
+```
+
+**Pros:**
+- Looser coupling (composition over inheritance)
+- Easier to test with mock FileSystem
+- Can selectively expose FileSystem methods
+- More flexible for future changes
+
+**Cons:**
+- More boilerplate for delegation
+- Need to explicitly forward each method
+
+### Recommendation: Light Wrapper (Option 1)
+
+Given that CodeEditorApi is conceptually "a FileSystem with code-aware features", inheritance makes sense here. The tight coupling is actually desirable because:
+1. We want all FileSystem operations available
+2. We're just adding side effects, not changing core behavior  
+3. It clearly communicates the relationship
+
 ## Implementation Checklist
 
 ### Files to Create

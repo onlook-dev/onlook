@@ -1,6 +1,7 @@
-import { ChatType, type DomElement } from '@onlook/models';
-import {
-    MessageContextType,
+import { makeAutoObservable, reaction } from 'mobx';
+
+import  { type DomElement } from '@onlook/models';
+import  {
     type BranchMessageContext,
     type ErrorMessageContext,
     type FileMessageContext,
@@ -9,10 +10,13 @@ import {
     type MessageContext,
     type ProjectMessageContext,
 } from '@onlook/models/chat';
-import { assertNever, type ParsedError } from '@onlook/utility';
-import { makeAutoObservable, reaction } from 'mobx';
-import type { EditorEngine } from '../engine';
-import type { FrameData } from '../frames';
+import  { type ParsedError } from '@onlook/utility';
+import { ChatType } from '@onlook/models';
+import { MessageContextType } from '@onlook/models/chat';
+import { assertNever } from '@onlook/utility';
+
+import { type EditorEngine } from '../engine';
+import { type FrameData } from '../frames';
 
 export class ChatContext {
     private _context: MessageContext[] = [];
@@ -80,28 +84,28 @@ export class ChatContext {
     async getRefreshedContext(context: MessageContext[]): Promise<MessageContext[]> {
         // Refresh the context if possible. Files and highlight content may have changed since the last time they were added to the context.
         // Images are not refreshed as they are not editable.
-        return await Promise.all(context.map(async (c) => {
-            if (c.type === MessageContextType.FILE) {
-                const fileContent = await this.editorEngine.activeSandbox.readFile(c.path);
-                if (fileContent === null) {
-                    console.error('No file content found for file', c.path);
-                    return c;
+        return (await Promise.all(
+            context.map(async (c) => {
+                if (c.type === MessageContextType.FILE) {
+                    const fileContent = await this.editorEngine.codeEditor.readFile(c.path);
+                    if (fileContent === null || fileContent instanceof Uint8Array) {
+                        console.error('No file content found or file is binary', c.path);
+                        return c;
+                    }
+                    return { ...c, content: fileContent } satisfies FileMessageContext;
+                } else if (c.type === MessageContextType.HIGHLIGHT && c.oid) {
+                    const metadata = await this.editorEngine.codeEditor.getJsxElementMetadata(
+                        c.oid,
+                    );
+                    if (!metadata?.code) {
+                        console.error('No code block found for node', c.path);
+                        return c;
+                    }
+                    return { ...c, content: metadata.code } satisfies HighlightMessageContext;
                 }
-                if (fileContent instanceof Uint8Array) {
-                    console.error('File is binary', c.path);
-                    return c;
-                }
-                return { ...c, content: fileContent } satisfies FileMessageContext;
-            } else if (c.type === MessageContextType.HIGHLIGHT && c.oid) {
-                const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(c.oid);
-                if (codeBlock === null) {
-                    console.error('No code block found for node', c.path);
-                    return c;
-                }
-                return { ...c, content: codeBlock } satisfies HighlightMessageContext;
-            }
-            return c;
-        })) satisfies MessageContext[];
+                return c;
+            }),
+        )) satisfies MessageContext[];
     }
 
     private async getImageContext(): Promise<ImageMessageContext[]> {
@@ -121,7 +125,7 @@ export class ChatContext {
         });
 
         for (const [filePath, branchId] of filePathToBranch) {
-            const content = await this.editorEngine.activeSandbox.readFile(filePath);
+            const content = await this.editorEngine.codeEditor.readFile(filePath);
             if (content === null || content instanceof Uint8Array) {
                 continue;
             }
@@ -129,7 +133,7 @@ export class ChatContext {
                 type: MessageContextType.FILE,
                 displayName: filePath,
                 path: filePath,
-                content: content,
+                content,
                 branchId: branchId,
             });
         }
@@ -190,48 +194,35 @@ export class ChatContext {
         return highlightedContext;
     }
 
-    private async getHighlightContextById(id: string, tagName: string, isInstance: boolean): Promise<HighlightMessageContext | null> {
-        const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(id);
-        if (codeBlock === null) {
-            console.error('No code block found for id', id);
-            return null;
-        }
-
-        const templateNode = this.editorEngine.templateNodes.getTemplateNode(id);
-        if (!templateNode) {
-            console.error('No template node found for id', id);
+    private async getHighlightContextById(
+        id: string,
+        tagName: string,
+        isInstance: boolean,
+    ): Promise<HighlightMessageContext | null> {
+        const metadata = await this.editorEngine.codeEditor.getJsxElementMetadata(id);
+        if (!metadata) {
+            console.error('No metadata found for id', id);
             return null;
         }
 
         return {
             type: MessageContextType.HIGHLIGHT,
-            displayName: (isInstance && templateNode.component) ? templateNode.component : tagName.toLowerCase(),
-            path: templateNode.path,
-            content: codeBlock,
-            start: templateNode.startTag.start.line,
-            end: templateNode.endTag?.end.line || templateNode.startTag.start.line,
+            displayName:
+                isInstance && metadata.component ? metadata.component : tagName.toLowerCase(),
+            path: metadata.path,
+            content: metadata.code,
+            start: metadata.startTag.start.line,
+            end: metadata.endTag?.end.line || metadata.startTag.end.line,
             oid: id,
-            branchId: templateNode.branchId,
+            branchId: metadata.branchId,
         };
-    }
-
-    // TODO: Enhance with custom rules
-    getProjectContext(): ProjectMessageContext[] {
-        return [
-            {
-                type: MessageContextType.PROJECT,
-                content: '',
-                displayName: 'Project',
-                path: './',
-            },
-        ];
     }
 
     getErrorContext(): ErrorMessageContext[] {
         const branchErrors = this.editorEngine.branches.getAllErrors();
         // Group errors by branch for context
         const branchGroups = new Map<string, ParsedError[]>();
-        branchErrors.forEach(error => {
+        branchErrors.forEach((error) => {
             const existing = branchGroups.get(error.branchId) || [];
             existing.push(error);
             branchGroups.set(error.branchId, existing);
@@ -270,8 +261,15 @@ export class ChatContext {
         try {
             const pagePaths = ['./app/page.tsx', './src/app/page.tsx'];
             for (const pagePath of pagePaths) {
-                const fileContent = await this.editorEngine.activeSandbox.readFile(pagePath);
-                if (typeof fileContent === 'string') {
+                let fileContent: string | Uint8Array | null = null;
+                try {
+                    fileContent = await this.editorEngine.codeEditor.readFile(pagePath);
+                } catch (error) {
+                    console.error('Error getting default page context', error);
+                    continue;
+                }
+                
+                if (fileContent && typeof fileContent === 'string') {
                     const activeBranchId = this.editorEngine.branches.activeBranch?.id;
                     if (!activeBranchId) {
                         console.error('No active branch found for default page context');
@@ -283,8 +281,8 @@ export class ChatContext {
                         content: fileContent,
                         displayName: pagePath.split('/').pop() || 'page.tsx',
                         branchId: activeBranchId,
-                    }
-                    return defaultPageContext
+                    };
+                    return defaultPageContext;
                 }
             }
             return null;
@@ -312,7 +310,7 @@ export class ChatContext {
                 content: styleGuide.configContent,
                 displayName: styleGuide.configPath.split('/').pop() || 'tailwind.config.ts',
                 branchId: activeBranchId,
-            }
+            };
 
             const cssContext: FileMessageContext = {
                 type: MessageContextType.FILE,
@@ -320,7 +318,7 @@ export class ChatContext {
                 content: styleGuide.cssContent,
                 displayName: styleGuide.cssPath.split('/').pop() || 'globals.css',
                 branchId: activeBranchId,
-            }
+            };
 
             return [tailwindConfigContext, cssContext];
         } catch (error) {

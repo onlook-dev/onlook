@@ -133,14 +133,14 @@ export class ElementsManager {
                 this.emitError('OID not found. Try refreshing the page.');
                 return;
             }
-            const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(oid);
+            const metadata = await this.editorEngine.codeEditor.getJsxElementMetadata(oid);
 
-            if (!codeBlock) {
+            if (!metadata?.code) {
                 this.emitError('Code block not found. Try refreshing the page.');
                 return;
             }
 
-            removeAction.codeBlock = codeBlock;
+            removeAction.codeBlock = metadata.code;
 
             this.editorEngine.action.run(removeAction).catch((err) => {
                 console.error('Error deleting element', err);

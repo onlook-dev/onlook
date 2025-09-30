@@ -289,7 +289,7 @@ export class FileSystem {
                 clearTimeout(existingTimeout);
             }
 
-            console.log(`[FileSystem] watchFile event: ${eventType} for ${path}`);
+            console.log(`[FileSystem] watchFile event: ${eventType} for ${filename}`);
 
             // Debounce the callback. This is required since the watcher will fire off way before the file is actually written to, resulting in broken states.
             const timeout = setTimeout(async () => {

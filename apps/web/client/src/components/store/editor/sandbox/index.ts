@@ -1,16 +1,12 @@
 import { CodeProviderSync } from '@/services/sync-engine/sync-engine';
-import type {
-    Provider
-} from '@onlook/code-provider';
-import {
-    EXCLUDED_SYNC_DIRECTORIES,
-    NEXT_JS_FILE_EXTENSIONS
-} from '@onlook/constants';
+import type { Provider } from '@onlook/code-provider';
+import { EXCLUDED_SYNC_DIRECTORIES, NEXT_JS_FILE_EXTENSIONS } from '@onlook/constants';
 import { FileSystem, type FileEntry } from '@onlook/file-system';
 import { RouterType, type Branch } from '@onlook/models';
 import { normalizePath } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
+import type { CodeEditorApi } from '@/services/code-editor-api';
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
 import { detectRouterConfig } from '../pages/helper';
@@ -25,12 +21,9 @@ export class SandboxManager {
     constructor(
         private branch: Branch,
         private readonly editorEngine: EditorEngine,
-        private readonly errorManager: ErrorManager
+        private readonly errorManager: ErrorManager,
     ) {
-        this.session = new SessionManager(
-            this.branch,
-            this.errorManager
-        );
+        this.session = new SessionManager(this.branch, this.errorManager);
         makeAutoObservable(this);
     }
 
@@ -55,13 +48,58 @@ export class SandboxManager {
             this.sync?.stop();
             this.sync = null;
         }
-        this.fs = new FileSystem(`/${this.editorEngine.projectId}/${this.branch.id}`);
-        await this.fs.initialize();
-        this.sync = new CodeProviderSync(provider, this.fs, {
+        
+        // Get the CodeEditorApi for this branch
+        const codeEditorApi = this.editorEngine.branches.getBranchDataById(this.branch.id)?.codeEditor;
+        if (!codeEditorApi) {
+            throw new Error('CodeEditorApi not found for branch');
+        }
+        
+        // Initialize the CodeEditorApi and use it as the file system
+        await codeEditorApi.initialize();
+        this.fs = codeEditorApi;
+        
+        this.sync = new CodeProviderSync(provider, codeEditorApi, {
             // TODO: add missing configs
             exclude: EXCLUDED_SYNC_DIRECTORIES,
         });
         await this.sync.start();
+        
+        // Copy preload script to public directory
+        await this.copyPreloadScriptToPublic(provider);
+    }
+    
+    private async copyPreloadScriptToPublic(provider: Provider): Promise<void> {
+        try {
+            console.log('[SandboxManager] Copying preload script to public directory');
+            
+            // Read the preload script from our public directory
+            const scriptResponse = await fetch('/onlook-preload-script.js');
+            const scriptContent = await scriptResponse.text();
+            console.log('[SandboxManager] Preload script length:', scriptContent.length);
+            
+            // Check if public directory exists, create if not
+            try {
+                await provider.statFile({ args: { path: 'public' } });
+            } catch {
+                console.log('[SandboxManager] Creating public directory');
+                await provider.createDirectory({ args: { path: 'public' } });
+            }
+            
+            // Write the script to public/onlook-preload-script.js
+            await provider.writeFile({
+                args: {
+                    path: 'public/onlook-preload-script.js',
+                    content: scriptContent,
+                    overwrite: true
+                }
+            });
+            
+            console.log('[SandboxManager] Successfully copied preload script to public/onlook-preload-script.js');
+            
+        } catch (error) {
+            console.error('[SandboxManager] Failed to copy preload script:', error);
+        }
     }
 
     async getLayoutPath(): Promise<string | null> {
@@ -114,9 +152,7 @@ export class SandboxManager {
         return this.fs.readDirectory(dir);
     }
 
-    async listFilesRecursively(
-        dir: string
-    ): Promise<string[]> {
+    async listFilesRecursively(dir: string): Promise<string[]> {
         if (!this.fs) throw new Error('File system not initialized');
         return this.fs.listFiles(dir);
     }
@@ -126,12 +162,9 @@ export class SandboxManager {
         return this.fs?.exists(path);
     }
 
-    async copy(
-        path: string,
-        targetPath: string,
-    ): Promise<void> {
+    async copy(path: string, targetPath: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
-        return this.fs.copyFile(path, targetPath)
+        return this.fs.copyFile(path, targetPath);
     }
 
     async deleteFile(path: string): Promise<void> {

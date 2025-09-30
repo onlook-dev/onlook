@@ -7,6 +7,7 @@ export const EXCLUDED_SYNC_DIRECTORIES = [
     'static',
     'out',
     CUSTOM_OUTPUT_DIR,
+    '.onlook',
 ];
 
 export const IGNORED_UPLOAD_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, CUSTOM_OUTPUT_DIR];

@@ -1,6 +1,8 @@
-import type { Branch } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
-import type { PostHog } from 'posthog-js';
+
+import { type Branch } from '@onlook/models';
+
+import { type CodeEditorApi } from '@/services/code-editor-api';
 import { ActionManager } from './action';
 import { ApiManager } from './api';
 import { AstManager } from './ast';
@@ -21,15 +23,15 @@ import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
 import { PreloadScriptManager } from './preload';
-import { SandboxManager } from './sandbox';
+import { type SandboxManager } from './sandbox';
 import { ScreenshotManager } from './screenshot';
 import { SnapManager } from './snap';
 import { StateManager } from './state';
 import { StyleManager } from './style';
-import { TemplateNodeManager } from './template-nodes';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { VersionsManager } from './version';
+import type { PostHog } from 'posthog-js/react';
 
 export class EditorEngine {
     readonly projectId: string;
@@ -68,14 +70,15 @@ export class EditorEngine {
     readonly preloadScript: PreloadScriptManager = new PreloadScriptManager(this);
     readonly screenshot: ScreenshotManager = new ScreenshotManager(this);
     readonly snap: SnapManager = new SnapManager(this);
-    readonly templateNodes: TemplateNodeManager;
+    get codeEditor(): CodeEditorApi {
+        return this.branches.activeCodeEditor;
+    }
     readonly api: ApiManager = new ApiManager(this);
     readonly ide: IdeManager = new IdeManager(this);
 
     constructor(projectId: string, posthog: PostHog) {
         this.projectId = projectId;
         this.posthog = posthog;
-        this.templateNodes = new TemplateNodeManager(this, projectId);
         makeAutoObservable(this);
     }
 
@@ -85,7 +88,6 @@ export class EditorEngine {
         this.font.init();
         this.frameEvent.init();
         this.chat.init();
-        this.templateNodes.init();
         this.style.init();
     }
 
@@ -117,7 +119,6 @@ export class EditorEngine {
         this.frameEvent.clear();
         this.screenshot.clear();
         this.snap.hideSnapLines();
-        this.templateNodes.clear();
     }
 
     clearUI() {
