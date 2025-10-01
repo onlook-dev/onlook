@@ -1,6 +1,6 @@
 import { MessageContextType, type FileMessageContext, type HighlightMessageContext } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
-import { CODE_FENCE, CONTEXT_PROMPTS } from '../../prompt/constants';
+import { CODE_FENCE } from '../../prompt/constants';
 import { wrapXml } from '../../prompt/helpers';
 import { BaseContext } from '../models/base';
 
@@ -8,6 +8,10 @@ export class FileContext implements BaseContext {
     static readonly contextType = MessageContextType.FILE;
     static readonly displayName = 'File';
     static readonly icon = Icons.File;
+    
+    private static readonly filesContentPrefix = `I have added these files to the chat so you can go ahead and edit them`;
+    private static readonly truncatedFilesContentPrefix = `This context originally included the content of files listed below and has been truncated to save space.
+If relevant, feel free to retrieve their content.`;
 
     static getPrompt(context: FileMessageContext): string {
         const pathDisplay = wrapXml('path', context.path);
@@ -31,7 +35,7 @@ export class FileContext implements BaseContext {
             return '';
         }
         let prompt = '';
-        prompt += `${CONTEXT_PROMPTS.filesContentPrefix}\n`;
+        prompt += `${FileContext.filesContentPrefix}\n`;
         let index = 1;
         for (const file of files) {
             let filePrompt = FileContext.getPrompt(file);
@@ -57,7 +61,7 @@ export class FileContext implements BaseContext {
             return '';
         }
         let prompt = '';
-        prompt += `${CONTEXT_PROMPTS.truncatedFilesContentPrefix}\n`;
+        prompt += `${FileContext.truncatedFilesContentPrefix}\n`;
         let index = 1;
         for (const file of files) {
             const branchDisplay = FileContext.getBranchContent(file.branchId);

@@ -1,21 +1,15 @@
 import {
     MessageContextType,
-    type AgentRuleMessageContext,
-    type BranchMessageContext,
     type ChatMessage,
-    type ErrorMessageContext,
-    type FileMessageContext,
-    type HighlightMessageContext,
     type MessageContext
 } from '@onlook/models';
 import type { FileUIPart } from 'ai';
-import { ASK_MODE_SYSTEM_PROMPT, CODE_FENCE, CONTEXT_PROMPTS, CREATE_NEW_PAGE_SYSTEM_PROMPT, SHELL_PROMPT, SUGGESTION_SYSTEM_PROMPT, SUMMARY_PROMPTS, SYSTEM_PROMPT } from './constants';
-import { wrapXml } from './helpers';
 import { AgentRuleContext } from '../contexts/classes/agent-rule-context';
 import { BranchContext } from '../contexts/classes/branch-context';
 import { ErrorContext } from '../contexts/classes/error-context';
 import { FileContext } from '../contexts/classes/file-context';
-import { HighlightContext } from '../contexts/classes/highlight-context';
+import { ASK_MODE_SYSTEM_PROMPT, CREATE_NEW_PAGE_SYSTEM_PROMPT, SHELL_PROMPT, SUGGESTION_SYSTEM_PROMPT, SUMMARY_PROMPTS, SYSTEM_PROMPT } from './constants';
+import { wrapXml } from './helpers';
 
 export interface HydrateMessageOptions {
     totalMessages: number;

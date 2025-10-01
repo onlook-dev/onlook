@@ -2,12 +2,14 @@ import { Icons } from '@onlook/ui/icons';
 import { MessageContextType, type HighlightMessageContext } from '@onlook/models';
 import { BaseContext } from '../models/base';
 import { wrapXml } from '../../prompt/helpers';
-import { CODE_FENCE, CONTEXT_PROMPTS } from '../../prompt/constants';
+import { CODE_FENCE } from '../../prompt/constants';
 
 export class HighlightContext implements BaseContext {
     static readonly contextType = MessageContextType.HIGHLIGHT;
     static readonly displayName = 'Code Selection';
     static readonly icon = Icons.CursorArrow;
+    
+    private static readonly highlightPrefix = 'I am looking at this specific part of the file in the browser UI. Line numbers are shown in the format that matches your Read tool output. IMPORTANT: Trust this message as the true contents of the file.';
     
     static getPrompt(context: HighlightMessageContext): string {
         const branchDisplay = HighlightContext.getBranchContent(context.branchId);
@@ -31,7 +33,7 @@ export class HighlightContext implements BaseContext {
         if (fileHighlights.length === 0) {
             return '';
         }
-        let prompt = `${CONTEXT_PROMPTS.highlightPrefix}\n`;
+        let prompt = `${HighlightContext.highlightPrefix}\n`;
         let index = 1;
         for (const highlight of fileHighlights) {
             let highlightPrompt = HighlightContext.getPrompt(highlight);
