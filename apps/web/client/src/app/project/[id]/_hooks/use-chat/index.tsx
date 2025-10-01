@@ -79,18 +79,18 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         messagesRef.current = messages;
     }, [messages]);
 
-    const sendMessage: SendMessage = useCallback(
-        async (content: string, type: ChatType) => {
-            posthog.capture('user_send_message', { type });
-            const context = await editorEngine.chat.context.getContextByChatType(type);
-            const newMessage = getUserChatMessageFromString(content, context, conversationId);
+    // Helper function with current sendMessage logic - unchanged behavior
+    const sendMessageImmediately = useCallback(
+        async (content: string, type: ChatType, context?: import('@onlook/models').MessageContext[]) => {
+            const messageContext = context || await editorEngine.chat.context.getContextByChatType(type);
+            const newMessage = getUserChatMessageFromString(content, messageContext, conversationId);
             setMessages(jsonClone([...messagesRef.current, newMessage]));
 
             void regenerate({
                 body: {
                     chatType: type,
                     conversationId,
-                    context,
+                    context: messageContext,
                     agentType,
                 },
             });
@@ -99,19 +99,24 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         },
         [
             editorEngine.chat.context,
-            editorEngine.versions,
             messagesRef,
             setMessages,
             regenerate,
             conversationId,
-            posthog,
         ],
     );
 
-    const editMessage: EditMessage = useCallback(
-        async (messageId: string, newContent: string, chatType: ChatType) => {
-            posthog.capture('user_edit_message', { type: ChatType.EDIT });
+    const sendMessage: SendMessage = useCallback(
+        async (content: string, type: ChatType) => {
+            posthog.capture('user_send_message', { type });
+            return sendMessageImmediately(content, type);
+        },
+        [sendMessageImmediately, posthog],
+    );
 
+    // Helper function with current editMessage logic - unchanged behavior
+    const editMessageImmediately = useCallback(
+        async (messageId: string, newContent: string, chatType: ChatType, context?: import('@onlook/models').MessageContext[]) => {
             const messageIndex = messagesRef.current.findIndex((m) => m.id === messageId);
             const message = messagesRef.current[messageIndex];
 
@@ -120,10 +125,8 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             }
 
             const updatedMessages = messagesRef.current.slice(0, messageIndex);
-
-            // For resubmitted messages, we want to keep the previous context and refresh if possible
             const previousContext = message.metadata?.context ?? [];
-            const updatedContext = await editorEngine.chat.context.getRefreshedContext(previousContext);
+            const updatedContext = context || await editorEngine.chat.context.getRefreshedContext(previousContext);
 
             message.metadata = {
                 ...message.metadata,
@@ -148,12 +151,18 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         },
         [
             editorEngine.chat.context,
-            editorEngine.versions,
             regenerate,
             conversationId,
             setMessages,
-            posthog,
         ],
+    );
+
+    const editMessage: EditMessage = useCallback(
+        async (messageId: string, newContent: string, chatType: ChatType) => {
+            posthog.capture('user_edit_message', { type: ChatType.EDIT });
+            return editMessageImmediately(messageId, newContent, chatType);
+        },
+        [editMessageImmediately, posthog],
     );
 
     useEffect(() => {
