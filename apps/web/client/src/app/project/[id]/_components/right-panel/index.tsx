@@ -34,7 +34,7 @@ export const RightPanel = observer(() => {
     return (
         <div
             className={cn(
-                'flex h-full w-full transition-width duration-300 bg-background/95 group/panel border-[0.5px] backdrop-blur-xl shadow rounded-tl-xl',
+                'flex h-full w-full transition-width duration-300 bg-background/95 group/panel border-[0.5px] backdrop-blur-xl shadow rounded-tl-xl relative',
                 editorEngine.state.editorMode === EditorMode.PREVIEW && 'hidden',
             )}
         >

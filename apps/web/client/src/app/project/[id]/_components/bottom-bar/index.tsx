@@ -1,6 +1,7 @@
 'use client';
 
 import { Hotkey } from '@/components/hotkey';
+import { useOnboarding } from '@/components/onboarding/onboarding-context';
 import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
 import { EditorMode } from '@onlook/models';
@@ -57,7 +58,9 @@ const TOOLBAR_ITEMS = ({ t }: { t: ReturnType<typeof useTranslations> }) => [
 export const BottomBar = observer(() => {
     const t = useTranslations();
     const editorEngine = useEditorEngine();
+    const { isActive, currentStep } = useOnboarding();
     const toolbarItems = TOOLBAR_ITEMS({ t });
+    const isOnboardingToolbarStep = isActive && currentStep === 1;
 
     // Ensure default state is set
     useEffect(() => {
@@ -69,12 +72,16 @@ export const BottomBar = observer(() => {
     return (
         <AnimatePresence mode="wait">
             <motion.div
+                    data-onboarding-target="project-toolbar"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ 
                         opacity: editorEngine.state.editorMode !== EditorMode.PREVIEW  ? 1 : 0, 
                         y: editorEngine.state.editorMode !== EditorMode.PREVIEW  ? 0 : 20, 
                     }}
-                    className="absolute left-1/2 -translate-x-1/2 bottom-4 flex flex-col border-[0.5px] border-border p-1 px-1 bg-background rounded-lg backdrop-blur drop-shadow-xl overflow-hidden"
+                    className={cn(
+                        "absolute left-1/2 -translate-x-1/2 bottom-4 flex flex-col border-[0.5px] border-border p-1 px-1 bg-background rounded-lg backdrop-blur drop-shadow-xl overflow-hidden z-50 transition-all duration-300",
+                        isOnboardingToolbarStep && "ring-1 ring-red-500 ring-offset-2 ring-offset-background shadow-[0_0_12px_rgba(239,68,68,0.8)]"
+                    )}
                     transition={{
                         type: 'spring',
                         bounce: 0.1,

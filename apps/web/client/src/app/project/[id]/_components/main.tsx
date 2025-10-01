@@ -17,6 +17,8 @@ import { EditorBar } from './editor-bar';
 import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
+import { OnboardingTrigger } from './onboarding-trigger';
+import { OnboardingOverlay } from '@/components/onboarding/onboarding-overlay';
 
 export const Main = observer(() => {
     const router = useRouter();
@@ -84,6 +86,9 @@ export const Main = observer(() => {
                     <TopBar />
                 </div>
 
+                {/* Onboarding Trigger */}
+                <OnboardingTrigger />
+
                 {/* Left Panel */}
                 <div
                     ref={leftPanelRef}
@@ -120,6 +125,10 @@ export const Main = observer(() => {
 
                 <BottomBar />
             </div>
+            
+            {/* Onboarding Overlay - positioned at top level to break panel constraints */}
+            <OnboardingOverlay />
+            
             <SettingsModalWithProjects />
             <SubscriptionModal />
         </TooltipProvider>

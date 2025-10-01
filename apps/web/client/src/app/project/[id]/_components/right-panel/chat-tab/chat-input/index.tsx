@@ -1,6 +1,7 @@
 'use client';
 
 import type { SendMessage } from '@/app/project/[id]/_hooks/use-chat';
+import { useOnboarding } from '@/components/onboarding/onboarding-context';
 import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
 import { transKeys } from '@/i18n/keys';
@@ -41,6 +42,7 @@ export const ChatInput = observer(({
     onSendMessage,
 }: ChatInputProps) => {
     const editorEngine = useEditorEngine();
+    const { isActive, currentStep } = useOnboarding();
     const t = useTranslations();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isComposing, setIsComposing] = useState(false);
@@ -48,6 +50,7 @@ export const ChatInput = observer(({
     const [isDragging, setIsDragging] = useState(false);
     const chatMode = editorEngine.state.chatMode;
     const [inputValue, setInputValue] = useState('');
+    const isOnboardingChatStep = isActive && currentStep === 0;
     const lastUsageMessage = useMemo(() => messages.findLast(msg => msg.metadata?.usage), [messages]);
 
     const focusInput = () => {
@@ -311,26 +314,28 @@ export const ChatInput = observer(({
 
 
     return (
-        <div
-            className={cn(
-                'flex flex-col w-full text-foreground-tertiary border-t text-small transition-colors duration-200 [&[data-dragging-image=true]]:bg-teal-500/40',
-                isDragging && 'cursor-copy',
-            )}
-            onDrop={(e) => {
-                handleDrop(e);
-                setIsDragging(false);
-            }}
-            onDragOver={handleDragOver}
-            onDragEnter={(e) => {
-                e.preventDefault();
-                handleDragStateChange(true, e);
-            }}
-            onDragLeave={(e) => {
-                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                    handleDragStateChange(false, e);
-                }
-            }}
-        >
+            <div
+                data-onboarding-target="chat-input"
+                className={cn(
+                    'flex flex-col w-full text-foreground-tertiary border-t text-small transition-all duration-300 [&[data-dragging-image=true]]:bg-teal-500/40 relative z-[100]',
+                    isDragging && 'cursor-copy',
+                    isOnboardingChatStep && 'ring-1 ring-red-500 ring-offset-2 ring-offset-background shadow-[0_0_12px_rgba(239,68,68,0.8)]',
+                )}
+                onDrop={(e) => {
+                    handleDrop(e);
+                    setIsDragging(false);
+                }}
+                onDragOver={handleDragOver}
+                onDragEnter={(e) => {
+                    e.preventDefault();
+                    handleDragStateChange(true, e);
+                }}
+                onDragLeave={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                        handleDragStateChange(false, e);
+                    }
+                }}
+            >
             <Suggestions
                 ref={suggestionRef}
                 suggestions={suggestions}
