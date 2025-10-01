@@ -23,36 +23,36 @@ Create a base class system for contexts similar to the existing tool architectur
 
 ## Proposed Base Context Architecture
 
-### 1. Base Context Class (Tool Pattern)
+### 1. Base Context Interface
 **Location**: `packages/ai/src/contexts/models/base.ts`
 
-Following the existing `BaseTool` pattern for consistency:
+Interface-based pattern for better TypeScript support:
 
 ```typescript
 export interface ContextIcon {
     className?: string;
 }
 
-export abstract class BaseContext {
-    static readonly contextType: MessageContextType;
-    static readonly displayName: string;
-    static readonly icon: ComponentType<ContextIcon>;
+export interface BaseContext {
+    readonly contextType: MessageContextType;
+    readonly displayName: string;
+    readonly icon: ComponentType<ContextIcon>;
     
     /**
      * Generate formatted prompt content for this context type
      */
-    static getPrompt(context: MessageContext): string;
+    getPrompt(context: MessageContext): string;
     
     /**
      * Generate display label for UI
      */
-    static getLabel(context: MessageContext): string;
+    getLabel(context: MessageContext): string;
 }
 ```
 
 **Usage Example:**
 ```typescript
-// Direct static calls, similar to tools
+// Direct static calls with interface implementation
 const filePrompt = FileContext.getPrompt(fileContext);
 const highlightLabel = HighlightContext.getLabel(highlightContext);
 ```
@@ -62,14 +62,19 @@ const highlightLabel = HighlightContext.getLabel(highlightContext);
 
 #### FileContext
 ```typescript
-export class FileContext extends BaseContext {
+export class FileContext implements BaseContext {
     static readonly contextType = MessageContextType.FILE;
     static readonly displayName = 'File';
-    static readonly icon = Icons.FileText;
+    static readonly icon = Icons.File;
     
     static getPrompt(context: FileMessageContext): string {
-        // Move existing getFilesContent() logic here
-        return `<path>${context.path}</path>\n<branch id="${context.branchId}" />\n\`\`\`${getLanguageFromFilePath(context.path)}\n${context.content}\n\`\`\``;
+        const pathDisplay = wrapXml('path', context.path);
+        const branchDisplay = wrapXml('branch', `id: "${context.branchId}"`);
+        let prompt = `${pathDisplay}\n${branchDisplay}\n`;
+        prompt += `${CODE_FENCE.start}${getLanguageFromFilePath(context.path)}\n`;
+        prompt += context.content;
+        prompt += `\n${CODE_FENCE.end}\n`;
+        return prompt;
     }
     
     static getLabel(context: FileMessageContext): string {
@@ -80,33 +85,25 @@ export class FileContext extends BaseContext {
 
 #### HighlightContext  
 ```typescript
-export class HighlightContext extends BaseContext {
+export class HighlightContext implements BaseContext {
     static readonly contextType = MessageContextType.HIGHLIGHT;
     static readonly displayName = 'Code Selection';
     static readonly icon = Icons.Target;
     
     static getPrompt(context: HighlightMessageContext): string {
-        // Move existing getHighlightsContent() logic here
+        const branchDisplay = getBranchContent(context.branchId);
+        const pathDisplay = wrapXml('path', `${context.path}#L${context.start}:L${context.end}`);
+        let prompt = `${pathDisplay}\n${branchDisplay}\n`;
+        prompt += `${CODE_FENCE.start}\n${context.content}\n${CODE_FENCE.end}\n`;
+        return prompt;
     }
 }
 ```
 
-#### ErrorContext
-```typescript
-export class ErrorContext extends BaseContext {
-    static readonly contextType = MessageContextType.ERROR;
-    static readonly displayName = 'Error';
-    static readonly icon = Icons.ExclamationTriangle;
-    
-    static getPrompt(context: ErrorMessageContext): string {
-        // Move existing getErrorsContent() logic here
-    }
-}
-```
-
-#### BranchContext, ImageContext, AgentRuleContext
-- Similar pattern following the static method approach
+#### ErrorContext, BranchContext, ImageContext, AgentRuleContext
+- Similar pattern using `implements BaseContext`
 - Each handles their specific prompt generation and labeling
+- All implemented with static methods following the interface contract
 
 ### 3. Simple Context Mapping 
 **Location**: `packages/ai/src/contexts/index.ts`
@@ -180,6 +177,60 @@ export { FileContext, HighlightContext, ErrorContext, BranchContext, ImageContex
 - Maintains existing data flow
 - Preserves transferable object patterns
 - Server/client compatibility maintained
+
+## Usage Replacement Guide
+
+### 1. Update Context Icon Usage
+Replace switch-based icon selection with context classes:
+
+```typescript
+// OLD: Manual switch statement
+switch (context.type) {
+    case MessageContextType.FILE:
+        icon = Icons.File;
+        break;
+    // ... other cases
+}
+
+// NEW: Use context classes for icons  
+import { getContextClass } from '@onlook/ai/contexts';
+const contextClass = getContextClass(context.type);
+const icon = contextClass.icon;
+```
+
+### 2. Update Context Labeling
+Replace direct property access with context class methods:
+
+```typescript
+// OLD: Direct property usage
+const displayName = context.displayName;
+
+// NEW: Use context class methods
+import { getContextLabel } from '@onlook/ai/contexts';
+const displayName = getContextLabel(context);
+```
+
+### 3. Replace Provider Function Calls
+Replace provider function calls with context classes:
+
+```typescript
+// OLD: Provider functions
+import { getFilesContent, getErrorsContent } from '@onlook/ai/prompt/provider';
+const filePrompt = getFilesContent(files, highlights);
+
+// NEW: Context classes (specific)
+import { FileContext } from '@onlook/ai/contexts';
+const filePrompts = files.map(file => FileContext.getPrompt(file));
+
+// NEW: Context classes (generic)
+import { getContextPrompt } from '@onlook/ai/contexts';
+const filePrompts = files.map(file => getContextPrompt(file));
+```
+
+### 4. Key Integration Locations
+- **UI Icons**: `apps/web/client/.../context-pills/helpers.tsx`
+- **Context Generation**: `apps/web/client/.../chat/context.ts`  
+- **Provider Functions**: `packages/ai/src/prompt/provider.ts`
 
 ## Implementation Notes
 

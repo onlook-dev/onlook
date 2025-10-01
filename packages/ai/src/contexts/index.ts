@@ -26,6 +26,10 @@ export function getContextLabel(context: MessageContext): string {
     return contextClass.getLabel(context as any);
 }
 
+export function getContextClass(type: MessageContextType) {
+    return CONTEXT_CLASSES[type];
+}
+
 export type { BaseContext } from './models/base';
 export {
     AgentRuleContext, BranchContext, ErrorContext, FileContext,
