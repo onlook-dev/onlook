@@ -421,16 +421,6 @@ return {
 - Queue features are additive, not replacing existing behavior
 - Graceful degradation if queue features fail
 
-### Performance Impact
-- Queue operations should be O(1) or O(log n) where possible
-- Memory usage monitoring for large queues
-- UI rendering optimization for queue status updates
-
-### Data Persistence
-- Consider localStorage persistence for queue across page refreshes
-- Queue state recovery after browser crashes
-- Message deduplication across sessions
-
 ## Success Metrics
 
 ### Functionality
@@ -438,12 +428,6 @@ return {
 - Successful retry of failed messages
 - Intuitive user control over pending messages
 - Stable queue processing without race conditions
-
-### Performance
-- Queue operations complete in <10ms
-- UI updates smooth with queues up to 100 messages  
-- Memory usage remains stable over long sessions
-- No impact on existing chat response times
 
 ### User Experience
 - Clear visual feedback for queue status
