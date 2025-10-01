@@ -77,9 +77,7 @@ export class CodeEditorApi extends FileSystem {
 
         const formattedContent = await formatContent(path, processedContent);
 
-        if (modified || (isRootLayoutFile(path, this.options.routerType))) {
-            await this.updateMetadataForFile(path, formattedContent);
-        }
+        await this.updateMetadataForFile(path, formattedContent);
 
         return formattedContent;
     }

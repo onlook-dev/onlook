@@ -47,10 +47,10 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
     }, [isConnecting, frame.branchId]);
 
     useEffect(() => {
-        if (branchData?.sandbox && !preloadScriptReady) {
+        if (branchData?.sandbox?.session?.provider && !preloadScriptReady) {
             branchData.sandbox.ensurePreloadScriptExists();
         }
-    }, [branchData?.sandbox, preloadScriptReady]);
+    }, [branchData?.sandbox?.session?.provider, preloadScriptReady]);
 
     const undebouncedReloadIframe = () => {
         setReloadKey(prev => prev + 1);
