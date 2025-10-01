@@ -24,26 +24,29 @@ interface QueuedMessageItemProps {
 
 const QueuedMessageItem = ({ message, index, removeFromQueue }: QueuedMessageItemProps) => {
     return (
-        <div className="flex items-center gap-3 group hover:bg-transparent">
-            <div className="size-3 rounded-full border border-muted-foreground/50 flex-shrink-0 bg-transparent" />
-
-            <p className="flex-1 min-w-0 text-small text-muted-foreground truncate">
+        <div className="flex flex-row w-full py-1.5 items-center rounded-md hover:bg-background-onlook cursor-default select-none group relative transition-none overflow-hidden">
+            <Icons.ChatBubble className="flex-none mr-2 ml-3 text-muted-foreground group-hover:text-foreground" />
+            <span className="text-small truncate w-full text-left text-muted-foreground group-hover:text-foreground mr-2">
                 {message.content}
-            </p>
-
+            </span>
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
                         size="icon"
-                        className='hidden group-hover:flex items-center justify-center bg-transparent hover:bg-transparent h-4 w-4 p-0.25'
-                        onClick={() => removeFromQueue(message.id)}
+                        className="text-muted-foreground hover:text-foreground absolute right-0 px-2.5 py-2 top-1/2 -translate-y-1/2 w-fit h-fit opacity-0 group-hover:opacity-100 !bg-background-onlook hover:!bg-background-onlook z-10 transition-none cursor-pointer"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            removeFromQueue(message.id);
+                        }}
                     >
-                        <Icons.CrossL className='size-2.5' />
+                        <Icons.Trash className="w-4 h-4" />
                     </Button>
                 </TooltipTrigger>
-                <TooltipContent hideArrow>
-                    Remove from queue
+                <TooltipContent side="top" hideArrow>
+                    <p className="font-normal">
+                        Remove from queue
+                    </p>
                 </TooltipContent>
             </Tooltip>
         </div>
@@ -64,24 +67,24 @@ export const QueueBox = ({ queuedMessages, removeFromQueue }: QueueBoxProps) => 
     if (messages.length === 0) return null;
 
     return (
-        <Collapsible className="mb-3" open={queueExpanded} onOpenChange={setQueueExpanded}>
+        <Collapsible className="mb-2" open={queueExpanded} onOpenChange={setQueueExpanded}>
             <CollapsibleTrigger asChild>
                 <Button
                     variant="ghost"
-                    className="w-full justify-start h-auto hover:bg-transparent text-muted-foreground p-0 py-2 "
+                    className="w-full justify-start h-auto hover:bg-transparent text-muted-foreground p-2"
                 >
                     <div className="flex items-center gap-2">
                         <Icons.ChevronDown
                             className={`size-4 transition-transform ${queueExpanded ? 'rotate-180' : ''}`}
                         />
                         <span className="text-xs">
-                            {messages.length} in queue
+                            {messages.length} chats in queue
                         </span>
                     </div>
                 </Button>
             </CollapsibleTrigger>
             <CollapsibleContent>
-                <div className="mx-1 gap-1 flex flex-col">
+                <div className="gap-0 flex flex-col mt-1">
                     {messages.map((message, index) => (
                         <QueuedMessageItem
                             key={message.id}

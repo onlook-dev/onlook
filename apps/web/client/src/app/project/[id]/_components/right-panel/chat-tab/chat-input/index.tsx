@@ -329,7 +329,7 @@ export const ChatInput = observer(({
                 }
             }}
         >
-            <div className="flex flex-col w-full p-4">
+            <div className="flex flex-col w-full p-2">
                 <QueueBox
                     queuedMessages={queuedMessages}
                     removeFromQueue={removeFromQueue}
@@ -339,7 +339,7 @@ export const ChatInput = observer(({
                     ref={textareaRef}
                     placeholder={getPlaceholderText()}
                     className={cn(
-                        'bg-transparent dark:bg-transparent mt-2 overflow-auto max-h-32 text-small p-0 border-0 focus-visible:ring-0 shadow-none rounded-none caret-[#FA003C] resize-none',
+                        'bg-transparent dark:bg-transparent mt-1 overflow-auto max-h-32 text-small p-2 border-0 focus-visible:ring-0 shadow-none rounded-none caret-[#FA003C] resize-none',
                         'selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary placeholder:text-foreground-primary/50 cursor-text',
                         isDragging ? 'pointer-events-none' : 'pointer-events-auto',
                     )}
