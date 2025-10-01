@@ -51,6 +51,8 @@ export const CodeTab = observer(() => {
     const [showLocalUnsavedDialog, setShowLocalUnsavedDialog] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
+
+    console.log('selectedFilePath', selectedFilePath);
     const { fs } = useFS(rootDir);
     const {
         entries: fileEntries,
@@ -122,7 +124,7 @@ export const CodeTab = observer(() => {
             console.log(`[CodeTab] Auto-opening file: ${filePath}`);
             setSelectedFilePath(filePath);
         }
-    }, [navigationTarget, selectedFilePath]);
+    }, [navigationTarget]);
 
     // Track dirty state of opened files
     useEffect(() => {

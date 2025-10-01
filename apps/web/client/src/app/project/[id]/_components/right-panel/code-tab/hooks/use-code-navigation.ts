@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { reaction } from 'mobx';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export interface CodePosition {
     line: number;

@@ -51,6 +51,7 @@ export const FileTree = ({
 
     // Sync tree selection with selected file
     useEffect(() => {
+        console.log('selectedFilePath', selectedFilePath);
         if (!treeRef.current || !fileEntries.length) {
             return;
         }
@@ -61,8 +62,16 @@ export const FileTree = ({
             return;
         }
 
+        console.log('here')
+
         // Find the exact entry that matches the file 
-        const entry = flatEntryIndex.get(selectedFilePath);
+        // TODO: Fix path format inconsistency - try both single and double slash formats
+        let entry = flatEntryIndex.get(selectedFilePath);
+        if (!entry && selectedFilePath.startsWith('/')) {
+            // Try with double slash if single slash didn't work
+            entry = flatEntryIndex.get(`/${selectedFilePath}`);
+        }
+        
         const targetEntry = entry && !entry.isDirectory ? entry : null;
         if (targetEntry) {
             treeRef.current.select(targetEntry.path);
