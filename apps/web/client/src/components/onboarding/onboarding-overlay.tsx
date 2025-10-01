@@ -16,84 +16,40 @@ export const OnboardingOverlay = () => {
     const [blinkTrigger, setBlinkTrigger] = useState(0);
 
     useEffect(() => {
-        if (isActive && currentStep === 0) {
-            // Find the chat input element
-            const chatInput = document.querySelector('[data-onboarding-target="chat-input"]');
-            if (chatInput) {
-                setTargetElement(chatInput as HTMLElement);
-                
-                // Delay the glow appearance
-                const glowTimer = setTimeout(() => setShowGlow(true), 300);
-                const textTimer = setTimeout(() => setShowText(true), 800);
-                
-                return () => {
-                    clearTimeout(glowTimer);
-                    clearTimeout(textTimer);
-                };
-            }
-        } else if (isActive && currentStep === 1) {
-            // Find the project toolbar element
-            const toolbar = document.querySelector('[data-onboarding-target="project-toolbar"]');
-            if (toolbar) {
-                setTargetElement(toolbar as HTMLElement);
-                
-                // Delay the glow appearance
-                const glowTimer = setTimeout(() => setShowGlow(true), 300);
-                const textTimer = setTimeout(() => setShowText(true), 800);
-                
-                return () => {
-                    clearTimeout(glowTimer);
-                    clearTimeout(textTimer);
-                };
-            }
-        } else if (isActive && currentStep === 2) {
-            // Find the left panel element
-            const leftPanel = document.querySelector('[data-onboarding-target="left-panel"]');
-            if (leftPanel) {
-                setTargetElement(leftPanel as HTMLElement);
-                
-                // Delay the glow appearance
-                const glowTimer = setTimeout(() => setShowGlow(true), 300);
-                const textTimer = setTimeout(() => setShowText(true), 800);
-                
-                return () => {
-                    clearTimeout(glowTimer);
-                    clearTimeout(textTimer);
-                };
-            }
-        } else if (isActive && currentStep === 3) {
-            // Find the mode toggle element
-            const modeToggle = document.querySelector('[data-onboarding-target="mode-toggle"]');
-            if (modeToggle) {
-                setTargetElement(modeToggle as HTMLElement);
-                
-                // Delay the glow appearance
-                const glowTimer = setTimeout(() => setShowGlow(true), 300);
-                const textTimer = setTimeout(() => setShowText(true), 800);
-                
-                return () => {
-                    clearTimeout(glowTimer);
-                    clearTimeout(textTimer);
-                };
-            }
-        } else if (isActive && currentStep === 4) {
-            // Find the top-right actions element
-            const topRightActions = document.querySelector('[data-onboarding-target="top-right-actions"]');
-            if (topRightActions) {
-                setTargetElement(topRightActions as HTMLElement);
-                
-                // Delay the glow appearance
-                const glowTimer = setTimeout(() => setShowGlow(true), 300);
-                const textTimer = setTimeout(() => setShowText(true), 800);
-                
-                return () => {
-                    clearTimeout(glowTimer);
-                    clearTimeout(textTimer);
-                };
-            }
-        } else {
+        const stepTargets: Record<number, string> = {
+            0: 'chat-input',
+            1: 'project-toolbar',
+            2: 'left-panel',
+            3: 'mode-toggle',
+            4: 'top-right-actions',
+        };
+
+        if (!isActive) {
             setShowGlow(false);
             setShowText(false);
+            setTargetElement(null);
+            return;
+        }
+
+        const targetSelector = stepTargets[currentStep];
+        if (!targetSelector) {
+            setShowGlow(false);
+            setShowText(false);
+            setTargetElement(null);
+            return;
+        }
+
+        const element = document.querySelector(`[data-onboarding-target="${targetSelector}"]`);
+        if (element) {
+            setTargetElement(element as HTMLElement);
+            const glowTimer = setTimeout(() => setShowGlow(true), 300);
+            const textTimer = setTimeout(() => setShowText(true), 800);
+            
+            return () => {
+                clearTimeout(glowTimer);
+                clearTimeout(textTimer);
+            };
+        } else {
             setTargetElement(null);
         }
     }, [isActive, currentStep]);
@@ -129,7 +85,7 @@ export const OnboardingOverlay = () => {
         setIsFadingOut(true);
     };
 
-    if (!isActive || (currentStep !== 0 && currentStep !== 1 && currentStep !== 2 && currentStep !== 3 && currentStep !== 4) || !targetElement) {
+    if (!isActive || !targetElement) {
         return null;
     }
 
@@ -137,40 +93,85 @@ export const OnboardingOverlay = () => {
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     
-    // For step 1 (toolbar), position the glow below the toolbar
     const isToolbarStep = currentStep === 1;
-    // For step 2 (left panel), position the glow on the left side
     const isLeftPanelStep = currentStep === 2;
-    // For step 3 (mode toggle), position the glow around the toggle
     const isModeToggleStep = currentStep === 3;
-    // For step 4 (top-right actions), position the glow around the actions
     const isTopRightStep = currentStep === 4;
+
+    const stepContent: Record<number, string> = {
+        0: "Type your first message here to begin designing your project.",
+        1: "Use these tools to design and interact with your project.",
+        2: "Access your layers, branding, pages, support, and more from here.",
+        3: "Switch between Design and Preview modes to edit or view your project.",
+        4: "Invite colleagues or publish your work to share it with the world.",
+    };
+
+    const glowConfig: Record<number, { 
+        top: number; 
+        left: number; 
+        zIndex: string;
+        width: { primary: number; outer: number; ambient: number };
+        height: { primary: number; outer: number; ambient: number };
+        textLeft: number;
+        textTop: number;
+    }> = {
+        0: { 
+            top: rect.top - 50, 
+            left: rect.left - 100,
+            zIndex: "z-[60]",
+            width: { primary: rect.width + 100, outer: rect.width + 300, ambient: rect.width + 400 },
+            height: { primary: rect.height + 100, outer: rect.height + 200, ambient: rect.height + 300 },
+            textLeft: centerX - 150,
+            textTop: centerY - 200,
+        },
+        1: { 
+            top: rect.bottom - 80, 
+            left: rect.left - 100,
+            zIndex: "z-10",
+            width: { primary: rect.width + 100, outer: rect.width + 300, ambient: rect.width + 400 },
+            height: { primary: rect.height + 100, outer: rect.height + 200, ambient: rect.height + 300 },
+            textLeft: centerX - 150,
+            textTop: rect.top - 120,
+        },
+        2: { 
+            top: rect.top - 50, 
+            left: rect.left - 100,
+            zIndex: "z-10",
+            width: { primary: rect.width + 100, outer: rect.width + 300, ambient: rect.width + 400 },
+            height: { primary: rect.height + 100, outer: rect.height + 200, ambient: rect.height + 300 },
+            textLeft: rect.right + 20,
+            textTop: rect.top + 80,
+        },
+        3: { 
+            top: rect.top - 30, 
+            left: rect.left - 50,
+            zIndex: "z-10",
+            width: { primary: rect.width + 100, outer: rect.width + 200, ambient: rect.width + 300 },
+            height: { primary: rect.height + 60, outer: rect.height + 160, ambient: rect.height + 260 },
+            textLeft: centerX - 150,
+            textTop: rect.bottom + 30,
+        },
+        4: { 
+            top: rect.top - 30, 
+            left: rect.left - 50,
+            zIndex: "z-[60]",
+            width: { primary: rect.width, outer: rect.width + 100, ambient: rect.width + 200 },
+            height: { primary: rect.height + 60, outer: rect.height + 160, ambient: rect.height + 260 },
+            textLeft: rect.right - 350,
+            textTop: rect.bottom + 50,
+        },
+    };
     
-    const glowTop = isToolbarStep 
-        ? rect.bottom - 80 
-        : isLeftPanelStep 
-            ? rect.top - 50
-            : isModeToggleStep
-                ? rect.top - 30
-                : isTopRightStep
-                    ? rect.top - 30
-                    : rect.top - 50;
-    const glowLeft = isToolbarStep 
-        ? rect.left - 100 
-        : isLeftPanelStep
-            ? rect.left - 100
-            : isModeToggleStep
-                ? rect.left - 50
-                : isTopRightStep
-                    ? rect.left - 50
-                    : rect.left - 100;
+    const config = glowConfig[currentStep] || glowConfig[0]!;
+    const glowTop = config.top;
+    const glowLeft = config.left;
 
     return (
         <>
             {/* Dark overlay over the rest of the interface - blocks all interactions */}
             <div 
                 className={cn(
-                    "fixed inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto z-[5]",
+                    "fixed inset-0 bg-black/60 backdrop-blur-lg pointer-events-auto z-[5]",
                     "transition-opacity duration-700 ease-in-out",
                     isFadingOut || isFadingIn ? "opacity-0" : "opacity-100"
                 )}
@@ -192,13 +193,13 @@ export const OnboardingOverlay = () => {
                     "blur-md will-change-[opacity,transform]",
                     "transition-[opacity,left,top,width,height] duration-700 ease-in-out",
                     showGlow && !isFadingOut ? "opacity-100" : "opacity-0",
-                    isTopRightStep ? "z-[60]" : (isToolbarStep || isLeftPanelStep || isModeToggleStep) ? "z-10" : "z-[60]"
+                    config.zIndex
                 )}
                 style={{
                     left: isTopRightStep ? glowLeft + 50 : glowLeft,
                     top: glowTop,
-                    width: isModeToggleStep ? rect.width + 100 : isTopRightStep ? rect.width : rect.width + 100,
-                    height: (isModeToggleStep || isTopRightStep) ? rect.height + 60 : rect.height + 100,
+                    width: config.width.primary,
+                    height: config.height.primary,
                     transform: 'scale(1.1) translateZ(0)',
                 }}
             />
@@ -207,18 +208,18 @@ export const OnboardingOverlay = () => {
             <div 
                 className={cn(
                     "fixed pointer-events-none rounded-full",
-                    "bg-gradient-to-t from-fuchsia-600/20 via-transparent to-pink-500/25",
+                    "bg-gradient-to-t from-red-600/20 via-transparent to-pink-500/25",
                     "shadow-[0_0_150px_rgba(192,38,211,0.4),0_0_300px_rgba(192,38,211,0.2)]",
                     "blur-lg will-change-[opacity,transform]",
                     "transition-[opacity,left,top,width,height] duration-900 ease-in-out",
                     showGlow && !isFadingOut ? "opacity-80" : "opacity-0",
-                    isTopRightStep ? "z-[60]" : (isToolbarStep || isLeftPanelStep || isModeToggleStep) ? "z-10" : "z-[60]"
+                    config.zIndex
                 )}
                 style={{
                     left: isTopRightStep ? glowLeft : glowLeft - 50,
                     top: glowTop - 50,
-                    width: isModeToggleStep ? rect.width + 200 : isTopRightStep ? rect.width + 100 : rect.width + 300,
-                    height: (isModeToggleStep || isTopRightStep) ? rect.height + 160 : rect.height + 200,
+                    width: config.width.outer,
+                    height: config.height.outer,
                     transform: 'scale(1.2) translateZ(0)',
                 }}
             />
@@ -232,13 +233,13 @@ export const OnboardingOverlay = () => {
                     "blur-xl will-change-[opacity,transform]",
                     "transition-[opacity,left,top,width,height] duration-1000 ease-in-out",
                     showGlow && !isFadingOut ? "opacity-60" : "opacity-0",
-                    isTopRightStep ? "z-[60]" : (isToolbarStep || isLeftPanelStep || isModeToggleStep) ? "z-10" : "z-[60]"
+                    config.zIndex
                 )}
                 style={{
                     left: isTopRightStep ? glowLeft - 50 : glowLeft - 100,
                     top: glowTop - 100,
-                    width: isModeToggleStep ? rect.width + 300 : isTopRightStep ? rect.width + 200 : rect.width + 400,
-                    height: (isModeToggleStep || isTopRightStep) ? rect.height + 260 : rect.height + 300,
+                    width: config.width.ambient,
+                    height: config.height.ambient,
                     transform: 'scale(1.3) translateZ(0)',
                 }}
             />
@@ -251,8 +252,8 @@ export const OnboardingOverlay = () => {
                         "transition-opacity duration-500 ease-in-out opacity-100"
                     )}
                     style={{
-                        left: isLeftPanelStep ? rect.right + 20 : isTopRightStep ? rect.right - 350 : isModeToggleStep ? centerX - 150 : centerX - 150,
-                        top: isToolbarStep ? rect.top - 120 : isLeftPanelStep ? rect.top + 80 : isModeToggleStep ? rect.bottom + 30 : isTopRightStep ? rect.bottom + 50 : centerY - 200,
+                        left: config.textLeft,
+                        top: config.textTop,
                         width: 300,
                         pointerEvents: 'auto',
                     }}
@@ -267,16 +268,7 @@ export const OnboardingOverlay = () => {
                             isLeftPanelStep ? "text-left" : "text-center",
                             "animate-in fade-in slide-in-from-bottom-2 duration-500"
                         )}>
-                            {isToolbarStep 
-                                ? "Use these tools to design and interact with your project."
-                                : isLeftPanelStep
-                                    ? "Access your layers, branding, pages, and more from here."
-                                    : isModeToggleStep
-                                        ? "Switch between Design and Preview modes to edit or view your project."
-                                        : isTopRightStep
-                                            ? "Invite colleagues or publish your work to share it with the world."
-                                            : "Type your first message here to begin designing your project."
-                            }
+                            {stepContent[currentStep]}
                         </p>
                         
                         {/* Buttons */}

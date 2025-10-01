@@ -19,6 +19,7 @@ import { compressImageInBrowser } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { validateImageLimit } from '../context-pills/helpers';
 import { InputContextPills } from '../context-pills/input-context-pills';
 import { Suggestions, type SuggestionsRef } from '../suggestions';
@@ -45,9 +46,11 @@ export const ChatInput = observer(({
     const { isActive, currentStep } = useOnboarding();
     const t = useTranslations();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const [isComposing, setIsComposing] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const [portalPosition, setPortalPosition] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
     const chatMode = editorEngine.state.chatMode;
     const [inputValue, setInputValue] = useState('');
     const isOnboardingChatStep = isActive && currentStep === 0;
@@ -81,6 +84,30 @@ export const ChatInput = observer(({
         window.addEventListener(FOCUS_CHAT_INPUT_EVENT, focusHandler);
         return () => window.removeEventListener(FOCUS_CHAT_INPUT_EVENT, focusHandler);
     }, []);
+
+    // Track position for portal when in onboarding mode
+    useEffect(() => {
+        if (isOnboardingChatStep && containerRef.current) {
+            const updatePosition = () => {
+                const rect = containerRef.current?.getBoundingClientRect();
+                if (rect) {
+                    setPortalPosition({
+                        top: rect.top,
+                        left: rect.left,
+                        width: rect.width,
+                        height: rect.height,
+                    });
+                }
+            };
+            
+            updatePosition();
+            window.addEventListener('resize', updatePosition);
+            
+            return () => window.removeEventListener('resize', updatePosition);
+        } else {
+            setPortalPosition(null);
+        }
+    }, [isOnboardingChatStep]);
 
     useEffect(() => {
         const handleGlobalKeyDown = (e: KeyboardEvent) => {
@@ -313,29 +340,37 @@ export const ChatInput = observer(({
     };
 
 
-    return (
-            <div
-                data-onboarding-target="chat-input"
-                className={cn(
-                    'flex flex-col w-full text-foreground-tertiary border-t text-small transition-all duration-300 [&[data-dragging-image=true]]:bg-teal-500/40 relative z-[100]',
-                    isDragging && 'cursor-copy',
-                    isOnboardingChatStep && 'ring-1 ring-red-500 ring-offset-2 ring-offset-background shadow-[0_0_12px_rgba(239,68,68,0.8)]',
-                )}
-                onDrop={(e) => {
-                    handleDrop(e);
-                    setIsDragging(false);
-                }}
-                onDragOver={handleDragOver}
-                onDragEnter={(e) => {
-                    e.preventDefault();
-                    handleDragStateChange(true, e);
-                }}
-                onDragLeave={(e) => {
-                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                        handleDragStateChange(false, e);
-                    }
-                }}
-            >
+    const chatInputContent = (isPortal = false) => (
+        <div
+            ref={!isPortal ? containerRef : undefined}
+            data-onboarding-target={!isPortal ? "chat-input" : undefined}
+            className={cn(
+                'flex flex-col w-full text-foreground-tertiary border-t text-small transition-all duration-300 [&[data-dragging-image=true]]:bg-teal-500/40 bg-background',
+                isDragging && 'cursor-copy',
+                isPortal ? 'fixed z-[99999]' : 'relative z-[100]',
+                isOnboardingChatStep && !isPortal && 'invisible',
+            )}
+            style={isPortal && portalPosition ? {
+                top: portalPosition.top,
+                left: portalPosition.left,
+                width: portalPosition.width,
+                height: portalPosition.height,
+            } : undefined}
+            onDrop={(e) => {
+                handleDrop(e);
+                setIsDragging(false);
+            }}
+            onDragOver={handleDragOver}
+            onDragEnter={(e) => {
+                e.preventDefault();
+                handleDragStateChange(true, e);
+            }}
+            onDragLeave={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                    handleDragStateChange(false, e);
+                }
+            }}
+        >
             <Suggestions
                 ref={suggestionRef}
                 suggestions={suggestions}
@@ -438,5 +473,15 @@ export const ChatInput = observer(({
                 </div>
             </div>
         </div>
+    );
+
+    return (
+        <>
+            {chatInputContent(false)}
+            {isOnboardingChatStep && portalPosition && typeof window !== 'undefined' && createPortal(
+                chatInputContent(true),
+                document.body
+            )}
+        </>
     );
 });
