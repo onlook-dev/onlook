@@ -15,7 +15,7 @@ export const ChatTabContent = ({
     projectId,
     initialMessages,
 }: ChatTabContentProps) => {
-    const { isStreaming, sendMessage, editMessage, messages, error, stop, suggestions } = useChat({
+    const { isStreaming, sendMessage, editMessage, messages, error, stop, suggestions, queuedMessages, removeFromQueue } = useChat({
         conversationId,
         projectId,
         initialMessages,
@@ -38,6 +38,8 @@ export const ChatTabContent = ({
                 isStreaming={isStreaming}
                 onStop={stop}
                 onSendMessage={sendMessage}
+                queuedMessages={queuedMessages}
+                removeFromQueue={removeFromQueue}
             />
         </div>
     );

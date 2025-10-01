@@ -1,7 +1,7 @@
 import type { ChatTools } from '@onlook/ai';
 import type { JSONValue, LanguageModelUsage, UIMessage, UIMessagePart } from 'ai';
-import type { MessageCheckpoints } from './checkpoint.ts';
-import type { MessageContext } from './context.ts';
+import type { MessageCheckpoints } from './checkpoint';
+import type { MessageContext } from './context';
 
 export type ChatMetadata = {
     createdAt: Date;

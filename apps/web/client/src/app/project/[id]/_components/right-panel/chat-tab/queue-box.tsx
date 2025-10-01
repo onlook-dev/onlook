@@ -6,16 +6,8 @@ import { Card } from '@onlook/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { ChatType } from '@onlook/models';
+import { ChatType, type MessageContext, type QueuedMessage } from '@onlook/models';
 import { useState } from 'react';
-
-interface QueuedMessage {
-    id: string;
-    content: string;
-    type: ChatType;
-    timestamp: Date;
-    context: any[];
-}
 
 interface QueuedMessageItemProps {
     message: QueuedMessage;

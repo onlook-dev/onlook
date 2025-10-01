@@ -4,7 +4,7 @@ import type { SendMessage } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
 import { transKeys } from '@/i18n/keys';
-import type { ChatMessage, ChatSuggestion } from '@onlook/models';
+import type { ChatMessage, ChatSuggestion, MessageContext, QueuedMessage } from '@onlook/models';
 import { ChatType, EditorTabValue, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 
@@ -21,6 +21,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { validateImageLimit } from '../context-pills/helpers';
 import { InputContextPills } from '../context-pills/input-context-pills';
 import { Suggestions, type SuggestionsRef } from '../suggestions';
+import { QueueBox } from '../queue-box';
 import { ActionButtons } from './action-buttons';
 import { ChatContextWindow } from './chat-context';
 import { ChatModeToggle } from './chat-mode-toggle';
@@ -31,6 +32,8 @@ interface ChatInputProps {
     isStreaming: boolean;
     onStop: () => Promise<void>;
     onSendMessage: SendMessage;
+    queuedMessages: QueuedMessage[];
+    removeFromQueue: (id: string) => void;
 }
 
 export const ChatInput = observer(({
@@ -39,6 +42,8 @@ export const ChatInput = observer(({
     isStreaming,
     onStop,
     onSendMessage,
+    queuedMessages,
+    removeFromQueue,
 }: ChatInputProps) => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
@@ -353,6 +358,10 @@ export const ChatInput = observer(({
                 }}
             />
             <div className="flex flex-col w-full p-4">
+                <QueueBox 
+                    queuedMessages={queuedMessages}
+                    removeFromQueue={removeFromQueue}
+                />
                 <InputContextPills />
                 <Textarea
                     ref={textareaRef}

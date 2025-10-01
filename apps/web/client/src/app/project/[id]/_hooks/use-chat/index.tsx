@@ -4,7 +4,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { api } from '@/trpc/client';
 import { useChat as useAiChat } from '@ai-sdk/react';
-import { AgentType, ChatType, type ChatMessage, type ChatSuggestion, type MessageContext } from '@onlook/models';
+import { AgentType, ChatType, type ChatMessage, type ChatSuggestion, type MessageContext, type QueuedMessage } from '@onlook/models';
 import { jsonClone } from '@onlook/utility';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import { usePostHog } from 'posthog-js/react';
@@ -27,14 +27,6 @@ export type ProcessMessage = (
     type: ChatType,
     messageId?: string,
 ) => Promise<ChatMessage | void>;
-
-interface QueuedMessage {
-    id: string;
-    content: string;
-    type: ChatType;
-    timestamp: Date;
-    context: MessageContext[];
-}
 
 interface UseChatProps {
     conversationId: string;
@@ -118,9 +110,9 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const sendMessage: SendMessage = useCallback(
         async (content: string, type: ChatType) => {
             posthog.capture('user_send_message', { type });
-            
+
             const context = await editorEngine.chat.context.getContextByChatType(type);
-            
+
             const newMessage: QueuedMessage = {
                 id: uuidv4(),
                 content,
@@ -128,7 +120,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 timestamp: new Date(),
                 context
             };
-            
+
             if (isStreaming) {
                 // AI is running - add to bottom of queue (normal queueing)
                 setQueuedMessages(prev => [...prev, newMessage]);
@@ -139,7 +131,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 // No queue and not streaming - send immediately
                 return processMessage(content, type);
             }
-            
+
             return getUserChatMessageFromString(content, [], conversationId);
         },
         [processMessage, posthog, editorEngine.chat.context, isStreaming, queuedMessages.length, conversationId],
@@ -195,30 +187,30 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
 
     const processNextInQueue = useCallback(async () => {
         if (queuedMessages.length === 0) return;
-        
+
         const [nextMessage, ...remaining] = queuedMessages;
         if (!nextMessage) return;
-        
+
         setQueuedMessages(remaining);
-        
+
         const refreshedContext = await editorEngine.chat.context.getRefreshedContext(nextMessage.context);
-        
+
         await processMessage(nextMessage.content, nextMessage.type, refreshedContext);
     }, [queuedMessages, editorEngine.chat.context, processMessage]);
 
     const editMessage: EditMessage = useCallback(
         async (messageId: string, newContent: string, chatType: ChatType) => {
             posthog.capture('user_edit_message', { type: ChatType.EDIT });
-            
+
             if (isStreaming) {
                 // Stop current streaming immediately
                 stop();
-                
+
                 // Process edit with immediate priority (higher than queue)
                 const context = await editorEngine.chat.context.getContextByChatType(chatType);
                 return await processMessageEdit(messageId, newContent, chatType);
             }
-            
+
             // Normal edit processing when not streaming
             return processMessageEdit(messageId, newContent, chatType);
         },
