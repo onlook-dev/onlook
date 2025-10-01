@@ -109,8 +109,8 @@ export const isRootLayoutFile = (
  * - pathsEqual('src//app/page.tsx', 'src/app/page.tsx') => true  
  * - pathsEqual('./src/app/page.tsx', 'src/app/page.tsx') => true
  */
-export function pathsEqual(path1: string, path2: string): boolean {
-    if (!path1 || !path2) return path1 === path2;
+export function pathsEqual(path1: string | undefined | null, path2: string | undefined | null): boolean {
+    if (!path1 || !path2) return false;
     
     const normalizeForComparison = (p: string) => {
         const clean = p.startsWith('/') ? p.substring(1) : p;

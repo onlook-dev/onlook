@@ -25,8 +25,6 @@ export function useCodeNavigation() {
         const disposer = reaction(
             () => editorEngine.elements.selected,
             async (selectedElements) => {
-                console.log('[CodeNavigation] Selected elements', selectedElements);
-
                 const [selectedElement] = selectedElements;
                 if (!selectedElement) {
                     setNavigationTarget(null);

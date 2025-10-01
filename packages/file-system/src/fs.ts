@@ -92,6 +92,21 @@ export class FileSystem {
     }
 
     /**
+     * Check if a file exists
+     */
+    async fileExists(inputPath: string): Promise<boolean> {
+        if (!this.fs) throw new Error('File system not initialized');
+
+        try {
+            const fullPath = path.join(this.basePath, inputPath);
+            await this.fs.promises.stat(fullPath);
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    /**
      * Read a file - automatically detects text files and returns string in that case. Otherwise, returns Uint8Array.
      */
     async readFile(inputPath: string): Promise<string | Uint8Array> {

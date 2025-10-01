@@ -162,7 +162,7 @@ export class FontManager {
             const codeDiff = await updateDefaultFontInRootLayout(font, this.editorEngine);
 
             if (codeDiff) {
-                await this.editorEngine.activeSandbox.writeFile(codeDiff.path, codeDiff.generated);
+                await this.editorEngine.codeEditor.writeFile(codeDiff.path, codeDiff.generated);
                 return true;
             }
             return false;
@@ -206,7 +206,7 @@ export class FontManager {
                 if (!fontConfigPath) {
                     return false;
                 }
-                await this.editorEngine.activeSandbox.writeFile(
+                await this.editorEngine.codeEditor.writeFile(
                     fontConfigPath,
                     code,
                 );

@@ -191,14 +191,14 @@ export const readFontConfigFile = async (fontConfigPath: string, editorEngine: E
     }
     | undefined
 > => {
-    const sandbox = editorEngine.activeSandbox;
-    const fileExists = await sandbox.fileExists(fontConfigPath);
+    const codeEditor = editorEngine.codeEditor;
+    const fileExists = await codeEditor.fileExists(fontConfigPath);
     if (!fileExists) {
         console.warn('Font config file does not exist', fontConfigPath);
         return;
     }
 
-    const file = await sandbox.readFile(fontConfigPath);
+    const file = await codeEditor.readFile(fontConfigPath);
     if (!file || typeof file !== 'string') {
         console.error("Font config file is empty or doesn't exist");
         return;
@@ -221,10 +221,10 @@ export const readFontConfigFile = async (fontConfigPath: string, editorEngine: E
  * Ensures the font configuration file exists
  */
 export const ensureFontConfigFileExists = async (fontConfigPath: string, editorEngine: EditorEngine): Promise<void> => {
-    const sandbox = editorEngine.activeSandbox;
-    const fontConfigExists = await sandbox.fileExists(fontConfigPath);
+    const codeEditor = editorEngine.codeEditor;
+    const fontConfigExists = await codeEditor.fileExists(fontConfigPath);
     if (!fontConfigExists) {
-        await sandbox.writeFile(fontConfigPath, '');
+        await codeEditor.writeFile(fontConfigPath, '');
     }
 }
 
