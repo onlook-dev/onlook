@@ -117,7 +117,7 @@
         "@onlook/typescript": "*",
         "@tailwindcss/postcss": "^4.0.15",
         "@types/culori": "^4.0.0",
-        "@types/node": "^20.14.10",
+        "@types/node": "^24.6.1",
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",
         "@types/webfontloader": "^1.6.38",
