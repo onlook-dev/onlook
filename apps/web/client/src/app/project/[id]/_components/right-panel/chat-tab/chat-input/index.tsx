@@ -4,7 +4,7 @@ import type { SendMessage } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
 import { transKeys } from '@/i18n/keys';
-import type { ChatMessage, ChatSuggestion, MessageContext, QueuedMessage } from '@onlook/models';
+import type { ChatMessage, ChatSuggestion, QueuedMessage } from '@onlook/models';
 import { ChatType, EditorTabValue, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 
@@ -20,8 +20,8 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { validateImageLimit } from '../context-pills/helpers';
 import { InputContextPills } from '../context-pills/input-context-pills';
-import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { QueueBox } from '../queue-box';
+import { type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 import { ChatContextWindow } from './chat-context';
 import { ChatModeToggle } from './chat-mode-toggle';
@@ -101,7 +101,6 @@ export const ChatInput = observer(({
         return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
     }, []);
 
-    const disabled = isStreaming
     const inputEmpty = !inputValue || inputValue.trim().length === 0;
 
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -142,10 +141,6 @@ export const ChatInput = observer(({
     async function sendMessage() {
         if (inputEmpty) {
             console.warn('Empty message');
-            return;
-        }
-        if (isStreaming) {
-            console.warn('Already waiting for response');
             return;
         }
         const savedInput = inputValue.trim();
@@ -336,36 +331,14 @@ export const ChatInput = observer(({
                 }
             }}
         >
-            <Suggestions
-                ref={suggestionRef}
-                suggestions={suggestions}
-                isStreaming={isStreaming}
-                disabled={disabled}
-                inputValue={inputValue}
-                setInput={(suggestion) => {
-                    setInputValue(suggestion);
-                    textareaRef.current?.focus();
-                    setTimeout(() => {
-                        if (textareaRef.current) {
-                            textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
-                        }
-                    }, 100);
-                }}
-                onSuggestionFocus={(isFocused) => {
-                    if (!isFocused) {
-                        textareaRef.current?.focus();
-                    }
-                }}
-            />
             <div className="flex flex-col w-full p-4">
-                <QueueBox 
+                <QueueBox
                     queuedMessages={queuedMessages}
                     removeFromQueue={removeFromQueue}
                 />
                 <InputContextPills />
                 <Textarea
                     ref={textareaRef}
-                    disabled={disabled}
                     placeholder={getPlaceholderText()}
                     className={cn(
                         'bg-transparent dark:bg-transparent mt-2 overflow-auto max-h-32 text-small p-0 border-0 focus-visible:ring-0 shadow-none rounded-none caret-[#FA003C] resize-none',
@@ -401,17 +374,15 @@ export const ChatInput = observer(({
                     <ChatModeToggle
                         chatMode={chatMode}
                         onChatModeChange={handleChatModeChange}
-                        disabled={disabled}
                     />
                     {lastUsageMessage?.metadata?.usage && <ChatContextWindow usage={lastUsageMessage?.metadata?.usage} />}
                 </div>
                 <div className="flex flex-row items-center gap-1.5">
                     <ActionButtons
-                        disabled={disabled}
                         handleImageEvent={handleImageEvent}
                         handleScreenshot={handleScreenshot}
                     />
-                    {isStreaming ? (
+                    {isStreaming && inputEmpty ? (
                         <Tooltip open={actionTooltipOpen} onOpenChange={setActionTooltipOpen}>
                             <TooltipTrigger asChild>
                                 <Button
@@ -433,7 +404,7 @@ export const ChatInput = observer(({
                             size={'icon'}
                             variant={'secondary'}
                             className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
-                            disabled={inputEmpty || disabled}
+                            disabled={inputEmpty}
                             onClick={() => void sendMessage()}
                         >
                             <Icons.ArrowRight />

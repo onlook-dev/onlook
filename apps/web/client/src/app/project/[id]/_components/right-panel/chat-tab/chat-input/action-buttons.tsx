@@ -5,11 +5,11 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { cn } from '@onlook/ui/utils';
 
 export const ActionButtons = ({
-    disabled,
+    disabled = false,
     handleImageEvent,
     handleScreenshot,
 }: {
-    disabled: boolean;
+    disabled?: boolean;
     handleImageEvent: (file: File, fileName: string) => Promise<void>;
     handleScreenshot: () => Promise<void>;
 }) => {
