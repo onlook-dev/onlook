@@ -4,7 +4,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { api } from '@/trpc/client';
 import { useChat as useAiChat } from '@ai-sdk/react';
-import { AgentType, ChatType, type ChatMessage, type ChatSuggestion } from '@onlook/models';
+import { AgentType, ChatType, type ChatMessage, type ChatSuggestion, type MessageContext } from '@onlook/models';
 import { jsonClone } from '@onlook/utility';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import { usePostHog } from 'posthog-js/react';
@@ -79,9 +79,8 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         messagesRef.current = messages;
     }, [messages]);
 
-    // Helper function with current sendMessage logic - unchanged behavior
-    const sendMessageImmediately = useCallback(
-        async (content: string, type: ChatType, context?: import('@onlook/models').MessageContext[]) => {
+    const processMessage = useCallback(
+        async (content: string, type: ChatType, context?: MessageContext[]) => {
             const messageContext = context || await editorEngine.chat.context.getContextByChatType(type);
             const newMessage = getUserChatMessageFromString(content, messageContext, conversationId);
             setMessages(jsonClone([...messagesRef.current, newMessage]));
@@ -109,14 +108,13 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const sendMessage: SendMessage = useCallback(
         async (content: string, type: ChatType) => {
             posthog.capture('user_send_message', { type });
-            return sendMessageImmediately(content, type);
+            return processMessage(content, type);
         },
-        [sendMessageImmediately, posthog],
+        [processMessage, posthog],
     );
 
-    // Helper function with current editMessage logic - unchanged behavior
-    const editMessageImmediately = useCallback(
-        async (messageId: string, newContent: string, chatType: ChatType, context?: import('@onlook/models').MessageContext[]) => {
+    const processMessageEdit = useCallback(
+        async (messageId: string, newContent: string, chatType: ChatType, context?: MessageContext[]) => {
             const messageIndex = messagesRef.current.findIndex((m) => m.id === messageId);
             const message = messagesRef.current[messageIndex];
 
@@ -160,9 +158,9 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const editMessage: EditMessage = useCallback(
         async (messageId: string, newContent: string, chatType: ChatType) => {
             posthog.capture('user_edit_message', { type: ChatType.EDIT });
-            return editMessageImmediately(messageId, newContent, chatType);
+            return processMessageEdit(messageId, newContent, chatType);
         },
-        [editMessageImmediately, posthog],
+        [processMessageEdit, posthog],
     );
 
     useEffect(() => {

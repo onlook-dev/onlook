@@ -65,11 +65,11 @@ const processNextInQueue = async () => {
   // Refresh context before sending - takes and returns MessageContext[]
   const refreshedContext: MessageContext[] = await editorEngine.chat.context.getRefreshedContext(nextMessage.context);
   
-  await sendMessageImmediately(nextMessage.content, nextMessage.type, refreshedContext);
+  await processMessage(nextMessage.content, nextMessage.type, refreshedContext);
 };
 
 // Helper functions - same behavior as current sendMessage/editMessage
-const sendMessageImmediately = async (content: string, type: ChatType, context?: MessageContext[]) => {
+const processMessage = async (content: string, type: ChatType, context?: MessageContext[]) => {
   // This is the current sendMessage logic - unchanged behavior
   const messageContext = context || await editorEngine.chat.context.getContextByChatType(type);
   const newMessage = getUserChatMessageFromString(content, messageContext, conversationId);
@@ -87,7 +87,7 @@ const sendMessageImmediately = async (content: string, type: ChatType, context?:
   return newMessage;
 };
 
-const editMessageImmediately = async (messageId: string, newContent: string, chatType: ChatType, context?: MessageContext[]) => {
+const processMessageEdit = async (messageId: string, newContent: string, chatType: ChatType, context?: MessageContext[]) => {
   // This is the current editMessage logic - unchanged behavior
   const messageIndex = messagesRef.current.findIndex((m) => m.id === messageId);
   const message = messagesRef.current[messageIndex];
@@ -136,7 +136,7 @@ const sendMessage: SendMessage = useCallback(
     }
     
     // Send immediately if not streaming
-    return sendMessageImmediately(content, type);
+    return processMessage(content, type);
   },
   [isStreaming, addToQueue]
 );
@@ -163,7 +163,7 @@ const sendMessage: SendMessage = useCallback(
       setQueuedMessages(prev => [newMessage, ...prev]);
     } else {
       // No queue and not streaming - send immediately
-      return sendMessageImmediately(content, type);
+      return processMessage(content, type);
     }
     
     return getUserChatMessageFromString(content, [], conversationId);
@@ -182,7 +182,7 @@ const editMessage: EditMessage = useCallback(
       
       // Process edit with immediate priority (higher than queue)
       const context: MessageContext[] = await editorEngine.chat.context.getContextByChatType(chatType);
-      await editMessageImmediately(messageId, newContent, chatType, context);
+      await processMessageEdit(messageId, newContent, chatType, context);
       
       // Queue remains intact and will auto-process when streaming ends
       return;
@@ -190,7 +190,7 @@ const editMessage: EditMessage = useCallback(
     
     // Normal edit processing when not streaming
     const context: MessageContext[] = await editorEngine.chat.context.getContextByChatType(chatType);
-    return editMessageImmediately(messageId, newContent, chatType, context);
+    return processMessageEdit(messageId, newContent, chatType, context);
   },
   [isStreaming, stop]
 );
