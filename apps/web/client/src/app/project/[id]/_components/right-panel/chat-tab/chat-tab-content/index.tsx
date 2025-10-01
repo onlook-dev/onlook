@@ -15,7 +15,7 @@ export const ChatTabContent = ({
     projectId,
     initialMessages,
 }: ChatTabContentProps) => {
-    const { isStreaming, sendMessage, editMessage, messages, error, stop, suggestions, queuedMessages, removeFromQueue } = useChat({
+    const { isStreaming, sendMessage, editMessage, messages, error, stop, queuedMessages, removeFromQueue } = useChat({
         conversationId,
         projectId,
         initialMessages,
@@ -34,7 +34,6 @@ export const ChatTabContent = ({
             <ErrorSection isStreaming={isStreaming} onSendMessage={sendMessage} />
             <ChatInput
                 messages={messages}
-                suggestions={suggestions}
                 isStreaming={isStreaming}
                 onStop={stop}
                 onSendMessage={sendMessage}

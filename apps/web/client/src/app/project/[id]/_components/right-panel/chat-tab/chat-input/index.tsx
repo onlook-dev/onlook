@@ -4,7 +4,7 @@ import type { SendMessage } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
 import { transKeys } from '@/i18n/keys';
-import type { ChatMessage, ChatSuggestion, QueuedMessage } from '@onlook/models';
+import type { ChatMessage, QueuedMessage } from '@onlook/models';
 import { ChatType, EditorTabValue, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 
@@ -28,7 +28,6 @@ import { ChatModeToggle } from './chat-mode-toggle';
 
 interface ChatInputProps {
     messages: ChatMessage[];
-    suggestions: ChatSuggestion[];
     isStreaming: boolean;
     onStop: () => Promise<void>;
     onSendMessage: SendMessage;
@@ -38,7 +37,6 @@ interface ChatInputProps {
 
 export const ChatInput = observer(({
     messages,
-    suggestions,
     isStreaming,
     onStop,
     onSendMessage,

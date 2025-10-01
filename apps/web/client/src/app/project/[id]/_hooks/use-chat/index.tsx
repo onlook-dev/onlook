@@ -2,9 +2,8 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
-import { api } from '@/trpc/client';
 import { useChat as useAiChat } from '@ai-sdk/react';
-import { AgentType, ChatType, type ChatMessage, type ChatSuggestion, type MessageContext, type QueuedMessage } from '@onlook/models';
+import { AgentType, ChatType, type ChatMessage, type MessageContext, type QueuedMessage } from '@onlook/models';
 import { jsonClone } from '@onlook/utility';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import { usePostHog } from 'posthog-js/react';
@@ -12,8 +11,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
     attachCommitToUserMessage,
-    getUserChatMessageFromString,
-    prepareMessagesForSuggestions,
+    getUserChatMessageFromString
 } from './utils';
 
 export type SendMessage = (content: string, type: ChatType) => Promise<ChatMessage>;
@@ -39,7 +37,6 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const editorEngine = useEditorEngine();
     const posthog = usePostHog();
 
-    const [suggestions, setSuggestions] = useState<ChatSuggestion[]>([]);
     const [finishReason, setFinishReason] = useState<string | null>(null);
     const [isExecutingToolCall, setIsExecutingToolCall] = useState(false);
     const [queuedMessages, setQueuedMessages] = useState<QueuedMessage[]>([]);
@@ -229,18 +226,6 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         // Actions to handle when the chat is finished
         if (finishReason && finishReason !== 'tool-calls') {
             setFinishReason(null);
-            setSuggestions([]);
-            const fetchSuggestions = async () => {
-                try {
-                    const suggestions = await api.chat.suggestions.generate.mutate({
-                        conversationId,
-                        messages: prepareMessagesForSuggestions(messagesRef.current),
-                    });
-                    setSuggestions(suggestions);
-                } catch (error) {
-                    console.error('Error fetching suggestions:', error);
-                }
-            };
 
             const applyCommit = async () => {
                 const lastUserMessage = messagesRef.current.findLast((m) => m.role === 'user');
@@ -286,7 +271,6 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             };
 
             void cleanupContext();
-            void fetchSuggestions();
             void applyCommit();
         }
     }, [finishReason, conversationId]);
@@ -307,7 +291,6 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         error,
         stop,
         isStreaming,
-        suggestions,
         queuedMessages,
         removeFromQueue,
     };
