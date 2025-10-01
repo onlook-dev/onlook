@@ -1,22 +1,26 @@
-import type { ComponentType } from 'react';
 import { MessageContextType, type MessageContext } from '@onlook/models';
+import type { ComponentType } from 'react';
 
 export interface ContextIcon {
     className?: string;
 }
 
-export interface BaseContext {
-    readonly contextType: MessageContextType;
-    readonly displayName: string;
-    readonly icon: ComponentType<ContextIcon>;
-    
+export abstract class BaseContext {
+    static readonly contextType: MessageContextType;
+    static readonly displayName: string;
+    static readonly icon: ComponentType<ContextIcon>;
+
     /**
      * Generate formatted prompt content for this context type
      */
-    getPrompt(context: MessageContext): string;
-    
+    static getPrompt(context: MessageContext): string {
+        throw new Error('getPrompt must be implemented by subclass');
+    }
+
     /**
      * Generate display label for UI
      */
-    getLabel(context: MessageContext): string;
+    static getLabel(context: MessageContext): string {
+        throw new Error('getLabel must be implemented by subclass');
+    }
 }

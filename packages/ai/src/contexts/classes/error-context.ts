@@ -1,24 +1,24 @@
-import { Icons } from '@onlook/ui/icons';
 import { MessageContextType, type ErrorMessageContext } from '@onlook/models';
-import { BaseContext } from '../models/base';
-import { wrapXml } from '../../prompt/helpers';
+import { Icons } from '@onlook/ui/icons';
 import { CONTEXT_PROMPTS } from '../../prompt/constants';
+import { wrapXml } from '../../prompt/helpers';
+import { BaseContext } from '../models/base';
 
 export class ErrorContext implements BaseContext {
     static readonly contextType = MessageContextType.ERROR;
     static readonly displayName = 'Error';
-    static readonly icon = Icons.ExclamationTriangle;
-    
+    static readonly icon = Icons.InfoCircled;
+
     static getPrompt(context: ErrorMessageContext): string {
         const branchDisplay = ErrorContext.getBranchContent(context.branchId);
         const errorDisplay = wrapXml('error', context.content);
         return `${branchDisplay}\n${errorDisplay}\n`;
     }
-    
+
     static getLabel(context: ErrorMessageContext): string {
         return context.displayName || 'Error';
     }
-    
+
     /**
      * Generate multiple errors content (used by existing provider functions)
      */
@@ -30,11 +30,11 @@ export class ErrorContext implements BaseContext {
         for (const error of errors) {
             prompt += ErrorContext.getPrompt(error);
         }
-        
+
         prompt = wrapXml('errors', prompt);
         return prompt;
     }
-    
+
     private static getBranchContent(id: string): string {
         return wrapXml('branch', `id: "${id}"`);
     }
