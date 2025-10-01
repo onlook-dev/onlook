@@ -27,6 +27,7 @@ export class CodeManager {
         try {
             // TODO: This is a hack to write code, we should refactor this
             if (action.type === 'write-code' && action.diffs[0]) {
+                // Write-code actions don't have branch context, use active editor
                 await this.editorEngine.codeEditor.writeFile(
                     action.diffs[0].path,
                     action.diffs[0].generated,
@@ -48,7 +49,19 @@ export class CodeManager {
         const groupedRequests = await this.groupRequestByFile(requests);
         const codeDiffs = await processGroupedRequests(groupedRequests);
         for (const diff of codeDiffs) {
-            await this.editorEngine.codeEditor.writeFile(diff.path, diff.generated);
+            // Use branchId from the first request in this file group
+            const firstRequest = Array.from(groupedRequests.get(diff.path)?.oidToRequest.values() || [])[0];
+            if (firstRequest) {
+                const branchData = this.editorEngine.branches.getBranchDataById(firstRequest.branchId);
+                if (branchData) {
+                    await branchData.codeEditor.writeFile(diff.path, diff.generated);
+                } else {
+                    console.warn(`Branch not found for ID: ${firstRequest.branchId}, falling back to active`);
+                    await this.editorEngine.codeEditor.writeFile(diff.path, diff.generated);
+                }
+            } else {
+                await this.editorEngine.codeEditor.writeFile(diff.path, diff.generated);
+            }
         }
     }
 
@@ -83,11 +96,14 @@ export class CodeManager {
         const requestByFile: FileToRequests = new Map();
 
         for (const request of requests) {
-            const metadata = await this.editorEngine.codeEditor.getJsxElementMetadata(request.oid);
+            const branchData = this.editorEngine.branches.getBranchDataById(request.branchId);
+            const codeEditor = branchData?.codeEditor || this.editorEngine.codeEditor;
+            
+            const metadata = await codeEditor.getJsxElementMetadata(request.oid);
             if (!metadata) {
                 throw new Error(`Metadata not found for oid: ${request.oid}`);
             }
-            const fileContent = await this.editorEngine.codeEditor.readFile(metadata.path);
+            const fileContent = await codeEditor.readFile(metadata.path);
             if (!fileContent || fileContent instanceof Uint8Array) {
                 throw new Error(`Failed to read file: ${metadata.path}`);
             }

@@ -11,6 +11,7 @@ import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
 import { detectRouterConfig } from '../pages/helper';
 import { SessionManager } from './session';
+import { env } from '@/env';
 
 export class SandboxManager {
     readonly session: SessionManager;
@@ -69,43 +70,30 @@ export class SandboxManager {
         await codeEditorApi.rebuildIndex();
     }
     
-    async ensurePreloadScriptExists(): Promise<boolean> {
+    async ensurePreloadScriptExists(): Promise<void> {
         // Ensures multiple frames pointing to the same sandbox don't try to inject the preload script at the same time.
         if (this.preloadScriptLoading) {
-            return false;
+            return;
         }
 
         this.preloadScriptLoading = true;
 
         if (this.preloadScriptInjected) {
             this.preloadScriptLoading = false;
-            return true;
+            return;
         }
         
         if (!this.session.provider) {
             console.warn('[SandboxManager] No provider available for preload script injection');
             this.preloadScriptLoading = false;
-            return false;
+            return;
         }
         
-        // Check if script already exists before trying to copy
-        try {
-            const existingScript = await this.session.provider.readFile({
-                args: { path: 'public/onlook-preload-script.js' }
-            });
-            if (existingScript.file.content && existingScript.file.content.length > 0) {
-                this.preloadScriptInjected = true;
-                this.preloadScriptLoading = false;
-                return true;
-            }
-        } catch { } // File doesn't exist, continue with copying
-        
-        const response = await this.copyPreloadScriptToPublic(this.session.provider);
+        await this.copyPreloadScriptToPublic(this.session.provider);
         this.preloadScriptLoading = false;
-        return response;
     }
     
-    private async copyPreloadScriptToPublic(provider: Provider): Promise<boolean> {
+    private async copyPreloadScriptToPublic(provider: Provider): Promise<void> {
         try {            
             try {
                 await provider.createDirectory({ args: { path: 'public' } });
@@ -125,11 +113,8 @@ export class SandboxManager {
             await this.injectPreloadScriptIntoLayout(provider);
             
             this.preloadScriptInjected = true;
-            return true;
-            
         } catch (error) {
             console.error('[SandboxManager] Failed to copy preload script:', error);
-            return false;
         }
     }
 

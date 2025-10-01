@@ -1146,6 +1146,7 @@ export class ThemeManager {
     async updateClassReferences(replacements: ClassReplacement[]): Promise<void> {
         const sourceFiles = await this.editorEngine.activeSandbox.listAllFiles();
         const filesToUpdate = sourceFiles.filter((file) => file.path.endsWith('.tsx'))
+        const activeBranchId = this.editorEngine.branches.activeBranch.id;
 
         await Promise.all(
             filesToUpdate.map(async (file) => {
@@ -1186,6 +1187,7 @@ export class ThemeManager {
                             if (oid) {
                                 updates.set(oid, {
                                     oid,
+                                    branchId: activeBranchId,
                                     attributes: { className: newClasses.join(' ') },
                                     overrideClasses: true,
                                     textContent: null,

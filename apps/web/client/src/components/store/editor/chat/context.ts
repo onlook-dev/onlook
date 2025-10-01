@@ -86,17 +86,27 @@ export class ChatContext {
         // Images are not refreshed as they are not editable.
         return (await Promise.all(
             context.map(async (c) => {
-                if (c.type === MessageContextType.FILE) {
-                    const fileContent = await this.editorEngine.codeEditor.readFile(c.path);
+                if (c.type === MessageContextType.FILE && 'branchId' in c && c.branchId) {
+                    const branchData = this.editorEngine.branches.getBranchDataById(c.branchId);
+                    if (!branchData) {
+                        console.warn(`No branch data found for branchId: ${c.branchId}`);
+                        return c;
+                    }
+
+                    const fileContent = await branchData.codeEditor.readFile(c.path);
                     if (fileContent === null || fileContent instanceof Uint8Array) {
                         console.error('No file content found or file is binary', c.path);
                         return c;
                     }
                     return { ...c, content: fileContent } satisfies FileMessageContext;
-                } else if (c.type === MessageContextType.HIGHLIGHT && c.oid) {
-                    const metadata = await this.editorEngine.codeEditor.getJsxElementMetadata(
-                        c.oid,
-                    );
+                } else if (c.type === MessageContextType.HIGHLIGHT && c.oid && 'branchId' in c && c.branchId) {
+                    const branchData = this.editorEngine.branches.getBranchDataById(c.branchId);
+                    if (!branchData) {
+                        console.warn(`No branch data found for branchId: ${c.branchId}`);
+                        return c;
+                    }
+
+                    const metadata = await branchData.codeEditor.getJsxElementMetadata(c.oid);
                     if (!metadata?.code) {
                         console.error('No code block found for node', c.path);
                         return c;
@@ -125,7 +135,13 @@ export class ChatContext {
         });
 
         for (const [filePath, branchId] of filePathToBranch) {
-            const content = await this.editorEngine.codeEditor.readFile(filePath);
+            const branchData = this.editorEngine.branches.getBranchDataById(branchId);
+            if (!branchData) {
+                console.warn(`No branch data found for branchId: ${branchId}`);
+                continue;
+            }
+
+            const content = await branchData.codeEditor.readFile(filePath);
             if (content === null || content instanceof Uint8Array) {
                 continue;
             }
@@ -177,12 +193,12 @@ export class ChatContext {
             const instanceId = node.instanceId;
 
             if (oid) {
-                const context = await this.getHighlightContextById(oid, node.tagName, false);
+                const context = await this.getHighlightContextById(oid, node.tagName, false, node.branchId);
                 if (context) highlightedContext.push(context);
             }
 
             if (instanceId) {
-                const context = await this.getHighlightContextById(instanceId, node.tagName, true);
+                const context = await this.getHighlightContextById(instanceId, node.tagName, true, node.branchId);
                 if (context) highlightedContext.push(context);
             }
 
@@ -198,8 +214,15 @@ export class ChatContext {
         id: string,
         tagName: string,
         isInstance: boolean,
+        branchId: string,
     ): Promise<HighlightMessageContext | null> {
-        const metadata = await this.editorEngine.codeEditor.getJsxElementMetadata(id);
+        const branchData = this.editorEngine.branches.getBranchDataById(branchId);
+        if (!branchData) {
+            console.warn(`No branch data found for branchId: ${branchId}`);
+            return null;
+        }
+
+        const metadata = await branchData.codeEditor.getJsxElementMetadata(id);
         if (!metadata) {
             console.error('No metadata found for id', id);
             return null;
@@ -214,7 +237,7 @@ export class ChatContext {
             start: metadata.startTag.start.line,
             end: metadata.endTag?.end.line || metadata.startTag.end.line,
             oid: id,
-            branchId: metadata.branchId,
+            branchId: branchId,
         };
     }
 
@@ -259,22 +282,29 @@ export class ChatContext {
 
     async getDefaultPageContext(): Promise<FileMessageContext | null> {
         try {
+            const activeBranchId = this.editorEngine.branches.activeBranch?.id;
+            if (!activeBranchId) {
+                console.error('No active branch found for default page context');
+                return null;
+            }
+
+            const branchData = this.editorEngine.branches.getBranchDataById(activeBranchId);
+            if (!branchData) {
+                console.error(`No branch data found for activeBranchId: ${activeBranchId}`);
+                return null;
+            }
+
             const pagePaths = ['./app/page.tsx', './src/app/page.tsx'];
             for (const pagePath of pagePaths) {
                 let fileContent: string | Uint8Array | null = null;
                 try {
-                    fileContent = await this.editorEngine.codeEditor.readFile(pagePath);
+                    fileContent = await branchData.codeEditor.readFile(pagePath);
                 } catch (error) {
                     console.error('Error getting default page context', error);
                     continue;
                 }
                 
                 if (fileContent && typeof fileContent === 'string') {
-                    const activeBranchId = this.editorEngine.branches.activeBranch?.id;
-                    if (!activeBranchId) {
-                        console.error('No active branch found for default page context');
-                        continue;
-                    }
                     const defaultPageContext: FileMessageContext = {
                         type: MessageContextType.FILE,
                         path: pagePath,

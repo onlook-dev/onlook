@@ -128,6 +128,7 @@ export class ImageManager {
 
         const targets: ActionTarget[] = selected.map((element) => ({
             frameId: element.frameId,
+            branchId: element.branchId,
             domId: element.domId,
             oid: element.oid,
         }));
