@@ -108,7 +108,7 @@ export class ErrorContext extends BaseContext {
 - Similar pattern following the static method approach
 - Each handles their specific prompt generation and labeling
 
-### 3. Simple Context Mapping (No Registry Needed)
+### 3. Simple Context Mapping 
 **Location**: `packages/ai/src/contexts/index.ts`
 
 Instead of a complex registry, use a simple mapping pattern:
@@ -147,7 +147,7 @@ export { FileContext, HighlightContext, ErrorContext, BranchContext, ImageContex
 #### Phase 1: Base Architecture
 1. Create base context class following tool pattern
 2. Create concrete context implementations with static methods
-3. Set up simple context mapping (no complex registry)
+3. Set up simple context mapping
 
 #### Phase 2: Integration  
 1. Move prompt generation logic from `provider.ts` into context classes
