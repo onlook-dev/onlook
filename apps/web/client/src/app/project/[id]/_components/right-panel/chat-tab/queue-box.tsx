@@ -1,20 +1,11 @@
 'use client';
 
-import { ChatType, type QueuedMessage } from '@onlook/models';
+import { type QueuedMessage } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { useState } from 'react';
-
-// TODO: Remove this stub data when integrating with real queue data
-const STUB_MESSAGES = [
-    { id: '1', content: 'Test answer', timestamp: new Date(), type: ChatType.EDIT, context: [] },
-    { id: '2', content: 'test message', timestamp: new Date(), type: ChatType.EDIT, context: [] },
-    { id: '3', content: 'This is a long message', timestamp: new Date(), type: ChatType.EDIT, context: [] },
-    { id: '4', content: 'shgksjhdfgkjhsdkjfghjkhsdfjkghsdjkhfgjhkshgksjhdfgkjhsdkjfghjkhsdfjkghsdjkhfgjhkshgksjhdfgkjhsdkjfghjkhsdfjkghsdjkhfgjhkshgksjhdfgkjhsdkjfghjkhsdfjkghsdjkhfgjhkshgksjhdfgkjhsdkjfghjkhsdfjkghsdjkhfgjhk', timestamp: new Date(), type: ChatType.EDIT, context: [] },
-
-];
 
 interface QueuedMessageItemProps {
     message: QueuedMessage;
@@ -58,14 +49,9 @@ interface QueueBoxProps {
     removeFromQueue: (id: string) => void;
 }
 
-export const QueueBox = ({ queuedMessages, removeFromQueue }: QueueBoxProps) => {
+export const QueueBox = ({ queuedMessages: messages, removeFromQueue }: QueueBoxProps) => {
     const [queueExpanded, setQueueExpanded] = useState(false);
-
-    // TODO: Replace with real queuedMessages when ready - using stub data for now
-    const messages = STUB_MESSAGES;
-
     if (messages.length === 0) return null;
-
     return (
         <Collapsible className="mb-2" open={queueExpanded} onOpenChange={setQueueExpanded}>
             <CollapsibleTrigger asChild>
