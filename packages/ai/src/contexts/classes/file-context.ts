@@ -4,7 +4,7 @@ import { BaseContext } from '../models/base';
 import { wrapXml } from '../../prompt/helpers';
 import { CODE_FENCE } from '../../prompt/constants';
 
-export class FileContext extends BaseContext {
+export class FileContext implements BaseContext {
     static readonly contextType = MessageContextType.FILE;
     static readonly displayName = 'File';
     static readonly icon = Icons.FileText;

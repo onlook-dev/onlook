@@ -2,7 +2,7 @@ import { Icons } from '@onlook/ui/icons';
 import { MessageContextType, type ImageMessageContext } from '@onlook/models';
 import { BaseContext } from '../models/base';
 
-export class ImageContext extends BaseContext {
+export class ImageContext implements BaseContext {
     static readonly contextType = MessageContextType.IMAGE;
     static readonly displayName = 'Image';
     static readonly icon = Icons.Image;

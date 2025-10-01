@@ -4,7 +4,7 @@ import { BaseContext } from '../models/base';
 import { wrapXml } from '../../prompt/helpers';
 import { CONTEXT_PROMPTS } from '../../prompt/constants';
 
-export class AgentRuleContext extends BaseContext {
+export class AgentRuleContext implements BaseContext {
     static readonly contextType = MessageContextType.AGENT_RULE;
     static readonly displayName = 'Agent Rule';
     static readonly icon = Icons.FileCode;

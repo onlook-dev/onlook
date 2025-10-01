@@ -4,7 +4,7 @@ import { BaseContext } from '../models/base';
 import { wrapXml } from '../../prompt/helpers';
 import { CONTEXT_PROMPTS } from '../../prompt/constants';
 
-export class ErrorContext extends BaseContext {
+export class ErrorContext implements BaseContext {
     static readonly contextType = MessageContextType.ERROR;
     static readonly displayName = 'Error';
     static readonly icon = Icons.ExclamationTriangle;

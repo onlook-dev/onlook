@@ -4,7 +4,7 @@ import { BaseContext } from '../models/base';
 import { wrapXml } from '../../prompt/helpers';
 import { CODE_FENCE, CONTEXT_PROMPTS } from '../../prompt/constants';
 
-export class HighlightContext extends BaseContext {
+export class HighlightContext implements BaseContext {
     static readonly contextType = MessageContextType.HIGHLIGHT;
     static readonly displayName = 'Code Selection';
     static readonly icon = Icons.Target;

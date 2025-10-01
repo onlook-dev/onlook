@@ -3,7 +3,7 @@ import { MessageContextType, type BranchMessageContext } from '@onlook/models';
 import { BaseContext } from '../models/base';
 import { wrapXml } from '../../prompt/helpers';
 
-export class BranchContext extends BaseContext {
+export class BranchContext implements BaseContext {
     static readonly contextType = MessageContextType.BRANCH;
     static readonly displayName = 'Branch';
     static readonly icon = Icons.GitBranch;
