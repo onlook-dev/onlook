@@ -83,29 +83,29 @@ export function getHydratedUserMessage(
 
     let prompt = '';
     if (truncateFileContext) {
-        const contextPrompt = getTruncatedFilesContent(files);
+        const contextPrompt = FileContext.getTruncatedFilesContent(files);
         if (contextPrompt) {
             prompt += wrapXml('truncated-context', contextPrompt);
         }
     } else {
-        const contextPrompt = getFilesContent(files, highlights);
+        const contextPrompt = FileContext.getFilesContent(files, highlights);
         if (contextPrompt) {
             prompt += wrapXml('context', contextPrompt);
         }
     }
 
     if (errors.length > 0) {
-        const errorPrompt = getErrorsContent(errors);
+        const errorPrompt = ErrorContext.getErrorsContent(errors);
         prompt += errorPrompt;
     }
 
     if (agentRules.length > 0) {
-        const agentRulePrompt = getAgentRulesContent(agentRules);
+        const agentRulePrompt = AgentRuleContext.getAgentRulesContent(agentRules);
         prompt += agentRulePrompt;
     }
 
     if (branches.length > 0) {
-        const branchPrompt = getBranchesContent(branches);
+        const branchPrompt = BranchContext.getBranchesContent(branches);
         prompt += branchPrompt;
     }
 
@@ -133,31 +133,8 @@ export function getHydratedUserMessage(
     };
 }
 
-export function getTruncatedFilesContent(files: FileMessageContext[]) {
-    return FileContext.getTruncatedFilesContent(files);
-}
-
-export function getFilesContent(
-    files: FileMessageContext[],
-    highlights: HighlightMessageContext[],
-) {
-    return FileContext.getFilesContent(files, highlights);
-}
-
-export function getErrorsContent(errors: ErrorMessageContext[]) {
-    return ErrorContext.getErrorsContent(errors);
-}
-
 export function getLanguageFromFilePath(filePath: string): string {
     return filePath.split('.').pop() ?? '';
-}
-
-export function getHighlightsContent(filePath: string, highlights: HighlightMessageContext[]) {
-    return HighlightContext.getHighlightsContent(filePath, highlights);
-}
-
-export function getBranchesContent(branches: BranchMessageContext[]) {
-    return BranchContext.getBranchesContent(branches);
 }
 
 export function getBranchContent(id: string) {
@@ -174,8 +151,4 @@ export function getSummaryPrompt() {
 
     prompt += wrapXml('example-summary-output', 'EXAMPLE SUMMARY:\n' + SUMMARY_PROMPTS.summary);
     return prompt;
-}
-
-export function getAgentRulesContent(agentRules: AgentRuleMessageContext[]) {
-    return AgentRuleContext.getAgentRulesContent(agentRules);
 }
