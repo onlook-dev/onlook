@@ -80,16 +80,16 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     }, [messages]);
 
     const processMessage = useCallback(
-        async (content: string, type: ChatType, context?: MessageContext[]) => {
-            const messageContext = context || await editorEngine.chat.context.getContextByChatType(type);
-            const newMessage = getUserChatMessageFromString(content, messageContext, conversationId);
+        async (content: string, type: ChatType) => {
+            const context = await editorEngine.chat.context.getContextByChatType(type);
+            const newMessage = getUserChatMessageFromString(content, context, conversationId);
             setMessages(jsonClone([...messagesRef.current, newMessage]));
 
             void regenerate({
                 body: {
                     chatType: type,
                     conversationId,
-                    context: messageContext,
+                    context,
                     agentType,
                 },
             });
@@ -114,7 +114,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     );
 
     const processMessageEdit = useCallback(
-        async (messageId: string, newContent: string, chatType: ChatType, context?: MessageContext[]) => {
+        async (messageId: string, newContent: string, chatType: ChatType) => {
             const messageIndex = messagesRef.current.findIndex((m) => m.id === messageId);
             const message = messagesRef.current[messageIndex];
 
@@ -124,7 +124,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
 
             const updatedMessages = messagesRef.current.slice(0, messageIndex);
             const previousContext = message.metadata?.context ?? [];
-            const updatedContext = context || await editorEngine.chat.context.getRefreshedContext(previousContext);
+            const updatedContext = await editorEngine.chat.context.getRefreshedContext(previousContext);
 
             message.metadata = {
                 ...message.metadata,
