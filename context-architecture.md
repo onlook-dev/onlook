@@ -190,29 +190,133 @@ export { FileContext, HighlightContext, ErrorContext, BranchContext, ImageContex
 
 ## Testing Requirements
 
-### Unit Tests
-Create tests for each context class:
+### Migrate Existing Tests
+**Current Location**: `packages/ai/test/prompt/prompt.test.ts`
+
+The existing tests need to be adapted for context classes:
+
+#### 1. Extract Context-Specific Tests
+Move these existing tests to individual context class test files:
+
+**`packages/ai/test/contexts/file-context.test.ts`**:
 ```typescript
+import { MessageContextType, type FileMessageContext } from '@onlook/models';
+import { describe, expect, test } from 'bun:test';
+import { FileContext } from '../../src/contexts/classes/file-context';
+
 describe('FileContext', () => {
-    it('should generate correct prompt format', () => {
+    test('should generate correct prompt format', () => {
+        const context: FileMessageContext = {
+            type: MessageContextType.FILE,
+            path: 'test.txt',
+            content: 'test',
+            displayName: 'test.txt',
+            branchId: 'test',
+        };
+        
+        const prompt = FileContext.getPrompt(context);
+        expect(prompt).toContain('<path>test.txt</path>');
+        expect(prompt).toContain('<branch id="test" />');
+        expect(prompt).toContain('```txt');
+        expect(prompt).toContain('test');
+    });
+    
+    test('should generate correct label', () => {
         const context: FileMessageContext = {
             type: MessageContextType.FILE,
             path: 'src/app/page.tsx',
-            content: 'export default function Page() {}',
+            content: 'content',
             displayName: 'page.tsx',
-            branchId: 'branch-123'
+            branchId: 'test',
         };
-        const prompt = FileContext.getPrompt(context);
-        expect(prompt).toContain('<path>src/app/page.tsx</path>');
-        expect(prompt).toContain('```tsx');
+        
+        expect(FileContext.getLabel(context)).toBe('page.tsx');
     });
 });
 ```
 
-### Integration Tests  
-- Test context classes work with existing `ChatContext`
-- Verify backward compatibility with `provider.ts` functions
-- Test server/client compatibility
+**`packages/ai/test/contexts/highlight-context.test.ts`**:
+```typescript
+import { MessageContextType, type HighlightMessageContext } from '@onlook/models';
+import { describe, expect, test } from 'bun:test';
+import { HighlightContext } from '../../src/contexts/classes/highlight-context';
+
+describe('HighlightContext', () => {
+    test('should generate correct prompt format', () => {
+        const context: HighlightMessageContext = {
+            type: MessageContextType.HIGHLIGHT,
+            path: 'test.txt',
+            start: 1,
+            end: 2,
+            content: 'test',
+            displayName: 'test.txt',
+            branchId: 'test',
+        };
+        
+        const prompt = HighlightContext.getPrompt(context);
+        expect(prompt).toContain('<path>test.txt#L1:L2</path>');
+        expect(prompt).toContain('```');
+        expect(prompt).toContain('test');
+    });
+});
+```
+
+#### 2. Update Integration Tests
+Keep the high-level integration tests in `prompt.test.ts` but update them to use context classes:
+
+```typescript
+// In prompt.test.ts - update getFilesContent test to verify it uses FileContext
+test('File content should be the same', async () => {
+    const fileContentPath = path.resolve(__dirname, './data/file.txt');
+    
+    // Test that getFilesContent still works (backward compatibility)
+    const prompt = getFilesContent([...], [...]);
+    
+    // Test that it produces same result as direct context usage
+    const contextPrompt = FileContext.getPrompt(fileContext);
+    expect(prompt).toContain(contextPrompt);
+    
+    // Existing file comparison logic...
+});
+```
+
+#### 3. New Context Class Tests
+Create test files for all context classes:
+- `packages/ai/test/contexts/file-context.test.ts`
+- `packages/ai/test/contexts/highlight-context.test.ts`
+- `packages/ai/test/contexts/error-context.test.ts`
+- `packages/ai/test/contexts/branch-context.test.ts`
+- `packages/ai/test/contexts/image-context.test.ts`
+- `packages/ai/test/contexts/agent-rule-context.test.ts`
+
+#### 4. Context Index Tests
+**`packages/ai/test/contexts/index.test.ts`**:
+```typescript
+import { MessageContextType } from '@onlook/models';
+import { describe, expect, test } from 'bun:test';
+import { getContextPrompt, getContextLabel } from '../../src/contexts';
+
+describe('Context Index', () => {
+    test('should route to correct context class for prompts', () => {
+        const fileContext = {
+            type: MessageContextType.FILE,
+            path: 'test.txt',
+            content: 'test',
+            displayName: 'test.txt',
+            branchId: 'test',
+        };
+        
+        const prompt = getContextPrompt(fileContext);
+        expect(prompt).toContain('<path>test.txt</path>');
+    });
+});
+```
+
+### Migration Strategy for Tests
+1. **Phase 1**: Create new context class test files
+2. **Phase 2**: Extract relevant test logic from `prompt.test.ts`
+3. **Phase 3**: Update integration tests to verify backward compatibility
+4. **Phase 4**: Ensure all existing test data files still pass
 
 ## Directory Structure
 ```
