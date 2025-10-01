@@ -20,14 +20,11 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
     const [hasTimedOut, setHasTimedOut] = useState(false);
     const isSelected = editorEngine.frames.isSelected(frame.id);
 
-    // Check if sandbox is connecting for this frame's branch
     const branchData = editorEngine.branches.getBranchDataById(frame.branchId);
     const isConnecting = branchData?.sandbox?.session?.isConnecting || false;
     
-    // Check if preload script is ready (observable will auto-update)
     const preloadScriptReady = branchData?.sandbox?.preloadScriptInjected || false;
 
-    // Timeout for connection attempts
     useEffect(() => {
         if (!isConnecting) {
             setHasTimedOut(false);
@@ -49,7 +46,6 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
         return () => clearTimeout(timeoutId);
     }, [isConnecting, frame.branchId]);
 
-    // Trigger preload script injection if needed (non-blocking)
     useEffect(() => {
         if (branchData?.sandbox && !preloadScriptReady) {
             branchData.sandbox.ensurePreloadScriptExists();

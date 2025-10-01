@@ -101,11 +101,7 @@ export class SandboxManager {
     
     private async copyPreloadScriptToPublic(provider: Provider): Promise<boolean> {
         try {            
-            // Read the preload script (local in dev, CDN in prod)
-            const scriptResponse = await fetch(PRELOAD_SCRIPT_SRC);
-            const scriptContent = await scriptResponse.text();
             
-            // Ensure public directory exists
             try {
                 await provider.statFile({ args: { path: 'public' } });
             } catch {
@@ -118,11 +114,12 @@ export class SandboxManager {
                     }
                 }
             }
-            
+
+            const scriptResponse = await fetch(PRELOAD_SCRIPT_SRC);
             await provider.writeFile({
                 args: {
                     path: 'public/onlook-preload-script.js',
-                    content: scriptContent,
+                    content: await scriptResponse.text(),
                     overwrite: true
                 }
             });

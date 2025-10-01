@@ -289,8 +289,6 @@ export class FileSystem {
                 clearTimeout(existingTimeout);
             }
 
-            console.log(`[FileSystem] watchFile event: ${eventType} for ${filename}`);
-
             // Debounce the callback. This is required since the watcher will fire off way before the file is actually written to, resulting in broken states.
             const timeout = setTimeout(async () => {
                 // For rename events, check if the file exists to determine if it's a delete
@@ -304,8 +302,6 @@ export class FileSystem {
                             path,
                         });
                     } catch (error) {
-                        // File doesn't exist, it was deleted
-                        console.log(`[FileSystem] Detected delete for ${path}`);
                         callback({
                             type: 'delete',
                             path,

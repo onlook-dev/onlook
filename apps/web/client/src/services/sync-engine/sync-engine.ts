@@ -472,7 +472,6 @@ export class CodeProviderSync {
 
                             // Check if this change was from our own sync
                             if (this.fileHashes.get(path) === currentHash) {
-                                console.debug(`[Sync] Skipping ${path} - change was from sync`);
                                 return;
                             }
 

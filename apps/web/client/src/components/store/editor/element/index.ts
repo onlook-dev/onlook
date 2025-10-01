@@ -23,7 +23,6 @@ export class ElementsManager {
     }
 
     set selected(elements: DomElement[]) {
-        console.log('set selected', elements);
         this._selected = elements;
     }
 
