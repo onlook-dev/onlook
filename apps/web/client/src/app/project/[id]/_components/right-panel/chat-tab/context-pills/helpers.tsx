@@ -33,11 +33,11 @@ export function getContextIcon(context: MessageContext) {
             return (
                 <NodeIcon tagName={context.displayName} iconClass="w-3 h-3 ml-1 mr-2 flex-none" />
             );
-        case MessageContextType.PROJECT:
-            icon = Icons.Cube;
-            break;
         case MessageContextType.BRANCH:
             icon = Icons.Branch;
+            break;
+        case MessageContextType.AGENT_RULE:
+            icon = Icons.Cube;
             break;
         default:
             assertNever(context);

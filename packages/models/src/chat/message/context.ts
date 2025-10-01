@@ -5,8 +5,8 @@ export enum MessageContextType {
     HIGHLIGHT = 'highlight',
     IMAGE = 'image',
     ERROR = 'error',
-    PROJECT = 'project',
     BRANCH = 'branch',
+    AGENT_RULE = 'agent_rule',
 }
 
 type BaseMessageContext = {
@@ -45,8 +45,8 @@ export type ErrorMessageContext = BaseMessageContext & {
     branchId: string;
 };
 
-export type ProjectMessageContext = BaseMessageContext & {
-    type: MessageContextType.PROJECT;
+export type AgentRuleMessageContext = BaseMessageContext & {
+    type: MessageContextType.AGENT_RULE;
     path: string;
 };
 
@@ -54,6 +54,6 @@ export type MessageContext =
     | HighlightMessageContext
     | ImageMessageContext
     | ErrorMessageContext
-    | ProjectMessageContext
+    | AgentRuleMessageContext
     | BranchMessageContext
     | FileMessageContext;

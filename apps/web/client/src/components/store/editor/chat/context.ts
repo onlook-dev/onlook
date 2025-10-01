@@ -1,13 +1,13 @@
 import { ChatType, type DomElement } from '@onlook/models';
 import {
     MessageContextType,
+    type AgentRuleMessageContext,
     type BranchMessageContext,
     type ErrorMessageContext,
     type FileMessageContext,
     type HighlightMessageContext,
     type ImageMessageContext,
-    type MessageContext,
-    type ProjectMessageContext,
+    type MessageContext
 } from '@onlook/models/chat';
 import { assertNever, type ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
@@ -51,7 +51,7 @@ export class ChatContext {
             case ChatType.EDIT:
             case ChatType.CREATE:
             case ChatType.ASK:
-                return await this.getLatestContext();
+                return await this.getChatEditContext();
             case ChatType.FIX:
                 return this.getErrorContext();
             default:
@@ -59,8 +59,8 @@ export class ChatContext {
         }
     }
 
-    async getLatestContext(): Promise<MessageContext[]> {
-        return await this.getRefreshedContext(this.context);
+    async getChatEditContext(): Promise<MessageContext[]> {
+        return [...await this.getRefreshedContext(this.context), ...await this.getAgentRuleContext()];
     }
 
     private async generateContextFromReaction({ elements, frames }: { elements: DomElement[], frames: FrameData[] }): Promise<MessageContext[]> {
@@ -215,16 +215,34 @@ export class ChatContext {
         };
     }
 
-    // TODO: Enhance with custom rules
-    getProjectContext(): ProjectMessageContext[] {
-        return [
-            {
-                type: MessageContextType.PROJECT,
-                content: '',
-                displayName: 'Project',
-                path: './',
-            },
-        ];
+    private async getAgentRuleContext(): Promise<AgentRuleMessageContext[]> {
+        try {
+            const agentRuleFilesPaths = ['agents.md', 'claude.md', 'AGENTS.md', 'CLAUDE.md'];
+            const agentRuleContexts: AgentRuleMessageContext[] = (await Promise.all(
+                agentRuleFilesPaths.map(async (filePath) => {
+                    const file = await this.editorEngine.activeSandbox.readFile(`./${filePath}`);
+                    if (file === null) {
+                        return null;
+                    }
+                    if (file.type === 'binary') {
+                        return null;
+                    }
+                    if (file.content.trim().length === 0) {
+                        return null;
+                    }
+                    return {
+                        type: MessageContextType.AGENT_RULE,
+                        content: file.content,
+                        displayName: filePath,
+                        path: filePath,
+                    } satisfies AgentRuleMessageContext;
+                })
+            )).filter((context) => context !== null);
+            return agentRuleContexts
+        } catch (error) {
+            console.error('Error getting agent rule context', error);
+            return [];
+        }
     }
 
     getErrorContext(): ErrorMessageContext[] {
