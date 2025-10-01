@@ -33,15 +33,11 @@ export const CodeEditor = observer(({
     const onCreateEditor = (editor: EditorView) => {
         editorViewsRef.current?.set(file.path, editor);
         
-        // Apply navigation if this editor was just created and has a navigation target
         if (navigationTarget && isActive) {
-            setTimeout(() => {
-                handleNavigation(editor, navigationTarget);
-            }, 100); // Small delay to ensure editor is ready
+            handleNavigation(editor, navigationTarget);
         }
     }
 
-    // Handle navigation when target changes or editor becomes active
     useEffect(() => {
         if (!navigationTarget || !isActive || file.type !== 'text') return;
 
@@ -55,15 +51,12 @@ export const CodeEditor = observer(({
         const { range } = target;
         
         try {
-            // Clear any existing highlights
             editor.dispatch({
                 effects: clearElementHighlight()
             });
 
-            // Scroll to the start position
             scrollToLineColumn(editor, range.start.line, range.start.column);
 
-            // Add highlighting
             editor.dispatch({
                 effects: highlightElementRange(
                     range.start.line,
@@ -72,8 +65,6 @@ export const CodeEditor = observer(({
                     range.end.column
                 )
             });
-
-            console.log(`[CodeEditor] Navigated to ${file.path}:${range.start.line}:${range.start.column}`);
         } catch (error) {
             console.error('[CodeEditor] Navigation error:', error);
         }

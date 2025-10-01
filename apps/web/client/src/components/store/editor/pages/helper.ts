@@ -433,6 +433,9 @@ export const scanPagesFromSandbox = async (sandboxManager: SandboxManager): Prom
     }
 };
 
+
+// TODO: We're calling getRouterConfig in a lot of places before the provider is initialized.
+// We should ensure it's initialized earlier during setup.
 export const detectRouterConfig = async (
     provider: Provider,
 ): Promise<{ type: RouterType; basePath: string } | null> => {

@@ -83,7 +83,6 @@ export class ElementsManager {
                 domEl.domId,
             );
             this._selected.push(domEl);
-            console.log('selected', this._selected);
         }
     }
 

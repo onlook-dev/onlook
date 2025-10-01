@@ -288,30 +288,24 @@ export function clearElementHighlight() {
 }
 
 export function scrollToLineColumn(view: EditorView, line: number, column: number): void {
-    try {
-        const doc = view.state.doc;
-        
-        // Ensure line number is within bounds (1-indexed to 0-indexed)
-        const lineNum = Math.max(1, Math.min(line, doc.lines));
-        const docLine = doc.line(lineNum);
-        
-        // Ensure column is within line bounds (1-indexed to 0-indexed)  
-        const colNum = Math.max(1, Math.min(column, docLine.length + 1));
-        const pos = docLine.from + colNum - 1;
+    const doc = view.state.doc;
+    
+    // Ensure line number is within bounds (1-indexed to 0-indexed)
+    const lineNum = Math.max(1, Math.min(line, doc.lines));
+    const docLine = doc.line(lineNum);
+    
+    // Ensure column is within line bounds (1-indexed to 0-indexed)  
+    const colNum = Math.max(1, Math.min(column, docLine.length + 1));
+    const pos = docLine.from + colNum - 1;
 
-        // Scroll to position with center alignment
-        view.dispatch({
-            effects: EditorView.scrollIntoView(pos, {
-                y: 'center',
-                yMargin: 50
-            }),
-            selection: { anchor: pos, head: pos }
-        });
-
-        console.log(`[CodeMirror] Scrolled to line ${line}, column ${column} (pos: ${pos})`);
-    } catch (error) {
-        console.error('[CodeMirror] Error scrolling to position:', error);
-    }
+    // Scroll to position with center alignment
+    view.dispatch({
+        effects: EditorView.scrollIntoView(pos, {
+            y: 'center',
+            yMargin: 50
+        }),
+        selection: { anchor: pos, head: pos }
+    });
 }
 
 export function scrollToFirstMatch(view: EditorView, term: string): boolean {

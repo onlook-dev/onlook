@@ -13,17 +13,13 @@ import { isRootLayoutFile } from '@onlook/utility';
 import { formatContent } from '@/components/store/editor/sandbox/helpers';
 import { ONLOOK_CACHE_DIRECTORY } from '@onlook/constants';
 
-
-
-
 export interface JsxElementMetadata extends TemplateNode {
     oid: string;
     code: string;
 }
 
 export interface CodeEditorOptions {
-    injectPreloadScript?: boolean; // Default: true
-    routerType?: RouterType; // Default: RouterType.APP
+    routerType?: RouterType;
 }
 
 export class CodeEditorApi extends FileSystem {
@@ -35,7 +31,6 @@ export class CodeEditorApi extends FileSystem {
         super(`/${projectId}/${branchId}`);
         this.branchId = branchId;
         this.options = {
-            injectPreloadScript: options.injectPreloadScript ?? true,
             routerType: options.routerType ?? RouterType.APP,
         };
     }
@@ -70,7 +65,7 @@ export class CodeEditorApi extends FileSystem {
             return content;
         }
 
-        if (this.options.injectPreloadScript && isRootLayoutFile(path, this.options.routerType)) {
+        if (isRootLayoutFile(path, this.options.routerType)) {
             injectPreloadScript(ast);
         }
 
@@ -82,14 +77,13 @@ export class CodeEditorApi extends FileSystem {
 
         const formattedContent = await formatContent(path, processedContent);
 
-        if (modified || (this.options.injectPreloadScript && isRootLayoutFile(path, this.options.routerType))) {
+        if (modified || (isRootLayoutFile(path, this.options.routerType))) {
             await this.updateMetadataForFile(path, formattedContent);
         }
 
         return formattedContent;
     }
 
-    // Get existing OIDs from file (for duplicate detection)
     private async getFileOids(path: string): Promise<Set<string>> {
         const index = await this.loadIndex();
         
@@ -102,18 +96,15 @@ export class CodeEditorApi extends FileSystem {
         return oids;
     }
 
-    // Update metadata index for a file
     private async updateMetadataForFile(path: string, content: string): Promise<void> {
         const index = await this.loadIndex();
 
-        // Remove old metadata for this file
         for (const [oid, metadata] of Object.entries(index)) {
             if (metadata.path === path) {
                 delete index[oid];
             }
         }
 
-        // Parse and add new metadata
         const ast = getAstFromContent(content);
         if (!ast) return;
 
@@ -123,7 +114,6 @@ export class CodeEditorApi extends FileSystem {
             branchId: this.branchId,
         });
 
-        // Convert TemplateNode to JsxElementMetadata and add to index
         for (const [oid, node] of templateNodeMap.entries()) {
             const code = await getContentFromTemplateNode(node, content);
             const metadata: JsxElementMetadata = {
@@ -208,7 +198,6 @@ export class CodeEditorApi extends FileSystem {
             const index = await this.loadIndex();
             let hasChanges = false;
 
-            // Remove metadata for this file
             for (const [oid, metadata] of Object.entries(index)) {
                 if (metadata.path === path) {
                     delete index[oid];

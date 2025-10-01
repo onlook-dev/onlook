@@ -52,27 +52,20 @@ export class SandboxManager {
             this.sync = null;
         }
         
-        // Get the CodeEditorApi for this branch
         const codeEditorApi = this.editorEngine.branches.getBranchDataById(this.branch.id)?.codeEditor;
         if (!codeEditorApi) {
             throw new Error('CodeEditorApi not found for branch');
         }
         
-        // Initialize the CodeEditorApi and use it as the file system
         await codeEditorApi.initialize();
         this.fs = codeEditorApi;
         
         this.sync = new CodeProviderSync(provider, codeEditorApi, {
-            // TODO: add missing configs
             exclude: EXCLUDED_SYNC_DIRECTORIES,
         });
+
         await this.sync.start();
-        
-        // Rebuild the index after all files have been synced
         await codeEditorApi.rebuildIndex();
-        
-        // Now that filesystem is ready, ensure preload script exists
-        await this.copyPreloadScriptToPublic(provider);
     }
     
     async ensurePreloadScriptExists(): Promise<boolean> {
@@ -101,18 +94,10 @@ export class SandboxManager {
     
     private async copyPreloadScriptToPublic(provider: Provider): Promise<boolean> {
         try {            
-            
             try {
-                await provider.statFile({ args: { path: 'public' } });
+                await provider.createDirectory({ args: { path: 'public' } });
             } catch {
-                try {
-                    await provider.createDirectory({ args: { path: 'public' } });
-                } catch (dirError: any) {
-                    // Directory might already exist, continue if that's the case
-                    if (!dirError?.message?.includes('exists') && !dirError?.message?.includes('AlreadyExists')) {
-                        throw dirError;
-                    }
-                }
+                // Directory might already exist, ignore error
             }
 
             const scriptResponse = await fetch(PRELOAD_SCRIPT_SRC);
@@ -141,18 +126,15 @@ export class SandboxManager {
             throw new Error('Could not detect router type for script injection. This is required for iframe communication.');
         }
 
-        // List all files in the router base path and find layout files
         const result = await provider.listFiles({ args: { path: routerConfig.basePath } });
-        const layoutFiles = result.files.filter(file => 
+        const [layoutFile] = result.files.filter(file => 
             file.type === 'file' && isRootLayoutFile(`${routerConfig.basePath}/${file.name}`, routerConfig.type)
         );
 
-        if (layoutFiles.length === 0) {
+        if (!layoutFile) {
             throw new Error(`No layout files found in ${routerConfig.basePath}`);
         }
 
-        // Process the first layout file found
-        const layoutFile = layoutFiles[0]!;
         const layoutPath = `${routerConfig.basePath}/${layoutFile.name}`;
         
         const layoutResponse = await provider.readFile({ args: { path: layoutPath } });
@@ -176,8 +158,6 @@ export class SandboxManager {
                 overwrite: true
             }
         });
-        
-        console.log(`[SandboxManager] ✅ Successfully injected preload script into ${layoutPath}`);
     }
 
     async getLayoutPath(): Promise<string | null> {
