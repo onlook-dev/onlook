@@ -52,7 +52,7 @@
         "@onlook/utility": "*",
         "@opentelemetry/api-logs": "0.57.2",
         "@opentelemetry/instrumentation": "0.57.2",
-        "@opentelemetry/sdk-logs": "0.57.2",
+        "@opentelemetry/sdk-logs": "0.205.0",
         "@supabase/ssr": "^0.6.1",
         "@t3-oss/env-nextjs": "^0.12.0",
         "@tanstack/react-query": "^5.69.0",
