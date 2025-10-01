@@ -34,7 +34,7 @@ export const InputContextPills = observer(() => {
     }, [editorEngine.chat.context.context]);
 
     return (
-        <div className="flex flex-row flex-wrap items-center gap-1.5 px-1">
+        <div className="flex flex-row flex-wrap items-center gap-1.5 px-1 pt-1">
             <AnimatePresence mode="popLayout">
                 {sortedContexts.map((context: MessageContext, index: number) => {
                     if (context.type === MessageContextType.IMAGE) {
