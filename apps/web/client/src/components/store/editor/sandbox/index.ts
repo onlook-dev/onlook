@@ -18,6 +18,7 @@ export class SandboxManager {
     private fs: FileSystem | null = null;
     private sync: CodeProviderSync | null = null;
     preloadScriptInjected: boolean = false;
+    preloadScriptLoading: boolean = false;
 
     constructor(
         private branch: Branch,
@@ -69,12 +70,21 @@ export class SandboxManager {
     }
     
     async ensurePreloadScriptExists(): Promise<boolean> {
+        // Ensures multiple frames pointing to the same sandbox don't try to inject the preload script at the same time.
+        if (this.preloadScriptLoading) {
+            return false;
+        }
+
+        this.preloadScriptLoading = true;
+
         if (this.preloadScriptInjected) {
+            this.preloadScriptLoading = false;
             return true;
         }
         
         if (!this.session.provider) {
             console.warn('[SandboxManager] No provider available for preload script injection');
+            this.preloadScriptLoading = false;
             return false;
         }
         
@@ -85,11 +95,14 @@ export class SandboxManager {
             });
             if (existingScript.file.content && existingScript.file.content.length > 0) {
                 this.preloadScriptInjected = true;
+                this.preloadScriptLoading = false;
                 return true;
             }
         } catch { } // File doesn't exist, continue with copying
         
-        return await this.copyPreloadScriptToPublic(this.session.provider);
+        const response = await this.copyPreloadScriptToPublic(this.session.provider);
+        this.preloadScriptLoading = false;
+        return response;
     }
     
     private async copyPreloadScriptToPublic(provider: Provider): Promise<boolean> {
