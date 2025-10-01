@@ -4,6 +4,7 @@ import { getFileUrlFromStorage } from '@/utils/supabase/client';
 import { STORAGE_BUCKETS } from '@onlook/constants';
 import type { Project } from '@onlook/models';
 import { timeAgo } from '@onlook/utility';
+import { Icons } from '@onlook/ui/icons/index';
 import { motion } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
 import { EditAppButton } from '../edit-app';
@@ -71,6 +72,14 @@ export function ProjectCard({
                     <SettingsDropdown project={project} refetch={refetch} />
                 </div>
 
+                {true && (
+                    <div className="absolute top-3 left-3 z-30">
+                        <div className="w-8 h-8 p-0 flex items-center justify-center bg-foreground-primary/10 backdrop-blur-lg rounded-md">
+                            <Icons.Globe className="w-4 h-4 text-foreground-primary" />
+                        </div>
+                    </div>
+                )}
+
                 <div className="absolute inset-0 flex items-center justify-center bg-background/30 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto z-20">
                     <EditAppButton
                         project={project}
@@ -91,7 +100,8 @@ export function ProjectCard({
                                 )}
                             </div>
                             <div className="text-white/70 text-xs mb-1 drop-shadow-lg flex items-center">
-                                <span>{lastUpdated} ago</span>
+                                <span>Edited {lastUpdated} ago</span>
+                                {true && <span className="ml-1">• Published</span>}
                             </div>
                             {SHOW_DESCRIPTION && project.metadata?.description && (
                                 <div className="text-white/60 text-xs line-clamp-1 drop-shadow-lg">

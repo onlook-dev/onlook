@@ -7,6 +7,7 @@ export interface Project {
         previewImg: PreviewImg | null;
         description: string | null;
         tags: string[];
+        isPublished: boolean;
     };
 }
 

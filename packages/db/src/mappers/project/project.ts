@@ -2,8 +2,18 @@ import type { PreviewImg, Project } from '@onlook/models';
 import type { Project as DbProject } from '../../schema';
 
 export const fromDbProject = (
-    dbProject: DbProject,
+    dbProject: DbProject & {
+        previewDomains?: Array<{ id: string }>;
+        projectCustomDomains?: Array<{ id: string }>;
+        deployments?: Array<{ status: string }>;
+    },
 ): Project => {
+    // Determine if project is published based on domains or deployments
+    const hasPreviewDomain = dbProject.previewDomains && dbProject.previewDomains.length > 0;
+    const hasCustomDomain = dbProject.projectCustomDomains && dbProject.projectCustomDomains.length > 0;
+    const hasCompletedDeployment = dbProject.deployments && dbProject.deployments.some(d => d.status === 'completed');
+    const isPublished = hasPreviewDomain || hasCustomDomain || hasCompletedDeployment;
+
     return {
         id: dbProject.id,
         name: dbProject.name,
@@ -13,6 +23,7 @@ export const fromDbProject = (
             previewImg: fromDbPreviewImg(dbProject),
             description: dbProject.description,
             tags: dbProject.tags ?? [],
+            isPublished,
         },
     };
 };
