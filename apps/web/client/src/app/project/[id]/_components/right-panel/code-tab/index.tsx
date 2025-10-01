@@ -3,6 +3,7 @@ import { hashContent } from '@/services/sync-engine/sync-engine';
 import { EditorView } from '@codemirror/view';
 import { useDirectory, useFile, useFS } from '@onlook/file-system/hooks';
 import { toast } from '@onlook/ui/sonner';
+import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CodeEditorArea } from './file-content';
@@ -36,11 +37,12 @@ const createEditorFile = async (filePath: string, content: string | Uint8Array):
     }
 }
 
-export const CodeTab = () => {
+export const CodeTab = observer(() => {
     const editorEngine = useEditorEngine();
     const rootDir = `/${editorEngine.projectId}/${editorEngine.branches.activeBranch.id}`;
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const navigationTarget = useCodeNavigation();
+
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
@@ -110,7 +112,6 @@ export const CodeTab = () => {
         processFile();
     }, [loadedContent]);
 
-    // Handle navigation when element is selected
     useEffect(() => {
         if (!navigationTarget) return;
 
@@ -223,7 +224,6 @@ export const CodeTab = () => {
 
     const handleLocalFileTabSelect = (file: EditorFile) => {
         setActiveEditorFile(file);
-        // Also update selectedFile to sync with file tree
         setSelectedFilePath(file.path);
     };
 
@@ -381,4 +381,4 @@ export const CodeTab = () => {
             </div>
         </div>
     );
-};
+});
