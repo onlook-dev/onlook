@@ -184,30 +184,21 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     }, []);
 
     const processNextInQueue = useCallback(async () => {
-        // Concurrency/streaming guard - return early if already processing or streaming
-        if (isProcessingQueue.current || isStreaming) return;
+        if (isProcessingQueue.current || isStreaming || queuedMessages.length === 0) return;
         
-        // Check if queue is empty
-        if (queuedMessages.length === 0) return;
-        
-        // Get snapshot of next message without removing it yet
         const nextMessage = queuedMessages[0];
         if (!nextMessage) return;
         
         isProcessingQueue.current = true;
         
         try {
-            // Perform async refresh and processMessage
             const refreshedContext = await editorEngine.chat.context.getRefreshedContext(nextMessage.context);
             await processMessage(nextMessage.content, nextMessage.type, refreshedContext);
             
-            // Only remove the item from queue after successful completion
+            // Remove only after successful processing
             setQueuedMessages(prev => prev.slice(1));
         } catch (error) {
             console.error('Failed to process queued message:', error);
-            
-            // On failure, message stays in queue (no removal needed since we didn't remove it)
-            // The message will be retried when queue processing is triggered again
         } finally {
             isProcessingQueue.current = false;
         }
