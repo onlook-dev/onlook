@@ -42,7 +42,6 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const [finishReason, setFinishReason] = useState<string | null>(null);
     const [isExecutingToolCall, setIsExecutingToolCall] = useState(false);
 
-
     const { addToolResult, messages, error, stop, setMessages, regenerate, status } =
         useAiChat<ChatMessage>({
             id: 'user-chat',
