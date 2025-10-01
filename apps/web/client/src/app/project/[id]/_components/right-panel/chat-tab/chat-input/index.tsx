@@ -7,7 +7,6 @@ import { transKeys } from '@/i18n/keys';
 import type { ChatMessage, QueuedMessage } from '@onlook/models';
 import { ChatType, EditorTabValue, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
-
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
@@ -20,11 +19,11 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { validateImageLimit } from '../context-pills/helpers';
 import { InputContextPills } from '../context-pills/input-context-pills';
-import { QueueBox } from '../queue-box';
 import { type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 import { ChatContextWindow } from './chat-context';
 import { ChatModeToggle } from './chat-mode-toggle';
+import { QueueItems } from './queue-items';
 
 interface ChatInputProps {
     messages: ChatMessage[];
@@ -330,7 +329,7 @@ export const ChatInput = observer(({
             }}
         >
             <div className="flex flex-col w-full p-2">
-                <QueueBox
+                <QueueItems
                     queuedMessages={queuedMessages}
                     removeFromQueue={removeFromQueue}
                 />
