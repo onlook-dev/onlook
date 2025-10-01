@@ -19,7 +19,7 @@ export class AgentRuleContext extends BaseContext {
     }
 
     /**
-     * Generate multiple agent rules content (used by existing provider functions)
+     * Generate multiple agent rules content 
      */
     static getAgentRulesContent(agentRules: AgentRuleMessageContext[]): string {
         let content = `${AgentRuleContext.agentRulesContextPrefix}\n`;

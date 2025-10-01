@@ -34,7 +34,7 @@ NEVER SUGGEST THE "bun run dev" command. Assume the user is already running the 
     }
 
     /**
-     * Generate multiple errors content (used by existing provider functions)
+     * Generate multiple errors content 
      */
     static getErrorsContent(errors: ErrorMessageContext[]): string {
         if (errors.length === 0) {

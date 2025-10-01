@@ -28,7 +28,7 @@ If relevant, feel free to retrieve their content.`;
     }
 
     /**
-     * Generate multiple files content with highlights (used by existing provider functions)
+     * Generate multiple files content with highlights 
      */
     static getFilesContent(files: FileMessageContext[], highlights: HighlightMessageContext[]): string {
         if (files.length === 0) {
@@ -54,7 +54,7 @@ If relevant, feel free to retrieve their content.`;
     }
 
     /**
-     * Generate truncated files content (used by existing provider functions)
+     * Generate truncated files content 
      */
     static getTruncatedFilesContent(files: FileMessageContext[]): string {
         if (files.length === 0) {

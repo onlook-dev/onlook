@@ -26,7 +26,7 @@ export class HighlightContext extends BaseContext {
     }
 
     /**
-     * Generate multiple highlights content for a file path (used by existing provider functions)
+     * Generate multiple highlights content for a file path 
      */
     static getHighlightsContent(filePath: string, highlights: HighlightMessageContext[]): string {
         const fileHighlights = highlights.filter((h) => h.path === filePath);

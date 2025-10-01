@@ -17,7 +17,7 @@ export class BranchContext extends BaseContext {
     }
 
     /**
-     * Generate multiple branches content (used by existing provider functions)
+     * Generate multiple branches content 
      */
     static getBranchesContent(branches: BranchMessageContext[]): string {
         let prompt = `I'm working on the following branches: \n`;
