@@ -42,6 +42,9 @@ export class CodeEditorApi extends FileSystem {
 
     async initialize(): Promise<void> {
         await super.initialize();
+    }
+
+    async rebuildIndex(): Promise<void> {
         await this.buildIndex();
     }
 

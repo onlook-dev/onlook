@@ -64,6 +64,9 @@ export class SandboxManager {
         });
         await this.sync.start();
         
+        // Rebuild the index after all files have been synced
+        await codeEditorApi.rebuildIndex();
+        
         // Copy preload script to public directory
         await this.copyPreloadScriptToPublic(provider);
     }
