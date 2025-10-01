@@ -1,12 +1,12 @@
 import {
     MessageContextType,
+    type AgentRuleMessageContext,
     type BranchMessageContext,
     type ChatMessage,
     type ErrorMessageContext,
     type FileMessageContext,
     type HighlightMessageContext,
-    type MessageContext,
-    type ProjectMessageContext,
+    type MessageContext
 } from '@onlook/models';
 import type { FileUIPart } from 'ai';
 import { ASK_MODE_SYSTEM_PROMPT, CODE_FENCE, CONTEXT_PROMPTS, CREATE_NEW_PAGE_SYSTEM_PROMPT, SHELL_PROMPT, SUGGESTION_SYSTEM_PROMPT, SUMMARY_PROMPTS, SYSTEM_PROMPT } from './constants';
@@ -67,7 +67,7 @@ export function getHydratedUserMessage(
     const files = context.filter((c) => c.type === MessageContextType.FILE).map((c) => c);
     const highlights = context.filter((c) => c.type === MessageContextType.HIGHLIGHT).map((c) => c);
     const errors = context.filter((c) => c.type === MessageContextType.ERROR).map((c) => c);
-    const project = context.filter((c) => c.type === MessageContextType.PROJECT).map((c) => c);
+    const agentRules = context.filter((c) => c.type === MessageContextType.AGENT_RULE).map((c) => c);
     const images = context.filter((c) => c.type === MessageContextType.IMAGE).map((c) => c);
     const branches = context.filter((c) => c.type === MessageContextType.BRANCH).map((c) => c);
 
@@ -94,11 +94,9 @@ export function getHydratedUserMessage(
         prompt += errorPrompt;
     }
 
-    if (project.length > 0) {
-        const projectContext = project[0];
-        if (projectContext) {
-            prompt += getProjectContext(projectContext);
-        }
+    if (agentRules.length > 0) {
+        const agentRulePrompt = getAgentRulesContent(agentRules);
+        prompt += agentRulePrompt;
     }
 
     if (branches.length > 0) {
@@ -242,7 +240,11 @@ export function getSummaryPrompt() {
     return prompt;
 }
 
-export function getProjectContext(project: ProjectMessageContext) {
-    const content = `${CONTEXT_PROMPTS.projectContextPrefix} ${project.path}`;
-    return wrapXml('project-info', content);
+export function getAgentRulesContent(agentRules: AgentRuleMessageContext[]) {
+    let content = `${CONTEXT_PROMPTS.agentRulesContextPrefix}\n`;
+    for (const agentRule of agentRules) {
+        const agentRulePrompt = `${agentRule.path}\n${agentRule.content}`;
+        content += agentRulePrompt;
+    }
+    return wrapXml('agent-rules', content);
 }

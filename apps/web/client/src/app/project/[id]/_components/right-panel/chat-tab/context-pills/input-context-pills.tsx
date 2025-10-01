@@ -9,11 +9,11 @@ import { DraftImagePill } from './draft-image-pill';
 
 const typeOrder = {
     [MessageContextType.BRANCH]: 0,
-    [MessageContextType.PROJECT]: 1,
-    [MessageContextType.FILE]: 2,
-    [MessageContextType.HIGHLIGHT]: 3,
-    [MessageContextType.ERROR]: 4,
-    [MessageContextType.IMAGE]: 5,
+    [MessageContextType.FILE]: 1,
+    [MessageContextType.HIGHLIGHT]: 2,
+    [MessageContextType.ERROR]: 3,
+    [MessageContextType.IMAGE]: 4,
+    [MessageContextType.AGENT_RULE]: 5,
 };
 
 export const InputContextPills = observer(() => {

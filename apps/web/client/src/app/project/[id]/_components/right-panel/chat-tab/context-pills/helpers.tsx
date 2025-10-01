@@ -2,7 +2,6 @@ import { DefaultSettings } from '@onlook/constants';
 import { MessageContextType, type MessageContext } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
 import { getTruncatedFileName } from '@onlook/ui/utils';
-import { assertNever } from '@onlook/utility';
 import React from 'react';
 import { NodeIcon } from '../../../left-panel/layers-tab/tree/node-icon';
 
@@ -33,14 +32,11 @@ export function getContextIcon(context: MessageContext) {
             return (
                 <NodeIcon tagName={context.displayName} iconClass="w-3 h-3 ml-1 mr-2 flex-none" />
             );
-        case MessageContextType.PROJECT:
-            icon = Icons.Cube;
-            break;
         case MessageContextType.BRANCH:
             icon = Icons.Branch;
             break;
         default:
-            assertNever(context);
+            return null;
     }
     if (icon) {
         return React.createElement(icon);
