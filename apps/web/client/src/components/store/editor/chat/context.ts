@@ -227,6 +227,9 @@ export class ChatContext {
                     if (file.type === 'binary') {
                         return null;
                     }
+                    if (file.content.trim().length === 0) {
+                        return null;
+                    }
                     return {
                         type: MessageContextType.AGENT_RULE,
                         content: file.content,
