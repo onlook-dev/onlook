@@ -2,6 +2,7 @@ import { type FileEntry } from '@onlook/file-system/hooks';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
+import { pathsEqual } from '@onlook/utility';
 import { FileTreeNode } from './file-tree-node';
 import { FileTreeRow } from './file-tree-row';
 import { FileTreeSearch } from './file-tree-search';
@@ -61,10 +62,14 @@ export const FileTree = ({
             return;
         }
 
-        // Find the exact entry that matches the file
-        const entry = flatEntryIndex.get(selectedFilePath);
-        
-        const targetEntry = entry && !entry.isDirectory ? entry : null;
+        // Find the entry that matches the file using robust path comparison
+        let targetEntry: FileEntry | null = null;
+        for (const [path, entry] of flatEntryIndex) {
+            if (!entry.isDirectory && pathsEqual(path, selectedFilePath)) {
+                targetEntry = entry;
+                break;
+            }
+        }
         if (targetEntry) {
             treeRef.current.select(targetEntry.path);
             treeRef.current.scrollTo(targetEntry.path);

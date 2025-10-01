@@ -34,7 +34,10 @@ export const CodeEditor = observer(({
         editorViewsRef.current?.set(file.path, editor);
         
         if (navigationTarget && isActive) {
-            handleNavigation(editor, navigationTarget);
+            // Delay navigation to ensure document is fully loaded
+            setTimeout(() => {
+                handleNavigation(editor, navigationTarget);
+            }, 100);
         }
     }
 

@@ -9,7 +9,7 @@ import {
     createTemplateNodeMap,
     getContentFromTemplateNode
 } from '@onlook/parser';
-import { isRootLayoutFile } from '@onlook/utility';
+import { isRootLayoutFile, pathsEqual } from '@onlook/utility';
 import { formatContent } from '@/components/store/editor/sandbox/helpers';
 import { ONLOOK_CACHE_DIRECTORY } from '@onlook/constants';
 
@@ -87,7 +87,7 @@ export class CodeEditorApi extends FileSystem {
         
         const oids = new Set<string>();
         for (const [oid, metadata] of Object.entries(index)) {
-            if (metadata.path === path) {
+            if (pathsEqual(metadata.path, path)) {
                 oids.add(oid);
             }
         }
@@ -98,7 +98,7 @@ export class CodeEditorApi extends FileSystem {
         const index = await this.loadIndex();
 
         for (const [oid, metadata] of Object.entries(index)) {
-            if (metadata.path === path) {
+            if (pathsEqual(metadata.path, path)) {
                 delete index[oid];
             }
         }
@@ -197,7 +197,7 @@ export class CodeEditorApi extends FileSystem {
             let hasChanges = false;
 
             for (const [oid, metadata] of Object.entries(index)) {
-                if (metadata.path === path) {
+                if (pathsEqual(metadata.path, path)) {
                     delete index[oid];
                     hasChanges = true;
                 }
@@ -217,7 +217,7 @@ export class CodeEditorApi extends FileSystem {
             let hasChanges = false;
 
             for (const metadata of Object.values(index)) {
-                if (metadata.path === oldPath) {
+                if (pathsEqual(metadata.path, oldPath)) {
                     metadata.path = newPath;
                     hasChanges = true;
                 }

@@ -98,7 +98,8 @@ export const RightPanel = observer(() => {
                         )}
                         value={EditorTabValue.DEV}
                     >
-                        <CodeTab />
+                        {/* Force remount when branch changes to reset all editor state (opened files, selection, etc.) */}
+                        <CodeTab key={editorEngine.branches.activeBranch.id} />
                     </TabsContent>
                 </Tabs>
             </ResizablePanel>

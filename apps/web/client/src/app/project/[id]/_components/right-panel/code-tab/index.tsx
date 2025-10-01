@@ -3,6 +3,7 @@ import { hashContent } from '@/services/sync-engine/sync-engine';
 import { EditorView } from '@codemirror/view';
 import { useDirectory, useFile, useFS } from '@onlook/file-system/hooks';
 import { toast } from '@onlook/ui/sonner';
+import { pathsEqual } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -59,7 +60,6 @@ export const CodeTab = observer(() => {
     } = useDirectory(rootDir, '/');
 
 
-    console.log('[CodeTab] fileEntries', fileEntries);
     const {
         content: loadedContent,
     } = useFile(rootDir, selectedFilePath || '');
@@ -70,7 +70,7 @@ export const CodeTab = observer(() => {
 
         const processFile = async () => {
             const newLocalFile = await createEditorFile(selectedFilePath, loadedContent);
-            const existingFileIndex = openedEditorFiles.findIndex(f => f.path === selectedFilePath);
+            const existingFileIndex = openedEditorFiles.findIndex(f => pathsEqual(f.path, selectedFilePath));
 
             if (existingFileIndex >= 0) {
                 updateExistingFile(existingFileIndex, newLocalFile);
@@ -116,12 +116,11 @@ export const CodeTab = observer(() => {
     }, [loadedContent]);
 
     useEffect(() => {
-        console.log('[CodeTab] Navigation target changed', navigationTarget);
         if (!navigationTarget) return;
 
         const { filePath } = navigationTarget;
         
-        if (selectedFilePath !== filePath) {
+        if (!selectedFilePath || !pathsEqual(selectedFilePath, filePath)) {
             setSelectedFilePath(filePath);
         }
     }, [navigationTarget]);
@@ -181,7 +180,7 @@ export const CodeTab = observer(() => {
 
                 // Update in opened files list
                 const updatedFiles = openedEditorFiles.map(file =>
-                    file.path === selectedFilePath ? updatedFile : file
+                    pathsEqual(file.path, selectedFilePath) ? updatedFile : file
                 );
                 setOpenedEditorFiles(updatedFiles);
                 setActiveEditorFile(updatedFile);
@@ -193,7 +192,7 @@ export const CodeTab = observer(() => {
     };
 
     const closeLocalFile = useCallback((filePath: string) => {
-        const fileToClose = openedEditorFiles.find(f => f.path === filePath);
+        const fileToClose = openedEditorFiles.find(f => pathsEqual(f.path, filePath));
         if (fileToClose) {
             isDirty(fileToClose).then(dirty => {
                 if (dirty) {
@@ -231,14 +230,14 @@ export const CodeTab = observer(() => {
 
     const updateLocalFileContent = (filePath: string, content: string) => {
         const updatedFiles = openedEditorFiles.map(file =>
-            file.path === filePath
+            pathsEqual(file.path, filePath)
                 ? { ...file, content }
                 : file
         );
         setOpenedEditorFiles(updatedFiles);
 
         // Update active file if it's the one being updated
-        if (activeEditorFile?.path === filePath) {
+        if (activeEditorFile && pathsEqual(activeEditorFile.path, filePath)) {
             const updatedActiveFile = { ...activeEditorFile, content };
             setActiveEditorFile(updatedActiveFile);
         }
@@ -252,16 +251,16 @@ export const CodeTab = observer(() => {
             editorViewsRef.current.delete(filePath);
         }
 
-        const updatedFiles = openedEditorFiles.filter(f => f.path !== filePath);
+        const updatedFiles = openedEditorFiles.filter(f => !pathsEqual(f.path, filePath));
         setOpenedEditorFiles(updatedFiles);
 
-        if (activeEditorFile?.path === filePath) {
+        if (activeEditorFile && pathsEqual(activeEditorFile.path, filePath)) {
             const newActiveFile = updatedFiles.length > 0 ? updatedFiles[updatedFiles.length - 1] || null : null;
             setActiveEditorFile(newActiveFile);
         }
 
         // Clear selected file path if the closed file was selected
-        if (selectedFilePath === filePath) {
+        if (selectedFilePath && pathsEqual(selectedFilePath, filePath)) {
             setSelectedFilePath(null);
         }
     };

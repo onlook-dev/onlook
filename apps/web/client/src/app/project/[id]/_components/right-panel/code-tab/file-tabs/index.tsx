@@ -9,6 +9,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { pathsEqual } from '@onlook/utility';
 import { useEffect, useRef } from 'react';
 import type { EditorFile } from '../shared/types';
 import { FileTab } from './file-tab';
@@ -105,10 +106,10 @@ export const FileTabs = ({
                     <FileTab
                         key={file.path}
                         file={file}
-                        isActive={activeFile?.path === file.path}
+                        isActive={pathsEqual(activeFile?.path, file.path)}
                         onClick={() => onFileSelect(file)}
                         onClose={() => onCloseFile(file.path)}
-                        dataActive={activeFile?.path === file.path}
+                        dataActive={pathsEqual(activeFile?.path, file.path)}
                     />
                 ))}
             </div>
