@@ -23,9 +23,8 @@ export class AgentRuleContext extends BaseContext {
      */
     static getAgentRulesContent(agentRules: AgentRuleMessageContext[]): string {
         let content = `${AgentRuleContext.agentRulesContextPrefix}\n`;
-        for (const agentRule of agentRules) {
-            content += AgentRuleContext.getPrompt(agentRule);
-        }
+        const rulePrompts = agentRules.map(agentRule => AgentRuleContext.getPrompt(agentRule));
+        content += rulePrompts.join('\n');
         return wrapXml('agent-rules', content);
     }
 }
