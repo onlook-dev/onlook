@@ -263,6 +263,10 @@ export class CodeEditorApi extends FileSystem {
     }
 
     private isJsxFile(path: string): boolean {
+        // Exclude the onlook preload script from JSX processing
+        if (path.endsWith('onlook-preload-script.js')) {
+            return false;
+        }
         return /\.(jsx?|tsx?)$/i.test(path);
     }
 

@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { CodeEditorArea } from './file-content';
 import { FileTabs } from './file-tabs';
 import { CodeControls } from './header-controls';
+import { useCodeNavigation, type CodeNavigationTarget } from './hooks/use-code-navigation';
 import type { BinaryEditorFile, EditorFile, TextEditorFile } from './shared/types';
 import { isDirty } from './shared/utils';
 import { FileTree } from './sidebar/file-tree';
@@ -39,6 +40,7 @@ export const CodeTab = () => {
     const editorEngine = useEditorEngine();
     const rootDir = `/${editorEngine.projectId}/${editorEngine.branches.activeBranch.id}`;
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
+    const navigationTarget = useCodeNavigation();
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
@@ -108,9 +110,18 @@ export const CodeTab = () => {
         processFile();
     }, [loadedContent]);
 
+    // Handle navigation when element is selected
     useEffect(() => {
-        // TODO: Create highlight range based on selected element
-    }, [editorEngine.elements.selected]);
+        if (!navigationTarget) return;
+
+        const { filePath, range } = navigationTarget;
+        
+        // Auto-open the file if it's not already selected
+        if (selectedFilePath !== filePath) {
+            console.log(`[CodeTab] Auto-opening file: ${filePath}`);
+            setSelectedFilePath(filePath);
+        }
+    }, [navigationTarget, selectedFilePath]);
 
     // Track dirty state of opened files
     useEffect(() => {
@@ -338,7 +349,7 @@ export const CodeTab = () => {
                     onFileSelect={handleFileTreeSelect}
                     fileEntries={fileEntries}
                     isLoading={filesLoading}
-                    selectedFilePath={activeEditorFile?.path}
+                    selectedFilePath={selectedFilePath}
                     onDeleteFile={handleDeleteFile}
                     onRenameFile={handleRenameFile}
                     onRefresh={() => { }}
@@ -359,6 +370,7 @@ export const CodeTab = () => {
                     openedFiles={openedEditorFiles}
                     activeFile={activeEditorFile}
                     showUnsavedDialog={showLocalUnsavedDialog}
+                    navigationTarget={navigationTarget}
                     onSaveFile={handleSaveFile}
                     onUpdateFileContent={updateLocalFileContent}
                     onDiscardChanges={discardLocalFileChanges}

@@ -125,6 +125,11 @@ export const customDarkTheme = EditorView.theme({
         backgroundColor: 'rgba(26, 198, 156, 0.3)',
         borderRadius: '2px'
     },
+    '.cm-element-highlight': {
+        backgroundColor: 'rgba(255, 172, 96, 0.25)',
+        border: '1px solid rgba(255, 172, 96, 0.5)',
+        borderRadius: '2px'
+    },
 }, { dark: true });
 
 // Custom syntax highlighting with the specified colors
@@ -235,6 +240,80 @@ export function clearSearchHighlight() {
     return clearHighlightEffect.of(null);
 }
 
+// Element highlighting effects
+const elementHighlightEffect = StateEffect.define<{ startLine: number; startCol: number; endLine: number; endCol: number }>();
+const clearElementHighlightEffect = StateEffect.define();
+
+const elementHighlightField = StateField.define<DecorationSet>({
+    create() {
+        return Decoration.none;
+    },
+    update(decorations, tr) {
+        decorations = decorations.map(tr.changes);
+
+        for (let effect of tr.effects) {
+            if (effect.is(elementHighlightEffect)) {
+                const { startLine, startCol, endLine, endCol } = effect.value;
+                
+                // Convert line/column to document positions (0-indexed)
+                const doc = tr.state.doc;
+                const startPos = doc.line(startLine).from + startCol - 1;
+                const endPos = doc.line(endLine).from + endCol;
+                
+                // Ensure positions are within document bounds
+                const validStartPos = Math.max(0, Math.min(startPos, doc.length));
+                const validEndPos = Math.max(validStartPos, Math.min(endPos, doc.length));
+                
+                decorations = Decoration.set([
+                    Decoration.mark({
+                        class: 'cm-element-highlight'
+                    }).range(validStartPos, validEndPos)
+                ]);
+            } else if (effect.is(clearElementHighlightEffect)) {
+                decorations = Decoration.none;
+            }
+        }
+
+        return decorations;
+    },
+    provide: f => EditorView.decorations.from(f)
+});
+
+export function highlightElementRange(startLine: number, startCol: number, endLine: number, endCol: number) {
+    return elementHighlightEffect.of({ startLine, startCol, endLine, endCol });
+}
+
+export function clearElementHighlight() {
+    return clearElementHighlightEffect.of(null);
+}
+
+export function scrollToLineColumn(view: EditorView, line: number, column: number): void {
+    try {
+        const doc = view.state.doc;
+        
+        // Ensure line number is within bounds (1-indexed to 0-indexed)
+        const lineNum = Math.max(1, Math.min(line, doc.lines));
+        const docLine = doc.line(lineNum);
+        
+        // Ensure column is within line bounds (1-indexed to 0-indexed)  
+        const colNum = Math.max(1, Math.min(column, docLine.length + 1));
+        const pos = docLine.from + colNum - 1;
+
+        // Scroll to position with center alignment
+        view.dispatch({
+            effects: EditorView.scrollIntoView(pos, {
+                y: 'center',
+                yMargin: 50
+            }),
+            selection: { anchor: pos, head: pos }
+        });
+
+        console.log(`[CodeMirror] Scrolled to line ${line}, column ${column} (pos: ${pos})`);
+    } catch (error) {
+        console.error('[CodeMirror] Error scrolling to position:', error);
+    }
+}
+
 export function scrollToFirstMatch(view: EditorView, term: string): boolean {
     if (!term || term.length < 2) return false;
 
@@ -268,6 +347,7 @@ export const getBasicSetup = (saveFile: () => void) => {
         lintGutter(),
         lineNumbers(),
         searchHighlightField,
+        elementHighlightField,
         keymap.of([
             {
                 key: 'Mod-s',

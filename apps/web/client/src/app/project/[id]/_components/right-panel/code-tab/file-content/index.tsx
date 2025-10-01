@@ -1,5 +1,6 @@
 import { EditorView } from '@codemirror/view';
 import { type RefObject, useMemo } from 'react';
+import type { CodeNavigationTarget } from '../hooks/use-code-navigation';
 import type { EditorFile } from '../shared/types';
 import { isDirty } from '../shared/utils';
 import { CodeEditor } from './code-editor';
@@ -9,6 +10,7 @@ interface CodeEditorAreaProps {
     openedFiles: EditorFile[];
     activeFile: EditorFile | null;
     showUnsavedDialog: boolean;
+    navigationTarget: CodeNavigationTarget | null;
     editorViewsRef: RefObject<Map<string, EditorView>>;
     onSaveFile: () => Promise<void>;
     onUpdateFileContent: (fileId: string, content: string) => void;
@@ -20,6 +22,7 @@ export const CodeEditorArea = ({
     openedFiles,
     activeFile,
     showUnsavedDialog,
+    navigationTarget,
     editorViewsRef,
     onSaveFile,
     onUpdateFileContent,
@@ -48,6 +51,7 @@ export const CodeEditorArea = ({
                             key={file.path}
                             file={file}
                             isActive={activeFile?.path === file.path}
+                            navigationTarget={navigationTarget && navigationTarget.filePath === file.path ? navigationTarget : null}
                             editorViewsRef={editorViewsRef}
                             onSaveFile={onSaveFile}
                             onUpdateFileContent={onUpdateFileContent}
