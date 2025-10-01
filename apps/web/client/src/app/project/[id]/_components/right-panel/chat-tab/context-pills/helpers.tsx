@@ -2,7 +2,7 @@ import { getContextClass, getContextLabel } from '@onlook/ai';
 import { DefaultSettings } from '@onlook/constants';
 import { MessageContextType, type MessageContext } from '@onlook/models/chat';
 import { getTruncatedFileName } from '@onlook/ui/utils';
-import { assertNever } from '@onlook/utility';
+import React from 'react';
 import { NodeIcon } from '../../../left-panel/layers-tab/tree/node-icon';
 
 export function getTruncatedName(context: MessageContext) {
@@ -26,12 +26,10 @@ export function getContextIcon(context: MessageContext) {
     }
 
     const contextClass = getContextClass(context.type);
-    if (contextClass) {
-        return contextClass.icon;
+    if (contextClass?.icon) {
+        return React.createElement(contextClass.icon);
     }
-
-    // Fallback for unknown types
-    assertNever(context.type);
+    return null;
 }
 
 export function validateImageLimit(
