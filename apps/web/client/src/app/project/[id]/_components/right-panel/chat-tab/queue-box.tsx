@@ -1,13 +1,17 @@
 'use client';
 
-import { Badge } from '@onlook/ui/badge';
+import { ChatType, type QueuedMessage } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
-import { Card } from '@onlook/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { ChatType, type MessageContext, type QueuedMessage } from '@onlook/models';
 import { useState } from 'react';
+
+// TODO: Remove this stub data when integrating with real queue data
+const STUB_MESSAGES = [
+    { id: '1', content: 'Test answer', timestamp: new Date(), type: ChatType.EDIT, context: [] },
+    { id: '2', content: 'test message', timestamp: new Date(), type: ChatType.EDIT, context: [] },
+    { id: '3', content: 'shgksjhdfgkjhsdkjfghjkhsdfjkghsdjkhfgjhk...', timestamp: new Date(), type: ChatType.EDIT, context: [] },
+];
 
 interface QueuedMessageItemProps {
     message: QueuedMessage;
@@ -17,35 +21,23 @@ interface QueuedMessageItemProps {
 
 const QueuedMessageItem = ({ message, index, removeFromQueue }: QueuedMessageItemProps) => {
     return (
-        <div className="flex items-start gap-2 p-2 rounded-md border border-border/50 bg-card/50">
-            <Badge variant="outline" className="text-xs shrink-0 mt-0.5">
-                #{index + 1}
-            </Badge>
-            
+        <div className="flex items-center gap-3 group hover:bg-transparent">
+            <div className="w-4 h-4 rounded-full border border-muted-foreground/50 flex-shrink-0 bg-transparent" />
+
             <div className="flex-1 min-w-0">
-                <p className="text-sm text-foreground/90 line-clamp-2 break-words">
+                <p className="text-sm text-muted-foreground truncate">
                     {message.content}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                    {new Date(message.timestamp).toLocaleTimeString()}
-                </p>
             </div>
-            
-            <div className="flex gap-1 shrink-0">
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 hover:bg-destructive/10 hover:text-destructive"
-                            onClick={() => removeFromQueue(message.id)}
-                        >
-                            <Icons.Trash className="h-3 w-3" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Remove from queue</TooltipContent>
-                </Tooltip>
-            </div>
+
+            <Button
+                variant="ghost"
+                size="sm"
+                className="h-4 w-4 p-0 text-muted-foreground/60 hover:text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => removeFromQueue(message.id)}
+            >
+                <Icons.CrossL className="h-3 w-3" />
+            </Button>
         </div>
     );
 };
@@ -57,44 +49,44 @@ interface QueueBoxProps {
 
 export const QueueBox = ({ queuedMessages, removeFromQueue }: QueueBoxProps) => {
     const [queueExpanded, setQueueExpanded] = useState(false);
-    
-    if (queuedMessages.length === 0) return null;
-    
+
+    // TODO: Replace with real queuedMessages when ready - using stub data for now
+    const messages = STUB_MESSAGES;
+
+    if (messages.length === 0) return null;
+
     return (
-        <Card className="queue-container border-border/50 bg-background/95 backdrop-blur mb-3">
+        <div className="queue-container mb-3">
             <Collapsible open={queueExpanded} onOpenChange={setQueueExpanded}>
                 <CollapsibleTrigger asChild>
                     <Button
                         variant="ghost"
-                        className="w-full justify-between p-3 h-auto hover:bg-accent/50"
+                        className="w-full justify-start h-auto hover:bg-transparent text-muted-foreground p-0"
                     >
                         <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="text-xs">
-                                {queuedMessages.length}
-                            </Badge>
+                            <Icons.ChevronDown
+                                className={`h-4 w-4 transition-transform ${queueExpanded ? 'rotate-180' : ''}`}
+                            />
                             <span className="text-sm">
-                                message{queuedMessages.length > 1 ? 's' : ''} queued
+                                {messages.length} in queue
                             </span>
                         </div>
-                        <Icons.ChevronDown 
-                            className={`h-4 w-4 transition-transform ${queueExpanded ? 'rotate-180' : ''}`}
-                        />
                     </Button>
                 </CollapsibleTrigger>
-                
-                <CollapsibleContent className="border-t border-border/50">
-                    <div className="p-3 space-y-2">
-                        {queuedMessages.map((message, index) => (
-                            <QueuedMessageItem 
-                                key={message.id} 
-                                message={message} 
-                                index={index} 
+
+                <CollapsibleContent>
+                    <div>
+                        {messages.map((message, index) => (
+                            <QueuedMessageItem
+                                key={message.id}
+                                message={message}
+                                index={index}
                                 removeFromQueue={removeFromQueue}
                             />
                         ))}
                     </div>
                 </CollapsibleContent>
             </Collapsible>
-        </Card>
+        </div>
     );
 };
