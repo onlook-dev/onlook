@@ -226,11 +226,14 @@ export class BranchManager {
                 framePosition,
             });
 
+
+            const routerConfig = await this.activeSandbox.getRouterConfig();
+
             // Add the new branch to the local branch map
             const errorManager = new ErrorManager(result.branch);
             const sandboxManager = new SandboxManager(result.branch, this.editorEngine, errorManager);
             const historyManager = new HistoryManager(this.editorEngine);
-            const codeEditorApi = new CodeEditorApi(this.editorEngine.projectId, result.branch.id);
+            const codeEditorApi = new CodeEditorApi(this.editorEngine.projectId, result.branch.id, { routerType: routerConfig?.type });
             this.branchMap.set(result.branch.id, {
                 branch: result.branch,
                 sandbox: sandboxManager,
@@ -242,7 +245,6 @@ export class BranchManager {
             // Initialize the new sandbox and code editor
             await sandboxManager.init();
             await codeEditorApi.initialize();
-            await codeEditorApi.buildIndex();
 
             // Add the created frames to the frame manager
             if (result.frames && result.frames.length > 0) {

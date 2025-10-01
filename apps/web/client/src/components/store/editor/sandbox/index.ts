@@ -6,7 +6,6 @@ import { RouterType, type Branch } from '@onlook/models';
 import { normalizePath } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
-import type { CodeEditorApi } from '@/services/code-editor-api';
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
 import { detectRouterConfig } from '../pages/helper';
