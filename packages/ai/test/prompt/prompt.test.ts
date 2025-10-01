@@ -177,7 +177,7 @@ describe('Prompt', () => {
                 displayName: 'test.txt',
                 branchId: 'test',
             },
-        ]);
+        ], 'test');
         if (SHOULD_WRITE_HIGHLIGHTS) {
             await Bun.write(highlightsPath, prompt);
         }

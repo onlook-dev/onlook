@@ -164,7 +164,7 @@ describe('HighlightContext', () => {
     describe('getHighlightsContent', () => {
         test('should generate content for single highlight', () => {
             const highlights = [createMockHighlightContext()];
-            const content = HighlightContext.getHighlightsContent('src/components/Button.tsx', highlights);
+            const content = HighlightContext.getHighlightsContent('src/components/Button.tsx', highlights, 'feature-branch-456');
 
             expect(content).toContain('I am looking at this specific part of the file');
             expect(content).toContain('<highlight>');
@@ -185,7 +185,7 @@ describe('HighlightContext', () => {
                     content: 'export default Button;',
                 }),
             ];
-            const content = HighlightContext.getHighlightsContent('src/components/Button.tsx', highlights);
+            const content = HighlightContext.getHighlightsContent('src/components/Button.tsx', highlights, 'feature-branch-456');
 
             expect(content).toContain('<highlight-1>');
             expect(content).toContain('<highlight-2>');
@@ -204,7 +204,7 @@ describe('HighlightContext', () => {
                     content: 'helper content',
                 }),
             ];
-            const content = HighlightContext.getHighlightsContent('src/components/Button.tsx', highlights);
+            const content = HighlightContext.getHighlightsContent('src/components/Button.tsx', highlights, 'feature-branch-456');
 
             expect(content).toContain('button content');
             expect(content).not.toContain('helper content');
@@ -216,13 +216,13 @@ describe('HighlightContext', () => {
                     path: 'src/other/file.ts',
                 }),
             ];
-            const content = HighlightContext.getHighlightsContent('src/components/Button.tsx', highlights);
+            const content = HighlightContext.getHighlightsContent('src/components/Button.tsx', highlights, 'feature-branch-456');
 
             expect(content).toBe('');
         });
 
         test('should return empty string for empty highlights array', () => {
-            const content = HighlightContext.getHighlightsContent('src/components/Button.tsx', []);
+            const content = HighlightContext.getHighlightsContent('src/components/Button.tsx', [], 'feature-branch-456');
             expect(content).toBe('');
         });
 
@@ -232,7 +232,7 @@ describe('HighlightContext', () => {
                     path: 'src/Components/Button.tsx',
                 }),
             ];
-            const content = HighlightContext.getHighlightsContent('src/components/Button.tsx', highlights);
+            const content = HighlightContext.getHighlightsContent('src/components/Button.tsx', highlights, 'feature-branch-456');
 
             expect(content).toBe('');
         });
@@ -244,7 +244,7 @@ describe('HighlightContext', () => {
                     path: longPath,
                 }),
             ];
-            const content = HighlightContext.getHighlightsContent(longPath, highlights);
+            const content = HighlightContext.getHighlightsContent(longPath, highlights, 'feature-branch-456');
 
             expect(content).toContain('I am looking at this specific part');
             expect(content).toContain(longPath);

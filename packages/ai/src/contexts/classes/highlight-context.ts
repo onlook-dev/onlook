@@ -28,8 +28,8 @@ export class HighlightContext extends BaseContext {
     /**
      * Generate multiple highlights content for a file path 
      */
-    static getHighlightsContent(filePath: string, highlights: HighlightMessageContext[]): string {
-        const fileHighlights = highlights.filter((h) => h.path === filePath);
+    static getHighlightsContent(filePath: string, highlights: HighlightMessageContext[], branchId: string): string {
+        const fileHighlights = highlights.filter((h) => h.path === filePath && h.branchId === branchId);
         if (fileHighlights.length === 0) {
             return '';
         }

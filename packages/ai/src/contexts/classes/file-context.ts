@@ -40,7 +40,7 @@ If relevant, feel free to retrieve their content.`;
         for (const file of files) {
             let filePrompt = FileContext.getPrompt(file);
             // Add highlights for this file
-            const highlightContent = FileContext.getHighlightsForFile(file.path, highlights);
+            const highlightContent = FileContext.getHighlightsForFile(file.path, highlights, file.branchId);
             if (highlightContent) {
                 filePrompt += highlightContent;
             }
@@ -79,10 +79,10 @@ If relevant, feel free to retrieve their content.`;
         return wrapXml('branch', `id: "${id}"`);
     }
 
-    private static getHighlightsForFile(filePath: string, highlights: HighlightMessageContext[]): string {
+    private static getHighlightsForFile(filePath: string, highlights: HighlightMessageContext[], branchId: string): string {
         // Import HighlightContext dynamically to avoid circular imports
         const { HighlightContext } = require('./highlight-context');
-        return HighlightContext.getHighlightsContent(filePath, highlights);
+        return HighlightContext.getHighlightsContent(filePath, highlights, branchId);
     }
 
     private static getLanguageFromFilePath(filePath: string): string {

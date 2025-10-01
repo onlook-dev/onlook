@@ -26,4 +26,6 @@ IMPORTANT: This project uses Bun as the package manager. Always use Bun commands
 NEVER SUGGEST THE "bun run dev" command. Assume the user is already running the app.
 <branch>id: "test"</branch>
 <error>test</error>
-</errors><instruction>test</instruction>
+</errors><agent-rules>These are user provided rules for the project
+test-rule.md
+</agent-rules><instruction>test</instruction>
