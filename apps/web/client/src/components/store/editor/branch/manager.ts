@@ -9,7 +9,7 @@ import { HistoryManager } from '../history';
 import { SandboxManager } from '../sandbox';
 import { CodeEditorApi } from '@/services/code-editor-api';
 
-interface BranchData {
+export interface BranchData {
     branch: Branch;
     sandbox: SandboxManager;
     history: HistoryManager;

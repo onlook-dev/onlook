@@ -15,3 +15,19 @@ export function getFrameId(): string {
     }
     return frameId;
 }
+
+export function setBranchId(branchId: string) {
+    (window as any)._onlookBranchId = branchId;
+}
+
+export function getBranchId(): string {
+    const branchId = (window as any)._onlookBranchId;
+    if (!branchId) {
+        console.warn('Branch id not found');
+        penpalParent?.getBranchId().then((id) => {
+            setBranchId(id);
+        });
+        return '';
+    }
+    return branchId;
+}

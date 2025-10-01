@@ -114,6 +114,7 @@ export const CodeTab = observer(() => {
     }, [loadedContent]);
 
     useEffect(() => {
+        console.log('[CodeTab] Navigation target changed', navigationTarget);
         if (!navigationTarget) return;
 
         const { filePath } = navigationTarget;

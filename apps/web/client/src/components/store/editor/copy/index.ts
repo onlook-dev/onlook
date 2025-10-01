@@ -54,7 +54,14 @@ export class CopyManager {
             console.error('Failed to copy element');
             return;
         }
-        const metadata = await this.editorEngine.codeEditor.getJsxElementMetadata(selectedEl.oid);
+
+        const branchData = this.editorEngine.branches.getBranchDataById(selectedEl.branchId);
+        if (!branchData) {
+            console.error(`Branch data not found for branchId: ${selectedEl.branchId}`);
+            return;
+        }
+
+        const metadata = await branchData.codeEditor.getJsxElementMetadata(selectedEl.oid);
         this.copied = { element: targetEl, codeBlock: metadata?.code || null };
         await this.clearClipboard();
     }

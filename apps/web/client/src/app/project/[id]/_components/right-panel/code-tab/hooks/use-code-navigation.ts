@@ -25,13 +25,13 @@ export function useCodeNavigation() {
         const disposer = reaction(
             () => editorEngine.elements.selected,
             async (selectedElements) => {
-                if (selectedElements.length === 0) {
+                console.log('[CodeNavigation] Selected elements', selectedElements);
+
+                const [selectedElement] = selectedElements;
+                if (!selectedElement) {
                     setNavigationTarget(null);
                     return;
                 }
-
-                const selectedElement = selectedElements[0];
-                if (!selectedElement) return;
 
                 const oid = selectedElement.instanceId ?? selectedElement.oid;
                 if (!oid) {
@@ -40,7 +40,13 @@ export function useCodeNavigation() {
                 }
 
                 try {
-                    const metadata = await editorEngine.codeEditor.getJsxElementMetadata(oid);
+                    const branchData = editorEngine.branches.getBranchDataById(selectedElement.branchId);
+                    if (!branchData) {
+                        console.warn(`[CodeNavigation] No branch data found for branchId: ${selectedElement.branchId}`);
+                        return;
+                    }
+                    
+                    const metadata = await branchData.codeEditor.getJsxElementMetadata(oid);
                     if (!metadata) {
                         console.warn(`[CodeNavigation] No metadata found for OID: ${oid}`);
                         return;

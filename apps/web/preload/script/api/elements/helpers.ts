@@ -2,7 +2,7 @@ import { EditorAttributes } from '@onlook/constants';
 import type { DomElement, ParentDomElement } from '@onlook/models';
 import type { ActionLocation } from '@onlook/models/actions';
 import { getInstanceId, getOid } from '../../helpers/ids';
-import { getFrameId } from '../state';
+import { getFrameId, getBranchId } from '../state';
 import { getStyles } from './style';
 
 export const getDeepElement = (x: number, y: number): Element | undefined => {
@@ -35,6 +35,7 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
         ? {
             domId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string,
             frameId: getFrameId(),
+            branchId: getBranchId(),
             oid: parent.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string,
             instanceId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID) as string,
             rect: parent.getBoundingClientRect(),
@@ -47,6 +48,7 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
         domId: el.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string,
         oid: el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string,
         frameId: getFrameId(),
+        branchId: getBranchId(),
         instanceId: el.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID) as string,
         rect,
         tagName: el.tagName,

@@ -133,7 +133,14 @@ export class ElementsManager {
                 this.emitError('OID not found. Try refreshing the page.');
                 return;
             }
-            const metadata = await this.editorEngine.codeEditor.getJsxElementMetadata(oid);
+
+            const branchData = this.editorEngine.branches.getBranchDataById(selectedEl.branchId);
+            if (!branchData) {
+                this.emitError(`Branch data not found for branchId: ${selectedEl.branchId}. Try refreshing the page.`);
+                return;
+            }
+
+            const metadata = await branchData.codeEditor.getJsxElementMetadata(oid);
 
             if (!metadata?.code) {
                 this.emitError('Code block not found. Try refreshing the page.');
