@@ -26,4 +26,4 @@ IMPORTANT: This project uses Bun as the package manager. Always use Bun commands
 NEVER SUGGEST THE "bun run dev" command. Assume the user is already running the app.
 <branch>id: "test"</branch>
 <error>test</error>
-</errors><project-info>This is a Nextjs project with TailwindCSS test</project-info><instruction>test</instruction>
+</errors><instruction>test</instruction>

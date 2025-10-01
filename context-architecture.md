@@ -188,12 +188,43 @@ export { FileContext, HighlightContext, ErrorContext, BranchContext, ImageContex
 - Transferable objects remain plain data for serialization
 - Static methods for utility functions that don't require instance state
 
-### Integration Points
-- `ChatContext.getHydratedUserMessage()` - primary integration point
-- `provider.ts` functions - gradual migration target
-- Context display in UI components
+## Testing Requirements
 
-### Testing Strategy
-- Unit tests for individual context prompt generation
-- Integration tests with existing `ChatContext`
-- Compatibility tests for server/client serialization
+### Unit Tests
+Create tests for each context class:
+```typescript
+describe('FileContext', () => {
+    it('should generate correct prompt format', () => {
+        const context: FileMessageContext = {
+            type: MessageContextType.FILE,
+            path: 'src/app/page.tsx',
+            content: 'export default function Page() {}',
+            displayName: 'page.tsx',
+            branchId: 'branch-123'
+        };
+        const prompt = FileContext.getPrompt(context);
+        expect(prompt).toContain('<path>src/app/page.tsx</path>');
+        expect(prompt).toContain('```tsx');
+    });
+});
+```
+
+### Integration Tests  
+- Test context classes work with existing `ChatContext`
+- Verify backward compatibility with `provider.ts` functions
+- Test server/client compatibility
+
+## Directory Structure
+```
+packages/ai/src/contexts/
+├── models/
+│   └── base.ts
+├── classes/
+│   ├── file-context.ts
+│   ├── highlight-context.ts
+│   ├── error-context.ts
+│   ├── branch-context.ts
+│   ├── image-context.ts
+│   └── agent-rule-context.ts
+└── index.ts
+```
