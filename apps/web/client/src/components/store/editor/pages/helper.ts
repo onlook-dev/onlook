@@ -4,6 +4,7 @@ import type { PageMetadata, PageNode } from '@onlook/models';
 import { RouterType } from '@onlook/models';
 import type { T } from '@onlook/parser';
 import { generate, getAstFromContent, t, traverse } from '@onlook/parser';
+import type { Provider } from '@onlook/code-provider';
 
 import type { FileEntry, FileSystem } from '@onlook/file-system';
 import type { SandboxManager } from '../sandbox';
@@ -433,17 +434,18 @@ export const scanPagesFromSandbox = async (sandboxManager: SandboxManager): Prom
 };
 
 export const detectRouterConfig = async (
-    fs: FileSystem,
+    provider: Provider,
 ): Promise<{ type: RouterType; basePath: string } | null> => {
     // Check for App Router
     for (const appPath of APP_ROUTER_PATHS) {
         try {
-            const entries = await fs.readDirectory(appPath);
+            const result = await provider.listFiles({ args: { path: appPath } });
+            const entries = result.files;
             if (entries && entries.length > 0) {
                 // Check for layout file (required for App Router)
                 const hasLayout = entries.some(
-                    (entry: FileEntry) =>
-                        !entry.isDirectory &&
+                    (entry) =>
+                        entry.type === 'file' &&
                         entry.name.startsWith('layout.') &&
                         ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
                 );
@@ -460,12 +462,13 @@ export const detectRouterConfig = async (
     // Check for Pages Router if App Router not found
     for (const pagesPath of PAGES_ROUTER_PATHS) {
         try {
-            const entries: FileEntry[] = await fs.readDirectory(pagesPath);
+            const result = await provider.listFiles({ args: { path: pagesPath } });
+            const entries = result.files;
             if (entries && entries.length > 0) {
                 // Check for index file (common in Pages Router)
                 const hasIndex = entries.some(
-                    (entry: FileEntry) =>
-                        !entry.isDirectory &&
+                    (entry) =>
+                        entry.type === 'file' &&
                         entry.name.startsWith('index.') &&
                         ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
                 );

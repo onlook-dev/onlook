@@ -51,7 +51,6 @@ export const FileTree = ({
 
     // Sync tree selection with selected file
     useEffect(() => {
-        console.log('selectedFilePath', selectedFilePath);
         if (!treeRef.current || !fileEntries.length) {
             return;
         }
@@ -61,8 +60,6 @@ export const FileTree = ({
             treeRef.current.deselectAll();
             return;
         }
-
-        console.log('here')
 
         // Find the exact entry that matches the file 
         // TODO: Fix path format inconsistency - try both single and double slash formats

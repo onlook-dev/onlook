@@ -23,6 +23,9 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
     // Check if sandbox is connecting for this frame's branch
     const branchData = editorEngine.branches.getBranchDataById(frame.branchId);
     const isConnecting = branchData?.sandbox?.session?.isConnecting || false;
+    
+    // Check if preload script is ready (observable will auto-update)
+    const preloadScriptReady = branchData?.sandbox?.preloadScriptInjected || false;
 
     // Timeout for connection attempts
     useEffect(() => {
@@ -46,6 +49,13 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
         return () => clearTimeout(timeoutId);
     }, [isConnecting, frame.branchId]);
 
+    // Trigger preload script injection if needed (non-blocking)
+    useEffect(() => {
+        if (branchData?.sandbox && !preloadScriptReady) {
+            branchData.sandbox.ensurePreloadScriptExists();
+        }
+    }, [branchData?.sandbox, preloadScriptReady]);
+
     const undebouncedReloadIframe = () => {
         setReloadKey(prev => prev + 1);
     };
@@ -67,7 +77,19 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
                 borderRadius: '4px',
             }}>
                 <ResizeHandles frame={frame} setIsResizing={setIsResizing} />
-                <FrameComponent key={reloadKey} frame={frame} reloadIframe={reloadIframe} isInDragSelection={isInDragSelection} ref={iFrameRef} />
+                {preloadScriptReady ? (
+                    <FrameComponent key={reloadKey} frame={frame} reloadIframe={reloadIframe} isInDragSelection={isInDragSelection} ref={iFrameRef} />
+                ) : (
+                    <div
+                        className="flex items-center justify-center bg-muted/50 rounded-md"
+                        style={{ width: frame.dimension.width, height: frame.dimension.height }}
+                    >
+                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                            <Icons.LoadingSpinner className="animate-spin h-6 w-6" />
+                            <span className="text-sm">Preparing sandbox...</span>
+                        </div>
+                    </div>
+                )}
                 <GestureScreen frame={frame} isResizing={isResizing} />
 
                 {isConnecting && !hasTimedOut && (

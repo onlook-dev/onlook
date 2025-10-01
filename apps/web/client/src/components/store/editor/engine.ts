@@ -3,6 +3,7 @@ import { makeAutoObservable } from 'mobx';
 import { type Branch } from '@onlook/models';
 
 import { type CodeEditorApi } from '@/services/code-editor-api';
+import type { PostHog } from 'posthog-js/react';
 import { ActionManager } from './action';
 import { ApiManager } from './api';
 import { AstManager } from './ast';
@@ -22,7 +23,6 @@ import { InsertManager } from './insert';
 import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
-import { PreloadScriptManager } from './preload';
 import { type SandboxManager } from './sandbox';
 import { ScreenshotManager } from './screenshot';
 import { SnapManager } from './snap';
@@ -31,7 +31,6 @@ import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { VersionsManager } from './version';
-import type { PostHog } from 'posthog-js/react';
 
 export class EditorEngine {
     readonly projectId: string;
@@ -67,7 +66,6 @@ export class EditorEngine {
     readonly pages: PagesManager = new PagesManager(this);
     readonly frames: FramesManager = new FramesManager(this);
     readonly frameEvent: FrameEventManager = new FrameEventManager(this);
-    readonly preloadScript: PreloadScriptManager = new PreloadScriptManager(this);
     readonly screenshot: ScreenshotManager = new ScreenshotManager(this);
     readonly snap: SnapManager = new SnapManager(this);
     get codeEditor(): CodeEditorApi {

@@ -9,7 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { CodeEditorArea } from './file-content';
 import { FileTabs } from './file-tabs';
 import { CodeControls } from './header-controls';
-import { useCodeNavigation, type CodeNavigationTarget } from './hooks/use-code-navigation';
+import { useCodeNavigation } from './hooks/use-code-navigation';
 import type { BinaryEditorFile, EditorFile, TextEditorFile } from './shared/types';
 import { isDirty } from './shared/utils';
 import { FileTree } from './sidebar/file-tree';
@@ -52,7 +52,6 @@ export const CodeTab = observer(() => {
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
 
-    console.log('selectedFilePath', selectedFilePath);
     const { fs } = useFS(rootDir);
     const {
         entries: fileEntries,
@@ -117,11 +116,9 @@ export const CodeTab = observer(() => {
     useEffect(() => {
         if (!navigationTarget) return;
 
-        const { filePath, range } = navigationTarget;
+        const { filePath } = navigationTarget;
         
-        // Auto-open the file if it's not already selected
         if (selectedFilePath !== filePath) {
-            console.log(`[CodeTab] Auto-opening file: ${filePath}`);
             setSelectedFilePath(filePath);
         }
     }, [navigationTarget]);
