@@ -1,6 +1,7 @@
 import { useDirectory, useFS } from '@onlook/file-system/hooks';
 import { isImageFile } from '@onlook/utility/src/file';
 import { useMemo, useState } from 'react';
+import path from 'path';
 
 export const useImageOperations = (rootDir: string, activeFolder: string) => {
     const [isUploading, setIsUploading] = useState(false);
@@ -40,7 +41,7 @@ export const useImageOperations = (rootDir: string, activeFolder: string) => {
                 const uint8Array = new Uint8Array(arrayBuffer);
                 
                 // Create file path in active folder
-                const filePath = activeFolder === '/' ? `/${file.name}` : `${activeFolder}/${file.name}`;
+                const filePath = path.join(activeFolder, file.name);
                 
                 // Write file to filesystem
                 await fs.writeFile(filePath, uint8Array);

@@ -2,6 +2,7 @@
 
 import { AlertCircle, FileText, FolderPlus, Play, Square } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import path from 'path';
 
 import type { Provider } from '@onlook/code-provider';
 import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
@@ -482,9 +483,7 @@ export default function TestSyncEnginePage() {
 
         try {
             // Calculate new path
-            const lastSlash = oldPath.lastIndexOf('/');
-            const newPath =
-                lastSlash === -1 ? newName : `${oldPath.substring(0, lastSlash)}/${newName}`;
+            const newPath = path.join(path.dirname(oldPath), newName);
 
             await provider.renameFile({
                 args: {
@@ -512,9 +511,7 @@ export default function TestSyncEnginePage() {
 
         try {
             // Calculate new path
-            const lastSlash = oldPath.lastIndexOf('/');
-            const newPath =
-                lastSlash === -1 ? `/${newName}` : `${oldPath.substring(0, lastSlash)}/${newName}`;
+            const newPath = path.join(path.dirname(oldPath), newName);
 
             await fs.moveFile(oldPath, newPath);
 
@@ -567,9 +564,7 @@ export default function TestSyncEnginePage() {
         if (!independentFs) return;
 
         try {
-            const lastSlash = oldPath.lastIndexOf('/');
-            const newPath =
-                lastSlash === -1 ? `/${newName}` : `${oldPath.substring(0, lastSlash)}/${newName}`;
+            const newPath = path.join(path.dirname(oldPath), newName);
 
             await independentFs.moveFile(oldPath, newPath);
 

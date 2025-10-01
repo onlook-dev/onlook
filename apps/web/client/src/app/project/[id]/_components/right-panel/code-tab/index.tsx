@@ -58,6 +58,8 @@ export const CodeTab = observer(() => {
         loading: filesLoading,
     } = useDirectory(rootDir, '/');
 
+
+    console.log('[CodeTab] fileEntries', fileEntries);
     const {
         content: loadedContent,
     } = useFile(rootDir, selectedFilePath || '');

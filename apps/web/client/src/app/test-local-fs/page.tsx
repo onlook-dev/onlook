@@ -2,6 +2,7 @@
 
 import { AlertCircle, Copy, Edit2, Move, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import path from 'path';
 
 import { useDirectory, useFile, useFS, type FileEntry } from '@onlook/file-system/hooks';
 import { Alert, AlertDescription } from '@onlook/ui/alert';
@@ -129,9 +130,7 @@ export default function TestLocalFSPage() {
         if (!fs) return;
 
         try {
-            const lastSlash = oldPath.lastIndexOf('/');
-            const newPath =
-                lastSlash === -1 ? `/${newName}` : `${oldPath.substring(0, lastSlash)}/${newName}`;
+            const newPath = path.join(path.dirname(oldPath), newName);
 
             await fs.moveFile(oldPath, newPath);
 

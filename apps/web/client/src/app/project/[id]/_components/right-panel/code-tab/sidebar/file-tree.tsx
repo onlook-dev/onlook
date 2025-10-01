@@ -61,13 +61,8 @@ export const FileTree = ({
             return;
         }
 
-        // Find the exact entry that matches the file 
-        // TODO: Fix path format inconsistency - try both single and double slash formats
-        let entry = flatEntryIndex.get(selectedFilePath);
-        if (!entry && selectedFilePath.startsWith('/')) {
-            // Try with double slash if single slash didn't work
-            entry = flatEntryIndex.get(`/${selectedFilePath}`);
-        }
+        // Find the exact entry that matches the file
+        const entry = flatEntryIndex.get(selectedFilePath);
         
         const targetEntry = entry && !entry.isDirectory ? entry : null;
         if (targetEntry) {
