@@ -11,6 +11,11 @@ import {
 import type { FileUIPart } from 'ai';
 import { ASK_MODE_SYSTEM_PROMPT, CODE_FENCE, CONTEXT_PROMPTS, CREATE_NEW_PAGE_SYSTEM_PROMPT, SHELL_PROMPT, SUGGESTION_SYSTEM_PROMPT, SUMMARY_PROMPTS, SYSTEM_PROMPT } from './constants';
 import { wrapXml } from './helpers';
+import { AgentRuleContext } from '../contexts/classes/agent-rule-context';
+import { BranchContext } from '../contexts/classes/branch-context';
+import { ErrorContext } from '../contexts/classes/error-context';
+import { FileContext } from '../contexts/classes/file-context';
+import { HighlightContext } from '../contexts/classes/highlight-context';
 
 export interface HydrateMessageOptions {
     totalMessages: number;
@@ -129,64 +134,18 @@ export function getHydratedUserMessage(
 }
 
 export function getTruncatedFilesContent(files: FileMessageContext[]) {
-    if (files.length === 0) {
-        return '';
-    }
-    let prompt = '';
-    prompt += `${CONTEXT_PROMPTS.truncatedFilesContentPrefix}\n`;
-    let index = 1;
-    for (const file of files) {
-        const branchDisplay = getBranchContent(file.branchId);
-        const pathDisplay = wrapXml('path', file.path);
-        let filePrompt = `${pathDisplay}\n${branchDisplay}\n`;
-        filePrompt = wrapXml(files.length > 1 ? `file-${index}` : 'file', filePrompt);
-        prompt += filePrompt;
-        index++;
-    }
-
-    return prompt;
+    return FileContext.getTruncatedFilesContent(files);
 }
 
 export function getFilesContent(
     files: FileMessageContext[],
     highlights: HighlightMessageContext[],
 ) {
-    if (files.length === 0) {
-        return '';
-    }
-    let prompt = '';
-    prompt += `${CONTEXT_PROMPTS.filesContentPrefix}\n`;
-    let index = 1;
-    for (const file of files) {
-        const branchDisplay = getBranchContent(file.branchId);
-        const pathDisplay = wrapXml('path', file.path);
-        let filePrompt = `${pathDisplay}\n${branchDisplay}\n`;
-        filePrompt += `${CODE_FENCE.start}${getLanguageFromFilePath(file.path)}\n`;
-        filePrompt += file.content;
-        filePrompt += `\n${CODE_FENCE.end}\n`;
-        filePrompt += getHighlightsContent(file.path, highlights);
-
-        filePrompt = wrapXml(files.length > 1 ? `file-${index}` : 'file', filePrompt);
-        prompt += filePrompt;
-        index++;
-    }
-
-    return prompt;
+    return FileContext.getFilesContent(files, highlights);
 }
 
 export function getErrorsContent(errors: ErrorMessageContext[]) {
-    if (errors.length === 0) {
-        return '';
-    }
-    let prompt = `${CONTEXT_PROMPTS.errorsContentPrefix}\n`;
-    for (const error of errors) {
-        const branchDisplay = getBranchContent(error.branchId);
-        const errorDisplay = wrapXml('error', error.content);
-        prompt += `${branchDisplay}\n${errorDisplay}\n`;
-    }
-
-    prompt = wrapXml('errors', prompt);
-    return prompt;
+    return ErrorContext.getErrorsContent(errors);
 }
 
 export function getLanguageFromFilePath(filePath: string): string {
@@ -194,34 +153,11 @@ export function getLanguageFromFilePath(filePath: string): string {
 }
 
 export function getHighlightsContent(filePath: string, highlights: HighlightMessageContext[]) {
-    const fileHighlights = highlights.filter((h) => h.path === filePath);
-    if (fileHighlights.length === 0) {
-        return '';
-    }
-    let prompt = `${CONTEXT_PROMPTS.highlightPrefix}\n`;
-    let index = 1;
-    for (const highlight of fileHighlights) {
-        const branchDisplay = getBranchContent(highlight.branchId);
-        const pathDisplay = wrapXml('path', filePath);
-        let highlightPrompt = `${pathDisplay}#L${highlight.start}:L${highlight.end}\n${branchDisplay}\n`;
-        highlightPrompt += `${CODE_FENCE.start}\n`;
-        highlightPrompt += highlight.content;
-        highlightPrompt += `\n${CODE_FENCE.end}\n`;
-        highlightPrompt = wrapXml(
-            fileHighlights.length > 1 ? `highlight-${index}` : 'highlight',
-            highlightPrompt,
-        );
-        prompt += highlightPrompt;
-        index++;
-    }
-    return prompt;
+    return HighlightContext.getHighlightsContent(filePath, highlights);
 }
 
 export function getBranchesContent(branches: BranchMessageContext[]) {
-    let prompt = `I'm working on the following branches: \n`;
-    prompt += branches.map((b) => b.branch.id).join(', ');
-    prompt = wrapXml('branches', prompt);
-    return prompt;
+    return BranchContext.getBranchesContent(branches);
 }
 
 export function getBranchContent(id: string) {
@@ -241,10 +177,5 @@ export function getSummaryPrompt() {
 }
 
 export function getAgentRulesContent(agentRules: AgentRuleMessageContext[]) {
-    let content = `${CONTEXT_PROMPTS.agentRulesContextPrefix}\n`;
-    for (const agentRule of agentRules) {
-        const agentRulePrompt = `${agentRule.path}\n${agentRule.content}`;
-        content += agentRulePrompt;
-    }
-    return wrapXml('agent-rules', content);
+    return AgentRuleContext.getAgentRulesContent(agentRules);
 }

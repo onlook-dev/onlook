@@ -1,7 +1,10 @@
 # Context Base Class Architecture
 
+*NOTE: Treat all the code here as suggestions and validate the correct code usage. Typecheck should be ran under packages/ai*
+
 ## Overview
 Create a base class system for contexts similar to the existing tool architecture, integrating with the current context generation and prompt formatting system.
+
 
 ## Current Architecture Analysis
 

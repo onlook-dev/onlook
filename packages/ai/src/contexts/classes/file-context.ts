@@ -1,6 +1,6 @@
-import { MessageContextType, type FileMessageContext } from '@onlook/models';
+import { MessageContextType, type FileMessageContext, type HighlightMessageContext } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
-import { CODE_FENCE } from '../../prompt/constants';
+import { CODE_FENCE, CONTEXT_PROMPTS } from '../../prompt/constants';
 import { wrapXml } from '../../prompt/helpers';
 import { BaseContext } from '../models/base';
 
@@ -21,6 +21,64 @@ export class FileContext implements BaseContext {
 
     static getLabel(context: FileMessageContext): string {
         return context.path.split('/').pop() || 'File';
+    }
+
+    /**
+     * Generate multiple files content with highlights (used by existing provider functions)
+     */
+    static getFilesContent(files: FileMessageContext[], highlights: HighlightMessageContext[]): string {
+        if (files.length === 0) {
+            return '';
+        }
+        let prompt = '';
+        prompt += `${CONTEXT_PROMPTS.filesContentPrefix}\n`;
+        let index = 1;
+        for (const file of files) {
+            let filePrompt = FileContext.getPrompt(file);
+            // Add highlights for this file
+            const highlightContent = FileContext.getHighlightsForFile(file.path, highlights);
+            if (highlightContent) {
+                filePrompt += highlightContent;
+            }
+
+            filePrompt = wrapXml(files.length > 1 ? `file-${index}` : 'file', filePrompt);
+            prompt += filePrompt;
+            index++;
+        }
+
+        return prompt;
+    }
+
+    /**
+     * Generate truncated files content (used by existing provider functions)
+     */
+    static getTruncatedFilesContent(files: FileMessageContext[]): string {
+        if (files.length === 0) {
+            return '';
+        }
+        let prompt = '';
+        prompt += `${CONTEXT_PROMPTS.truncatedFilesContentPrefix}\n`;
+        let index = 1;
+        for (const file of files) {
+            const branchDisplay = FileContext.getBranchContent(file.branchId);
+            const pathDisplay = wrapXml('path', file.path);
+            let filePrompt = `${pathDisplay}\n${branchDisplay}\n`;
+            filePrompt = wrapXml(files.length > 1 ? `file-${index}` : 'file', filePrompt);
+            prompt += filePrompt;
+            index++;
+        }
+
+        return prompt;
+    }
+
+    private static getBranchContent(id: string): string {
+        return wrapXml('branch', `id: "${id}"`);
+    }
+
+    private static getHighlightsForFile(filePath: string, highlights: HighlightMessageContext[]): string {
+        // Import HighlightContext dynamically to avoid circular imports
+        const { HighlightContext } = require('./highlight-context');
+        return HighlightContext.getHighlightsContent(filePath, highlights);
     }
 
     private static getLanguageFromFilePath(filePath: string): string {

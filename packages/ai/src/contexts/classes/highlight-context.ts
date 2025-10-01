@@ -7,7 +7,7 @@ import { CODE_FENCE, CONTEXT_PROMPTS } from '../../prompt/constants';
 export class HighlightContext implements BaseContext {
     static readonly contextType = MessageContextType.HIGHLIGHT;
     static readonly displayName = 'Code Selection';
-    static readonly icon = Icons.Target;
+    static readonly icon = Icons.CursorArrow;
     
     static getPrompt(context: HighlightMessageContext): string {
         const branchDisplay = HighlightContext.getBranchContent(context.branchId);
