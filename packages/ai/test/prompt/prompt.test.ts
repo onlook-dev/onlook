@@ -74,8 +74,8 @@ describe('Prompt', () => {
                     branchId: 'test',
                 },
                 {
-                    path: 'test',
-                    type: MessageContextType.PROJECT,
+                    path: 'test-rule.md',
+                    type: MessageContextType.AGENT_RULE,
                     displayName: 'test',
                     content: '',
                 },

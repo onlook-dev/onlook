@@ -5,8 +5,9 @@ import { ErrorContext } from './classes/error-context';
 import { FileContext } from './classes/file-context';
 import { HighlightContext } from './classes/highlight-context';
 import { ImageContext } from './classes/image-context';
+import type { ContextClass } from './models/base';
 
-const CONTEXT_CLASSES = {
+const CONTEXT_CLASSES: Record<MessageContextType, ContextClass> = {
     [MessageContextType.FILE]: FileContext,
     [MessageContextType.HIGHLIGHT]: HighlightContext,
     [MessageContextType.ERROR]: ErrorContext,
@@ -18,19 +19,18 @@ const CONTEXT_CLASSES = {
 // Utility functions for cases where type is determined at runtime
 export function getContextPrompt(context: MessageContext): string {
     const contextClass = CONTEXT_CLASSES[context.type];
-    return contextClass.getPrompt(context as any);
+    return contextClass.getPrompt(context);
 }
 
 export function getContextLabel(context: MessageContext): string {
     const contextClass = CONTEXT_CLASSES[context.type];
-    return contextClass.getLabel(context as any);
+    return contextClass.getLabel(context);
 }
 
 export function getContextClass(type: MessageContextType) {
     return CONTEXT_CLASSES[type];
 }
 
-export type { BaseContext } from './models/base';
 export {
     AgentRuleContext, BranchContext, ErrorContext, FileContext,
     HighlightContext, ImageContext

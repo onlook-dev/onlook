@@ -4,11 +4,11 @@ import { CODE_FENCE } from '../../prompt/constants';
 import { wrapXml } from '../../prompt/helpers';
 import { BaseContext } from '../models/base';
 
-export class FileContext implements BaseContext {
+export class FileContext extends BaseContext {
     static readonly contextType = MessageContextType.FILE;
     static readonly displayName = 'File';
     static readonly icon = Icons.File;
-    
+
     private static readonly filesContentPrefix = `I have added these files to the chat so you can go ahead and edit them`;
     private static readonly truncatedFilesContentPrefix = `This context originally included the content of files listed below and has been truncated to save space.
 If relevant, feel free to retrieve their content.`;

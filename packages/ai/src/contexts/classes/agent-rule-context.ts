@@ -1,13 +1,13 @@
 import { MessageContextType, type AgentRuleMessageContext } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { wrapXml } from '../../prompt/helpers';
-import type { BaseContext } from '../models/base';
+import { BaseContext } from '../models/base';
 
-export class AgentRuleContext implements BaseContext {
+export class AgentRuleContext extends BaseContext {
     static readonly contextType = MessageContextType.AGENT_RULE;
     static readonly displayName = 'Agent Rule';
     static readonly icon = Icons.Cube;
-    
+
     private static readonly agentRulesContextPrefix = `These are user provided rules for the project`;
 
     static getPrompt(context: AgentRuleMessageContext): string {

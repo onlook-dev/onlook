@@ -3,7 +3,7 @@ import { Icons } from '@onlook/ui/icons';
 import { wrapXml } from '../../prompt/helpers';
 import { BaseContext } from '../models/base';
 
-export class BranchContext implements BaseContext {
+export class BranchContext extends BaseContext {
     static readonly contextType = MessageContextType.BRANCH;
     static readonly displayName = 'Branch';
     static readonly icon = Icons.Branch;

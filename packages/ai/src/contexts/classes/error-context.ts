@@ -3,11 +3,11 @@ import { Icons } from '@onlook/ui/icons';
 import { wrapXml } from '../../prompt/helpers';
 import { BaseContext } from '../models/base';
 
-export class ErrorContext implements BaseContext {
+export class ErrorContext extends BaseContext {
     static readonly contextType = MessageContextType.ERROR;
     static readonly displayName = 'Error';
     static readonly icon = Icons.InfoCircled;
-    
+
     private static readonly errorsContentPrefix = `You are helping debug a Next.js React app, likely being set up for the first time. Common issues:
 - Missing dependencies ("command not found" errors) → Suggest "bun install" to install the dependencies for the first time (this project uses Bun, not npm)
 - Missing closing tags in JSX/TSX files. Make sure all the tags are closed.

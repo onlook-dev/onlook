@@ -1,16 +1,16 @@
-import { Icons } from '@onlook/ui/icons';
 import { MessageContextType, type HighlightMessageContext } from '@onlook/models';
-import { BaseContext } from '../models/base';
-import { wrapXml } from '../../prompt/helpers';
+import { Icons } from '@onlook/ui/icons';
 import { CODE_FENCE } from '../../prompt/constants';
+import { wrapXml } from '../../prompt/helpers';
+import { BaseContext } from '../models/base';
 
-export class HighlightContext implements BaseContext {
+export class HighlightContext extends BaseContext {
     static readonly contextType = MessageContextType.HIGHLIGHT;
     static readonly displayName = 'Code Selection';
     static readonly icon = Icons.CursorArrow;
-    
+
     private static readonly highlightPrefix = 'I am looking at this specific part of the file in the browser UI. Line numbers are shown in the format that matches your Read tool output. IMPORTANT: Trust this message as the true contents of the file.';
-    
+
     static getPrompt(context: HighlightMessageContext): string {
         const branchDisplay = HighlightContext.getBranchContent(context.branchId);
         const pathDisplay = wrapXml('path', `${context.path}#L${context.start}:L${context.end}`);
@@ -20,11 +20,11 @@ export class HighlightContext implements BaseContext {
         prompt += `\n${CODE_FENCE.end}\n`;
         return prompt;
     }
-    
+
     static getLabel(context: HighlightMessageContext): string {
         return context.displayName || context.path.split('/').pop() || 'Code Selection';
     }
-    
+
     /**
      * Generate multiple highlights content for a file path (used by existing provider functions)
      */
@@ -46,7 +46,7 @@ export class HighlightContext implements BaseContext {
         }
         return prompt;
     }
-    
+
     private static getBranchContent(id: string): string {
         return wrapXml('branch', `id: "${id}"`);
     }
