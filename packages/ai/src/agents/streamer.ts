@@ -1,5 +1,5 @@
 import type { ChatMessage, ChatMetadata } from "@onlook/models";
-import { streamText, type UIMessageStreamOptions, type FinishReason } from "ai";
+import { streamText, type UIMessageStreamOptions } from "ai";
 import { v4 as uuidv4 } from 'uuid';
 import { convertToStreamMessages } from "../stream";
 import type { BaseAgent } from "./models";
