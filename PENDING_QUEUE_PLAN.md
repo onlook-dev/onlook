@@ -67,6 +67,60 @@ const processNextInQueue = async () => {
   
   await sendMessageImmediately(nextMessage.content, nextMessage.type, refreshedContext);
 };
+
+// Helper functions - same behavior as current sendMessage/editMessage
+const sendMessageImmediately = async (content: string, type: ChatType, context?: MessageContext[]) => {
+  // This is the current sendMessage logic - unchanged behavior
+  const messageContext = context || await editorEngine.chat.context.getContextByChatType(type);
+  const newMessage = getUserChatMessageFromString(content, messageContext, conversationId);
+  setMessages(jsonClone([...messagesRef.current, newMessage]));
+
+  void regenerate({
+    body: {
+      chatType: type,
+      conversationId,
+      context: messageContext,
+      agentType,
+    },
+  });
+  void editorEngine.chat.conversation.generateTitle(content);
+  return newMessage;
+};
+
+const editMessageImmediately = async (messageId: string, newContent: string, chatType: ChatType, context?: MessageContext[]) => {
+  // This is the current editMessage logic - unchanged behavior
+  const messageIndex = messagesRef.current.findIndex((m) => m.id === messageId);
+  const message = messagesRef.current[messageIndex];
+
+  if (messageIndex === -1 || !message || message.role !== 'user') {
+    throw new Error('Message not found.');
+  }
+
+  const updatedMessages = messagesRef.current.slice(0, messageIndex);
+  const previousContext = message.metadata?.context ?? [];
+  const updatedContext = context || await editorEngine.chat.context.getRefreshedContext(previousContext);
+
+  message.metadata = {
+    ...message.metadata,
+    context: updatedContext,
+    conversationId,
+    createdAt: message.metadata?.createdAt ?? new Date(),
+    checkpoints: message.metadata?.checkpoints ?? [],
+  };
+  message.parts = [{ type: 'text', text: newContent }];
+
+  setMessages(jsonClone([...updatedMessages, message]));
+
+  void regenerate({
+    body: {
+      chatType,
+      conversationId,
+      agentType,
+    },
+  });
+
+  return message;
+};
 ```
 
 ### 3. Integration with Existing Chat Flow
@@ -115,6 +169,30 @@ const sendMessage: SendMessage = useCallback(
     return getUserChatMessageFromString(content, [], conversationId);
   },
   [isStreaming, queuedMessages.length]
+);
+```
+
+#### editMessage Streaming Logic with Immediate Processing
+```typescript
+const editMessage: EditMessage = useCallback(
+  async (messageId: string, newContent: string, chatType: ChatType) => {
+    if (isStreaming) {
+      // Stop current streaming immediately
+      stop();
+      
+      // Process edit with immediate priority (higher than queue)
+      const context: MessageContext[] = await editorEngine.chat.context.getContextByChatType(chatType);
+      await editMessageImmediately(messageId, newContent, chatType, context);
+      
+      // Queue remains intact and will auto-process when streaming ends
+      return;
+    }
+    
+    // Normal edit processing when not streaming
+    const context: MessageContext[] = await editorEngine.chat.context.getContextByChatType(chatType);
+    return editMessageImmediately(messageId, newContent, chatType, context);
+  },
+  [isStreaming, stop]
 );
 ```
 
@@ -298,21 +376,23 @@ return {
 
 ## Implementation Phases
 
-### Phase 1: Core Queue Functionality (MVP)
+### Phase 1: Refactor Existing Functions (No Behavior Changes)
+1. Extract current `sendMessage` logic into `sendMessageImmediately` helper
+2. Extract current `editMessage` logic into `editMessageImmediately` helper
+3. Update existing functions to call helpers (same behavior, cleaner structure)
+4. Verify all existing functionality works unchanged
+
+### Phase 2: Core Queue Functionality (MVP)
 1. Add simple queue state (`queuedMessages`)
 2. Implement basic queue function (`removeFromQueue`)
 3. Modify `sendMessage` to queue when streaming (bottom) vs stopped (top)
-4. Auto-process queue when streaming ends
+4. Add `editMessage` streaming logic with immediate processing
+5. Auto-process queue when streaming ends
 
-### Phase 2: UI Components  
+### Phase 3: UI Components  
 1. Create expandable queue box component (no clear all button)
 2. Add individual message items with remove buttons only
 3. Integrate queue box into chat input component (above textarea, below context pills)
-
-### Phase 3: Polish
-1. Add queue expansion/collapse persistence
-2. Polish animations and transitions
-3. Add keyboard shortcuts for queue management
 
 ## Testing Strategy
 
