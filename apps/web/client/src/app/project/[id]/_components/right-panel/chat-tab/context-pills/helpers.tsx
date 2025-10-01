@@ -1,13 +1,13 @@
+import { getContextClass, getContextLabel } from '@onlook/ai';
 import { DefaultSettings } from '@onlook/constants';
 import { MessageContextType, type MessageContext } from '@onlook/models/chat';
-import { Icons } from '@onlook/ui/icons';
 import { getTruncatedFileName } from '@onlook/ui/utils';
 import { assertNever } from '@onlook/utility';
-import React from 'react';
 import { NodeIcon } from '../../../left-panel/layers-tab/tree/node-icon';
 
 export function getTruncatedName(context: MessageContext) {
-    let name = context.displayName;
+    let name = getContextLabel(context);
+
     if (context.type === MessageContextType.FILE || context.type === MessageContextType.IMAGE) {
         name = getTruncatedFileName(name);
     }
@@ -18,33 +18,20 @@ export function getTruncatedName(context: MessageContext) {
 }
 
 export function getContextIcon(context: MessageContext) {
-    let icon: React.ComponentType | React.ReactElement | null = null;
-    switch (context.type) {
-        case MessageContextType.FILE:
-            icon = Icons.File;
-            break;
-        case MessageContextType.IMAGE:
-            icon = Icons.Image;
-            break;
-        case MessageContextType.ERROR:
-            icon = Icons.InfoCircled;
-            break;
-        case MessageContextType.HIGHLIGHT:
-            return (
-                <NodeIcon tagName={context.displayName} iconClass="w-3 h-3 ml-1 mr-2 flex-none" />
-            );
-        case MessageContextType.BRANCH:
-            icon = Icons.Branch;
-            break;
-        case MessageContextType.AGENT_RULE:
-            icon = Icons.Cube;
-            break;
-        default:
-            assertNever(context);
+    // Special case for highlight context which uses a custom component
+    if (context.type === MessageContextType.HIGHLIGHT) {
+        return (
+            <NodeIcon tagName={context.displayName} iconClass="w-3 h-3 ml-1 mr-2 flex-none" />
+        );
     }
-    if (icon) {
-        return React.createElement(icon);
+
+    const contextClass = getContextClass(context.type);
+    if (contextClass) {
+        return contextClass.icon;
     }
+
+    // Fallback for unknown types
+    assertNever(context.type);
 }
 
 export function validateImageLimit(
