@@ -11,7 +11,7 @@ import {
 } from '@onlook/parser';
 import { isRootLayoutFile, pathsEqual } from '@onlook/utility';
 import { formatContent } from '@/components/store/editor/sandbox/helpers';
-import { ONLOOK_CACHE_DIRECTORY } from '@onlook/constants';
+import { ONLOOK_CACHE_DIRECTORY, ONLOOK_PRELOAD_SCRIPT } from '@onlook/constants';
 
 export interface JsxElementMetadata extends TemplateNode {
     oid: string;
@@ -226,7 +226,7 @@ export class CodeEditorApi extends FileSystem {
             const content = await this.readFile(this.indexPath);
             return JSON.parse(content as string);
         } catch {
-
+            console.warn(`[CodeEditorApi] Failed to load index from ${this.indexPath}`);
             return {};
         }
     }
@@ -236,14 +236,14 @@ export class CodeEditorApi extends FileSystem {
         try {
             await this.createDirectory(ONLOOK_CACHE_DIRECTORY);
         } catch {
-
+            console.warn(`[CodeEditorApi] Failed to create ${ONLOOK_CACHE_DIRECTORY} directory`);
         }
         await super.writeFile(this.indexPath, JSON.stringify(index));
     }
 
     private isJsxFile(path: string): boolean {
         // Exclude the onlook preload script from JSX processing
-        if (path.endsWith('onlook-preload-script.js')) {
+        if (path.endsWith(ONLOOK_PRELOAD_SCRIPT)) {
             return false;
         }
         return /\.(jsx?|tsx?)$/i.test(path);

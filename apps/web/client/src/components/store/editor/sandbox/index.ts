@@ -1,6 +1,6 @@
 import { CodeProviderSync } from '@/services/sync-engine/sync-engine';
 import type { Provider } from '@onlook/code-provider';
-import { EXCLUDED_SYNC_DIRECTORIES, NEXT_JS_FILE_EXTENSIONS, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
+import { EXCLUDED_SYNC_PATHS, NEXT_JS_FILE_EXTENSIONS, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
 import { FileSystem, type FileEntry } from '@onlook/file-system';
 import { RouterType, type Branch } from '@onlook/models';
 import { getAstFromContent, getContentFromAst, injectPreloadScript } from '@onlook/parser';
@@ -62,7 +62,7 @@ export class SandboxManager {
         this.fs = codeEditorApi;
         
         this.sync = new CodeProviderSync(provider, codeEditorApi, {
-            exclude: EXCLUDED_SYNC_DIRECTORIES,
+            exclude: EXCLUDED_SYNC_PATHS,
         });
 
         await this.sync.start();

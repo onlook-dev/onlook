@@ -1,16 +1,17 @@
-import { CUSTOM_OUTPUT_DIR } from './editor';
-
 const BASE_EXCLUDED_DIRECTORIES = ['node_modules', 'dist', 'build', '.git', '.next'] as const;
 
+export const CUSTOM_OUTPUT_DIR = '.next-prod';
 export const ONLOOK_CACHE_DIRECTORY = '.onlook';
+export const ONLOOK_PRELOAD_SCRIPT = 'onlook-preload-script.js';
+export const ONLOOK_PRELOAD_SCRIPT_PATH = `public/${ONLOOK_PRELOAD_SCRIPT}`;
 
-export const EXCLUDED_SYNC_DIRECTORIES = [
+export const EXCLUDED_SYNC_PATHS = [
     ...BASE_EXCLUDED_DIRECTORIES,
     'static',
     'out',
     CUSTOM_OUTPUT_DIR,
     ONLOOK_CACHE_DIRECTORY,
-    'public/onlook-preload-script.js',
+    ONLOOK_PRELOAD_SCRIPT_PATH,
 ];
 
 export const IGNORED_UPLOAD_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, CUSTOM_OUTPUT_DIR];

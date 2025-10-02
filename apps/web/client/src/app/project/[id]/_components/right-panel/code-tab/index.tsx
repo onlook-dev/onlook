@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { hashContent } from '@/services/sync-engine/sync-engine';
 import { EditorView } from '@codemirror/view';
-import { useDirectory, useFile, useFS } from '@onlook/file-system/hooks';
+import { useDirectory, useFile } from '@onlook/file-system/hooks';
 import { toast } from '@onlook/ui/sonner';
 import { pathsEqual } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
@@ -40,7 +40,8 @@ const createEditorFile = async (filePath: string, content: string | Uint8Array):
 
 export const CodeTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const rootDir = `/${editorEngine.projectId}/${editorEngine.branches.activeBranch.id}`;
+    const activeBranch = editorEngine.branches.activeBranch;
+    const rootDir = `/${editorEngine.projectId}/${activeBranch.id}`;
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const navigationTarget = useCodeNavigation();
 
@@ -53,7 +54,7 @@ export const CodeTab = observer(() => {
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
 
-    const { fs } = useFS(rootDir);
+    const branchData = editorEngine.branches.getBranchDataById(activeBranch.id);
     const {
         entries: fileEntries,
         loading: filesLoading,
@@ -171,7 +172,6 @@ export const CodeTab = observer(() => {
     const handleSaveFile = async () => {
         if (!selectedFilePath || !activeEditorFile) return;
         try {
-            const branchData = editorEngine.branches.getBranchDataById(editorEngine.branches.activeBranch.id);
             if (!branchData) {
                 throw new Error('Branch data not found');
             }
@@ -276,9 +276,9 @@ export const CodeTab = observer(() => {
     };
 
     const handleRenameFile = (oldPath: string, newName: string) => {
-        if (!fs) return;
+        if (!branchData?.codeEditor) return;
         try {
-            fs.moveFile(oldPath, newName);
+            branchData.codeEditor.moveFile(oldPath, newName);
         } catch (error) {
             console.error('Failed to rename file:', error);
             toast.error(`Failed to rename: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -286,9 +286,9 @@ export const CodeTab = observer(() => {
     };
 
     const handleDeleteFile = (path: string) => {
-        if (!fs) return;
+        if (!branchData?.codeEditor) return;
         try {
-            fs.deleteFile(path);
+            branchData.codeEditor.deleteFile(path);
         } catch (error) {
             console.error('Failed to delete file:', error);
             toast.error(`Failed to delete: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -297,7 +297,6 @@ export const CodeTab = observer(() => {
 
     const handleCreateFile = async (filePath: string, content: string = '') => {
         try {
-            const branchData = editorEngine.branches.getBranchDataById(editorEngine.branches.activeBranch.id);
             if (!branchData) {
                 throw new Error('Branch data not found');
             }
@@ -312,9 +311,9 @@ export const CodeTab = observer(() => {
     };
 
     const handleCreateFolder = async (folderPath: string) => {
-        if (!fs) throw new Error('File system not available');
+        if (!branchData?.codeEditor) throw new Error('Code editor not available');
         try {
-            await fs.createDirectory(folderPath);
+            await branchData.codeEditor.createDirectory(folderPath);
             toast(`Folder "${folderPath.split('/').pop()}" created successfully!`);
         } catch (error) {
             console.error('Failed to create folder:', error);

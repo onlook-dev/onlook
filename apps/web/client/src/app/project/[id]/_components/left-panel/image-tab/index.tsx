@@ -25,6 +25,9 @@ export const ImagesTab = observer(() => {
         filterImages,
     } = useNavigation('/public');
 
+    // Get the CodeEditorApi for the active branch
+    const branchData = editorEngine.branches.getBranchDataById(editorEngine.branches.activeBranch.id);
+
     // Image operations and data
     const {
         folders,
@@ -33,7 +36,7 @@ export const ImagesTab = observer(() => {
         error,
         isUploading,
         handleUpload,
-    } = useImageOperations(rootDir, activeFolder);
+    } = useImageOperations(rootDir, activeFolder, branchData?.codeEditor);
 
     // Filter images based on search
     const images = filterImages(allImages);
