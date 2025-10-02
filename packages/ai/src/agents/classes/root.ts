@@ -1,11 +1,6 @@
 import { ChatType, LLMProvider, OPENROUTER_MODELS, type ModelConfig } from '@onlook/models';
 import { getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, getToolSetFromType, initModel } from '../../index';
 import { BaseAgent } from '../models/base';
-import { readOnlyRootTools, rootTools } from '../tool-lookup';
-
-export function getToolFromType(chatType: ChatType) {
-    return chatType === ChatType.ASK ? readOnlyRootTools : rootTools;
-}
 
 export class RootAgent extends BaseAgent {
     readonly id = 'root-agent';
