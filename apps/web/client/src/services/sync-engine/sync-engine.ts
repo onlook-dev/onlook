@@ -52,6 +52,8 @@ export class CodeProviderSync {
         try {
             await this.pullFromSandbox();
             await this.setupWatching();
+            // Push any locally modified files (with OIDs) back to sandbox
+            await this.pushModifiedFilesToSandbox();
         } catch (error) {
             this.isRunning = false;
             throw error;
@@ -138,7 +140,14 @@ export class CodeProviderSync {
             }
         }
 
-        await this.fs.writeFiles(filesToWrite);
+        // Write files sequentially to avoid race conditions
+        for (const { path, content } of filesToWrite) {
+            try {
+                await this.fs.writeFile(path, content);
+            } catch (error) {
+                console.error(`[Sync] Failed to write ${path}:`, error);
+            }
+        }
 
         // Store hashes of files so we can skip syncing if the content hasn't changed later.
         for (const { path, content } of filesToWrite) {
@@ -184,6 +193,37 @@ export class CodeProviderSync {
         }
 
         return files;
+    }
+
+    private async pushModifiedFilesToSandbox(): Promise<void> {
+        console.log('[Sync] Pushing locally modified files back to sandbox...');
+        
+        try {
+            // Get all local JSX/TSX files that might have been modified with OIDs
+            const localFiles = await this.fs.listFiles('/');
+            const jsxFiles = localFiles.filter(path => /\.(jsx?|tsx?)$/i.test(path));
+            
+            for (const filePath of jsxFiles) {
+                try {
+                    const content = await this.fs.readFile(filePath);
+                    if (typeof content === 'string') {
+                        // Push to sandbox
+                        await this.provider.writeFile({
+                            args: {
+                                path: filePath.startsWith('/') ? filePath.substring(1) : filePath,
+                                content,
+                                overwrite: true
+                            }
+                        });
+                        console.log(`[Sync] Pushed ${filePath} to sandbox`);
+                    }
+                } catch (error) {
+                    console.warn(`[Sync] Failed to push ${filePath} to sandbox:`, error);
+                }
+            }
+        } catch (error) {
+            console.error('[Sync] Error pushing files to sandbox:', error);
+        }
     }
 
     private shouldSync(path: string): boolean {

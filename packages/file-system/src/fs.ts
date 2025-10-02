@@ -140,7 +140,14 @@ export class FileSystem {
     async writeFiles(files: Array<{ path: string; content: string | Uint8Array }>): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
 
-        await Promise.all(files.map(({ path, content }) => this.writeFile(path, content)));
+        // Write files sequentially to avoid race conditions
+        for (const { path, content } of files) {
+            try {
+                await this.writeFile(path, content);
+            } catch (error) {
+                console.error(`[FileSystem] Failed to write ${path}:`, error);
+            }
+        }
     }
 
     async deleteFile(inputPath: string): Promise<void> {
