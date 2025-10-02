@@ -1,8 +1,9 @@
 import { api } from '@/trpc/server';
 import { trackEvent } from '@/utils/analytics/server';
-import { RootAgent } from '@onlook/ai';
+import { convertToStreamMessages, RootAgent } from '@onlook/ai';
 import { toDbMessage } from '@onlook/db';
-import { ChatType, type ChatMessage } from '@onlook/models';
+import { ChatType, type ChatMessage, type ChatMetadata } from '@onlook/models';
+import { stepCountIs, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { checkMessageLimit, decrementUsage, errorHandler, getSupabaseUser, incrementUsage, repairToolCall } from './helpers';
@@ -74,40 +75,62 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         if (chatType === ChatType.EDIT) {
             usageRecord = await incrementUsage(req, traceId);
         }
-
-        // Create RootAgent instance
         const agent = new RootAgent(chatType);
-
-        return agent.streamTextWithMetadata(messages, conversationId, {
-            streamTextConfig: {
-                experimental_telemetry: {
-                    isEnabled: true,
-                    metadata: {
-                        conversationId,
-                        projectId,
-                        userId,
-                        chatType: chatType,
-                        tags: ['chat'],
-                        langfuseTraceId: traceId,
-                        sessionId: conversationId,
-                    },
+        const result = streamText({
+            model: agent.modelConfig.model,
+            headers: agent.modelConfig.headers,
+            tools: agent.toolSet,
+            stopWhen: stepCountIs(agent.maxSteps),
+            messages: [
+                {
+                    role: 'system',
+                    content: agent.systemPrompt,
+                    providerOptions: agent.modelConfig.providerOptions,
                 },
-                experimental_repairToolCall: repairToolCall,
-                onError: async (error) => {
-                    console.error('Error in chat stream call', error);
-                    // if there was an error with the API, do not penalize the user
-                    await decrementUsage(req, usageRecord);
-
-                    // Ensure the stream stops on error by re-throwing
-                    if (error instanceof Error) {
-                        throw error;
-                    } else {
-                        const errorMessage = typeof error === 'string' ? error : JSON.stringify(error);
-                        throw new Error(errorMessage);
-                    }
+                ...convertToStreamMessages(messages),
+            ],
+            experimental_telemetry: {
+                isEnabled: true,
+                metadata: {
+                    conversationId,
+                    projectId,
+                    userId,
+                    chatType: chatType,
+                    tags: ['chat'],
+                    langfuseTraceId: traceId,
+                    sessionId: conversationId,
                 },
             },
-            toUIMessageStreamResponseConfig: {
+            experimental_repairToolCall: repairToolCall,
+            onError: async (error) => {
+                console.error('Error in chat stream call', error);
+                // if there was an error with the API, do not penalize the user
+                await decrementUsage(req, usageRecord);
+
+                // Ensure the stream stops on error by re-throwing
+                if (error instanceof Error) {
+                    throw error;
+                } else {
+                    const errorMessage = typeof error === 'string' ? error : JSON.stringify(error);
+                    throw new Error(errorMessage);
+                }
+            }
+        })
+
+        return result.toUIMessageStreamResponse<ChatMessage>(
+            {
+                originalMessages: messages,
+                generateMessageId: () => uuidv4(),
+                messageMetadata: ({ part }) => {
+                    return {
+                        createdAt: new Date(),
+                        conversationId,
+                        context: [],
+                        checkpoints: [],
+                        finishReason: part.type === 'finish-step' ? part.finishReason : undefined,
+                        usage: part.type === 'finish-step' ? part.usage : undefined,
+                    } satisfies ChatMetadata;
+                },
                 onFinish: async ({ messages: finalMessages }) => {
                     const messagesToStore = finalMessages
                         .filter(msg =>
@@ -121,8 +144,8 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                     });
                 },
                 onError: errorHandler,
-            },
-        });
+            }
+        );
     } catch (error) {
         console.error('Error in streamResponse setup', error);
         // If there was an error setting up the stream and we incremented usage, revert it
