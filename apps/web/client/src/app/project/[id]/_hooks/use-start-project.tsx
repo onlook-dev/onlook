@@ -13,6 +13,7 @@ import {
 } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { useEffect, useRef, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { useTabActive } from '../_hooks/use-tab-active';
 
 interface ProjectReadyState {
@@ -94,6 +95,7 @@ export const useStartProject = () => {
                     content: context.content,
                     mimeType: context.mimeType,
                     displayName: 'user image',
+                    id: uuidv4(),
                 }));
 
             const context: MessageContext[] = [...createContext, ...imageContexts];

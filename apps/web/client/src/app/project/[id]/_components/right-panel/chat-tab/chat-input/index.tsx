@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { compressImageInBrowser } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
+import { v4 as uuidv4 } from 'uuid';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { validateImageLimit } from '../context-pills/helpers';
@@ -213,6 +214,7 @@ export const ChatInput = observer(({
                 content: base64URL,
                 mimeType: file.type,
                 displayName: displayName ?? file.name,
+                id: uuidv4(),
             };
             editorEngine.chat.context.addContexts([contextImage]);
         };
@@ -265,6 +267,7 @@ export const ChatInput = observer(({
                 content: screenshotData,
                 mimeType: mimeType,
                 displayName: 'Screenshot',
+                id: uuidv4(),
             };
             editorEngine.chat.context.addContexts([contextImage]);
             toast.success('Screenshot added to chat');

@@ -79,9 +79,9 @@ export const ToolCallDisplay = ({
                     <Icons.Image className="w-4 h-4" />
                     <span className="text-sm font-medium">View Image</span>
                 </div>
-                {args?.image_reference && (
+                {args?.image_id && (
                     <div className="text-xs text-foreground-secondary">
-                        Image: {args.image_reference}
+                        Image ID: {args.image_id}
                     </div>
                 )}
                 {result?.message && (
@@ -102,9 +102,9 @@ export const ToolCallDisplay = ({
                     <Icons.Image className="w-4 h-4" />
                     <span className="text-sm font-medium">Upload Image</span>
                 </div>
-                {args?.image_reference && (
+                {args?.image_id && (
                     <div className="text-xs text-foreground-secondary">
-                        Image: {args.image_reference}
+                        Image ID: {args.image_id}
                     </div>
                 )}
                 {args?.destination_path && (

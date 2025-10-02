@@ -112,13 +112,11 @@ export function getHydratedUserMessage(
         .join('\n');
     prompt += wrapXml('instruction', textContent);
 
-    // Add image references to prompt (but doesnt send image data yet)
-    // AI will decide whether to view or upload them using tools
     if (images.length > 0) {
         const imageList = images
-            .map((img, idx) => `${idx + 1}. "${img.displayName}" (${img.mimeType})`)
+            .map((img) => `- ID: ${img.id}, Name: "${img.displayName}", Type: ${img.mimeType}`)
             .join('\n');
-        const imagesPrompt = `The user has attached ${images.length} image(s) to this message:\n${imageList}\n\nYou can:\n- Use the "view_image" tool to analyze the image content\n- Use the "upload_image" tool to save it to the project\n\nDetermine the appropriate action based on the user's request.`;
+        const imagesPrompt = `The user has attached ${images.length} image(s) to this message:\n${imageList}\n\nYou can:\n- Use the "view_image" tool with the image ID to analyze the image content\n- Use the "upload_image" tool with the image ID to save it to the project\n\nDetermine the appropriate action based on the user's request.`;
         prompt += wrapXml('available-images', imagesPrompt);
     }
 

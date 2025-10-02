@@ -16,6 +16,7 @@ import { cn } from '@onlook/ui/utils';
 import { compressImageInBrowser } from '@onlook/utility';
 import localforage from 'localforage';
 import { observer } from 'mobx-react-lite';
+import { v4 as uuidv4 } from 'uuid';
 import { AnimatePresence } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -200,6 +201,7 @@ export const Create = observer(({
                 content: base64,
                 displayName: file.name,
                 mimeType: file.type,
+                id: uuidv4(),
             };
         } catch (error) {
             console.error('Error reading file:', error);

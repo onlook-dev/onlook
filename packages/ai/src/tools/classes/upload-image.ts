@@ -1,6 +1,7 @@
 import { Icons } from '@onlook/ui/icons';
 import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
-import { MessageContextType } from '@onlook/models';
+import { MessageContextType, type MessageContext } from '@onlook/models';
+import mime from 'mime-lite';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { ClientTool } from '../models/client';
@@ -8,17 +9,17 @@ import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class UploadImageTool extends ClientTool {
     static readonly toolName = 'upload_image';
-    static readonly description = "Uploads an image from the chat context to the project's file system. Use this tool when the user asks you to save, add, or upload an image to their project. The image will be stored in the project's public directory and can be referenced in code. After uploading, you can use the file path in your code changes.";
+    static readonly description = "Uploads an image from the chat context to the project's file system. Use this tool when the user asks you to save, add, or upload an image to their project. The image will be stored in public/images/ directory by default and can be referenced in code. After uploading, you can use the file path in your code changes.";
     static readonly parameters = z.object({
-        image_reference: z
+        image_id: z
             .string()
             .describe(
-                'Reference to an image in the chat context (use the display name or index number)',
+                'The unique ID of the image from the available images list',
             ),
         destination_path: z
             .string()
             .optional()
-            .describe('Destination path within the project (default: "public/assets/images")'),
+            .describe('Destination path within the project. Defaults to "public/images" if not specified.'),
         filename: z
             .string()
             .optional()
@@ -38,31 +39,12 @@ export class UploadImageTool extends ClientTool {
             }
 
             const context = editorEngine.chat.context.context;
-            const imageContext = context.find((ctx) => {
-                if (ctx.type !== MessageContextType.IMAGE) {
-                    return false;
-                }
-                return ctx.displayName.toLowerCase().includes(args.image_reference.toLowerCase()) ||
-                       args.image_reference.toLowerCase().includes(ctx.displayName.toLowerCase());
-            });
+            const imageContext = context.find((ctx) =>
+                ctx.type === MessageContextType.IMAGE && ctx.id === args.image_id
+            );
 
             if (!imageContext || imageContext.type !== MessageContextType.IMAGE) {
-                const recentImages = context.filter(ctx => ctx.type === MessageContextType.IMAGE);
-                if (recentImages.length === 0) {
-                    throw new Error(`No image found matching reference: ${args.image_reference}`);
-                }
-
-                const mostRecentImage = recentImages[recentImages.length - 1];
-                if (!mostRecentImage || mostRecentImage.type !== MessageContextType.IMAGE) {
-                    throw new Error(`No image found matching reference: ${args.image_reference}`);
-                }
-
-                console.warn(`No exact match for "${args.image_reference}", using most recent image: ${mostRecentImage.displayName}`);
-
-                const fullPath = await this.uploadImageToSandbox(mostRecentImage, args, sandbox);
-                await editorEngine.image.scanImages();
-
-                return `Image "${mostRecentImage.displayName}" uploaded successfully to ${fullPath}`;
+                throw new Error(`No image found with ID: ${args.image_id}`);
             }
 
             const fullPath = await this.uploadImageToSandbox(imageContext, args, sandbox);
@@ -75,40 +57,26 @@ export class UploadImageTool extends ClientTool {
     }
 
     getLabel(input?: z.infer<typeof UploadImageTool.parameters>): string {
-        if (input?.image_reference) {
-            return 'Uploading image ' + input.image_reference.substring(0, 20);
+        if (input?.image_id) {
+            return 'Uploading image ' + input.image_id.substring(0, 20);
         }
         return 'Uploading image';
     }
 
     private async uploadImageToSandbox(
-        imageContext: Extract<import('@onlook/models').MessageContext, { type: MessageContextType.IMAGE }>,
+        imageContext: Extract<MessageContext, { type: MessageContextType.IMAGE }>,
         args: z.infer<typeof UploadImageTool.parameters>,
         sandbox: any
     ): Promise<string> {
         const mimeType = imageContext.mimeType;
-        const extension = this.getExtensionFromMimeType(mimeType);
+        const extension = mime.getExtension(mimeType) || 'png';
         const filename = args.filename ? `${args.filename}.${extension}` : `${uuidv4()}.${extension}`;
-        const destinationPath = args.destination_path || 'public/assets/images';
+        const destinationPath = args.destination_path?.trim() || 'public/images';
         const fullPath = `${destinationPath}/${filename}`;
         const base64Data = imageContext.content.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, '');
         const binaryData = this.base64ToUint8Array(base64Data);
         await sandbox.writeBinaryFile(fullPath, binaryData);
         return fullPath;
-    }
-
-    private getExtensionFromMimeType(mimeType: string): string {
-        const mimeToExt: Record<string, string> = {
-            'image/jpeg': 'jpg',
-            'image/jpg': 'jpg',
-            'image/png': 'png',
-            'image/gif': 'gif',
-            'image/webp': 'webp',
-            'image/svg+xml': 'svg',
-            'image/bmp': 'bmp',
-            'image/tiff': 'tiff',
-        };
-        return mimeToExt[mimeType.toLowerCase()] || 'png';
     }
 
     private base64ToUint8Array(base64: string): Uint8Array {
