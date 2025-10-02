@@ -6,6 +6,7 @@ import { ChatType, type ChatMessage, type ChatMetadata } from '@onlook/models';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { checkMessageLimit, decrementUsage, errorHandler, getSupabaseUser, incrementUsage, repairToolCall } from './helpers';
+import { smoothStream } from 'ai';
 
 export async function POST(req: NextRequest) {
     try {
@@ -84,7 +85,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         });
         const result = agent.stream({
             providerOptions: modelConfig.providerOptions,
-            messages: convertToStreamMessages(messages)
+            messages: convertToStreamMessages(messages),
         });
         return result.toUIMessageStreamResponse<ChatMessage>(
             {
