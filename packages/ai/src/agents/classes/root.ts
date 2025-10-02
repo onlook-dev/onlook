@@ -82,7 +82,6 @@ export class RootAgent {
         });
     }
 
-
     private getModelFromType(chatType: ChatType): ModelConfig {
         switch (chatType) {
             case ChatType.CREATE:
