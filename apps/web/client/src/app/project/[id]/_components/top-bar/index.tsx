@@ -15,6 +15,7 @@ import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Members } from '../members';
+import { PresenceDisplay } from '../presence-display';
 import { BranchDisplay } from './branch';
 import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
@@ -53,6 +54,7 @@ export const TopBar = observer(() => {
                     <div className={`transition-all duration-200 ${isMembersPopoverOpen ? 'mr-2' : '-mr-2 group-hover:mr-2'}`}>
                         <Members onPopoverOpenChange={setIsMembersPopoverOpen} />
                     </div>
+                    <PresenceDisplay className="mr-2" />
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div className="flex items-center">
