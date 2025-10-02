@@ -20,7 +20,7 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
     const [isForking, setIsForking] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const isActiveBranch = editorEngine.branches.activeBranch.id === branch.id;
-    const isOnlyBranch = editorEngine.branches.allBranches.length === 1;
+    // We'll check this dynamically in handleDelete to ensure accuracy
 
     const handleClose = () => {
         editorEngine.state.branchTab = null;
@@ -72,14 +72,18 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
         try {
             setIsDeleting(true);
 
+            // Check if this is the last branch by querying the database directly
+            const remainingBranches = await api.branch.getByProjectId.query({ 
+                projectId: editorEngine.projectId 
+            });
+            
+            if (remainingBranches.length <= 1) {
+                throw new Error('Cannot delete the last remaining branch');
+            }
+
             // If this is the active branch, switch to a different one first
             if (isActiveBranch) {
-                const allBranches = editorEngine.branches.allBranches;
-                const otherBranches = allBranches.filter(b => b.id !== branch.id);
-
-                if (otherBranches.length === 0) {
-                    throw new Error('Cannot delete the last remaining branch');
-                }
+                const otherBranches = remainingBranches.filter(b => b.id !== branch.id);
 
                 // Find the default branch, or use the first available branch
                 const targetBranch = otherBranches.find(b => b.isDefault) || otherBranches[0];
@@ -192,12 +196,8 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
                             variant="destructive"
                             className="w-full"
                             onClick={handleDelete}
-                            disabled={isDeleting || isOnlyBranch}
-                            title={
-                                isOnlyBranch
-                                    ? "Cannot delete the last remaining branch"
-                                    : "Delete branch"
-                            }
+                            disabled={isDeleting}
+                            title="Delete branch"
                         >
                             {isDeleting ? (
                                 <div className="flex items-center gap-2">
