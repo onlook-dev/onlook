@@ -141,13 +141,6 @@ export class ConversationManager {
         return api.chat.conversation.getAll.query({ projectId: id });
     }
 
-    async upsertConversationInStorage(conversation: Partial<ChatConversation>): Promise<ChatConversation> {
-        return await api.chat.conversation.upsert.mutate({
-            ...conversation,
-            projectId: this.editorEngine.projectId,
-        });
-    }
-
     async updateConversationInStorage(conversation: Partial<ChatConversation> & { id: string }) {
         await api.chat.conversation.update.mutate(conversation);
     }

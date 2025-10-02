@@ -1,6 +1,6 @@
-import { AgentType, type ChatSuggestion } from "@onlook/models";
+import type { ChatSuggestion } from "@onlook/models";
 import { relations } from "drizzle-orm";
-import { jsonb, pgEnum, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { jsonb, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { z } from "zod";
 import { projects } from "../project";
@@ -8,11 +8,8 @@ import { CONVERSATION_MESSAGe_RELATION_NAME, messages } from "./message";
 
 export const PROJECT_CONVERSATION_RELATION_NAME = "project_conversations";
 
-export const agentType = pgEnum("agent_type", AgentType);
-
 export const conversations = pgTable("conversations", {
     id: uuid("id").primaryKey().defaultRandom(),
-    agentType: agentType("agent_type").default(AgentType.ROOT),
     projectId: uuid("project_id")
         .notNull()
         .references(() => projects.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -22,12 +19,9 @@ export const conversations = pgTable("conversations", {
     suggestions: jsonb("suggestions").$type<ChatSuggestion[]>().default([]),
 }).enableRLS();
 
-export const conversationInsertSchema = createInsertSchema(conversations, {
-    agentType: z.enum(AgentType).optional(),
-});
+export const conversationInsertSchema = createInsertSchema(conversations);
 export const conversationUpdateSchema = createUpdateSchema(conversations, {
-    id: z.uuid(),
-    agentType: z.enum(AgentType).optional(),
+    id: z.string().uuid(),
 });
 
 export const conversationRelations = relations(conversations, ({ one, many }) => ({

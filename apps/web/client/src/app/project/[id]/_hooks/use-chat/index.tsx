@@ -3,7 +3,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat as useAiChat } from '@ai-sdk/react';
-import { AgentType, ChatType, type ChatMessage, type MessageContext, type QueuedMessage } from '@onlook/models';
+import { ChatType, type ChatMessage, type MessageContext, type QueuedMessage } from '@onlook/models';
 import { jsonClone } from '@onlook/utility';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, type FinishReason } from 'ai';
 import { usePostHog } from 'posthog-js/react';
@@ -31,7 +31,6 @@ interface UseChatProps {
     projectId: string;
     initialMessages: ChatMessage[];
 }
-const agentType = AgentType.ROOT;
 
 export function useChat({ conversationId, projectId, initialMessages }: UseChatProps) {
     const editorEngine = useEditorEngine();
@@ -52,12 +51,11 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 body: {
                     conversationId,
                     projectId,
-                    agentType,
                 },
             }),
             onToolCall: async (toolCall) => {
                 setIsExecutingToolCall(true);
-                void handleToolCall(agentType, toolCall.toolCall, editorEngine, addToolResult).then(() => {
+                void handleToolCall(toolCall.toolCall, editorEngine, addToolResult).then(() => {
                     setIsExecutingToolCall(false);
                 });
             },
@@ -90,7 +88,6 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                     chatType: type,
                     conversationId,
                     context: messageContext,
-                    agentType,
                 },
             });
             void editorEngine.chat.conversation.generateTitle(content);
@@ -165,7 +162,6 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 body: {
                     chatType,
                     conversationId,
-                    agentType,
                 },
             });
 
@@ -185,16 +181,16 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
 
     const processNextInQueue = useCallback(async () => {
         if (isProcessingQueue.current || isStreaming || queuedMessages.length === 0) return;
-        
+
         const nextMessage = queuedMessages[0];
         if (!nextMessage) return;
-        
+
         isProcessingQueue.current = true;
-        
+
         try {
             const refreshedContext = await editorEngine.chat.context.getRefreshedContext(nextMessage.context);
             await processMessage(nextMessage.content, nextMessage.type, refreshedContext);
-            
+
             // Remove only after successful processing
             setQueuedMessages(prev => prev.slice(1));
         } catch (error) {

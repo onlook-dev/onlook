@@ -222,7 +222,6 @@
         "gpt-tokenizer": "^3.0.1",
         "marked": "^15.0.7",
         "openai": "^4.103.0",
-        "uuid": "^11.1.0",
         "zod": "^4.1.3",
       },
       "devDependencies": {

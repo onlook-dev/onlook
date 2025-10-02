@@ -11,10 +11,10 @@ import { assertNever } from '@onlook/utility';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import type { LanguageModel } from 'ai';
 
-export function initModel({
+export async function initModel({
     provider: requestedProvider,
     model: requestedModel,
-}: InitialModelPayload): ModelConfig {
+}: InitialModelPayload): Promise<ModelConfig> {
     let model: LanguageModel;
     let providerOptions: Record<string, any> | undefined;
     let headers: Record<string, string> | undefined;
@@ -22,10 +22,10 @@ export function initModel({
 
     switch (requestedProvider) {
         case LLMProvider.ANTHROPIC:
-            model = getAnthropicProvider(requestedModel);
+            model = await getAnthropicProvider(requestedModel);
             break;
         case LLMProvider.OPENROUTER:
-            model = getOpenRouterProvider(requestedModel);
+            model = await getOpenRouterProvider(requestedModel);
             headers = {
                 'HTTP-Referer': 'https://onlook.com',
                 'X-Title': 'Onlook',
@@ -50,12 +50,12 @@ export function initModel({
     };
 }
 
-function getAnthropicProvider(model: ANTHROPIC_MODELS): LanguageModel {
+async function getAnthropicProvider(model: ANTHROPIC_MODELS): Promise<LanguageModel> {
     const anthropic = createAnthropic();
     return anthropic(model);
 }
 
-function getOpenRouterProvider(model: OPENROUTER_MODELS): LanguageModel {
+async function getOpenRouterProvider(model: OPENROUTER_MODELS): Promise<LanguageModel> {
     if (!process.env.OPENROUTER_API_KEY) {
         throw new Error('OPENROUTER_API_KEY must be set');
     }

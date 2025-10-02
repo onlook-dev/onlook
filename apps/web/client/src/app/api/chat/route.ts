@@ -1,12 +1,11 @@
 import { api } from '@/trpc/server';
 import { trackEvent } from '@/utils/analytics/server';
-import { AgentStreamer, BaseAgent, RootAgent, UserAgent } from '@onlook/ai';
+import { AgentStreamer, RootAgent } from '@onlook/ai';
 import { toDbMessage } from '@onlook/db';
-import { AgentType, ChatType } from '@onlook/models';
+import { ChatType, type ChatMessage } from '@onlook/models';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { checkMessageLimit, decrementUsage, errorHandler, getSupabaseUser, incrementUsage, repairToolCall } from './helpers';
-import { z } from 'zod';
 
 export async function POST(req: NextRequest) {
     try {
@@ -52,24 +51,14 @@ export async function POST(req: NextRequest) {
     }
 }
 
-const streamResponseSchema = z.object({
-    agentType: z.enum(AgentType).optional().default(AgentType.ROOT),
-    messages: z.array(z.any()),
-    chatType: z.enum(ChatType).optional(),
-    conversationId: z.string(),
-    projectId: z.string(),
-}).refine((data) => {
-    // Only allow chatType if agentType is ROOT
-    if (data.chatType !== undefined && data.agentType !== AgentType.ROOT) {
-        return false;
-    }
-    return true;
-}, { message: "chatType is only allowed if agentType is root" });
-
 export const streamResponse = async (req: NextRequest, userId: string) => {
     const body = await req.json();
-    const { agentType, messages, chatType, conversationId, projectId } = streamResponseSchema.parse(body);
-
+    const { messages, chatType, conversationId, projectId } = body as {
+        messages: ChatMessage[],
+        chatType: ChatType,
+        conversationId: string,
+        projectId: string,
+    };
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
     // If the call below fails, the user will not be penalized.
@@ -82,20 +71,12 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         const lastUserMessage = messages.findLast((message) => message.role === 'user');
         const traceId = lastUserMessage?.id ?? uuidv4();
 
-        // Create RootAgent instance
-        let agent: BaseAgent;
-        if (agentType === AgentType.ROOT) {
-            if (chatType === ChatType.EDIT) {
-                usageRecord = await incrementUsage(req, traceId);
-            }
-
-            agent = new RootAgent(chatType!);
-        } else if (agentType === AgentType.USER) {
-            agent = new UserAgent();
-        } else {
-            // agent = new WeatherAgent();
-            throw new Error('Agent type not supported');
+        if (chatType === ChatType.EDIT) {
+            usageRecord = await incrementUsage(req, traceId);
         }
+
+        // Create RootAgent instance
+        const agent = await RootAgent.create(chatType);
         const streamer = new AgentStreamer(agent, conversationId);
 
         return streamer.streamText(messages, {
@@ -106,8 +87,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                         conversationId,
                         projectId,
                         userId,
-                        agentType: agentType ?? AgentType.ROOT,
-                        chatType: chatType ?? "null",
+                        chatType: chatType,
                         tags: ['chat'],
                         langfuseTraceId: traceId,
                         sessionId: conversationId,
