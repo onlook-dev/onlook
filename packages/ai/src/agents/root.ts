@@ -27,7 +27,7 @@ export const createRootAgent = ({
     const systemPrompt = getSystemPromptFromType(chatType);
     const toolSet = getToolSetFromType(chatType);
     return {
-        agent: new Agent({
+        agent: new Agent<typeof toolSet>({
             model: modelConfig.model,
             system: systemPrompt,
             tools: toolSet,

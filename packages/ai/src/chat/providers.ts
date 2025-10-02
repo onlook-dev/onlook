@@ -1,11 +1,9 @@
-import { createAnthropic } from '@ai-sdk/anthropic';
 import {
-    ANTHROPIC_MODELS,
     LLMProvider,
     MODEL_MAX_TOKENS,
     OPENROUTER_MODELS,
     type InitialModelPayload,
-    type ModelConfig,
+    type ModelConfig
 } from '@onlook/models';
 import { assertNever } from '@onlook/utility';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
@@ -21,9 +19,6 @@ export function initModel({
     let maxOutputTokens: number = MODEL_MAX_TOKENS[requestedModel];
 
     switch (requestedProvider) {
-        case LLMProvider.ANTHROPIC:
-            model = getAnthropicProvider(requestedModel);
-            break;
         case LLMProvider.OPENROUTER:
             model = getOpenRouterProvider(requestedModel);
             headers = {
@@ -33,8 +28,8 @@ export function initModel({
             providerOptions = {
                 openrouter: { transforms: ['middle-out'] },
             };
-            const isClaude = requestedModel === OPENROUTER_MODELS.CLAUDE_4_SONNET || requestedModel === OPENROUTER_MODELS.CLAUDE_4_5_SONNET || requestedModel === OPENROUTER_MODELS.CLAUDE_3_5_HAIKU;
-            providerOptions = isClaude
+            const isAnthropic = requestedModel === OPENROUTER_MODELS.CLAUDE_4_5_SONNET || requestedModel === OPENROUTER_MODELS.CLAUDE_3_5_HAIKU;
+            providerOptions = isAnthropic
                 ? { ...providerOptions, anthropic: { cacheControl: { type: 'ephemeral' } } }
                 : providerOptions;
             break;
@@ -48,11 +43,6 @@ export function initModel({
         headers,
         maxOutputTokens,
     };
-}
-
-function getAnthropicProvider(model: ANTHROPIC_MODELS): LanguageModel {
-    const anthropic = createAnthropic();
-    return anthropic(model);
 }
 
 function getOpenRouterProvider(model: OPENROUTER_MODELS): LanguageModel {
