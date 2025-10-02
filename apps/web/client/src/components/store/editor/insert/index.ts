@@ -18,7 +18,7 @@ import {
 } from '@onlook/models/actions';
 import { StyleChangeType } from '@onlook/models/style';
 import { colors } from '@onlook/ui/tokens';
-import { canHaveBackgroundImage, createDomId, createOid, urlToRelativePath } from '@onlook/utility';
+import { canHaveBackgroundImage, createDomId, createOid, urlToRelativePath, sanitizeFilename } from '@onlook/utility';
 import type React from 'react';
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';

@@ -76,7 +76,7 @@ export const ImageItem = ({ image, rootDir, onImageDragStart, onImageDragEnd, on
             e.preventDefault();
             return;
         }
-        // TODO: 
+
         const imageContentData: ImageContentData = {
             fileName: image.name,
             content: content as string,

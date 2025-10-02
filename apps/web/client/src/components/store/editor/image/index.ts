@@ -1,5 +1,6 @@
 import { type ActionTarget, type ImageContentData } from '@onlook/models';
-import { convertToBase64, getBaseName, getMimeType, isImageFile, stripImageFolderPrefix } from '@onlook/utility';
+import { convertToBase64, getBaseName, getMimeType, isImageFile, stripImageFolderPrefix, sanitizeFilename } from '@onlook/utility';
+import path from 'path';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 
@@ -104,9 +105,11 @@ export class ImageManager {
 
     async upload(file: File, destinationFolder: string): Promise<void> {
         try {
-            const path = `${destinationFolder}/${file.name}`;
+            // Sanitize filename from user upload
+            const sanitizedName = sanitizeFilename(file.name);
+            const filePath = path.join(destinationFolder, sanitizedName);
             const uint8Array = new Uint8Array(await file.arrayBuffer());
-            await this.editorEngine.activeSandbox.writeFile(path, uint8Array);
+            await this.editorEngine.activeSandbox.writeFile(filePath, uint8Array);
         } catch (error) {
             console.error('Error uploading image:', error);
             throw error;

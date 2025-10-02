@@ -1,5 +1,6 @@
 import { useDirectory, useFS } from '@onlook/file-system/hooks';
 import { isImageFile } from '@onlook/utility/src/file';
+import { sanitizeFilename } from '@onlook/utility';
 import { useMemo, useState } from 'react';
 import path from 'path';
 
@@ -20,7 +21,9 @@ export const useImageOperations = (rootDir: string, activeFolder: string) => {
     // Get images in the active folder
     const images = useMemo(() => {
         if (!activeFolderEntries) return [];
-        return activeFolderEntries.filter(entry => !entry.isDirectory && isImageFile(entry.name));
+        const imageEntries = activeFolderEntries.filter(entry => !entry.isDirectory && isImageFile(entry.name));
+
+        return imageEntries;
     }, [activeFolderEntries]);
 
     // Handle file upload
@@ -30,20 +33,19 @@ export const useImageOperations = (rootDir: string, activeFolder: string) => {
         setIsUploading(true);
         try {
             for (const file of Array.from(files)) {
-                // Check if it's an image file
+                const sanitizedName = sanitizeFilename(file.name);
+                
+                // Check if it's an image file (using original name for validation)
                 if (!isImageFile(file.name)) {
                     console.warn(`Skipping non-image file: ${file.name}`);
                     continue;
                 }
-                
+
                 // Read file content
                 const arrayBuffer = await file.arrayBuffer();
                 const uint8Array = new Uint8Array(arrayBuffer);
-                
-                // Create file path in active folder
-                const filePath = path.join(activeFolder, file.name);
-                
-                // Write file to filesystem
+
+                const filePath = path.join(activeFolder, sanitizedName);
                 await fs.writeFile(filePath, uint8Array);
             }
         } catch (error) {

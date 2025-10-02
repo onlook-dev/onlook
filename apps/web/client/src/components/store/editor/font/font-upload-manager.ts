@@ -9,7 +9,7 @@ import {
 import type { FontConfig, FontUploadFile } from '@onlook/models';
 import type { T } from '@onlook/parser';
 import { t } from '@onlook/parser';
-import { getFontFileName } from '@onlook/utility';
+import { getFontFileName, sanitizeFilename } from '@onlook/utility';
 import { camelCase } from 'lodash';
 import * as pathModule from 'path';
 import type { EditorEngine } from '../engine';
@@ -76,17 +76,21 @@ export const processFontFiles = async (
             const weight = fontFile.weight;
             const style = fontFile.style.toLowerCase();
             const fileName = getFontFileName(baseFontName, weight, style);
+            
+            const sanitizedOriginalName = sanitizeFilename(fontFile.file.name);
+            const fileExtension = sanitizedOriginalName.split('.').pop();
+            
             const filePath = pathModule.join(
                 basePath,
                 DefaultSettings.FONT_FOLDER,
-                `${fileName}.${fontFile.file.name.split('.').pop()}`,
+                `${fileName}.${fileExtension}`,
             );
 
             const buffer = Buffer.from(fontFile.file.buffer);
             await editorEngine.activeSandbox.writeFile(filePath, buffer);
 
             return {
-                path: `./fonts/${fileName}.${fontFile.file.name.split('.').pop()}`,
+                path: pathModule.posix.join('./fonts', `${fileName}.${fileExtension}`),
                 weight,
                 style,
             };

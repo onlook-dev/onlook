@@ -47,7 +47,6 @@ export class FontSearchManager {
 
         try {
             await this.loadFontBatch(convertedFonts);
-            console.log(`Initial ${convertedFonts.length} fonts loaded successfully`);
         } catch (error) {
             console.error('Failed to load initial fonts:', error);
         }
