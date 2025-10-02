@@ -10,6 +10,7 @@ export type ChatMetadata = {
     checkpoints: MessageCheckpoints[];
     finishReason?: FinishReason;
     usage?: LanguageModelUsage;
+    error?: string;
 };
 
 export type ChatProviderMetadata = Record<string, Record<string, JSONValue>>;
