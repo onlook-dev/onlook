@@ -1,14 +1,14 @@
 import type { ChatMessage, ChatMetadata } from "@onlook/models";
-import type { BaseAgent } from "./models";
-import { convertToStreamMessages } from "../stream";
+import type { streamText, UIMessageStreamOptions } from "ai";
 import { v4 as uuidv4 } from 'uuid';
-import type { streamText, UIMessageStreamOnFinishCallback, UIMessageStreamOptions } from "ai";
+import { convertToStreamMessages } from "../stream";
+import type { RootAgent } from "./classes/root";
 
 export class AgentStreamer {
-    private readonly agent: BaseAgent;
+    private readonly agent: RootAgent;
     private readonly conversationId: string;
 
-    constructor(agent: BaseAgent, conversationId: string) {
+    constructor(agent: RootAgent, conversationId: string) {
         this.agent = agent;
         this.conversationId = conversationId;
     }
