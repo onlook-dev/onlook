@@ -1,1 +1,0 @@
-export { RootAgent } from './root';

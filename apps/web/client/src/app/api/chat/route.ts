@@ -1,9 +1,9 @@
 import { api } from '@/trpc/server';
 import { trackEvent } from '@/utils/analytics/server';
-import { convertToStreamMessages, RootAgent } from '@onlook/ai';
+import { convertToStreamMessages } from '@onlook/ai';
+import { createRootAgent } from '@onlook/ai/src/agents/classes/root';
 import { toDbMessage } from '@onlook/db';
 import { ChatType, type ChatMessage, type ChatMetadata } from '@onlook/models';
-import { stepCountIs, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { checkMessageLimit, decrementUsage, errorHandler, getSupabaseUser, incrementUsage, repairToolCall } from './helpers';
@@ -75,48 +75,18 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         if (chatType === ChatType.EDIT) {
             usageRecord = await incrementUsage(req, traceId);
         }
-        const agent = new RootAgent(chatType);
-        const result = streamText({
-            model: agent.modelConfig.model,
-            headers: agent.modelConfig.headers,
-            tools: agent.toolSet,
-            stopWhen: stepCountIs(agent.maxSteps),
-            messages: [
-                {
-                    role: 'system',
-                    content: agent.systemPrompt,
-                    providerOptions: agent.modelConfig.providerOptions,
-                },
-                ...convertToStreamMessages(messages),
-            ],
-            experimental_telemetry: {
-                isEnabled: true,
-                metadata: {
-                    conversationId,
-                    projectId,
-                    userId,
-                    chatType: chatType,
-                    tags: ['chat'],
-                    langfuseTraceId: traceId,
-                    sessionId: conversationId,
-                },
-            },
-            experimental_repairToolCall: repairToolCall,
-            onError: async (error) => {
-                console.error('Error in chat stream call', error);
-                // if there was an error with the API, do not penalize the user
-                await decrementUsage(req, usageRecord);
-
-                // Ensure the stream stops on error by re-throwing
-                if (error instanceof Error) {
-                    throw error;
-                } else {
-                    const errorMessage = typeof error === 'string' ? error : JSON.stringify(error);
-                    throw new Error(errorMessage);
-                }
-            }
-        })
-
+        const { agent, modelConfig } = createRootAgent({
+            chatType,
+            conversationId,
+            projectId,
+            userId,
+            traceId,
+            repairToolCall,
+        });
+        const result = agent.stream({
+            providerOptions: modelConfig.providerOptions,
+            messages: convertToStreamMessages(messages)
+        });
         return result.toUIMessageStreamResponse<ChatMessage>(
             {
                 originalMessages: messages,
