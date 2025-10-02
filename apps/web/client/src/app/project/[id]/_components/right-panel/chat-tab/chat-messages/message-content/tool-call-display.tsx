@@ -1,5 +1,6 @@
-import { FuzzyEditFileTool, SearchReplaceEditTool, SearchReplaceMultiEditFileTool, TerminalCommandTool, TypecheckTool, WebSearchTool, WriteFileTool } from '@onlook/ai';
+import { FuzzyEditFileTool, SearchReplaceEditTool, SearchReplaceMultiEditFileTool, TerminalCommandTool, TypecheckTool, UploadImageTool, ViewImageTool, WebSearchTool, WriteFileTool } from '@onlook/ai';
 import type { WebSearchResult } from '@onlook/models';
+import { Icons } from '@onlook/ui/icons';
 import type { ToolUIPart } from 'ai';
 import stripAnsi from 'strip-ansi';
 import { type z } from 'zod';
@@ -67,6 +68,62 @@ export const ToolCallDisplay = ({
                 />
             );
         }
+    }
+
+    if (toolName === ViewImageTool.toolName) {
+        const args = toolPart.input as z.infer<typeof ViewImageTool.parameters> | null;
+        const result = toolPart.output as { message: string } | null;
+        return (
+            <div className="flex flex-col gap-2 p-3 border rounded-lg bg-background-secondary">
+                <div className="flex items-center gap-2">
+                    <Icons.Image className="w-4 h-4" />
+                    <span className="text-sm font-medium">View Image</span>
+                </div>
+                {args?.image_id && (
+                    <div className="text-xs text-foreground-secondary">
+                        Image ID: {args.image_id}
+                    </div>
+                )}
+                {result?.message && (
+                    <div className="text-xs text-green-600 mt-1">
+                        {result.message}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    if (toolName === UploadImageTool.toolName) {
+        const args = toolPart.input as z.infer<typeof UploadImageTool.parameters> | null;
+        const result = toolPart.output as string | null;
+        return (
+            <div className="flex flex-col gap-2 p-3 border rounded-lg bg-background-secondary">
+                <div className="flex items-center gap-2">
+                    <Icons.Image className="w-4 h-4" />
+                    <span className="text-sm font-medium">Upload Image</span>
+                </div>
+                {args?.image_id && (
+                    <div className="text-xs text-foreground-secondary">
+                        Image ID: {args.image_id}
+                    </div>
+                )}
+                {args?.destination_path && (
+                    <div className="text-xs text-foreground-secondary">
+                        Destination: {args.destination_path}
+                    </div>
+                )}
+                {args?.filename && (
+                    <div className="text-xs text-foreground-secondary">
+                        Filename: {args.filename}
+                    </div>
+                )}
+                {result && (
+                    <div className="text-xs text-green-600 mt-1">
+                        {result}
+                    </div>
+                )}
+            </div>
+        );
     }
 
     if (toolName === WriteFileTool.toolName) {

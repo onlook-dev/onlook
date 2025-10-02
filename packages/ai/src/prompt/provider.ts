@@ -109,16 +109,15 @@ export function getHydratedUserMessage(
         .join('\n');
     prompt += wrapXml('instruction', textContent);
 
-    userParts.push({ type: 'text', text: prompt });
-
     if (images.length > 0) {
-        const attachments: FileUIPart[] = images.map((i) => ({
-            type: 'file',
-            mediaType: i.mimeType,
-            url: i.content,
-        }));
-        userParts = userParts.concat(attachments);
+        const imageList = images
+            .map((img) => `- ID: ${img.id}, Name: "${img.displayName}", Type: ${img.mimeType}`)
+            .join('\n');
+        const imagesPrompt = `The user has attached ${images.length} image(s) to this message:\n${imageList}\n\nYou can:\n- Use the "view_image" tool with the image ID to analyze the image content\n- Use the "upload_image" tool with the image ID to save it to the project\n\nDetermine the appropriate action based on the user's request.`;
+        prompt += wrapXml('available-images', imagesPrompt);
     }
+
+    userParts.push({ type: 'text', text: prompt });
 
     return {
         id,
