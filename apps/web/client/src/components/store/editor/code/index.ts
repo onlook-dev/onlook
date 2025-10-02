@@ -49,19 +49,22 @@ export class CodeManager {
         const groupedRequests = await this.groupRequestByFile(requests);
         const codeDiffs = await processGroupedRequests(groupedRequests);
         for (const diff of codeDiffs) {
-            // Use branchId from the first request in this file group
-            const firstRequest = Array.from(groupedRequests.get(diff.path)?.oidToRequest.values() || [])[0];
-            if (firstRequest) {
-                const branchData = this.editorEngine.branches.getBranchDataById(firstRequest.branchId);
-                if (branchData) {
-                    await branchData.codeEditor.writeFile(diff.path, diff.generated);
-                } else {
-                    console.warn(`Branch not found for ID: ${firstRequest.branchId}, falling back to active`);
-                    await this.editorEngine.codeEditor.writeFile(diff.path, diff.generated);
-                }
-            } else {
-                await this.editorEngine.codeEditor.writeFile(diff.path, diff.generated);
+            const fileGroup = groupedRequests.get(diff.path);
+            if (!fileGroup) {
+                throw new Error(`No request group found for file: ${diff.path}`);
             }
+
+            const firstRequest = Array.from(fileGroup.oidToRequest.values())[0];
+            if (!firstRequest) {
+                throw new Error(`No requests found in group for file: ${diff.path}`);
+            }
+
+            const branchData = this.editorEngine.branches.getBranchDataById(firstRequest.branchId);
+            if (!branchData) {
+                throw new Error(`Branch not found for ID: ${firstRequest.branchId}`);
+            }
+
+            await branchData.codeEditor.writeFile(diff.path, diff.generated);
         }
     }
 

@@ -3,15 +3,14 @@ import type { Provider } from '@onlook/code-provider';
 import { EXCLUDED_SYNC_DIRECTORIES, NEXT_JS_FILE_EXTENSIONS, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
 import { FileSystem, type FileEntry } from '@onlook/file-system';
 import { RouterType, type Branch } from '@onlook/models';
-import { getAstFromContent, injectPreloadScript, getContentFromAst } from '@onlook/parser';
-import { normalizePath, isRootLayoutFile } from '@onlook/utility';
+import { getAstFromContent, getContentFromAst, injectPreloadScript } from '@onlook/parser';
+import { isRootLayoutFile, normalizePath } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
 import { detectRouterConfig } from '../pages/helper';
 import { SessionManager } from './session';
-import { env } from '@/env';
 
 export class SandboxManager {
     readonly session: SessionManager;

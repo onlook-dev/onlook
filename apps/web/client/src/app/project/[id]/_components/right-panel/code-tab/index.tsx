@@ -169,9 +169,14 @@ export const CodeTab = observer(() => {
     };
 
     const handleSaveFile = async () => {
-        if (!fs || !selectedFilePath || !activeEditorFile) return;
+        if (!selectedFilePath || !activeEditorFile) return;
         try {
-            await fs.writeFile(selectedFilePath, activeEditorFile.content || '');
+            const branchData = editorEngine.branches.getBranchDataById(editorEngine.branches.activeBranch.id);
+            if (!branchData) {
+                throw new Error('Branch data not found');
+            }
+
+            await branchData.codeEditor.writeFile(selectedFilePath, activeEditorFile.content || '');
 
             // Update originalHash to mark file as clean after successful save
             if (activeEditorFile.type === 'text') {
@@ -291,9 +296,14 @@ export const CodeTab = observer(() => {
     };
 
     const handleCreateFile = async (filePath: string, content: string = '') => {
-        if (!fs) throw new Error('File system not available');
         try {
-            await fs.writeFile(filePath, content);
+            const branchData = editorEngine.branches.getBranchDataById(editorEngine.branches.activeBranch.id);
+            if (!branchData) {
+                throw new Error('Branch data not found');
+            }
+
+            await branchData.codeEditor.writeFile(filePath, content);
+            
             toast(`File "${filePath.split('/').pop()}" created successfully!`);
         } catch (error) {
             console.error('Failed to create file:', error);

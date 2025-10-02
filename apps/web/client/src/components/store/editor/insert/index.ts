@@ -165,8 +165,7 @@ export class InsertManager {
             console.error('Insert position not found');
             return;
         }
-        
-        // Get branchId from frameView
+
         const frameData = this.editorEngine.frames.get(frameView.id);
         if (!frameData) {
             console.error('Frame data not found');

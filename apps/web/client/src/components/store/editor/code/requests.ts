@@ -29,10 +29,6 @@ export async function processGroupedRequests(groupedRequests: FileToRequests): P
     for (const [path, request] of groupedRequests) {
         const { oidToRequest, content } = request;
 
-        console.log('[processGroupedRequests] Processing file', path);
-        console.log('[processGroupedRequests] Content', content);
-        console.log('[processGroupedRequests] Oid to request', oidToRequest);
-
         const ast = getAstFromContent(content);
 
         if (!ast) {

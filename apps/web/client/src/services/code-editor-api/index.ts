@@ -35,14 +35,6 @@ export class CodeEditorApi extends FileSystem {
         };
     }
 
-    async initialize(): Promise<void> {
-        await super.initialize();
-    }
-
-    async rebuildIndex(): Promise<void> {
-        await this.buildIndex();
-    }
-
     async writeFile(path: string, content: string | Uint8Array): Promise<void> {
         if (this.isJsxFile(path) && typeof content === 'string') {
             const processedContent = await this.processJsxFile(path, content);
@@ -135,7 +127,7 @@ export class CodeEditorApi extends FileSystem {
     }
 
 
-    private async buildIndex(): Promise<void> {
+    async rebuildIndex(): Promise<void> {
         const startTime = Date.now();
         let index: Record<string, JsxElementMetadata> = {};
 
