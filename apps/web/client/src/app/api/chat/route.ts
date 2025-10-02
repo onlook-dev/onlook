@@ -1,7 +1,6 @@
 import { api } from '@/trpc/server';
 import { trackEvent } from '@/utils/analytics/server';
-import { convertToStreamMessages } from '@onlook/ai';
-import { createRootAgent } from '@onlook/ai/src/agents';
+import { convertToStreamMessages, createRootAgent } from '@onlook/ai';
 import { toDbMessage } from '@onlook/db';
 import { ChatType, type ChatMessage, type ChatMetadata } from '@onlook/models';
 import { type NextRequest } from 'next/server';
