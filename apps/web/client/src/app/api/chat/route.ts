@@ -1,6 +1,6 @@
 import { api } from '@/trpc/server';
 import { trackEvent } from '@/utils/analytics/server';
-import { AgentStreamer, RootAgent } from '@onlook/ai';
+import { RootAgent } from '@onlook/ai';
 import { toDbMessage } from '@onlook/db';
 import { ChatType, type ChatMessage } from '@onlook/models';
 import { type NextRequest } from 'next/server';
@@ -76,10 +76,9 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         }
 
         // Create RootAgent instance
-        const agent = await RootAgent.create(chatType);
-        const streamer = new AgentStreamer(agent, conversationId);
+        const agent = new RootAgent(chatType);
 
-        return streamer.streamText(messages, {
+        return agent.streamTextWithMetadata(messages, conversationId, {
             streamTextConfig: {
                 experimental_telemetry: {
                     isEnabled: true,
