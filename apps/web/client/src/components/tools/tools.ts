@@ -7,7 +7,7 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
     const toolName = toolCall.toolName;
     const currentChatMode = editorEngine.state.chatMode;
     const availableTools = getToolClassesFromType(currentChatMode);
-    let output: any = null;
+    let output: unknown = null;
 
     try {
         const tool = availableTools.find(tool => tool.toolName === toolName);

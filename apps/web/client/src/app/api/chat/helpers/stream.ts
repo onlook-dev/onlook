@@ -3,12 +3,12 @@ import { getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, ini
 import { ChatType, LLMProvider, OPENROUTER_MODELS, type ModelConfig } from '@onlook/models';
 import { generateObject, NoSuchToolError, type ToolSet } from 'ai';
 
-export async function getModelFromType(chatType: ChatType) {
+export function getModelFromType(chatType: ChatType) {
     let model: ModelConfig;
     switch (chatType) {
         case ChatType.CREATE:
         case ChatType.FIX:
-            model = await initModel({
+            model = initModel({
                 provider: LLMProvider.OPENROUTER,
                 model: OPENROUTER_MODELS.OPEN_AI_GPT_5,
             });
@@ -16,7 +16,7 @@ export async function getModelFromType(chatType: ChatType) {
         case ChatType.ASK:
         case ChatType.EDIT:
         default:
-            model = await initModel({
+            model = initModel({
                 provider: LLMProvider.OPENROUTER,
                 model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
             });
