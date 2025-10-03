@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import ora, { type Ora } from 'ora';
+import { z } from 'zod';
 import { writeEnvFile } from './helpers';
 
 /**
@@ -67,7 +68,45 @@ const rootDir = findRepositoryRoot();
 interface BackendKeys {
     anonKey: string;
     serviceRoleKey: string;
+    publishableKey: string;
+    secretKey: string;
 }
+
+const SupabaseStatusSchema = z
+    .object({
+        ANON_KEY: z.string(),
+        API_URL: z.string(),
+        DB_URL: z.string(),
+        GRAPHQL_URL: z.string(),
+        INBUCKET_URL: z.string(),
+        JWT_SECRET: z.string(),
+        MAILPIT_URL: z.string(),
+        PUBLISHABLE_KEY: z.string(),
+        S3_PROTOCOL_ACCESS_KEY_ID: z.string(),
+        S3_PROTOCOL_ACCESS_KEY_SECRET: z.string(),
+        S3_PROTOCOL_REGION: z.string(),
+        SECRET_KEY: z.string(),
+        SERVICE_ROLE_KEY: z.string(),
+        STORAGE_S3_URL: z.string(),
+        STUDIO_URL: z.string(),
+    })
+    .transform((raw) => ({
+        anonKey: raw.ANON_KEY,
+        apiUrl: raw.API_URL,
+        dbUrl: raw.DB_URL,
+        graphqlUrl: raw.GRAPHQL_URL,
+        inbucketUrl: raw.INBUCKET_URL,
+        jwtSecret: raw.JWT_SECRET,
+        mailpitUrl: raw.MAILPIT_URL,
+        publishableKey: raw.PUBLISHABLE_KEY,
+        s3ProtocolAccessKeyId: raw.S3_PROTOCOL_ACCESS_KEY_ID,
+        s3ProtocolAccessKeySecret: raw.S3_PROTOCOL_ACCESS_KEY_SECRET,
+        s3ProtocolRegion: raw.S3_PROTOCOL_REGION,
+        secretKey: raw.SECRET_KEY,
+        serviceRoleKey: raw.SERVICE_ROLE_KEY,
+        storageS3Url: raw.STORAGE_S3_URL,
+        studioUrl: raw.STUDIO_URL,
+    }));
 
 export const promptAndWriteBackendKeys = async (clientEnvPath: string, dbEnvPath: string) => {
     await checkDockerRunning();
@@ -91,6 +130,14 @@ export const CLIENT_BACKEND_KEYS: BackendEnvConfig[] = [
         value: '', // Will be filled with actual key
     },
     {
+        key: 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
+        value: '', // Will be filled with actual key
+    },
+    {
+        key: 'SUPABASE_SERVICE_ROLE_KEY',
+        value: '', // Will be filled with actual key
+    },
+    {
         key: 'SUPABASE_DATABASE_URL',
         value: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres',
     },
@@ -103,6 +150,10 @@ const DB_BACKEND_KEYS: BackendEnvConfig[] = [
     },
     {
         key: 'SUPABASE_SERVICE_ROLE_KEY',
+        value: '', // Will be filled with actual key
+    },
+    {
+        key: 'SUPABASE_SECRET_KEY',
         value: '', // Will be filled with actual key
     },
     {
@@ -130,6 +181,10 @@ export const generateBackendEnvContent = (
             value = keys.anonKey;
         } else if (item.key === 'SUPABASE_SERVICE_ROLE_KEY') {
             value = keys.serviceRoleKey;
+        } else if (item.key === 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') {
+            value = keys.publishableKey;
+        } else if (item.key === 'SUPABASE_SECRET_KEY') {
+            value = keys.secretKey;
         }
 
         lines.push(`${item.key}=${value}`);
@@ -179,18 +234,36 @@ const checkDockerRunning = async (): Promise<void> => {
 };
 
 /**
- * Extracts Supabase keys from command output
- * @param output - Raw output from Supabase startup command
+ * Extracts Supabase keys from supabase status -o json output
+ * @param output - Raw JSON output from supabase status command
  * @returns Extracted keys or null if not found
  */
 const extractSupabaseKeys = (output: string): BackendKeys | null => {
-    const anonMatch = output.match(/anon key: (ey[A-Za-z0-9_-]+[^\r\n]*)/);
-    const roleMatch = output.match(/service_role key: (ey[A-Za-z0-9_-]+[^\r\n]*)/);
+    try {
+        const parsed: unknown = JSON.parse(output);
+        const validationResult = SupabaseStatusSchema.safeParse(parsed);
 
-    const anonKey = anonMatch?.[1];
-    const serviceRoleKey = roleMatch?.[1];
+        if (!validationResult.success) {
+            console.error('Supabase status validation failed:', validationResult.error.issues);
+            return null;
+        }
 
-    return anonKey && serviceRoleKey ? { anonKey, serviceRoleKey } : null;
+        const status = validationResult.data;
+        const anonKey = status.anonKey;
+        const serviceRoleKey = status.serviceRoleKey;
+        const publishableKey = status.publishableKey;
+        const secretKey = status.secretKey;
+
+        if (!anonKey || !serviceRoleKey) {
+            console.warn('Missing required Supabase keys in status output');
+            return null;
+        }
+
+        return { anonKey, serviceRoleKey, publishableKey, secretKey };
+    } catch (error) {
+        console.error('Failed to parse Supabase status JSON:', error);
+        return null;
+    }
 };
 
 interface ProcessHandlers {
@@ -219,14 +292,20 @@ const createProcessHandlers = (
     const onData = (data: Buffer) => {
         if (resolved) return;
         buffer += data.toString();
-        const keys = extractSupabaseKeys(buffer);
-        if (keys) {
-            resolved = true;
-            clearTimeout(timeout);
-            proc.kill();
-            cleanup();
-            spinner.succeed('Successfully extracted Supabase keys.');
-            resolve(keys);
+
+        try {
+            const keys = extractSupabaseKeys(buffer);
+            if (keys) {
+                resolved = true;
+                clearTimeout(timeout);
+                proc.kill();
+                cleanup();
+                spinner.succeed('Successfully extracted Supabase keys.');
+                resolve(keys);
+            }
+        } catch {
+            // JSON might be incomplete, continue buffering
+            console.debug('Incomplete JSON received, continuing to buffer...');
         }
     };
 
@@ -257,26 +336,59 @@ const startBackendAndExtractKeys = async (): Promise<BackendKeys> => {
     console.log(chalk.yellow('🚀 Starting Supabase backend...'));
     const spinner = ora('Waiting for Supabase to initialize...').start();
 
-    const proc = spawn('bun run', ['backend:start'], { cwd: rootDir, shell: true });
+    const startProc = spawn('bun run', ['backend:start'], { cwd: rootDir, shell: true });
 
-    return new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => {
-            proc.kill();
+            startProc.kill();
             spinner.fail('Timed out waiting for Supabase keys.');
             reject(new Error('Supabase start timeout'));
         }, 120_000);
 
+        startProc.on('close', (code) => {
+            clearTimeout(timeout);
+            if (code === 0) {
+                resolve();
+            } else {
+                spinner.fail('Failed to start Supabase backend.');
+                reject(new Error('Supabase start failed'));
+            }
+        });
+
+        startProc.on('error', (err) => {
+            clearTimeout(timeout);
+            spinner.fail(`Backend error: ${err.message}`);
+            reject(err);
+        });
+    });
+
+    spinner.succeed('Supabase backend started.');
+
+    // Now get all keys from status
+    const keysSpinner = ora('Extracting Supabase keys...').start();
+    const backendDir = path.join(rootDir, 'apps', 'backend');
+    const statusProc = spawn('supabase', ['status', '-o', 'json'], {
+        cwd: backendDir,
+        shell: true,
+    });
+
+    return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+            statusProc.kill();
+            keysSpinner.fail('Timed out waiting for Supabase keys.');
+            reject(new Error('Supabase status timeout'));
+        }, 30_000);
+
         const { onData, onClose, onError } = createProcessHandlers(
-            proc,
-            spinner,
+            statusProc,
+            keysSpinner,
             timeout,
             resolve,
             reject,
         );
 
-        proc.stdout?.on('data', onData);
-        proc.stderr?.on('data', onData);
-        proc.on('close', onClose);
-        proc.on('error', onError);
+        statusProc.stdout?.on('data', onData);
+        statusProc.on('close', onClose);
+        statusProc.on('error', onError);
     });
 };

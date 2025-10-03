@@ -28,8 +28,8 @@
         "preview:standalone": "bun run build:standalone && bun run start:standalone"
     },
     "dependencies": {
-        "@ai-sdk/provider-utils": "^3.0.5",
-        "@ai-sdk/react": "2.0.25",
+        "@ai-sdk/provider-utils": "^3.0.10",
+        "@ai-sdk/react": "2.0.60",
         "@codemirror/lang-css": "^6.2.0",
         "@codemirror/lang-html": "^6.4.7",
         "@codemirror/lang-javascript": "^6.2.3",

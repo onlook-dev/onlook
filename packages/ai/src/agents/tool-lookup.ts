@@ -20,9 +20,7 @@ export const allTools = [
     BashEditTool,
     SandboxTool,
     TerminalCommandTool,
-    // UserAgentTool,
 ];
-
 
 export const readOnlyRootTools = [
     ListFilesTool,
@@ -37,7 +35,6 @@ export const readOnlyRootTools = [
     GrepTool,
     TypecheckTool,
     CheckErrorsTool,
-    // UserAgentTool,
 ]
 const editOnlyRootTools = [
     SearchReplaceEditTool,
@@ -47,7 +44,6 @@ const editOnlyRootTools = [
     BashEditTool,
     SandboxTool,
     TerminalCommandTool,
-    // UserAgentTool
 ]
 
 export const rootTools = [...readOnlyRootTools, ...editOnlyRootTools];

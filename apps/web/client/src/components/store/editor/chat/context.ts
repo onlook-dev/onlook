@@ -1,20 +1,16 @@
-import { makeAutoObservable, reaction } from 'mobx';
-
-import  { type DomElement } from '@onlook/models';
-import  {
+import { ChatType, type DomElement } from '@onlook/models';
+import {
+    MessageContextType,
+    type AgentRuleMessageContext,
     type BranchMessageContext,
     type ErrorMessageContext,
     type FileMessageContext,
     type HighlightMessageContext,
     type ImageMessageContext,
-    type MessageContext,
-    type ProjectMessageContext,
+    type MessageContext
 } from '@onlook/models/chat';
-import  { type ParsedError } from '@onlook/utility';
-import { ChatType } from '@onlook/models';
-import { MessageContextType } from '@onlook/models/chat';
-import { assertNever } from '@onlook/utility';
-
+import { assertNever, type ParsedError } from '@onlook/utility';
+import { makeAutoObservable, reaction } from 'mobx';
 import { type EditorEngine } from '../engine';
 import { type FrameData } from '../frames';
 
@@ -55,7 +51,7 @@ export class ChatContext {
             case ChatType.EDIT:
             case ChatType.CREATE:
             case ChatType.ASK:
-                return await this.getLatestContext();
+                return await this.getChatEditContext();
             case ChatType.FIX:
                 return this.getErrorContext();
             default:
@@ -63,8 +59,8 @@ export class ChatContext {
         }
     }
 
-    async getLatestContext(): Promise<MessageContext[]> {
-        return await this.getRefreshedContext(this.context);
+    async getChatEditContext(): Promise<MessageContext[]> {
+        return [...await this.getRefreshedContext(this.context), ...await this.getAgentRuleContext()];
     }
 
     private async generateContextFromReaction({ elements, frames }: { elements: DomElement[], frames: FrameData[] }): Promise<MessageContext[]> {
@@ -241,6 +237,36 @@ export class ChatContext {
         };
     }
 
+    private async getAgentRuleContext(): Promise<AgentRuleMessageContext[]> {
+        try {
+            const agentRuleFilesPaths = ['agents.md', 'claude.md', 'AGENTS.md', 'CLAUDE.md'];
+            const agentRuleContexts: AgentRuleMessageContext[] = (await Promise.all(
+                agentRuleFilesPaths.map(async (filePath) => {
+                    const fileContent = await this.editorEngine.activeSandbox.readFile(`./${filePath}`);
+                    if (fileContent === null) {
+                        return null;
+                    }
+                    if (fileContent instanceof Uint8Array) {
+                        return null;
+                    }
+                    if (fileContent.trim().length === 0) {
+                        return null;
+                    }
+                    return {
+                        type: MessageContextType.AGENT_RULE,
+                        content: fileContent,
+                        displayName: filePath,
+                        path: filePath,
+                    } satisfies AgentRuleMessageContext;
+                })
+            )).filter((context) => context !== null);
+            return agentRuleContexts
+        } catch (error) {
+            console.error('Error getting agent rule context', error);
+            return [];
+        }
+    }
+
     getErrorContext(): ErrorMessageContext[] {
         const branchErrors = this.editorEngine.branches.getAllErrors();
         // Group errors by branch for context
@@ -303,7 +329,7 @@ export class ChatContext {
                     console.error('Error getting default page context', error);
                     continue;
                 }
-                
+
                 if (fileContent && typeof fileContent === 'string') {
                     const defaultPageContext: FileMessageContext = {
                         type: MessageContextType.FILE,

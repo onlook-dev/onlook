@@ -1,6 +1,5 @@
 export * from './ask';
 export * from './base';
-export * from './context';
 export * from './create';
 export * from './format';
 export * from './onlook';

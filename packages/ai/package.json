@@ -1,7 +1,6 @@
 {
     "name": "@onlook/ai",
     "description": "A AI library for Onlook",
-    "main": "./dist/index.js",
     "type": "module",
     "module": "src/index.ts",
     "types": "src/index.ts",
@@ -34,14 +33,9 @@
         "typescript": "^5.5.4"
     },
     "dependencies": {
-        "@ai-sdk/amazon-bedrock": "2.2.10",
-        "@ai-sdk/anthropic": "2.0.0",
-        "@ai-sdk/google": "2.0.0",
-        "@ai-sdk/google-vertex": "2.2.24",
-        "@ai-sdk/openai": "2.0.0",
         "@mendable/firecrawl-js": "^1.29.1",
-        "@openrouter/ai-sdk-provider": "^1.1.2",
-        "ai": "5.0.26",
+        "@openrouter/ai-sdk-provider": "^1.2.0",
+        "ai": "5.0.60",
         "exa-js": "^1.8.26",
         "fg": "^0.0.3",
         "gpt-tokenizer": "^3.0.1",

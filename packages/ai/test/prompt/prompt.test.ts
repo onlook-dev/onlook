@@ -4,12 +4,12 @@ import path from 'path';
 import {
     type HydrateMessageOptions,
     getCreatePageSystemPrompt,
-    getFilesContent,
-    getHighlightsContent,
     getHydratedUserMessage,
     getSummaryPrompt,
     getSystemPrompt,
 } from '../../src/prompt/provider';
+import { FileContext } from '../../src/contexts/classes/file-context';
+import { HighlightContext } from '../../src/contexts/classes/highlight-context';
 
 const __dirname = import.meta.dir;
 
@@ -74,8 +74,8 @@ describe('Prompt', () => {
                     branchId: 'test',
                 },
                 {
-                    path: 'test',
-                    type: MessageContextType.PROJECT,
+                    path: 'test-rule.md',
+                    type: MessageContextType.AGENT_RULE,
                     displayName: 'test',
                     content: '',
                 },
@@ -117,7 +117,7 @@ describe('Prompt', () => {
     test('File content should be the same', async () => {
         const fileContentPath = path.resolve(__dirname, './data/file.txt');
 
-        const prompt = getFilesContent(
+        const prompt = FileContext.getFilesContent(
             [
                 {
                     path: 'test.txt',
@@ -158,7 +158,7 @@ describe('Prompt', () => {
     test('Highlights should be the same', async () => {
         const highlightsPath = path.resolve(__dirname, './data/highlights.txt');
 
-        const prompt = getHighlightsContent('test.txt', [
+        const prompt = HighlightContext.getHighlightsContent('test.txt', [
             {
                 path: 'test.txt',
                 start: 1,
@@ -177,7 +177,7 @@ describe('Prompt', () => {
                 displayName: 'test.txt',
                 branchId: 'test',
             },
-        ]);
+        ], 'test');
         if (SHOULD_WRITE_HIGHLIGHTS) {
             await Bun.write(highlightsPath, prompt);
         }
