@@ -4,10 +4,7 @@ import {
     type MessageContext
 } from '@onlook/models';
 import type { FileUIPart } from 'ai';
-import { AgentRuleContext } from '../contexts/classes/agent-rule-context';
-import { BranchContext } from '../contexts/classes/branch-context';
-import { ErrorContext } from '../contexts/classes/error-context';
-import { FileContext } from '../contexts/classes/file-context';
+import { AgentRuleContext, BranchContext, ErrorContext, FileContext, ImageContext } from '../contexts/classes';
 import { ASK_MODE_SYSTEM_PROMPT, CREATE_NEW_PAGE_SYSTEM_PROMPT, SHELL_PROMPT, SUGGESTION_SYSTEM_PROMPT, SUMMARY_PROMPTS, SYSTEM_PROMPT } from './constants';
 import { wrapXml } from './helpers';
 
@@ -112,12 +109,8 @@ export function getHydratedUserMessage(
     userParts.push({ type: 'text', text: prompt });
 
     if (images.length > 0) {
-        const attachments: FileUIPart[] = images.map((i) => ({
-            type: 'file',
-            mediaType: i.mimeType,
-            url: i.content,
-        }));
-        userParts = userParts.concat(attachments);
+        const fileParts: FileUIPart[] = ImageContext.toFileUIParts(images);
+        userParts = userParts.concat(fileParts);
     }
 
     return {

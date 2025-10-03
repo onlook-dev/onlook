@@ -3,6 +3,7 @@ import { Icons } from '@onlook/ui/icons';
 import { CODE_FENCE } from '../../prompt/constants';
 import { wrapXml } from '../../prompt/helpers';
 import { BaseContext } from '../models/base';
+import { HighlightContext } from './highlight';
 
 export class FileContext extends BaseContext {
     static readonly contextType = MessageContextType.FILE;
@@ -81,7 +82,6 @@ If relevant, feel free to retrieve their content.`;
 
     private static getHighlightsForFile(filePath: string, highlights: HighlightMessageContext[], branchId: string): string {
         // Import HighlightContext dynamically to avoid circular imports
-        const { HighlightContext } = require('./highlight-context');
         return HighlightContext.getHighlightsContent(filePath, highlights, branchId);
     }
 

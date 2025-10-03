@@ -1,6 +1,6 @@
 import { MessageContextType, type HighlightMessageContext } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
-import { HighlightContext } from '../../src/contexts/classes/highlight-context';
+import { HighlightContext } from '../../src/contexts/classes/highlight';
 
 describe('HighlightContext', () => {
     const createMockHighlightContext = (overrides: Partial<HighlightMessageContext> = {}): HighlightMessageContext => ({
