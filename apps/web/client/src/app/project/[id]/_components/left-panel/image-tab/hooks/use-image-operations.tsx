@@ -1,16 +1,16 @@
+import type { CodeFileSystem } from '@onlook/file-system';
 import { useDirectory } from '@onlook/file-system/hooks';
-import { isImageFile } from '@onlook/utility/src/file';
 import { sanitizeFilename } from '@onlook/utility';
-import { useMemo, useState } from 'react';
+import { isImageFile } from '@onlook/utility/src/file';
 import path from 'path';
-import type { CodeEditorApi } from '@/services/code-editor-api';
+import { useMemo, useState } from 'react';
 
-export const useImageOperations = (rootDir: string, activeFolder: string, codeEditor?: CodeEditorApi) => {
+export const useImageOperations = (projectId: string, branchId: string, activeFolder: string, codeEditor?: CodeFileSystem) => {
     const [isUploading, setIsUploading] = useState(false);
 
     // Get directory entries
-    const { entries: rootEntries, loading, error } = useDirectory(rootDir, activeFolder);
-    const { entries: activeFolderEntries } = useDirectory(rootDir, activeFolder);
+    const { entries: rootEntries, loading, error } = useDirectory(projectId, branchId, activeFolder);
+    const { entries: activeFolderEntries } = useDirectory(projectId, branchId, activeFolder);
 
     // Get available folders
     const folders = useMemo(() => {
@@ -29,12 +29,12 @@ export const useImageOperations = (rootDir: string, activeFolder: string, codeEd
     // Handle file upload
     const handleUpload = async (files: FileList) => {
         if (!codeEditor || !files.length) return;
-        
+
         setIsUploading(true);
         try {
             for (const file of Array.from(files)) {
                 const sanitizedName = sanitizeFilename(file.name);
-                
+
                 // Check if it's an image file (using original name for validation)
                 if (!isImageFile(file.name)) {
                     console.warn(`Skipping non-image file: ${file.name}`);

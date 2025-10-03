@@ -8,11 +8,12 @@ import type { ImageData } from './types';
 
 interface ImageGridProps {
     images: ImageData[];
-    rootDir: string;
+    projectId: string;
+    branchId: string;
     search: string;
 }
 
-export const ImageGrid = ({ images, rootDir, search, }: ImageGridProps) => {
+export const ImageGrid = ({ images, projectId, branchId, search, }: ImageGridProps) => {
     const {
         handleDragEnter, handleDragLeave, handleDragOver, isDragging,
         onImageDragStart, onImageDragEnd, onImageMouseDown, onImageMouseUp
@@ -32,7 +33,8 @@ export const ImageGrid = ({ images, rootDir, search, }: ImageGridProps) => {
                     <ImageItem
                         key={image.path}
                         image={image}
-                        rootDir={rootDir}
+                        projectId={projectId}
+                        branchId={branchId}
                         onImageDragStart={onImageDragStart}
                         onImageDragEnd={onImageDragEnd}
                         onImageMouseDown={onImageMouseDown}

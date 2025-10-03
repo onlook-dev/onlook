@@ -30,7 +30,7 @@ Make sure there's enough context for the other model to understand where the cha
         editorEngine: EditorEngine,
     ): Promise<string> {
 
-        const fileSystem = await getFileSystem(editorEngine.projectId, args.branchId);
+        const fileSystem = await getFileSystem(args.branchId, editorEngine);
         const originalFile = await fileSystem.readFile(args.file_path);
 
         if (!originalFile) {

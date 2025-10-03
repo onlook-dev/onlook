@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useFS } from './useFS';
+import { useFS } from './use-fs';
 
-export function useFile(rootDir: string, path: string) {
-    const { fs, isInitializing, error: fsError } = useFS(rootDir);
+export function useFile(projectId: string, branchId: string, path: string) {
+    const { fs, isInitializing, error: fsError } = useFS(projectId, branchId);
     const [content, setContent] = useState<string | Uint8Array<ArrayBufferLike> | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
@@ -34,7 +34,7 @@ export function useFile(rootDir: string, path: string) {
 
     useEffect(() => {
         setIsLoading(false);
-    }, [rootDir, path]);
+    }, [projectId, branchId, path]);
 
     // Type guards are used below to ensure that the resultant type is correct
     if (isInitializing || isLoading) {

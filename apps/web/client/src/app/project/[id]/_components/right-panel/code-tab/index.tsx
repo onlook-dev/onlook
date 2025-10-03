@@ -53,7 +53,8 @@ const createEditorFile = async (filePath: string, content: string | Uint8Array):
 export const CodeTab = observer(forwardRef<CodeTabRef, CodeTabProps>(({ onUnsavedChangesChange }, ref) => {
     const editorEngine = useEditorEngine();
     const activeBranch = editorEngine.branches.activeBranch;
-    const rootDir = `/${editorEngine.projectId}/${activeBranch.id}`;
+    const projectId = editorEngine.projectId;
+    const branchId = activeBranch.id;
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const navigationTarget = useCodeNavigation();
 
@@ -70,12 +71,11 @@ export const CodeTab = observer(forwardRef<CodeTabRef, CodeTabProps>(({ onUnsave
     const {
         entries: fileEntries,
         loading: filesLoading,
-    } = useDirectory(rootDir, '/');
-
+    } = useDirectory(projectId, branchId, '/');
 
     const {
         content: loadedContent,
-    } = useFile(rootDir, selectedFilePath || '');
+    } = useFile(projectId, branchId, selectedFilePath || '');
 
     // React to loadedContent changes - build local EditorFile and manage opened files
     useEffect(() => {

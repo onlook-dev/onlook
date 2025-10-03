@@ -1,8 +1,8 @@
 'use client';
 
 import { AlertCircle, FileText, FolderPlus, Play, Square } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import path from 'path';
+import { useEffect, useState } from 'react';
 
 import type { Provider } from '@onlook/code-provider';
 import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
@@ -37,22 +37,22 @@ export default function TestSyncEnginePage() {
 
     // File system
     const rootDir = `/${PROJECT_ID}/${BRANCH_ID}`;
-    const { fs, isInitializing: fsInitializing, error: fsError } = useFS(rootDir);
+    const { fs, isInitializing: fsInitializing, error: fsError } = useFS(PROJECT_ID, BRANCH_ID);
 
     // Use directory hook for local files
     const {
         entries: localEntries,
         loading: localDirLoading,
         error: localDirError,
-    } = useDirectory(rootDir, '/');
+    } = useDirectory(PROJECT_ID, BRANCH_ID, '/');
 
     // Third independent file system instance (not part of sync engine)
-    const { fs: independentFs, isInitializing: independentFsInitializing, error: independentFsError } = useFS(rootDir);
+    const { fs: independentFs, isInitializing: independentFsInitializing, error: independentFsError } = useFS(PROJECT_ID, BRANCH_ID);
     const {
         entries: independentEntries,
         loading: independentDirLoading,
         error: independentDirError,
-    } = useDirectory(rootDir, '/');
+    } = useDirectory(PROJECT_ID, BRANCH_ID, '/');
 
     // State for independent file browser
     const [selectedIndependentFile, setSelectedIndependentFile] = useState<string | null>(null);
@@ -60,7 +60,7 @@ export default function TestSyncEnginePage() {
         content: independentFileContent,
         loading: isLoadingIndependentContent,
         error: independentFileError,
-    } = useFile(rootDir, selectedIndependentFile || '');
+    } = useFile(PROJECT_ID, BRANCH_ID, selectedIndependentFile || '');
 
     // File browser state
     const [sandboxFiles, setSandboxFiles] = useState<FileNode[]>([]);
@@ -74,7 +74,7 @@ export default function TestSyncEnginePage() {
         content: localFileContent,
         loading: isLoadingLocalContent,
         error: localFileError,
-    } = useFile(rootDir, selectedLocalFile || '');
+    } = useFile(PROJECT_ID, BRANCH_ID, selectedLocalFile || '');
 
     // API mutations
     const startSandbox = api.sandbox.start.useMutation();

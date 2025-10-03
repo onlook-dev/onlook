@@ -11,15 +11,16 @@ interface ImageItemProps {
         path: string;
         mimeType?: string;
     };
-    rootDir: string;
+    projectId: string;
+    branchId: string;
     onImageDragStart: (e: React.DragEvent<HTMLDivElement>, image: ImageContentData) => void;
     onImageDragEnd: () => void;
     onImageMouseDown: () => void;
     onImageMouseUp: () => void;
 }
 
-export const ImageItem = ({ image, rootDir, onImageDragStart, onImageDragEnd, onImageMouseDown, onImageMouseUp }: ImageItemProps) => {
-    const { content, loading } = useFile(rootDir, image.path);
+export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImageDragEnd, onImageMouseDown, onImageMouseUp }: ImageItemProps) => {
+    const { content, loading } = useFile(projectId, branchId, image.path);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [isDisabled, setIsDisabled] = useState(false);
 

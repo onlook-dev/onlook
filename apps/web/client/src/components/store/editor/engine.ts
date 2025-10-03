@@ -1,8 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 
+import type { CodeFileSystem } from '@onlook/file-system';
 import { type Branch } from '@onlook/models';
-
-import { type CodeEditorApi } from '@/services/code-editor-api';
 import type { PostHog } from 'posthog-js/react';
 import { ActionManager } from './action';
 import { ApiManager } from './api';
@@ -45,6 +44,10 @@ export class EditorEngine {
         return this.branches.activeHistory;
     }
 
+    get fileSystem(): CodeFileSystem {
+        return this.branches.activeCodeEditor;
+    }
+
     readonly state: StateManager = new StateManager();
     readonly canvas: CanvasManager = new CanvasManager(this);
     readonly text: TextEditingManager = new TextEditingManager(this);
@@ -68,9 +71,6 @@ export class EditorEngine {
     readonly frameEvent: FrameEventManager = new FrameEventManager(this);
     readonly screenshot: ScreenshotManager = new ScreenshotManager(this);
     readonly snap: SnapManager = new SnapManager(this);
-    get codeEditor(): CodeEditorApi {
-        return this.branches.activeCodeEditor;
-    }
     readonly api: ApiManager = new ApiManager(this);
     readonly ide: IdeManager = new IdeManager(this);
 

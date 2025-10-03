@@ -17,7 +17,7 @@ export class WriteFileTool extends ClientTool {
 
     async handle(args: z.infer<typeof WriteFileTool.parameters>, editorEngine: EditorEngine): Promise<string> {
         try {
-            const fileSystem = await getFileSystem(editorEngine.projectId, args.branchId);
+            const fileSystem = await getFileSystem(args.branchId, editorEngine);
             await fileSystem.writeFile(args.file_path, args.content);
             return `File ${args.file_path} written successfully`;
         } catch (error) {

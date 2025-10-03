@@ -1,4 +1,4 @@
-export { FileSystem } from './fs';
-
-export * from './types';
+export * from './code-fs';
 export * from './hooks';
+export * from './types';
+

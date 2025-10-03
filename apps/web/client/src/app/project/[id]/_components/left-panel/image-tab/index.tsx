@@ -12,7 +12,8 @@ import { SearchUploadBar } from './search-upload-bar';
 
 export const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const rootDir = `/${editorEngine.projectId}/${editorEngine.branches.activeBranch.id}`;
+    const projectId = editorEngine.projectId;
+    const branchId = editorEngine.branches.activeBranch.id;
 
     // Navigation state and handlers
     const {
@@ -36,7 +37,7 @@ export const ImagesTab = observer(() => {
         error,
         isUploading,
         handleUpload,
-    } = useImageOperations(rootDir, activeFolder, branchData?.codeEditor);
+    } = useImageOperations(projectId, branchId, activeFolder, branchData?.codeEditor);
 
     // Filter images based on search
     const images = filterImages(allImages);
@@ -79,7 +80,8 @@ export const ImagesTab = observer(() => {
 
             <ImageGrid
                 images={images}
-                rootDir={rootDir}
+                projectId={projectId}
+                branchId={branchId}
                 search={search}
             />
         </div>

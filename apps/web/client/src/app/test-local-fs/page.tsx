@@ -1,8 +1,8 @@
 'use client';
 
 import { AlertCircle, Copy, Edit2, Move, Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import path from 'path';
+import { useEffect, useState } from 'react';
 
 import { useDirectory, useFile, useFS, type FileEntry } from '@onlook/file-system/hooks';
 import { Alert, AlertDescription } from '@onlook/ui/alert';
@@ -28,14 +28,14 @@ const BRANCH_ID = 'main';
 export default function TestLocalFSPage() {
     // File system
     const rootDir = `/${PROJECT_ID}/${BRANCH_ID}`;
-    const { fs, isInitializing: fsInitializing, error: fsError } = useFS(rootDir);
+    const { fs, isInitializing: fsInitializing, error: fsError } = useFS(PROJECT_ID, BRANCH_ID);
 
     // Use directory hook for local files
     const {
         entries: localEntries,
         loading: localDirLoading,
         error: localDirError,
-    } = useDirectory(rootDir, '/');
+    } = useDirectory(PROJECT_ID, BRANCH_ID, '/');
 
     // File browser state
     const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -61,7 +61,7 @@ export default function TestLocalFSPage() {
         content: loadedContent,
         loading: isLoadingContent,
         error: fileError,
-    } = useFile(rootDir, selectedFile || '');
+    } = useFile(PROJECT_ID, BRANCH_ID, selectedFile || '');
 
     // Update content when file loads
     useEffect(() => {

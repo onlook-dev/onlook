@@ -1,10 +1,9 @@
-import { FileSystem } from '@onlook/file-system';
 import { Icons } from '@onlook/ui/icons';
 import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
 import { ClientTool } from '../models/client';
-import { BRANCH_ID_SCHEMA } from '../shared/type';
 import { getFileSystem } from '../shared/helpers/files';
+import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class ReadFileTool extends ClientTool {
     static readonly toolName = 'read_file';
@@ -37,9 +36,8 @@ export class ReadFileTool extends ClientTool {
         lines: number;
     }> {
         try {
-            const fileSystem = await getFileSystem(editorEngine.projectId, args.branchId);
+            const fileSystem = await getFileSystem(args.branchId, editorEngine);
             let file = await fileSystem.readFile(args.file_path);
-
             if (typeof file !== 'string') {
                 throw new Error(`Cannot read file ${args.file_path}: file is not text`);
             }

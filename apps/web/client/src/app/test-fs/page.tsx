@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import  { type FileChangeEvent, type FileEntry } from '@onlook/file-system';
-import { FileSystem } from '@onlook/file-system';
+import { CodeFileSystem, type FileChangeEvent, type FileEntry } from '@onlook/file-system';
 import { useDirectory, useFile, useFS } from '@onlook/file-system/hooks';
 import { Button } from '@onlook/ui/button';
 
@@ -37,11 +36,10 @@ function FileTree({
                     <button
                         onClick={() => !entry.isDirectory && onSelectFile(entry.path)}
                         onContextMenu={(e) => onContextMenu(e, entry)}
-                        className={`flex w-full items-center rounded px-3 py-1 text-left text-xs ${
-                            selectedFile === entry.path
-                                ? 'bg-blue-600 text-white'
-                                : 'text-gray-300 hover:bg-gray-800'
-                        } ${entry.isDirectory ? 'font-medium' : ''} `}
+                        className={`flex w-full items-center rounded px-3 py-1 text-left text-xs ${selectedFile === entry.path
+                            ? 'bg-blue-600 text-white'
+                            : 'text-gray-300 hover:bg-gray-800'
+                            } ${entry.isDirectory ? 'font-medium' : ''} `}
                         style={{ paddingLeft: `${level * 16 + 12}px` }}
                     >
                         <span className="mr-2">{entry.isDirectory ? '📁' : '📄'}</span>
@@ -69,9 +67,8 @@ interface EditorProps {
 }
 
 function Editor({ projectId, branchId, path }: EditorProps) {
-    const rootDir = `/${projectId}/${branchId}`;
-    const { fs } = useFS(rootDir);
-    const { content, loading, error } = useFile(rootDir, path);
+    const { fs } = useFS(projectId, branchId);
+    const { content, loading, error } = useFile(projectId, branchId, path);
     const [editorContent, setEditorContent] = useState('');
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -130,11 +127,10 @@ function Editor({ projectId, branchId, path }: EditorProps) {
                     <button
                         onClick={handleSave}
                         disabled={!isDirty || isSaving}
-                        className={`rounded px-3 py-1 text-xs transition-colors ${
-                            isDirty && !isSaving
-                                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                : 'cursor-not-allowed bg-gray-700 text-gray-500'
-                        } `}
+                        className={`rounded px-3 py-1 text-xs transition-colors ${isDirty && !isSaving
+                            ? 'bg-blue-600 text-white hover:bg-blue-700'
+                            : 'cursor-not-allowed bg-gray-700 text-gray-500'
+                            } `}
                     >
                         {isSaving ? 'Saving...' : 'Save'}
                     </button>
@@ -181,9 +177,8 @@ interface ProjectEditorProps {
 
 function ProjectEditor({ project, color }: ProjectEditorProps) {
     const [selectedFile, setSelectedFile] = useState<string | null>(null);
-    const rootDir = `/${project.id}/${project.branch}`;
-    const { fs, isInitializing } = useFS(rootDir);
-    const { entries, loading, error } = useDirectory(rootDir, '/');
+    const { fs, isInitializing } = useFS(project.id, project.branch);
+    const { entries, loading, error } = useDirectory(project.id, project.branch, '/');
     const [isSettingUp, setIsSettingUp] = useState(false);
     const [contextMenu, setContextMenu] = useState<{
         x: number;
@@ -559,63 +554,63 @@ PORT=3000
 
     const contextMenuItems: ContextMenuItem[] = contextMenu
         ? [
-              ...(contextMenu.entry.isDirectory
-                  ? [
-                        {
-                            label: 'New File',
-                            onClick: async () => {
-                                const fileName = window.prompt('Enter file name:');
-                                if (fileName && fs) {
-                                    try {
-                                        const newPath = `${contextMenu.entry.path}/${fileName}`;
-                                        await fs.createFile(newPath, '');
-                                        setSelectedFile(newPath);
-                                    } catch (err) {
-                                        console.error('Failed to create file:', err);
-                                        alert(
-                                            'Failed to create file: ' +
-                                                (err instanceof Error
-                                                    ? err.message
-                                                    : 'Unknown error'),
-                                        );
-                                    }
+            ...(contextMenu.entry.isDirectory
+                ? [
+                    {
+                        label: 'New File',
+                        onClick: async () => {
+                            const fileName = window.prompt('Enter file name:');
+                            if (fileName && fs) {
+                                try {
+                                    const newPath = `${contextMenu.entry.path}/${fileName}`;
+                                    await fs.createFile(newPath, '');
+                                    setSelectedFile(newPath);
+                                } catch (err) {
+                                    console.error('Failed to create file:', err);
+                                    alert(
+                                        'Failed to create file: ' +
+                                        (err instanceof Error
+                                            ? err.message
+                                            : 'Unknown error'),
+                                    );
                                 }
-                            },
+                            }
                         },
-                        {
-                            label: 'New Directory',
-                            onClick: async () => {
-                                const dirName = window.prompt('Enter directory name:');
-                                if (dirName && fs) {
-                                    try {
-                                        const newPath = `${contextMenu.entry.path}/${dirName}`;
-                                        await fs.createDirectory(newPath);
-                                    } catch (err) {
-                                        console.error('Failed to create directory:', err);
-                                        alert(
-                                            'Failed to create directory: ' +
-                                                (err instanceof Error
-                                                    ? err.message
-                                                    : 'Unknown error'),
-                                        );
-                                    }
+                    },
+                    {
+                        label: 'New Directory',
+                        onClick: async () => {
+                            const dirName = window.prompt('Enter directory name:');
+                            if (dirName && fs) {
+                                try {
+                                    const newPath = `${contextMenu.entry.path}/${dirName}`;
+                                    await fs.createDirectory(newPath);
+                                } catch (err) {
+                                    console.error('Failed to create directory:', err);
+                                    alert(
+                                        'Failed to create directory: ' +
+                                        (err instanceof Error
+                                            ? err.message
+                                            : 'Unknown error'),
+                                    );
                                 }
-                            },
+                            }
                         },
-                    ]
-                  : []),
-              {
-                  label: 'Rename',
-                  onClick: () => {
-                      setRenameModal({ isOpen: true, entry: contextMenu.entry });
-                  },
-              },
-              {
-                  label: 'Delete',
-                  onClick: () => handleDelete(contextMenu.entry.path),
-                  destructive: true,
-              },
-          ]
+                    },
+                ]
+                : []),
+            {
+                label: 'Rename',
+                onClick: () => {
+                    setRenameModal({ isOpen: true, entry: contextMenu.entry });
+                },
+            },
+            {
+                label: 'Delete',
+                onClick: () => handleDelete(contextMenu.entry.path),
+                destructive: true,
+            },
+        ]
         : [];
 
     return (
@@ -725,10 +720,7 @@ PORT=3000
 // Component to show file system watch events
 function WatchEventsLog({ projectId, branchId }: { projectId: string; branchId: string }) {
     const [events, setEvents] = useState<Array<FileChangeEvent & { timestamp: Date }>>([]);
-    const rootDir = `/${projectId}/${branchId}`;
-    const { fs } = useFS(rootDir);
-
-    console.log(rootDir);
+    const { fs } = useFS(projectId, branchId);
 
     useEffect(() => {
         if (!fs) return;
@@ -762,7 +754,7 @@ export default function TestFSPage() {
                 <Button
                     // eslint-disable-next-line @typescript-eslint/no-misused-promises
                     onClick={async () => {
-                        const fs = new FileSystem('/test');
+                        const fs = new CodeFileSystem('/test', 'test');
                         await fs.initialize();
                         console.log('Creating file');
                         await fs.createFile('/test.txt', 'Hello, world!');

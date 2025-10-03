@@ -3,7 +3,7 @@ import { getTemplateNodeChild } from '@onlook/parser';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { BranchData } from '../branch/manager';
-import type { JsxElementMetadata } from '@/services/code-editor-api';
+import type { JsxElementMetadata } from '@onlook/file-system';
 import { LayersManager } from './layers';
 
 export class AstManager {

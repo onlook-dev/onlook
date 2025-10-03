@@ -1,15 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FileSystem } from '../fs';
+import { CodeFileSystem } from '../code-fs';
 
-export function useFS(rootDir: string) {
-    const [fs, setFs] = useState<FileSystem | null>(null);
+export function useFS(projectId: string, branchId: string) {
+    const [fs, setFs] = useState<CodeFileSystem | null>(null);
     const [isInitializing, setIsInitializing] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
-        const fileSystem = new FileSystem(rootDir);
+        const fileSystem = new CodeFileSystem(projectId, branchId);
 
         fileSystem
             .initialize()
@@ -29,7 +29,7 @@ export function useFS(rootDir: string) {
         return () => {
             fileSystem.cleanup();
         };
-    }, [rootDir]);
+    }, [projectId, branchId]);
 
     // Type guards are used below to ensure that the resultant type is correct
     if (isInitializing) {

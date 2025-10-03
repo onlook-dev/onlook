@@ -1,17 +1,17 @@
+import { ONLOOK_CACHE_DIRECTORY, ONLOOK_PRELOAD_SCRIPT } from '@onlook/constants';
 import type { TemplateNode } from '@onlook/models';
 import { RouterType } from '@onlook/models';
-import { FileSystem } from '@onlook/file-system';
-import { 
-    getAstFromContent, 
-    addOidsToAst, 
-    getContentFromAst,
-    injectPreloadScript,
+import {
+    addOidsToAst,
     createTemplateNodeMap,
-    getContentFromTemplateNode
+    formatContent,
+    getAstFromContent,
+    getContentFromAst,
+    getContentFromTemplateNode,
+    injectPreloadScript
 } from '@onlook/parser';
 import { isRootLayoutFile, pathsEqual } from '@onlook/utility';
-import { formatContent } from '@/components/store/editor/sandbox/helpers';
-import { ONLOOK_CACHE_DIRECTORY, ONLOOK_PRELOAD_SCRIPT } from '@onlook/constants';
+import { FileSystem } from './fs';
 
 export interface JsxElementMetadata extends TemplateNode {
     oid: string;
@@ -22,7 +22,7 @@ export interface CodeEditorOptions {
     routerType?: RouterType;
 }
 
-export class CodeEditorApi extends FileSystem {
+export class CodeFileSystem extends FileSystem {
     private branchId: string;
     private options: Required<CodeEditorOptions>;
     private indexPath = `${ONLOOK_CACHE_DIRECTORY}/index.json`;
@@ -44,8 +44,8 @@ export class CodeEditorApi extends FileSystem {
         }
     }
 
-    async writeFiles(files: Array<{path: string, content: string | Uint8Array}>): Promise<void> {
-        await Promise.all(files.map(({path, content}) => 
+    async writeFiles(files: Array<{ path: string, content: string | Uint8Array }>): Promise<void> {
+        await Promise.all(files.map(({ path, content }) =>
             this.writeFile(path, content)
         ));
     }
@@ -76,7 +76,7 @@ export class CodeEditorApi extends FileSystem {
 
     private async getFileOids(path: string): Promise<Set<string>> {
         const index = await this.loadIndex();
-        
+
         const oids = new Set<string>();
         for (const [oid, metadata] of Object.entries(index)) {
             if (pathsEqual(metadata.path, path)) {
@@ -138,7 +138,7 @@ export class CodeEditorApi extends FileSystem {
 
         const BATCH_SIZE = 10;
         let processedCount = 0;
-        
+
         for (let i = 0; i < jsxFiles.length; i += BATCH_SIZE) {
             const batch = jsxFiles.slice(i, i + BATCH_SIZE);
             await Promise.all(
@@ -174,7 +174,7 @@ export class CodeEditorApi extends FileSystem {
         }
 
         await this.saveIndex(index);
-        
+
         const duration = Date.now() - startTime;
         console.log(
             `[CodeEditorApi] Index built: ${Object.keys(index).length} elements from ${processedCount} files in ${duration}ms`
@@ -183,7 +183,7 @@ export class CodeEditorApi extends FileSystem {
 
     async deleteFile(path: string): Promise<void> {
         await super.deleteFile(path);
-        
+
         if (this.isJsxFile(path)) {
             const index = await this.loadIndex();
             let hasChanges = false;
@@ -194,7 +194,7 @@ export class CodeEditorApi extends FileSystem {
                     hasChanges = true;
                 }
             }
-            
+
             if (hasChanges) {
                 await this.saveIndex(index);
             }
@@ -203,7 +203,7 @@ export class CodeEditorApi extends FileSystem {
 
     async moveFile(oldPath: string, newPath: string): Promise<void> {
         await super.moveFile(oldPath, newPath);
-        
+
         if (this.isJsxFile(oldPath) && this.isJsxFile(newPath)) {
             const index = await this.loadIndex();
             let hasChanges = false;
@@ -214,7 +214,7 @@ export class CodeEditorApi extends FileSystem {
                     hasChanges = true;
                 }
             }
-            
+
             if (hasChanges) {
                 await this.saveIndex(index);
             }
@@ -249,11 +249,5 @@ export class CodeEditorApi extends FileSystem {
         return /\.(jsx?|tsx?)$/i.test(path);
     }
 
-    async cleanup(): Promise<void> {
-        try {
-            await this.deleteDirectory('/');
-        } catch (error) {
-            console.error('Error cleaning up:', error);
-        }
-    }
+    async cleanup(): Promise<void> { }
 }

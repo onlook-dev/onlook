@@ -3,10 +3,9 @@ import type { FileEntry } from '@onlook/file-system';
 import type { PageMetadata, PageNode, RouterConfig } from '@onlook/models';
 import { RouterType } from '@onlook/models';
 import type { T } from '@onlook/parser';
-import { generate, getAstFromContent, t, traverse } from '@onlook/parser';
+import { formatContent, generate, getAstFromContent, t, traverse } from '@onlook/parser';
 import { nanoid } from 'nanoid';
 import type { SandboxManager } from '../sandbox';
-import { formatContent } from '../sandbox/helpers';
 
 const DEFAULT_LAYOUT_CONTENT = `export default function Layout({
     children,

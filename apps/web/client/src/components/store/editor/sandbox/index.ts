@@ -1,7 +1,7 @@
-import type { CodeEditorApi } from '@/services/code-editor-api';
 import { CodeProviderSync } from '@/services/sync-engine/sync-engine';
 import type { Provider } from '@onlook/code-provider';
 import { EXCLUDED_SYNC_PATHS } from '@onlook/constants';
+import type { CodeFileSystem } from '@onlook/file-system';
 import { type FileEntry } from '@onlook/file-system';
 import type { Branch, RouterConfig } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
@@ -23,7 +23,7 @@ export class SandboxManager {
         private branch: Branch,
         private readonly editorEngine: EditorEngine,
         private readonly errorManager: ErrorManager,
-        private readonly fs: CodeEditorApi,
+        private readonly fs: CodeFileSystem,
     ) {
         this.session = new SessionManager(this.branch, this.errorManager);
         makeAutoObservable(this);

@@ -1,5 +1,5 @@
-import { CodeEditorApi } from '@/services/code-editor-api';
 import { api } from '@/trpc/client';
+import { CodeFileSystem } from '@onlook/file-system';
 import type { Branch, RouterType } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import type { ParsedError } from '@onlook/utility';
@@ -14,7 +14,7 @@ export interface BranchData {
     sandbox: SandboxManager;
     history: HistoryManager;
     error: ErrorManager;
-    codeEditor: CodeEditorApi;
+    codeEditor: CodeFileSystem;
 }
 
 export class BranchManager {
@@ -104,7 +104,7 @@ export class BranchManager {
         return this.activeBranchData.error;
     }
 
-    get activeCodeEditor(): CodeEditorApi {
+    get activeCodeEditor(): CodeFileSystem {
         return this.activeBranchData.codeEditor;
     }
 
@@ -128,7 +128,7 @@ export class BranchManager {
     }
 
     private createBranchData(branch: Branch, routerType?: RouterType): BranchData {
-        const codeEditorApi = new CodeEditorApi(this.editorEngine.projectId, branch.id, { routerType });
+        const codeEditorApi = new CodeFileSystem(this.editorEngine.projectId, branch.id, { routerType });
         const errorManager = new ErrorManager(branch);
         const sandboxManager = new SandboxManager(branch, this.editorEngine, errorManager, codeEditorApi);
         const historyManager = new HistoryManager(this.editorEngine);

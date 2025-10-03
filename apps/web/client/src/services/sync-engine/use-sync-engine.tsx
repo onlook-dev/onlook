@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { type Provider } from '@onlook/code-provider';
-import { type FileSystem } from '@onlook/file-system';
 
+import type { CodeFileSystem } from '../../../../../../packages/file-system/src/code-fs';
 import { CodeProviderSync, type SyncConfig } from './sync-engine';
 
 interface UseSyncEngineOptions {
     provider: Provider | null;
-    fs: FileSystem | null;
+    fs: CodeFileSystem | null;
     config?: SyncConfig;
 }
 

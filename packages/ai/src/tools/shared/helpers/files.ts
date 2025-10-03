@@ -1,8 +1,12 @@
-import { FileSystem } from "@onlook/file-system";
+import type { CodeFileSystem } from "@onlook/file-system";
+import type { EditorEngine } from "@onlook/web-client/src/components/store/editor/engine";
 import type { SandboxManager } from "@onlook/web-client/src/components/store/editor/sandbox";
 
-export async function getFileSystem(projectId: string, branchId: string): Promise<FileSystem> {
-    const fileSystem = new FileSystem(`/${projectId}/${branchId}`);
+export async function getFileSystem(branchId: string, editorEngine: EditorEngine): Promise<CodeFileSystem> {
+    const fileSystem = editorEngine.branches.getBranchDataById(branchId)?.codeEditor;
+    if (!fileSystem) {
+        throw new Error(`Cannot get file system for branch ${branchId}: file system not found`);
+    }
     await fileSystem.initialize();
     return fileSystem;
 }

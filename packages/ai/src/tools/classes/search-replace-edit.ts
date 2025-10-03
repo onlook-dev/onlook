@@ -20,7 +20,7 @@ export class SearchReplaceEditTool extends ClientTool {
     async handle(args: z.infer<typeof SearchReplaceEditTool.parameters>, editorEngine: EditorEngine): Promise<string> {
         try {
 
-            const fileSystem = await getFileSystem(editorEngine.projectId, args.branchId);
+            const fileSystem = await getFileSystem(args.branchId, editorEngine);
             const file = await fileSystem.readFile(args.file_path);
             if (!file || typeof file !== 'string') {
                 throw new Error(`Cannot read file ${args.file_path}: file not found or not text`);

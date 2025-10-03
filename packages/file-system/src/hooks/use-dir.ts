@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import type { FileEntry } from '../types';
-import { useFS } from './useFS';
+import { useFS } from './use-fs';
 
-export function useDirectory(rootDir: string, path: string) {
-    const { fs, isInitializing, error: fsError } = useFS(rootDir);
+export function useDirectory(projectId: string, branchId: string, path: string) {
+    const { fs, isInitializing, error: fsError } = useFS(projectId, branchId);
     const [entries, setEntries] = useState<FileEntry[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
@@ -35,7 +35,7 @@ export function useDirectory(rootDir: string, path: string) {
 
     useEffect(() => {
         setIsLoading(true);
-    }, [rootDir, path]);
+    }, [projectId, branchId, path]);
 
     // Type guards are used below to ensure that the resultant type is correct
     if (isInitializing || isLoading) {

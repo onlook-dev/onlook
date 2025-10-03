@@ -191,7 +191,7 @@ export const readFontConfigFile = async (fontConfigPath: string, editorEngine: E
     }
     | undefined
 > => {
-    const codeEditor = editorEngine.codeEditor;
+    const codeEditor = editorEngine.fileSystem;
     const fileExists = await codeEditor.fileExists(fontConfigPath);
     if (!fileExists) {
         console.warn('Font config file does not exist', fontConfigPath);
@@ -221,7 +221,7 @@ export const readFontConfigFile = async (fontConfigPath: string, editorEngine: E
  * Ensures the font configuration file exists
  */
 export const ensureFontConfigFileExists = async (fontConfigPath: string, editorEngine: EditorEngine): Promise<void> => {
-    const codeEditor = editorEngine.codeEditor;
+    const codeEditor = editorEngine.fileSystem;
     const fontConfigExists = await codeEditor.fileExists(fontConfigPath);
     if (!fontConfigExists) {
         await codeEditor.writeFile(fontConfigPath, '');

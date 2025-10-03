@@ -5,9 +5,9 @@
  * After this, it watches for changes either in the local file system or the provider and syncs the changes back and forth.
  */
 import { type Provider, type ProviderFileWatcher } from '@onlook/code-provider';
-import { type FileSystem } from '@onlook/file-system';
 
 import { normalizePath } from '@/components/store/editor/sandbox/helpers';
+import type { CodeFileSystem } from '../../../../../../packages/file-system/src/code-fs';
 
 export interface SyncConfig {
     include?: string[];
@@ -34,7 +34,7 @@ export class CodeProviderSync {
 
     constructor(
         private provider: Provider,
-        private fs: FileSystem,
+        private fs: CodeFileSystem,
         private config: SyncConfig = { include: [], exclude: [] },
     ) {
         // Compute excludes once
@@ -197,12 +197,12 @@ export class CodeProviderSync {
 
     private async pushModifiedFilesToSandbox(): Promise<void> {
         console.log('[Sync] Pushing locally modified files back to sandbox...');
-        
+
         try {
             // Get all local JSX/TSX files that might have been modified with OIDs
             const localFiles = await this.fs.listFiles('/');
             const jsxFiles = localFiles.filter(path => /\.(jsx?|tsx?)$/i.test(path));
-            
+
             for (const filePath of jsxFiles) {
                 try {
                     const content = await this.fs.readFile(filePath);
