@@ -1,6 +1,12 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { MouseAction } from '@onlook/models/editor';
+import { MouseAction, EditorTabValue } from '@onlook/models/editor';
 import type { DomElement, LayerNode } from '@onlook/models/element';
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuTrigger,
+} from '@onlook/ui/context-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
@@ -252,17 +258,36 @@ export const TreeNode = memo(
                 );
             }
 
+            function viewSource(oid: string | null) {
+                if (!oid) {
+                    console.error('No oid found');
+                    return;
+                }
+                editorEngine.code.viewCodeBlock(oid);
+            }
+
+            const menuItems = [
+                {
+                    label: 'View Code',
+                    action: () => viewSource(node.data.oid),
+                    icon: <Icons.ExternalLink className="mr-2 h-4 w-4" />,
+                    disabled: !node.data.oid || isWindow,
+                },
+            ];
+
             return (
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div ref={nodeRef}>
-                            <div
-                                ref={dragHandle}
-                                style={style}
-                                onMouseDown={(e) => handleSelectNode(e)}
-                                onMouseOver={(e) => handleHoverNode(e)}
-                                className={nodeClassName}
-                            >
+                <ContextMenu>
+                    <ContextMenuTrigger asChild>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div ref={nodeRef}>
+                                    <div
+                                        ref={dragHandle}
+                                        style={style}
+                                        onMouseDown={(e) => handleSelectNode(e)}
+                                        onMouseOver={(e) => handleHoverNode(e)}
+                                        className={nodeClassName}
+                                    >
                                 <span className="w-4 h-4 flex-none relative">
                                     {!node.isLeaf && (
                                         <div
@@ -358,9 +383,9 @@ export const TreeNode = memo(
                                         onClick={toggleVisibility}
                                     />
                                 )}
-                            </div>
-                        </div>
-                    </TooltipTrigger>
+                                    </div>
+                                </div>
+                            </TooltipTrigger>
                     {node.data.textContent !== '' && (
                         <TooltipPortal container={document.getElementById('style-panel')}>
                             <TooltipContent
@@ -374,7 +399,24 @@ export const TreeNode = memo(
                         </TooltipPortal>
                     )}
                 </Tooltip>
-            );
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+                {menuItems.map((item) => (
+                    <ContextMenuItem
+                        key={item.label}
+                        onClick={item.action}
+                        className="cursor-pointer"
+                        disabled={item.disabled}
+                    >
+                        <span className={cn('flex w-full items-center gap-1')}>
+                            {item.icon}
+                            {item.label}
+                        </span>
+                    </ContextMenuItem>
+                ))}
+            </ContextMenuContent>
+        </ContextMenu>
+    );
         },
     ),
 );
