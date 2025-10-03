@@ -1,8 +1,7 @@
 import { MessageContextType } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import path from 'path';
-import { FileContext } from '../../src/contexts/classes/file';
-import { HighlightContext } from '../../src/contexts/classes/highlight-context';
+import { FileContext, HighlightContext } from '../../src/contexts/classes';
 import {
     type HydrateMessageOptions,
     getCreatePageSystemPrompt,
