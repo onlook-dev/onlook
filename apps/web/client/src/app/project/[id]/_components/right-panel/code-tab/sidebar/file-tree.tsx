@@ -1,8 +1,8 @@
 import { type FileEntry } from '@onlook/file-system/hooks';
+import { pathsEqual } from '@onlook/utility';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
-import { pathsEqual } from '@onlook/utility';
 import { FileTreeNode } from './file-tree-node';
 import { FileTreeRow } from './file-tree-row';
 import { FileTreeSearch } from './file-tree-search';
@@ -30,8 +30,7 @@ export const FileTree = ({
     const inputRef = useRef<HTMLInputElement>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
-    const { ref: containerRef, width: filesWidth } = useResizeObserver();
-    const { ref: treeContainerRef, height: filesHeight } = useResizeObserver();
+    const { ref: containerRef, width: filesWidth, height: filesHeight } = useResizeObserver();
 
     // Create flat entry index for efficient operations
     const flatEntryIndex = useMemo(() => {
@@ -193,7 +192,7 @@ export const FileTree = ({
                     onRefresh={onRefresh}
                     onKeyDown={handleKeyDown}
                 />
-                <div ref={treeContainerRef} className="w-full h-full overflow-auto text-xs px-2 flex-1">
+                <div className="w-full h-full overflow-auto text-xs px-2 flex-1">
                     {isLoading ? (
                         <div className="flex flex-col justify-start items-center h-full text-sm text-foreground/50 pt-4">
                             <div className="animate-spin h-6 w-6 border-2 border-foreground-hover rounded-full border-t-transparent mb-2"></div>
@@ -205,9 +204,9 @@ export const FileTree = ({
                         </div>
                     ) : (
                         <Tree
-                            className="h-full"
                             ref={treeRef}
                             data={filteredFiles}
+                            className="h-full"
                             idAccessor={(entry: FileEntry) => entry.path}
                             childrenAccessor={(entry: FileEntry) =>
                                 entry.children && entry.children.length > 0
@@ -216,7 +215,7 @@ export const FileTree = ({
                             }
                             onSelect={handleFileTreeSelect}
                             height={filesTreeDimensions.height}
-                            width={(filesWidth || 224) - 16}
+                            width={filesTreeDimensions.width}
                             indent={8}
                             rowHeight={24}
                             openByDefault={false}

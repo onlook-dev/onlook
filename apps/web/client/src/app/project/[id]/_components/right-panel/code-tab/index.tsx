@@ -6,14 +6,26 @@ import { toast } from '@onlook/ui/sonner';
 import { pathsEqual } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { CodeEditorArea } from './file-content';
 import { FileTabs } from './file-tabs';
-import { CodeControls } from './header-controls';
 import { useCodeNavigation } from './hooks/use-code-navigation';
 import type { BinaryEditorFile, EditorFile, TextEditorFile } from './shared/types';
 import { isDirty } from './shared/utils';
 import { FileTree } from './sidebar/file-tree';
+
+export interface CodeTabRef {
+    hasUnsavedChanges: boolean;
+    getCurrentPath: () => string;
+    handleSaveFile: () => Promise<void>;
+    refreshFileTree: () => void;
+    handleCreateFile: (filePath: string, content?: string) => Promise<void>;
+    handleCreateFolder: (folderPath: string) => Promise<void>;
+}
+
+interface CodeTabProps {
+    onUnsavedChangesChange?: (hasUnsavedChanges: boolean) => void;
+}
 
 const createEditorFile = async (filePath: string, content: string | Uint8Array): Promise<EditorFile> => {
     const isBinary = content instanceof Uint8Array;
@@ -38,7 +50,7 @@ const createEditorFile = async (filePath: string, content: string | Uint8Array):
     }
 }
 
-export const CodeTab = observer(() => {
+export const CodeTab = observer(forwardRef<CodeTabRef, CodeTabProps>(({ onUnsavedChangesChange }, ref) => {
     const editorEngine = useEditorEngine();
     const activeBranch = editorEngine.branches.activeBranch;
     const rootDir = `/${editorEngine.projectId}/${activeBranch.id}`;
@@ -50,8 +62,9 @@ export const CodeTab = observer(() => {
     const [activeEditorFile, setActiveEditorFile] = useState<EditorFile | null>(null);
     const [openedEditorFiles, setOpenedEditorFiles] = useState<EditorFile[]>([]);
     const [showLocalUnsavedDialog, setShowLocalUnsavedDialog] = useState(false);
-    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
+    // This is a workaround to allow code controls to access the hasUnsavedChanges state
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
     const branchData = editorEngine.branches.getBranchDataById(activeBranch.id);
     const {
@@ -141,6 +154,11 @@ export const CodeTab = observer(() => {
 
         checkDirtyState();
     }, [openedEditorFiles]);
+
+    // Notify parent when hasUnsavedChanges changes
+    useEffect(() => {
+        onUnsavedChangesChange?.(hasUnsavedChanges);
+    }, [hasUnsavedChanges, onUnsavedChangesChange]);
 
     const refreshFileTree = () => {
         // Force refresh of file entries
@@ -320,6 +338,16 @@ export const CodeTab = observer(() => {
         }
     };
 
+    // Expose functions through ref. This won't be needed once we move the code controls
+    useImperativeHandle(ref, (): CodeTabRef => ({
+        hasUnsavedChanges,
+        getCurrentPath,
+        handleSaveFile,
+        refreshFileTree,
+        handleCreateFile,
+        handleCreateFolder
+    }), [hasUnsavedChanges, getCurrentPath, handleSaveFile, refreshFileTree, handleCreateFile, handleCreateFolder]);
+
     // Cleanup editor instances when component unmounts
     useEffect(() => {
         return () => {
@@ -329,19 +357,7 @@ export const CodeTab = observer(() => {
     }, []);
 
     return (
-        <div className="size-full flex flex-row flex-1 min-h-0 relative">
-            {/* Absolute position for encapsulation */}
-            <div className="absolute right-2 -top-9">
-                <CodeControls
-                    isDirty={hasUnsavedChanges}
-                    currentPath={getCurrentPath()}
-                    onSave={handleSaveFile}
-                    onRefresh={refreshFileTree}
-                    onCreateFile={handleCreateFile}
-                    onCreateFolder={handleCreateFolder}
-                />
-            </div>
-
+        <div className="size-full flex flex-row flex-1 min-h-0">
             <motion.div
                 initial={false}
                 animate={{
@@ -390,4 +406,4 @@ export const CodeTab = observer(() => {
             </div>
         </div>
     );
-});
+}));

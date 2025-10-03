@@ -23,7 +23,7 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
     const branchData = editorEngine.branches.getBranchDataById(frame.branchId);
     const isConnecting = branchData?.sandbox?.session?.isConnecting || false;
 
-    const preloadScriptReady = branchData?.sandbox?.preloadScriptInjected || false;
+    const preloadScriptReady = branchData?.sandbox?.preloadScriptInjected ?? false;
     const isFrameReady = preloadScriptReady && !(isConnecting && !hasTimedOut);
 
     useEffect(() => {
@@ -68,7 +68,9 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
                 borderRadius: '4px',
             }}>
                 <ResizeHandles frame={frame} setIsResizing={setIsResizing} />
-                <FrameComponent key={reloadKey} frame={frame} reloadIframe={reloadIframe} isInDragSelection={isInDragSelection} ref={iFrameRef} />
+                {isFrameReady && (
+                    <FrameComponent key={reloadKey} frame={frame} reloadIframe={reloadIframe} isInDragSelection={isInDragSelection} ref={iFrameRef} />
+                )}
                 <GestureScreen frame={frame} isResizing={isResizing} />
 
                 {!isFrameReady && (
