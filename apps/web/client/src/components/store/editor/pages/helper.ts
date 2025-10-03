@@ -1,19 +1,12 @@
-import { nanoid } from 'nanoid';
-
 import type { Provider } from '@onlook/code-provider';
-import type { PageMetadata, PageNode } from '@onlook/models';
+import type { FileEntry } from '@onlook/file-system';
+import type { PageMetadata, PageNode, RouterConfig } from '@onlook/models';
 import { RouterType } from '@onlook/models';
 import type { T } from '@onlook/parser';
 import { generate, getAstFromContent, t, traverse } from '@onlook/parser';
-
-import type { FileEntry } from '@onlook/file-system';
+import { nanoid } from 'nanoid';
 import type { SandboxManager } from '../sandbox';
 import { formatContent } from '../sandbox/helpers';
-
-export interface RouterConfig {
-    type: RouterType;
-    basePath: string;
-}
 
 const DEFAULT_LAYOUT_CONTENT = `export default function Layout({
     children,

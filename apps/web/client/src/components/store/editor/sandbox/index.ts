@@ -3,7 +3,7 @@ import { CodeProviderSync } from '@/services/sync-engine/sync-engine';
 import type { Provider } from '@onlook/code-provider';
 import { EXCLUDED_SYNC_PATHS } from '@onlook/constants';
 import { type FileEntry } from '@onlook/file-system';
-import type { Branch } from '@onlook/models';
+import type { Branch, RouterConfig } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
@@ -17,6 +17,7 @@ export class SandboxManager {
     private sync: CodeProviderSync | null = null;
     preloadScriptInjected: boolean = false;
     preloadScriptLoading: boolean = false;
+    routerConfig: RouterConfig | null = null;
 
     constructor(
         private branch: Branch,
@@ -39,11 +40,15 @@ export class SandboxManager {
         );
     }
 
-    async getRouterConfig() {
+    async getRouterConfig(): Promise<RouterConfig | null> {
+        if (!!this.routerConfig) {
+            return this.routerConfig;
+        }
         if (!this.session.provider) {
             throw new Error('Provider not initialized');
         }
-        return await detectRouterConfig(this.session.provider);
+        this.routerConfig = await detectRouterConfig(this.session.provider);
+        return this.routerConfig;
     }
 
     async initializeSyncEngine(provider: Provider) {
@@ -71,14 +76,10 @@ export class SandboxManager {
             if (this.preloadScriptLoading) {
                 return;
             }
-
             this.preloadScriptLoading = true;
 
-
             if (!this.session.provider) {
-                console.warn('[SandboxManager] No provider available for preload script injection');
-                this.preloadScriptLoading = false;
-                return;
+                throw new Error('No provider available for preload script injection');
             }
 
             const routerConfig = await this.getRouterConfig();

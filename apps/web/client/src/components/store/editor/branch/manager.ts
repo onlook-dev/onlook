@@ -1,6 +1,6 @@
 import { CodeEditorApi } from '@/services/code-editor-api';
 import { api } from '@/trpc/client';
-import type { Branch } from '@onlook/models';
+import type { Branch, RouterType } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import type { ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
@@ -39,18 +39,7 @@ export class BranchManager {
         }
         this.branchMap.clear();
         for (const branch of branches) {
-            const codeEditorApi = new CodeEditorApi(this.editorEngine.projectId, branch.id);
-            await codeEditorApi.initialize();
-            const errorManager = new ErrorManager(branch);
-            const historyManager = new HistoryManager(this.editorEngine);
-            const sandboxManager = new SandboxManager(branch, this.editorEngine, errorManager, codeEditorApi);
-            this.branchMap.set(branch.id, {
-                branch,
-                sandbox: sandboxManager,
-                history: historyManager,
-                error: errorManager,
-                codeEditor: codeEditorApi,
-            });
+            await this.createBranchData(branch);
         }
         // Preserve previous selection if still present; else default; else first; else null
         const prev = this.currentBranchId;
@@ -65,10 +54,6 @@ export class BranchManager {
     }
 
     async init(): Promise<void> {
-        for (const branchData of this.branchMap.values()) {
-            await branchData.sandbox.init();
-            await branchData.codeEditor.initialize();
-        }
         this.setupActiveFrameReaction();
     }
 
@@ -138,6 +123,27 @@ export class BranchManager {
         return this.getBranchDataById(branchId)?.sandbox ?? null;
     }
 
+    private async createBranchData(branch: Branch, routerType?: RouterType): Promise<BranchData> {
+        const codeEditorApi = new CodeEditorApi(this.editorEngine.projectId, branch.id, { routerType });
+        await codeEditorApi.initialize();
+        const errorManager = new ErrorManager(branch);
+        const sandboxManager = new SandboxManager(branch, this.editorEngine, errorManager, codeEditorApi);
+        const historyManager = new HistoryManager(this.editorEngine);
+
+        const branchData: BranchData = {
+            branch,
+            sandbox: sandboxManager,
+            history: historyManager,
+            error: errorManager,
+            codeEditor: codeEditorApi,
+        };
+
+        this.branchMap.set(branch.id, branchData);
+        await sandboxManager.init();
+
+        return branchData;
+    }
+
     get allBranches(): Branch[] {
         return Array.from(this.branchMap.values()).map(({ branch }) => branch);
     }
@@ -161,22 +167,8 @@ export class BranchManager {
             // Call the fork API
             const result = await api.branch.fork.mutate({ branchId });
 
-            const codeEditorApi = new CodeEditorApi(this.editorEngine.projectId, result.branch.id);
-            await codeEditorApi.initialize();
             // Add the new branch to the local branch map
-            const errorManager = new ErrorManager(result.branch);
-            const sandboxManager = new SandboxManager(result.branch, this.editorEngine, errorManager, codeEditorApi);
-            const historyManager = new HistoryManager(this.editorEngine);
-            this.branchMap.set(result.branch.id, {
-                branch: result.branch,
-                sandbox: sandboxManager,
-                history: historyManager,
-                error: errorManager,
-                codeEditor: codeEditorApi,
-            });
-
-            // Initialize the new sandbox
-            await sandboxManager.init();
+            await this.createBranchData(result.branch);
 
             // Add the created frames to the frame manager
             if (result.frames && result.frames.length > 0) {
@@ -229,21 +221,7 @@ export class BranchManager {
             const routerConfig = await this.activeSandbox.getRouterConfig();
 
             // Add the new branch to the local branch map
-            const codeEditorApi = new CodeEditorApi(this.editorEngine.projectId, result.branch.id, { routerType: routerConfig?.type });
-            await codeEditorApi.initialize();
-            const errorManager = new ErrorManager(result.branch);
-            const sandboxManager = new SandboxManager(result.branch, this.editorEngine, errorManager, codeEditorApi);
-            const historyManager = new HistoryManager(this.editorEngine);
-            this.branchMap.set(result.branch.id, {
-                branch: result.branch,
-                sandbox: sandboxManager,
-                history: historyManager,
-                error: errorManager,
-                codeEditor: codeEditorApi,
-            });
-
-            // Initialize the new sandbox and code editor
-            await sandboxManager.init();
+            await this.createBranchData(result.branch, routerConfig?.type);
 
             // Add the created frames to the frame manager
             if (result.frames && result.frames.length > 0) {
