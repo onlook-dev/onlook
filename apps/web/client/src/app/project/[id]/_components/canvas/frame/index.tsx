@@ -47,12 +47,6 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
         return () => clearTimeout(timeoutId);
     }, [isConnecting, frame.branchId]);
 
-    useEffect(() => {
-        if (branchData?.sandbox?.session?.provider && !preloadScriptReady) {
-            branchData.sandbox.ensurePreloadScriptExists();
-        }
-    }, [branchData?.sandbox?.session?.provider, preloadScriptReady]);
-
     const undebouncedReloadIframe = () => {
         setReloadKey(prev => prev + 1);
     };

@@ -1,15 +1,13 @@
 import { CodeProviderSync } from '@/services/sync-engine/sync-engine';
 import type { Provider } from '@onlook/code-provider';
-import { EXCLUDED_SYNC_PATHS, NEXT_JS_FILE_EXTENSIONS, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
+import { EXCLUDED_SYNC_PATHS } from '@onlook/constants';
 import { FileSystem, type FileEntry } from '@onlook/file-system';
-import { RouterType, type Branch } from '@onlook/models';
-import { getAstFromContent, getContentFromAst, injectPreloadScript } from '@onlook/parser';
-import { isRootLayoutFile, normalizePath } from '@onlook/utility';
+import type { Branch } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
-import path from 'path';
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
 import { detectRouterConfig } from '../pages/helper';
+import { copyPreloadScriptToPublic, getLayoutPath } from './preload-script';
 import { SessionManager } from './session';
 
 export class SandboxManager {
@@ -52,135 +50,62 @@ export class SandboxManager {
             this.sync?.stop();
             this.sync = null;
         }
-        
+
         const codeEditorApi = this.editorEngine.branches.getBranchDataById(this.branch.id)?.codeEditor;
         if (!codeEditorApi) {
             throw new Error('CodeEditorApi not found for branch');
         }
-        
+
         await codeEditorApi.initialize();
         this.fs = codeEditorApi;
-        
+
         this.sync = new CodeProviderSync(provider, codeEditorApi, {
             exclude: EXCLUDED_SYNC_PATHS,
         });
 
         await this.sync.start();
         await codeEditorApi.rebuildIndex();
+        await this.ensurePreloadScriptExists();
     }
-    
-    async ensurePreloadScriptExists(): Promise<void> {
-        // Ensures multiple frames pointing to the same sandbox don't try to inject the preload script at the same time.
-        if (this.preloadScriptLoading) {
-            return;
-        }
 
-        this.preloadScriptLoading = true;
-
-        if (this.preloadScriptInjected) {
-            this.preloadScriptLoading = false;
-            return;
-        }
-        
-        if (!this.session.provider) {
-            console.warn('[SandboxManager] No provider available for preload script injection');
-            this.preloadScriptLoading = false;
-            return;
-        }
-        
-        await this.copyPreloadScriptToPublic(this.session.provider);
-        this.preloadScriptLoading = false;
-    }
-    
-    private async copyPreloadScriptToPublic(provider: Provider): Promise<void> {
-        try {            
-            try {
-                await provider.createDirectory({ args: { path: 'public' } });
-            } catch {
-                // Directory might already exist, ignore error
+    private async ensurePreloadScriptExists(): Promise<void> {
+        try {
+            if (this.preloadScriptInjected) {
+                return;
             }
 
-            const scriptResponse = await fetch(PRELOAD_SCRIPT_SRC);
-            await provider.writeFile({
-                args: {
-                    path: 'public/onlook-preload-script.js',
-                    content: await scriptResponse.text(),
-                    overwrite: true
-                }
-            });
-            
-            await this.injectPreloadScriptIntoLayout(provider);
-            
+            // Ensures multiple frames pointing to the same sandbox don't try to inject the preload script at the same time.
+            if (this.preloadScriptLoading) {
+                return;
+            }
+
+            this.preloadScriptLoading = true;
+
+
+            if (!this.session.provider) {
+                console.warn('[SandboxManager] No provider available for preload script injection');
+                this.preloadScriptLoading = false;
+                return;
+            }
+
+            const routerConfig = await this.getRouterConfig();
+            if (!routerConfig) {
+                throw new Error('No router config found for preload script injection');
+            }
+
+            await copyPreloadScriptToPublic(this.session.provider, routerConfig);
             this.preloadScriptInjected = true;
         } catch (error) {
-            console.error('[SandboxManager] Failed to copy preload script:', error);
+            console.error('[SandboxManager] Failed to ensure preload script exists:', error);
+        } finally {
+            this.preloadScriptLoading = false;
         }
     }
 
-    private async injectPreloadScriptIntoLayout(provider: Provider): Promise<void> {
-        const routerConfig = await this.getRouterConfig();
-        if (!routerConfig) {
-            throw new Error('Could not detect router type for script injection. This is required for iframe communication.');
-        }
-
-        const result = await provider.listFiles({ args: { path: routerConfig.basePath } });
-        const [layoutFile] = result.files.filter(file => 
-            file.type === 'file' && isRootLayoutFile(`${routerConfig.basePath}/${file.name}`, routerConfig.type)
-        );
-
-        if (!layoutFile) {
-            throw new Error(`No layout files found in ${routerConfig.basePath}`);
-        }
-
-        const layoutPath = `${routerConfig.basePath}/${layoutFile.name}`;
-        
-        const layoutResponse = await provider.readFile({ args: { path: layoutPath } });
-        if (!layoutResponse.file.content || typeof layoutResponse.file.content !== 'string') {
-            throw new Error(`Layout file ${layoutPath} has no content`);
-        }
-        
-        const content = layoutResponse.file.content;
-        const ast = getAstFromContent(content);
-        if (!ast) {
-            throw new Error(`Failed to parse layout file: ${layoutPath}`);
-        }
-        
-        injectPreloadScript(ast);
-        const modifiedContent = await getContentFromAst(ast, content);
-        
-        await provider.writeFile({
-            args: {
-                path: layoutPath,
-                content: modifiedContent,
-                overwrite: true
-            }
-        });
-    }
 
     async getLayoutPath(): Promise<string | null> {
-        const routerConfig = await this.getRouterConfig()
-        if (!routerConfig) {
-            console.log('Could not detect Next.js router type');
-            return null;
-        }
-
-        let layoutFileName: string;
-
-        if (routerConfig.type === RouterType.PAGES) {
-            layoutFileName = '_app';
-        } else {
-            layoutFileName = 'layout';
-        }
-
-        for (const extension of NEXT_JS_FILE_EXTENSIONS) {
-            const layoutPath = path.join(routerConfig.basePath, `${layoutFileName}${extension}`);
-            if (await this.fileExists(layoutPath)) {
-                return normalizePath(layoutPath);
-            }
-        }
-
-        console.log('Could not find layout file');
-        return null;
+        const routerConfig = await this.getRouterConfig();
+        return getLayoutPath(routerConfig, (path) => this.fileExists(path));
     }
 
     get errors() {

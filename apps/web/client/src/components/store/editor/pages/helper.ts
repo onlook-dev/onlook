@@ -1,14 +1,19 @@
 import { nanoid } from 'nanoid';
 
+import type { Provider } from '@onlook/code-provider';
 import type { PageMetadata, PageNode } from '@onlook/models';
 import { RouterType } from '@onlook/models';
 import type { T } from '@onlook/parser';
 import { generate, getAstFromContent, t, traverse } from '@onlook/parser';
-import type { Provider } from '@onlook/code-provider';
 
-import type { FileEntry, FileSystem } from '@onlook/file-system';
+import type { FileEntry } from '@onlook/file-system';
 import type { SandboxManager } from '../sandbox';
 import { formatContent } from '../sandbox/helpers';
+
+export interface RouterConfig {
+    type: RouterType;
+    basePath: string;
+}
 
 const DEFAULT_LAYOUT_CONTENT = `export default function Layout({
     children,
@@ -438,7 +443,7 @@ export const scanPagesFromSandbox = async (sandboxManager: SandboxManager): Prom
 // We should ensure it's initialized earlier during setup.
 export const detectRouterConfig = async (
     provider: Provider,
-): Promise<{ type: RouterType; basePath: string } | null> => {
+): Promise<RouterConfig | null> => {
     // Check for App Router
     for (const appPath of APP_ROUTER_PATHS) {
         try {
