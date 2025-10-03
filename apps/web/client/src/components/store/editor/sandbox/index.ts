@@ -1,7 +1,8 @@
+import type { CodeEditorApi } from '@/services/code-editor-api';
 import { CodeProviderSync } from '@/services/sync-engine/sync-engine';
 import type { Provider } from '@onlook/code-provider';
 import { EXCLUDED_SYNC_PATHS } from '@onlook/constants';
-import { FileSystem, type FileEntry } from '@onlook/file-system';
+import { type FileEntry } from '@onlook/file-system';
 import type { Branch } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -13,7 +14,6 @@ import { SessionManager } from './session';
 export class SandboxManager {
     readonly session: SessionManager;
     private providerReactionDisposer?: () => void;
-    private fs: FileSystem | null = null;
     private sync: CodeProviderSync | null = null;
     preloadScriptInjected: boolean = false;
     preloadScriptLoading: boolean = false;
@@ -22,6 +22,7 @@ export class SandboxManager {
         private branch: Branch,
         private readonly editorEngine: EditorEngine,
         private readonly errorManager: ErrorManager,
+        private readonly fs: CodeEditorApi,
     ) {
         this.session = new SessionManager(this.branch, this.errorManager);
         makeAutoObservable(this);
@@ -51,20 +52,12 @@ export class SandboxManager {
             this.sync = null;
         }
 
-        const codeEditorApi = this.editorEngine.branches.getBranchDataById(this.branch.id)?.codeEditor;
-        if (!codeEditorApi) {
-            throw new Error('CodeEditorApi not found for branch');
-        }
-
-        await codeEditorApi.initialize();
-        this.fs = codeEditorApi;
-
-        this.sync = new CodeProviderSync(provider, codeEditorApi, {
+        this.sync = new CodeProviderSync(provider, this.fs, {
             exclude: EXCLUDED_SYNC_PATHS,
         });
 
         await this.sync.start();
-        await codeEditorApi.rebuildIndex();
+        await this.fs.rebuildIndex();
         await this.ensurePreloadScriptExists();
     }
 
@@ -101,7 +94,6 @@ export class SandboxManager {
             this.preloadScriptLoading = false;
         }
     }
-
 
     async getLayoutPath(): Promise<string | null> {
         const routerConfig = await this.getRouterConfig();
@@ -193,7 +185,6 @@ export class SandboxManager {
         this.providerReactionDisposer = undefined;
         this.sync?.stop();
         this.sync = null;
-        this.fs = null;
         this.preloadScriptInjected = false;
         this.session.clear();
     }

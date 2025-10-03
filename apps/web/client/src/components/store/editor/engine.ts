@@ -89,7 +89,7 @@ export class EditorEngine {
     }
 
     async initBranches(branches: Branch[]) {
-        this.branches.initBranches(branches);
+        await this.branches.initBranches(branches);
         await this.branches.init();
     }
 
