@@ -87,7 +87,7 @@ export class SearchReplaceMultiEditFileTool extends ClientTool {
         }
     }
 
-    getLabel(input?: z.infer<typeof SearchReplaceMultiEditFileTool.parameters>): string {
+    static getLabel(input?: z.infer<typeof SearchReplaceMultiEditFileTool.parameters>): string {
         if (input?.file_path) {
             return 'Editing ' + (input.file_path.split('/').pop() || '');
         }

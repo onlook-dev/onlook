@@ -7,7 +7,7 @@ import { HighlightContext } from './classes/highlight-context';
 import { ImageContext } from './classes/image-context';
 import type { ContextClass } from './models/base';
 
-const CONTEXT_CLASSES: Record<MessageContextType, ContextClass> = {
+const CONTEXT_CLASSES: Record<MessageContextType, ContextClass | undefined> = {
     [MessageContextType.FILE]: FileContext,
     [MessageContextType.HIGHLIGHT]: HighlightContext,
     [MessageContextType.ERROR]: ErrorContext,
@@ -18,13 +18,29 @@ const CONTEXT_CLASSES: Record<MessageContextType, ContextClass> = {
 
 // Utility functions for cases where type is determined at runtime
 export function getContextPrompt(context: MessageContext): string {
-    const contextClass = CONTEXT_CLASSES[context.type];
-    return contextClass.getPrompt(context);
+    try {
+        const contextClass = CONTEXT_CLASSES[context.type];
+        if (!contextClass) {
+            throw new Error(`No context class found for type: ${context.type}`);
+        }
+        return contextClass.getPrompt(context);
+    } catch (error) {
+        console.error('Error getting context prompt:', error);
+        return 'unknown context';
+    }
 }
 
 export function getContextLabel(context: MessageContext): string {
-    const contextClass = CONTEXT_CLASSES[context.type];
-    return contextClass.getLabel(context);
+    try {
+        const contextClass = CONTEXT_CLASSES[context.type];
+        if (!contextClass) {
+            throw new Error(`No context class found for type: ${context.type}`);
+        }
+        return contextClass.getLabel(context);
+    } catch (error) {
+        console.error('Error getting context label:', error);
+        return 'unknown context';
+    }
 }
 
 export function getContextClass(type: MessageContextType) {

@@ -68,7 +68,7 @@ Make sure there's enough context for the other model to understand where the cha
         return 'File edited!';
     }
 
-    getLabel(input?: z.infer<typeof FuzzyEditFileTool.parameters>): string {
+    static getLabel(input?: z.infer<typeof FuzzyEditFileTool.parameters>): string {
         if (input?.file_path) {
             return 'Editing ' + (input.file_path.split('/').pop() || '');
         }

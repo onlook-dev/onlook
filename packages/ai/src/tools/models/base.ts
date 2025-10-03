@@ -25,5 +25,7 @@ export abstract class BaseTool {
     /**
      * Generate a dynamic label for the tool call based on input parameters
      */
-    abstract getLabel(input?: any): string;
+    static getLabel(input?: unknown): string {
+        return this.toolName;
+    }
 }

@@ -58,7 +58,7 @@ export class ScrapeUrlTool extends ClientTool {
         }
     }
 
-    getLabel(input?: z.infer<typeof ScrapeUrlTool.parameters>): string {
+    static getLabel(input?: z.infer<typeof ScrapeUrlTool.parameters>): string {
         if (input?.url) {
             try {
                 return 'Visiting ' + (new URL(input.url).hostname || 'URL');

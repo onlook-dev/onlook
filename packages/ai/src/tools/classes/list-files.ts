@@ -135,7 +135,7 @@ export class ListFilesTool extends ClientTool {
         }
     }
 
-    getLabel(input?: z.infer<typeof ListFilesTool.parameters>): string {
+    static getLabel(input?: z.infer<typeof ListFilesTool.parameters>): string {
         if (input?.path) {
             return 'Reading directory ' + (input.path.split('/').pop() || '');
         }

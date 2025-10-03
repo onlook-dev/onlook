@@ -14,7 +14,7 @@ export class OnlookInstructionsTool extends ClientTool {
         return ONLOOK_INSTRUCTIONS;
     }
 
-    getLabel(input?: z.infer<typeof OnlookInstructionsTool.parameters>): string {
+    static getLabel(input?: z.infer<typeof OnlookInstructionsTool.parameters>): string {
         return 'Reading Onlook instructions';
     }
 }

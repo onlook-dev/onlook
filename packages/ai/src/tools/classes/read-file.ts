@@ -144,7 +144,7 @@ export class ReadFileTool extends ClientTool {
         }
     }
 
-    getLabel(input?: z.infer<typeof ReadFileTool.parameters>): string {
+    static getLabel(input?: z.infer<typeof ReadFileTool.parameters>): string {
         if (input?.file_path) {
             return 'Reading file ' + (input.file_path.split('/').pop() || '');
         }

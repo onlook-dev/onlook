@@ -89,7 +89,7 @@ export class BashReadTool extends ClientTool {
     }
 
 
-    getLabel(input?: z.infer<typeof BashReadTool.parameters>): string {
+    static getLabel(input?: z.infer<typeof BashReadTool.parameters>): string {
         if (input?.command) {
             return 'Reading with ' + (input.command.split(' ')[0] || '');
         }

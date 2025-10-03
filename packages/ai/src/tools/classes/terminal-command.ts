@@ -32,7 +32,7 @@ export class TerminalCommandTool extends ClientTool {
         return await sandbox.session.runCommand(args.command);
     }
 
-    getLabel(input?: z.infer<typeof TerminalCommandTool.parameters>): string {
+    static getLabel(input?: z.infer<typeof TerminalCommandTool.parameters>): string {
         return 'Terminal';
     }
 }

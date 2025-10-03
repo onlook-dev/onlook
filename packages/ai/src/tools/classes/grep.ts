@@ -102,7 +102,7 @@ export class GrepTool extends ClientTool {
     }
 
 
-    getLabel(input?: z.infer<typeof GrepTool.parameters>): string {
+    static getLabel(input?: z.infer<typeof GrepTool.parameters>): string {
         if (input?.pattern) {
             const truncatedPattern = input.pattern.length > 30
                 ? input.pattern.substring(0, 30) + '...'
