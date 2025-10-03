@@ -42,7 +42,7 @@ export class CheckErrorsTool extends ClientTool {
         };
     }
 
-    getLabel(input?: z.infer<typeof CheckErrorsTool.parameters>): string {
+    static getLabel(input?: z.infer<typeof CheckErrorsTool.parameters>): string {
         return 'Checking for errors';
     }
 }

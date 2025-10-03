@@ -34,7 +34,7 @@ export class WebSearchTool extends ClientTool {
         }
     }
 
-    getLabel(input?: z.infer<typeof WebSearchTool.parameters>): string {
+    static getLabel(input?: z.infer<typeof WebSearchTool.parameters>): string {
         if (input?.query) {
             const truncatedQuery = input.query.length > 30
                 ? input.query.substring(0, 30) + '...'

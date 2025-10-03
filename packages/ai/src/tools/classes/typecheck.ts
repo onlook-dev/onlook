@@ -48,7 +48,7 @@ export class TypecheckTool extends ClientTool {
             };
         }
     }
-    getLabel(input?: z.infer<typeof TypecheckTool.parameters>): string {
+    static getLabel(input?: z.infer<typeof TypecheckTool.parameters>): string {
         return 'Checking types';
     }
 }

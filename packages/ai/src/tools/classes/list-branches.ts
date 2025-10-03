@@ -22,7 +22,7 @@ export class ListBranchesTool extends ClientTool {
         };
     }
 
-    getLabel(input?: z.infer<typeof ListBranchesTool.parameters>): string {
+    static getLabel(input?: z.infer<typeof ListBranchesTool.parameters>): string {
         return 'Listing branches';
     }
 }
