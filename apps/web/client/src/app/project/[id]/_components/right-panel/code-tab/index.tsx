@@ -45,7 +45,6 @@ export const CodeTab = observer(() => {
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const navigationTarget = useCodeNavigation();
 
-
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
     const [activeEditorFile, setActiveEditorFile] = useState<EditorFile | null>(null);
@@ -120,7 +119,7 @@ export const CodeTab = observer(() => {
         if (!navigationTarget) return;
 
         const { filePath } = navigationTarget;
-        
+
         if (!selectedFilePath || !pathsEqual(selectedFilePath, filePath)) {
             setSelectedFilePath(filePath);
         }
@@ -302,7 +301,7 @@ export const CodeTab = observer(() => {
             }
 
             await branchData.codeEditor.writeFile(filePath, content);
-            
+
             toast(`File "${filePath.split('/').pop()}" created successfully!`);
         } catch (error) {
             console.error('Failed to create file:', error);

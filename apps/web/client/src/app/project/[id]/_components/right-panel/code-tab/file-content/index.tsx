@@ -51,7 +51,7 @@ export const CodeEditorArea = ({
                             key={file.path}
                             file={file}
                             isActive={activeFile?.path === file.path}
-                            navigationTarget={navigationTarget}
+                            navigationTarget={navigationTarget?.filePath === file.path ? navigationTarget : null}
                             editorViewsRef={editorViewsRef}
                             onSaveFile={onSaveFile}
                             onUpdateFileContent={onUpdateFileContent}
