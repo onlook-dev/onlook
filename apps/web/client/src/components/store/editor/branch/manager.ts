@@ -1,3 +1,4 @@
+import { CodeEditorApi } from '@/services/code-editor-api';
 import { api } from '@/trpc/client';
 import type { Branch } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
@@ -7,7 +8,6 @@ import type { EditorEngine } from '../engine';
 import { ErrorManager } from '../error';
 import { HistoryManager } from '../history';
 import { SandboxManager } from '../sandbox';
-import { CodeEditorApi } from '@/services/code-editor-api';
 
 export interface BranchData {
     branch: Branch;
@@ -226,7 +226,6 @@ export class BranchManager {
                 framePosition,
             });
 
-
             const routerConfig = await this.activeSandbox.getRouterConfig();
 
             // Add the new branch to the local branch map
@@ -302,7 +301,7 @@ export class BranchManager {
             branchData.sandbox.clear();
             branchData.history.clear();
             branchData.error.clear();
-            
+
             // Clean up the entire branch directory
             await branchData.codeEditor.cleanup();
             // Remove from the map

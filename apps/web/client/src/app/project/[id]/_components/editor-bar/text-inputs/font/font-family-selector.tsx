@@ -7,11 +7,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/
 import { Icons } from '@onlook/ui/icons';
 import { toNormalCase } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDropdownControl } from '../../hooks/use-dropdown-manager';
-import { ToolbarButton } from '../../toolbar-button';
 import { useTextControl } from '../../hooks/use-text-control';
 import { HoverOnlyTooltip } from '../../hover-tooltip';
+import { ToolbarButton } from '../../toolbar-button';
 import { FontFamily } from './font-family';
 
 export const FontFamilySelector = observer(() => {
@@ -25,6 +25,13 @@ export const FontFamilySelector = observer(() => {
     const filteredFonts = editorEngine.font.fonts.filter((font) =>
         font.family.toLowerCase().includes(search.toLowerCase()),
     );
+
+    useEffect(() => {
+        if (!editorEngine.activeSandbox.session.provider) {
+            return;
+        }
+        editorEngine.font.init();
+    }, [editorEngine.activeSandbox.session.provider]);
 
     const handleClose = () => {
         onOpenChange(false);

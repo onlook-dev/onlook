@@ -30,7 +30,7 @@ const FontPanel = observer(() => {
 
     useEffect(() => {
         editorEngine.font.init();
-    }, []);
+    }, [editorEngine.activeSandbox.session.provider]);
 
     const handleFontUpload = async (fonts: FontFile[]) => {
         try {
