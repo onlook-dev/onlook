@@ -22,8 +22,9 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
 
     const branchData = editorEngine.branches.getBranchDataById(frame.branchId);
     const isConnecting = branchData?.sandbox?.session?.isConnecting || false;
-    
+
     const preloadScriptReady = branchData?.sandbox?.preloadScriptInjected || false;
+    const isFrameReady = preloadScriptReady && !(isConnecting && !hasTimedOut);
 
     useEffect(() => {
         if (!isConnecting) {
@@ -73,27 +74,15 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
                 borderRadius: '4px',
             }}>
                 <ResizeHandles frame={frame} setIsResizing={setIsResizing} />
-                {preloadScriptReady ? (
-                    <FrameComponent key={reloadKey} frame={frame} reloadIframe={reloadIframe} isInDragSelection={isInDragSelection} ref={iFrameRef} />
-                ) : (
-                    <div
-                        className="flex items-center justify-center bg-muted/50 rounded-md"
-                        style={{ width: frame.dimension.width, height: frame.dimension.height }}
-                    >
-                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                            <Icons.LoadingSpinner className="animate-spin h-6 w-6" />
-                            <span className="text-sm">Preparing sandbox...</span>
-                        </div>
-                    </div>
-                )}
+                <FrameComponent key={reloadKey} frame={frame} reloadIframe={reloadIframe} isInDragSelection={isInDragSelection} ref={iFrameRef} />
                 <GestureScreen frame={frame} isResizing={isResizing} />
 
-                {isConnecting && !hasTimedOut && (
+                {!isFrameReady && (
                     <div
                         className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-md"
                         style={{ width: frame.dimension.width, height: frame.dimension.height }}
                     >
-                        <div className="flex flex-col items-center gap-3 text-foreground" style={{ transform: `scale(${1 / editorEngine.canvas.scale})` }}>
+                        <div className="flex items-center gap-3 text-foreground" style={{ transform: `scale(${1 / editorEngine.canvas.scale})` }}>
                             <Icons.LoadingSpinner className="animate-spin h-8 w-8" />
                         </div>
                     </div>
