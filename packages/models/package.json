@@ -33,7 +33,7 @@
     "devDependencies": {
         "@onlook/eslint": "*",
         "@onlook/typescript": "*",
-        "ai": "5.0.26",
+        "ai": "5.0.60",
         "eslint": "^9.0.0",
         "typescript": "^5.5.4"
     },
