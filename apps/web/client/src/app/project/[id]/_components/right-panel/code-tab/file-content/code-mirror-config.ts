@@ -126,9 +126,8 @@ export const customDarkTheme = EditorView.theme({
         borderRadius: '2px'
     },
     '.cm-element-highlight': {
-        backgroundColor: 'rgba(255, 172, 96, 0.25)',
-        border: '1px solid rgba(255, 172, 96, 0.5)',
-        borderRadius: '2px'
+        backgroundColor: 'rgba(26, 198, 156, 0.2)',
+        borderRadius: '2px',
     },
 }, { dark: true });
 
@@ -254,16 +253,16 @@ const elementHighlightField = StateField.define<DecorationSet>({
         for (let effect of tr.effects) {
             if (effect.is(elementHighlightEffect)) {
                 const { startLine, startCol, endLine, endCol } = effect.value;
-                
+
                 // Convert line/column to document positions (0-indexed)
                 const doc = tr.state.doc;
                 const startPos = doc.line(startLine).from + startCol - 1;
                 const endPos = doc.line(endLine).from + endCol;
-                
+
                 // Ensure positions are within document bounds
                 const validStartPos = Math.max(0, Math.min(startPos, doc.length));
                 const validEndPos = Math.max(validStartPos, Math.min(endPos, doc.length));
-                
+
                 decorations = Decoration.set([
                     Decoration.mark({
                         class: 'cm-element-highlight'
@@ -280,7 +279,8 @@ const elementHighlightField = StateField.define<DecorationSet>({
 });
 
 export function highlightElementRange(startLine: number, startCol: number, endLine: number, endCol: number) {
-    return elementHighlightEffect.of({ startLine, startCol, endLine, endCol });
+    // CodeMirror is 0-indexed, so we need to add 1 to the start and end columns
+    return elementHighlightEffect.of({ startLine, startCol: startCol + 1, endLine, endCol: endCol + 1 });
 }
 
 export function clearElementHighlight() {
@@ -289,11 +289,11 @@ export function clearElementHighlight() {
 
 export function scrollToLineColumn(view: EditorView, line: number, column: number): void {
     const doc = view.state.doc;
-    
+
     // Ensure line number is within bounds (1-indexed to 0-indexed)
     const lineNum = Math.max(1, Math.min(line, doc.lines));
     const docLine = doc.line(lineNum);
-    
+
     // Ensure column is within line bounds (1-indexed to 0-indexed)  
     const colNum = Math.max(1, Math.min(column, docLine.length + 1));
     const pos = docLine.from + colNum - 1;

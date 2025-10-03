@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { reaction } from 'mobx';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export interface CodePosition {
     line: number;
@@ -43,7 +43,7 @@ export function useCodeNavigation() {
                         console.warn(`[CodeNavigation] No branch data found for branchId: ${selectedElement.branchId}`);
                         return;
                     }
-                    
+
                     const metadata = await branchData.codeEditor.getJsxElementMetadata(oid);
                     if (!metadata) {
                         console.warn(`[CodeNavigation] No metadata found for OID: ${oid}`);
@@ -52,7 +52,7 @@ export function useCodeNavigation() {
 
                     const startLine = metadata.startTag.start.line;
                     const startColumn = metadata.startTag.start.column;
-                    
+
                     const endTag = metadata.endTag || metadata.startTag;
                     const endLine = endTag.end.line;
                     const endColumn = endTag.end.column;
