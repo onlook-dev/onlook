@@ -1,6 +1,6 @@
 import { MessageContextType, type ErrorMessageContext } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
-import { ErrorContext } from '../../src/contexts/classes/error-context';
+import { ErrorContext } from '../../src/contexts/classes/error';
 
 describe('ErrorContext', () => {
     const createMockErrorContext = (overrides: Partial<ErrorMessageContext> = {}): ErrorMessageContext => ({
@@ -235,11 +235,11 @@ describe('ErrorContext', () => {
                 createMockErrorContext({ content: 'Third error' }),
             ];
             const content = ErrorContext.getErrorsContent(errors);
-            
+
             const firstIndex = content.indexOf('First error');
             const secondIndex = content.indexOf('Second error');
             const thirdIndex = content.indexOf('Third error');
-            
+
             expect(firstIndex).toBeLessThan(secondIndex);
             expect(secondIndex).toBeLessThan(thirdIndex);
         });
@@ -277,7 +277,7 @@ describe('ErrorContext', () => {
         });
 
         test('should handle very deep stack traces', () => {
-            const deepTrace = Array(50).fill(0).map((_, i) => 
+            const deepTrace = Array(50).fill(0).map((_, i) =>
                 `    at function${i} (/path/to/file${i}.ts:${i + 1}:5)`
             ).join('\n');
             const context = createMockErrorContext({

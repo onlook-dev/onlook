@@ -1,6 +1,6 @@
 import { MessageContextType, type AgentRuleMessageContext } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
-import { AgentRuleContext } from '../../src/contexts/classes/agent-rule-context';
+import { AgentRuleContext } from '../../src/contexts/classes/agent-rule';
 
 describe('AgentRuleContext', () => {
     const createMockAgentRuleContext = (overrides: Partial<AgentRuleMessageContext> = {}): AgentRuleMessageContext => ({

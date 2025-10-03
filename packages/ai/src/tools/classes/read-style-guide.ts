@@ -22,7 +22,7 @@ export class ReadStyleGuideTool extends ClientTool {
         return result;
     }
 
-    getLabel(input?: z.infer<typeof ReadStyleGuideTool.parameters>): string {
+    static getLabel(input?: z.infer<typeof ReadStyleGuideTool.parameters>): string {
         return 'Reading style guide';
     }
 }

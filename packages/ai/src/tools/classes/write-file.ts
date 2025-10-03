@@ -25,7 +25,7 @@ export class WriteFileTool extends ClientTool {
         }
     }
 
-    getLabel(input?: z.infer<typeof WriteFileTool.parameters>): string {
+    static getLabel(input?: z.infer<typeof WriteFileTool.parameters>): string {
         if (input?.file_path) {
             return 'Writing file ' + (input.file_path.split('/').pop() || '');
         }

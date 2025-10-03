@@ -40,7 +40,7 @@ export class SandboxTool extends ClientTool {
         }
     }
 
-    getLabel(input?: z.infer<typeof SandboxTool.parameters>): string {
+    static getLabel(input?: z.infer<typeof SandboxTool.parameters>): string {
         if (input?.command) {
             return 'Sandbox: ' + input.command;
         }
