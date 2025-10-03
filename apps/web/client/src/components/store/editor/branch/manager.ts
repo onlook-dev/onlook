@@ -39,7 +39,7 @@ export class BranchManager {
         }
         this.branchMap.clear();
         for (const branch of branches) {
-            await this.createBranchData(branch);
+            this.createBranchData(branch);
         }
         // Preserve previous selection if still present; else default; else first; else null
         const prev = this.currentBranchId;
@@ -54,6 +54,10 @@ export class BranchManager {
     }
 
     async init(): Promise<void> {
+        for (const branchData of this.branchMap.values()) {
+            await branchData.codeEditor.initialize();
+            await branchData.sandbox.init();
+        }
         this.setupActiveFrameReaction();
     }
 
@@ -123,9 +127,8 @@ export class BranchManager {
         return this.getBranchDataById(branchId)?.sandbox ?? null;
     }
 
-    private async createBranchData(branch: Branch, routerType?: RouterType): Promise<BranchData> {
+    private createBranchData(branch: Branch, routerType?: RouterType): BranchData {
         const codeEditorApi = new CodeEditorApi(this.editorEngine.projectId, branch.id, { routerType });
-        await codeEditorApi.initialize();
         const errorManager = new ErrorManager(branch);
         const sandboxManager = new SandboxManager(branch, this.editorEngine, errorManager, codeEditorApi);
         const historyManager = new HistoryManager(this.editorEngine);
@@ -139,7 +142,6 @@ export class BranchManager {
         };
 
         this.branchMap.set(branch.id, branchData);
-        await sandboxManager.init();
 
         return branchData;
     }
@@ -168,7 +170,9 @@ export class BranchManager {
             const result = await api.branch.fork.mutate({ branchId });
 
             // Add the new branch to the local branch map
-            await this.createBranchData(result.branch);
+            const branchData = this.createBranchData(result.branch);
+            await branchData.codeEditor.initialize();
+            await branchData.sandbox.init();
 
             // Add the created frames to the frame manager
             if (result.frames && result.frames.length > 0) {
@@ -221,7 +225,9 @@ export class BranchManager {
             const routerConfig = await this.activeSandbox.getRouterConfig();
 
             // Add the new branch to the local branch map
-            await this.createBranchData(result.branch, routerConfig?.type);
+            const branchData = this.createBranchData(result.branch, routerConfig?.type);
+            await branchData.codeEditor.initialize();
+            await branchData.sandbox.init();
 
             // Add the created frames to the frame manager
             if (result.frames && result.frames.length > 0) {
