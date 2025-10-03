@@ -1,47 +1,49 @@
 import type { ToolCall } from '@ai-sdk/provider-utils';
-import { ChatType, LLMProvider, OPENROUTER_MODELS, type ModelConfig } from '@onlook/models';
-import { Experimental_Agent as Agent, NoSuchToolError, generateObject, stepCountIs, type ToolSet } from 'ai';
-import { getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, getToolSetFromType, initModel } from '../index';
+import { ChatType, LLMProvider, OPENROUTER_MODELS, type ChatMessage, type ModelConfig } from '@onlook/models';
+import { NoSuchToolError, generateObject, smoothStream, stepCountIs, streamText, type ToolSet } from 'ai';
+import { convertToStreamMessages, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, getToolSetFromType, initModel } from '../index';
 
-export const createRootAgent = ({
+export const createRootAgentStream = ({
     chatType,
     conversationId,
     projectId,
     userId,
     traceId,
+    messages,
 }: {
     chatType: ChatType;
     conversationId: string;
     projectId: string;
     userId: string;
     traceId: string;
+    messages: ChatMessage[];
 }) => {
     const modelConfig = getModelFromType(chatType);
     const systemPrompt = getSystemPromptFromType(chatType);
     const toolSet = getToolSetFromType(chatType);
-    return {
-        agent: new Agent<typeof toolSet>({
-            model: modelConfig.model,
-            system: systemPrompt,
-            tools: toolSet,
-            headers: modelConfig.headers,
-            stopWhen: stepCountIs(20),
-            experimental_repairToolCall: repairToolCall,
-            experimental_telemetry: {
-                isEnabled: true,
-                metadata: {
-                    conversationId,
-                    projectId,
-                    userId,
-                    chatType: chatType,
-                    tags: ['chat'],
-                    langfuseTraceId: traceId,
-                    sessionId: conversationId,
-                },
+    return streamText({
+        providerOptions: modelConfig.providerOptions,
+        messages: convertToStreamMessages(messages),
+        model: modelConfig.model,
+        system: systemPrompt,
+        tools: toolSet,
+        headers: modelConfig.headers,
+        stopWhen: stepCountIs(20),
+        experimental_repairToolCall: repairToolCall,
+        experimental_transform: smoothStream(),
+        experimental_telemetry: {
+            isEnabled: true,
+            metadata: {
+                conversationId,
+                projectId,
+                userId,
+                chatType: chatType,
+                tags: ['chat'],
+                langfuseTraceId: traceId,
+                sessionId: conversationId,
             },
-        }),
-        modelConfig,
-    }
+        },
+    });
 }
 
 const getSystemPromptFromType = (chatType: ChatType): string => {

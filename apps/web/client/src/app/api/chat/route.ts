@@ -1,6 +1,6 @@
 import { api } from '@/trpc/server';
 import { trackEvent } from '@/utils/analytics/server';
-import { convertToStreamMessages, createRootAgent } from '@onlook/ai';
+import { createRootAgentStream } from '@onlook/ai';
 import { toDbMessage } from '@onlook/db';
 import { ChatType, type ChatMessage, type ChatMetadata } from '@onlook/models';
 import { type NextRequest } from 'next/server';
@@ -74,18 +74,15 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         if (chatType === ChatType.EDIT) {
             usageRecord = await incrementUsage(req, traceId);
         }
-        const { agent, modelConfig } = createRootAgent({
+        const stream = createRootAgentStream({
             chatType,
             conversationId,
             projectId,
             userId,
             traceId,
+            messages,
         });
-        const result = agent.stream({
-            providerOptions: modelConfig.providerOptions,
-            messages: convertToStreamMessages(messages),
-        });
-        return result.toUIMessageStreamResponse<ChatMessage>(
+        return stream.toUIMessageStreamResponse<ChatMessage>(
             {
                 originalMessages: messages,
                 generateMessageId: () => uuidv4(),
