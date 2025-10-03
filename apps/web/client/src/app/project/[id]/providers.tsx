@@ -2,6 +2,7 @@
 
 import { EditorEngineProvider } from '@/components/store/editor';
 import { HostingProvider } from '@/components/store/hosting';
+import { OnboardingProvider } from '@/components/onboarding/onboarding-context';
 import type { Branch, Project } from '@onlook/models';
 
 export const ProjectProviders = ({
@@ -16,7 +17,9 @@ export const ProjectProviders = ({
     return (
         <EditorEngineProvider project={project} branches={branches}>
             <HostingProvider>
-                {children}
+                <OnboardingProvider>
+                    {children}
+                </OnboardingProvider>
             </HostingProvider>
         </EditorEngineProvider>
     );

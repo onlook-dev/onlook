@@ -42,13 +42,13 @@ export const TopBar = observer(() => {
     ];
 
     return (
-        <div className="bg-background-primary/20 backdrop-blur-md flex flex-row h-10 p-0 justify-center items-center">
+        <div className="bg-background-primary/20 backdrop-blur-md flex flex-row h-10 p-0 justify-center items-center relative z-[70]">
             <div className="flex flex-row flex-grow basis-0 justify-start items-center">
                 <ProjectBreadcrumb />
                 <BranchDisplay />
             </div>
             <ModeToggle />
-            <div className="flex flex-grow basis-0 justify-end items-center gap-1.5 mr-2">
+            <div data-onboarding-target="top-right-actions" className="flex flex-grow basis-0 justify-end items-center gap-1.5 mr-2">
                 <div className="flex items-center group">
                     <div className={`transition-all duration-200 ${isMembersPopoverOpen ? 'mr-2' : '-mr-2 group-hover:mr-2'}`}>
                         <Members onPopoverOpenChange={setIsMembersPopoverOpen} />

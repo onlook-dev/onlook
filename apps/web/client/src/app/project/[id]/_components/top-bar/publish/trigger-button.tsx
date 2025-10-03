@@ -1,3 +1,4 @@
+import { useOnboarding } from '@/components/onboarding/onboarding-context';
 import { useEditorEngine } from '@/components/store/editor';
 import { useHostingType } from '@/components/store/hosting';
 import { DeploymentStatus, DeploymentType } from '@onlook/models';
@@ -8,6 +9,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 
 export const TriggerButton = observer(() => {
+    const { isActive, currentStep } = useOnboarding();
     const editorEngine = useEditorEngine();
     const { deployment: previewDeployment, isDeploying: isPreviewDeploying } = useHostingType(DeploymentType.PREVIEW);
     const { deployment: customDeployment, isDeploying: isCustomDeploying } = useHostingType(DeploymentType.CUSTOM);
@@ -15,6 +17,8 @@ export const TriggerButton = observer(() => {
     const isCustomCompleted = customDeployment?.status === DeploymentStatus.COMPLETED;
     const isPreviewFailed = previewDeployment?.status === DeploymentStatus.FAILED;
     const isCustomFailed = customDeployment?.status === DeploymentStatus.FAILED;
+    
+    const isOnboardingStep5 = isActive && currentStep === 4;
 
     const isCompleted = isPreviewCompleted || isCustomCompleted;
     const isFailed = isPreviewFailed || isCustomFailed;
@@ -48,6 +52,7 @@ export const TriggerButton = observer(() => {
                 className={cn(
                     'px-3 flex items-center border-[0.5px] text-xs justify-center shadow-sm h-8 rounded-md transition-all duration-300 ease-in-out',
                     colorClasses,
+                    isOnboardingStep5 && 'ring-1 ring-red-500 ring-offset-2 ring-offset-background shadow-[0_0_12px_rgba(239,68,68,0.6)]',
                 )}
             >
                 {icon}

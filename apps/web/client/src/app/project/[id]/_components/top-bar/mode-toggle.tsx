@@ -36,7 +36,7 @@ export const ModeToggle = observer(() => {
     }
 
     return (
-        <div className="relative">
+        <div className="relative" data-onboarding-target="mode-toggle">
             <ToggleGroup
                 className="font-normal h-7 mt-1"
                 type="single"
