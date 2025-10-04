@@ -256,8 +256,20 @@ const elementHighlightField = StateField.define<DecorationSet>({
 
                 // Convert line/column to document positions (0-indexed)
                 const doc = tr.state.doc;
-                const startPos = doc.line(startLine).from + startCol - 1;
-                const endPos = doc.line(endLine).from + endCol;
+                
+                // Clamp line numbers to valid range (1 through doc.lines)
+                const clampedStartLine = Math.max(1, Math.min(startLine, doc.lines));
+                const clampedEndLine = Math.max(1, Math.min(endLine, doc.lines));
+                
+                const startLineObj = doc.line(clampedStartLine);
+                const endLineObj = doc.line(clampedEndLine);
+                
+                // Clamp column positions to valid range (1 through line length + 1)
+                const clampedStartCol = Math.max(1, Math.min(startCol, startLineObj.length + 1));
+                const clampedEndCol = Math.max(1, Math.min(endCol, endLineObj.length + 1));
+                
+                const startPos = startLineObj.from + clampedStartCol - 1;
+                const endPos = endLineObj.from + clampedEndCol;
 
                 // Ensure positions are within document bounds
                 const validStartPos = Math.max(0, Math.min(startPos, doc.length));
