@@ -1,10 +1,14 @@
-import { Icons } from "@onlook/ui/icons/index";
+import { Icons } from "@onlook/ui/icons";
 
 export const FileIcon = ({ path, isDirectory }: { path: string, isDirectory: boolean }) => {
-    const extension = path.split('.').pop()?.toLowerCase();
+
     if (isDirectory) {
         return <Icons.Directory className="w-4 h-4 mr-2" />;
     }
+
+    const fileName = path.split('/').pop() || path;
+    const lastDotIndex = fileName.lastIndexOf('.');
+    const extension = lastDotIndex > 0 ? fileName.slice(lastDotIndex + 1).toLowerCase() : '';
 
     switch (extension) {
         case 'js':
