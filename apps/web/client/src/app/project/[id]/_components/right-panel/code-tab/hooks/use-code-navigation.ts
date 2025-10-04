@@ -1,3 +1,5 @@
+'use client';
+
 import { useEditorEngine } from '@/components/store/editor';
 import { reaction } from 'mobx';
 import { useEffect, useState } from 'react';

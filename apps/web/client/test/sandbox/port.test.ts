@@ -1,8 +1,18 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it, beforeEach, afterEach } from 'bun:test';
 import { detectPortFromPackageJson } from '../../src/app/projects/import/local/_context/index';
 import { ProcessedFileType, type ProcessedFile } from '../../src/app/projects/types';
 
 describe('detectPortFromPackageJson', () => {
+    let originalConsoleError: typeof console.error;
+
+    beforeEach(() => {
+        originalConsoleError = console.error;
+    });
+
+    afterEach(() => {
+        console.error = originalConsoleError;
+    });
+
     const createMockFile = (content: string): ProcessedFile => ({
         path: 'package.json',
         content,
@@ -35,6 +45,9 @@ describe('detectPortFromPackageJson', () => {
     });
 
     it('returns default port when JSON is invalid', () => {
+        // Suppress console.error for expected JSON parse error
+        console.error = () => {};
+        
         const mockFile = createMockFile('invalid json {');
         const result = detectPortFromPackageJson(mockFile);
         expect(result).toBe(3000);
