@@ -7,7 +7,7 @@
 import { type Provider, type ProviderFileWatcher } from '@onlook/code-provider';
 
 import { normalizePath } from '@/components/store/editor/sandbox/helpers';
-import type { CodeFileSystem } from '../../../../../../packages/file-system/src/code-fs';
+import type { CodeFileSystem } from '@onlook/file-system';
 
 export interface SyncConfig {
     include?: string[];

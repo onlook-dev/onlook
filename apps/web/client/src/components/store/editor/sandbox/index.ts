@@ -35,6 +35,10 @@ export class SandboxManager {
             (provider) => {
                 if (provider) {
                     this.initializeSyncEngine(provider);
+                } else if (this.sync) {
+                    // If the provider is null, stop the sync engine
+                    this.sync.stop();
+                    this.sync = null;
                 }
             },
         );
