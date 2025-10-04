@@ -143,13 +143,20 @@ export class SessionManager {
             if (isConnected2) {
                 return;
             }
-            // Reinitialize the provider
-            this.provider = null;
-            await this.start(sandboxId, userId);
+            await this.restartProvider(sandboxId, userId);
         } catch (error) {
             console.error('Failed to reconnect to sandbox', error);
             this.isConnecting = false;
         }
+    }
+
+    async restartProvider(sandboxId: string, userId?: string) {
+        if (!this.provider) {
+            return;
+        }
+        await this.provider.destroy();
+        this.provider = null;
+        await this.start(sandboxId, userId);
     }
 
     async ping() {
