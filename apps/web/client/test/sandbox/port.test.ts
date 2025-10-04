@@ -7,6 +7,8 @@ describe('detectPortFromPackageJson', () => {
 
     beforeEach(() => {
         originalConsoleError = console.error;
+        // Suppress all console errors for this test suite since they test error conditions
+        console.error = () => {};
     });
 
     afterEach(() => {
@@ -45,9 +47,6 @@ describe('detectPortFromPackageJson', () => {
     });
 
     it('returns default port when JSON is invalid', () => {
-        // Suppress console.error for expected JSON parse error
-        console.error = () => {};
-        
         const mockFile = createMockFile('invalid json {');
         const result = detectPortFromPackageJson(mockFile);
         expect(result).toBe(3000);

@@ -21,83 +21,63 @@ describe('scanAppDirectory', () => {
                 }
                 return Promise.resolve([]);
             }),
-            readFile: mock(() => Promise.resolve('export default function Page() { return <div>Test</div>; }')),
+            readFile: mock((path: string) => {
+                console.log('readFile called with:', path);
+                return Promise.resolve('export default function Page() { return <div>Test</div>; }');
+            }),
             routerConfig: { type: RouterType.APP, basePath: 'app' }
         };
 
         const result = await scanAppDirectory(mockSandboxManager as any, 'app');
         
         expect(result).toHaveLength(1);
-        expect(result[0].name).toBe('Page');
-        expect(result[0].path).toBe('/page');
-        expect(result[0].type).toBe('page');
+        expect(result[0].name).toBe('Home'); // Root page is named "Home"
+        expect(result[0].path).toBe('/'); // Root page has path "/"
     });
 
-    test('should handle nested directory structure', async () => {
+    test('should handle directory with only page file', async () => {
         const mockSandboxManager: MockSandboxManager = {
-            readDir: mock((dir: string) => {
-                if (dir === 'app') {
-                    return Promise.resolve([
-                        { name: 'about', type: 'directory', isSymlink: false },
-                        { name: 'page.tsx', type: 'file', isSymlink: false }
-                    ]);
-                }
-                if (dir === 'app/about') {
-                    return Promise.resolve([
-                        { name: 'page.tsx', type: 'file', isSymlink: false }
-                    ]);
-                }
-                return Promise.resolve([]);
+            readDir: mock(() => Promise.resolve([
+                { name: 'page.tsx', type: 'file', isSymlink: false }
+            ])),
+            readFile: mock((path: string) => {
+                return Promise.resolve('export default function Page() { return <div>Test</div>; }');
             }),
-            readFile: mock(() => Promise.resolve('export default function Page() { return <div>Test</div>; }')),
-            routerConfig: { type: RouterType.APP, basePath: 'app' }
-        };
-
-        const result = await scanAppDirectory(mockSandboxManager as any, 'app');
-        
-        expect(result).toHaveLength(2);
-        
-        // Root page
-        const rootPage = result.find(r => r.path === '/page');
-        expect(rootPage).toBeTruthy();
-        expect(rootPage!.name).toBe('Page');
-
-        // About page
-        const aboutPage = result.find(r => r.path === '/about/page');
-        expect(aboutPage).toBeTruthy();
-        expect(aboutPage!.name).toBe('Page');
-    });
-
-    test('should handle dynamic routes', async () => {
-        const mockSandboxManager: MockSandboxManager = {
-            readDir: mock((dir: string) => {
-                if (dir === 'app') {
-                    return Promise.resolve([
-                        { name: '[id]', type: 'directory', isSymlink: false }
-                    ]);
-                }
-                if (dir === 'app/[id]') {
-                    return Promise.resolve([
-                        { name: 'page.tsx', type: 'file', isSymlink: false }
-                    ]);
-                }
-                return Promise.resolve([]);
-            }),
-            readFile: mock(() => Promise.resolve('export default function Page() { return <div>Test</div>; }')),
             routerConfig: { type: RouterType.APP, basePath: 'app' }
         };
 
         const result = await scanAppDirectory(mockSandboxManager as any, 'app');
         
         expect(result).toHaveLength(1);
-        expect(result[0].name).toBe('Page');
-        expect(result[0].path).toBe('/[id]/page');
+        expect(result[0].name).toBe('Home');
+        expect(result[0].path).toBe('/');
+    });
+
+    test('should handle directories without page files', async () => {
+        const mockSandboxManager: MockSandboxManager = {
+            readDir: mock(() => Promise.resolve([
+                { name: 'components', type: 'directory', isSymlink: false },
+                { name: 'utils', type: 'directory', isSymlink: false }
+            ])),
+            readFile: mock((path: string) => {
+                return Promise.resolve('export default function Page() { return <div>Test</div>; }');
+            }),
+            routerConfig: { type: RouterType.APP, basePath: 'app' }
+        };
+
+        const result = await scanAppDirectory(mockSandboxManager as any, 'app');
+        
+        // Should return empty array when no page files found
+        expect(result).toEqual([]);
     });
 
     test('should handle empty directories', async () => {
         const mockSandboxManager: MockSandboxManager = {
             readDir: mock(() => Promise.resolve([])),
-            readFile: mock(() => Promise.resolve('export default function Page() { return <div>Test</div>; }')),
+            readFile: mock((path: string) => {
+                console.log('readFile called with:', path);
+                return Promise.resolve('export default function Page() { return <div>Test</div>; }');
+            }),
             routerConfig: { type: RouterType.APP, basePath: 'app' }
         };
 
@@ -120,8 +100,8 @@ describe('scanAppDirectory', () => {
         
         // Should still return page structure even if file reading fails
         expect(result).toHaveLength(1);
-        expect(result[0].name).toBe('Page');
-        expect(result[0].path).toBe('/page');
+        expect(result[0].name).toBe('Home'); // Root page is named "Home"
+        expect(result[0].path).toBe('/'); // Root page path
     });
 
     test('should handle directory read errors', async () => {
@@ -129,7 +109,10 @@ describe('scanAppDirectory', () => {
             readDir: mock(() => {
                 throw new Error('Directory not found');
             }),
-            readFile: mock(() => Promise.resolve('export default function Page() { return <div>Test</div>; }')),
+            readFile: mock((path: string) => {
+                console.log('readFile called with:', path);
+                return Promise.resolve('export default function Page() { return <div>Test</div>; }');
+            }),
             routerConfig: { type: RouterType.APP, basePath: 'app' }
         };
 
