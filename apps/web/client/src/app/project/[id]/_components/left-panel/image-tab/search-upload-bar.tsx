@@ -14,15 +14,19 @@ interface SearchUploadBarProps {
 
 export const SearchUploadBar = ({ search, setSearch, isUploading, onUpload }: SearchUploadBarProps) => {
     const handleUploadClick = () => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.multiple = true;
-        input.accept = 'image/*';
-        input.onchange = (e) => {
-            const files = (e.target as HTMLInputElement).files;
-            if (files) onUpload(files);
-        };
-        input.click();
+        try {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.multiple = true;
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+                const files = (e.target as HTMLInputElement).files;
+                if (files) onUpload(files);
+            };
+            input.click();
+        } catch (error) {
+            console.error('Error uploading images', error);
+        }
     };
 
     return (

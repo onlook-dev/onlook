@@ -21,6 +21,7 @@ export const PagesTab = observer(() => {
     const treeRef = useRef<TreeApi<PageNode>>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
+    // TODO: use file system like code tab
     useEffect(() => {
         editorEngine.pages.scanPages();
     }, []);

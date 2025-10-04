@@ -107,8 +107,8 @@ export class CodeManager {
                 throw new Error(`Metadata not found for oid: ${request.oid}`);
             }
             const fileContent = await codeEditor.readFile(metadata.path);
-            if (!fileContent || fileContent instanceof Uint8Array) {
-                throw new Error(`Failed to read file: ${metadata.path}`);
+            if (fileContent instanceof Uint8Array) {
+                throw new Error(`File is binary: ${metadata.path}`);
             }
             const path = metadata.path;
 
