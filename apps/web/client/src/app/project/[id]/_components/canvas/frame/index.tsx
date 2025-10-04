@@ -21,7 +21,7 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
     const isSelected = editorEngine.frames.isSelected(frame.id);
 
     const branchData = editorEngine.branches.getBranchDataById(frame.branchId);
-    const isConnecting = branchData?.sandbox?.session?.isConnecting || false;
+    const isConnecting = branchData?.sandbox?.session?.isConnecting ?? false;
 
     const preloadScriptReady = branchData?.sandbox?.preloadScriptInjected ?? false;
     const isFrameReady = preloadScriptReady && !(isConnecting && !hasTimedOut);
@@ -34,7 +34,7 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
 
         const timeoutId = setTimeout(() => {
             const currentBranchData = editorEngine.branches.getBranchDataById(frame.branchId);
-            const stillConnecting = currentBranchData?.sandbox?.session?.isConnecting || false;
+            const stillConnecting = currentBranchData?.sandbox?.session?.isConnecting ?? false;
 
             if (stillConnecting) {
                 setHasTimedOut(true);

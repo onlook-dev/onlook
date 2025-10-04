@@ -57,67 +57,6 @@ export const BrandTab = observer(() => {
         loadBrandColors();
     }, [editorEngine.theme]);
 
-    // Watch for file changes to automatically detect new color groups
-    useEffect(() => {
-        const handleFileChange = async (filePath: string) => {
-            // Check if the changed file is the Tailwind config
-            if (filePath.includes('tailwind.config') || filePath.includes('globals.css')) {
-                // Rescan for new color groups
-                setTimeout(async () => {
-                    try {
-                        await editorEngine.theme.scanConfig();
-
-                        const { colorGroups, colorDefaults } = editorEngine.theme;
-
-                        // Extract color-500 variants from project colors
-                        const projectColors: string[] = [];
-
-                        // Add colors from custom color groups (user-defined in Tailwind config)
-                        Object.values(colorGroups).forEach(group => {
-                            group.forEach(color => {
-                                // Get the default/500 color from each custom color group
-                                if (color.name === '500' || color.name === 'default' || color.name === 'DEFAULT') {
-                                    projectColors.push(color.lightColor);
-                                }
-                            });
-                        });
-
-                        // Add colors from default color groups (standard Tailwind colors)
-                        Object.values(colorDefaults).forEach(group => {
-                            group.forEach(color => {
-                                // Get the default/500 color from each default color group
-                                if (color.name === '500' || color.name === 'default' || color.name === 'DEFAULT') {
-                                    projectColors.push(color.lightColor);
-                                }
-                            });
-                        });
-
-                        setBrandColors(projectColors);
-                    } catch (error) {
-                        console.warn('Theme scanning failed:', error);
-                    }
-                }, 100); // Small delay to ensure file is fully written
-            }
-        };
-
-        // TODO: use fs hook
-        // // Listen for file changes in the sandbox
-        // const unsubscribe = editorEngine.activeSandbox.fileEventBus.subscribe('*', (event) => {
-        //     // Check if any of the changed files are Tailwind config files
-        //     const isTailwindConfigChange = event.paths.some(path =>
-        //         path.includes('tailwind.config') || path.includes('globals.css')
-        //     );
-
-        //     if (isTailwindConfigChange && event.paths[0]) {
-        //         handleFileChange(event.paths[0]);
-        //     }
-        // });
-
-        return () => {
-            // unsubscribe();
-        };
-    }, [editorEngine.theme, editorEngine.activeSandbox]);
-
     // If color panel is visible, show it instead of the main content
     if (editorEngine.state.brandTab === BrandTabValue.COLORS) {
         return <ColorPanel />;

@@ -1,6 +1,7 @@
+import { DEFAULT_IMAGE_DIRECTORY } from '@onlook/constants';
 import { useMemo, useState } from 'react';
 
-export const useNavigation = (initialFolder = '/public') => {
+export const useNavigation = (initialFolder = DEFAULT_IMAGE_DIRECTORY) => {
     const [activeFolder, setActiveFolder] = useState(initialFolder);
     const [search, setSearch] = useState('');
 
@@ -26,7 +27,7 @@ export const useNavigation = (initialFolder = '/public') => {
     // Filter images based on search
     const filterImages = <T extends { name: string }>(images: T[]) => {
         if (!search) return images;
-        return images.filter(image => 
+        return images.filter(image =>
             image.name.toLowerCase().includes(search.toLowerCase())
         );
     };

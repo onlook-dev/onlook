@@ -4,6 +4,7 @@ export const CUSTOM_OUTPUT_DIR = '.next-prod';
 export const ONLOOK_CACHE_DIRECTORY = '.onlook';
 export const ONLOOK_PRELOAD_SCRIPT = 'onlook-preload-script.js';
 export const ONLOOK_PRELOAD_SCRIPT_PATH = `public/${ONLOOK_PRELOAD_SCRIPT}`;
+export const DEFAULT_IMAGE_DIRECTORY = 'public';
 
 export const EXCLUDED_SYNC_PATHS = [
     ...BASE_EXCLUDED_DIRECTORIES,

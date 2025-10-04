@@ -28,6 +28,7 @@ const FontPanel = observer(() => {
         setIsUploadModalOpen(true);
     };
 
+    // TODO: use file system like code tab
     useEffect(() => {
         editorEngine.font.init();
     }, [editorEngine.activeSandbox.session.provider]);

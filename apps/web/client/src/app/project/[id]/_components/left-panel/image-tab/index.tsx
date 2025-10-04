@@ -24,7 +24,7 @@ export const ImagesTab = observer(() => {
         navigateToFolder,
         handleFolderClick,
         filterImages,
-    } = useNavigation('/public');
+    } = useNavigation();
 
     // Get the CodeEditorApi for the active branch
     const branchData = editorEngine.branches.getBranchDataById(editorEngine.branches.activeBranch.id);

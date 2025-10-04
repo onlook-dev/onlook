@@ -26,6 +26,7 @@ export const FontFamilySelector = observer(() => {
         font.family.toLowerCase().includes(search.toLowerCase()),
     );
 
+    // TODO: use file system like code tab
     useEffect(() => {
         if (!editorEngine.activeSandbox.session.provider) {
             return;
