@@ -151,6 +151,7 @@ export class TextEditingManager {
                 targets: [
                     {
                         frameId: frameView.id,
+                        branchId: domEl.branchId,
                         domId: domEl.domId,
                         oid: domEl.oid,
                     },

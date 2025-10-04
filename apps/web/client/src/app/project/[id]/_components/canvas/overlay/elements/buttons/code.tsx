@@ -6,7 +6,7 @@ import { observer } from 'mobx-react-lite';
 
 export const OverlayOpenCode = observer(({ isInputting }: { isInputting: boolean }) => {
     const editorEngine = useEditorEngine();
-    const isDevMode = editorEngine.state.rightPanelTab === EditorTabValue.DEV;
+    const isDevMode = editorEngine.state.rightPanelTab === EditorTabValue.CODE;
     const oid = editorEngine.elements.selected[0]?.oid;
 
     if (isDevMode || isInputting || !oid) {

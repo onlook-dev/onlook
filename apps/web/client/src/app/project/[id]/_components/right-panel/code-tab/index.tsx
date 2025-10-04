@@ -1,438 +1,351 @@
+'use client';
+
 import { useEditorEngine } from '@/components/store/editor';
-import type { CodeRange, EditorFile } from '@/components/store/editor/ide';
-import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus';
+import { hashContent } from '@/services/sync-engine/sync-engine';
 import { EditorView } from '@codemirror/view';
-import { Button } from '@onlook/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from '@onlook/ui/dropdown-menu';
-import { Icons } from '@onlook/ui/icons';
+import { useDirectory, useFile } from '@onlook/file-system/hooks';
 import { toast } from '@onlook/ui/sonner';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { getMimeType } from '@onlook/utility';
-import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
-import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useRef } from 'react';
-import { createSearchHighlight, getBasicSetup, getExtensions, scrollToFirstMatch } from './code-mirror-config';
-import { FileTab } from './file-tab';
-import { FileTree } from './file-tree';
+import { pathsEqual } from '@onlook/utility';
+import { motion } from 'motion/react';
+import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { CodeEditorArea } from './file-content';
+import { FileTabs } from './file-tabs';
+import { useCodeNavigation } from './hooks/use-code-navigation';
+import type { BinaryEditorFile, EditorFile, TextEditorFile } from './shared/types';
+import { isDirty } from './shared/utils';
+import { FileTree } from './sidebar/file-tree';
 
-export const CodeTab = observer(() => {
+export interface CodeTabRef {
+    hasUnsavedChanges: boolean;
+    getCurrentPath: () => string;
+    handleSaveFile: () => Promise<void>;
+    refreshFileTree: () => void;
+    handleCreateFile: (filePath: string, content?: string) => Promise<void>;
+    handleCreateFolder: (folderPath: string) => Promise<void>;
+}
+
+interface CodeTabProps {
+    projectId: string;
+    branchId: string;
+    onUnsavedChangesChange?: (hasUnsavedChanges: boolean) => void;
+}
+
+const createEditorFile = async (filePath: string, content: string | Uint8Array): Promise<EditorFile> => {
+    const isBinary = content instanceof Uint8Array;
+
+    if (isBinary) {
+        return {
+            path: filePath,
+            content: content,
+            type: 'binary',
+            originalHash: null,
+        } satisfies BinaryEditorFile;
+    } else if (typeof content === 'string') {
+        const originalHash = await hashContent(content);
+        return {
+            path: filePath,
+            content: content,
+            type: 'text',
+            originalHash,
+        } as TextEditorFile;
+    } else {
+        throw new Error('Invalid content type');
+    }
+}
+
+export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, branchId, onUnsavedChangesChange }, ref) => {
     const editorEngine = useEditorEngine();
-    const activeSandbox = editorEngine.branches.activeSandbox;
-    const files = activeSandbox.files;
-    const ide = editorEngine.ide;
-    const editorContainer = useRef<HTMLDivElement | null>(null);
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
-    const fileTabsContainerRef = useRef<HTMLDivElement>(null);
-    const fileTreeRef = useRef<any>(null);
+    const navigationTarget = useCodeNavigation();
 
-    // Helper function to check if sandbox is connected and ready
-    const isSandboxReady = ide.isSandboxReady;
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
+    const [activeEditorFile, setActiveEditorFile] = useState<EditorFile | null>(null);
+    const [openedEditorFiles, setOpenedEditorFiles] = useState<EditorFile[]>([]);
+    const [showLocalUnsavedDialog, setShowLocalUnsavedDialog] = useState(false);
 
-    // Helper function to handle sandbox not ready scenarios
-    const handleSandboxNotReady = (operation: string): void => {
-        const message = `Cannot ${operation}: sandbox not connected`;
-        console.error(message);
+    // This is a workaround to allow code controls to access the hasUnsavedChanges state
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const branchData = editorEngine.branches.getBranchDataById(branchId);
+    const {
+        entries: fileEntries,
+        loading: filesLoading,
+    } = useDirectory(projectId, branchId, '/');
+
+    const {
+        content: loadedContent,
+    } = useFile(projectId, branchId, selectedFilePath || '');
+
+    // React to loadedContent changes - build local EditorFile and manage opened files
+    useEffect(() => {
+        if (!selectedFilePath || !loadedContent) return;
+
+        const processFile = async () => {
+            const newLocalFile = await createEditorFile(selectedFilePath, loadedContent);
+            const existingFileIndex = openedEditorFiles.findIndex(f => pathsEqual(f.path, selectedFilePath));
+
+            if (existingFileIndex >= 0) {
+                updateExistingFile(existingFileIndex, newLocalFile);
+            } else {
+                addNewFile(newLocalFile);
+            }
+        };
+
+        const updateExistingFile = (index: number, newFile: EditorFile) => {
+            const existingFile = openedEditorFiles[index];
+            if (!existingFile) return;
+
+            const updatedFile = createUpdatedFile(existingFile, newFile);
+            const updatedFiles = [...openedEditorFiles];
+            updatedFiles[index] = updatedFile;
+
+            setOpenedEditorFiles(updatedFiles);
+            setActiveEditorFile(updatedFile);
+        };
+
+        const addNewFile = (newFile: EditorFile) => {
+            setOpenedEditorFiles(prev => [...prev, newFile]);
+            setActiveEditorFile(newFile);
+        };
+
+        const createUpdatedFile = (existing: EditorFile, newFile: EditorFile): EditorFile => {
+            if (existing.type === 'binary') {
+                return { ...existing, content: newFile.content };
+            }
+
+            const existingText = existing as TextEditorFile;
+            const newText = newFile as TextEditorFile;
+            const diskContentChanged = existingText.originalHash !== newText.originalHash;
+
+            return {
+                ...existingText,
+                content: diskContentChanged ? newText.content : existingText.content,
+                originalHash: diskContentChanged ? newText.originalHash : existingText.originalHash,
+            };
+        };
+
+        processFile();
+    }, [loadedContent]);
+
+    useEffect(() => {
+        if (!navigationTarget) return;
+
+        const { filePath } = navigationTarget;
+
+        if (!selectedFilePath || !pathsEqual(selectedFilePath, filePath)) {
+            setSelectedFilePath(filePath);
+        }
+    }, [navigationTarget]);
+
+    // Track dirty state of opened files
+    useEffect(() => {
+        const checkDirtyState = async () => {
+            if (openedEditorFiles.length === 0) {
+                setHasUnsavedChanges(false);
+                return;
+            }
+
+            const dirtyChecks = await Promise.all(
+                openedEditorFiles.map(file => isDirty(file))
+            );
+            setHasUnsavedChanges(dirtyChecks.some(dirty => dirty));
+        };
+
+        checkDirtyState();
+    }, [openedEditorFiles]);
+
+    // Notify parent when hasUnsavedChanges changes
+    useEffect(() => {
+        onUnsavedChangesChange?.(hasUnsavedChanges);
+    }, [hasUnsavedChanges, onUnsavedChangesChange]);
+
+    const refreshFileTree = () => {
+        // Force refresh of file entries
+        // This will cause the file tree to re-render with updated file list
+        // Note: The useDirectory hook automatically handles file watching,
+        // but this provides an explicit refresh mechanism for after file operations
+        setTimeout(() => {
+            // Simple state update to trigger re-render
+            setSelectedFilePath(prev => prev);
+        }, 100);
     };
 
-    const getActiveEditorView = (): EditorView | undefined => {
-        if (!ide.activeFile) {
-            return undefined;
-        }
-        return editorViewsRef.current.get(ide.activeFile.id);
+    // Get current directory from selected file path or default to root
+    const getCurrentPath = () => {
+        if (!selectedFilePath) return '';
+        const parts = selectedFilePath.split('/');
+        parts.pop(); // Remove filename to get directory
+        return parts.join('/');
     };
 
-    useEffect(() => {
-        const checkSelectedElement = async () => {
-            const selectedElements = editorEngine.elements.selected;
-            if (selectedElements.length === 0) {
-                return;
-            }
-
-            const element = selectedElements[0];
-            ide.isLoading = true;
-
-            try {
-                const filePath = await getFilePathFromOid(element?.oid || '');
-
-                if (filePath) {
-                    const file = await loadFile(filePath);
-
-                    // Only get range information if file was successfully loaded
-                    if (file) {
-                        // Gets range information for the selected element
-                        const range = await getElementCodeRange(element);
-
-                        if (range) {
-                            ide.setHighlightRange(range);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading file for selected element:', error);
-            } finally {
-                ide.isLoading = false;
-            }
-        };
-
-        checkSelectedElement();
-    }, [editorEngine.elements.selected]);
-
-    async function getElementCodeRange(element: any): Promise<CodeRange | null> {
-        if (!ide.activeFile || !element.oid) {
-            return null;
+    const handleFileTreeSelect = (filePath: string, searchTerm?: string) => {
+        setSelectedFilePath(filePath);
+        if (searchTerm) {
+            //    TODO: Reimplement search term handling
         }
+    };
 
-        if (!isSandboxReady) {
-            handleSandboxNotReady('get element code range');
-            return null;
-        }
-
+    const handleSaveFile = async () => {
+        if (!selectedFilePath || !activeEditorFile) return;
         try {
-            const templateNode = editorEngine.templateNodes.getTemplateNode(element.oid);
-            if (templateNode?.startTag) {
-                return {
-                    startLineNumber: templateNode.startTag.start.line,
-                    startColumn: templateNode.startTag.start.column,
-                    endLineNumber: templateNode.endTag?.end.line || templateNode.startTag.end.line,
-                    endColumn: templateNode.endTag?.end.column || templateNode.startTag.end.column,
-                };
+            if (!branchData) {
+                throw new Error('Branch data not found');
+            }
+
+            await branchData.codeEditor.writeFile(selectedFilePath, activeEditorFile.content || '');
+
+            // Update originalHash to mark file as clean after successful save
+            if (activeEditorFile.type === 'text') {
+                const newHash = await hashContent(activeEditorFile.content);
+                const updatedFile = { ...activeEditorFile, originalHash: newHash };
+
+                // Update in opened files list
+                const updatedFiles = openedEditorFiles.map(file =>
+                    pathsEqual(file.path, selectedFilePath) ? updatedFile : file
+                );
+                setOpenedEditorFiles(updatedFiles);
+                setActiveEditorFile(updatedFile);
             }
         } catch (error) {
-            console.error('Error getting element code range:', error);
+            console.error('Failed to save file:', error);
+            alert(`Failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
-        return null;
-    }
+    };
 
-    useEffect(() => {
-        if (!ide.activeFile || !ide.highlightRange) {
-            return;
-        }
+    const closeLocalFile = useCallback((filePath: string) => {
+        const fileToClose = openedEditorFiles.find(f => pathsEqual(f.path, filePath));
+        if (fileToClose) {
+            isDirty(fileToClose).then(dirty => {
+                if (dirty) {
+                    setShowLocalUnsavedDialog(true);
+                    return;
+                }
 
-        const editorView = getActiveEditorView();
-        if (!editorView) {
-            return;
-        }
-
-        try {
-            // Calculate positions for scrolling
-            const lines = ide.activeFile!.content.split('\n');
-
-            // Safety check - validate line numbers are within bounds
-            if (
-                ide.highlightRange.startLineNumber > lines.length ||
-                ide.highlightRange.endLineNumber > lines.length ||
-                ide.highlightRange.startLineNumber < 1 ||
-                ide.highlightRange.endLineNumber < 1
-            ) {
-                console.warn('Highlight range out of bounds, clearing selection');
-                ide.setHighlightRange(null);
-                return;
-            }
-
-            // Calculate start position
-            let startPos = 0;
-            for (let i = 0; i < ide.highlightRange.startLineNumber - 1; i++) {
-                startPos += (lines[i]?.length || 0) + 1; // +1 for newline
-            }
-            startPos += ide.highlightRange.startColumn;
-
-            // Calculate end position
-            let endPos = 0;
-            for (let i = 0; i < ide.highlightRange.endLineNumber - 1; i++) {
-                endPos += (lines[i]?.length || 0) + 1; // +1 for newline
-            }
-            endPos += ide.highlightRange.endColumn;
-
-            if (
-                startPos >= ide.activeFile!.content.length ||
-                endPos > ide.activeFile!.content.length ||
-                startPos < 0 ||
-                endPos < 0
-            ) {
-                console.warn('Highlight position out of bounds, clearing selection');
-                ide.setHighlightRange(null);
-                return;
-            }
-
-            // Create the selection and apply it in a single transaction
-            const selection = EditorSelection.create([EditorSelection.range(startPos, endPos)]);
-            
-            editorView.dispatch({
-                selection,
-                effects: [
-                    EditorView.scrollIntoView(startPos, {
-                        y: 'start',
-                        yMargin: 48 
-                    })
-                ],
-                userEvent: 'select.element'
+                closeFileInternal(filePath);
             });
-
-            // Force the editor to focus
-            editorView.focus();
-        } catch (error) {
-            console.error('Error applying highlight:', error);
-            ide.setHighlightRange(null);
         }
-    }, [ide.highlightRange, ide.activeFile]);
+    }, [openedEditorFiles]);
 
-    useEffect(() => {
-        if (!ide.activeFile || !ide.searchTerm) {
-            return;
-        }
+    const closeAllLocalFiles = () => {
+        Promise.all(openedEditorFiles.map(async file => ({
+            file,
+            dirty: await isDirty(file)
+        }))).then(fileStatuses => {
+            // Close clean files immediately
+            const cleanFiles = fileStatuses.filter(status => !status.dirty);
+            cleanFiles.forEach(status => closeFileInternal(status.file.path));
 
-        const editorView = getActiveEditorView();
-        if (!editorView) {
-            return;
-        }
-
-        try {
-            editorView.dispatch({
-                effects: createSearchHighlight(ide.searchTerm)
-            });
-
-            setTimeout(() => {
-                scrollToFirstMatch(editorView, ide.searchTerm);
-            }, 100);
-        } catch (error) {
-            console.error('Error applying search highlight:', error);
-        }
-    }, [ide.searchTerm, ide.activeFile]);
-
-    // Subscribe to file events
-    useEffect(() => {
-        const handleFileEvent = async (event: FileEvent) => {
-            // Only fetch all files when files are added/removed
-            if (event.type === 'add' || event.type === 'remove') {
-                ide.isFilesLoading = true;
-                try {
-                    await ide.refreshFiles();
-                } catch (error) {
-                    console.error('Error loading files:', error);
-                }
-            }
-
-            if (event.type === 'change') {
-                if (ide.activeFile) {
-                    if (event.paths.includes(ide.activeFile.path)) {
-                        await loadNewContent(ide.activeFile.path);
-                    }
-                }
-            }
-        };
-
-        const unsubscribe = activeSandbox.fileEventBus.subscribe('*', handleFileEvent);
-
-        return () => {
-            unsubscribe();
-        };
-    }, [activeSandbox, ide.activeFile, editorEngine.branches.activeBranch.id]);
-
-    // Load files when active sandbox changes
-    useEffect(() => {
-        const loadFilesForActiveSandbox = async () => {
-            if (!isSandboxReady) {
+            // Check if any dirty files remain
+            const dirtyFiles = fileStatuses.filter(status => status.dirty);
+            if (dirtyFiles.length > 0) {
+                setShowLocalUnsavedDialog(true);
                 return;
             }
+        });
+    };
 
-            // Preserve the currently active file path and highlight range before clearing
-            const activeFilePath = ide.activeFile?.path;
-            const savedHighlightRange = ide.highlightRange;
+    const handleLocalFileTabSelect = (file: EditorFile) => {
+        setActiveEditorFile(file);
+        setSelectedFilePath(file.path);
+    };
 
-            // Clear existing files and editors when switching sandboxes
-            ide.clear();
-            editorViewsRef.current.forEach((view) => view.destroy());
-            editorViewsRef.current.clear();
+    const updateLocalFileContent = (filePath: string, content: string) => {
+        const updatedFiles = openedEditorFiles.map(file =>
+            pathsEqual(file.path, filePath)
+                ? { ...file, content }
+                : file
+        );
+        setOpenedEditorFiles(updatedFiles);
 
-            // Reset file tree selection state
-            if (fileTreeRef.current?.deselectAll) {
-                fileTreeRef.current.deselectAll();
-            }
-
-            ide.isFilesLoading = true;
-            try {
-                await ide.refreshFiles();
-
-                // Reopen the previously active file if it exists in the new branch
-                if (activeFilePath) {
-                    const fileExists = files.some(file => file === activeFilePath);
-                    if (fileExists) {
-                        await loadFile(activeFilePath);
-                        // Restore the highlight range if it was preserved
-                        if (savedHighlightRange) {
-                            ide.setHighlightRange(savedHighlightRange);
-                        }
-                        // Update the file tree selection
-                        if (fileTreeRef.current?.selectFile) {
-                            fileTreeRef.current.selectFile(activeFilePath);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading files for active sandbox:', error);
-            }
-        };
-
-        loadFilesForActiveSandbox();
-    }, [activeSandbox]);
-
-    async function loadNewContent(filePath: string) {
-        if (!isSandboxReady) {
-            handleSandboxNotReady('load new content');
-            return;
+        // Update active file if it's the one being updated
+        if (activeEditorFile && pathsEqual(activeEditorFile.path, filePath)) {
+            const updatedActiveFile = { ...activeEditorFile, content };
+            setActiveEditorFile(updatedActiveFile);
         }
+    };
 
-        try {
-            await ide.loadNewContent(filePath);
-        } catch (error) {
-            console.error('Error loading new content:', error);
-        }
-    }
-
-    const loadFile = useCallback(async (filePath: string, searchTerm?: string): Promise<EditorFile | null> => {
-        if (!isSandboxReady) {
-            handleSandboxNotReady('load file');
-            return null;
-        }
-
-        try {
-            return await ide.openFile(filePath, searchTerm, false);
-        } catch (error) {
-            console.error('Error loading file:', error);
-            return null;
-        }
-    }, [isSandboxReady]);
-
-    function handleFileSelect(file: EditorFile) {
-        ide.setHighlightRange(null);
-        ide.activeFile = file;
-    }
-
-    async function getFilePathFromOid(oid: string): Promise<string | null> {
-        if (!isSandboxReady) {
-            handleSandboxNotReady('get file path from OID');
-            return null;
-        }
-
-        return ide.getFilePathFromOid(oid);
-    }
-
-    const closeFile = useCallback((fileId: string) => {
-        if (ide.openedFiles.find(f => f.id === fileId)?.isDirty) {
-            ide.showUnsavedDialog = true;
-            return;
-        }
-
-        const editorView = editorViewsRef.current.get(fileId);
+    // Centralized function to close a file and clean up resources
+    const closeFileInternal = (filePath: string) => {
+        const editorView = editorViewsRef.current.get(filePath);
         if (editorView) {
             editorView.destroy();
-            editorViewsRef.current.delete(fileId);
-        }
-        ide.closeFile(fileId);
-    }, [ide]);
-
-    const saveFile = async () => {
-        if (!ide.activeFile) {
-            return;
+            editorViewsRef.current.delete(filePath);
         }
 
-        if (!isSandboxReady) {
-            handleSandboxNotReady('save file');
-            return;
+        const updatedFiles = openedEditorFiles.filter(f => !pathsEqual(f.path, filePath));
+        setOpenedEditorFiles(updatedFiles);
+
+        if (activeEditorFile && pathsEqual(activeEditorFile.path, filePath)) {
+            const newActiveFile = updatedFiles.length > 0 ? updatedFiles[updatedFiles.length - 1] || null : null;
+            setActiveEditorFile(newActiveFile);
         }
 
-        if (ide.pendingCloseAll) {
-            const file = ide.openedFiles.find((f) => f.id === ide.activeFile?.id);
-            if (file) {
-                await ide.saveActiveFile();
-                closeFile(file.id);
+        // Clear selected file path if the closed file was selected
+        if (selectedFilePath && pathsEqual(selectedFilePath, filePath)) {
+            setSelectedFilePath(null);
+        }
+    };
+
+    const discardLocalFileChanges = (filePath: string) => {
+        closeFileInternal(filePath);
+        setShowLocalUnsavedDialog(false);
+    };
+
+    const handleRenameFile = (oldPath: string, newName: string) => {
+        if (!branchData?.codeEditor) return;
+        try {
+            branchData.codeEditor.moveFile(oldPath, newName);
+        } catch (error) {
+            console.error('Failed to rename file:', error);
+            toast.error(`Failed to rename: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
+
+    const handleDeleteFile = (path: string) => {
+        if (!branchData?.codeEditor) return;
+        try {
+            branchData.codeEditor.deleteFile(path);
+        } catch (error) {
+            console.error('Failed to delete file:', error);
+            toast.error(`Failed to delete: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
+
+    const handleCreateFile = async (filePath: string, content: string = '') => {
+        try {
+            if (!branchData) {
+                throw new Error('Branch data not found');
             }
 
-            const remainingDirty = ide.openedFiles.filter((f) => f.isDirty);
-            if (remainingDirty.length !== 0) {
-                ide.showUnsavedDialog = true;
-                return;
-            }
+            await branchData.codeEditor.writeFile(filePath, content);
 
-            ide.closeAllFiles();
-            ide.pendingCloseAll = false;
-            ide.showUnsavedDialog = false;
-
-            return;
-        }
-
-        await ide.saveActiveFile();
-
-        if (ide.showUnsavedDialog) {
-            ide.showUnsavedDialog = false;
-            closeFile(ide.activeFile.id);
-        }
-
-        toast('File saved!');
-    };
-
-    const handleFileTreeSelect = async (nodes: any[]) => {
-        if (nodes.length > 0 && !nodes[0].data.isDirectory) {
-            await loadFile(nodes[0].data.path);
-            ide.setHighlightRange(null);
+            toast(`File "${filePath.split('/').pop()}" created successfully!`);
+        } catch (error) {
+            console.error('Failed to create file:', error);
+            throw error;
         }
     };
 
-    function closeAllFiles() {
-        const dirtyFiles = ide.openedFiles.filter((file) => file.isDirty);
-        if (dirtyFiles.length > 0) {
-            ide.showUnsavedDialog = true;
-            ide.pendingCloseAll = true;
-            return;
+    const handleCreateFolder = async (folderPath: string) => {
+        if (!branchData?.codeEditor) throw new Error('Code editor not available');
+        try {
+            await branchData.codeEditor.createDirectory(folderPath);
+            toast(`Folder "${folderPath.split('/').pop()}" created successfully!`);
+        } catch (error) {
+            console.error('Failed to create folder:', error);
+            throw error;
         }
-
-        editorViewsRef.current.forEach((view) => view.destroy());
-        editorViewsRef.current.clear();
-        ide.closeAllFiles();
-    }
-
-    const updateFileContent = (fileId: string, content: string) => {
-        ide.updateFileContent(fileId, content);
     };
 
-    async function discardChanges(fileId: string) {
-        if (ide.pendingCloseAll) {
-            const file = ide.openedFiles.find((e) => e.id === fileId);
-            if (file) {
-                await ide.discardFileChanges(file.id);
-                closeFile(fileId);
-                ide.showUnsavedDialog = true;
-                const isDirty = ide.openedFiles.filter((val) => val.isDirty);
-                if (isDirty.length === 0) {
-                    ide.closeAllFiles();
-                    ide.pendingCloseAll = false;
-                    ide.showUnsavedDialog = false;
-                }
-                return;
-            }
-
-            ide.pendingCloseAll = false;
-            return;
-        }
-
-        if (!ide.activeFile) {
-            return;
-        }
-
-        await ide.discardFileChanges(fileId);
-        closeFile(fileId);
-        ide.showUnsavedDialog = false;
-    }
-
-    const getFileUrl = (file: EditorFile) => {
-        const mime = getMimeType(file.filename.toLowerCase());
-        return `data:${mime};base64,${file.content}`;
-    };
+    // Expose functions through ref. This won't be needed once we move the code controls
+    useImperativeHandle(ref, (): CodeTabRef => ({
+        hasUnsavedChanges,
+        getCurrentPath,
+        handleSaveFile,
+        refreshFileTree,
+        handleCreateFile,
+        handleCreateFolder
+    }), [hasUnsavedChanges, getCurrentPath, handleSaveFile, refreshFileTree, handleCreateFile, handleCreateFolder]);
 
     // Cleanup editor instances when component unmounts
     useEffect(() => {
@@ -442,234 +355,54 @@ export const CodeTab = observer(() => {
         };
     }, []);
 
-
-    const scrollToActiveTab = useCallback(() => {
-        if (!fileTabsContainerRef.current || !ide.activeFile) return;
-
-        const container = fileTabsContainerRef.current;
-        const activeTab = container.querySelector('[data-active="true"]');
-
-        if (activeTab) {
-            const containerRect = container.getBoundingClientRect();
-            const tabRect = activeTab.getBoundingClientRect();
-
-            // Calculate if the tab is outside the visible area
-            if (tabRect.left < containerRect.left) {
-                // Tab is to the left of the visible area
-                container.scrollLeft += tabRect.left - containerRect.left;
-            } else if (tabRect.right > containerRect.right) {
-                // Tab is to the right of the visible area
-                container.scrollLeft += tabRect.right - containerRect.right;
-            }
-        }
-    }, [ide.activeFile]);
-
-    // Scroll to active tab when it changes
-    useEffect(() => {
-        scrollToActiveTab();
-    }, [ide.activeFile, scrollToActiveTab]);
-
     return (
-        <div className="size-full flex flex-col">
-
-            {/* Show connection status when sandbox is not ready */}
-            {!isSandboxReady ? (
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="animate-spin h-8 w-8 border-2 border-foreground-hover rounded-full border-t-transparent"></div>
-                        <span className="text-sm text-muted-foreground">
-                            Connecting to sandbox...
-                        </span>
-                    </div>
-                </div>
-            ) : (
-                <div className="flex flex-1 min-h-0 overflow-hidden">
-                    {ide.isFilesVisible && (
-                        <FileTree
-                            ref={fileTreeRef}
-                            onFileSelect={loadFile}
-                        />
-                    )}
-
-                    {/* Editor section */}
-                    <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-                        {/* File tabs */}
-                        <div className="flex items-center justify-between h-11 pl-0 border-b-[0.5px] flex-shrink-0 relative">
-                            <div className="absolute left-0 top-0 bottom-0 z-20 border-r-[0.5px] h-full flex items-center p-1 bg-background">
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => ide.isFilesVisible = !ide.isFilesVisible}
-                                            className="text-muted-foreground hover:text-foreground"
-                                        >
-                                            {ide.isFilesVisible ? <Icons.SidebarLeftCollapse /> : <Icons.SidebarLeftExpand />}
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="bottom" className="mt-1" hideArrow>
-                                        {ide.isFilesVisible ? 'Collapse sidebar' : 'Expand sidebar'}
-                                    </TooltipContent>
-                                </Tooltip>
-                            </div>
-                            <div className="absolute right-0 top-0 bottom-0 z-20 flex items-center h-full border-l-[0.5px] p-1 bg-background w-11">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger className="text-muted-foreground hover:text-foreground hover:bg-foreground/5 p-1 rounded h-full w-full flex items-center justify-center px-2.5">
-                                        <Icons.DotsHorizontal className="h-4 w-4" />
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="-mt-1">
-                                        <DropdownMenuItem
-                                            onClick={() => ide.activeFile && closeFile(ide.activeFile.id)}
-                                            disabled={!ide.activeFile}
-                                            className="cursor-pointer"
-                                        >
-                                            Close file
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            onClick={() => closeAllFiles()}
-                                            disabled={ide.openedFiles.length === 0}
-                                            className="cursor-pointer"
-                                        >
-                                            Close all
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                            <div className="flex items-center h-full overflow-x-auto w-full ml-11 mr-10.5" ref={fileTabsContainerRef}>
-                                {ide.openedFiles.map((file) => (
-                                    <FileTab
-                                        key={file.id}
-                                        filename={file.filename}
-                                        isActive={ide.activeFile?.id === file.id}
-                                        isDirty={file.isDirty}
-                                        onClick={() => handleFileSelect(file)}
-                                        onClose={() => closeFile(file.id)}
-                                        data-active={ide.activeFile?.id === file.id}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Code Editor Area */}
-                        <div className="flex-1 relative overflow-hidden">
-                            {ide.isLoading && (
-                                <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
-                                    <div className="flex flex-col items-center">
-                                        <div className="animate-spin h-8 w-8 border-2 border-foreground-hover rounded-full border-t-transparent"></div>
-                                        <span className="mt-2 text-sm">Loading file...</span>
-                                    </div>
-                                </div>
-                            )}
-                            <div ref={editorContainer} className="h-full">
-                                {/* Empty state when no file is selected */}
-                                {ide.openedFiles.length === 0 || !ide.activeFile ? (
-                                    <div className="absolute inset-0 flex items-center justify-center z-10">
-                                        <div className="text-center text-muted-foreground text-base">
-                                            Open a file or select an element on the page.
-                                        </div>
-                                    </div>
-                                ) : (
-                                    ide.openedFiles.map((file) => (
-                                        <div
-                                            key={file.id}
-                                            className="h-full"
-                                            style={{
-                                                display: ide.activeFile?.id === file.id ? 'block' : 'none',
-                                            }}
-                                        >
-                                            {file.isBinary ? (
-                                                <img
-                                                    src={getFileUrl(file)}
-                                                    alt={file.filename}
-                                                    className="w-full h-full object-contain p-5"
-                                                />
-                                            ) : (
-                                                <CodeMirror
-                                                    key={file.id}
-                                                    value={file.content}
-                                                    height="100%"
-                                                    theme="dark"
-                                                    extensions={[
-                                                        ...getBasicSetup(saveFile),
-                                                        ...getExtensions(file.language),
-                                                    ]}
-                                                    onChange={(value) => {
-                                                        if (ide.highlightRange) {
-                                                            ide.setHighlightRange(null);
-                                                        }
-                                                        updateFileContent(file.id, value);
-                                                    }}
-                                                    className="h-full overflow-hidden"
-                                                    onCreateEditor={(editor) => {
-                                                        editorViewsRef.current.set(file.id, editor);
-
-                                                        editor.dom.addEventListener('mousedown', () => {
-                                                            if (ide.highlightRange) {
-                                                                ide.setHighlightRange(null);
-                                                            }
-                                                        });
-
-                                                        // If this file is the active file and we have a highlight range,
-                                                        // trigger the highlight effect again
-                                                        if (
-                                                            ide.activeFile &&
-                                                            ide.activeFile.id === file.id &&
-                                                            ide.highlightRange
-                                                        ) {
-                                                            setTimeout(() => {
-                                                                if (ide.highlightRange) {
-                                                                    ide.setHighlightRange(ide.highlightRange);
-                                                                }
-                                                            }, 300);
-                                                        }
-                                                    }}
-                                                />
-                                            )}
-                                            {ide.activeFile?.isDirty && ide.showUnsavedDialog && (
-                                                <div className="absolute top-4 left-1/2 z-50 -translate-x-1/2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 shadow-lg rounded-lg p-4 w-[320px]">
-                                                    <div className="text-sm text-gray-800 dark:text-gray-100 mb-4">
-                                                        You have unsaved changes. Are you sure you want
-                                                        to close this file?
-                                                    </div>
-                                                    <div className="flex justify-end gap-1">
-                                                        <Button
-                                                            onClick={async () => {
-                                                                await discardChanges(file.id);
-                                                            }}
-                                                            variant="ghost"
-                                                            className="text-red hover:text-red"
-                                                        >
-                                                            Discard
-                                                        </Button>
-                                                        <Button
-                                                            onClick={async () => {
-                                                                await saveFile();
-                                                            }}
-                                                            variant="ghost"
-                                                            className="text-sm text-blue-500 hover:text-blue-500"
-                                                        >
-                                                            Save
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            onClick={() => {
-                                                                ide.showUnsavedDialog = false;
-                                                                ide.pendingCloseAll = false;
-                                                            }}
-                                                        >
-                                                            Cancel
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+        <div className="size-full flex flex-row flex-1 min-h-0">
+            <motion.div
+                initial={false}
+                animate={{
+                    width: isSidebarOpen ? "auto" : 0,
+                    opacity: isSidebarOpen ? 1 : 0
+                }}
+                transition={{
+                    duration: 0.3,
+                    ease: [0.4, 0.0, 0.2, 1]
+                }}
+                className="flex-shrink-0 overflow-y-auto"
+                style={{ minWidth: 0 }}>
+                <FileTree
+                    onFileSelect={handleFileTreeSelect}
+                    fileEntries={fileEntries}
+                    isLoading={filesLoading}
+                    selectedFilePath={selectedFilePath}
+                    onDeleteFile={handleDeleteFile}
+                    onRenameFile={handleRenameFile}
+                    onRefresh={() => { }}
+                />
+            </motion.div>
+            <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+                <FileTabs
+                    openedFiles={openedEditorFiles}
+                    activeFile={activeEditorFile}
+                    isSidebarOpen={isSidebarOpen}
+                    setIsSidebarOpen={setIsSidebarOpen}
+                    onFileSelect={handleLocalFileTabSelect}
+                    onCloseFile={closeLocalFile}
+                    onCloseAllFiles={closeAllLocalFiles}
+                />
+                <CodeEditorArea
+                    editorViewsRef={editorViewsRef}
+                    openedFiles={openedEditorFiles}
+                    activeFile={activeEditorFile}
+                    showUnsavedDialog={showLocalUnsavedDialog}
+                    navigationTarget={navigationTarget}
+                    onSaveFile={handleSaveFile}
+                    onUpdateFileContent={updateLocalFileContent}
+                    onDiscardChanges={discardLocalFileChanges}
+                    onCancelUnsaved={() => {
+                        setShowLocalUnsavedDialog(false);
+                    }}
+                />
+            </div>
         </div>
     );
-});
+}))

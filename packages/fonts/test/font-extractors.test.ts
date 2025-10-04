@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'bun:test';
+import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import {
     parseFontDeclarations,
     buildFontConfiguration,
@@ -149,6 +149,16 @@ describe('buildFontConfiguration', () => {
 });
 
 describe('migrateFontsFromLayout', () => {
+    let originalConsoleError: typeof console.error;
+
+    beforeEach(() => {
+        originalConsoleError = console.error;
+    });
+
+    afterEach(() => {
+        console.error = originalConsoleError;
+    });
+
     const processMigrateFontsFromLayout = (content: string): string => {
         const result = migrateFontsFromLayout(content);
         return JSON.stringify(
@@ -189,6 +199,9 @@ describe('migrateFontsFromLayout', () => {
     });
 
     test('should handle invalid syntax gracefully', () => {
+        // Suppress console.error for expected parsing error
+        console.error = () => {};
+        
         const content = 'invalid javascript syntax {';
         const result = migrateFontsFromLayout(content);
         expect(result.layoutContent).toBe(content);

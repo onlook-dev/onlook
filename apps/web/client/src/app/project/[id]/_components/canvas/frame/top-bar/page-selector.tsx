@@ -10,7 +10,7 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { cn } from '@onlook/ui/utils';
-import { inferPageFromUrl } from '@onlook/utility';
+import { inferPageFromUrl, pathsEqual } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import React, { useMemo, useState } from 'react';
 import { HoverOnlyTooltip } from '../../../editor-bar/hover-tooltip';
@@ -53,7 +53,7 @@ export const PageSelector = observer(({ frame, className, tooltipSide = "top", s
         const framePathname = new URL(frame.url).pathname;
         return allPages.find(page => {
             const pagePath = page.path === '/' ? '' : page.path;
-            return framePathname === pagePath || framePathname === page.path;
+            return pathsEqual(framePathname, pagePath) || pathsEqual(framePathname, page.path);
         });
     }, [frame.url, allPages]);
 

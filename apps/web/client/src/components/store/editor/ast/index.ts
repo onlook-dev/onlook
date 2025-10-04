@@ -1,6 +1,9 @@
-import type { LayerNode, TemplateNode } from '@onlook/models';
+import type { LayerNode } from '@onlook/models';
+import { getTemplateNodeChild } from '@onlook/parser';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
+import type { BranchData } from '../branch/manager';
+import type { JsxElementMetadata } from '@onlook/file-system';
 import { LayersManager } from './layers';
 
 export class AstManager {
@@ -63,51 +66,59 @@ export class AstManager {
             console.warn('Failed to processNodeForMap: No oid found');
             return;
         }
-        const templateNode = this.editorEngine.templateNodes.getTemplateNode(node.oid);
-        if (!templateNode) {
-            console.warn('Failed to processNodeForMap: Template node not found');
+
+        const frameData = this.editorEngine.frames.get(frameId);
+        if (!frameData) {
+            console.warn(`Failed to processNodeForMap: Frame data not found for frameId: ${frameId}`);
+            return;
+        }
+
+        const branchData = this.editorEngine.branches.getBranchDataById(frameData.frame.branchId);
+        if (!branchData) {
+            console.warn(`Failed to processNodeForMap: Branch data not found for branchId: ${frameData.frame.branchId}`);
+            return;
+        }
+
+        const metadata = await branchData.codeEditor.getJsxElementMetadata(node.oid);
+        if (!metadata) {
+            console.warn('Failed to processNodeForMap: Metadata not found');
             return;
         }
 
         // Check if node needs type assignment
-        const hasSpecialType = templateNode.dynamicType || templateNode.coreElementType;
+        const hasSpecialType = metadata.dynamicType || metadata.coreElementType;
         if (!hasSpecialType) {
-            this.findNodeInstance(frameId, node, node, templateNode);
+            this.findNodeInstance(frameId, node, node, metadata, branchData);
             return;
         }
 
-        const frame = this.editorEngine.frames.get(frameId);
-        if (!frame) {
-            console.warn('Failed: Frame not found');
-            return;
+        if (metadata.dynamicType) {
+            node.dynamicType = metadata.dynamicType;
         }
 
-        if (templateNode.dynamicType) {
-            node.dynamicType = templateNode.dynamicType;
+        if (metadata.coreElementType) {
+            node.coreElementType = metadata.coreElementType;
         }
 
-        if (templateNode.coreElementType) {
-            node.coreElementType = templateNode.coreElementType;
-        }
-
-        if (!frame.view) {
+        if (!frameData.view) {
             console.error('No frame view found');
             return;
         }
 
-        frame.view.setElementType(
+        frameData.view.setElementType(
             node.domId,
-            templateNode.dynamicType,
-            templateNode.coreElementType,
+            metadata.dynamicType || null,
+            metadata.coreElementType || null,
         );
-        this.findNodeInstance(frameId, node, node, templateNode);
+        this.findNodeInstance(frameId, node, node, metadata, branchData);
     }
 
     private async findNodeInstance(
         frameId: string,
         originalNode: LayerNode,
         node: LayerNode,
-        templateNode: TemplateNode,
+        metadata: JsxElementMetadata,
+        branchData: BranchData,
     ) {
         if (node.tagName.toLocaleLowerCase() === 'body') {
             return;
@@ -127,14 +138,14 @@ export class AstManager {
             console.warn('Failed to findNodeInstance: Parent has no oid');
             return;
         }
-        const parentTemplateNode = this.editorEngine.templateNodes.getTemplateNode(parent.oid);
+        const parentMetadata = await branchData.codeEditor.getJsxElementMetadata(parent.oid);
 
-        if (!parentTemplateNode) {
-            console.warn('Failed to findNodeInstance: Parent template node not found');
+        if (!parentMetadata) {
+            console.warn('Failed to findNodeInstance: Parent metadata not found');
             return;
         }
 
-        if (parentTemplateNode.component !== templateNode.component) {
+        if (parentMetadata.component !== metadata.component) {
             if (!parent.children) {
                 console.warn('Failed to findNodeInstance: Parent has no children');
                 return;
@@ -164,12 +175,12 @@ export class AstManager {
                 return;
             }
 
-            const res: { instanceId: string; component: string } | null =
-                await this.editorEngine.templateNodes.getTemplateNodeChild(
-                    parent.oid,
-                    templateNode,
-                    index,
-                );
+            // Use getTemplateNodeChild to find the specific instance
+            const res = await getTemplateNodeChild(
+                parentMetadata.code,
+                metadata,
+                index,
+            );
 
             if (res) {
                 originalNode.instanceId = res.instanceId;
@@ -181,7 +192,7 @@ export class AstManager {
                     res.component,
                 );
             } else {
-                await this.findNodeInstance(frameId, originalNode, parent, templateNode);
+                await this.findNodeInstance(frameId, originalNode, parent, metadata, branchData);
             }
         }
     }

@@ -1,50 +1,89 @@
+'use client';
+
 import { useEditorEngine } from '@/components/store/editor';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
-import Folder from './folder';
-import { FolderProvider } from './providers/folder-provider';
-import { ImagesProvider, useImagesContext } from './providers/images-provider';
+import { BreadcrumbNavigation } from './breadcrumb-navigation';
+import { FolderList } from './folder-list';
+import { useImageOperations } from './hooks/use-image-operations';
+import { useNavigation } from './hooks/use-navigation';
+import { ImageGrid } from './image-grid';
+import { SearchUploadBar } from './search-upload-bar';
 
-export const ImagesTab = () => {
-    return (
-        <ImagesProvider>
-            <FolderProvider>
-                <ImagesTabContent />
-            </FolderProvider>
-        </ImagesProvider>
-    );
-};
-
-const ImagesTabContent = observer(() => {
+export const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const isIndexing = editorEngine.activeSandbox.isIndexing;
-    const {
-        renameOperations: { renameState },
-        uploadOperations,
-    } = useImagesContext();
+    const projectId = editorEngine.projectId;
+    const branchId = editorEngine.branches.activeBranch.id;
 
-    if (isIndexing) {
+    // Navigation state and handlers
+    const {
+        activeFolder,
+        search,
+        setSearch,
+        breadcrumbSegments,
+        navigateToFolder,
+        handleFolderClick,
+        filterImages,
+    } = useNavigation();
+
+    // Get the CodeEditorApi for the active branch
+    const branchData = editorEngine.branches.getBranchDataById(editorEngine.branches.activeBranch.id);
+
+    // Image operations and data
+    const {
+        folders,
+        images: allImages,
+        loading,
+        error,
+        isUploading,
+        handleUpload,
+    } = useImageOperations(projectId, branchId, activeFolder, branchData?.codeEditor);
+
+    // Filter images based on search
+    const images = filterImages(allImages);
+
+    if (loading) {
         return (
             <div className="w-full h-full flex items-center justify-center gap-2">
-                <Icons.Reload className="w-4 h-4 animate-spin" />
-                Indexing images...
+                <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
+                Loading images...
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="w-full h-full flex items-center justify-center text-sm text-red-500">
+                Error: {error.message}
             </div>
         );
     }
 
     return (
-        <div className="w-full h-full flex flex-col gap-2 p-3 overflow-x-hidden">
-            {uploadOperations.uploadState.error && (
-                <div className="mb-2 px-3 py-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-md">
-                    {uploadOperations.uploadState.error}
-                </div>
-            )}
-            {renameState.error && (
-                <div className="mb-2 px-3 py-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-md">
-                    {renameState.error}
-                </div>
-            )}
-            <Folder />
+        <div className="w-full h-full flex flex-col gap-3 p-3">
+            <SearchUploadBar
+                search={search}
+                setSearch={setSearch}
+                isUploading={isUploading}
+                onUpload={handleUpload}
+            />
+
+            <BreadcrumbNavigation
+                breadcrumbSegments={breadcrumbSegments}
+                onNavigate={navigateToFolder}
+            />
+
+            <FolderList
+                folders={folders}
+                onFolderClick={handleFolderClick}
+            />
+
+            <ImageGrid
+                images={images}
+                projectId={projectId}
+                branchId={branchId}
+                search={search}
+            />
         </div>
     );
 });

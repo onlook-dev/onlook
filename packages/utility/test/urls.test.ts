@@ -1,7 +1,18 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { inferPageFromUrl } from '../src/urls';
 
+// Mock console.error to suppress expected error logs in tests
+let originalConsoleError: typeof console.error;
+
 describe('inferPageFromUrl', () => {
+    beforeEach(() => {
+        originalConsoleError = console.error;
+    });
+
+    afterEach(() => {
+        console.error = originalConsoleError;
+    });
+
     describe('Root path handling', () => {
         it('should return Home for root path', () => {
             expect(inferPageFromUrl('https://example.com/')).toEqual({
@@ -171,6 +182,11 @@ describe('inferPageFromUrl', () => {
     });
 
     describe('Error handling', () => {
+        beforeEach(() => {
+            // Suppress console.error for error handling tests since they're expected
+            console.error = () => {};
+        });
+
         it('should handle invalid URLs gracefully', () => {
             expect(inferPageFromUrl('not-a-valid-url')).toEqual({
                 name: 'Unknown Page',

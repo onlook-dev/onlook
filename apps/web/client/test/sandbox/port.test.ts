@@ -1,8 +1,20 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it, beforeEach, afterEach } from 'bun:test';
 import { detectPortFromPackageJson } from '../../src/app/projects/import/local/_context/index';
 import { ProcessedFileType, type ProcessedFile } from '../../src/app/projects/types';
 
 describe('detectPortFromPackageJson', () => {
+    let originalConsoleError: typeof console.error;
+
+    beforeEach(() => {
+        originalConsoleError = console.error;
+        // Suppress all console errors for this test suite since they test error conditions
+        console.error = () => {};
+    });
+
+    afterEach(() => {
+        console.error = originalConsoleError;
+    });
+
     const createMockFile = (content: string): ProcessedFile => ({
         path: 'package.json',
         content,

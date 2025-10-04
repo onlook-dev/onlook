@@ -62,7 +62,7 @@ export const Canvas = observer(() => {
             }
 
             // Switch to chat mode when clicking on empty canvas space during code editing
-            if (editorEngine.state.rightPanelTab === EditorTabValue.DEV) {
+            if (editorEngine.state.rightPanelTab === EditorTabValue.CODE) {
                 editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
             }
         } else {

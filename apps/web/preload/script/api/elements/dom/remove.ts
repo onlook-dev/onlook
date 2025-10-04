@@ -1,5 +1,6 @@
 import type { RemoveElementAction } from '@onlook/models/actions';
 import { getHtmlElement } from '../../../helpers';
+import { getBranchId } from '../../state';
 import { getElementLocation } from '../helpers';
 import { getActionElement } from './helpers';
 
@@ -30,6 +31,7 @@ export function getRemoveAction(
         targets: [
             {
                 frameId,
+                branchId: actionEl.branchId,
                 domId: actionEl.domId,
                 oid: actionEl.oid,
             },

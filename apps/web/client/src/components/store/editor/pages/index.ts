@@ -1,6 +1,5 @@
-import { LeftPanelTabValue } from '@onlook/models';
 import type { PageMetadata, PageNode } from '@onlook/models/pages';
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
 import {
@@ -26,23 +25,28 @@ export class PagesManager {
         makeAutoObservable(this);
     }
 
-    init() {
-        reaction(
-            () => {
-                return {
-                    isIndexing: this.editorEngine.activeSandbox.isIndexing,
-                    isIndexed: this.editorEngine.activeSandbox.isIndexed,
-                };
-            },
-            (sandboxStatus) => {
-                if (this.editorEngine.state.leftPanelTab !== LeftPanelTabValue.PAGES) {
-                    return;
-                }
-                if (sandboxStatus.isIndexed && !sandboxStatus.isIndexing) {
-                    this.scanPages();
-                }
-            },
-        );
+    init() { }
+
+    async scanPages() {
+        try {
+            if (this._isScanning) {
+                return;
+            }
+            this._isScanning = true;
+            const realPages = await scanPagesFromSandbox(this.editorEngine.activeSandbox);
+            this.setPages(realPages);
+            return;
+        } catch (error) {
+            console.error('Failed to scan pages from sandbox:', error);
+            this.setPages([]);
+        } finally {
+            this._isScanning = false;
+        }
+    }
+
+
+    get isScanning() {
+        return this._isScanning;
     }
 
     get tree() {
@@ -52,10 +56,6 @@ export class PagesManager {
     get activeRoute(): string | undefined {
         const frame = this.getActiveFrame();
         return frame ? this.activeRoutesByFrameId[frame.frame.id] : undefined;
-    }
-
-    get isScanning() {
-        return this._isScanning;
     }
 
     private getActiveFrame(): FrameData | undefined {
@@ -134,35 +134,6 @@ export class PagesManager {
         }
     }
 
-    async scanPages() {
-        try {
-            if (this._isScanning) {
-                return;
-            }
-            this._isScanning = true;
-            if (this.editorEngine.activeSandbox.session.provider) {
-                try {
-                    const realPages = await scanPagesFromSandbox(this.editorEngine.activeSandbox);
-
-                    this.setPages(realPages);
-                    this._isScanning = false;
-                    return;
-                } catch (error) {
-                    console.error('Failed to scan pages from sandbox:', error);
-                    this.setPages([]);
-                    this._isScanning = false;
-                }
-            } else {
-                console.log('Sandbox provider not available');
-                this.setPages([]);
-            }
-        } catch (error) {
-            console.error('Failed to scan pages:', error);
-            this.setPages([]);
-        } finally {
-            this._isScanning = false;
-        }
-    }
 
     public async createPage(baseRoute: string, pageName: string): Promise<void> {
         const { valid, error } = validateNextJsRoute(pageName);

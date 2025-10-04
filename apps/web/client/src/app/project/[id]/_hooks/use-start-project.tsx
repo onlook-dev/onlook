@@ -54,6 +54,12 @@ export const useStartProject = () => {
     }, [sandbox.session.isConnecting]);
 
     useEffect(() => {
+        if (tabState === 'reactivated') {
+            sandbox.session.reconnect(editorEngine.projectId, user?.id);
+        }
+    }, [tabState, sandbox.session]);
+
+    useEffect(() => {
         if (canvasWithFrames) {
             editorEngine.canvas.applyCanvas(canvasWithFrames.userCanvas);
             editorEngine.frames.applyFrames(canvasWithFrames.frames);
@@ -135,11 +141,6 @@ export const useStartProject = () => {
         }
     };
 
-    useEffect(() => {
-        if (tabState === 'reactivated') {
-            editorEngine.activeSandbox.session.reconnect(editorEngine.projectId, user?.id);
-        }
-    }, [tabState]);
 
     useEffect(() => {
         setError(userError?.message ?? canvasError?.message ?? conversationsError?.message ?? creationRequestError?.message ?? null);

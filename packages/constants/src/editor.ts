@@ -1,10 +1,9 @@
 import { Orientation, Theme } from './frame';
+import { ONLOOK_PRELOAD_SCRIPT } from './files';
 export const APP_NAME = 'Onlook';
 export const APP_SCHEMA = 'onlook';
 export const HOSTING_DOMAIN = 'onlook.live';
-export const CUSTOM_OUTPUT_DIR = '.next-prod';
 export const MAX_NAME_LENGTH = 50;
-
 export enum EditorAttributes {
     // DOM attributes
     ONLOOK_TOOLBAR = 'onlook-toolbar',
@@ -73,7 +72,7 @@ export const DEFAULT_COLOR_NAME = 'DEFAULT';
 
 const CDN_PRELOAD_SCRIPT_SRC =
     'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/client/public/onlook-preload-script.js';
-export const LOCAL_PRELOAD_SCRIPT_SRC = `/onlook-preload-script.js`;
+export const LOCAL_PRELOAD_SCRIPT_SRC = `/${ONLOOK_PRELOAD_SCRIPT}`;
 export const PRELOAD_SCRIPT_SRC = isDev ? LOCAL_PRELOAD_SCRIPT_SRC : CDN_PRELOAD_SCRIPT_SRC;
 
 export const DEPRECATED_PRELOAD_SCRIPT_SRCS = [

@@ -15,7 +15,7 @@ export class SessionManager {
         private readonly branch: Branch,
         private readonly errorManager: ErrorManager
     ) {
-        this.start(this.branch.sandbox.id);
+        void this.start(this.branch.sandbox.id);
         makeAutoObservable(this);
     }
 
@@ -143,12 +143,20 @@ export class SessionManager {
             if (isConnected2) {
                 return;
             }
-
-            await this.start(sandboxId, userId);
+            await this.restartProvider(sandboxId, userId);
         } catch (error) {
             console.error('Failed to reconnect to sandbox', error);
             this.isConnecting = false;
         }
+    }
+
+    async restartProvider(sandboxId: string, userId?: string) {
+        if (!this.provider) {
+            return;
+        }
+        await this.provider.destroy();
+        this.provider = null;
+        await this.start(sandboxId, userId);
     }
 
     async ping() {
@@ -175,10 +183,10 @@ export class SessionManager {
             if (!this.provider) {
                 throw new Error('No provider found in runCommand');
             }
-            
+
             // Append error suppression if ignoreError is true
             const finalCommand = ignoreError ? `${command} 2>/dev/null || true` : command;
-            
+
             streamCallback?.(finalCommand + '\n');
             const { output } = await this.provider.runCommand({ args: { command: finalCommand } });
             streamCallback?.(output);

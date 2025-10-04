@@ -2,6 +2,7 @@ import { type CodeAction } from '../actions/code';
 
 export interface CodeDiffRequest {
     oid: string;
+    branchId: string;
     attributes: Record<string, any>;
     textContent: string | null;
     overrideClasses: boolean | null;
@@ -21,12 +22,3 @@ export type FileToRequests = Map<
         content: string;
     }
 >;
-
-export interface FileNode {
-    id: string;
-    name: string;
-    path: string;
-    isDirectory: boolean;
-    children?: FileNode[];
-    extension?: string;
-}

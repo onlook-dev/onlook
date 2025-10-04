@@ -9,24 +9,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ChatTab } from './chat-tab';
 import { ChatControls } from './chat-tab/controls';
 import { ChatHistory } from './chat-tab/history';
 import { ChatPanelDropdown } from './chat-tab/panel-dropdown';
-import { CodeTab } from './code-tab';
-import { CodeControls } from './code-tab/code-controls';
+import { CodeTab, type CodeTabRef } from './code-tab';
+import { CodeControls } from './code-tab/header-controls';
 
 const EDIT_PANEL_WIDTHS = {
     [EditorTabValue.CHAT]: 352,
-    [EditorTabValue.DEV]: 700,
+    [EditorTabValue.CODE]: 700,
 };
 
 export const RightPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
-
+    const [codeTabHasUnsavedChanges, setCodeTabHasUnsavedChanges] = useState(false);
+    const codeTabRef = useRef<CodeTabRef>(null);
     const selectedTab = editorEngine.state.rightPanelTab;
     const currentConversation = editorEngine.chat.conversation.current;
     const editPanelWidth = EDIT_PANEL_WIDTHS[selectedTab];
@@ -69,14 +70,21 @@ export const RightPanel = observer(() => {
                             </ChatPanelDropdown>
                             <TabsTrigger
                                 className="bg-transparent py-2 px-1 text-small hover:text-foreground-hover cursor-pointer"
-                                value={EditorTabValue.DEV}
+                                value={EditorTabValue.CODE}
                             >
                                 <Icons.Code className="mr-1 h-4 w-4" />
                                 Code
                             </TabsTrigger>
                         </div>
                         {selectedTab === EditorTabValue.CHAT && <ChatControls />}
-                        {selectedTab === EditorTabValue.DEV && <CodeControls />}
+                        {selectedTab === EditorTabValue.CODE && codeTabRef.current && <CodeControls
+                            isDirty={codeTabHasUnsavedChanges}
+                            currentPath={codeTabRef.current.getCurrentPath()}
+                            onSave={codeTabRef.current.handleSaveFile}
+                            onRefresh={codeTabRef.current.refreshFileTree}
+                            onCreateFile={codeTabRef.current.handleCreateFile}
+                            onCreateFolder={codeTabRef.current.handleCreateFolder}
+                        />}
                     </TabsList>
                     <ChatHistory isOpen={isChatHistoryOpen} onOpenChange={setIsChatHistoryOpen} />
                     <TabsContent
@@ -96,11 +104,17 @@ export const RightPanel = observer(() => {
                         forceMount
                         className={cn(
                             'h-full overflow-y-auto',
-                            editorEngine.state.rightPanelTab !== EditorTabValue.DEV && 'hidden',
+                            editorEngine.state.rightPanelTab !== EditorTabValue.CODE && 'hidden',
                         )}
-                        value={EditorTabValue.DEV}
+                        value={EditorTabValue.CODE}
                     >
-                        <CodeTab />
+                        {/* Force remount when branch changes to reset all editor state (opened files, selection, etc.) */}
+                        <CodeTab
+                            projectId={editorEngine.projectId}
+                            branchId={editorEngine.branches.activeBranch.id}
+                            ref={codeTabRef}
+                            onUnsavedChangesChange={setCodeTabHasUnsavedChanges}
+                        />
                     </TabsContent>
                 </Tabs>
             </ResizablePanel>

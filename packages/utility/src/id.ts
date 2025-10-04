@@ -1,4 +1,3 @@
-import { EditorAttributes } from '@onlook/constants';
 import { customAlphabet } from 'nanoid';
 
 export const VALID_DATA_ATTR_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789-._:';
@@ -13,22 +12,9 @@ export function createOid(): string {
     return `${generateCustomId()}`;
 }
 
-export function getOid(node: HTMLElement): string | null {
-    return node.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
-}
-
-export function getInstanceId(node: HTMLElement): string | null {
-    return node.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID);
-}
-
-export function getDomId(node: HTMLElement): string | null {
-    return node.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
-}
-
 /**
  * Shortens a UUID; maintains uniqueness probabilistically (collisions are possible).
  */
-
 export function shortenUuid(uuid: string, maxLength: number): string {
     let hash = 0;
     for (let i = 0; i < uuid.length; i++) {
