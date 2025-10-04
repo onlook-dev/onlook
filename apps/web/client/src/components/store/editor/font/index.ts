@@ -6,6 +6,7 @@ import { generate } from '@onlook/parser';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { FileEvent } from '../sandbox/file-event-bus';
+import { CSSManager } from './css-manager';
 import { FontConfigManager } from './font-config-manager';
 import { FontSearchManager } from './font-search-manager';
 import { FontUploadManager } from './font-upload-manager';
@@ -29,6 +30,7 @@ export class FontManager {
     private fontConfigManager: FontConfigManager;
     private layoutManager: LayoutManager;
     private fontUploadManager: FontUploadManager;
+    private cssManager: CSSManager;
 
     private sandboxReactionDisposer?: () => void;
 
@@ -40,6 +42,7 @@ export class FontManager {
         this.fontConfigManager = new FontConfigManager(editorEngine);
         this.layoutManager = new LayoutManager(editorEngine);
         this.fontUploadManager = new FontUploadManager(editorEngine);
+        this.cssManager = new CSSManager(editorEngine);
     }
 
     init() {
@@ -165,6 +168,9 @@ export class FontManager {
                 // Load the new font in the search manager
                 await this.fontSearchManager.loadFontFromBatch([font]);
 
+                // Add CSS variable to globals.css
+                await this.cssManager.addFontVariable(font);
+
                 return true;
             }
             return false;
@@ -194,6 +200,9 @@ export class FontManager {
                 if (font.id === this._defaultFont) {
                     this._defaultFont = null;
                 }
+
+                // Remove CSS variable from globals.css
+                await this.cssManager.removeFontVariable(font);
 
                 return result;
             }
@@ -328,6 +337,7 @@ export class FontManager {
         this.fontSearchManager.updateFontsList([]);
         this.fontUploadManager.clear();
         this.fontConfigManager.clear();
+        // Note: cssManager doesn't need explicit clearing as it's stateless
 
         // Clean up file watcher
         this.cleanupFontConfigFileWatcher();
@@ -374,6 +384,7 @@ export class FontManager {
                 for (const font of removedFonts) {
                     await removeFontFromTailwindConfig(font, sandbox);
                     await this.layoutManager.removeFontVariableFromRootLayout(font.id);
+                    await this.cssManager.removeFontVariable(font);
                 }
             }
 
@@ -381,6 +392,7 @@ export class FontManager {
                 for (const font of addedFonts) {
                     await addFontToTailwindConfig(font, sandbox);
                     await this.layoutManager.addFontVariableToRootLayout(font.id);
+                    await this.cssManager.addFontVariable(font);
                 }
             }
 
