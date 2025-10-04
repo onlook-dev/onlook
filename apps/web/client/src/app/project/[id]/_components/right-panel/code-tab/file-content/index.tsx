@@ -1,5 +1,5 @@
 import { EditorView } from '@codemirror/view';
-import { type RefObject, useMemo } from 'react';
+import { type RefObject, useEffect, useState } from 'react';
 import type { CodeNavigationTarget } from '../hooks/use-code-navigation';
 import type { EditorFile } from '../shared/types';
 import { isDirty } from '../shared/utils';
@@ -29,9 +29,29 @@ export const CodeEditorArea = ({
     onDiscardChanges,
     onCancelUnsaved,
 }: CodeEditorAreaProps) => {
-    const activeFileIsDirty = useMemo(() => {
-        if (!activeFile) return false;
-        return isDirty(activeFile);
+    const [activeFileIsDirty, setActiveFileIsDirty] = useState(false);
+
+    useEffect(() => {
+        // Guard setActiveFileIsDirty being called after 
+        // the component is unmounted because isDirty is async
+        let isMounted = true;
+
+        async function checkDirty() {
+            if (!activeFile) {
+                setActiveFileIsDirty(false);
+                return;
+            }
+            const dirty = await isDirty(activeFile);
+            if (isMounted) {
+                setActiveFileIsDirty(dirty);
+            }
+        }
+
+        void checkDirty();
+
+        return () => {
+            isMounted = false;
+        };
     }, [activeFile]);
 
     return (
