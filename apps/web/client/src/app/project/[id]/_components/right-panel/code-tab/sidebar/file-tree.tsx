@@ -1,7 +1,7 @@
 import { type FileEntry } from '@onlook/file-system/hooks';
 import { pathsEqual } from '@onlook/utility';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Tree, type TreeApi } from 'react-arborist';
+import { NodeApi, Tree, type RowRendererProps, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import { FileTreeNode } from './file-tree-node';
 import { FileTreeRow } from './file-tree-row';
@@ -163,8 +163,8 @@ export const FileTree = ({
         }
     };
 
-    const handleFileTreeSelect = (nodes: any[]) => {
-        if (nodes.length > 0 && !nodes[0].data.isDirectory) {
+    const handleFileTreeSelect = (nodes: NodeApi<FileEntry>[]) => {
+        if (nodes.length > 0 && !nodes[0]?.data.isDirectory && nodes[0]?.data.path) {
             const hasSearchTerm = searchQuery.trim().length > 0;
             onFileSelect(nodes[0].data.path, hasSearchTerm ? searchQuery : undefined);
         }
@@ -219,7 +219,7 @@ export const FileTree = ({
                             indent={8}
                             rowHeight={24}
                             openByDefault={false}
-                            renderRow={(props: any) => (
+                            renderRow={(props: RowRendererProps<FileEntry>) => (
                                 <FileTreeRow
                                     {...props}
                                     isHighlighted={

@@ -6,7 +6,7 @@ import { Input } from '@onlook/ui/input';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { type NodeApi, Tree, type TreeApi } from 'react-arborist';
+import { type NodeApi, type RowRendererProps, Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import { PageTreeNode } from '../layers-tab/tree/page-tree-node';
 import { PageTreeRow } from '../layers-tab/tree/page-tree-row';
@@ -136,7 +136,7 @@ export const PagesTab = observer(() => {
             indent: 8,
             rowHeight: 24,
             openByDefault: true,
-            renderRow: (props: any) => (
+            renderRow: (props: RowRendererProps<PageNode>) => (
                 <PageTreeRow
                     {...props}
                     isHighlighted={
