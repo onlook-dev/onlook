@@ -7,7 +7,7 @@ import { scanAppDirectory } from '../../src/components/store/editor/pages/helper
 // Mock SandboxManager interface
 interface MockSandboxManager {
     readDir: (dir: string) => Promise<ReaddirEntry[]>;
-    readFile: (path: string) => Promise<SandboxFile | null>;
+    readFile: (path: string) => Promise<string | Uint8Array>;
     routerConfig: { type: RouterType; basePath: string } | null;
 }
 
@@ -33,24 +33,16 @@ const createMockSandboxManager = (directoryStructure: Record<string, ReaddirEntr
 
     const mockReadFile = mock((path: string) => {
         if (path.endsWith('page.tsx')) {
-            return Promise.resolve({
-                type: 'text' as const,
-                path,
-                content: `export default function Page() {
+            return Promise.resolve(`export default function Page() {
     return <div>Test Page</div>;
-}`
-            });
+}`);
         }
         if (path.endsWith('layout.tsx')) {
-            return Promise.resolve({
-                type: 'text' as const,
-                path,
-                content: `export default function Layout({ children }: { children: React.ReactNode }) {
+            return Promise.resolve(`export default function Layout({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
-}`
-            });
+}`);
         }
-        return Promise.resolve(null);
+        throw new Error(`File not found: ${path}`);
     });
 
     return {
@@ -746,8 +738,16 @@ describe('scanAppDirectory', () => {
             throw new Error('File read error');
         });
 
-        // The function should throw an error when file reading fails
-        await expect(scanAppDirectory(mockSandboxManager as any, 'app')).rejects.toThrow('File read error');
+        // The function should handle errors gracefully and return results without page metadata
+        const result = await scanAppDirectory(mockSandboxManager as any, 'app');
+        
+        // Should return a page node without metadata since file reading failed
+        expect(result).toEqual([{
+            name: 'Page',
+            path: '/page',
+            type: 'page',
+            children: []
+        }]);
     });
 
     test('should handle metadata extraction errors', async () => {
@@ -758,11 +758,7 @@ describe('scanAppDirectory', () => {
         });
         // Override readFile to return invalid content
         mockSandboxManager.readFile = mock(() => {
-            return Promise.resolve({
-                type: 'text' as const,
-                path: 'app/page.tsx',
-                content: 'invalid syntax {'
-            });
+            return Promise.resolve('invalid syntax {');
         });
 
         const result = await scanAppDirectory(mockSandboxManager as any, 'app');

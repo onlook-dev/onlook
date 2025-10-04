@@ -152,7 +152,7 @@ export const UploadModal = ({
                             className={cn(
                                 "border-2 border-dashed rounded-lg p-6 transition-colors cursor-pointer hover:border-primary/50",
                                 isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/25",
-                                selectedFiles && selectedFiles.length > 0 ? "border-green-500 bg-green-50/50" : ""
+                                selectedFiles && selectedFiles.length > 0 ? "border-green-500" : ""
                             )}
                             onDrop={handleDrop}
                             onDragOver={handleDragOver}
@@ -171,7 +171,7 @@ export const UploadModal = ({
                             <div className="text-center">
                                 {selectedFiles && selectedFiles.length > 0 ? (
                                     <div className="space-y-2">
-                                        <p className="text-sm font-medium text-green-600">
+                                        <p className="text-sm font-medium text-green-500">
                                             {selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''} selected
                                         </p>
                                         <div className="text-xs text-muted-foreground space-y-1">
