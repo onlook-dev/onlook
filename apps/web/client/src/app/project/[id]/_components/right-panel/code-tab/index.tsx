@@ -6,9 +6,8 @@ import { EditorView } from '@codemirror/view';
 import { useDirectory, useFile } from '@onlook/file-system/hooks';
 import { toast } from '@onlook/ui/sonner';
 import { pathsEqual } from '@onlook/utility';
-import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { CodeEditorArea } from './file-content';
 import { FileTabs } from './file-tabs';
 import { useCodeNavigation } from './hooks/use-code-navigation';
@@ -26,6 +25,8 @@ export interface CodeTabRef {
 }
 
 interface CodeTabProps {
+    projectId: string;
+    branchId: string;
     onUnsavedChangesChange?: (hasUnsavedChanges: boolean) => void;
 }
 
@@ -52,11 +53,8 @@ const createEditorFile = async (filePath: string, content: string | Uint8Array):
     }
 }
 
-export const CodeTab = observer(forwardRef<CodeTabRef, CodeTabProps>(({ onUnsavedChangesChange }, ref) => {
+export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, branchId, onUnsavedChangesChange }, ref) => {
     const editorEngine = useEditorEngine();
-    const activeBranch = editorEngine.branches.activeBranch;
-    const projectId = editorEngine.projectId;
-    const branchId = activeBranch.id;
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const navigationTarget = useCodeNavigation();
 
@@ -68,8 +66,7 @@ export const CodeTab = observer(forwardRef<CodeTabRef, CodeTabProps>(({ onUnsave
 
     // This is a workaround to allow code controls to access the hasUnsavedChanges state
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
-    const branchData = editorEngine.branches.getBranchDataById(activeBranch.id);
+    const branchData = editorEngine.branches.getBranchDataById(branchId);
     const {
         entries: fileEntries,
         loading: filesLoading,
@@ -408,4 +405,4 @@ export const CodeTab = observer(forwardRef<CodeTabRef, CodeTabProps>(({ onUnsave
             </div>
         </div>
     );
-}));
+}))

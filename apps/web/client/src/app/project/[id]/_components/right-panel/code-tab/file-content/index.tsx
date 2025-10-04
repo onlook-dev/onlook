@@ -1,4 +1,5 @@
 import { EditorView } from '@codemirror/view';
+import { pathsEqual } from '@onlook/utility';
 import { type RefObject, useEffect, useState } from 'react';
 import type { CodeNavigationTarget } from '../hooks/use-code-navigation';
 import type { EditorFile } from '../shared/types';
@@ -70,8 +71,8 @@ export const CodeEditorArea = ({
                         <CodeEditor
                             key={file.path}
                             file={file}
-                            isActive={activeFile?.path === file.path}
-                            navigationTarget={navigationTarget?.filePath === file.path ? navigationTarget : null}
+                            isActive={pathsEqual(activeFile?.path, file.path)}
+                            navigationTarget={pathsEqual(navigationTarget?.filePath, file.path) ? navigationTarget : null}
                             editorViewsRef={editorViewsRef}
                             onSaveFile={onSaveFile}
                             onUpdateFileContent={onUpdateFileContent}

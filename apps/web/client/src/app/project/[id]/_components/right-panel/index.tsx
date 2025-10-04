@@ -109,8 +109,9 @@ export const RightPanel = observer(() => {
                         value={EditorTabValue.CODE}
                     >
                         {/* Force remount when branch changes to reset all editor state (opened files, selection, etc.) */}
-                        <CodeTab 
-                            key={editorEngine.branches.activeBranch.id} 
+                        <CodeTab
+                            projectId={editorEngine.projectId}
+                            branchId={editorEngine.branches.activeBranch.id}
                             ref={codeTabRef}
                             onUnsavedChangesChange={setCodeTabHasUnsavedChanges}
                         />

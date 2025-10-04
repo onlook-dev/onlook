@@ -256,18 +256,18 @@ const elementHighlightField = StateField.define<DecorationSet>({
 
                 // Convert line/column to document positions (0-indexed)
                 const doc = tr.state.doc;
-                
+
                 // Clamp line numbers to valid range (1 through doc.lines)
                 const clampedStartLine = Math.max(1, Math.min(startLine, doc.lines));
                 const clampedEndLine = Math.max(1, Math.min(endLine, doc.lines));
-                
+
                 const startLineObj = doc.line(clampedStartLine);
                 const endLineObj = doc.line(clampedEndLine);
-                
+
                 // Clamp column positions to valid range (1 through line length + 1)
                 const clampedStartCol = Math.max(1, Math.min(startCol, startLineObj.length + 1));
                 const clampedEndCol = Math.max(1, Math.min(endCol, endLineObj.length + 1));
-                
+
                 const startPos = startLineObj.from + clampedStartCol - 1;
                 const endPos = endLineObj.from + clampedEndCol;
 
@@ -300,6 +300,12 @@ export function clearElementHighlight() {
 }
 
 export function scrollToLineColumn(view: EditorView, line: number, column: number): void {
+    setTimeout(() => {
+        undebounceScrollToLineColumn(view, line, column);
+    }, 500, { leading: true, });
+}
+
+function undebounceScrollToLineColumn(view: EditorView, line: number, column: number): void {
     const doc = view.state.doc;
 
     // Ensure line number is within bounds (1-indexed to 0-indexed)
@@ -314,9 +320,7 @@ export function scrollToLineColumn(view: EditorView, line: number, column: numbe
     view.dispatch({
         effects: EditorView.scrollIntoView(pos, {
             y: 'center',
-            yMargin: 50
         }),
-        selection: { anchor: pos, head: pos }
     });
 }
 

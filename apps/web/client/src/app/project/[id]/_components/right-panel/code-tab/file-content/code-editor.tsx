@@ -1,11 +1,10 @@
 import { EditorView } from '@codemirror/view';
 import { convertToBase64, getMimeType } from '@onlook/utility/src/file';
 import CodeMirror from '@uiw/react-codemirror';
-import { observer } from 'mobx-react-lite';
 import { type RefObject, useEffect } from 'react';
 import type { CodeNavigationTarget } from '../hooks/use-code-navigation';
 import type { BinaryEditorFile, EditorFile } from '../shared/types';
-import { clearElementHighlight, getBasicSetup, getExtensions, highlightElementRange, scrollToLineColumn } from './code-mirror-config';
+import { getBasicSetup, getExtensions, highlightElementRange, scrollToLineColumn } from './code-mirror-config';
 
 interface CodeEditorProps {
     file: EditorFile;
@@ -16,7 +15,7 @@ interface CodeEditorProps {
     onUpdateFileContent: (fileId: string, content: string) => void;
 }
 
-export const CodeEditor = observer(({
+export const CodeEditor = ({
     file,
     isActive,
     navigationTarget,
@@ -32,7 +31,7 @@ export const CodeEditor = observer(({
 
     const onCreateEditor = (editor: EditorView) => {
         editorViewsRef.current?.set(file.path, editor);
-        
+
         if (navigationTarget && isActive) {
             // Delay navigation to ensure document is fully loaded
             setTimeout(() => {
@@ -48,18 +47,12 @@ export const CodeEditor = observer(({
         if (!editor) return;
 
         handleNavigation(editor, navigationTarget);
-    }, [navigationTarget, isActive, file.path, file.type, editorViewsRef]);
+    }, [navigationTarget, isActive, file.originalHash, file.type, file.path, editorViewsRef.current]);
 
     const handleNavigation = (editor: EditorView, target: CodeNavigationTarget) => {
         const { range } = target;
-        
         try {
-            editor.dispatch({
-                effects: clearElementHighlight()
-            });
-
             scrollToLineColumn(editor, range.start.line, range.start.column);
-
             editor.dispatch({
                 effects: highlightElementRange(
                     range.start.line,
@@ -106,4 +99,4 @@ export const CodeEditor = observer(({
             )}
         </div>
     );
-});
+};

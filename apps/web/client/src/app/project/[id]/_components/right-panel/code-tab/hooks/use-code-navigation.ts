@@ -1,8 +1,9 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
+import { pathsEqual } from '@onlook/utility';
 import { reaction } from 'mobx';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export interface CodePosition {
     line: number;
@@ -19,8 +20,20 @@ export interface CodeNavigationTarget {
     range: CodeRange;
 }
 
+const isNavigationTargetEqual = (navigationTarget1: CodeNavigationTarget | null, navigationTarget2: CodeNavigationTarget | null) => {
+    if (!navigationTarget1 || !navigationTarget2) {
+        return false;
+    }
+    return pathsEqual(navigationTarget1.filePath, navigationTarget2.filePath)
+        && navigationTarget1.range.start.line === navigationTarget2.range.start.line
+        && navigationTarget1.range.start.column === navigationTarget2.range.start.column
+        && navigationTarget1.range.end.line === navigationTarget2.range.end.line
+        && navigationTarget1.range.end.column === navigationTarget2.range.end.column;
+}
+
 export function useCodeNavigation() {
     const editorEngine = useEditorEngine();
+    const savedNavigationTarget = useRef<CodeNavigationTarget | null>(null);
     const [navigationTarget, setNavigationTarget] = useState<CodeNavigationTarget | null>(null);
 
     useEffect(() => {
@@ -67,6 +80,10 @@ export function useCodeNavigation() {
                         }
                     };
 
+                    if (isNavigationTargetEqual(target, savedNavigationTarget.current)) {
+                        return;
+                    }
+                    savedNavigationTarget.current = target;
                     setNavigationTarget(target);
                 } catch (error) {
                     console.error('[CodeNavigation] Error getting element metadata:', error);
@@ -77,7 +94,7 @@ export function useCodeNavigation() {
         );
 
         return () => disposer();
-    }, [editorEngine]);
+    }, []);
 
     return navigationTarget;
 }
