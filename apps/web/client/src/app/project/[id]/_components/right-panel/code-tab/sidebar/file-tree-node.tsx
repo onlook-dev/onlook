@@ -21,13 +21,13 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { motion } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type ReactElement } from 'react';
 import type { NodeApi } from 'react-arborist';
 import { FileIcon } from './file-icon';
 
 interface FileTreeNodeProps {
     node: NodeApi<FileEntry>;
-    style: React.CSSProperties;
+    style: CSSProperties;
     onFileSelect: (filePath: string, searchTerm?: string) => void;
     onRenameFile: (oldPath: string, newPath: string) => void;
     onDeleteFile: (path: string) => void;
@@ -42,7 +42,7 @@ export const FileTreeNode = ({
     const inputRef = useRef<HTMLInputElement>(null);
     const isDirectory = node.data.isDirectory;
 
-    const handleClick = (e: React.MouseEvent) => {
+    const handleClick = (e: MouseEvent) => {
         if (isEditing) return;
 
         if (isDirectory) {
@@ -100,7 +100,7 @@ export const FileTreeNode = ({
         setEditingName(node.data.name);
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
         e.stopPropagation();
         if (e.key === 'Enter') {
             handleBlur();
@@ -113,7 +113,7 @@ export const FileTreeNode = ({
     const menuItems: Array<{
         label: string;
         action: () => void;
-        icon: React.ReactElement;
+        icon: ReactElement;
         separator: boolean;
         className?: string;
     } | null> = [
