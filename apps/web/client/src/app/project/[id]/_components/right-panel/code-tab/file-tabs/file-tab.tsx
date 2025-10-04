@@ -1,3 +1,5 @@
+'use client';
+
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { useEffect, useState } from 'react';
