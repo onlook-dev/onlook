@@ -88,7 +88,7 @@ export class AstManager {
         // Check if node needs type assignment
         const hasSpecialType = metadata.dynamicType || metadata.coreElementType;
         if (!hasSpecialType) {
-            this.findNodeInstance(frameId, node, node, metadata, branchData);
+            void this.findNodeInstance(frameId, node, node, metadata, branchData);
             return;
         }
 
@@ -106,7 +106,7 @@ export class AstManager {
             console.error('No frame view found');
         }
 
-        this.findNodeInstance(frameId, node, node, metadata, branchData);
+        void this.findNodeInstance(frameId, node, node, metadata, branchData);
     }
 
     private async findNodeInstance(
