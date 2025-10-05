@@ -236,8 +236,8 @@ export class CodeFileSystem extends FileSystem {
             try {
                 const content = await this.readFile(this.indexPath);
                 this.memoryIndex = JSON.parse(content as string);
-            } catch {
-                console.warn(`[CodeEditorApi] Failed to load index from ${this.indexPath}`);
+            } catch (error) {
+                console.warn(`[CodeEditorApi] Failed to load index from ${this.indexPath}, error: ${error}`);
                 this.memoryIndex = {};
             }
             this.indexLoaded = true;
@@ -249,7 +249,7 @@ export class CodeFileSystem extends FileSystem {
     private async saveIndex(index: Record<string, JsxElementMetadata>): Promise<void> {
         this.memoryIndex = { ...index };
         this.indexLoaded = true;
-        this.debouncedSaveIndex();
+        void this.debouncedSaveIndexToFile();
     }
 
     private async undobounceSaveIndexToFile(): Promise<void> {
@@ -261,11 +261,7 @@ export class CodeFileSystem extends FileSystem {
         await super.writeFile(this.indexPath, JSON.stringify(this.memoryIndex));
     }
 
-    private async debouncedSaveIndex(): Promise<void> {
-        debounce(async () => {
-            await this.undobounceSaveIndexToFile();
-        }, 1000);
-    }
+    private debouncedSaveIndexToFile = debounce(this.undobounceSaveIndexToFile, 1000);
 
     private isJsxFile(path: string): boolean {
         // Exclude the onlook preload script from JSX processing

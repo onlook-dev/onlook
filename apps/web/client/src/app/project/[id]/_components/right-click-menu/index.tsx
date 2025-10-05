@@ -138,8 +138,6 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         const element: DomElement | undefined = editorEngine.elements.selected[0];
         const instance = element?.instanceId || null;
         const root = element?.oid || null;
-        console.log("instance", instance);
-        console.log("root", root);
 
         const updatedToolItems = [
             instance !== null && {
