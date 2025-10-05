@@ -17,6 +17,7 @@ const ONLOOK_PROD_PRELOAD_SCRIPT_SRC =
 export const ONLOOK_PRELOAD_SCRIPT_SRC = isDev ? ONLOOK_DEV_PRELOAD_SCRIPT_SRC : ONLOOK_PROD_PRELOAD_SCRIPT_SRC;
 
 export const DEPRECATED_PRELOAD_SCRIPT_SRCS = [
+    'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/client/public/onlook-preload-script.js',
     // Intentionally reversed to deprecate non-preferred (local in prod, CDN in dev) usage.
     isDev ? ONLOOK_PROD_PRELOAD_SCRIPT_SRC : ONLOOK_DEV_PRELOAD_SCRIPT_SRC,
 ];
