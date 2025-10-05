@@ -66,8 +66,8 @@ export class SandboxManager {
         });
 
         await this.sync.start();
-        await this.fs.rebuildIndex();
         await this.ensurePreloadScriptExists();
+        await this.fs.rebuildIndex();
     }
 
     private async ensurePreloadScriptExists(): Promise<void> {
