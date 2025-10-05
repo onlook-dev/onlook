@@ -4,6 +4,7 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { useAuthContext } from '../auth/auth-context';
 
 export const GithubLoginButton = ({
@@ -18,6 +19,17 @@ export const GithubLoginButton = ({
     const isLastSignInMethod = lastSignInMethod === SignInMethod.GITHUB;
     const isSigningIn = signingInMethod === SignInMethod.GITHUB;
 
+    const handleLoginClick = () => {
+        try {
+            handleLogin(SignInMethod.GITHUB, returnUrl ?? null);
+        } catch (error) {
+            console.error('Error signing in with GitHub:', error);
+            toast.error('Error signing in with GitHub', {
+                description: error instanceof Error ? error.message : 'Please try again.',
+            });
+        }
+    };
+
     return (
         <div className={cn('flex flex-col items-center w-full', className)}>
             <Button
@@ -28,7 +40,7 @@ export const GithubLoginButton = ({
                         ? 'bg-teal-100 dark:bg-teal-950 border-teal-300 dark:border-teal-700 text-teal-900 dark:text-teal-100 text-small hover:bg-teal-200/50 dark:hover:bg-teal-800 hover:border-teal-500/70 dark:hover:border-teal-500'
                         : 'bg-background-onlook',
                 )}
-                onClick={() => handleLogin(SignInMethod.GITHUB, returnUrl ?? null)}
+                onClick={handleLoginClick}
                 disabled={!!signingInMethod}
             >
                 {isSigningIn ? (
@@ -57,6 +69,17 @@ export const GoogleLoginButton = ({
     const isLastSignInMethod = lastSignInMethod === SignInMethod.GOOGLE;
     const isSigningIn = signingInMethod === SignInMethod.GOOGLE;
 
+    const handleLoginClick = () => {
+        try {
+            handleLogin(SignInMethod.GOOGLE, returnUrl ?? null);
+        } catch (error) {
+            console.error('Error signing in with Google:', error);
+            toast.error('Error signing in with Google', {
+                description: error instanceof Error ? error.message : 'Please try again.',
+            });
+        }
+    };
+
     return (
         <div className={cn('flex flex-col items-center w-full', className)}>
             <Button
@@ -67,7 +90,7 @@ export const GoogleLoginButton = ({
                         ? 'bg-teal-100 dark:bg-teal-950 border-teal-300 dark:border-teal-700 text-teal-900 dark:text-teal-100 text-small hover:bg-teal-200/50 dark:hover:bg-teal-800 hover:border-teal-500/70 dark:hover:border-teal-500'
                         : 'bg-background-onlook',
                 )}
-                onClick={() => handleLogin(SignInMethod.GOOGLE, returnUrl ?? null)}
+                onClick={handleLoginClick}
                 disabled={!!signingInMethod}
             >
                 {isSigningIn ? (
