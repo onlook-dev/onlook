@@ -1,5 +1,5 @@
 import { Orientation, Theme } from './frame';
-import { ONLOOK_PRELOAD_SCRIPT } from './files';
+
 export const APP_NAME = 'Onlook';
 export const APP_SCHEMA = 'onlook';
 export const HOSTING_DOMAIN = 'onlook.live';
@@ -67,18 +67,4 @@ export const DefaultSettings = {
     },
 };
 
-const isDev = process.env.NODE_ENV === 'development';
 export const DEFAULT_COLOR_NAME = 'DEFAULT';
-
-const CDN_PRELOAD_SCRIPT_SRC =
-    'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/client/public/onlook-preload-script.js';
-export const LOCAL_PRELOAD_SCRIPT_SRC = `/${ONLOOK_PRELOAD_SCRIPT}`;
-export const PRELOAD_SCRIPT_SRC = isDev ? LOCAL_PRELOAD_SCRIPT_SRC : CDN_PRELOAD_SCRIPT_SRC;
-
-export const DEPRECATED_PRELOAD_SCRIPT_SRCS = [
-    'https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js',
-    'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/packages/preload/dist/index.js',
-    'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/preload/dist/index.js',
-    // Intentionally reversed to deprecate non-preferred (local in prod, CDN in dev) usage.
-    isDev ? CDN_PRELOAD_SCRIPT_SRC : LOCAL_PRELOAD_SCRIPT_SRC,
-];

@@ -1,4 +1,4 @@
-import { ONLOOK_CACHE_DIRECTORY, ONLOOK_PRELOAD_SCRIPT } from '@onlook/constants';
+import { ONLOOK_CACHE_DIRECTORY, ONLOOK_PRELOAD_SCRIPT_FILE } from '@onlook/constants';
 import type { TemplateNode } from '@onlook/models';
 import { RouterType } from '@onlook/models';
 import {
@@ -244,7 +244,7 @@ export class CodeFileSystem extends FileSystem {
 
     private isJsxFile(path: string): boolean {
         // Exclude the onlook preload script from JSX processing
-        if (path.endsWith(ONLOOK_PRELOAD_SCRIPT)) {
+        if (path.endsWith(ONLOOK_PRELOAD_SCRIPT_FILE)) {
             return false;
         }
         return /\.(jsx?|tsx?)$/i.test(path);

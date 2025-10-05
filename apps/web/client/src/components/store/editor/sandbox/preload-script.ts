@@ -1,5 +1,5 @@
 import type { Provider } from '@onlook/code-provider';
-import { NEXT_JS_FILE_EXTENSIONS, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
+import { NEXT_JS_FILE_EXTENSIONS, ONLOOK_DEV_PRELOAD_SCRIPT_PATH, ONLOOK_DEV_PRELOAD_SCRIPT_SRC } from '@onlook/constants';
 import { RouterType, type RouterConfig } from '@onlook/models';
 import { getAstFromContent, getContentFromAst, injectPreloadScript } from '@onlook/parser';
 import { isRootLayoutFile, normalizePath } from '@onlook/utility';
@@ -13,10 +13,10 @@ export async function copyPreloadScriptToPublic(provider: Provider, routerConfig
             // Directory might already exist, ignore error
         }
 
-        const scriptResponse = await fetch(PRELOAD_SCRIPT_SRC);
+        const scriptResponse = await fetch(ONLOOK_DEV_PRELOAD_SCRIPT_SRC);
         await provider.writeFile({
             args: {
-                path: 'public/onlook-preload-script.js',
+                path: ONLOOK_DEV_PRELOAD_SCRIPT_PATH,
                 content: await scriptResponse.text(),
                 overwrite: true
             }

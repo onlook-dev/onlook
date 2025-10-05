@@ -1,9 +1,29 @@
+const isDev = process.env.NODE_ENV === 'development';
 const BASE_EXCLUDED_DIRECTORIES = ['node_modules', 'dist', 'build', '.git', '.next'] as const;
 
 export const CUSTOM_OUTPUT_DIR = '.next-prod';
 export const ONLOOK_CACHE_DIRECTORY = '.onlook';
-export const ONLOOK_PRELOAD_SCRIPT = 'onlook-preload-script.js';
-export const ONLOOK_PRELOAD_SCRIPT_PATH = `public/${ONLOOK_PRELOAD_SCRIPT}`;
+
+// Preload script. Fetch from local public folder in dev, fetch from CDN in prod.
+export const ONLOOK_PRELOAD_SCRIPT_FILE = 'onlook-preload-script.js';
+// Fetch path to load from local
+export const ONLOOK_DEV_PRELOAD_SCRIPT_SRC = `/${ONLOOK_PRELOAD_SCRIPT_FILE}`;
+// Path to write into sandbox
+export const ONLOOK_DEV_PRELOAD_SCRIPT_PATH = `public/${ONLOOK_PRELOAD_SCRIPT_FILE}`;
+// Fetch url to load from CDN
+const ONLOOK_PROD_PRELOAD_SCRIPT_SRC =
+    'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/client/public/onlook-preload-script.js';
+// Officially exported src to load from local or CDN
+export const ONLOOK_PRELOAD_SCRIPT_SRC = isDev ? ONLOOK_DEV_PRELOAD_SCRIPT_SRC : ONLOOK_PROD_PRELOAD_SCRIPT_SRC;
+
+export const DEPRECATED_PRELOAD_SCRIPT_SRCS = [
+    'https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js',
+    'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/packages/preload/dist/index.js',
+    'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/preload/dist/index.js',
+    // Intentionally reversed to deprecate non-preferred (local in prod, CDN in dev) usage.
+    isDev ? ONLOOK_PROD_PRELOAD_SCRIPT_SRC : ONLOOK_DEV_PRELOAD_SCRIPT_SRC,
+];
+
 export const DEFAULT_IMAGE_DIRECTORY = 'public';
 
 export const EXCLUDED_SYNC_PATHS = [
@@ -12,7 +32,7 @@ export const EXCLUDED_SYNC_PATHS = [
     'out',
     CUSTOM_OUTPUT_DIR,
     ONLOOK_CACHE_DIRECTORY,
-    ONLOOK_PRELOAD_SCRIPT_PATH,
+    ONLOOK_DEV_PRELOAD_SCRIPT_PATH,
 ];
 
 export const IGNORED_UPLOAD_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, CUSTOM_OUTPUT_DIR];
