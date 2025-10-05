@@ -44,10 +44,11 @@ export class CodeFileSystem extends FileSystem {
         }
     }
 
-    async writeFiles(files: Array<{ path: string, content: string | Uint8Array }>): Promise<void> {
-        await Promise.all(files.map(({ path, content }) =>
-            this.writeFile(path, content)
-        ));
+    async writeFiles(files: Array<{ path: string; content: string | Uint8Array }>): Promise<void> {
+        // Write files sequentially to avoid race conditions to metadata file
+        for (const { path, content } of files) {
+            await this.writeFile(path, content);
+        }
     }
 
     private async processJsxFile(path: string, content: string): Promise<string> {
