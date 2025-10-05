@@ -67,7 +67,7 @@ export async function injectPreloadScriptIntoLayout(provider: Provider, routerCo
     });
 }
 
-export async function getLayoutPath(routerConfig: any, fileExists: (path: string) => Promise<boolean>): Promise<string | null> {
+export async function getLayoutPath(routerConfig: RouterConfig, fileExists: (path: string) => Promise<boolean>): Promise<string | null> {
     if (!routerConfig) {
         console.log('Could not detect Next.js router type');
         return null;
