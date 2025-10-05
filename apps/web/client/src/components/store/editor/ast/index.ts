@@ -173,9 +173,8 @@ export class AstManager {
                 );
 
             if (res) {
-                originalNode.instanceId = metadata.oid;
-                originalNode.component = metadata.component;
-
+                originalNode.instanceId = res.instanceId;
+                originalNode.component = res.component;
                 this.updateElementInstance(
                     frameId,
                     originalNode.domId,
