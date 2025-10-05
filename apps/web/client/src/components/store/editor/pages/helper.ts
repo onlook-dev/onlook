@@ -718,16 +718,17 @@ export const duplicatePageInSandbox = async (
             throw new Error('Target path already exists');
         }
 
-        // Check if source is a directory or file
+        // Check if source directory exists
         const sourceEntries = await sandboxManager.readDir(getDirName(sourceFull));
         const sourceEntry = sourceEntries.find(
-            (entry: any) => entry.name === getBaseName(sourceFull),
+            (entry: FileEntry) => entry.name === getBaseName(sourceFull),
         );
 
         if (!sourceEntry) {
             throw new Error('Source page not found');
         }
 
+        // App Router pages are always directories containing page.tsx and other files
         await sandboxManager.copyDirectory(sourceFull, targetFull);
 
         console.log(`Duplicated page from ${sourceFull} to ${targetFull}`);
