@@ -13,7 +13,6 @@ import { Icons } from '@onlook/ui/icons';
 import { Kbd } from '@onlook/ui/kbd';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
 
 interface RightClickMenuProps {
     children: React.ReactNode;
@@ -31,16 +30,7 @@ interface MenuItem {
 
 export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
-    const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
     const ide = IDE.fromType(DEFAULT_IDE);
-
-    useEffect(() => {
-        updateMenuItems();
-    }, [
-        editorEngine.elements.selected,
-        editorEngine.ast.mappings.layers,
-        editorEngine.frames.selected,
-    ]);
 
     const TOOL_ITEMS: MenuItem[] = [
         {
@@ -140,53 +130,40 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         },
     ];
 
-    const updateMenuItems = () => {
-        let instance: string | null = null;
-        let root: string | null = null;
-        let menuItems: MenuItem[][] = [];
-
-
-
+    const getMenuItems = (): MenuItem[][] => {
         if (!editorEngine.elements.selected.length) {
-            menuItems = [WINDOW_ITEMS];
-        } else {
-            if (editorEngine.elements.selected[0]) {
-                const element: DomElement = editorEngine.elements.selected[0];
-                instance = element.instanceId;
-                root = element.oid;
-            }
-            const updatedToolItems = [
-                instance !== null && {
-                    label: 'View instance code',
-                    action: () => viewSource(instance),
-                    icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,
-                },
-                {
-                    label: `View ${instance ? 'component' : 'element'} in ${ide.displayName}`,
-                    disabled: !root,
-                    action: () => viewSource(root),
-                    icon: instance ? (
-                        <Icons.Component className="mr-2 h-4 w-4" />
-                    ) : (
-                        <Icons.ExternalLink className="mr-2 h-4 w-4" />
-                    ),
-                },
-                ...TOOL_ITEMS,
-            ].filter((item): item is MenuItem => item !== false);
-
-            menuItems = [updatedToolItems, GROUP_ITEMS, EDITING_ITEMS];
+            return [WINDOW_ITEMS];
         }
 
-        setMenuItems(menuItems);
+        const element: DomElement | undefined = editorEngine.elements.selected[0];
+        const instance = element?.instanceId || null;
+        const root = element?.oid || null;
+        console.log("instance", instance);
+        console.log("root", root);
+
+        const updatedToolItems = [
+            instance !== null && {
+                label: 'View instance code',
+                action: () => instance && editorEngine.ide.openCodeBlock(instance),
+                icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,
+            },
+            {
+                label: `View ${instance ? 'component' : 'element'} in ${ide.displayName}`,
+                disabled: !root,
+                action: () => root && editorEngine.ide.openCodeBlock(root),
+                icon: instance ? (
+                    <Icons.Component className="mr-2 h-4 w-4" />
+                ) : (
+                    <Icons.ExternalLink className="mr-2 h-4 w-4" />
+                ),
+            },
+            ...TOOL_ITEMS,
+        ].filter((item): item is MenuItem => item !== false);
+
+        return [updatedToolItems, GROUP_ITEMS, EDITING_ITEMS];
     };
 
-    function viewSource(oid: string | null) {
-        if (!oid) {
-            console.error('No oid found');
-            return;
-        }
-        editorEngine.ide.openCodeBlock(oid);
-    }
+    const menuItems: MenuItem[][] = getMenuItems();
 
     return (
         <ContextMenu>
