@@ -8,7 +8,7 @@ import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
 import { detectRouterConfig } from '../pages/helper';
-import { copyPreloadScriptToPublic, getLayoutPath } from './preload-script';
+import { copyPreloadScriptToPublic, getLayoutPath as detectLayoutPath } from './preload-script';
 import { SessionManager } from './session';
 
 export class SandboxManager {
@@ -102,7 +102,10 @@ export class SandboxManager {
 
     async getLayoutPath(): Promise<string | null> {
         const routerConfig = await this.getRouterConfig();
-        return getLayoutPath(routerConfig, (path) => this.fileExists(path));
+        if (!routerConfig) {
+            return null;
+        }
+        return detectLayoutPath(routerConfig, (path) => this.fileExists(path));
     }
 
     get errors() {

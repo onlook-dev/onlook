@@ -1,9 +1,8 @@
-import type { LayerNode } from '@onlook/models';
-import { getTemplateNodeChild } from '@onlook/parser';
-import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
-import type { BranchData } from '../branch/manager';
 import type { JsxElementMetadata } from '@onlook/file-system';
+import type { LayerNode } from '@onlook/models';
+import { makeAutoObservable } from 'mobx';
+import type { BranchData } from '../branch/manager';
+import type { EditorEngine } from '../engine';
 import { LayersManager } from './layers';
 
 export class AstManager {
@@ -91,25 +90,21 @@ export class AstManager {
             this.findNodeInstance(frameId, node, node, metadata, branchData);
             return;
         }
+        
+        // Always update node types based on metadata
+        node.dynamicType = metadata.dynamicType || null;
+        node.coreElementType = metadata.coreElementType || null;
 
-        if (metadata.dynamicType) {
-            node.dynamicType = metadata.dynamicType;
-        }
-
-        if (metadata.coreElementType) {
-            node.coreElementType = metadata.coreElementType;
-        }
-
-        if (!frameData.view) {
+        if (frameData.view) {
+            frameData.view.setElementType(
+                node.domId,
+                metadata.dynamicType || null,
+                metadata.coreElementType || null,
+            );
+        } else {
             console.error('No frame view found');
-            return;
         }
 
-        frameData.view.setElementType(
-            node.domId,
-            metadata.dynamicType || null,
-            metadata.coreElementType || null,
-        );
         this.findNodeInstance(frameId, node, node, metadata, branchData);
     }
 
@@ -139,60 +134,24 @@ export class AstManager {
             return;
         }
         const parentMetadata = await branchData.codeEditor.getJsxElementMetadata(parent.oid);
-
         if (!parentMetadata) {
             console.warn('Failed to findNodeInstance: Parent metadata not found');
             return;
         }
 
         if (parentMetadata.component !== metadata.component) {
-            if (!parent.children) {
-                console.warn('Failed to findNodeInstance: Parent has no children');
-                return;
-            }
+            // Since getTemplateNodeChild doesn't work well with {children} patterns,
+            // use the metadata directly to set component instance information
+            if (metadata.component && metadata.oid) {
+                originalNode.instanceId = metadata.oid;
+                originalNode.component = metadata.component;
 
-            const childrenWithSameOid: LayerNode[] = [];
-            for (const childDomId of parent.children) {
-                const childLayerNode = this.mappings.getLayerNode(frameId, childDomId);
-                if (childLayerNode && childLayerNode.oid === originalNode.oid) {
-                    childrenWithSameOid.push(childLayerNode);
-                }
-            }
-
-            if (childrenWithSameOid.length === 0) {
-                console.warn('Failed to findNodeInstance: No children found with matching OID');
-                return;
-            }
-
-            const index = childrenWithSameOid.findIndex(
-                (child) => child.domId === originalNode.domId,
-            );
-
-            if (index === -1) {
-                console.warn(
-                    'Failed to findNodeInstance: Original node not found in children with same OID',
-                );
-                return;
-            }
-
-            // Use getTemplateNodeChild to find the specific instance
-            const res = await getTemplateNodeChild(
-                parentMetadata.code,
-                metadata,
-                index,
-            );
-
-            if (res) {
-                originalNode.instanceId = res.instanceId;
-                originalNode.component = res.component;
                 this.updateElementInstance(
                     frameId,
                     originalNode.domId,
-                    res.instanceId,
-                    res.component,
+                    metadata.oid,
+                    metadata.component,
                 );
-            } else {
-                await this.findNodeInstance(frameId, originalNode, parent, metadata, branchData);
             }
         }
     }
