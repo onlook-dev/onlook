@@ -1,10 +1,10 @@
 import type { TemplateNode } from '@onlook/models';
 import { CoreElementType, DynamicType } from '@onlook/models';
 
-import type { NodePath, T } from '../packages';
 import { getOidFromJsxElement } from '../code-edit/helpers';
 import { isReactFragment } from '../helpers';
 import { getExistingOid } from '../ids';
+import type { NodePath, T } from '../packages';
 import { t, traverse } from '../packages';
 import { getAstFromContent } from '../parse';
 import { createTemplateNode } from './helpers';

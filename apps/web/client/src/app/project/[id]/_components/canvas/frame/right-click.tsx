@@ -143,17 +143,18 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const updateMenuItems = () => {
         let instance: string | null = null;
         let root: string | null = null;
-
-        if (editorEngine.elements.selected.length > 0 && editorEngine.elements.selected[0]) {
-            const element: DomElement = editorEngine.elements.selected[0];
-            instance = element.instanceId;
-            root = element.oid;
-        }
         let menuItems: MenuItem[][] = [];
+
+
 
         if (!editorEngine.elements.selected.length) {
             menuItems = [WINDOW_ITEMS];
         } else {
+            if (editorEngine.elements.selected[0]) {
+                const element: DomElement = editorEngine.elements.selected[0];
+                instance = element.instanceId;
+                root = element.oid;
+            }
             const updatedToolItems = [
                 instance !== null && {
                     label: 'View instance code',

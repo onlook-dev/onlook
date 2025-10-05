@@ -203,24 +203,26 @@ export class CodeProviderSync {
             const localFiles = await this.fs.listFiles('/');
             const jsxFiles = localFiles.filter(path => /\.(jsx?|tsx?)$/i.test(path));
 
-            for (const filePath of jsxFiles) {
-                try {
-                    const content = await this.fs.readFile(filePath);
-                    if (typeof content === 'string') {
-                        // Push to sandbox
-                        await this.provider.writeFile({
-                            args: {
-                                path: filePath.startsWith('/') ? filePath.substring(1) : filePath,
-                                content,
-                                overwrite: true
-                            }
-                        });
-                        console.log(`[Sync] Pushed ${filePath} to sandbox`);
+            await Promise.all(
+                jsxFiles.map(async (filePath) => {
+                    try {
+                        const content = await this.fs.readFile(filePath);
+                        if (typeof content === 'string') {
+                            // Push to sandbox
+                            await this.provider.writeFile({
+                                args: {
+                                    path: filePath.startsWith('/') ? filePath.substring(1) : filePath,
+                                    content,
+                                    overwrite: true
+                                }
+                            });
+                            console.log(`[Sync] Pushed ${filePath} to sandbox`);
+                        }
+                    } catch (error) {
+                        console.warn(`[Sync] Failed to push ${filePath} to sandbox:`, error);
                     }
-                } catch (error) {
-                    console.warn(`[Sync] Failed to push ${filePath} to sandbox:`, error);
-                }
-            }
+                })
+            );
         } catch (error) {
             console.error('[Sync] Error pushing files to sandbox:', error);
         }

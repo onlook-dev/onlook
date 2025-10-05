@@ -1,5 +1,6 @@
 import type { JsxElementMetadata } from '@onlook/file-system';
 import type { LayerNode } from '@onlook/models';
+import { getTemplateNodeChild } from '@onlook/parser';
 import { makeAutoObservable } from 'mobx';
 import type { BranchData } from '../branch/manager';
 import type { EditorEngine } from '../engine';
@@ -90,7 +91,7 @@ export class AstManager {
             this.findNodeInstance(frameId, node, node, metadata, branchData);
             return;
         }
-        
+
         // Always update node types based on metadata
         node.dynamicType = metadata.dynamicType || null;
         node.coreElementType = metadata.coreElementType || null;
@@ -140,18 +141,50 @@ export class AstManager {
         }
 
         if (parentMetadata.component !== metadata.component) {
-            // Since getTemplateNodeChild doesn't work well with {children} patterns,
-            // use the metadata directly to set component instance information
-            if (metadata.component && metadata.oid) {
+            const childrenWithSameOid: LayerNode[] = [];
+            for (const childDomId of parent.children ?? []) {
+                const childLayerNode = this.mappings.getLayerNode(frameId, childDomId);
+                if (childLayerNode && childLayerNode.oid === originalNode.oid) {
+                    childrenWithSameOid.push(childLayerNode);
+                }
+            }
+
+            if (childrenWithSameOid.length === 0) {
+                console.warn('Failed to findNodeInstance: No children found with matching OID');
+                return;
+            }
+
+            const index = childrenWithSameOid.findIndex(
+                (child) => child.domId === originalNode.domId,
+            );
+
+            if (index === -1) {
+                console.warn(
+                    'Failed to findNodeInstance: Original node not found in children with same OID',
+                );
+                return;
+            }
+
+            const res: { instanceId: string; component: string } | null =
+                await getTemplateNodeChild(
+                    parentMetadata.code,
+                    metadata,
+                    index,
+                );
+
+            if (res) {
                 originalNode.instanceId = metadata.oid;
                 originalNode.component = metadata.component;
 
                 this.updateElementInstance(
                     frameId,
                     originalNode.domId,
-                    metadata.oid,
-                    metadata.component,
+                    res.instanceId,
+                    res.component,
                 );
+            } else {
+                // Recursively look up parent to find the instance
+                await this.findNodeInstance(frameId, originalNode, parent, metadata, branchData);
             }
         }
     }
