@@ -34,7 +34,7 @@ export function useFile(projectId: string, branchId: string, path: string) {
     }, [fs, path]);
 
     useEffect(() => {
-        setIsLoading(false);
+        setIsLoading(true);
     }, [projectId, branchId, path]);
 
     // Type guards are used below to ensure that the resultant type is correct
