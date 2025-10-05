@@ -109,10 +109,6 @@ export const addFontToConfig = async (font: Font, fontConfigPath: string, editor
         // Generate and write the updated code back to the file
         const { code } = generate(ast);
 
-        if (!fontConfigPath) {
-            return false;
-        }
-
         await editorEngine.activeSandbox.writeFile(
             fontConfigPath,
             code,

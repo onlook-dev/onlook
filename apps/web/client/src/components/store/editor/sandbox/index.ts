@@ -139,9 +139,14 @@ export class SandboxManager {
         return this.fs?.exists(path);
     }
 
-    async copy(path: string, targetPath: string): Promise<void> {
+    async copyFile(path: string, targetPath: string): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
         return this.fs.copyFile(path, targetPath);
+    }
+
+    async copyDirectory(path: string, targetPath: string): Promise<void> {
+        if (!this.fs) throw new Error('File system not initialized');
+        return this.fs.copyDirectory(path, targetPath);
     }
 
     async deleteFile(path: string): Promise<void> {

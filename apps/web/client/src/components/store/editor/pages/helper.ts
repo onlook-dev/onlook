@@ -697,7 +697,7 @@ export const duplicatePageInSandbox = async (
                 throw new Error('Target path already exists');
             }
 
-            await sandboxManager.copy(sourcePageFile, targetPageFile);
+            await sandboxManager.copyFile(sourcePageFile, targetPageFile);
 
             console.log(`Duplicated root page to: ${targetPageFile}`);
             return;
@@ -728,7 +728,7 @@ export const duplicatePageInSandbox = async (
             throw new Error('Source page not found');
         }
 
-        await sandboxManager.copy(sourceFull, targetFull);
+        await sandboxManager.copyDirectory(sourceFull, targetFull);
 
         console.log(`Duplicated page from ${sourceFull} to ${targetFull}`);
     } catch (error) {

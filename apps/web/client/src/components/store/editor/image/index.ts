@@ -1,7 +1,7 @@
 import { type ActionTarget, type ImageContentData } from '@onlook/models';
-import { convertToBase64, getBaseName, getMimeType, isImageFile, stripImageFolderPrefix, sanitizeFilename } from '@onlook/utility';
-import path from 'path';
+import { convertToBase64, getBaseName, getMimeType, isImageFile, sanitizeFilename, stripImageFolderPrefix } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
+import path from 'path';
 import type { EditorEngine } from '../engine';
 
 export class ImageManager {
@@ -206,6 +206,9 @@ export class ImageManager {
 
     clear() {
         this._imagePaths = [];
+        this._selectedImage = null;
+        this._previewImage = null;
+        this._isSelectingImage = false;
     }
 
 }
