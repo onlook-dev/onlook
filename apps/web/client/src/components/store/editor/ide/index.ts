@@ -11,10 +11,4 @@ export class IdeManager {
         // open the code block in the code editor
         this.editorEngine.state.rightPanelTab = EditorTabValue.CODE;
     }
-
-    async openFile(path: string) {
-        // TODO: Implement
-        // open the file in the code editor
-        this.editorEngine.state.rightPanelTab = EditorTabValue.CODE;
-    }
 }
