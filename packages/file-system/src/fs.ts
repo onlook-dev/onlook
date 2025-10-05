@@ -7,6 +7,7 @@
  */
 
 import path from 'path';
+
 import type ZenFS from '@zenfs/core';
 import { getFS } from './config';
 import { type FileChangeEvent, type FileEntry, type FileInfo } from './types';
@@ -40,7 +41,6 @@ export class FileSystem {
 
         this.isInitialized = true;
     }
-
 
     private isTextContent(buffer: Uint8Array): boolean {
         // Check first 512 bytes for binary content

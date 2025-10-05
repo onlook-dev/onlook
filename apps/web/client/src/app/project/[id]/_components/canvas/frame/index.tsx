@@ -6,9 +6,9 @@ import { colors } from '@onlook/ui/tokens';
 import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
+import { RightClickMenu } from '../../right-click-menu';
 import { GestureScreen } from './gesture';
 import { ResizeHandles } from './resize-handles';
-import { RightClickMenu } from './right-click';
 import { TopBar } from './top-bar';
 import { FrameComponent, type IFrameView } from './view';
 

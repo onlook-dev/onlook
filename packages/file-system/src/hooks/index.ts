@@ -8,4 +8,3 @@ export { useFS } from './use-fs';
 export type { UseFSResult } from './use-fs';
 
 export type { FileChangeEvent, FileEntry, FileInfo } from '../types';
-

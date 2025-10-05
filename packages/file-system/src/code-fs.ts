@@ -8,10 +8,11 @@ import {
     getAstFromContent,
     getContentFromAst,
     getContentFromTemplateNode,
-    injectPreloadScript
+    injectPreloadScript,
 } from '@onlook/parser';
 import { isRootLayoutFile, pathsEqual } from '@onlook/utility';
 import debounce from 'lodash.debounce';
+
 import { FileSystem } from './fs';
 
 export interface JsxElementMetadata extends TemplateNode {
@@ -125,18 +126,20 @@ export class CodeFileSystem extends FileSystem {
         const index = await this.loadIndex();
         const metadata = index[oid];
         if (!metadata) {
-            console.warn(`[CodeEditorApi] No metadata found for OID: ${oid}. Total index size: ${Object.keys(index).length}`);
+            console.warn(
+                `[CodeEditorApi] No metadata found for OID: ${oid}. Total index size: ${Object.keys(index).length}`,
+            );
         }
         return metadata;
     }
 
     async rebuildIndex(): Promise<void> {
         const startTime = Date.now();
-        let index: Record<string, JsxElementMetadata> = {};
+        const index: Record<string, JsxElementMetadata> = {};
 
         const entries = await this.listAll();
         const jsxFiles = entries.filter(
-            entry => entry.type === 'file' && this.isJsxFile(entry.path)
+            (entry) => entry.type === 'file' && this.isJsxFile(entry.path),
         );
 
         const BATCH_SIZE = 10;
@@ -172,7 +175,7 @@ export class CodeFileSystem extends FileSystem {
                     } catch (error) {
                         console.error(`Error indexing ${entry.path}:`, error);
                     }
-                })
+                }),
             );
         }
 
@@ -180,7 +183,7 @@ export class CodeFileSystem extends FileSystem {
 
         const duration = Date.now() - startTime;
         console.log(
-            `[CodeEditorApi] Index built: ${Object.keys(index).length} elements from ${processedCount} files in ${duration}ms`
+            `[CodeEditorApi] Index built: ${Object.keys(index).length} elements from ${processedCount} files in ${duration}ms`,
         );
     }
 

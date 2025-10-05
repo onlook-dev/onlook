@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { FileEntry } from '../types';
+
+import { type FileEntry } from '../types';
 import { useFS } from './use-fs';
 
 export function useDirectory(projectId: string, branchId: string, path: string) {
