@@ -1,24 +1,10 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
+import type { CodeNavigationTarget } from '@onlook/models';
 import { pathsEqual } from '@onlook/utility';
 import { reaction } from 'mobx';
 import { useEffect, useRef, useState } from 'react';
-
-export interface CodePosition {
-    line: number;
-    column: number;
-}
-
-export interface CodeRange {
-    start: CodePosition;
-    end: CodePosition;
-}
-
-export interface CodeNavigationTarget {
-    filePath: string;
-    range: CodeRange;
-}
 
 const isNavigationTargetEqual = (navigationTarget1: CodeNavigationTarget | null, navigationTarget2: CodeNavigationTarget | null) => {
     if (!navigationTarget1 || !navigationTarget2) {
@@ -38,9 +24,28 @@ export function useCodeNavigation() {
 
     useEffect(() => {
         const disposer = reaction(
-            () => editorEngine.elements.selected,
-            async (selectedElements) => {
+            () => ({
+                selected: editorEngine.elements.selected,
+                override: editorEngine.ide.codeNavigationOverride
+            }),
+            async ({ selected: selectedElements, override }) => {
+                // If there's an override, use it and ignore selection
+                if (override) {
+                    if (isNavigationTargetEqual(override, savedNavigationTarget.current)) {
+                        return;
+                    }
+                    savedNavigationTarget.current = override;
+                    setNavigationTarget(override);
+                    return;
+                }
+
+                // If there are selected elements, clear any existing override and process selection
                 const [selectedElement] = selectedElements;
+                if (selectedElements.length > 0 && editorEngine.ide.hasCodeNavigationOverride()) {
+                    // Clear override when user makes a new selection
+                    editorEngine.ide.clearCodeNavigationOverride();
+                }
+
                 if (!selectedElement) {
                     setNavigationTarget(null);
                     return;

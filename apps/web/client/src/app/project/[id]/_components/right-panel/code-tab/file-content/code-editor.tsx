@@ -2,7 +2,7 @@ import { EditorView } from '@codemirror/view';
 import { convertToBase64, getMimeType } from '@onlook/utility/src/file';
 import CodeMirror from '@uiw/react-codemirror';
 import { type RefObject, useEffect } from 'react';
-import type { CodeNavigationTarget } from '../hooks/use-code-navigation';
+import type { CodeNavigationTarget } from '@onlook/models';
 import type { BinaryEditorFile, EditorFile } from '../shared/types';
 import { getBasicSetup, getExtensions, highlightElementRange, scrollToLineColumn } from './code-mirror-config';
 

@@ -1,7 +1,7 @@
 import { EditorView } from '@codemirror/view';
 import { pathsEqual } from '@onlook/utility';
 import { type RefObject, useEffect, useState } from 'react';
-import type { CodeNavigationTarget } from '../hooks/use-code-navigation';
+import type { CodeNavigationTarget } from '@onlook/models';
 import type { EditorFile } from '../shared/types';
 import { isDirty } from '../shared/utils';
 import { CodeEditor } from './code-editor';

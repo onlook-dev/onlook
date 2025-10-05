@@ -22,3 +22,18 @@ export type FileToRequests = Map<
         content: string;
     }
 >;
+
+export interface CodePosition {
+    line: number;
+    column: number;
+}
+
+export interface CodeRange {
+    start: CodePosition;
+    end: CodePosition;
+}
+
+export interface CodeNavigationTarget {
+    filePath: string;
+    range: CodeRange;
+}
