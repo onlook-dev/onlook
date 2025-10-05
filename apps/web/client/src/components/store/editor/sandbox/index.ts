@@ -66,8 +66,7 @@ export class SandboxManager {
         });
 
         await this.sync.start();
-        // TODO: Not sure if this should be done here
-        // await this.fs.rebuildIndex();
+        await this.fs.rebuildIndex();
         await this.ensurePreloadScriptExists();
     }
 
