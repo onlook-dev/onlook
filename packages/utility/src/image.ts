@@ -4,10 +4,18 @@ import { normalizePath } from './folder';
 import { isImageFile } from './file';
 
 // Browser-side image compression
-export async function compressImageInBrowser(file: File): Promise<string | undefined> {
+export async function compressImageInBrowser(
+    file: File,
+    compressionOptions?: {
+        maxSizeMB?: number;
+        maxWidthOrHeight?: number;
+        quality?: number;
+    }
+): Promise<string | undefined> {
     const options = {
-        maxSizeMB: 2,
-        maxWidthOrHeight: 2048,
+        maxSizeMB: compressionOptions?.maxSizeMB ?? 2,
+        maxWidthOrHeight: compressionOptions?.maxWidthOrHeight ?? 2048,
+        quality: compressionOptions?.quality ?? 0.8,
     };
 
     try {
