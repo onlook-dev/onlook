@@ -356,8 +356,8 @@ const scanPagesDirectory = async (
             let metadata: PageMetadata | undefined;
             try {
                 const fileContent = await sandboxManager.readFile(`${dir}/${entry.name}`);
-                if (!fileContent || typeof fileContent !== 'string') {
-                    throw new Error(`File ${dir}/${entry.name} not found or is not a text file`);
+                if (typeof fileContent !== 'string') {
+                    throw new Error(`File ${dir}/${entry.name} is not a text file`);
                 }
                 metadata = await extractMetadata(fileContent);
             } catch (error) {
@@ -763,8 +763,8 @@ export const updatePageMetadataInSandbox = async (
     }
 
     const file = await sandboxManager.readFile(pageFilePath);
-    if (!file || typeof file !== 'string') {
-        throw new Error('Page file not found or is not a text file');
+    if (typeof file !== 'string') {
+        throw new Error('Page file is not a text file');
     }
     const pageContent = file;
     const hasUseClient =
@@ -795,8 +795,8 @@ async function updateMetadataInFile(
 ) {
     // Read the current file content
     const file = await sandboxManager.readFile(filePath);
-    if (!file || typeof file !== 'string') {
-        throw new Error('File not found or is not a text file');
+    if (typeof file !== 'string') {
+        throw new Error('File is not a text file');
     }
     const content = file;
 
@@ -1010,8 +1010,8 @@ export const addSetupTask = async (sandboxManager: SandboxManager) => {
 
 export const updatePackageJson = async (sandboxManager: SandboxManager) => {
     const file = await sandboxManager.readFile('./package.json');
-    if (!file || typeof file !== 'string') {
-        throw new Error('Package.json not found or is not a text file');
+    if (typeof file !== 'string') {
+        throw new Error('Package.json is not a text file');
     }
     const pkgJson = JSON.parse(file);
 

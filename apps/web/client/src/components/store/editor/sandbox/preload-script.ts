@@ -45,8 +45,8 @@ export async function injectPreloadScriptIntoLayout(provider: Provider, routerCo
     const layoutPath = `${routerConfig.basePath}/${layoutFile.name}`;
 
     const layoutResponse = await provider.readFile({ args: { path: layoutPath } });
-    if (!layoutResponse.file.content || typeof layoutResponse.file.content !== 'string') {
-        throw new Error(`Layout file ${layoutPath} has no content`);
+    if (typeof layoutResponse.file.content !== 'string') {
+        throw new Error(`Layout file ${layoutPath} is not a text file`);
     }
 
     const content = layoutResponse.file.content;

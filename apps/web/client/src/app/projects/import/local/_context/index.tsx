@@ -184,8 +184,8 @@ export const ProjectCreationProvider = ({ children, totalSteps }: ProjectCreatio
             (f) => f.path.endsWith('package.json') && f.type === ProcessedFileType.TEXT,
         );
 
-        if (!packageJsonFile?.content || typeof packageJsonFile.content !== 'string') {
-            return { isValid: false, error: 'No package.json found' };
+        if (typeof packageJsonFile?.content !== 'string') {
+            return { isValid: false, error: 'Package.json is not a text file' };
         }
 
         try {

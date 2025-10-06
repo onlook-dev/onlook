@@ -90,8 +90,8 @@ export class ChatContext {
                     }
 
                     const fileContent = await branchData.codeEditor.readFile(c.path);
-                    if (fileContent === null || fileContent instanceof Uint8Array) {
-                        console.error('No file content found or file is binary', c.path);
+                    if (fileContent instanceof Uint8Array) {
+                        console.error('File is binary', c.path);
                         return c;
                     }
                     return { ...c, content: fileContent } satisfies FileMessageContext;
@@ -138,7 +138,8 @@ export class ChatContext {
             }
 
             const content = await branchData.codeEditor.readFile(filePath);
-            if (content === null || content instanceof Uint8Array) {
+            if (content instanceof Uint8Array) {
+                console.error('File is binary', filePath);
                 continue;
             }
             fileContext.push({
@@ -248,10 +249,7 @@ export class ChatContext {
                         return null;
                     }
                     const fileContent = await this.editorEngine.activeSandbox.readFile(filePath);
-                    if (fileContent === null) {
-                        return null;
-                    }
-                    if (fileContent instanceof Uint8Array) {
+                    if (fileContent === null || fileContent instanceof Uint8Array) {
                         return null;
                     }
                     if (fileContent.trim().length === 0) {
