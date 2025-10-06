@@ -1,9 +1,7 @@
 import { Hotkey } from '@/components/hotkey';
 import { IDE } from '@/components/ide';
 import { useEditorEngine } from '@/components/store/editor';
-import { EditorTabValue } from '@onlook/models/editor';
-import type { DomElement } from '@onlook/models/element';
-import { DEFAULT_IDE } from '@onlook/models/ide';
+import { DEFAULT_IDE, EditorTabValue, type DomElement } from '@onlook/models';
 import {
     ContextMenu,
     ContextMenuContent,
@@ -15,7 +13,6 @@ import { Icons } from '@onlook/ui/icons';
 import { Kbd } from '@onlook/ui/kbd';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
 
 interface RightClickMenuProps {
     children: React.ReactNode;
@@ -33,16 +30,7 @@ interface MenuItem {
 
 export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
-    const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
     const ide = IDE.fromType(DEFAULT_IDE);
-
-    useEffect(() => {
-        updateMenuItems();
-    }, [
-        editorEngine.elements.selected,
-        editorEngine.ast.mappings.layers,
-        editorEngine.frames.selected,
-    ]);
 
     const TOOL_ITEMS: MenuItem[] = [
         {
@@ -70,16 +58,16 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const GROUP_ITEMS: MenuItem[] = [
         {
             label: 'Group',
-            action: () => editorEngine.group.groupSelectedElements(),
             icon: <Icons.Box className="mr-2 h-4 w-4" />,
-            // disabled: !editorEngine.group.canGroupElements(),
+            action: () => editorEngine.group.groupSelectedElements(),
+            disabled: !editorEngine.group.canGroupElements(),
             hotkey: Hotkey.GROUP,
         },
         {
             label: 'Ungroup',
             action: () => editorEngine.group.ungroupSelectedElement(),
-            icon: <Icons.Group className="mr-2 h-4 w-4" />,
             disabled: !editorEngine.group.canUngroupElement(),
+            icon: <Icons.Group className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.UNGROUP,
         },
     ];
@@ -130,6 +118,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => editorEngine.frames.duplicateSelected(),
             icon: <Icons.Copy className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DUPLICATE,
+            disabled: !editorEngine.frames.canDuplicate(),
         },
         {
             label: 'Delete',
@@ -141,54 +130,38 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         },
     ];
 
-    const updateMenuItems = () => {
-        let instance: string | null = null;
-        let root: string | null = null;
-
-        if (editorEngine.elements.selected.length > 0) {
-            const element: DomElement | undefined = editorEngine.elements.selected[0];
-            if (element) {
-                instance = element.instanceId;
-                root = element.oid;
-            }
-        }
-        let menuItems: MenuItem[][] = [];
-
-        if (editorEngine.frames.selected.length > 0) {
-            menuItems = [WINDOW_ITEMS];
-        } else {
-            const updatedToolItems = [
-                instance !== null && {
-                    label: 'View instance code',
-                    action: () => viewSource(instance),
-                    icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,
-                },
-                {
-                    label: `View ${instance ? 'component' : 'element'} in ${ide.displayName}`,
-                    disabled: !root,
-                    action: () => viewSource(root),
-                    icon: instance ? (
-                        <Icons.Component className="mr-2 h-4 w-4" />
-                    ) : (
-                        <Icons.ExternalLink className="mr-2 h-4 w-4" />
-                    ),
-                },
-                ...TOOL_ITEMS,
-            ].filter(Boolean) as MenuItem[];
-
-            menuItems = [updatedToolItems, GROUP_ITEMS, EDITING_ITEMS];
+    const getMenuItems = (): MenuItem[][] => {
+        if (!editorEngine.elements.selected.length) {
+            return [WINDOW_ITEMS];
         }
 
-        setMenuItems(menuItems);
+        const element: DomElement | undefined = editorEngine.elements.selected[0];
+        const instance = element?.instanceId || null;
+        const root = element?.oid || null;
+
+        const updatedToolItems = [
+            instance !== null && {
+                label: 'View instance code',
+                action: () => instance && editorEngine.ide.openCodeBlock(instance),
+                icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,
+            },
+            {
+                label: `View ${instance ? 'component' : 'element'} in ${ide.displayName}`,
+                disabled: !root,
+                action: () => root && editorEngine.ide.openCodeBlock(root),
+                icon: instance ? (
+                    <Icons.Component className="mr-2 h-4 w-4" />
+                ) : (
+                    <Icons.ExternalLink className="mr-2 h-4 w-4" />
+                ),
+            },
+            ...TOOL_ITEMS,
+        ].filter((item): item is MenuItem => item !== false);
+
+        return [updatedToolItems, GROUP_ITEMS, EDITING_ITEMS];
     };
 
-    function viewSource(oid: string | null) {
-        if (!oid) {
-            console.error('No oid found');
-            return;
-        }
-        editorEngine.ide.openCodeBlock(oid);
-    }
+    const menuItems: MenuItem[][] = getMenuItems();
 
     return (
         <ContextMenu>

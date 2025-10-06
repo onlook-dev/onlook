@@ -1,13 +1,11 @@
-import { nanoid } from 'nanoid';
-
-import type { ListFilesOutputFile } from '@onlook/code-provider';
-import type { PageMetadata, PageNode, SandboxFile } from '@onlook/models';
-import type { T } from '@onlook/parser';
+import type { Provider } from '@onlook/code-provider';
+import type { FileEntry } from '@onlook/file-system';
+import type { PageMetadata, PageNode, RouterConfig } from '@onlook/models';
 import { RouterType } from '@onlook/models';
-import { generate, getAstFromContent, t, traverse } from '@onlook/parser';
-
+import type { T } from '@onlook/parser';
+import { formatContent, generate, getAstFromContent, t, traverse } from '@onlook/parser';
+import { nanoid } from 'nanoid';
 import type { SandboxManager } from '../sandbox';
-import { formatContent } from '../sandbox/helpers';
 
 const DEFAULT_LAYOUT_CONTENT = `export default function Layout({
     children,
@@ -118,8 +116,11 @@ const joinPath = (...parts: string[]): string => {
 };
 
 // Helper function to extract metadata from file content
-const extractMetadata = async (content: string): Promise<PageMetadata | undefined> => {
+const extractMetadata = async (content: string | Uint8Array): Promise<PageMetadata | undefined> => {
     try {
+        if (typeof content !== 'string') {
+            throw new Error('Content is not a string');
+        }
         const ast = getAstFromContent(content);
         if (!ast) {
             throw new Error('Failed to parse page file');
@@ -208,7 +209,7 @@ export const scanAppDirectory = async (
     parentPath = '',
 ): Promise<PageNode[]> => {
     const nodes: PageNode[] = [];
-    let entries;
+    let entries: FileEntry[];
 
     try {
         entries = await sandboxManager.readDir(dir);
@@ -220,19 +221,14 @@ export const scanAppDirectory = async (
     const { pageFile, layoutFile } = getPageAndLayoutFiles(entries);
 
     const childDirectories = entries.filter(
-        (entry) => entry.type === 'directory' && !IGNORED_DIRECTORIES.includes(entry.name),
+        (entry) => entry.isDirectory && !IGNORED_DIRECTORIES.includes(entry.name),
     );
 
     if (pageFile) {
-        const fileReadPromises: Array<Promise<SandboxFile | null>> = [];
-
-        fileReadPromises.push(sandboxManager.readFile(`${dir}/${pageFile.name}`));
-
-        if (layoutFile) {
-            fileReadPromises.push(sandboxManager.readFile(`${dir}/${layoutFile.name}`));
-        } else {
-            fileReadPromises.push(Promise.resolve(null));
-        }
+        const fileEntries: (FileEntry | null)[] = [
+            pageFile,
+            layoutFile || null
+        ];
 
         const childPromises = childDirectories.map((entry) => {
             const fullPath = `${dir}/${entry.name}`;
@@ -240,14 +236,10 @@ export const scanAppDirectory = async (
             return scanAppDirectory(sandboxManager, fullPath, relativePath);
         });
 
-        const [fileResults, childResults] = await Promise.all([
-            Promise.all(fileReadPromises),
-            Promise.all(childPromises),
-        ]);
-
+        const childResults = await Promise.all(childPromises);
         const children = childResults.flat();
 
-        const { pageMetadata, layoutMetadata } = await getPageAndLayoutMetadata(fileResults);
+        const { pageMetadata, layoutMetadata } = await getPageAndLayoutMetadata(fileEntries, sandboxManager, dir);
 
         const metadata = {
             ...layoutMetadata,
@@ -319,7 +311,7 @@ const scanPagesDirectory = async (
     parentPath = '',
 ): Promise<PageNode[]> => {
     const nodes: PageNode[] = [];
-    let entries: ListFilesOutputFile[];
+    let entries: FileEntry[];
 
     try {
         entries = await sandboxManager.readDir(dir);
@@ -338,7 +330,7 @@ const scanPagesDirectory = async (
         }
 
         if (
-            entry.type === 'file' &&
+            !entry.isDirectory &&
             ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)) &&
             !IGNORED_DIRECTORIES.includes(fileName)
         ) {
@@ -363,11 +355,11 @@ const scanPagesDirectory = async (
             // Extract metadata from the page file
             let metadata: PageMetadata | undefined;
             try {
-                const file = await sandboxManager.readFile(`${dir}/${entry.name}`);
-                if (!file || file.type !== 'text') {
+                const fileContent = await sandboxManager.readFile(`${dir}/${entry.name}`);
+                if (!fileContent || typeof fileContent !== 'string') {
                     throw new Error(`File ${dir}/${entry.name} not found or is not a text file`);
                 }
-                metadata = await extractMetadata(file.content);
+                metadata = await extractMetadata(fileContent);
             } catch (error) {
                 console.error(`Error reading file ${dir}/${entry.name}:`, error);
             }
@@ -401,7 +393,7 @@ const scanPagesDirectory = async (
         const dirNameForPath = isDynamicDir ? entry.name.slice(1, -1) : entry.name;
         const relativePath = joinPath(parentPath, dirNameForPath);
 
-        if (entry.type === 'directory') {
+        if (entry.isDirectory) {
             const children = await scanPagesDirectory(sandboxManager, fullPath, relativePath);
             if (children.length > 0) {
                 const dirPath = relativePath.replace(/\\/g, '/');
@@ -424,7 +416,7 @@ const scanPagesDirectory = async (
 
 export const scanPagesFromSandbox = async (sandboxManager: SandboxManager): Promise<PageNode[]> => {
     // Use router config from sandbox manager
-    const routerConfig = sandboxManager.routerConfig;
+    const routerConfig = await sandboxManager.getRouterConfig();
 
     if (!routerConfig) {
         console.log('No Next.js router detected, returning empty pages');
@@ -438,13 +430,17 @@ export const scanPagesFromSandbox = async (sandboxManager: SandboxManager): Prom
     }
 };
 
-export const detectRouterTypeInSandbox = async (
-    sandboxManager: SandboxManager,
-): Promise<{ type: RouterType; basePath: string } | null> => {
+
+// TODO: We're calling getRouterConfig in a lot of places before the provider is initialized.
+// We should ensure it's initialized earlier during setup.
+export const detectRouterConfig = async (
+    provider: Provider,
+): Promise<RouterConfig | null> => {
     // Check for App Router
     for (const appPath of APP_ROUTER_PATHS) {
         try {
-            const entries = await sandboxManager.readDir(appPath);
+            const result = await provider.listFiles({ args: { path: appPath } });
+            const entries = result.files;
             if (entries && entries.length > 0) {
                 // Check for layout file (required for App Router)
                 const hasLayout = entries.some(
@@ -466,7 +462,8 @@ export const detectRouterTypeInSandbox = async (
     // Check for Pages Router if App Router not found
     for (const pagesPath of PAGES_ROUTER_PATHS) {
         try {
-            const entries = await sandboxManager.readDir(pagesPath);
+            const result = await provider.listFiles({ args: { path: pagesPath } });
+            const entries = result.files;
             if (entries && entries.length > 0) {
                 // Check for index file (common in Pages Router)
                 const hasIndex = entries.some(
@@ -510,7 +507,7 @@ const cleanupEmptyFolders = async (
             const entries = await sandboxManager.readDir(folderPath);
             if (entries.length === 0) {
                 // Delete empty directory using remove method
-                await sandboxManager.delete(folderPath);
+                await sandboxManager.deleteDirectory(folderPath);
                 folderPath = getDirName(folderPath);
             } else {
                 break;
@@ -550,7 +547,7 @@ export const createPageInSandbox = async (
     pagePath: string,
 ): Promise<void> => {
     try {
-        const routerConfig = sandboxManager.routerConfig;
+        const routerConfig = await sandboxManager.getRouterConfig();
 
         if (!routerConfig) {
             throw new Error('Could not detect Next.js router type');
@@ -588,7 +585,7 @@ export const deletePageInSandbox = async (
     isDir: boolean,
 ): Promise<void> => {
     try {
-        const routerConfig = sandboxManager.routerConfig;
+        const routerConfig = await sandboxManager.getRouterConfig();
 
         if (!routerConfig) {
             throw new Error('Could not detect Next.js router type');
@@ -611,11 +608,11 @@ export const deletePageInSandbox = async (
 
         if (isDir) {
             // Delete entire directory
-            await sandboxManager.delete(fullPath, true);
+            await sandboxManager.deleteDirectory(fullPath);
         } else {
             // Delete just the page.tsx file
             const pageFilePath = joinPath(fullPath, 'page.tsx');
-            await sandboxManager.delete(pageFilePath);
+            await sandboxManager.deleteFile(pageFilePath);
 
             // Clean up empty parent directories
             await cleanupEmptyFolders(sandboxManager, fullPath);
@@ -634,7 +631,7 @@ export const renamePageInSandbox = async (
     newName: string,
 ): Promise<void> => {
     try {
-        const routerConfig = sandboxManager.routerConfig;
+        const routerConfig = await sandboxManager.getRouterConfig();
 
         if (!routerConfig || routerConfig.type !== RouterType.APP) {
             throw new Error('Page renaming is only supported for App Router projects.');
@@ -677,7 +674,7 @@ export const duplicatePageInSandbox = async (
     targetPath: string,
 ): Promise<void> => {
     try {
-        const routerConfig = sandboxManager.routerConfig;
+        const routerConfig = await sandboxManager.getRouterConfig();
 
         if (!routerConfig || routerConfig.type !== RouterType.APP) {
             throw new Error('Page duplication is only supported for App Router projects.');
@@ -700,7 +697,7 @@ export const duplicatePageInSandbox = async (
                 throw new Error('Target path already exists');
             }
 
-            await sandboxManager.copy(sourcePageFile, targetPageFile);
+            await sandboxManager.copyFile(sourcePageFile, targetPageFile);
 
             console.log(`Duplicated root page to: ${targetPageFile}`);
             return;
@@ -721,17 +718,18 @@ export const duplicatePageInSandbox = async (
             throw new Error('Target path already exists');
         }
 
-        // Check if source is a directory or file
+        // Check if source directory exists
         const sourceEntries = await sandboxManager.readDir(getDirName(sourceFull));
         const sourceEntry = sourceEntries.find(
-            (entry: any) => entry.name === getBaseName(sourceFull),
+            (entry: FileEntry) => entry.name === getBaseName(sourceFull),
         );
 
         if (!sourceEntry) {
             throw new Error('Source page not found');
         }
 
-        await sandboxManager.copy(sourceFull, targetFull, true);
+        // App Router pages are always directories containing page.tsx and other files
+        await sandboxManager.copyDirectory(sourceFull, targetFull);
 
         console.log(`Duplicated page from ${sourceFull} to ${targetFull}`);
     } catch (error) {
@@ -745,7 +743,7 @@ export const updatePageMetadataInSandbox = async (
     pagePath: string,
     metadata: PageMetadata,
 ): Promise<void> => {
-    const routerConfig = sandboxManager.routerConfig;
+    const routerConfig = await sandboxManager.getRouterConfig();
 
     if (!routerConfig) {
         throw new Error('Could not detect Next.js router type');
@@ -765,10 +763,10 @@ export const updatePageMetadataInSandbox = async (
     }
 
     const file = await sandboxManager.readFile(pageFilePath);
-    if (!file || file.type !== 'text') {
+    if (!file || typeof file !== 'string') {
         throw new Error('Page file not found or is not a text file');
     }
-    const pageContent = file.content;
+    const pageContent = file;
     const hasUseClient =
         pageContent.includes("'use client'") || pageContent.includes('"use client"');
 
@@ -797,10 +795,10 @@ async function updateMetadataInFile(
 ) {
     // Read the current file content
     const file = await sandboxManager.readFile(filePath);
-    if (!file || file.type !== 'text') {
+    if (!file || typeof file !== 'string') {
         throw new Error('File not found or is not a text file');
     }
-    const content = file.content;
+    const content = file;
 
     // Parse the file content using Babel
     const ast = getAstFromContent(content);
@@ -1012,10 +1010,10 @@ export const addSetupTask = async (sandboxManager: SandboxManager) => {
 
 export const updatePackageJson = async (sandboxManager: SandboxManager) => {
     const file = await sandboxManager.readFile('./package.json');
-    if (!file || file.type !== 'text') {
+    if (!file || typeof file !== 'string') {
         throw new Error('Package.json not found or is not a text file');
     }
-    const pkgJson = JSON.parse(file.content);
+    const pkgJson = JSON.parse(file);
 
     pkgJson.scripts = pkgJson.scripts || {};
     pkgJson.scripts.dev = 'next dev';
@@ -1035,17 +1033,17 @@ export const parseRepoUrl = (repoUrl: string): { owner: string; repo: string } =
     };
 };
 
-const getPageAndLayoutFiles = (entries: ListFilesOutputFile[]) => {
+const getPageAndLayoutFiles = (entries: FileEntry[]) => {
     const pageFile = entries.find(
         (entry) =>
-            entry.type === 'file' &&
+            !entry.isDirectory &&
             entry.name.startsWith('page.') &&
             ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
     );
 
     const layoutFile = entries.find(
         (entry) =>
-            entry.type === 'file' &&
+            !entry.isDirectory &&
             entry.name.startsWith('layout.') &&
             ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
     );
@@ -1054,7 +1052,9 @@ const getPageAndLayoutFiles = (entries: ListFilesOutputFile[]) => {
 };
 
 const getPageAndLayoutMetadata = async (
-    fileResults: (SandboxFile | null)[],
+    fileResults: (FileEntry | null)[],
+    sandboxManager: SandboxManager,
+    dir?: string,
 ): Promise<{
     pageMetadata: PageMetadata | undefined;
     layoutMetadata: PageMetadata | undefined;
@@ -1068,17 +1068,21 @@ const getPageAndLayoutMetadata = async (
     let pageMetadata: PageMetadata | undefined;
     let layoutMetadata: PageMetadata | undefined;
 
-    if (pageFileResult && pageFileResult.type === 'text') {
+    if (pageFileResult && !pageFileResult.isDirectory) {
         try {
-            pageMetadata = await extractMetadata(pageFileResult.content);
+            const filePath = dir ? `${dir}/${pageFileResult.name}` : pageFileResult.path;
+            const fileContent = await sandboxManager.readFile(filePath);
+            pageMetadata = await extractMetadata(fileContent);
         } catch (error) {
             console.error(`Error reading page file ${pageFileResult.path}:`, error);
         }
     }
 
-    if (layoutFileResult && layoutFileResult.type === 'text') {
+    if (layoutFileResult && !layoutFileResult.isDirectory) {
         try {
-            layoutMetadata = await extractMetadata(layoutFileResult.content);
+            const filePath = dir ? `${dir}/${layoutFileResult.name}` : layoutFileResult.path;
+            const fileContent = await sandboxManager.readFile(filePath);
+            layoutMetadata = await extractMetadata(fileContent);
         } catch (error) {
             console.error(`Error reading layout file ${layoutFileResult.path}:`, error);
         }

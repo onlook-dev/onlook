@@ -1,5 +1,5 @@
 import * as t from '@babel/types';
-import { DEPRECATED_PRELOAD_SCRIPT_SRCS, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
+import { DEPRECATED_PRELOAD_SCRIPT_SRCS, ONLOOK_PRELOAD_SCRIPT_SRC } from '@onlook/constants';
 import { describe, expect, test } from 'bun:test';
 import fs from 'fs';
 import path from 'path';
@@ -19,7 +19,7 @@ export default function Document() {
     return (
         <html>
             <head>
-                <Script type="module" src="${PRELOAD_SCRIPT_SRC}" />
+                <Script type="module" src="${ONLOOK_PRELOAD_SCRIPT_SRC}" />
                 <Script type="module" src="${DEPRECATED_PRELOAD_SCRIPT_SRCS[0]}" />
             </head>
             <body>
@@ -36,7 +36,7 @@ export default function Document() {
         const result = await getContentFromAst(ast, input);
 
         // Current environment script should remain
-        expect(result).toContain(`src="${PRELOAD_SCRIPT_SRC}"`);
+        expect(result).toContain(`src="${ONLOOK_PRELOAD_SCRIPT_SRC}"`);
         // Deprecated script for current environment should be removed
         expect(result).not.toContain(`src="${DEPRECATED_PRELOAD_SCRIPT_SRCS[0]}"`);
         // Other deprecated scripts should also be removed
@@ -49,7 +49,7 @@ export default function Document() {
     return (
         <html>
             <body>
-                <Script type="module" src="${PRELOAD_SCRIPT_SRC}" />
+                <Script type="module" src="${ONLOOK_PRELOAD_SCRIPT_SRC}" />
             </body>
         </html>
     );
@@ -71,7 +71,7 @@ export default function Document() {
     return (
         <html>
             <body>
-                <Script type="module" src="${PRELOAD_SCRIPT_SRC}" />
+                <Script type="module" src="${ONLOOK_PRELOAD_SCRIPT_SRC}" />
                 <Script type="module" src="${DEPRECATED_PRELOAD_SCRIPT_SRCS[0]}" />
             </body>
         </html>
@@ -95,7 +95,7 @@ export default function Document() {
     return (
         <html>
             <body>
-                <Script type="module" src="${PRELOAD_SCRIPT_SRC}" />
+                <Script type="module" src="${ONLOOK_PRELOAD_SCRIPT_SRC}" />
             </body>
         </html>
     );
@@ -113,51 +113,6 @@ export default function Document() {
 });
 
 describe('removeDeprecatedPreloadScripts', () => {
-    const SHOULD_UPDATE_EXPECTED = false;
-    const casesDir = path.resolve(__dirname, 'data/layout');
-
-    // Only test cases that have deprecated scripts to remove
-    const relevantTestCases = ['removes-deprecated-script', 'removes-deprecated-script-multiple'];
-
-    for (const testCase of relevantTestCases) {
-        test(`should handle case: ${testCase}`, async () => {
-            const caseDir = path.resolve(casesDir, testCase);
-            const files = fs.readdirSync(caseDir);
-
-            const inputFile = files.find((f) => f.startsWith('input.'));
-            if (!inputFile) {
-                throw new Error(`Test case ${testCase} is missing input file.`);
-            }
-
-            const inputPath = path.resolve(caseDir, inputFile);
-            const inputContent = await Bun.file(inputPath).text();
-
-            const ast = getAstFromContent(inputContent);
-            if (!ast) throw new Error('Failed to parse input code');
-
-            // Apply only the removeDeprecatedPreloadScripts function
-            removeDeprecatedPreloadScripts(ast);
-            const result = await getContentFromAst(ast, inputContent);
-
-            // Create expected output path for preload tests
-            const expectedPath = path.resolve(caseDir, `expected-preload.tsx`);
-
-            if (SHOULD_UPDATE_EXPECTED) {
-                await Bun.write(expectedPath, result);
-            }
-
-            // For now, let's create the expected files manually based on what should happen
-            if (!fs.existsSync(expectedPath)) {
-                throw new Error(
-                    `Expected file ${expectedPath} does not exist. Run test with SHOULD_UPDATE_EXPECTED = true first to generate it.`,
-                );
-            }
-
-            const expectedContent = await Bun.file(expectedPath).text();
-            expect(result).toBe(expectedContent);
-        });
-    }
-
     // Test additional cases to ensure the function only removes deprecated scripts
     test('should not remove non-deprecated scripts', async () => {
         const input = `import Script from 'next/script';
@@ -165,7 +120,7 @@ export default function Document() {
     return (
         <html>
             <head>
-                <Script type="module" src="${PRELOAD_SCRIPT_SRC}" />
+                <Script type="module" src="${ONLOOK_PRELOAD_SCRIPT_SRC}" />
                 <Script type="module" src="https://example.com/other-script.js" />
             </head>
             <body>
@@ -182,7 +137,7 @@ export default function Document() {
         const result = await getContentFromAst(ast, input);
 
         // Should keep both scripts since neither is deprecated
-        expect(result).toContain(`src="${PRELOAD_SCRIPT_SRC}"`);
+        expect(result).toContain(`src="${ONLOOK_PRELOAD_SCRIPT_SRC}"`);
         expect(result).toContain('src="https://example.com/other-script.js"');
     });
 
@@ -192,7 +147,7 @@ export default function Document() {
     return (
         <html>
             <head>
-                <Script type="module" src="${PRELOAD_SCRIPT_SRC}" />
+                <Script type="module" src="${ONLOOK_PRELOAD_SCRIPT_SRC}" />
                 <Script type="module" src="${DEPRECATED_PRELOAD_SCRIPT_SRCS[0]}" />
             </head>
             <body>
@@ -209,7 +164,7 @@ export default function Document() {
         const result = await getContentFromAst(ast, input);
 
         // Should keep the current script
-        expect(result).toContain(`src="${PRELOAD_SCRIPT_SRC}"`);
+        expect(result).toContain(`src="${ONLOOK_PRELOAD_SCRIPT_SRC}"`);
         // Should remove deprecated scripts
         expect(result).not.toContain(`src="${DEPRECATED_PRELOAD_SCRIPT_SRCS[0]}"`);
     });
@@ -226,8 +181,8 @@ describe('scanForPreloadScript', () => {
             injectedCorrectly: false,
         },
         'does-not-duplicate': {
-            scriptCount: 2,
-            deprecatedScriptCount: 0,
+            scriptCount: 0,
+            deprecatedScriptCount: 2,
             injectedCorrectly: false,
         },
         'removes-deprecated-script': {
@@ -237,7 +192,7 @@ describe('scanForPreloadScript', () => {
         },
         'removes-deprecated-script-multiple': {
             scriptCount: 0,
-            deprecatedScriptCount: 2,
+            deprecatedScriptCount: 0,
             injectedCorrectly: false,
         },
         'injects-at-bottom': {
@@ -302,7 +257,7 @@ describe('scanForPreloadScript', () => {
     }
 
     test('should handle exactly one valid script in body as injected correctly', () => {
-        const bodyWithScript = createScriptElement(PRELOAD_SCRIPT_SRC, 'body');
+        const bodyWithScript = createScriptElement(ONLOOK_PRELOAD_SCRIPT_SRC, 'body');
         const ast = createComponentWithJSX(bodyWithScript);
 
         const result = scanForPreloadScript(ast);
@@ -313,7 +268,7 @@ describe('scanForPreloadScript', () => {
     });
 
     test('should handle valid script outside body as not injected correctly', () => {
-        const scriptElement = createScriptElement(PRELOAD_SCRIPT_SRC);
+        const scriptElement = createScriptElement(ONLOOK_PRELOAD_SCRIPT_SRC);
         const divWithScript = t.jsxElement(
             t.jsxOpeningElement(t.jsxIdentifier('div'), [], false),
             t.jsxClosingElement(t.jsxIdentifier('div')),

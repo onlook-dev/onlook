@@ -133,14 +133,21 @@ export class ElementsManager {
                 this.emitError('OID not found. Try refreshing the page.');
                 return;
             }
-            const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(oid);
 
-            if (!codeBlock) {
+            const branchData = this.editorEngine.branches.getBranchDataById(selectedEl.branchId);
+            if (!branchData) {
+                this.emitError(`Branch data not found for branchId: ${selectedEl.branchId}. Try refreshing the page.`);
+                return;
+            }
+
+            const metadata = await branchData.codeEditor.getJsxElementMetadata(oid);
+
+            if (!metadata?.code) {
                 this.emitError('Code block not found. Try refreshing the page.');
                 return;
             }
 
-            removeAction.codeBlock = codeBlock;
+            removeAction.codeBlock = metadata.code;
 
             this.editorEngine.action.run(removeAction).catch((err) => {
                 console.error('Error deleting element', err);

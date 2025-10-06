@@ -1,8 +1,8 @@
 import { DefaultSettings } from '@onlook/constants';
-import { removeFontFromTailwindTheme, addFontToTailwindTheme } from '@onlook/fonts';
+import { addFontToTailwindTheme, removeFontFromTailwindTheme } from '@onlook/fonts';
 import type { Font } from '@onlook/models';
-import { normalizePath } from '../sandbox/helpers';
 import type { SandboxManager } from '../sandbox';
+import { normalizePath } from '../sandbox/helpers';
 
 const tailwindConfigPath = normalizePath(DefaultSettings.TAILWIND_CONFIG);
 
@@ -15,18 +15,19 @@ export const removeFontFromTailwindConfig = async (
 ): Promise<boolean> => {
     try {
         const file = await sandbox.readFile(tailwindConfigPath);
-        if (!file || file.type === 'binary') {
+        if (typeof file !== 'string') {
             console.error("Tailwind config file is empty or doesn't exist");
             return false;
         }
 
-        const content = file.content;
+        const content = file;
         const result = removeFontFromTailwindTheme(font.id, content);
 
         if (!result) {
             return false;
         }
-        return await sandbox.writeFile(tailwindConfigPath, result);
+        await sandbox.writeFile(tailwindConfigPath, result);
+        return true;
     } catch (error) {
         console.error('Error removing font from Tailwind config:', error);
         return false;
@@ -42,19 +43,20 @@ export const addFontToTailwindConfig = async (
 ): Promise<boolean> => {
     try {
         const file = await sandbox.readFile(tailwindConfigPath);
-        if (!file || file.type === 'binary') {
+        if (!file || typeof file !== 'string') {
             console.error("Tailwind config file is empty or doesn't exist");
             return false;
         }
 
-        const content = file.content;
+        const content = file;
         const result = addFontToTailwindTheme(font, content);
 
         if (!result) {
             return false;
         }
 
-        return await sandbox.writeFile(tailwindConfigPath, result);
+        await sandbox.writeFile(tailwindConfigPath, result);
+        return true;
     } catch (error) {
         console.error('Error updating Tailwind font config:', error);
         return false;

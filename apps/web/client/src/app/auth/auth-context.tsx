@@ -2,7 +2,6 @@
 
 import { LocalForageKeys } from '@/utils/constants';
 import { SignInMethod } from '@onlook/models/auth';
-import { toast } from '@onlook/ui/sonner';
 import localforage from 'localforage';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -43,11 +42,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             await localforage.setItem(LAST_SIGN_IN_METHOD_KEY, method);
             await login(method);
         } catch (error) {
-            toast.error('Error signing in with password', {
-                description: error instanceof Error ? error.message : 'Please try again.',
-            });
-            console.error('Error signing in with password:', error);
-            throw new Error('Error signing in with password');
+            console.error('Error signing in with method:', method, error);
+            throw error;
         } finally {
             setSigningInMethod(null);
         }

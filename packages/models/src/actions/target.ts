@@ -9,6 +9,7 @@ export interface ActionTarget {
     domId: string;
     oid: string | null;
     frameId: string;
+    branchId: string;
 }
 
 export interface StyleActionTarget extends ActionTarget {

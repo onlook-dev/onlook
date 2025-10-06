@@ -1,4 +1,3 @@
-import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import {
     Dialog,
@@ -9,74 +8,48 @@ import {
     DialogTitle,
 } from '@onlook/ui/dialog';
 import { Input } from '@onlook/ui/input';
-import { toast } from '@onlook/ui/sonner';
+import { Label } from '@onlook/ui/label';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
 import path from 'path';
 import { useEffect, useMemo, useState } from 'react';
-import {
-    createFileInSandbox,
-    doesFileExist,
-    validateFileName,
-} from '../file-operations';
-import { getFileTemplate } from '../file-templates';
+import { getFileTemplate } from '../shared/file-templates';
 
 interface FileModalProps {
     basePath: string;
+    show: boolean;
+    setShow: (show: boolean) => void;
     onSuccess?: () => void;
+    onCreateFile: (filePath: string, content?: string) => Promise<void>;
 }
 
-export const FileModal = observer(({
+export const FileModal = ({
     basePath,
+    show,
+    setShow,
     onSuccess,
+    onCreateFile,
 }: FileModalProps) => {
-    const editorEngine = useEditorEngine();
-    const files = editorEngine.activeSandbox.files;
-    const open = editorEngine.ide.fileModalOpen;
 
     const [name, setName] = useState('');
+    const [currentPath, setCurrentPath] = useState(basePath);
     const [warning, setWarning] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isComposing, setIsComposing] = useState(false);
 
+    // Update currentPath when basePath prop changes
+    useEffect(() => {
+        setCurrentPath(basePath);
+    }, [basePath]);
+
     const fullPath = useMemo(() => {
         if (!name) return '';
-        return path.join(basePath, name).replace(/\\/g, '/');
-    }, [basePath, name]);
+        return path.join(currentPath, name).replace(/\\/g, '/');
+    }, [currentPath, name]);
 
     const title = 'Create New File';
     const buttonText = 'Create File';
     const loadingText = 'Creating file...';
     const placeholder = 'component.tsx';
-
-    // Reset name when modal opens
-    useEffect(() => {
-        if (open) {
-            setName('');
-            setWarning('');
-        }
-    }, [open]);
-
-    useEffect(() => {
-        if (!name) {
-            setWarning('');
-            return;
-        }
-
-        const { valid, error } = validateFileName(name);
-
-        if (!valid) {
-            setWarning(error ?? 'Invalid file name');
-            return;
-        }
-
-        if (doesFileExist(files, fullPath)) {
-            setWarning('This file already exists');
-            return;
-        }
-
-        setWarning('');
-    }, [name, fullPath, files]);
 
     const handleSubmit = async () => {
         if (!name || warning) return;
@@ -85,11 +58,12 @@ export const FileModal = observer(({
             setIsLoading(true);
 
             const content = getFileTemplate(name);
-            await createFileInSandbox(editorEngine.activeSandbox.session.provider, fullPath, content, editorEngine.activeSandbox);
-            toast(`File "${name}" created successfully!`);
+            await onCreateFile(fullPath, content);
 
             setName('');
-            editorEngine.ide.fileModalOpen = false;
+            setCurrentPath(basePath);
+            setWarning('');
+            setShow(false);
             onSuccess?.();
         } catch (error) {
             console.error('Failed to create file:', error);
@@ -100,23 +74,39 @@ export const FileModal = observer(({
         }
     };
 
-    const displayPath = basePath === '' ? '/' : `/${basePath}`;
+    const displayPath = currentPath === '' ? '/' : `/${currentPath}`;
 
     return (
-        <Dialog open={open} onOpenChange={(isOpen) => editorEngine.ide.fileModalOpen = isOpen}>
+        <Dialog open={show} onOpenChange={(isOpen) => setShow(isOpen)}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>
-                        Create a new file in{' '}
-                        <code className="bg-background-secondary px-1 py-0.5 rounded text-xs">
-                            {displayPath}
-                        </code>
+                        Create a new file
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-4 py-4">
                     <div className="space-y-2">
+                        <Label htmlFor="path">
+                            Directory Path
+                        </Label>
+                        <Input
+                            id="path"
+                            value={currentPath}
+                            onChange={(e) => setCurrentPath(e.target.value)}
+                            placeholder="/"
+                            disabled={isLoading}
+                            className="text-sm"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Path where the file will be created
+                        </p>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="name">
+                            File Name
+                        </Label>
                         <Input
                             id="name"
                             value={name}
@@ -150,7 +140,7 @@ export const FileModal = observer(({
                 <DialogFooter>
                     <Button
                         variant="ghost"
-                        onClick={() => editorEngine.ide.fileModalOpen = false}
+                        onClick={() => setShow(false)}
                         disabled={isLoading}
                     >
                         Cancel
@@ -166,4 +156,4 @@ export const FileModal = observer(({
             </DialogContent>
         </Dialog>
     );
-}); 
+}; 

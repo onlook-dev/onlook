@@ -3,12 +3,13 @@
 import { useGetBackground } from '@/hooks/use-get-background';
 import { transKeys } from '@/i18n/keys';
 import { LocalForageKeys, Routes } from '@/utils/constants';
+import { SignInMethod } from '@onlook/models/auth';
 import { Icons } from '@onlook/ui/icons';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { DevLoginButton, GithubLoginButton, GoogleLoginButton } from '../_components/login-button';
+import { DevLoginButton, LoginButton } from '../_components/login-button';
 
 export default function LoginPage() {
     const isDev = process.env.NODE_ENV === 'development';
@@ -34,8 +35,20 @@ export default function LoginPage() {
                         </p>
                     </div>
                     <div className="space-y-2 md:space-y-0 md:space-x-2 flex flex-col md:flex-row">
-                        <GithubLoginButton returnUrl={returnUrl} />
-                        <GoogleLoginButton returnUrl={returnUrl} />
+                        <LoginButton
+                            returnUrl={returnUrl}
+                            method={SignInMethod.GITHUB}
+                            icon={<Icons.GitHubLogo className="w-4 h-4 mr-2" />}
+                            translationKey="github"
+                            providerName="GitHub"
+                        />
+                        <LoginButton
+                            returnUrl={returnUrl}
+                            method={SignInMethod.GOOGLE}
+                            icon={<Icons.GoogleLogo viewBox="0 0 24 24" className="w-4 h-4 mr-2" />}
+                            translationKey="google"
+                            providerName="Google"
+                        />
                     </div>
                     {isDev && <DevLoginButton returnUrl={returnUrl} />}
                     <p className="text-small text-foreground-onlook">

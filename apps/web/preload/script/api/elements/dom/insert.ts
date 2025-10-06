@@ -117,6 +117,7 @@ export function insertElement(
             assertNever(location);
     }
 
+
     const domEl = getDomElement(newEl, true)
     const newMap = buildLayerTree(newEl);
     return {

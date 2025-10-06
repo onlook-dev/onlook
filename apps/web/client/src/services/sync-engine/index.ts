@@ -1,2 +1,3 @@
 export { CodeProviderSync, type SyncConfig } from './sync-engine';
-export { useSyncEngine } from './useSyncEngine';
+export { useSyncEngine } from './use-sync-engine';
+

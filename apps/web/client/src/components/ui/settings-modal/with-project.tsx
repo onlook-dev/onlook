@@ -109,11 +109,12 @@ export const SettingsModalWithProjects = observer(() => {
 
     const tabs = [...globalTabs, ...pagesTabs, ...projectTabs];
 
+    // TODO: use file system like code tab
     useEffect(() => {
-        if (stateManager.isSettingsModalOpen) {
-            editorEngine.pages.scanPages();
-            editorEngine.image.scanImages();
+        if (!stateManager.isSettingsModalOpen) {
+            return;
         }
+        editorEngine.pages.scanPages();
     }, [stateManager.isSettingsModalOpen]);
 
     return (

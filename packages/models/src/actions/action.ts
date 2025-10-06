@@ -5,6 +5,7 @@ import { type ActionTarget, type StyleActionTarget } from './target';
 interface BaseActionElement {
     domId: string;
     oid: string;
+    branchId: string;
     tagName: string;
     attributes: Record<string, string>;
     styles: Record<string, string>;

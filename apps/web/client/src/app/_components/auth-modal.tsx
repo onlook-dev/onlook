@@ -10,7 +10,9 @@ import {
 import { Button } from '@onlook/ui/button';
 import { useTranslations } from 'next-intl';
 import { useAuthContext } from '../auth/auth-context';
-import { GithubLoginButton, GoogleLoginButton } from './login-button';
+import { LoginButton } from './login-button';
+import { SignInMethod } from '@onlook/models/auth';
+import { Icons } from '@onlook/ui/icons';
 
 export function AuthModal() {
     const { setIsAuthModalOpen, isAuthModalOpen } = useAuthContext();
@@ -28,8 +30,20 @@ export function AuthModal() {
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="space-y-2 flex flex-col">
-                    <GithubLoginButton className="!bg-black" />
-                    <GoogleLoginButton className="!bg-black" />
+                    <LoginButton
+                        className="!bg-black"
+                        method={SignInMethod.GITHUB}
+                        icon={<Icons.GitHubLogo className="w-4 h-4 mr-2" />}
+                        translationKey="github"
+                        providerName="GitHub"
+                    />
+                    <LoginButton
+                        className="!bg-black"
+                        method={SignInMethod.GOOGLE}
+                        icon={<Icons.GoogleLogo viewBox="0 0 24 24" className="w-4 h-4 mr-2" />}
+                        translationKey="google"
+                        providerName="Google"
+                    />
                 </div>
                 <AlertDialogFooter className="flex !justify-center w-full">
                     <Button variant={'ghost'} onClick={() => setIsAuthModalOpen(false)}>

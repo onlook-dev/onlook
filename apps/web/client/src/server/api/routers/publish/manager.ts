@@ -3,8 +3,8 @@ import {
     CUSTOM_OUTPUT_DIR,
     DefaultSettings,
     EXCLUDED_PUBLISH_DIRECTORIES,
-    LOCAL_PRELOAD_SCRIPT_SRC,
-    SUPPORTED_LOCK_FILES,
+    ONLOOK_PRELOAD_SCRIPT_FILE,
+    SUPPORTED_LOCK_FILES
 } from '@onlook/constants';
 import type { Deployment, deploymentUpdateSchema } from '@onlook/db';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
@@ -342,7 +342,7 @@ export class PublishManager {
             filePath.includes('/dist/') ||
             filePath.includes('/build/') ||
             filePath.includes('/coverage/') ||
-            filePath.endsWith(LOCAL_PRELOAD_SCRIPT_SRC)
+            filePath.endsWith(`/${ONLOOK_PRELOAD_SCRIPT_FILE}`)
         );
     }
 

@@ -665,25 +665,28 @@ export class ThemeManager {
         return undefined;
     }
 
-    getConfigPath(): {
+    async getConfigPath(): Promise<{
         configPath: string | null;
         cssPath: string | null;
-    } {
-        const list: string[] = this.editorEngine.activeSandbox.listAllFiles();
+    }> {
+        const list: {
+            path: string;
+            type: "file" | "directory";
+        }[] = await this.editorEngine.activeSandbox.listAllFiles();
 
         if (!list.length) {
             return { configPath: null, cssPath: null };
         }
 
-        const configPath = list.find((file: string) => file.includes('tailwind.config')) ?? null;
-        const cssPath = list.find((file: string) => file.includes('globals.css')) ?? null;
+        const configPath = list.find((file) => file.path.includes('tailwind.config')) ?? null;
+        const cssPath = list.find((file) => file.path.includes('globals.css')) ?? null;
 
-        return { configPath, cssPath };
+        return { configPath: configPath?.path ?? null, cssPath: cssPath?.path ?? null };
     }
 
     async scanTailwindConfig() {
         try {
-            const { configPath, cssPath } = this.getConfigPath();
+            const { configPath, cssPath } = await this.getConfigPath();
 
             if (!configPath || !cssPath) {
                 return null;
@@ -691,8 +694,8 @@ export class ThemeManager {
 
             const configFile = await this.editorEngine.activeSandbox.readFile(configPath);
             const cssFile = await this.editorEngine.activeSandbox.readFile(cssPath);
-            const configContent = configFile && configFile.type === 'text' ? extractColorsFromTailwindConfig(configFile.content) : '';
-            const cssContent = cssFile && cssFile.type === 'text' ? extractTailwindCssVariables(cssFile.content) : '';
+            const configContent = configFile && typeof configFile === 'string' ? extractColorsFromTailwindConfig(configFile) : '';
+            const cssContent = cssFile && typeof cssFile === 'string' ? extractTailwindCssVariables(cssFile) : '';
             return {
                 configPath,
                 configContent,
@@ -954,25 +957,26 @@ export class ThemeManager {
     }
 
     async initializeTailwindColorContent(): Promise<ColorUpdate | null> {
-        const { configPath, cssPath } = this.getConfigPath();
+        const { configPath, cssPath } = await this.getConfigPath();
         if (!configPath || !cssPath) {
             return null;
         }
 
-        const files = await this.editorEngine.activeSandbox.readFiles([configPath, cssPath]);
-        if (!files[configPath] || !files[cssPath]) {
+        const configContent = await this.editorEngine.activeSandbox.readFile(configPath);
+        const cssContent = await this.editorEngine.activeSandbox.readFile(cssPath);
+        if (!configContent || !cssContent) {
             return null;
         }
 
-        if (files[configPath].type === 'binary' || files[cssPath].type === 'binary') {
+        if (typeof configContent !== 'string' || typeof cssContent !== 'string') {
             throw new Error('Config or CSS file is a binary file');
         }
 
         return {
             configPath,
             cssPath,
-            configContent: files[configPath].content,
-            cssContent: files[cssPath].content,
+            configContent: configContent,
+            cssContent: cssContent,
         };
     }
 
@@ -1140,17 +1144,18 @@ export class ThemeManager {
     }
 
     async updateClassReferences(replacements: ClassReplacement[]): Promise<void> {
-        const sourceFiles = this.editorEngine.activeSandbox.listAllFiles();
-        const filesToUpdate = sourceFiles.filter((file) => file.endsWith('.tsx'))
+        const sourceFiles = await this.editorEngine.activeSandbox.listAllFiles();
+        const filesToUpdate = sourceFiles.filter((file) => file.path.endsWith('.tsx'))
+        const activeBranchId = this.editorEngine.branches.activeBranch.id;
 
         await Promise.all(
             filesToUpdate.map(async (file) => {
-                const foundFile = await this.editorEngine.activeSandbox.readFile(file);
-                if (!foundFile || foundFile.type === 'binary') {
+                const fileContent = await this.editorEngine.activeSandbox.readFile(file.path);
+                if (!fileContent || typeof fileContent !== 'string') {
                     return;
                 }
 
-                const ast = getAstFromContent(foundFile.content);
+                const ast = getAstFromContent(fileContent);
                 if (!ast) {
                     throw new Error(`Failed to parse file ${file}`);
                 }
@@ -1182,6 +1187,7 @@ export class ThemeManager {
                             if (oid) {
                                 updates.set(oid, {
                                     oid,
+                                    branchId: activeBranchId,
                                     attributes: { className: newClasses.join(' ') },
                                     overrideClasses: true,
                                     textContent: null,
@@ -1194,8 +1200,8 @@ export class ThemeManager {
 
                 if (updates.size > 0) {
                     transformAst(ast, updates);
-                    const output = generate(ast, { retainLines: true }, foundFile.content).code;
-                    await this.editorEngine.activeSandbox.writeFile(file, output);
+                    const output = generate(ast, { retainLines: true }, fileContent).code;
+                    await this.editorEngine.activeSandbox.writeFile(file.path, output);
                 }
             }),
         );

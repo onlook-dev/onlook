@@ -2,6 +2,7 @@ import { Icons } from '@onlook/ui/icons';
 import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
 import { ClientTool } from '../models/client';
+import { getFileSystem } from '../shared/helpers/files';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class SearchReplaceMultiEditFileTool extends ClientTool {
@@ -28,16 +29,13 @@ export class SearchReplaceMultiEditFileTool extends ClientTool {
 
     async handle(args: z.infer<typeof SearchReplaceMultiEditFileTool.parameters>, editorEngine: EditorEngine): Promise<string> {
         try {
-            const sandbox = editorEngine.branches.getSandboxById(args.branchId);
-            if (!sandbox) {
-                throw new Error(`Sandbox not found for branch ID: ${args.branchId}`);
-            }
-            const file = await sandbox.readFile(args.file_path);
-            if (!file || file.type !== 'text') {
+            const fileSystem = await getFileSystem(args.branchId, editorEngine);
+            const file = await fileSystem.readFile(args.file_path);
+            if (!file || typeof file !== 'string') {
                 throw new Error(`Cannot read file ${args.file_path}: file not found or not text`);
             }
 
-            const originalContent = file.content;
+            const originalContent = file;
             let content = originalContent;
 
             // Validate only the first non-replace_all edit against original content
@@ -76,11 +74,7 @@ export class SearchReplaceMultiEditFileTool extends ClientTool {
                 }
             }
 
-            const result = await sandbox.writeFile(args.file_path, content);
-            if (!result) {
-                throw new Error(`Failed to write file ${args.file_path}`);
-            }
-
+            await fileSystem.writeFile(args.file_path, content);
             return `File ${args.file_path} edited with ${args.edits.length} changes`;
         } catch (error) {
             throw new Error(`Cannot multi-edit file ${args.file_path}: ${(error as Error).message}`);

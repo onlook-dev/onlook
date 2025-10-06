@@ -11,8 +11,8 @@ import {
 } from '@onlook/models/chat';
 import { assertNever, type ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
-import type { EditorEngine } from '../engine';
-import type { FrameData } from '../frames';
+import { type EditorEngine } from '../engine';
+import { type FrameData } from '../frames';
 
 export class ChatContext {
     private _context: MessageContext[] = [];
@@ -80,28 +80,38 @@ export class ChatContext {
     async getRefreshedContext(context: MessageContext[]): Promise<MessageContext[]> {
         // Refresh the context if possible. Files and highlight content may have changed since the last time they were added to the context.
         // Images are not refreshed as they are not editable.
-        return await Promise.all(context.map(async (c) => {
-            if (c.type === MessageContextType.FILE) {
-                const fileContent = await this.editorEngine.activeSandbox.readFile(c.path);
-                if (fileContent === null) {
-                    console.error('No file content found for file', c.path);
-                    return c;
+        return (await Promise.all(
+            context.map(async (c) => {
+                if (c.type === MessageContextType.FILE && 'branchId' in c && c.branchId) {
+                    const branchData = this.editorEngine.branches.getBranchDataById(c.branchId);
+                    if (!branchData) {
+                        console.warn(`No branch data found for branchId: ${c.branchId}`);
+                        return c;
+                    }
+
+                    const fileContent = await branchData.codeEditor.readFile(c.path);
+                    if (fileContent === null || fileContent instanceof Uint8Array) {
+                        console.error('No file content found or file is binary', c.path);
+                        return c;
+                    }
+                    return { ...c, content: fileContent } satisfies FileMessageContext;
+                } else if (c.type === MessageContextType.HIGHLIGHT && c.oid && 'branchId' in c && c.branchId) {
+                    const branchData = this.editorEngine.branches.getBranchDataById(c.branchId);
+                    if (!branchData) {
+                        console.warn(`No branch data found for branchId: ${c.branchId}`);
+                        return c;
+                    }
+
+                    const metadata = await branchData.codeEditor.getJsxElementMetadata(c.oid);
+                    if (!metadata?.code) {
+                        console.error('No code block found for node', c.path);
+                        return c;
+                    }
+                    return { ...c, content: metadata.code } satisfies HighlightMessageContext;
                 }
-                if (fileContent.type === 'binary') {
-                    console.error('File is binary', c.path);
-                    return c;
-                }
-                return { ...c, content: fileContent.content } satisfies FileMessageContext;
-            } else if (c.type === MessageContextType.HIGHLIGHT && c.oid) {
-                const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(c.oid);
-                if (codeBlock === null) {
-                    console.error('No code block found for node', c.path);
-                    return c;
-                }
-                return { ...c, content: codeBlock } satisfies HighlightMessageContext;
-            }
-            return c;
-        })) satisfies MessageContext[];
+                return c;
+            }),
+        )) satisfies MessageContext[];
     }
 
     private async getImageContext(): Promise<ImageMessageContext[]> {
@@ -121,15 +131,21 @@ export class ChatContext {
         });
 
         for (const [filePath, branchId] of filePathToBranch) {
-            const file = await this.editorEngine.activeSandbox.readFile(filePath);
-            if (file === null || file.type === 'binary') {
+            const branchData = this.editorEngine.branches.getBranchDataById(branchId);
+            if (!branchData) {
+                console.warn(`No branch data found for branchId: ${branchId}`);
+                continue;
+            }
+
+            const content = await branchData.codeEditor.readFile(filePath);
+            if (content === null || content instanceof Uint8Array) {
                 continue;
             }
             fileContext.push({
                 type: MessageContextType.FILE,
                 displayName: filePath,
                 path: filePath,
-                content: file.content,
+                content,
                 branchId: branchId,
             });
         }
@@ -173,12 +189,12 @@ export class ChatContext {
             const instanceId = node.instanceId;
 
             if (oid) {
-                const context = await this.getHighlightContextById(oid, node.tagName, false);
+                const context = await this.getHighlightContextById(oid, node.tagName, false, node.branchId);
                 if (context) highlightedContext.push(context);
             }
 
             if (instanceId) {
-                const context = await this.getHighlightContextById(instanceId, node.tagName, true);
+                const context = await this.getHighlightContextById(instanceId, node.tagName, true, node.branchId);
                 if (context) highlightedContext.push(context);
             }
 
@@ -190,50 +206,61 @@ export class ChatContext {
         return highlightedContext;
     }
 
-    private async getHighlightContextById(id: string, tagName: string, isInstance: boolean): Promise<HighlightMessageContext | null> {
-        const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(id);
-        if (codeBlock === null) {
-            console.error('No code block found for id', id);
+    private async getHighlightContextById(
+        id: string,
+        tagName: string,
+        isInstance: boolean,
+        branchId: string,
+    ): Promise<HighlightMessageContext | null> {
+        const branchData = this.editorEngine.branches.getBranchDataById(branchId);
+        if (!branchData) {
+            console.warn(`No branch data found for branchId: ${branchId}`);
             return null;
         }
 
-        const templateNode = this.editorEngine.templateNodes.getTemplateNode(id);
-        if (!templateNode) {
-            console.error('No template node found for id', id);
+        const metadata = await branchData.codeEditor.getJsxElementMetadata(id);
+        if (!metadata) {
+            console.error('No metadata found for id', id);
             return null;
         }
 
         return {
             type: MessageContextType.HIGHLIGHT,
-            displayName: (isInstance && templateNode.component) ? templateNode.component : tagName.toLowerCase(),
-            path: templateNode.path,
-            content: codeBlock,
-            start: templateNode.startTag.start.line,
-            end: templateNode.endTag?.end.line || templateNode.startTag.start.line,
+            displayName:
+                isInstance && metadata.component ? metadata.component : tagName.toLowerCase(),
+            path: metadata.path,
+            content: metadata.code,
+            start: metadata.startTag.start.line,
+            end: metadata.endTag?.end.line || metadata.startTag.end.line,
             oid: id,
-            branchId: templateNode.branchId,
+            branchId: branchId,
         };
     }
 
     private async getAgentRuleContext(): Promise<AgentRuleMessageContext[]> {
         try {
-            const agentRuleFilesPaths = ['agents.md', 'claude.md', 'AGENTS.md', 'CLAUDE.md'];
+            const agentRuleFileNames = ['agents.md', 'claude.md', 'AGENTS.md', 'CLAUDE.md'];
+            const sandbox = this.editorEngine.activeSandbox;
             const agentRuleContexts: AgentRuleMessageContext[] = (await Promise.all(
-                agentRuleFilesPaths.map(async (filePath) => {
-                    const file = await this.editorEngine.activeSandbox.readFile(`./${filePath}`);
-                    if (file === null) {
+                agentRuleFileNames.map(async (fileName) => {
+                    const filePath = `./${fileName}`;
+                    if (!sandbox.fileExists(filePath)) {
                         return null;
                     }
-                    if (file.type === 'binary') {
+                    const fileContent = await this.editorEngine.activeSandbox.readFile(filePath);
+                    if (fileContent === null) {
                         return null;
                     }
-                    if (file.content.trim().length === 0) {
+                    if (fileContent instanceof Uint8Array) {
+                        return null;
+                    }
+                    if (fileContent.trim().length === 0) {
                         return null;
                     }
                     return {
                         type: MessageContextType.AGENT_RULE,
-                        content: file.content,
-                        displayName: filePath,
+                        content: fileContent,
+                        displayName: fileName,
                         path: filePath,
                     } satisfies AgentRuleMessageContext;
                 })
@@ -249,7 +276,7 @@ export class ChatContext {
         const branchErrors = this.editorEngine.branches.getAllErrors();
         // Group errors by branch for context
         const branchGroups = new Map<string, ParsedError[]>();
-        branchErrors.forEach(error => {
+        branchErrors.forEach((error) => {
             const existing = branchGroups.get(error.branchId) || [];
             existing.push(error);
             branchGroups.set(error.branchId, existing);
@@ -286,23 +313,37 @@ export class ChatContext {
 
     async getDefaultPageContext(): Promise<FileMessageContext | null> {
         try {
+            const activeBranchId = this.editorEngine.branches.activeBranch?.id;
+            if (!activeBranchId) {
+                console.error('No active branch found for default page context');
+                return null;
+            }
+
+            const branchData = this.editorEngine.branches.getBranchDataById(activeBranchId);
+            if (!branchData) {
+                console.error(`No branch data found for activeBranchId: ${activeBranchId}`);
+                return null;
+            }
+
             const pagePaths = ['./app/page.tsx', './src/app/page.tsx'];
             for (const pagePath of pagePaths) {
-                const file = await this.editorEngine.activeSandbox.readFile(pagePath);
-                if (file && file.type === 'text') {
-                    const activeBranchId = this.editorEngine.branches.activeBranch?.id;
-                    if (!activeBranchId) {
-                        console.error('No active branch found for default page context');
-                        continue;
-                    }
+                let fileContent: string | Uint8Array | null = null;
+                try {
+                    fileContent = await branchData.codeEditor.readFile(pagePath);
+                } catch (error) {
+                    console.error('Error getting default page context', error);
+                    continue;
+                }
+
+                if (fileContent && typeof fileContent === 'string') {
                     const defaultPageContext: FileMessageContext = {
                         type: MessageContextType.FILE,
                         path: pagePath,
-                        content: file.content,
+                        content: fileContent,
                         displayName: pagePath.split('/').pop() || 'page.tsx',
                         branchId: activeBranchId,
-                    }
-                    return defaultPageContext
+                    };
+                    return defaultPageContext;
                 }
             }
             return null;
@@ -330,7 +371,7 @@ export class ChatContext {
                 content: styleGuide.configContent,
                 displayName: styleGuide.configPath.split('/').pop() || 'tailwind.config.ts',
                 branchId: activeBranchId,
-            }
+            };
 
             const cssContext: FileMessageContext = {
                 type: MessageContextType.FILE,
@@ -338,7 +379,7 @@ export class ChatContext {
                 content: styleGuide.cssContent,
                 displayName: styleGuide.cssPath.split('/').pop() || 'globals.css',
                 branchId: activeBranchId,
-            }
+            };
 
             return [tailwindConfigContext, cssContext];
         } catch (error) {

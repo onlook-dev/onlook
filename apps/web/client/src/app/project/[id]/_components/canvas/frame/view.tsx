@@ -125,6 +125,7 @@ export const FrameComponent = observer(
                     messenger,
                     methods: {
                         getFrameId: () => frame.id,
+                        getBranchId: () => frame.branchId,
                         onWindowMutated: () => {
                             editorEngine.frameEvent.handleWindowMutated();
                         },
@@ -158,6 +159,7 @@ export const FrameComponent = observer(
                         const remote = child as unknown as PenpalChildMethods;
                         setPenpalChild(remote);
                         remote.setFrameId(frame.id);
+                        remote.setBranchId(frame.branchId);
                         remote.handleBodyReady();
                         remote.processDom();
                         console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Penpal connection set `);
@@ -200,6 +202,7 @@ export const FrameComponent = observer(
                 getElementAtLoc: promisifyMethod(penpalChild?.getElementAtLoc),
                 getElementByDomId: promisifyMethod(penpalChild?.getElementByDomId),
                 setFrameId: promisifyMethod(penpalChild?.setFrameId),
+                setBranchId: promisifyMethod(penpalChild?.setBranchId),
                 getElementIndex: promisifyMethod(penpalChild?.getElementIndex),
                 getComputedStyleByDomId: promisifyMethod(penpalChild?.getComputedStyleByDomId),
                 updateElementInstance: promisifyMethod(penpalChild?.updateElementInstance),

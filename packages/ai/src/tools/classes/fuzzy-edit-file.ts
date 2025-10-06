@@ -2,6 +2,7 @@ import { Icons } from '@onlook/ui/icons';
 import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
 import { z } from 'zod';
 import { ClientTool } from '../models/client';
+import { getFileSystem } from '../shared/helpers/files';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class FuzzyEditFileTool extends ClientTool {
@@ -28,21 +29,15 @@ Make sure there's enough context for the other model to understand where the cha
         args: z.infer<typeof FuzzyEditFileTool.parameters>,
         editorEngine: EditorEngine,
     ): Promise<string> {
-        const sandbox = editorEngine.branches.getSandboxById(args.branchId);
-        if (!sandbox) {
-            throw new Error(`Sandbox not found for branch ID: ${args.branchId}`);
-        }
-        const exists = await sandbox.fileExists(args.file_path);
-        if (!exists) {
-            throw new Error('File does not exist');
-        }
-        const originalFile = await sandbox.readFile(args.file_path);
+
+        const fileSystem = await getFileSystem(args.branchId, editorEngine);
+        const originalFile = await fileSystem.readFile(args.file_path);
 
         if (!originalFile) {
             throw new Error('Error reading file');
         }
 
-        if (originalFile.type === 'binary') {
+        if (typeof originalFile !== 'string') {
             throw new Error('Binary files are not supported for editing');
         }
 
@@ -52,7 +47,7 @@ Make sure there's enough context for the other model to understand where the cha
         };
 
         const updatedContent = await editorEngine.api.applyDiff({
-            originalCode: originalFile.content,
+            originalCode: originalFile,
             updateSnippet: args.content,
             instruction: args.instruction,
             metadata,
@@ -61,10 +56,7 @@ Make sure there's enough context for the other model to understand where the cha
             throw new Error('Error applying code change: ' + updatedContent.error);
         }
 
-        const result = await sandbox.writeFile(args.file_path, updatedContent.result);
-        if (!result) {
-            throw new Error('Error editing file');
-        }
+        await fileSystem.writeFile(args.file_path, updatedContent.result);
         return 'File edited!';
     }
 

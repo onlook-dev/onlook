@@ -1,4 +1,3 @@
-import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import {
     Dialog,
@@ -9,68 +8,42 @@ import {
     DialogTitle,
 } from '@onlook/ui/dialog';
 import { Input } from '@onlook/ui/input';
-import { toast } from '@onlook/ui/sonner';
+import { Label } from '@onlook/ui/label';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
 import path from 'path';
 import { useEffect, useMemo, useState } from 'react';
-import {
-    createFolderInSandbox,
-    doesFolderExist,
-    validateFolderName,
-} from '../file-operations';
 
 interface FolderModalProps {
     basePath: string;
+    show: boolean;
+    setShow: (show: boolean) => void;
     onSuccess?: () => void;
+    onCreateFolder: (folderPath: string) => Promise<void>;
 }
 
-export const FolderModal = observer(({
+export const FolderModal = ({
     basePath,
+    show,
+    setShow,
     onSuccess,
+    onCreateFolder,
 }: FolderModalProps) => {
-    const editorEngine = useEditorEngine();
-    const files = editorEngine.activeSandbox.files;
-    const open = editorEngine.ide.folderModalOpen;
 
     const [name, setName] = useState('');
+    const [currentPath, setCurrentPath] = useState(basePath);
     const [warning, setWarning] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isComposing, setIsComposing] = useState(false);
 
+    // Update currentPath when basePath prop changes
+    useEffect(() => {
+        setCurrentPath(basePath);
+    }, [basePath]);
+
     const fullPath = useMemo(() => {
         if (!name) return '';
-        return path.join(basePath, name).replace(/\\/g, '/');
-    }, [basePath, name]);
-
-    // Reset name when modal opens
-    useEffect(() => {
-        if (open) {
-            setName('');
-            setWarning('');
-        }
-    }, [open]);
-
-    useEffect(() => {
-        if (!name) {
-            setWarning('');
-            return;
-        }
-
-        const { valid, error } = validateFolderName(name);
-
-        if (!valid) {
-            setWarning(error ?? 'Invalid folder name');
-            return;
-        }
-
-        if (doesFolderExist(files, fullPath)) {
-            setWarning('This folder already exists');
-            return;
-        }
-
-        setWarning('');
-    }, [name, fullPath, files]);
+        return path.join(currentPath, name).replace(/\\/g, '/');
+    }, [currentPath, name]);
 
     const handleSubmit = async () => {
         if (!name || warning) return;
@@ -78,11 +51,12 @@ export const FolderModal = observer(({
         try {
             setIsLoading(true);
 
-            await createFolderInSandbox(editorEngine.activeSandbox.session.provider, fullPath, editorEngine.activeSandbox);
-            toast(`Folder "${name}" created successfully!`);
+            await onCreateFolder(fullPath);
 
             setName('');
-            editorEngine.ide.folderModalOpen = false;
+            setCurrentPath(basePath);
+            setWarning('');
+            setShow(false);
             onSuccess?.();
         } catch (error) {
             console.error('Failed to create folder:', error);
@@ -93,23 +67,39 @@ export const FolderModal = observer(({
         }
     };
 
-    const displayPath = basePath === '' ? '/' : `/${basePath}`;
+    const displayPath = currentPath === '' ? '/' : `/${currentPath}`;
 
     return (
-        <Dialog open={open} onOpenChange={(isOpen) => editorEngine.ide.folderModalOpen = isOpen}>
+        <Dialog open={show} onOpenChange={(isOpen) => setShow(isOpen)}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Create New Folder</DialogTitle>
                     <DialogDescription>
-                        Create a new folder in{' '}
-                        <code className="bg-background-secondary px-1 py-0.5 rounded text-xs">
-                            {displayPath}
-                        </code>
+                        Create a new folder
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-4 py-4">
                     <div className="space-y-2">
+                        <Label htmlFor="path">
+                            Directory Path
+                        </Label>
+                        <Input
+                            id="path"
+                            value={currentPath}
+                            onChange={(e) => setCurrentPath(e.target.value)}
+                            placeholder="/"
+                            disabled={isLoading}
+                            className="text-sm"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Path where the folder will be created
+                        </p>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="name">
+                            Folder Name
+                        </Label>
                         <Input
                             id="name"
                             value={name}
@@ -143,7 +133,7 @@ export const FolderModal = observer(({
                 <DialogFooter>
                     <Button
                         variant="ghost"
-                        onClick={() => editorEngine.ide.folderModalOpen = false}
+                        onClick={() => setShow(false)}
                         disabled={isLoading}
                     >
                         Cancel
@@ -159,4 +149,4 @@ export const FolderModal = observer(({
             </DialogContent>
         </Dialog>
     );
-}); 
+}; 

@@ -60,3 +60,29 @@ export function generateUniqueName(
 
     return newName;
 }
+
+/**
+ * Sanitizes a filename by normalizing unicode characters and removing unsafe characters.
+ * This prevents issues with filenames containing unicode characters like non-breaking spaces
+ * that can cause encoding problems further downstream.
+ * 
+ * @param filename The filename to sanitize
+ * @returns A sanitized filename with unicode characters normalized
+ */
+export function sanitizeFilename(filename: string): string {
+    if (!filename) {
+        return '';
+    }
+
+    return filename
+        // Normalize unicode characters (e.g., \u202F non-breaking space -> regular space)
+        .normalize('NFC')
+        // Replace non-breaking spaces with regular spaces
+        .replace(/\u00A0|\u2007|\u202F/g, ' ')
+        // Replace other unicode whitespace characters with regular spaces
+        .replace(/[\u2000-\u200B\u2028-\u2029]/g, ' ')
+        // Collapse multiple spaces into single spaces
+        .replace(/\s+/g, ' ')
+        // Trim whitespace from start and end
+        .trim();
+}

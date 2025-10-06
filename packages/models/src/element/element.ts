@@ -1,6 +1,7 @@
 interface BaseDomElement {
     domId: string;
     frameId: string;
+    branchId: string;
     oid: string | null;
     instanceId: string | null;
     rect: DOMRect;

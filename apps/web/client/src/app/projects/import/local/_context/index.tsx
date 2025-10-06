@@ -1,15 +1,14 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 import type { Provider } from '@onlook/code-provider';
 import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
 import { NEXT_JS_FILE_EXTENSIONS, SandboxTemplates, Templates } from '@onlook/constants';
 import { RouterType } from '@onlook/models';
-import { generate, getAstFromContent, injectPreloadScript } from '@onlook/parser';
-import { isRootLayoutFile, isTargetFile } from '@onlook/utility';
+import { isTargetFile } from '@onlook/utility';
 
 import type { NextJsProjectValidation, ProcessedFile } from '@/app/projects/types';
 import { ProcessedFileType } from '@/app/projects/types';
@@ -321,25 +320,10 @@ export const uploadToSandbox = async (files: ProcessedFile[], provider: Provider
                     },
                 });
             } else {
-                let content = file.content;
-
-                const isLayout = isRootLayoutFile(file.path);
-                if (isLayout) {
-                    try {
-                        const ast = getAstFromContent(content);
-                        if (!ast) {
-                            throw new Error('Failed to parse layout file');
-                        }
-                        const modifiedAst = injectPreloadScript(ast);
-                        content = generate(modifiedAst, {}, content).code;
-                    } catch (parseError) {
-                        console.warn('Failed to add script config to layout.tsx:', parseError);
-                    }
-                }
                 await provider.writeFile({
                     args: {
                         path: file.path,
-                        content,
+                        content: file.content,
                         overwrite: true,
                     },
                 });

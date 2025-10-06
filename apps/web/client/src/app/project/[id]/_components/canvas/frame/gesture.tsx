@@ -8,7 +8,7 @@ import { cn } from '@onlook/ui/utils';
 import throttle from 'lodash/throttle';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo } from 'react';
-import { RightClickMenu } from './right-click';
+import { RightClickMenu } from '../../right-click-menu';
 
 export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, isResizing: boolean }) => {
     const editorEngine = useEditorEngine();

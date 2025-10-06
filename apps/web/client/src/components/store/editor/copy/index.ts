@@ -54,8 +54,15 @@ export class CopyManager {
             console.error('Failed to copy element');
             return;
         }
-        const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(selectedEl.oid);
-        this.copied = { element: targetEl, codeBlock: codeBlock };
+
+        const branchData = this.editorEngine.branches.getBranchDataById(selectedEl.branchId);
+        if (!branchData) {
+            console.error(`Branch data not found for branchId: ${selectedEl.branchId}`);
+            return;
+        }
+
+        const metadata = await branchData.codeEditor.getJsxElementMetadata(selectedEl.oid);
+        this.copied = { element: targetEl, codeBlock: metadata?.code || null };
         await this.clearClipboard();
     }
 
@@ -70,10 +77,6 @@ export class CopyManager {
     async paste() {
         const selected = this.editorEngine.elements.selected;
         if (selected.length === 0) {
-            return;
-        }
-
-        if (await this.pasteImageFromClipboard()) {
             return;
         }
 
@@ -93,6 +96,7 @@ export class CopyManager {
             (selectedEl) => {
                 const target: ActionTarget = {
                     frameId: selectedEl.frameId,
+                    branchId: selectedEl.branchId,
                     domId: selectedEl.domId,
                     oid: selectedEl.oid,
                 };
@@ -123,28 +127,6 @@ export class CopyManager {
         };
 
         await this.editorEngine.action.run(action);
-    }
-
-    async pasteImageFromClipboard(): Promise<boolean> {
-        try {
-            const clipboard = await navigator.clipboard.read();
-            for (const item of clipboard) {
-                const imageType = item.types.find((type) => type.startsWith('image/'));
-                if (imageType) {
-                    const blob = await item.getType(imageType);
-                    const reader = new FileReader();
-                    reader.readAsDataURL(blob);
-                    reader.onloadend = async () => {
-                        const base64data = reader.result as string;
-                        await this.editorEngine.image.paste(base64data, imageType);
-                    };
-                    return true;
-                }
-            }
-        } catch (error) {
-            console.error('Failed to read clipboard:', error);
-        }
-        return false;
     }
 
     async cut() {

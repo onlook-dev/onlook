@@ -6,9 +6,9 @@ import { colors } from '@onlook/ui/tokens';
 import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
+import { RightClickMenu } from '../../right-click-menu';
 import { GestureScreen } from './gesture';
 import { ResizeHandles } from './resize-handles';
-import { RightClickMenu } from './right-click';
 import { TopBar } from './top-bar';
 import { FrameComponent, type IFrameView } from './view';
 
@@ -20,11 +20,12 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
     const [hasTimedOut, setHasTimedOut] = useState(false);
     const isSelected = editorEngine.frames.isSelected(frame.id);
 
-    // Check if sandbox is connecting for this frame's branch
     const branchData = editorEngine.branches.getBranchDataById(frame.branchId);
-    const isConnecting = branchData?.sandbox?.session?.isConnecting || branchData?.sandbox?.isIndexing || false;
+    const isConnecting = branchData?.sandbox?.session?.isConnecting ?? false;
 
-    // Timeout for connection attempts
+    const preloadScriptReady = branchData?.sandbox?.preloadScriptInjected ?? false;
+    const isFrameReady = preloadScriptReady && !(isConnecting && !hasTimedOut);
+
     useEffect(() => {
         if (!isConnecting) {
             setHasTimedOut(false);
@@ -33,7 +34,7 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
 
         const timeoutId = setTimeout(() => {
             const currentBranchData = editorEngine.branches.getBranchDataById(frame.branchId);
-            const stillConnecting = currentBranchData?.sandbox?.session?.isConnecting || currentBranchData?.sandbox?.isIndexing || false;
+            const stillConnecting = currentBranchData?.sandbox?.session?.isConnecting ?? false;
 
             if (stillConnecting) {
                 setHasTimedOut(true);
@@ -70,12 +71,12 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
                 <FrameComponent key={reloadKey} frame={frame} reloadIframe={reloadIframe} isInDragSelection={isInDragSelection} ref={iFrameRef} />
                 <GestureScreen frame={frame} isResizing={isResizing} />
 
-                {isConnecting && !hasTimedOut && (
+                {!isFrameReady && (
                     <div
                         className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-md"
                         style={{ width: frame.dimension.width, height: frame.dimension.height }}
                     >
-                        <div className="flex flex-col items-center gap-3 text-foreground" style={{ transform: `scale(${1 / editorEngine.canvas.scale})` }}>
+                        <div className="flex items-center gap-3 text-foreground" style={{ transform: `scale(${1 / editorEngine.canvas.scale})` }}>
                             <Icons.LoadingSpinner className="animate-spin h-8 w-8" />
                         </div>
                     </div>
