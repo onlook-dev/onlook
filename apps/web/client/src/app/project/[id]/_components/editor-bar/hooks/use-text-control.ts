@@ -72,7 +72,9 @@ export const useTextControl = () => {
 
     const handleFontFamilyChange = (fontFamily: Font) => {
         editorEngine.style.updateFontFamily('fontFamily', fontFamily);
-        editorEngine.frames.reloadAllViews();
+        setTimeout(async () => {
+            await editorEngine.frames.reloadAllViews();
+        }, 500);
     };
 
     const handleFontSizeChange = (fontSize: number) => {
