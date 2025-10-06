@@ -2,6 +2,16 @@
 
 import { useFile } from '@onlook/file-system/hooks';
 import type { ImageContentData } from '@onlook/models';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle
+} from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -11,7 +21,6 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
-import { cn } from '@onlook/ui/utils';
 import { useEffect, useState } from 'react';
 
 interface ImageItemProps {
@@ -37,6 +46,7 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
     const [isDisabled, setIsDisabled] = useState(false);
     const [isRenaming, setIsRenaming] = useState(false);
     const [newName, setNewName] = useState(image.name);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     // Convert content to data URL for display
     useEffect(() => {
@@ -114,12 +124,11 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
     };
 
     const handleDelete = async () => {
-        if (confirm(`Are you sure you want to delete ${image.name}?`)) {
-            try {
-                await onDelete(image.path);
-            } catch (error) {
-                console.error('Failed to delete file:', error);
-            }
+        try {
+            await onDelete(image.path);
+            setShowDeleteDialog(false);
+        } catch (error) {
+            console.error('Failed to delete file:', error);
         }
     };
 
@@ -144,7 +153,7 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
 
     return (
         <div className="group">
-            <div 
+            <div
                 className="aspect-square bg-background-secondary rounded-md border border-border-primary overflow-hidden cursor-pointer hover:border-border-onlook transition-colors relative"
                 onDragStart={handleDragStart}
                 onDragEnd={onImageDragEnd}
@@ -157,7 +166,7 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
                     className="w-full h-full object-cover"
                     loading="lazy"
                 />
-                
+
                 {/* Action menu */}
                 {!isRenaming && (
                     <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -202,7 +211,7 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        void handleDelete();
+                                        setShowDeleteDialog(true);
                                     }}
                                     className="flex items-center gap-2 text-red-500 hover:text-red-600 focus:text-red-600"
                                 >
@@ -214,7 +223,7 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
                     </div>
                 )}
             </div>
-            
+
             {/* Name section with rename functionality */}
             <div className="mt-1 px-1">
                 {isRenaming ? (
@@ -233,6 +242,27 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
                     </div>
                 )}
             </div>
+
+            {/* Delete confirmation dialog */}
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Image</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete {image.name}? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => void handleDelete()}
+                            className="bg-destructive text-white hover:bg-destructive/90"
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };
