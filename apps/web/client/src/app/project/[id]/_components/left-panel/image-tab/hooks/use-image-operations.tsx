@@ -63,21 +63,7 @@ export const useImageOperations = (projectId: string, branchId: string, activeFo
         const directory = path.dirname(oldPath);
         const sanitizedName = sanitizeFilename(newName);
         const newPath = path.join(directory, sanitizedName);
-
-        // Check if it's still an image file
-        if (!isImageFile(sanitizedName)) {
-            throw new Error('File must be an image');
-        }
-
-        // Read the existing file content
-        const content = await codeEditor.readFile(oldPath);
-        if (!content) {
-            throw new Error('Could not read file content');
-        }
-
-        // Write to new path and delete old file
-        await codeEditor.writeFile(newPath, content);
-        await codeEditor.deleteFile(oldPath);
+        await codeEditor.moveFile(oldPath, newPath);
     };
 
     // Handle file delete
