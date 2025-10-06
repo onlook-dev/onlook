@@ -188,11 +188,9 @@ export const readFontConfigFile = async (fontConfigPath: string, editorEngine: E
     | undefined
 > => {
     const codeEditor = editorEngine.fileSystem;
-    const fileExists = await codeEditor.fileExists(fontConfigPath);
-    if (!fileExists) {
-        console.warn('Font config file does not exist', fontConfigPath);
-        return;
-    }
+    
+    // Ensure the font config file exists, create it if it doesn't
+    await ensureFontConfigFileExists(fontConfigPath, editorEngine);
 
     const file = await codeEditor.readFile(fontConfigPath);
     if (!file || typeof file !== 'string') {

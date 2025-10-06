@@ -7,9 +7,7 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { camelCase } from 'lodash';
 import { useState } from 'react';
 
