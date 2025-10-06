@@ -72,6 +72,7 @@ export const useTextControl = () => {
 
     const handleFontFamilyChange = (fontFamily: Font) => {
         editorEngine.style.updateFontFamily('fontFamily', fontFamily);
+        // Reload all views after a delay to ensure the font is applied
         setTimeout(async () => {
             await editorEngine.frames.reloadAllViews();
         }, 500);
