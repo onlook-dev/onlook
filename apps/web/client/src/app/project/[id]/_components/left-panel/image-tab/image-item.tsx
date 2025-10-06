@@ -21,6 +21,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
+import { getMimeType } from '@onlook/utility';
 import { useEffect, useState } from 'react';
 
 interface ImageItemProps {
@@ -37,7 +38,7 @@ interface ImageItemProps {
     onImageMouseUp: () => void;
     onRename: (oldPath: string, newName: string) => Promise<void>;
     onDelete: (filePath: string) => Promise<void>;
-    onAddToChat: (image: ImageContentData) => void;
+    onAddToChat: (imagePath: string) => void;
 }
 
 export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImageDragEnd, onImageMouseDown, onImageMouseUp, onRename, onDelete, onAddToChat }: ImageItemProps) => {
@@ -47,6 +48,7 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
     const [isRenaming, setIsRenaming] = useState(false);
     const [newName, setNewName] = useState(image.name);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
 
     // Convert content to data URL for display
     useEffect(() => {
@@ -80,6 +82,13 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
         };
     }, [content, image.mimeType, image.name]);
 
+    // Close dropdown when entering rename mode or showing delete dialog
+    useEffect(() => {
+        if (isRenaming || showDeleteDialog) {
+            setDropdownOpen(false);
+        }
+    }, [isRenaming, showDeleteDialog]);
+
     if (loading) {
         return (
             <div className="aspect-square bg-background-secondary rounded-md border border-border-primary flex items-center justify-center">
@@ -105,7 +114,7 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
         const imageContentData: ImageContentData = {
             fileName: image.name,
             content: content as string,
-            mimeType: imageUrl,
+            mimeType: getMimeType(image.name),
             originPath: image.path,
         };
         onImageDragStart(e, imageContentData);
@@ -133,13 +142,7 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
     };
 
     const handleAddToChat = () => {
-        const imageContentData: ImageContentData = {
-            fileName: image.name,
-            content: content as string,
-            mimeType: imageUrl || '',
-            originPath: image.path,
-        };
-        onAddToChat(imageContentData);
+        onAddToChat(image.path);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -170,7 +173,7 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
                 {/* Action menu */}
                 {!isRenaming && (
                     <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <DropdownMenu>
+                        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     size="icon"

@@ -69,17 +69,18 @@ export const ImagesTab = observer(() => {
         }
     };
 
-    const handleAddToChat = async (imageContentData: any) => {
+    const handleAddToChat = async (imagePath: string) => {
         try {
-            // Convert the image content data to file context for chat
+            // Convert the image path to file context for chat
+            const fileName = imagePath.split('/').pop() || imagePath;
             const fileContext: FileMessageContext = {
                 type: MessageContextType.FILE,
                 content: '', // File content will be loaded by the chat system
-                displayName: imageContentData.fileName,
-                path: imageContentData.originPath,
+                displayName: fileName,
+                path: imagePath,
                 branchId: branchId,
             };
-            
+
             editorEngine.chat.context.addContexts([fileContext]);
             toast.success('Image added to chat');
         } catch (error) {

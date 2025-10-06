@@ -14,7 +14,7 @@ interface ImageGridProps {
     onUpload: (files: FileList) => Promise<void>;
     onRename: (oldPath: string, newName: string) => Promise<void>;
     onDelete: (filePath: string) => Promise<void>;
-    onAddToChat: (image: any) => void;
+    onAddToChat: (imagePath: string) => void;
 }
 
 export const ImageGrid = ({ images, projectId, branchId, search, onUpload, onRename, onDelete, onAddToChat }: ImageGridProps) => {
