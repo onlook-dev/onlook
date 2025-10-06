@@ -32,7 +32,6 @@
         "format": "bun --filter '*' format",
         "lint": "bun --filter '*' lint",
         "typecheck": "bun --filter @onlook/web-client typecheck",
-        "prepare": "husky",
         "clean": "git clean -xdf node_modules",
         "clean:workspaces": "bun --filter '*' clean",
         "setup:env": "cd packages/scripts && bun run start",
@@ -50,7 +49,6 @@
         "url": "https://github.com/onlook-dev/onlook/issues"
     },
     "devDependencies": {
-        "husky": "^9.1.6",
         "@onlook/eslint": "*"
     },
     "packageManager": "bun@1.2.21"
