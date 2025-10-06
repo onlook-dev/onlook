@@ -22,8 +22,8 @@ export class SearchReplaceEditTool extends ClientTool {
 
             const fileSystem = await getFileSystem(args.branchId, editorEngine);
             const file = await fileSystem.readFile(args.file_path);
-            if (!file || typeof file !== 'string') {
-                throw new Error(`Cannot read file ${args.file_path}: file not found or not text`);
+            if (typeof file !== 'string') {
+                throw new Error(`Cannot read file ${args.file_path}: file is not text`);
             }
 
             let newContent: string;

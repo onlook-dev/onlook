@@ -1151,7 +1151,8 @@ export class ThemeManager {
         await Promise.all(
             filesToUpdate.map(async (file) => {
                 const fileContent = await this.editorEngine.activeSandbox.readFile(file.path);
-                if (!fileContent || typeof fileContent !== 'string') {
+                if (typeof fileContent !== 'string') {
+                    console.error(`File ${file.path} is not a text file`);
                     return;
                 }
 

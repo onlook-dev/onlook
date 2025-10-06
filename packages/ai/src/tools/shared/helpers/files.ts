@@ -88,9 +88,7 @@ export async function resolvePath(inputPath: string, sandbox: SandboxManager): P
             // Fallback: try to read the file directly to check existence
             try {
                 const file = await sandbox.readFile(inputPath);
-                if (file) {
-                    return { path: inputPath, wasFuzzy: false };
-                }
+                return { path: inputPath, wasFuzzy: false };
             } catch {
                 // Continue to fuzzy matching
             }
@@ -109,9 +107,7 @@ export async function resolvePath(inputPath: string, sandbox: SandboxManager): P
             // Fallback: try the relative path as-is first
             try {
                 const file = await sandbox.readFile(inputPath);
-                if (file) {
-                    return { path: inputPath, wasFuzzy: false };
-                }
+                return { path: inputPath, wasFuzzy: false };
             } catch {
                 // Continue to fuzzy matching
             }

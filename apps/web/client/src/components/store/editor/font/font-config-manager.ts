@@ -43,8 +43,8 @@ export const scanExistingFonts = async (layoutPath: string, editorEngine: Editor
 
     try {
         const file = await sandbox.readFile(normalizedLayoutPath);
-        if (!file || typeof file !== 'string') {
-            console.log(`Layout file is empty or doesn't exist: ${layoutPath}`);
+        if (typeof file !== 'string') {
+            console.log(`Layout file is not text: ${layoutPath}`);
             return [];
         }
 
@@ -188,13 +188,13 @@ export const readFontConfigFile = async (fontConfigPath: string, editorEngine: E
     | undefined
 > => {
     const codeEditor = editorEngine.fileSystem;
-    
+
     // Ensure the font config file exists, create it if it doesn't
     await ensureFontConfigFileExists(fontConfigPath, editorEngine);
 
     const file = await codeEditor.readFile(fontConfigPath);
-    if (!file || typeof file !== 'string') {
-        console.error("Font config file is empty or doesn't exist");
+    if (typeof file !== 'string') {
+        console.error("Font config file is not text");
         return;
     }
     const content = file;

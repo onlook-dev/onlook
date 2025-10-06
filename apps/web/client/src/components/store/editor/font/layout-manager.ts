@@ -231,7 +231,7 @@ export const traverseClassName = async (
 
     try {
         const file = await sandbox.readFile(filePath);
-        if (!file || typeof file !== 'string') {
+        if (typeof file !== 'string') {
             console.error(`Failed to read file: ${filePath}`);
             return null;
         }
@@ -299,8 +299,8 @@ export const getLayoutContext = async (
     }
 
     const file = await editorEngine.activeSandbox.readFile(layoutPath);
-    if (!file || typeof file !== 'string') {
-        console.error(`Failed to read file: ${layoutPath}`);
+    if (typeof file !== 'string') {
+        console.error(`Layout file is not text: ${layoutPath}`);
         return;
     }
 

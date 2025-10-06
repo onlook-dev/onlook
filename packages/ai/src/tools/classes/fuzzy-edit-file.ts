@@ -33,10 +33,6 @@ Make sure there's enough context for the other model to understand where the cha
         const fileSystem = await getFileSystem(args.branchId, editorEngine);
         const originalFile = await fileSystem.readFile(args.file_path);
 
-        if (!originalFile) {
-            throw new Error('Error reading file');
-        }
-
         if (typeof originalFile !== 'string') {
             throw new Error('Binary files are not supported for editing');
         }
