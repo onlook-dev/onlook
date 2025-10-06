@@ -7,24 +7,34 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { useAuthContext } from '../auth/auth-context';
 
-export const GithubLoginButton = ({
-    className,
-    returnUrl,
-}: {
+interface LoginButtonProps {
     className?: string;
     returnUrl?: string | null;
-}) => {
+    method: SignInMethod.GITHUB | SignInMethod.GOOGLE;
+    icon: React.ReactNode;
+    translationKey: keyof typeof transKeys.welcome.login;
+    providerName: string;
+}
+
+const LoginButton = ({
+    className,
+    returnUrl,
+    method,
+    icon,
+    translationKey,
+    providerName,
+}: LoginButtonProps) => {
     const t = useTranslations();
     const { lastSignInMethod, handleLogin, signingInMethod } = useAuthContext();
-    const isLastSignInMethod = lastSignInMethod === SignInMethod.GITHUB;
-    const isSigningIn = signingInMethod === SignInMethod.GITHUB;
+    const isLastSignInMethod = lastSignInMethod === method;
+    const isSigningIn = signingInMethod === method;
 
-    const handleLoginClick = () => {
+    const handleLoginClick = async () => {
         try {
-            handleLogin(SignInMethod.GITHUB, returnUrl ?? null);
+            await handleLogin(method, returnUrl ?? null);
         } catch (error) {
-            console.error('Error signing in with GitHub:', error);
-            toast.error('Error signing in with GitHub', {
+            console.error(`Error signing in with ${providerName}:`, error);
+            toast.error(`Error signing in with ${providerName}`, {
                 description: error instanceof Error ? error.message : 'Please try again.',
             });
         }
@@ -46,9 +56,9 @@ export const GithubLoginButton = ({
                 {isSigningIn ? (
                     <Icons.LoadingSpinner className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
-                    <Icons.GitHubLogo className="w-4 h-4 mr-2" />
+                    icon
                 )}
-                {t(transKeys.welcome.login.github)}
+{t(transKeys.welcome.login[translationKey])}
             </Button>
             {isLastSignInMethod && (
                 <p className="text-teal-500 text-small mt-1">{t(transKeys.welcome.login.lastUsed)}</p>
@@ -56,6 +66,23 @@ export const GithubLoginButton = ({
         </div>
     );
 };
+
+export const GithubLoginButton = ({
+    className,
+    returnUrl,
+}: {
+    className?: string;
+    returnUrl?: string | null;
+}) => (
+    <LoginButton
+        className={className}
+        returnUrl={returnUrl}
+        method={SignInMethod.GITHUB}
+        icon={<Icons.GitHubLogo className="w-4 h-4 mr-2" />}
+        translationKey="github"
+        providerName="GitHub"
+    />
+);
 
 export const GoogleLoginButton = ({
     className,
@@ -63,49 +90,16 @@ export const GoogleLoginButton = ({
 }: {
     className?: string;
     returnUrl?: string | null;
-}) => {
-    const t = useTranslations();
-    const { lastSignInMethod, handleLogin, signingInMethod } = useAuthContext();
-    const isLastSignInMethod = lastSignInMethod === SignInMethod.GOOGLE;
-    const isSigningIn = signingInMethod === SignInMethod.GOOGLE;
-
-    const handleLoginClick = () => {
-        try {
-            handleLogin(SignInMethod.GOOGLE, returnUrl ?? null);
-        } catch (error) {
-            console.error('Error signing in with Google:', error);
-            toast.error('Error signing in with Google', {
-                description: error instanceof Error ? error.message : 'Please try again.',
-            });
-        }
-    };
-
-    return (
-        <div className={cn('flex flex-col items-center w-full', className)}>
-            <Button
-                variant="outline"
-                className={cn(
-                    'w-full items-center justify-center text-active text-small',
-                    isLastSignInMethod
-                        ? 'bg-teal-100 dark:bg-teal-950 border-teal-300 dark:border-teal-700 text-teal-900 dark:text-teal-100 text-small hover:bg-teal-200/50 dark:hover:bg-teal-800 hover:border-teal-500/70 dark:hover:border-teal-500'
-                        : 'bg-background-onlook',
-                )}
-                onClick={handleLoginClick}
-                disabled={!!signingInMethod}
-            >
-                {isSigningIn ? (
-                    <Icons.LoadingSpinner className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                    <Icons.GoogleLogo viewBox="0 0 24 24" className="w-4 h-4 mr-2" />
-                )}
-                {t(transKeys.welcome.login.google)}
-            </Button>
-            {isLastSignInMethod && (
-                <p className="text-teal-500 text-small mt-1">{t(transKeys.welcome.login.lastUsed)}</p>
-            )}
-        </div>
-    );
-};
+}) => (
+    <LoginButton
+        className={className}
+        returnUrl={returnUrl}
+        method={SignInMethod.GOOGLE}
+        icon={<Icons.GoogleLogo viewBox="0 0 24 24" className="w-4 h-4 mr-2" />}
+        translationKey="google"
+        providerName="Google"
+    />
+);
 
 export const DevLoginButton = ({
     className,

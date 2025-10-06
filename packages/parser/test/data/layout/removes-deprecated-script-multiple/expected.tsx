@@ -10,16 +10,16 @@ export default function Document() {
   return (
     <html lang="en" suppressHydrationWarning data-oid="o7v_4be">
             <head data-oid="795jc-7">
-                
+                <Script
+          type="module"
+          src="https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/preload/dist/index.js"
+          data-oid="m4pfglr" />
 
 
-
-
-
-                
-
-
-
+                <Script
+          type="module"
+          src="https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js"
+          data-oid="yujojk-" />
 
             </head>
             <body className={'h-screen antialiased'} data-oid="lb.txaa">
@@ -38,6 +38,6 @@ export default function Document() {
                     <Footer data-oid="j7nr0na" />
                 </ThemeProvider>
             
-        <Script src="https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/client/public/onlook-preload-script.js" strategy="afterInteractive" type="module" id="onlook-preload-script"></Script>
+        <Script src="https://cdn.jsdelivr.net/gh/onlook-dev/onlook@d3887f2/apps/web/client/public/onlook-preload-script.js" strategy="afterInteractive" type="module" id="onlook-preload-script"></Script>
       </body>
         </html>);}
