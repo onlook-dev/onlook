@@ -203,11 +203,7 @@ export const ChatInput = observer(({
 
         const reader = new FileReader();
         reader.onload = async (event) => {
-            const compressedImage = await compressImageInBrowser(file, {
-                maxSizeMB: 0.2,
-                maxWidthOrHeight: 512,
-                quality: 0.6,
-            });
+            const compressedImage = await compressImageInBrowser(file);
             const base64URL = compressedImage ?? (event.target?.result as string);
             const contextImage: ImageMessageContext = {
                 type: MessageContextType.IMAGE,

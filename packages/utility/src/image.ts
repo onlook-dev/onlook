@@ -1,7 +1,7 @@
-import imageCompression from 'browser-image-compression';
 import { DefaultSettings } from '@onlook/constants';
-import { normalizePath } from './folder';
+import imageCompression from 'browser-image-compression';
 import { isImageFile } from './file';
+import { normalizePath } from './folder';
 
 // Browser-side image compression
 export async function compressImageInBrowser(
@@ -13,9 +13,9 @@ export async function compressImageInBrowser(
     }
 ): Promise<string | undefined> {
     const options = {
-        maxSizeMB: compressionOptions?.maxSizeMB ?? 2,
-        maxWidthOrHeight: compressionOptions?.maxWidthOrHeight ?? 2048,
-        quality: compressionOptions?.quality ?? 0.8,
+        maxSizeMB: compressionOptions?.maxSizeMB ?? 0.2,
+        maxWidthOrHeight: compressionOptions?.maxWidthOrHeight ?? 512,
+        quality: compressionOptions?.quality ?? 0.6,
     };
 
     try {
