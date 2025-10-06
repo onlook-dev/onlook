@@ -1,7 +1,9 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
+import { MessageContextType, type FileMessageContext } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/sonner';
 import { observer } from 'mobx-react-lite';
 import { BreadcrumbNavigation } from './breadcrumb-navigation';
 import { FolderList } from './folder-list';
@@ -37,10 +39,54 @@ export const ImagesTab = observer(() => {
         error,
         isUploading,
         handleUpload,
+        handleRename,
+        handleDelete,
     } = useImageOperations(projectId, branchId, activeFolder, branchData?.codeEditor);
 
     // Filter images based on search
     const images = filterImages(allImages);
+
+    // Handler functions with error handling and feedback
+    const handleRenameWithFeedback = async (oldPath: string, newName: string) => {
+        try {
+            await handleRename(oldPath, newName);
+            toast.success('Image renamed successfully');
+        } catch (error) {
+            console.error('Failed to rename image:', error);
+            toast.error(`Failed to rename image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            throw error;
+        }
+    };
+
+    const handleDeleteWithFeedback = async (filePath: string) => {
+        try {
+            await handleDelete(filePath);
+            toast.success('Image deleted successfully');
+        } catch (error) {
+            console.error('Failed to delete image:', error);
+            toast.error(`Failed to delete image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            throw error;
+        }
+    };
+
+    const handleAddToChat = async (imageContentData: any) => {
+        try {
+            // Convert the image content data to file context for chat
+            const fileContext: FileMessageContext = {
+                type: MessageContextType.FILE,
+                content: '', // File content will be loaded by the chat system
+                displayName: imageContentData.fileName,
+                path: imageContentData.originPath,
+                branchId: branchId,
+            };
+            
+            editorEngine.chat.context.addContexts([fileContext]);
+            toast.success('Image added to chat');
+        } catch (error) {
+            console.error('Failed to add image to chat:', error);
+            toast.error('Failed to add image to chat');
+        }
+    };
 
     if (loading) {
         return (
@@ -84,6 +130,9 @@ export const ImagesTab = observer(() => {
                 branchId={branchId}
                 search={search}
                 onUpload={handleUpload}
+                onRename={handleRenameWithFeedback}
+                onDelete={handleDeleteWithFeedback}
+                onAddToChat={handleAddToChat}
             />
         </div>
     );

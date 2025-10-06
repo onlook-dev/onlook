@@ -56,6 +56,36 @@ export const useImageOperations = (projectId: string, branchId: string, activeFo
         }
     };
 
+    // Handle file rename
+    const handleRename = async (oldPath: string, newName: string) => {
+        if (!codeEditor) throw new Error('Code editor not available');
+
+        const directory = path.dirname(oldPath);
+        const sanitizedName = sanitizeFilename(newName);
+        const newPath = path.join(directory, sanitizedName);
+
+        // Check if it's still an image file
+        if (!isImageFile(sanitizedName)) {
+            throw new Error('File must be an image');
+        }
+
+        // Read the existing file content
+        const content = await codeEditor.readFile(oldPath);
+        if (!content) {
+            throw new Error('Could not read file content');
+        }
+
+        // Write to new path and delete old file
+        await codeEditor.writeFile(newPath, content);
+        await codeEditor.deleteFile(oldPath);
+    };
+
+    // Handle file delete
+    const handleDelete = async (filePath: string) => {
+        if (!codeEditor) throw new Error('Code editor not available');
+        await codeEditor.deleteFile(filePath);
+    };
+
     return {
         folders,
         images,
@@ -63,5 +93,7 @@ export const useImageOperations = (projectId: string, branchId: string, activeFo
         error,
         isUploading,
         handleUpload,
+        handleRename,
+        handleDelete,
     };
 };
