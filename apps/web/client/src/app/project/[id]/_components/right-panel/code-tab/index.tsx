@@ -63,6 +63,7 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
     const [activeEditorFile, setActiveEditorFile] = useState<EditorFile | null>(null);
     const [openedEditorFiles, setOpenedEditorFiles] = useState<EditorFile[]>([]);
     const [showLocalUnsavedDialog, setShowLocalUnsavedDialog] = useState(false);
+    const [filesToClose, setFilesToClose] = useState<string[]>([]);
 
     // This is a workaround to allow code controls to access the hasUnsavedChanges state
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -185,29 +186,54 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
         }
     };
 
+    const saveFileWithHash = async (filePath: string, file: EditorFile): Promise<EditorFile> => {
+        if (!branchData) {
+            throw new Error('Branch data not found');
+        }
+
+        await branchData.codeEditor.writeFile(filePath, file.content || '');
+
+        if (file.type === 'text') {
+            const newHash = await hashContent(file.content);
+            return { ...file, originalHash: newHash };
+        }
+
+        return file;
+    };
+
     const handleSaveFile = async () => {
         if (!selectedFilePath || !activeEditorFile) return;
         try {
-            if (!branchData) {
-                throw new Error('Branch data not found');
-            }
+            const updatedFile = await saveFileWithHash(selectedFilePath, activeEditorFile);
 
-            await branchData.codeEditor.writeFile(selectedFilePath, activeEditorFile.content || '');
-
-            // Update originalHash to mark file as clean after successful save
-            if (activeEditorFile.type === 'text') {
-                const newHash = await hashContent(activeEditorFile.content);
-                const updatedFile = { ...activeEditorFile, originalHash: newHash };
-
-                // Update in opened files list
-                const updatedFiles = openedEditorFiles.map(file =>
-                    pathsEqual(file.path, selectedFilePath) ? updatedFile : file
-                );
-                setOpenedEditorFiles(updatedFiles);
-                setActiveEditorFile(updatedFile);
-            }
+            // Update in opened files list
+            const updatedFiles = openedEditorFiles.map(file =>
+                pathsEqual(file.path, selectedFilePath) ? updatedFile : file
+            );
+            setOpenedEditorFiles(updatedFiles);
+            setActiveEditorFile(updatedFile);
         } catch (error) {
             console.error('Failed to save file:', error);
+            alert(`Failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
+
+    const handleSaveAndCloseFiles = async () => {
+        try {
+            // Save all files in filesToClose
+            await Promise.all(filesToClose.map(async (filePath) => {
+                const fileToSave = openedEditorFiles.find(f => pathsEqual(f.path, filePath));
+                if (!fileToSave) return;
+
+                await saveFileWithHash(filePath, fileToSave);
+            }));
+
+            // Close the files (no need to update hashes since we're closing them)
+            filesToClose.forEach(filePath => closeFileInternal(filePath));
+            setFilesToClose([]);
+            setShowLocalUnsavedDialog(false);
+        } catch (error) {
+            console.error('Failed to save files:', error);
             alert(`Failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     };
@@ -217,6 +243,7 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
         if (fileToClose) {
             isDirty(fileToClose).then(dirty => {
                 if (dirty) {
+                    setFilesToClose([filePath]);
                     setShowLocalUnsavedDialog(true);
                     return;
                 }
@@ -238,6 +265,7 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
             // Check if any dirty files remain
             const dirtyFiles = fileStatuses.filter(status => status.dirty);
             if (dirtyFiles.length > 0) {
+                setFilesToClose(dirtyFiles.map(status => status.file.path));
                 setShowLocalUnsavedDialog(true);
                 return;
             }
@@ -272,13 +300,17 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
             editorViewsRef.current.delete(filePath);
         }
 
-        const updatedFiles = openedEditorFiles.filter(f => !pathsEqual(f.path, filePath));
-        setOpenedEditorFiles(updatedFiles);
+        setOpenedEditorFiles(prev => {
+            const updatedFiles = prev.filter(f => !pathsEqual(f.path, filePath));
 
-        if (activeEditorFile && pathsEqual(activeEditorFile.path, filePath)) {
-            const newActiveFile = updatedFiles.length > 0 ? updatedFiles[updatedFiles.length - 1] || null : null;
-            setActiveEditorFile(newActiveFile);
-        }
+            // Update active file if we're closing it
+            if (activeEditorFile && pathsEqual(activeEditorFile.path, filePath)) {
+                const newActiveFile = updatedFiles.length > 0 ? updatedFiles[updatedFiles.length - 1] || null : null;
+                setActiveEditorFile(newActiveFile);
+            }
+
+            return updatedFiles;
+        });
 
         // Clear selected file path if the closed file was selected
         if (selectedFilePath && pathsEqual(selectedFilePath, filePath)) {
@@ -286,8 +318,9 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
         }
     };
 
-    const discardLocalFileChanges = (filePath: string) => {
-        closeFileInternal(filePath);
+    const discardLocalFileChanges = () => {
+        filesToClose.forEach(filePath => closeFileInternal(filePath));
+        setFilesToClose([]);
         setShowLocalUnsavedDialog(false);
     };
 
@@ -396,11 +429,14 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
                     showUnsavedDialog={showLocalUnsavedDialog}
                     navigationTarget={navigationTarget}
                     onSaveFile={handleSaveFile}
+                    onSaveAndCloseFiles={handleSaveAndCloseFiles}
                     onUpdateFileContent={updateLocalFileContent}
                     onDiscardChanges={discardLocalFileChanges}
                     onCancelUnsaved={() => {
+                        setFilesToClose([]);
                         setShowLocalUnsavedDialog(false);
                     }}
+                    fileCountToClose={filesToClose.length}
                 />
             </div>
         </div>

@@ -14,9 +14,11 @@ interface CodeEditorAreaProps {
     navigationTarget: CodeNavigationTarget | null;
     editorViewsRef: RefObject<Map<string, EditorView>>;
     onSaveFile: () => Promise<void>;
+    onSaveAndCloseFiles: () => Promise<void>;
     onUpdateFileContent: (fileId: string, content: string) => void;
-    onDiscardChanges: (fileId: string) => void;
+    onDiscardChanges: () => void;
     onCancelUnsaved: () => void;
+    fileCountToClose?: number;
 }
 
 export const CodeEditorArea = ({
@@ -26,9 +28,11 @@ export const CodeEditorArea = ({
     navigationTarget,
     editorViewsRef,
     onSaveFile,
+    onSaveAndCloseFiles,
     onUpdateFileContent,
     onDiscardChanges,
     onCancelUnsaved,
+    fileCountToClose,
 }: CodeEditorAreaProps) => {
     const [activeFileIsDirty, setActiveFileIsDirty] = useState(false);
 
@@ -82,9 +86,10 @@ export const CodeEditorArea = ({
             </div>
             {activeFileIsDirty && showUnsavedDialog && (
                 <UnsavedChangesDialog
-                    onSave={onSaveFile}
-                    onDiscard={() => onDiscardChanges(activeFile?.path || '')}
+                    onSave={onSaveAndCloseFiles}
+                    onDiscard={onDiscardChanges}
                     onCancel={() => { onCancelUnsaved(); }}
+                    fileCount={fileCountToClose}
                 />
             )}
         </div>
