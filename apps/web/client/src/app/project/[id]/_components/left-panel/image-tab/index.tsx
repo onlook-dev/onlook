@@ -83,6 +83,7 @@ export const ImagesTab = observer(() => {
                 projectId={projectId}
                 branchId={branchId}
                 search={search}
+                onUpload={handleUpload}
             />
         </div>
     );

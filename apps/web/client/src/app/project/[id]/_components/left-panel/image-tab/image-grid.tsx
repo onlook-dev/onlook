@@ -11,13 +11,14 @@ interface ImageGridProps {
     projectId: string;
     branchId: string;
     search: string;
+    onUpload: (files: FileList) => Promise<void>;
 }
 
-export const ImageGrid = ({ images, projectId, branchId, search, }: ImageGridProps) => {
+export const ImageGrid = ({ images, projectId, branchId, search, onUpload }: ImageGridProps) => {
     const {
-        handleDragEnter, handleDragLeave, handleDragOver, isDragging,
+        handleDragEnter, handleDragLeave, handleDragOver, handleDrop, isDragging,
         onImageDragStart, onImageDragEnd, onImageMouseDown, onImageMouseUp
-    } = useImageDragDrop();
+    } = useImageDragDrop(onUpload);
 
     return (
         <div className={cn(
@@ -27,6 +28,7 @@ export const ImageGrid = ({ images, projectId, branchId, search, }: ImageGridPro
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
+            onDrop={handleDrop}
         >
             <div className="grid grid-cols-2 gap-2">
                 {images.map((image) => (

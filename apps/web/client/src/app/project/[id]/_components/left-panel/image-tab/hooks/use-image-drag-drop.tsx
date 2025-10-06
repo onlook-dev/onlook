@@ -3,7 +3,7 @@ import { EditorMode, type ImageContentData } from '@onlook/models';
 import { usePostHog } from 'posthog-js/react';
 import { useCallback, useState } from 'react';
 
-export const useImageDragDrop = () => {
+export const useImageDragDrop = (onUpload?: (files: FileList) => Promise<void>) => {
     const editorEngine = useEditorEngine();
     const posthog = usePostHog();
     const [isDragging, setIsDragging] = useState(false);
@@ -87,11 +87,23 @@ export const useImageDragDrop = () => {
         editorEngine.state.editorMode = EditorMode.DESIGN;
     }, []);
 
+    const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDragging(false);
+        e.currentTarget.removeAttribute('data-dragging-image');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && onUpload) {
+            void onUpload(files);
+        }
+    }, [onUpload]);
+
     return {
         isDragging,
         handleDragOver,
         handleDragEnter,
         handleDragLeave,
+        handleDrop,
         onImageDragStart,
         onImageMouseDown,
         onImageMouseUp,
