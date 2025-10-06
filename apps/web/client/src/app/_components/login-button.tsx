@@ -16,7 +16,7 @@ interface LoginButtonProps {
     providerName: string;
 }
 
-const LoginButton = ({
+export const LoginButton = ({
     className,
     returnUrl,
     method,
@@ -67,39 +67,6 @@ const LoginButton = ({
     );
 };
 
-export const GithubLoginButton = ({
-    className,
-    returnUrl,
-}: {
-    className?: string;
-    returnUrl?: string | null;
-}) => (
-    <LoginButton
-        className={className}
-        returnUrl={returnUrl}
-        method={SignInMethod.GITHUB}
-        icon={<Icons.GitHubLogo className="w-4 h-4 mr-2" />}
-        translationKey="github"
-        providerName="GitHub"
-    />
-);
-
-export const GoogleLoginButton = ({
-    className,
-    returnUrl,
-}: {
-    className?: string;
-    returnUrl?: string | null;
-}) => (
-    <LoginButton
-        className={className}
-        returnUrl={returnUrl}
-        method={SignInMethod.GOOGLE}
-        icon={<Icons.GoogleLogo viewBox="0 0 24 24" className="w-4 h-4 mr-2" />}
-        translationKey="google"
-        providerName="Google"
-    />
-);
 
 export const DevLoginButton = ({
     className,
