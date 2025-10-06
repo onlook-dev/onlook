@@ -48,7 +48,7 @@ We can do that when parsing through the AST using this algorithm:
 Applying the algorithm to our case we will get this:
 1. Parse through the files, getting this map:
 
-```
+```json
 {
     "parent": ["parent.jsx", "start and end location", "Parent"],
     "instance": ["parent.jsx", "start and end location", "Child"],

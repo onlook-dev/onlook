@@ -161,11 +161,15 @@ export class FontManager {
             this._defaultFont = font.id;
             const codeDiff = await updateDefaultFontInRootLayout(font, this.editorEngine);
 
-            if (codeDiff) {
-                await this.editorEngine.fileSystem.writeFile(codeDiff.path, codeDiff.generated);
-                return true;
+            if (!codeDiff) {
+                return false;
             }
-            return false;
+            await this.editorEngine.fileSystem.writeFile(codeDiff.path, codeDiff.generated);
+            // Reload all views after a delay to ensure the font is applied
+            setTimeout(async () => {
+                await this.editorEngine.frames.reloadAllViews();
+            }, 500);
+            return true;
         } catch (error) {
             console.error('Error setting default font:', error);
             return false;
