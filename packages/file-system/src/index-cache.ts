@@ -7,6 +7,7 @@ export interface JsxElementMetadata extends TemplateNode {
 
 // projectId/branchId -> oid -> metadata
 const staticMemoryMap = new Map<string, Record<string, JsxElementMetadata>>();
+// guard against multiple loads race condition
 const loadingPromises = new Map<string, Promise<Record<string, JsxElementMetadata>>>();
 
 export async function getOrLoadIndex(
