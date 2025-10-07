@@ -38,6 +38,7 @@ export type HighlightMessageContext = BaseMessageContext & {
 export type ImageMessageContext = BaseMessageContext & {
     type: MessageContextType.IMAGE;
     mimeType: string;
+    id?: string;
 };
 
 export type ErrorMessageContext = BaseMessageContext & {

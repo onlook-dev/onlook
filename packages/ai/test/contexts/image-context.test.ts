@@ -1,5 +1,6 @@
 import { MessageContextType, type ImageMessageContext } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
+import { v4 as uuidv4 } from 'uuid';
 import { ImageContext } from '../../src/contexts/classes/image';
 
 describe('ImageContext', () => {
@@ -8,6 +9,7 @@ describe('ImageContext', () => {
         content: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
         displayName: 'Screenshot.png',
         mimeType: 'image/png',
+        id: uuidv4(),
         ...overrides,
     });
 

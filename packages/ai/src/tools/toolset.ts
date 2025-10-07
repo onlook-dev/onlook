@@ -18,6 +18,7 @@ import {
     SearchReplaceMultiEditFileTool,
     TerminalCommandTool,
     TypecheckTool,
+    UploadImageTool,
     WebSearchTool,
     WriteFileTool,
 } from './classes';
@@ -53,6 +54,7 @@ const editOnlyToolClasses = [
     BashEditTool,
     SandboxTool,
     TerminalCommandTool,
+    UploadImageTool,
 ];
 const allToolClasses = [...readOnlyToolClasses, ...editOnlyToolClasses];
 

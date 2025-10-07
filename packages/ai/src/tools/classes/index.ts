@@ -15,5 +15,6 @@ export { SearchReplaceEditTool } from './search-replace-edit';
 export { SearchReplaceMultiEditFileTool } from './search-replace-multi-edit';
 export { TerminalCommandTool } from './terminal-command';
 export { TypecheckTool } from './typecheck';
+export { UploadImageTool } from './upload-image';
 export { WebSearchTool } from './web-search';
 export { WriteFileTool } from './write-file';
