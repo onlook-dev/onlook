@@ -37,10 +37,11 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
             const stillConnecting = currentBranchData?.sandbox?.session?.isConnecting ?? false;
 
             if (stillConnecting) {
-                setHasTimedOut(true);
-                toast.error('Connection timeout', {
-                    description: `Failed to connect to the branch ${currentBranchData?.branch?.name}. Please try reloading.`,
+                console.log(`[Frame ${frame.id}] Connection timeout after 30s, triggering reload`);
+                toast.info('Connection slow, retrying...', {
+                    description: `Reconnecting to ${currentBranchData?.branch?.name}...`,
                 });
+                reloadIframe();
             }
         }, 30000);
 

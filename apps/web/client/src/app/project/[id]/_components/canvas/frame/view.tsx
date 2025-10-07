@@ -68,6 +68,9 @@ export const FrameComponent = observer(
         const retryCount = useRef(0);
         const maxRetries = 3;
         const baseDelay = 1000;
+        const reloadCount = useRef(0);
+        const maxReloads = 3;
+        const reloadBaseDelay = 5000;
         const [penpalChild, setPenpalChild] = useState<PenpalChildMethods | null>(null);
         const isSelected = editorEngine.frames.isSelected(frame.id);
         const isActiveBranch = editorEngine.branches.activeBranch.id === frame.branchId;
@@ -75,11 +78,29 @@ export const FrameComponent = observer(
         const retrySetupPenpalConnection = (error?: Error) => {
             if (retryCount.current >= maxRetries) {
                 console.error(
-                    `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Max retries (${maxRetries}) reached, reloading iframe`,
+                    `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Max Penpal retries (${maxRetries}) reached`,
                     error,
                 );
                 retryCount.current = 0;
-                reloadIframe?.();
+
+                // Check if we should reload iframe
+                if (reloadCount.current >= maxReloads) {
+                    console.error(
+                        `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Max iframe reloads (${maxReloads}) reached, giving up`,
+                    );
+                    return;
+                }
+
+                reloadCount.current += 1;
+                const reloadDelay = reloadBaseDelay * Math.pow(2, reloadCount.current - 1);
+
+                console.log(
+                    `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Scheduling iframe reload ${reloadCount.current}/${maxReloads} in ${reloadDelay}ms`,
+                );
+
+                setTimeout(() => {
+                    reloadIframe?.();
+                }, reloadDelay);
                 return;
             }
 
@@ -87,7 +108,7 @@ export const FrameComponent = observer(
             const delay = baseDelay * Math.pow(2, retryCount.current - 1);
 
             console.log(
-                `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Retrying connection attempt ${retryCount.current}/${maxRetries} in ${delay}ms`,
+                `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Retrying Penpal connection attempt ${retryCount.current}/${maxRetries} in ${delay}ms`,
             );
 
             setTimeout(() => {
@@ -153,8 +174,9 @@ export const FrameComponent = observer(
                             return;
                         }
 
-                        // Reset retry count on successful connection
+                        // Reset retry counts on successful connection
                         retryCount.current = 0;
+                        reloadCount.current = 0;
 
                         const remote = child as unknown as PenpalChildMethods;
                         setPenpalChild(remote);
