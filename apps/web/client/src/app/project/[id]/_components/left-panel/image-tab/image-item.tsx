@@ -23,6 +23,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { getMimeType } from '@onlook/utility';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface ImageItemProps {
     image: {
@@ -124,12 +125,17 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
         if (newName.trim() && newName !== image.name) {
             try {
                 await onRename(image.path, newName.trim());
+                setIsRenaming(false);
             } catch (error) {
+                toast.error('Failed to rename file', {
+                    description: error instanceof Error ? error.message : 'Unknown error',
+                });
                 console.error('Failed to rename file:', error);
                 setNewName(image.name); // Reset on error
             }
+        } else {
+            setIsRenaming(false);
         }
-        setIsRenaming(false);
     };
 
     const handleDelete = async () => {
@@ -137,6 +143,9 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
             await onDelete(image.path);
             setShowDeleteDialog(false);
         } catch (error) {
+            toast.error('Failed to delete file', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
             console.error('Failed to delete file:', error);
         }
     };
