@@ -54,52 +54,30 @@ const createSafeFallbackMethods = (): PromisifiedPendpalChildMethods => {
 
 interface FrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
     frame: Frame;
-    reloadIframe?: () => void;
+    reloadIframe: () => void;
+    onConnectionFailed: () => void;
+    onConnectionSuccess: () => void;
+    penpalTimeoutMs?: number;
     isInDragSelection?: boolean;
 }
 
 export const FrameComponent = observer(
-    forwardRef<IFrameView, FrameViewProps>(({ frame, reloadIframe, isInDragSelection = false, ...props }, ref) => {
+    forwardRef<IFrameView, FrameViewProps>(({ frame, reloadIframe, onConnectionFailed, onConnectionSuccess, penpalTimeoutMs = 5000, isInDragSelection = false, ...props }, ref) => {
         const editorEngine = useEditorEngine();
         const iframeRef = useRef<HTMLIFrameElement>(null);
         const zoomLevel = useRef(1);
         const isConnecting = useRef(false);
         const connectionRef = useRef<ReturnType<typeof connect> | null>(null);
-        const retryCount = useRef(0);
-        const maxRetries = 3;
-        const baseDelay = 1000;
         const [penpalChild, setPenpalChild] = useState<PenpalChildMethods | null>(null);
         const isSelected = editorEngine.frames.isSelected(frame.id);
         const isActiveBranch = editorEngine.branches.activeBranch.id === frame.branchId;
 
-        const retrySetupPenpalConnection = (error?: Error) => {
-            if (retryCount.current >= maxRetries) {
-                console.error(
-                    `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Max retries (${maxRetries}) reached, reloading iframe`,
-                    error,
-                );
-                retryCount.current = 0;
-                reloadIframe?.();
-                return;
-            }
-
-            retryCount.current += 1;
-            const delay = baseDelay * Math.pow(2, retryCount.current - 1);
-
-            console.log(
-                `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Retrying connection attempt ${retryCount.current}/${maxRetries} in ${delay}ms`,
-            );
-
-            setTimeout(() => {
-                setupPenpalConnection();
-            }, delay);
-        };
-
         const setupPenpalConnection = () => {
             try {
                 if (!iframeRef.current?.contentWindow) {
-                    console.error('No iframe found');
-                    throw new Error('No iframe found');
+                    console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - No iframe found`);
+                    onConnectionFailed;
+                    return;
                 }
 
                 if (isConnecting.current) {
@@ -110,7 +88,7 @@ export const FrameComponent = observer(
                 }
                 isConnecting.current = true;
 
-                // Destroy any existing connection before creating a new one
+                // Destroy any existing connection
                 if (connectionRef.current) {
                     connectionRef.current.destroy();
                     connectionRef.current = null;
@@ -138,23 +116,28 @@ export const FrameComponent = observer(
                     } satisfies PenpalParentMethods,
                 });
 
-                // Store the connection reference
                 connectionRef.current = connection;
 
-                connection.promise
+                // Create a timeout promise that rejects after specified timeout
+                const timeoutPromise = new Promise<never>((_, reject) => {
+                    setTimeout(() => {
+                        reject(new Error(`Penpal connection timeout after ${penpalTimeoutMs}ms`));
+                    }, penpalTimeoutMs);
+                });
+
+                // Race the connection promise against the timeout
+                Promise.race([connection.promise, timeoutPromise])
                     .then((child) => {
                         isConnecting.current = false;
                         if (!child) {
-                            const error = new Error('Failed to setup penpal connection: child is null');
                             console.error(
-                                `${PENPAL_PARENT_CHANNEL} (${frame.id}) - ${error.message}`,
+                                `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Connection failed: child is null`,
                             );
-                            retrySetupPenpalConnection(error);
+                            onConnectionFailed;
                             return;
                         }
 
-                        // Reset retry count on successful connection
-                        retryCount.current = 0;
+                        console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Penpal connection set`);
 
                         const remote = child as unknown as PenpalChildMethods;
                         setPenpalChild(remote);
@@ -162,7 +145,9 @@ export const FrameComponent = observer(
                         remote.setBranchId(frame.branchId);
                         remote.handleBodyReady();
                         remote.processDom();
-                        console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Penpal connection set `);
+
+                        // Notify parent of successful connection
+                        onConnectionSuccess;
                     })
                     .catch((error) => {
                         isConnecting.current = false;
@@ -170,12 +155,12 @@ export const FrameComponent = observer(
                             `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection:`,
                             error,
                         );
-                        retrySetupPenpalConnection(error);
+                        onConnectionFailed;
                     });
             } catch (error) {
                 isConnecting.current = false;
-                console.error('Failed to setup penpal connection', error);
-                retrySetupPenpalConnection(error as Error);
+                console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Setup failed:`, error);
+                onConnectionFailed;
             }
         };
 
@@ -271,7 +256,7 @@ export const FrameComponent = observer(
                     iframe.style.transform = `scale(${level})`;
                     iframe.style.transformOrigin = 'top left';
                 },
-                reload: () => reloadIframe?.(),
+                reload: () => reloadIframe(),
                 isLoading: () => iframe.contentDocument?.readyState !== 'complete',
             };
 
