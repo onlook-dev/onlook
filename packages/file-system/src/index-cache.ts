@@ -32,10 +32,22 @@ export async function getOrLoadIndex(
                 throw new Error('Invalid index file content');
             }
             const index = JSON.parse(content);
+
+            // Only set if no value was written while we were loading
+            const existing = staticMemoryMap.get(cacheKey);
+            if (existing !== undefined) {
+                return existing;
+            }
             staticMemoryMap.set(cacheKey, index);
             return index;
         } catch (error) {
             console.warn(`[CodeEditorApi] Failed to load index from ${indexPath}, error: ${error}`);
+
+            // Only set empty if no value was written while we were loading
+            const existing = staticMemoryMap.get(cacheKey);
+            if (existing !== undefined) {
+                return existing;
+            }
             const emptyIndex: Record<string, JsxElementMetadata> = {};
             staticMemoryMap.set(cacheKey, emptyIndex);
             return emptyIndex;
