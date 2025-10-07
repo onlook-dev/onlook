@@ -27,12 +27,13 @@ export const addFontVariableToRootLayout = async (
         const context = await getLayoutContext(editorEngine);
         if (!context) return false;
 
-        const { layoutPath, targetElements } = context;
+        const { layoutPath } = context;
 
         const fontName = camelCase(fontId);
         let hasUpdated = false;
 
-        const results = await traverseClassName(layoutPath, targetElements, editorEngine);
+        // Add font variable only to html element
+        const results = await traverseClassName(layoutPath, ['html'], editorEngine);
         if (!results) return false;
         const { classNameAttrs, elementsFound, ast } = results;
 
@@ -72,39 +73,70 @@ export const removeFontVariableFromRootLayout = async (
     try {
         const context = await getLayoutContext(editorEngine);
         if (!context) return false;
-        const { layoutPath, targetElements } = context;
+        const { layoutPath } = context;
 
         let hasUpdated = false;
         const fontName = camelCase(fontId);
 
-        // Traverse the className attributes in the layout file
-        // and remove the font variable from the className attributes
+        // Traverse both html and body elements in one pass
         const results = await traverseClassName(
             layoutPath,
-            targetElements,
+            ['html', 'body'],
             editorEngine,
-            true, // Should check all elements
+            true, // Check all elements
         );
 
         if (!results) return false;
-        const { classNameAttrs, elementsFound, ast } = results;
+        const { ast } = results;
 
-        if (elementsFound) {
-            for (const classNameAttr of classNameAttrs) {
-                // Remove both font variable (e.g., ${fontName.variable}) and font class (e.g., font-inter)
-                // Pass both camelCase name and original fontId to handle both cases
-                const updated = removeFontsFromClassName(classNameAttr, {
-                    fontIds: [fontName, fontId],
-                });
+        // We need to identify which className belongs to which element
+        // So let's traverse again to separate them
+        const sandbox = editorEngine.activeSandbox;
+        const file = await sandbox.readFile(layoutPath);
+        if (typeof file !== 'string') return false;
+
+        const content = file;
+        const workingAst = getAstFromContent(content);
+        if (!workingAst) return false;
+
+        traverse(workingAst, {
+            JSXOpeningElement: (path) => {
+                if (!t.isJSXIdentifier(path.node.name)) return;
+
+                const elementName = path.node.name.name;
+                if (elementName !== 'html' && elementName !== 'body') return;
+
+                let classNameAttr = path.node.attributes.find(
+                    (attr): attr is T.JSXAttribute =>
+                        t.isJSXAttribute(attr) &&
+                        t.isJSXIdentifier(attr.name) &&
+                        attr.name.name === 'className',
+                );
+
+                if (!classNameAttr) return;
+
+                let updated = false;
+                if (elementName === 'html') {
+                    // Remove font variable (e.g., ${fontName.variable}) from html
+                    updated = removeFontsFromClassName(classNameAttr, {
+                        fontIds: [fontName],
+                    });
+                } else if (elementName === 'body') {
+                    // Remove font class (e.g., font-inter) from body
+                    updated = removeFontsFromClassName(classNameAttr, {
+                        fontIds: [fontId],
+                    });
+                }
+
                 if (updated) {
                     hasUpdated = true;
                 }
-            }
-        }
+            },
+        });
 
-        if (hasUpdated && ast) {
+        if (hasUpdated && workingAst) {
             // Remove the font import if it exists
-            const newContent = removeFontImportFromFile(fontImportPath, fontName, ast);
+            const newContent = removeFontImportFromFile(fontImportPath, fontName, workingAst);
             if (!newContent) {
                 return false;
             }
@@ -128,13 +160,14 @@ export const updateDefaultFontInRootLayout = async (
     const context = await getLayoutContext(editorEngine);
     if (!context) return null;
 
-    const { layoutPath, targetElements, layoutContent } = context;
+    const { layoutPath, layoutContent } = context;
     let updatedAst = false;
     const fontClassName = `font-${font.id}`;
 
+    // Add font className only to body element
     const results = await traverseClassName(
         layoutPath,
-        targetElements,
+        ['body'],
         editorEngine,
         true, // Should check all elements
     );
