@@ -41,7 +41,7 @@ export const ImagesTab = observer(() => {
         handleUpload,
         handleRename,
         handleDelete,
-    } = useImageOperations(projectId, branchId, activeFolder, branchData?.codeEditor);
+    } = useImageOperations(projectId, branchId, activeFolder, branchData?.codeEditor, editorEngine);
 
     // Filter images based on search
     const images = filterImages(allImages);

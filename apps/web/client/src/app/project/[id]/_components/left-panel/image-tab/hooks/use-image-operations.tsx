@@ -1,3 +1,4 @@
+import type { EditorEngine } from '@/components/store/editor/engine';
 import type { CodeFileSystem } from '@onlook/file-system';
 import { useDirectory } from '@onlook/file-system/hooks';
 import { sanitizeFilename } from '@onlook/utility';
@@ -6,7 +7,7 @@ import path from 'path';
 import { useMemo, useState } from 'react';
 import { updateImageReferences } from '../utils/image-references';
 
-export const useImageOperations = (projectId: string, branchId: string, activeFolder: string, codeEditor?: CodeFileSystem) => {
+export const useImageOperations = (projectId: string, branchId: string, activeFolder: string, codeEditor?: CodeFileSystem, editorEngine?: EditorEngine) => {
     const [isUploading, setIsUploading] = useState(false);
 
     // Get directory entries
@@ -108,6 +109,11 @@ export const useImageOperations = (projectId: string, branchId: string, activeFo
 
         // Finally, rename the actual image file
         await codeEditor.moveFile(oldPath, newPath);
+
+        // Refresh all frame views after a slight delay to show updated image references
+        setTimeout(() => {
+            editorEngine?.frames.reloadAllViews();
+        }, 500);
     };
 
     // Handle file delete
