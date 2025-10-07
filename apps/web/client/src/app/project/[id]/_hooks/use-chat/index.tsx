@@ -2,6 +2,7 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
+import { api } from '@/trpc/client';
 import { useChat as useAiChat } from '@ai-sdk/react';
 import { ChatType, type ChatMessage, type MessageContext, type QueuedMessage } from '@onlook/models';
 import { jsonClone } from '@onlook/utility';
@@ -10,7 +11,6 @@ import { usePostHog } from 'posthog-js/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
-    attachCommitToUserMessage,
     getUserChatMessageFromString
 } from './utils';
 
@@ -225,9 +225,11 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             setFinishReason(null);
 
             const applyCommit = async () => {
+                console.log('[CHECKPOINT] applyCommit started');
                 const lastUserMessage = messagesRef.current.findLast((m) => m.role === 'user');
 
                 if (!lastUserMessage) {
+                    console.log('[CHECKPOINT] No last user message found');
                     return;
                 }
 
@@ -241,26 +243,93 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                     .join('');
 
                 if (!content) {
+                    console.log('[CHECKPOINT] No content in message');
                     return;
                 }
 
-                const { commit } = await editorEngine.versions.createCommit(content, false);
-                if (!commit) {
-                    throw new Error('Failed to create commit');
+                console.log('[CHECKPOINT] Checking all branches for modifications...');
+                // Detect all branches with modifications and create checkpoints
+                const checkpoints: Array<{
+                    type: import('@onlook/models').MessageCheckpointType.GIT;
+                    oid: string;
+                    branchId: string;
+                    createdAt: Date;
+                }> = [];
+
+                for (const branch of editorEngine.branches.allBranches) {
+                    console.log(`[CHECKPOINT] Checking branch: ${branch.name} (${branch.id})`);
+                    const branchData = editorEngine.branches.getBranchDataById(branch.id);
+
+                    if (!branchData) {
+                        console.log(`[CHECKPOINT] Branch data not found for ${branch.id}`);
+                        continue;
+                    }
+
+                    // Check if branch has modifications
+                    const status = await branchData.sandbox.gitManager.getStatus();
+                    console.log(`[CHECKPOINT] Git status for ${branch.name}:`, status);
+
+                    if (status && status.files.length > 0) {
+                        console.log(`[CHECKPOINT] Branch ${branch.name} has changes, creating commit...`);
+
+                        const result = await branchData.sandbox.gitManager.createCommit(content);
+
+                        if (result.success) {
+                            const latestCommit = branchData.sandbox.gitManager.commits?.[0];
+                            if (latestCommit) {
+                                console.log(`[CHECKPOINT] Commit created for ${branch.name}:`, latestCommit.oid);
+                                checkpoints.push({
+                                    type: 'git' as import('@onlook/models').MessageCheckpointType.GIT,
+                                    oid: latestCommit.oid,
+                                    branchId: branch.id,
+                                    createdAt: new Date(),
+                                });
+                            }
+                        } else {
+                            console.log(`[CHECKPOINT] Failed to create commit for ${branch.name}:`, result.error);
+                        }
+                    } else {
+                        console.log(`[CHECKPOINT] Branch ${branch.name} has no changes`);
+                    }
                 }
 
-                const messageWithCommit = attachCommitToUserMessage(
-                    commit,
-                    lastUserMessage,
+                if (checkpoints.length === 0) {
+                    console.warn('[CHECKPOINT] No checkpoints created - no modified branches found');
+                    return;
+                }
+
+                console.log('[CHECKPOINT] Total checkpoints created:', checkpoints.length);
+
+                // Update message with all checkpoints
+                const oldCheckpoints = lastUserMessage.metadata?.checkpoints.map((checkpoint) => ({
+                    ...checkpoint,
+                    createdAt: new Date(checkpoint.createdAt),
+                })) ?? [];
+
+                lastUserMessage.metadata = {
+                    ...lastUserMessage.metadata,
+                    createdAt: lastUserMessage.metadata?.createdAt ?? new Date(),
                     conversationId,
-                );
+                    checkpoints: [...oldCheckpoints, ...checkpoints],
+                    context: lastUserMessage.metadata?.context ?? [],
+                };
+
+                console.log('[CHECKPOINT] Saving checkpoints to database...');
+                // Save checkpoints to database
+                void api.chat.message.updateCheckpoints.mutate({
+                    messageId: lastUserMessage.id,
+                    checkpoints: [...oldCheckpoints, ...checkpoints],
+                });
+
+                console.log('[CHECKPOINT] Updating UI messages...');
                 setMessages(
                     jsonClone(
                         messagesRef.current.map((m) =>
-                            m.id === lastUserMessage.id ? messageWithCommit : m,
+                            m.id === lastUserMessage.id ? lastUserMessage : m,
                         ),
                     ),
                 );
+                console.log('[CHECKPOINT] applyCommit completed successfully');
             };
 
             const cleanupContext = async () => {

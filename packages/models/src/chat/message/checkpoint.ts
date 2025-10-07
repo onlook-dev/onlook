@@ -10,6 +10,7 @@ interface BaseMessageCheckpoint {
 export interface GitMessageCheckpoint extends BaseMessageCheckpoint {
     type: MessageCheckpointType.GIT;
     oid: string;
+    branchId: string;
 }
 
 export type MessageCheckpoints = GitMessageCheckpoint;

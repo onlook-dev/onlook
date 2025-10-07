@@ -29,7 +29,6 @@ import { StateManager } from './state';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
-import { VersionsManager } from './version';
 
 export class EditorEngine {
     readonly projectId: string;
@@ -61,7 +60,6 @@ export class EditorEngine {
     readonly action: ActionManager = new ActionManager(this);
     readonly style: StyleManager = new StyleManager(this);
     readonly code: CodeManager = new CodeManager(this);
-    readonly versions: VersionsManager = new VersionsManager(this);
     readonly chat: ChatManager = new ChatManager(this);
     readonly image: ImageManager = new ImageManager(this);
     readonly theme: ThemeManager = new ThemeManager(this);

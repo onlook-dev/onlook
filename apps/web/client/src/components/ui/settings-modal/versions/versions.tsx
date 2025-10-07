@@ -2,6 +2,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@onlook/ui/accordion';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@onlook/ui/select';
 import { Separator } from '@onlook/ui/separator';
 import { toast } from '@onlook/ui/sonner';
 import { observer } from 'mobx-react-lite';
@@ -11,9 +12,13 @@ import { VersionRow, VersionRowType } from './version-row';
 
 export const Versions = observer(() => {
     const editorEngine = useEditorEngine();
-    const commits = editorEngine.versions.commits;
-    const isLoadingCommits = editorEngine.versions.isLoadingCommits;
+    const [selectedBranchId, setSelectedBranchId] = useState(editorEngine.branches.activeBranch.id);
     const [commitToRename, setCommitToRename] = useState<string | null>(null);
+
+    const branchData = editorEngine.branches.getBranchDataById(selectedBranchId);
+    const gitManager = branchData?.sandbox.gitManager;
+    const commits = gitManager?.commits;
+    const isLoadingCommits = gitManager?.isLoadingCommits;
 
     // Group commits by date
     const groupedCommits = commits?.reduce(
@@ -47,14 +52,23 @@ export const Versions = observer(() => {
     );
 
     const handleNewBackup = async () => {
-        const res = await editorEngine.versions.createCommit();
-        if (!res?.success) {
-            toast.error('Failed to create commit', {
-                description: res?.errorReason,
+        if (!gitManager) {
+            toast.error('Git not initialized');
+            return;
+        }
+
+        const result = await gitManager.createCommit();
+        if (!result.success) {
+            toast.error('Failed to create backup', {
+                description: result.error || 'Unknown error',
             });
             return;
         }
-        const latestCommit = editorEngine.versions.latestCommit;
+
+        toast.success('Backup created successfully!');
+        editorEngine.posthog.capture('versions_create_commit_success');
+
+        const latestCommit = gitManager.commits?.[0];
         if (!latestCommit) {
             console.error('No latest commit found');
             return;
@@ -64,27 +78,40 @@ export const Versions = observer(() => {
 
     return (
         <div className="flex flex-col text-sm">
-            <div className="flex flex-row items-center justify-between gap-2 px-6 py-6">
-                <h2 className="text-lg">Versions</h2>
-                {isLoadingCommits && (
-                    <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
-                )}
-                {commits && commits.length > 0 ? (
+            <div className="flex flex-col gap-4 px-6 py-6">
+                <div className="flex flex-row items-center gap-3">
+                    <h2 className="text-lg">Versions</h2>
+
+                    {isLoadingCommits && (
+                        <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
+                    )}
+
+                    {/* Branch selector */}
+                    <Select value={selectedBranchId} onValueChange={setSelectedBranchId}>
+                        <SelectTrigger className="w-[180px] ml-auto">
+                            <SelectValue placeholder="Select branch" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {editorEngine.branches.allBranches.map((branch) => (
+                                <SelectItem key={branch.id} value={branch.id}>
+                                    {branch.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {commits && commits.length > 0 && (
                     <Button
                         variant="outline"
-                        className="bg-background-secondary ml-auto rounded text-sm font-normal"
+                        className="bg-background-secondary w-full rounded text-sm font-normal mt-2"
                         size="sm"
                         onClick={handleNewBackup}
-                        disabled={editorEngine.versions.isSaving}
                     >
-                        {editorEngine.versions.isSaving ? (
-                            <Icons.Shadow className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                            <Icons.Plus className="mr-2 h-4 w-4" />
-                        )}
-                        {editorEngine.versions.isSaving ? 'Saving...' : 'New backup'}
+                        <Icons.Plus className="mr-2 h-4 w-4" />
+                        New backup
                     </Button>
-                ) : null}
+                )}
             </div>
             <Separator />
 

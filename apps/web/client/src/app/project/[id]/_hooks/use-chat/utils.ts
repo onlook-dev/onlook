@@ -1,6 +1,4 @@
-import { api } from "@/trpc/client";
-import type { GitCommit } from "@onlook/git";
-import { type ChatMessage, MessageCheckpointType, type MessageContext } from "@onlook/models";
+import { type ChatMessage, type MessageContext } from "@onlook/models";
 import { v4 as uuidv4 } from 'uuid';
 
 export const prepareMessagesForSuggestions = (messages: ChatMessage[]) => {
@@ -32,37 +30,4 @@ export const getUserChatMessageFromString = (
             conversationId,
         },
     }
-}
-
-
-export const attachCommitToUserMessage = (commit: GitCommit, message: ChatMessage, conversationId: string) => {
-    // Vercel converts createdAt to a string, which our API doesn't accept.
-    const oldCheckpoints = message.metadata?.checkpoints.map((checkpoint) => ({
-        ...checkpoint,
-        createdAt: new Date(checkpoint.createdAt),
-    })) ?? [];
-    const newCheckpoints = [
-        ...oldCheckpoints,
-        {
-            type: MessageCheckpointType.GIT,
-            oid: commit.oid,
-            createdAt: new Date(),
-        },
-    ];
-
-    message.metadata = {
-        ...message.metadata,
-        createdAt: message.metadata?.createdAt ?? new Date(),
-        conversationId,
-        checkpoints: newCheckpoints,
-        context: message.metadata?.context ?? [],
-    };
-
-    // Very hacky - but since we only save messages when we submit a new message, we need to update the checkpoints here.
-    void api.chat.message.updateCheckpoints.mutate({
-        messageId: message.id,
-        checkpoints: newCheckpoints,
-    });
-    
-    return message;
 }
