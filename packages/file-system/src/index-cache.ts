@@ -25,15 +25,18 @@ export async function getOrLoadIndex(
         return existingLoad;
     }
 
-    const loadPromise = (async () => {
+    const loadPromise: Promise<Record<string, JsxElementMetadata>> = (async () => {
         try {
             const content = await readFile(indexPath);
-            const index = JSON.parse(content as string);
+            if (typeof content !== 'string') {
+                throw new Error('Invalid index file content');
+            }
+            const index = JSON.parse(content);
             staticMemoryMap.set(cacheKey, index);
             return index;
         } catch (error) {
             console.warn(`[CodeEditorApi] Failed to load index from ${indexPath}, error: ${error}`);
-            const emptyIndex = {};
+            const emptyIndex: Record<string, JsxElementMetadata> = {};
             staticMemoryMap.set(cacheKey, emptyIndex);
             return emptyIndex;
         } finally {
