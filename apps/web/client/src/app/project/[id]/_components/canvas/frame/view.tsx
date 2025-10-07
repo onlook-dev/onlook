@@ -54,9 +54,9 @@ const createSafeFallbackMethods = (): PromisifiedPendpalChildMethods => {
 
 interface FrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
     frame: Frame;
-    reloadIframe?: () => void;
-    onConnectionFailed?: () => void;
-    onConnectionSuccess?: () => void;
+    reloadIframe: () => void;
+    onConnectionFailed: () => void;
+    onConnectionSuccess: () => void;
     penpalTimeoutMs?: number;
     isInDragSelection?: boolean;
 }
@@ -76,7 +76,7 @@ export const FrameComponent = observer(
             try {
                 if (!iframeRef.current?.contentWindow) {
                     console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - No iframe found`);
-                    onConnectionFailed?.();
+                    onConnectionFailed;
                     return;
                 }
 
@@ -133,7 +133,7 @@ export const FrameComponent = observer(
                             console.error(
                                 `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Connection failed: child is null`,
                             );
-                            onConnectionFailed?.();
+                            onConnectionFailed;
                             return;
                         }
 
@@ -147,7 +147,7 @@ export const FrameComponent = observer(
                         remote.processDom();
 
                         // Notify parent of successful connection
-                        onConnectionSuccess?.();
+                        onConnectionSuccess;
                     })
                     .catch((error) => {
                         isConnecting.current = false;
@@ -155,12 +155,12 @@ export const FrameComponent = observer(
                             `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection:`,
                             error,
                         );
-                        onConnectionFailed?.();
+                        onConnectionFailed;
                     });
             } catch (error) {
                 isConnecting.current = false;
                 console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Setup failed:`, error);
-                onConnectionFailed?.();
+                onConnectionFailed;
             }
         };
 
@@ -256,7 +256,7 @@ export const FrameComponent = observer(
                     iframe.style.transform = `scale(${level})`;
                     iframe.style.transformOrigin = 'top left';
                 },
-                reload: () => reloadIframe?.(),
+                reload: () => reloadIframe(),
                 isLoading: () => iframe.contentDocument?.readyState !== 'complete',
             };
 
