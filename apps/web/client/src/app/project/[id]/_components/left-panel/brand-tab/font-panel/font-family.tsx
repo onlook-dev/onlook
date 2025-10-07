@@ -47,7 +47,6 @@ export const FontFamily = ({
     const [expanded, setExpanded] = useState(false);
 
     const handleToggleDefault = () => {
-        console.log('handleToggleDefault', isDefault);
         if (isDefault) {
             onClearDefault?.();
         } else {
