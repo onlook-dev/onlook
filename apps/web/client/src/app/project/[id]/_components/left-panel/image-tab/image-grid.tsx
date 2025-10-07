@@ -12,9 +12,12 @@ interface ImageGridProps {
     branchId: string;
     search: string;
     onUpload: (files: FileList) => Promise<void>;
+    onRename: (oldPath: string, newName: string) => Promise<void>;
+    onDelete: (filePath: string) => Promise<void>;
+    onAddToChat: (imagePath: string) => void;
 }
 
-export const ImageGrid = ({ images, projectId, branchId, search, onUpload }: ImageGridProps) => {
+export const ImageGrid = ({ images, projectId, branchId, search, onUpload, onRename, onDelete, onAddToChat }: ImageGridProps) => {
     const {
         handleDragEnter, handleDragLeave, handleDragOver, handleDrop, isDragging,
         onImageDragStart, onImageDragEnd, onImageMouseDown, onImageMouseUp
@@ -41,6 +44,9 @@ export const ImageGrid = ({ images, projectId, branchId, search, onUpload }: Ima
                         onImageDragEnd={onImageDragEnd}
                         onImageMouseDown={onImageMouseDown}
                         onImageMouseUp={onImageMouseUp}
+                        onRename={onRename}
+                        onDelete={onDelete}
+                        onAddToChat={onAddToChat}
                     />
                 ))}
             </div>
