@@ -1,543 +1,458 @@
-# Iframe Refresh System with Exponential Backoff
+# Iframe Refresh System - Simplified Approach
 
 ## Overview
 
-This document outlines the design for a robust iframe connection system that automatically handles Penpal connection failures with exponential backoff and progressive iframe reloads.
+Simple iframe reload system with linear backoff. When Penpal connection fails, reload the iframe with increasing delays.
 
-## Current State Analysis
+## Core Principle
 
-### Existing Implementation
+**No soft retries - just reload the iframe.**
 
-**File: `view.tsx:68-96`**
-- Penpal connection retry with exponential backoff
-- Max 3 retries with base delay 1000ms
-- After max retries, triggers `reloadIframe()`
+When Penpal connection fails, immediately reload the entire iframe instead of trying to reconnect to the same iframe multiple times.
 
-**File: `index.tsx:20-48`**
-- 30-second timeout monitoring
-- Shows error toast but doesn't trigger refresh
-- User must manually reload
+## Architecture Decision
 
-### Identified Gaps
+**All logic lives in `index.tsx` (FrameView component)**
 
-1. ❌ No automatic iframe refresh after Penpal connection timeout
-2. ❌ Disconnect between sandbox session state and Penpal connection state
-3. ❌ No exponential backoff for iframe reloads themselves
-4. ❌ User sees error toast but must manually reload
-5. ❌ No recovery tracking across iframe reload cycles
+- ✅ Parent component manages both iframe lifecycle AND reload logic
+- ✅ Parent holds reload counter state (persists across remounts)
+- ✅ Child component (`view.tsx`) becomes purely presentational
+- ✅ Simpler - single source of truth for all reload behavior
 
-## Proposed System Design
-
-### 1. Connection State Management
-
-Create a unified connection state tracker in `view.tsx`:
-
-```typescript
-interface ConnectionState {
-  penpalRetries: number;           // Current Penpal retry count
-  iframeReloadCount: number;       // Number of iframe reloads
-  lastReloadTime: number;          // Timestamp of last reload
-  connectionEstablished: boolean;  // Whether Penpal ever connected
-}
-```
-
-### 2. Exponential Backoff Strategy
-
-**Two-level retry system:**
-
-1. **Penpal retries (inner loop):** 3 attempts with exponential backoff
-   - Attempt 1: immediate
-   - Attempt 2: 1s delay
-   - Attempt 3: 2s delay
-   - ✅ *Already implemented*
-
-2. **Iframe reloads (outer loop):** 3 cycles with exponential backoff
-   - Reload 1: 5s delay
-   - Reload 2: 10s delay
-   - Reload 3: 20s delay
-   - ❌ *Needs implementation*
-
-**Configuration:**
-```typescript
-const IFRAME_RELOAD_CONFIG = {
-  maxReloads: 3,
-  baseDelay: 5000,      // 5 seconds
-  maxDelay: 20000,      // 20 seconds
-  timeoutPerCycle: 30000, // 30 seconds per iframe load
-};
-```
-
-**Total max attempts:** 12 connection attempts (3 Penpal × 3 iframe cycles + 3 initial) before giving up
-
-### 3. Connection Flow Diagram
+## Connection Flow
 
 ```
-Iframe Load
+Iframe Load (FrameView renders FrameComponent)
     ↓
-Penpal Connection Attempt 1 (immediate)
-    ↓ fail (after 1s timeout)
-Penpal Connection Attempt 2 (delay 1s)
-    ↓ fail (after 2s timeout)
-Penpal Connection Attempt 3 (delay 2s)
-    ↓ fail (after 4s timeout)
+Single Penpal Connection Attempt (in view.tsx)
+    ↓ fail → calls onConnectionFailed callback
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Iframe Reload 1 (delay 5s)
+FrameView schedules reload (2s delay)
     ↓
-Penpal Connection Attempt 1 (immediate)
-    ↓ fail
-Penpal Connection Attempt 2 (delay 1s)
-    ↓ fail
-Penpal Connection Attempt 3 (delay 2s)
+FrameView increments reloadKey → remounts FrameComponent
+    ↓
+Single Penpal Connection Attempt
+    ↓ fail → calls onConnectionFailed callback
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FrameView schedules reload (3s delay)
+    ↓
+FrameView increments reloadKey → remounts FrameComponent
+    ↓
+Single Penpal Connection Attempt
     ↓ fail
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Iframe Reload 2 (delay 10s)
-    ↓
-[Repeat Penpal attempts...]
-    ↓ all fail
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Iframe Reload 3 (delay 20s)
-    ↓
-[Repeat Penpal attempts...]
-    ↓ all fail
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Show Fatal Error (manual intervention required)
+Continues with linear backoff (4s, 5s, 6s...)
 ```
 
-### 4. Implementation Changes
+## Backoff Strategy
 
-#### A. Changes to `view.tsx`
+**Linear backoff for iframe reloads:**
+- Base delay: 2000ms (2 seconds)
+- Increment: 1000ms (1 second)
+- Pattern: 2s, 3s, 4s, 5s, 6s...
+- **No maximum limit** - keeps trying forever
 
-##### 1. Add connection state ref (insert after line ~68)
+## Implementation
 
-```typescript
-const connectionState = useRef<ConnectionState>({
-  penpalRetries: 0,
-  iframeReloadCount: 0,
-  lastReloadTime: 0,
-  connectionEstablished: false,
-});
+### File: `index.tsx` (FrameView Component)
 
-const IFRAME_RELOAD_CONFIG = {
-  maxReloads: 3,
-  baseDelay: 5000,
-  maxDelay: 20000,
-  timeoutPerCycle: 30000,
-};
-```
-
-##### 2. Add new function `scheduleIframeReload` (insert before `retrySetupPenpalConnection`)
+**This component manages everything:**
+- Reload counter state
+- Reload scheduling with backoff
+- Iframe mounting via `reloadKey`
+- Connection success/failure handling
 
 ```typescript
-const scheduleIframeReload = () => {
-  const state = connectionState.current;
+export const FrameView = observer(({ frame, isInDragSelection = false }: { frame: Frame; isInDragSelection?: boolean }) => {
+    const editorEngine = useEditorEngine();
+    const iFrameRef = useRef<IFrameView>(null);
+    const [isResizing, setIsResizing] = useState(false);
+    const [reloadKey, setReloadKey] = useState(0);
+    const [hasTimedOut, setHasTimedOut] = useState(false);
 
-  if (state.iframeReloadCount >= IFRAME_RELOAD_CONFIG.maxReloads) {
-    console.error(
-      `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Max iframe reloads (${IFRAME_RELOAD_CONFIG.maxReloads}) reached, connection failed permanently`
-    );
-    // Notify parent component of fatal failure
-    // This will be handled in index.tsx
-    return;
-  }
+    // Reload tracking state (persists across FrameComponent remounts)
+    const reloadCountRef = useRef(0);
+    const reloadBaseDelay = 2000;
+    const reloadIncrement = 1000;
 
-  state.iframeReloadCount++;
-  const delay = Math.min(
-    IFRAME_RELOAD_CONFIG.baseDelay * Math.pow(2, state.iframeReloadCount - 1),
-    IFRAME_RELOAD_CONFIG.maxDelay
-  );
+    const isSelected = editorEngine.frames.isSelected(frame.id);
 
-  console.log(
-    `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Scheduling iframe reload ${state.iframeReloadCount}/${IFRAME_RELOAD_CONFIG.maxReloads} in ${delay}ms`
-  );
+    const branchData = editorEngine.branches.getBranchDataById(frame.branchId);
+    const isConnecting = branchData?.sandbox?.session?.isConnecting ?? false;
 
-  setTimeout(() => {
-    state.lastReloadTime = Date.now();
-    reloadIframe?.();
-  }, delay);
-};
-```
+    const preloadScriptReady = branchData?.sandbox?.preloadScriptInjected ?? false;
+    const isFrameReady = preloadScriptReady && !(isConnecting && !hasTimedOut);
 
-##### 3. Update `retrySetupPenpalConnection` (modify existing function at line ~75)
-
-```typescript
-const retrySetupPenpalConnection = (error?: Error) => {
-  if (retryCount.current >= maxRetries) {
-    console.error(
-      `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Max Penpal retries (${maxRetries}) reached, triggering iframe reload`,
-      error,
-    );
-    retryCount.current = 0;
-
-    // Trigger iframe reload with exponential backoff
-    scheduleIframeReload();
-    return;
-  }
-
-  retryCount.current += 1;
-  const delay = baseDelay * Math.pow(2, retryCount.current - 1);
-
-  console.log(
-    `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Retrying Penpal connection attempt ${retryCount.current}/${maxRetries} in ${delay}ms`,
-  );
-
-  setTimeout(() => {
-    setupPenpalConnection();
-  }, delay);
-};
-```
-
-##### 4. Update success handler in `setupPenpalConnection` (modify line ~145)
-
-```typescript
-connection.promise
-  .then((child) => {
-    isConnecting.current = false;
-    if (!child) {
-      const error = new Error('Failed to setup penpal connection: child is null');
-      console.error(
-        `${PENPAL_PARENT_CHANNEL} (${frame.id}) - ${error.message}`,
-      );
-      retrySetupPenpalConnection(error);
-      return;
-    }
-
-    // Reset all retry counts on successful connection
-    retryCount.current = 0;
-    connectionState.current.iframeReloadCount = 0;
-    connectionState.current.connectionEstablished = true;
-
-    console.log(
-      `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Connection established successfully after ${connectionState.current.iframeReloadCount} iframe reloads`
-    );
-
-    const remote = child as unknown as PenpalChildMethods;
-    setPenpalChild(remote);
-    remote.setFrameId(frame.id);
-    remote.setBranchId(frame.branchId);
-    remote.handleBodyReady();
-    remote.processDom();
-    console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Penpal connection set `);
-  })
-  .catch((error) => {
-    isConnecting.current = false;
-    console.error(
-      `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection:`,
-      error,
-    );
-    retrySetupPenpalConnection(error);
-  });
-```
-
-##### 5. Reset state on iframe reload (modify useEffect cleanup at line ~291)
-
-```typescript
-useEffect(() => {
-  // Reset connection state when iframe reloads
-  connectionState.current.penpalRetries = 0;
-
-  return () => {
-    if (connectionRef.current) {
-      connectionRef.current.destroy();
-      connectionRef.current = null;
-    }
-    setPenpalChild(null);
-    isConnecting.current = false;
-    // Keep iframeReloadCount for tracking across reloads
-  };
-}, [reloadKey]); // Add reloadKey dependency if passed from parent
-```
-
-#### B. Changes to `index.tsx`
-
-##### 1. Add reload attempt tracking (insert after line ~19)
-
-```typescript
-const [reloadAttempts, setReloadAttempts] = useState(0);
-const maxIframeReloads = 3;
-```
-
-##### 2. Update timeout logic to trigger auto-reload (modify line ~35-48)
-
-```typescript
-useEffect(() => {
-  if (!isConnecting) {
-    setHasTimedOut(false);
-    return;
-  }
-
-  const timeoutId = setTimeout(() => {
-    const currentBranchData = editorEngine.branches.getBranchDataById(frame.branchId);
-    const stillConnecting = currentBranchData?.sandbox?.session?.isConnecting ?? false;
-
-    if (stillConnecting) {
-      console.log(
-        `[Frame ${frame.id}] Penpal connection timeout after 30s, triggering reload (attempt ${reloadAttempts + 1}/${maxIframeReloads})`
-      );
-
-      if (reloadAttempts < maxIframeReloads) {
-        setReloadAttempts(prev => prev + 1);
-
-        // Show progressive feedback
-        const message = getConnectionMessage(reloadAttempts + 1);
-        if (message) {
-          toast.info(message, {
-            description: `Reconnecting to ${currentBranchData?.branch?.name}...`,
-          });
+    // 30s timeout monitoring for slow connections
+    useEffect(() => {
+        if (!isConnecting) {
+            setHasTimedOut(false);
+            return;
         }
 
-        // Trigger reload with exponential backoff
-        const delay = Math.min(5000 * Math.pow(2, reloadAttempts), 20000);
+        const timeoutId = setTimeout(() => {
+            const currentBranchData = editorEngine.branches.getBranchDataById(frame.branchId);
+            const stillConnecting = currentBranchData?.sandbox?.session?.isConnecting ?? false;
+
+            if (stillConnecting) {
+                console.log(`[Frame ${frame.id}] Connection timeout after 30s, triggering reload`);
+                toast.info('Connection slow, retrying...', {
+                    description: `Reconnecting to ${currentBranchData?.branch?.name}...`,
+                });
+                handleConnectionFailed();
+            }
+        }, 30000);
+
+        return () => clearTimeout(timeoutId);
+    }, [isConnecting, frame.branchId]);
+
+    // Immediate reload (for manual triggers via frameData.view.reload())
+    const immediateReload = () => {
+        console.log(`[Frame ${frame.id}] Immediate reload triggered`);
+        setReloadKey(prev => prev + 1);
+    };
+
+    // Scheduled reload with linear backoff (for automatic retries)
+    const scheduleReload = () => {
+        reloadCountRef.current += 1;
+        const reloadDelay = reloadBaseDelay + (reloadIncrement * (reloadCountRef.current - 1));
+
+        console.log(
+            `[Frame ${frame.id}] Scheduling iframe reload attempt ${reloadCountRef.current} in ${reloadDelay}ms`
+        );
+
         setTimeout(() => {
-          reloadIframe();
-        }, delay);
-      } else {
-        setHasTimedOut(true);
-        toast.error('Connection failed', {
-          description: `Could not connect to ${currentBranchData?.branch?.name}. Please try reloading manually.`,
-          action: {
-            label: 'Reload',
-            onClick: () => {
-              setReloadAttempts(0);
-              reloadIframe();
-            },
-          },
-        });
-      }
-    }
-  }, 30000);
+            console.log(`[Frame ${frame.id}] Reloading iframe`);
+            setReloadKey(prev => prev + 1);
+        }, reloadDelay);
+    };
 
-  return () => clearTimeout(timeoutId);
-}, [isConnecting, frame.branchId, reloadAttempts]);
-```
+    // Debounced handler for connection failures (prevents duplicate reloads)
+    const handleConnectionFailed = debounce(scheduleReload, 1000, {
+        leading: true,
+    });
 
-##### 3. Add helper function for progressive messages (insert before component)
+    // Reset reload count on successful connection
+    useEffect(() => {
+        if (isFrameReady && reloadCountRef.current > 0) {
+            console.log(`[Frame ${frame.id}] Connection established, resetting reload counter`);
+            reloadCountRef.current = 0;
+        }
+    }, [isFrameReady, frame.id]);
 
-```typescript
-const getConnectionMessage = (reloadCount: number): string | null => {
-  switch(reloadCount) {
-    case 1: return 'Connection slow, retrying...';
-    case 2: return 'Still connecting, please wait...';
-    case 3: return 'Connection taking longer than expected...';
-    default: return null;
-  }
-};
-```
+    return (
+        <div
+            className="flex flex-col fixed"
+            style={{ transform: `translate(${frame.position.x}px, ${frame.position.y}px)` }}
+        >
+            <RightClickMenu>
+                <TopBar frame={frame} isInDragSelection={isInDragSelection} />
+            </RightClickMenu>
+            <div className="relative" style={{
+                outline: isSelected ? `2px solid ${colors.teal[400]}` : isInDragSelection ? `2px solid ${colors.teal[500]}` : 'none',
+                borderRadius: '4px',
+            }}>
+                <ResizeHandles frame={frame} setIsResizing={setIsResizing} />
+                <FrameComponent
+                    key={reloadKey}
+                    frame={frame}
+                    reloadIframe={immediateReload}
+                    onConnectionFailed={handleConnectionFailed}
+                    isInDragSelection={isInDragSelection}
+                    ref={iFrameRef}
+                />
+                <GestureScreen frame={frame} isResizing={isResizing} />
 
-##### 4. Reset reload attempts on successful connection (add useEffect)
-
-```typescript
-useEffect(() => {
-  // Reset reload attempts when connection succeeds
-  if (isFrameReady && reloadAttempts > 0) {
-    console.log(`[Frame ${frame.id}] Connection established, resetting reload attempts`);
-    setReloadAttempts(0);
-  }
-}, [isFrameReady, frame.id]);
-```
-
-### 5. User Feedback Strategy
-
-**Progressive messaging based on reload attempts:**
-
-| Attempt | Delay | User Message |
-|---------|-------|--------------|
-| Initial Penpal retries (1-3) | 0s, 1s, 2s | Loading spinner, no message |
-| Iframe Reload 1 | 5s | "Connection slow, retrying..." |
-| Iframe Reload 2 | 10s | "Still connecting, please wait..." |
-| Iframe Reload 3 | 20s | "Connection taking longer than expected..." |
-| Fatal (all failed) | - | "Connection failed" + manual reload button |
-
-**Toast implementation:**
-```typescript
-// Info toasts during retry
-toast.info('Connection slow, retrying...', {
-  description: `Reconnecting to ${branchName}...`,
-});
-
-// Error toast with action button
-toast.error('Connection failed', {
-  description: `Could not connect to ${branchName}. Please try reloading manually.`,
-  action: {
-    label: 'Reload',
-    onClick: () => {
-      setReloadAttempts(0);
-      reloadIframe();
-    },
-  },
+                {!isFrameReady && (
+                    <div
+                        className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-md"
+                        style={{ width: frame.dimension.width, height: frame.dimension.height }}
+                    >
+                        <div className="flex items-center gap-3 text-foreground" style={{ transform: `scale(${1 / editorEngine.canvas.scale})` }}>
+                            <Icons.LoadingSpinner className="animate-spin h-8 w-8" />
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 });
 ```
 
-### 6. Recovery Mechanisms
+### File: `view.tsx` (FrameComponent)
 
-1. **Manual reload button** - Available in fatal error state
-2. **Reset on branch switch** - Clear all retry state when user switches branches
-3. **Automatic cleanup** - Reset state on component unmount
-4. **Success reset** - Reset all counters on successful connection
+**This component is now simple - just handles Penpal connection:**
+- Single connection attempt on iframe load
+- Calls `onConnectionFailed()` on any error
+- Calls `reloadIframe()` for the `reload()` method exposure
+- No retry logic, no counters, no timers
 
-**Implementation:**
 ```typescript
-// Reset on branch change
-useEffect(() => {
-  setReloadAttempts(0);
-  setHasTimedOut(false);
-}, [frame.branchId]);
+interface FrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
+    frame: Frame;
+    reloadIframe?: () => void;
+    onConnectionFailed?: () => void;
+    isInDragSelection?: boolean;
+}
 
-// Reset on successful connection
-useEffect(() => {
-  if (isFrameReady && reloadAttempts > 0) {
-    setReloadAttempts(0);
-  }
-}, [isFrameReady]);
+export const FrameComponent = observer(
+    forwardRef<IFrameView, FrameViewProps>(({ frame, reloadIframe, onConnectionFailed, isInDragSelection = false, ...props }, ref) => {
+        const editorEngine = useEditorEngine();
+        const iframeRef = useRef<HTMLIFrameElement>(null);
+        const zoomLevel = useRef(1);
+        const isConnecting = useRef(false);
+        const connectionRef = useRef<ReturnType<typeof connect> | null>(null);
+        const [penpalChild, setPenpalChild] = useState<PenpalChildMethods | null>(null);
+        const isSelected = editorEngine.frames.isSelected(frame.id);
+        const isActiveBranch = editorEngine.branches.activeBranch.id === frame.branchId;
+
+        const setupPenpalConnection = () => {
+            try {
+                if (!iframeRef.current?.contentWindow) {
+                    console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - No iframe found`);
+                    onConnectionFailed?.();
+                    return;
+                }
+
+                if (isConnecting.current) {
+                    console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Connection already in progress`);
+                    return;
+                }
+                isConnecting.current = true;
+
+                // Destroy any existing connection
+                if (connectionRef.current) {
+                    connectionRef.current.destroy();
+                    connectionRef.current = null;
+                }
+
+                const messenger = new WindowMessenger({
+                    remoteWindow: iframeRef.current.contentWindow,
+                    allowedOrigins: ['*'],
+                });
+
+                const connection = connect({
+                    messenger,
+                    methods: {
+                        getFrameId: () => frame.id,
+                        getBranchId: () => frame.branchId,
+                        onWindowMutated: () => {
+                            editorEngine.frameEvent.handleWindowMutated();
+                        },
+                        onWindowResized: () => {
+                            editorEngine.frameEvent.handleWindowResized();
+                        },
+                        onDomProcessed: (data: { layerMap: Record<string, any>; rootNode: any }) => {
+                            editorEngine.frameEvent.handleDomProcessed(frame.id, data);
+                        },
+                    } satisfies PenpalParentMethods,
+                });
+
+                connectionRef.current = connection;
+
+                connection.promise
+                    .then((child) => {
+                        isConnecting.current = false;
+                        if (!child) {
+                            console.error(
+                                `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Connection failed: child is null`,
+                            );
+                            onConnectionFailed?.();
+                            return;
+                        }
+
+                        console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Connection established`);
+
+                        const remote = child as unknown as PenpalChildMethods;
+                        setPenpalChild(remote);
+                        remote.setFrameId(frame.id);
+                        remote.setBranchId(frame.branchId);
+                        remote.handleBodyReady();
+                        remote.processDom();
+                    })
+                    .catch((error) => {
+                        isConnecting.current = false;
+                        console.error(
+                            `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Connection failed:`,
+                            error,
+                        );
+                        onConnectionFailed?.();
+                    });
+            } catch (error) {
+                isConnecting.current = false;
+                console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Setup failed:`, error);
+                onConnectionFailed?.();
+            }
+        };
+
+        // ... promisifyMethod helper (unchanged)
+        // ... remoteMethods useMemo (unchanged)
+        // ... useImperativeHandle (unchanged, uses reloadIframe prop for reload() method)
+
+        useEffect(() => {
+            return () => {
+                if (connectionRef.current) {
+                    connectionRef.current.destroy();
+                    connectionRef.current = null;
+                }
+                setPenpalChild(null);
+                isConnecting.current = false;
+            };
+        }, []);
+
+        return (
+            <WebPreview>
+                <WebPreviewBody
+                    ref={iframeRef}
+                    id={frame.id}
+                    className={cn(
+                        'backdrop-blur-sm transition outline outline-4',
+                        isActiveBranch && 'outline-teal-400',
+                        isActiveBranch && !isSelected && 'outline-dashed',
+                        !isActiveBranch && isInDragSelection && 'outline-teal-500',
+                    )}
+                    src={frame.url}
+                    sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
+                    allow="geolocation; microphone; camera; midi; encrypted-media"
+                    style={{ width: frame.dimension.width, height: frame.dimension.height }}
+                    onLoad={setupPenpalConnection}
+                    {...props}
+                />
+            </WebPreview>
+        );
+    }),
+);
 ```
 
-### 7. Monitoring & Debugging
+## Key Design Decisions
 
-**Console logging structure:**
-```typescript
-// Penpal level
-console.log(`[Frame ${frame.id}] Penpal attempt ${retryCount}/${maxRetries}`);
-console.log(`[Frame ${frame.id}] Penpal connection failed: ${error.message}`);
+### 1. All Logic in Parent (FrameView)
 
-// Iframe level
-console.log(`[Frame ${frame.id}] Iframe reload ${reloadCount}/${maxReloads} scheduled in ${delay}ms`);
-console.log(`[Frame ${frame.id}] Connection established after ${totalAttempts} attempts`);
+**Why:** Parent component doesn't remount, so it's the natural place for persistent state.
 
-// Fatal
-console.error(`[Frame ${frame.id}] All connection attempts exhausted`);
-```
+**Result:**
+- `reloadCountRef` persists across iframe reloads
+- Clean separation: parent = orchestration, child = presentation
+- Single source of truth for reload behavior
 
-**Telemetry points to track:**
-- Connection attempt start/success/failure timestamps
-- Iframe reload triggers and delays
-- Total time to successful connection
-- Failure reasons (timeout, error type, max retries)
-- User manual reload triggers
+### 2. No Penpal Retries
 
-### 8. Edge Cases & Considerations
+**Why:** Simpler, faster recovery. If Penpal fails, the webpage state might be bad anyway - fresh reload is better.
 
-#### A. Race Conditions
-- **Problem:** Multiple reload timers active simultaneously
-- **Solution:** Clear existing timers before scheduling new ones
-```typescript
-const reloadTimerRef = useRef<NodeJS.Timeout | null>(null);
+**Result:** Clean, predictable behavior. One attempt → reload on failure.
 
-const scheduleIframeReload = () => {
-  if (reloadTimerRef.current) {
-    clearTimeout(reloadTimerRef.current);
-  }
-  reloadTimerRef.current = setTimeout(() => {
-    reloadIframe();
-  }, delay);
-};
-```
+### 3. Linear Backoff
 
-#### B. Component Unmount During Retry
-- **Problem:** Timers firing after component unmounts
-- **Solution:** Cleanup all timers in useEffect cleanup
-```typescript
-useEffect(() => {
-  return () => {
-    if (reloadTimerRef.current) {
-      clearTimeout(reloadTimerRef.current);
-    }
-  };
-}, []);
-```
+**Why:** Exponential grows too slow initially, too fast later. Linear is consistent and predictable.
 
-#### C. Rapid Branch Switching
-- **Problem:** Stale retry state when switching branches quickly
-- **Solution:** Reset all state on branch change
-```typescript
-useEffect(() => {
-  setReloadAttempts(0);
-  setHasTimedOut(false);
-  if (reloadTimerRef.current) {
-    clearTimeout(reloadTimerRef.current);
-  }
-}, [frame.branchId]);
-```
+**Pattern:** 2s, 3s, 4s, 5s, 6s...
 
-#### D. Network Flapping
-- **Problem:** Connection succeeds briefly then fails again
-- **Solution:** Only reset counters after stable connection (e.g., 5s connected)
-```typescript
-useEffect(() => {
-  if (!isFrameReady) return;
+### 4. Infinite Retries
 
-  const stabilityTimer = setTimeout(() => {
-    console.log(`[Frame ${frame.id}] Connection stable, resetting retry state`);
-    setReloadAttempts(0);
-  }, 5000);
+**Why:** Network issues can be transient. Keep trying until user intervenes or connection succeeds.
 
-  return () => clearTimeout(stabilityTimer);
-}, [isFrameReady]);
-```
+**Safety:** Linear backoff prevents overwhelming the system.
+
+### 5. Two Reload Paths
+
+**`immediateReload()`:**
+- For manual reloads via `frameData.view.reload()`
+- Instant, no delay
+- No counter increment
+
+**`scheduleReload()` via `handleConnectionFailed()`:**
+- For automatic retries
+- Linear backoff applied
+- Counter increments
 
 ## Benefits
 
-✅ **Automatic recovery** - No manual intervention needed for transient failures
-✅ **Progressive backoff** - Prevents overwhelming the system with rapid retries
-✅ **Clear limits** - Fails gracefully after reasonable attempts (12 total)
-✅ **User awareness** - Progressive feedback shows system is working
-✅ **Debuggable** - Comprehensive logging for troubleshooting
-✅ **Resilient** - Handles both Penpal-level and iframe-level failures
-✅ **User-friendly** - Manual recovery option always available
+✅ **Simple** - Single Penpal attempt, no complex retry state in child
+✅ **Fast** - Immediate reload on failure, no waiting for retries
+✅ **Predictable** - Linear backoff is easy to reason about
+✅ **Resilient** - Infinite retries with reasonable delays
+✅ **Maintainable** - All logic in one component (parent)
+✅ **Debuggable** - Clear console logs at each step
+
+## Edge Cases Handled
+
+### A. Component Remounting
+- **Problem:** Child remounts on reload, losing state
+- **Solution:** Parent holds all state (persists across remounts)
+
+### B. Multiple Failure Triggers
+- **Problem:** Penpal fails + timeout fires → duplicate reloads
+- **Solution:** `handleConnectionFailed` is debounced (1s)
+
+### C. Successful Connection
+- **Problem:** Counter keeps growing even after success
+- **Solution:** `useEffect` resets `reloadCountRef` when `isFrameReady`
+
+### D. Branch Switching
+- **Problem:** Stale reload timers when switching branches
+- **Solution:** Component remounts on branch change, timers cleaned via closure
 
 ## Testing Strategy
 
 ### Manual Testing Scenarios
 
-1. **Slow network simulation**
-   - Throttle network to 3G
-   - Verify progressive retries and eventual success
+1. **Slow network**
+   - Throttle to 3G
+   - Verify reload with increasing delays (2s, 3s, 4s...)
 
 2. **Complete network failure**
-   - Disconnect network entirely
-   - Verify proper error handling and fatal error state
+   - Disconnect network
+   - Verify continuous retry attempts
 
 3. **Intermittent connection**
-   - Toggle network on/off during retries
-   - Verify state resets on success
+   - Toggle network on/off
+   - Verify counter resets on success
 
-4. **Branch switching during retry**
-   - Switch branches while retries are in progress
-   - Verify cleanup and state reset
+4. **Manual reload**
+   - Call `frameData.view.reload()`
+   - Verify immediate reload, no backoff
 
-5. **Rapid iframe reloads**
-   - Manually trigger multiple reloads quickly
-   - Verify no race conditions or duplicate retries
-
-### Automated Testing (Future)
-
-```typescript
-describe('Iframe Refresh System', () => {
-  it('should retry Penpal connection 3 times before iframe reload', () => {});
-  it('should schedule iframe reload with exponential backoff', () => {});
-  it('should reset counters on successful connection', () => {});
-  it('should show fatal error after max attempts', () => {});
-  it('should cleanup timers on unmount', () => {});
-});
-```
+5. **Branch switching**
+   - Switch branches during retry
+   - Verify clean state reset
 
 ## Implementation Checklist
 
-- [ ] Add `ConnectionState` interface and ref in `view.tsx`
-- [ ] Implement `scheduleIframeReload` function in `view.tsx`
-- [ ] Update `retrySetupPenpalConnection` to call `scheduleIframeReload`
-- [ ] Update success handler to reset connection state
-- [ ] Add reload attempt tracking in `index.tsx`
-- [ ] Update timeout logic to trigger auto-reload
-- [ ] Add progressive user feedback messages
-- [ ] Implement manual reload button in fatal error
-- [ ] Add state reset on branch change
-- [ ] Add comprehensive logging
-- [ ] Handle edge cases (race conditions, unmount, etc.)
-- [ ] Manual testing across all scenarios
-- [ ] Document final implementation
+### In `view.tsx`:
+- [ ] Remove all retry logic (`retryCount`, `maxRetries`, `baseDelay`)
+- [ ] Simplify `setupPenpalConnection` to single attempt
+- [ ] Call `onConnectionFailed()` on any error
+- [ ] Remove success counter reset (no counter in child anymore)
+- [ ] Keep `reloadIframe` prop for `reload()` method exposure
+
+### In `index.tsx`:
+- [ ] Add `reloadCountRef` state
+- [ ] Add `reloadBaseDelay` and `reloadIncrement` constants
+- [ ] Add `immediateReload()` function
+- [ ] Add `scheduleReload()` function with linear backoff
+- [ ] Add `handleConnectionFailed` debounced callback
+- [ ] Add reset logic on successful connection
+- [ ] Pass `reloadIframe={immediateReload}` to child
+- [ ] Pass `onConnectionFailed={handleConnectionFailed}` to child
+
+## Console Output Example
+
+```
+[Frame abc123] Scheduling iframe reload attempt 1 in 2000ms
+[Frame abc123] Reloading iframe
+[Penpal Parent abc123] Connection failed: timeout
+[Frame abc123] Scheduling iframe reload attempt 2 in 3000ms
+[Frame abc123] Reloading iframe
+[Penpal Parent abc123] Connection failed: timeout
+[Frame abc123] Scheduling iframe reload attempt 3 in 4000ms
+[Frame abc123] Reloading iframe
+[Penpal Parent abc123] Connection established
+[Frame abc123] Connection established, resetting reload counter
+```
 
 ## References
 
 - Current implementation: `/Users/kietho/workplace/onlook/clones/web-blue/apps/web/client/src/app/project/[id]/_components/canvas/frame/`
-- Penpal connection: `view.tsx:98-180`
-- Timeout handling: `index.tsx:29-48`
-- Session manager: `/Users/kietho/workplace/onlook/clones/web-blue/apps/web/client/src/components/store/editor/sandbox/session.ts`
+- Parent component: `index.tsx` (FrameView)
+- Child component: `view.tsx` (FrameComponent)
+- Frame manager: `/Users/kietho/workplace/onlook/clones/web-blue/apps/web/client/src/components/store/editor/frames/manager.ts`
