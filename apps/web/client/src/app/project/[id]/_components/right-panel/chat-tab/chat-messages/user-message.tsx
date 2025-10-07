@@ -1,15 +1,25 @@
-import type { EditMessage } from '@/app/project/[id]/_hooks/use-chat';
-import { useEditorEngine } from '@/components/store/editor';
-import { ChatType, MessageCheckpointType, type ChatMessage, type GitMessageCheckpoint } from '@onlook/models';
+import React, { useEffect, useRef, useState } from 'react';
+import { nanoid } from 'nanoid';
+
+import type { ChatMessage, GitMessageCheckpoint } from '@onlook/models';
+import { ChatType, MessageCheckpointType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { nanoid } from 'nanoid';
-import React, { useEffect, useRef, useState } from 'react';
+
+import type { EditMessage } from '@/app/project/[id]/_hooks/use-chat';
+import { useEditorEngine } from '@/components/store/editor';
+import { restoreCheckpoint } from '@/components/store/editor/git';
 import { SentContextPill } from '../context-pills/sent-context-pill';
 import { MessageContent } from './message-content';
 import { MultiBranchRevertModal } from './multi-branch-revert-modal';
@@ -20,13 +30,15 @@ interface UserMessageProps {
 }
 
 export const getUserMessageContent = (message: ChatMessage) => {
-    return message.parts.map((part) => {
-        if (part.type === 'text') {
-            return part.text;
-        }
-        return '';
-    }).join('');
-}
+    return message.parts
+        .map((part) => {
+            if (part.type === 'text') {
+                return part.text;
+            }
+            return '';
+        })
+        .join('');
+};
 
 export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
@@ -38,9 +50,8 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
     const [isMultiBranchModalOpen, setIsMultiBranchModalOpen] = useState(false);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const gitCheckpoints = (message.metadata?.checkpoints?.filter(
-        (s) => s.type === MessageCheckpointType.GIT,
-    ) ?? []) as GitMessageCheckpoint[];
+    const gitCheckpoints =
+        message.metadata?.checkpoints?.filter((s) => s.type === MessageCheckpointType.GIT) ?? [];
 
     useEffect(() => {
         if (isEditing && textareaRef.current) {
@@ -84,60 +95,23 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
     };
 
     const handleRetry = async () => {
-        toast.promise(
-            onEditMessage(message.id, getUserMessageContent(message), ChatType.EDIT),
-            {
-                error: 'Failed to resubmit message',
-            }
-        )
+        toast.promise(onEditMessage(message.id, getUserMessageContent(message), ChatType.EDIT), {
+            error: 'Failed to resubmit message',
+        });
     };
 
     const sendMessage = async (newContent: string) => {
-        toast.promise(
-            onEditMessage(message.id, newContent, ChatType.EDIT),
-            {
-                loading: 'Editing message...',
-                success: 'Message resubmitted successfully',
-                error: 'Failed to resubmit message',
-            }
-        )
+        toast.promise(onEditMessage(message.id, newContent, ChatType.EDIT), {
+            loading: 'Editing message...',
+            success: 'Message resubmitted successfully',
+            error: 'Failed to resubmit message',
+        });
     };
 
     const handleRestoreSingleBranch = async (checkpoint: GitMessageCheckpoint) => {
-        try {
-            setIsRestoring(true);
-
-            const branchData = editorEngine.branches.getBranchDataById(checkpoint.branchId);
-            if (!branchData) {
-                toast.error('Branch not found');
-                return;
-            }
-
-            // Save current state before restoring
-            const saveResult = await branchData.sandbox.gitManager.createCommit('Save before restoring backup');
-            if (!saveResult.success) {
-                toast.warning('Failed to save before restoring backup');
-            }
-
-            // Restore to the specified commit
-            const restoreResult = await branchData.sandbox.gitManager.restoreToCommit(checkpoint.oid);
-
-            if (!restoreResult.success) {
-                throw new Error(restoreResult.error || 'Failed to restore commit');
-            }
-
-            const branchName = editorEngine.branches.getBranchById(checkpoint.branchId)?.name || checkpoint.branchId;
-            toast.success('Restored to backup!', {
-                description: `Branch "${branchName}" has been restored`,
-            });
-        } catch (error) {
-            console.error('Failed to restore checkpoint', error);
-            toast.error('Failed to restore checkpoint', {
-                description: error instanceof Error ? error.message : 'Unknown error',
-            });
-        } finally {
-            setIsRestoring(false);
-        }
+        setIsRestoring(true);
+        await restoreCheckpoint(checkpoint, editorEngine);
+        setIsRestoring(false);
     };
 
     const getBranchName = (branchId: string): string => {
@@ -152,7 +126,7 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
                     ref={textareaRef}
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
-                    className="text-small border-none resize-none px-0 mt-[-8px]"
+                    className="text-small mt-[-8px] resize-none border-none px-0"
                     rows={2}
                     onKeyDown={handleKeyDown}
                     onCompositionStart={() => setIsComposing(true)}
@@ -172,7 +146,7 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
 
     function renderButtons() {
         return (
-            <div className="absolute right-2 top-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 bg-background-primary">
+            <div className="bg-background-primary absolute top-2 right-2 z-10 flex gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
@@ -228,12 +202,12 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
     }
 
     return (
-        <div className="relative group w-full flex flex-row justify-end px-2" key={message.id}>
-            <div className="w-[90%] flex flex-col ml-8 p-2 rounded-lg shadow-sm rounded-br-none border-[0.5px] bg-background-primary relative">
+        <div className="group relative flex w-full flex-row justify-end px-2" key={message.id}>
+            <div className="bg-background-primary relative ml-8 flex w-[90%] flex-col rounded-lg rounded-br-none border-[0.5px] p-2 shadow-sm">
                 {!isEditing && renderButtons()}
-                <div className="h-6 relative">
-                    <div className="absolute top-1 left-0 right-0 flex flex-row justify-start items-center w-full overflow-auto pr-16">
-                        <div className="flex flex-row gap-3 text-micro text-foreground-secondary">
+                <div className="relative h-6">
+                    <div className="absolute top-1 right-0 left-0 flex w-full flex-row items-center justify-start overflow-auto pr-16">
+                        <div className="text-micro text-foreground-secondary flex flex-row gap-3">
                             {message.metadata?.context?.map((context) => (
                                 <SentContextPill key={nanoid()} context={context} />
                             ))}
@@ -254,46 +228,29 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
                 </div>
             </div>
             {gitCheckpoints.length > 0 && (
-                <div className="absolute left-2 top-1/2 -translate-y-1/2">
-                    {gitCheckpoints.length === 1 ? (
-                        <Tooltip>
+                <div className="absolute top-1/2 left-2 -translate-y-1/2">
+                    <Tooltip>
+                        <DropdownMenu>
                             <TooltipTrigger asChild>
-                                <button
-                                    className={cn(
-                                        'text-xs opacity-0 group-hover:opacity-100 hover:opacity-80 rounded-md p-2',
-                                        isRestoring ? 'opacity-100' : 'opacity-0',
-                                    )}
-                                    onClick={() => handleRestoreSingleBranch(gitCheckpoints[0]!)}
-                                    disabled={isRestoring}
-                                >
-                                    {isRestoring ? (
-                                        <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <Icons.Reset className="h-4 w-4" />
-                                    )}
-                                </button>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        className={cn(
+                                            'rounded-md p-2 text-xs opacity-0 group-hover:opacity-100 hover:opacity-80',
+                                            isRestoring ? 'opacity-100' : 'opacity-0',
+                                        )}
+                                        disabled={isRestoring}
+                                    >
+                                        {isRestoring ? (
+                                            <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <Icons.Reset className="h-4 w-4" />
+                                        )}
+                                    </button>
+                                </DropdownMenuTrigger>
                             </TooltipTrigger>
                             <TooltipContent side="top" sideOffset={5}>
-                                {isRestoring ? 'Restoring Checkpoint...' : `Restore ${getBranchName(gitCheckpoints[0]!.branchId)}`}
+                                {isRestoring ? 'Restoring...' : 'Restore Branch'}
                             </TooltipContent>
-                        </Tooltip>
-                    ) : (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button
-                                    className={cn(
-                                        'text-xs opacity-0 group-hover:opacity-100 hover:opacity-80 rounded-md p-2',
-                                        isRestoring ? 'opacity-100' : 'opacity-0',
-                                    )}
-                                    disabled={isRestoring}
-                                >
-                                    {isRestoring ? (
-                                        <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <Icons.Reset className="h-4 w-4" />
-                                    )}
-                                </button>
-                            </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" side="right">
                                 {gitCheckpoints.map((checkpoint) => (
                                     <DropdownMenuItem
@@ -303,13 +260,19 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
                                         {getBranchName(checkpoint.branchId)}
                                     </DropdownMenuItem>
                                 ))}
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => setIsMultiBranchModalOpen(true)}>
-                                    Select Multiple Branches...
-                                </DropdownMenuItem>
+                                {gitCheckpoints.length > 1 && (
+                                    <>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                            onClick={() => setIsMultiBranchModalOpen(true)}
+                                        >
+                                            Select Multiple Branches...
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
                             </DropdownMenuContent>
                         </DropdownMenu>
-                    )}
+                    </Tooltip>
                     <MultiBranchRevertModal
                         open={isMultiBranchModalOpen}
                         onOpenChange={setIsMultiBranchModalOpen}

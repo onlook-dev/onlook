@@ -7,8 +7,8 @@ import type { Branch, RouterConfig } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
+import { GitManager } from '../git';
 import { detectRouterConfig } from '../pages/helper';
-import { GitManager } from '../version/git';
 import { copyPreloadScriptToPublic, getLayoutPath as detectLayoutPath } from './preload-script';
 import { SessionManager } from './session';
 

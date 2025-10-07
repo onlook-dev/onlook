@@ -1,11 +1,11 @@
-import stripAnsi from 'strip-ansi';
 import { makeAutoObservable } from 'mobx';
+import stripAnsi from 'strip-ansi';
 
 import { SUPPORT_EMAIL } from '@onlook/constants';
 import { type GitCommit } from '@onlook/git';
 
-import type { SandboxManager } from '../sandbox';
 import { prepareCommitMessage, sanitizeCommitMessage } from '@/utils/git';
+import type { SandboxManager } from '../sandbox';
 
 export const ONLOOK_DISPLAY_NAME_NOTE_REF = 'refs/notes/onlook-display-name';
 
