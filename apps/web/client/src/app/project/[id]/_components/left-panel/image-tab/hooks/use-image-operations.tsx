@@ -4,6 +4,7 @@ import { sanitizeFilename } from '@onlook/utility';
 import { isImageFile } from '@onlook/utility/src/file';
 import path from 'path';
 import { useMemo, useState } from 'react';
+import { updateImageReferences } from '../utils/image-references';
 
 export const useImageOperations = (projectId: string, branchId: string, activeFolder: string, codeEditor?: CodeFileSystem) => {
     const [isUploading, setIsUploading] = useState(false);
@@ -63,6 +64,49 @@ export const useImageOperations = (projectId: string, branchId: string, activeFo
         const directory = path.dirname(oldPath);
         const sanitizedName = sanitizeFilename(newName);
         const newPath = path.join(directory, sanitizedName);
+
+        // Find all JS/TS files in the project
+        const allFiles = await codeEditor.listFiles('**/*');
+        const jsFiles = allFiles.filter(f => {
+            const ext = path.extname(f);
+            // Only process JS/TS/JSX/TSX files, skip test files and build dirs
+            return ['.js', '.jsx', '.ts', '.tsx'].includes(ext) &&
+                   !f.includes('node_modules') &&
+                   !f.includes('.next') &&
+                   !f.includes('dist') &&
+                   !f.endsWith('.test.ts') &&
+                   !f.endsWith('.test.tsx');
+        });
+
+        // Update references in parallel
+        const updatePromises: Promise<void>[] = [];
+        const oldFileName = path.basename(oldPath);
+
+        for (const file of jsFiles) {
+            const filePath = path.join('/', file);
+            updatePromises.push(
+                (async () => {
+                    try {
+                        const content = await codeEditor.readFile(filePath);
+                        if (typeof content !== 'string' || !content.includes(oldFileName)) {
+                            return;
+                        }
+
+                        const updatedContent = await updateImageReferences(content, oldPath, newPath);
+                        if (updatedContent !== content) {
+                            await codeEditor.writeFile(filePath, updatedContent);
+                        }
+                    } catch (error) {
+                        console.warn(`Failed to update references in ${filePath}:`, error);
+                    }
+                })()
+            );
+        }
+
+        // Wait for all updates to complete
+        await Promise.all(updatePromises);
+
+        // Finally, rename the actual image file
         await codeEditor.moveFile(oldPath, newPath);
     };
 
