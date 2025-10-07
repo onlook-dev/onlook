@@ -1,5 +1,4 @@
 import { ONLOOK_CACHE_DIRECTORY, ONLOOK_PRELOAD_SCRIPT_FILE } from '@onlook/constants';
-import type { TemplateNode } from '@onlook/models';
 import { RouterType } from '@onlook/models';
 import {
     addOidsToAst,
@@ -14,25 +13,29 @@ import { isRootLayoutFile, pathsEqual } from '@onlook/utility';
 import debounce from 'lodash.debounce';
 
 import { FileSystem } from './fs';
+import {
+    clearIndexCache,
+    getIndexFromCache,
+    getOrLoadIndex,
+    saveIndexToCache,
+    type JsxElementMetadata,
+} from './index-cache';
 
-export interface JsxElementMetadata extends TemplateNode {
-    oid: string;
-    code: string;
-}
+export type { JsxElementMetadata } from './index-cache';
 
 export interface CodeEditorOptions {
     routerType?: RouterType;
 }
 
 export class CodeFileSystem extends FileSystem {
+    private projectId: string;
     private branchId: string;
     private options: Required<CodeEditorOptions>;
     private indexPath = `${ONLOOK_CACHE_DIRECTORY}/index.json`;
-    private memoryIndex: Record<string, JsxElementMetadata> | null = null;
-    private indexLoaded = false;
 
     constructor(projectId: string, branchId: string, options: CodeEditorOptions = {}) {
         super(`/${projectId}/${branchId}`);
+        this.projectId = projectId;
         this.branchId = branchId;
         this.options = {
             routerType: options.routerType ?? RouterType.APP,
@@ -228,27 +231,11 @@ export class CodeFileSystem extends FileSystem {
     }
 
     private async loadIndex(): Promise<Record<string, JsxElementMetadata>> {
-        if (this.memoryIndex !== null) {
-            return this.memoryIndex;
-        }
-
-        if (!this.indexLoaded) {
-            try {
-                const content = await this.readFile(this.indexPath);
-                this.memoryIndex = JSON.parse(content as string);
-            } catch (error) {
-                console.warn(`[CodeEditorApi] Failed to load index from ${this.indexPath}, error: ${error}`);
-                this.memoryIndex = {};
-            }
-            this.indexLoaded = true;
-        }
-
-        return this.memoryIndex!;
+        return getOrLoadIndex(this.getCacheKey(), this.indexPath, (path) => this.readFile(path));
     }
 
     private async saveIndex(index: Record<string, JsxElementMetadata>): Promise<void> {
-        this.memoryIndex = { ...index };
-        this.indexLoaded = true;
+        saveIndexToCache(this.getCacheKey(), index);
         void this.debouncedSaveIndexToFile();
     }
 
@@ -258,7 +245,10 @@ export class CodeFileSystem extends FileSystem {
         } catch {
             console.warn(`[CodeEditorApi] Failed to create ${ONLOOK_CACHE_DIRECTORY} directory`);
         }
-        await super.writeFile(this.indexPath, JSON.stringify(this.memoryIndex));
+        const index = getIndexFromCache(this.getCacheKey());
+        if (index) {
+            await super.writeFile(this.indexPath, JSON.stringify(index));
+        }
     }
 
     private debouncedSaveIndexToFile = debounce(this.undobounceSaveIndexToFile, 1000);
@@ -272,11 +262,15 @@ export class CodeFileSystem extends FileSystem {
     }
 
     async cleanup(): Promise<void> {
-        if (this.memoryIndex) {
+        const cacheKey = this.getCacheKey();
+        if (getIndexFromCache(cacheKey)) {
             await this.undobounceSaveIndexToFile();
         }
 
-        this.memoryIndex = null;
-        this.indexLoaded = false;
+        clearIndexCache(cacheKey);
+    }
+
+    private getCacheKey(): string {
+        return `${this.projectId}/${this.branchId}`;
     }
 }

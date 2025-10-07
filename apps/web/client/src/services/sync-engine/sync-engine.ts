@@ -52,8 +52,6 @@ export class CodeProviderSync {
         try {
             await this.pullFromSandbox();
             await this.setupWatching();
-            // Push any locally modified files (with OIDs) back to sandbox
-            void this.pushModifiedFilesToSandbox();
         } catch (error) {
             this.isRunning = false;
             throw error;
