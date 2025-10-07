@@ -100,6 +100,13 @@ export function getHydratedUserMessage(
         prompt += branchPrompt;
     }
 
+    if (images.length > 0) {
+        const imageList = images
+            .map((img, idx) => `${idx + 1}. ${img.displayName} (ID: ${img.id || 'unknown'})`)
+            .join('\n');
+        prompt += wrapXml('available-images', imageList);
+    }
+
     const textContent = parts
         .filter((p) => p.type === 'text')
         .map((p) => p.text)

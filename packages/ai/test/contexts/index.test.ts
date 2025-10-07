@@ -1,5 +1,5 @@
-import { 
-    MessageContextType, 
+import {
+    MessageContextType,
     type MessageContext,
     type FileMessageContext,
     type HighlightMessageContext,
@@ -10,9 +10,10 @@ import {
     type Branch,
 } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
-import { 
-    getContextPrompt, 
-    getContextLabel, 
+import { v4 as uuidv4 } from 'uuid';
+import {
+    getContextPrompt,
+    getContextLabel,
     getContextClass,
     FileContext,
     HighlightContext,
@@ -73,6 +74,7 @@ describe('Context Index', () => {
             content: 'data:image/png;base64,test-data',
             displayName: 'screenshot.png',
             mimeType: 'image/png',
+            id: uuidv4(),
         } as ImageMessageContext,
         
         agentRule: {

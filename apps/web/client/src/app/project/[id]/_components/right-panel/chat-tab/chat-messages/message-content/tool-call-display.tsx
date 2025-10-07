@@ -217,6 +217,7 @@ export const ToolCallDisplay = ({
         );
     }
 
+
     return (
         <ToolCallSimple
             toolPart={toolPart}

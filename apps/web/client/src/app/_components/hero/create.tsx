@@ -19,6 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 const SAVED_INPUT_KEY = 'create-input';
 interface CreateInputContext {
@@ -200,13 +201,14 @@ export const Create = observer(({
                 content: base64,
                 displayName: file.name,
                 mimeType: file.type,
+                id: uuidv4(),
             };
         } catch (error) {
             console.error('Error reading file:', error);
             return null;
         }
     };
-
+    
     const handleDragStateChange = (isDragging: boolean, e: React.DragEvent) => {
         const hasImage =
             e.dataTransfer.types.length > 0 &&

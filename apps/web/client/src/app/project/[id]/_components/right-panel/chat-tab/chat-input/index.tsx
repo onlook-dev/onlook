@@ -17,6 +17,7 @@ import { compressImageInBrowser } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { validateImageLimit } from '../context-pills/helpers';
 import { InputContextPills } from '../context-pills/input-context-pills';
 import { type SuggestionsRef } from '../suggestions';
@@ -206,6 +207,7 @@ export const ChatInput = observer(({
             const compressedImage = await compressImageInBrowser(file);
             const base64URL = compressedImage ?? (event.target?.result as string);
             const contextImage: ImageMessageContext = {
+                id: uuidv4(),
                 type: MessageContextType.IMAGE,
                 content: base64URL,
                 mimeType: file.type,
@@ -258,6 +260,7 @@ export const ChatInput = observer(({
             }
 
             const contextImage: ImageMessageContext = {
+                id: uuidv4(),
                 type: MessageContextType.IMAGE,
                 content: screenshotData,
                 mimeType: mimeType,
