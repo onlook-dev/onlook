@@ -36,7 +36,8 @@ const SystemFont = observer(() => {
                                 showAddButton={false}
                                 isDefault={font.id === fontManager.defaultFont}
                                 onRemoveFont={() => fontManager.removeFont(font)}
-                                onSetFont={() => fontManager.setDefaultFont(font)}
+                                onSetDefault={() => fontManager.setDefaultFont(font)}
+                                onClearDefault={() => fontManager.clearDefaultFont()}
                             />
                         </div>
                     </div>

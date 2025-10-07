@@ -209,6 +209,64 @@ export const updateDefaultFontInRootLayout = async (
 }
 
 /**
+ * Clears the default font from the layout file by removing font className from body
+ */
+export const clearDefaultFontFromRootLayout = async (
+    fontId: string,
+    editorEngine: EditorEngine,
+): Promise<boolean> => {
+    try {
+        const context = await getLayoutContext(editorEngine);
+        if (!context) return false;
+        const { layoutPath } = context;
+
+        const sandbox = editorEngine.activeSandbox;
+        const file = await sandbox.readFile(layoutPath);
+        if (typeof file !== 'string') return false;
+
+        const content = file;
+        const ast = getAstFromContent(content);
+        if (!ast) return false;
+
+        let hasUpdated = false;
+        traverse(ast, {
+            JSXOpeningElement: (path) => {
+                if (!t.isJSXIdentifier(path.node.name)) return;
+                if (path.node.name.name !== 'body') return;
+
+                const classNameAttr = path.node.attributes.find(
+                    (attr): attr is T.JSXAttribute =>
+                        t.isJSXAttribute(attr) &&
+                        t.isJSXIdentifier(attr.name) &&
+                        attr.name.name === 'className',
+                );
+
+                if (!classNameAttr) return;
+
+                const updated = removeFontsFromClassName(classNameAttr, {
+                    fontIds: [fontId],
+                });
+
+                if (updated) {
+                    hasUpdated = true;
+                }
+            },
+        });
+
+        if (hasUpdated) {
+            const { code } = generate(ast);
+            await editorEngine.activeSandbox.writeFile(layoutPath, code);
+            return true;
+        }
+
+        return false;
+    } catch (error) {
+        console.error('Error clearing default font from layout:', error);
+        return false;
+    }
+}
+
+/**
  * Gets the current default font from the project
  */
 export const getCurrentDefaultFont = async (

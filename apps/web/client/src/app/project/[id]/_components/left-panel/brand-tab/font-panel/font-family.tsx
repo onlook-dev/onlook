@@ -1,10 +1,9 @@
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
-    DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuTrigger,
+    DropdownMenuTrigger
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
@@ -27,7 +26,8 @@ export interface FontFamilyProps {
     variants: string[];
     onRemoveFont?: () => void;
     onAddFont?: () => void;
-    onSetFont?: () => void;
+    onSetDefault?: () => void;
+    onClearDefault?: () => void;
     showDropdown?: boolean;
     showAddButton?: boolean; // New property to control Add button visibility
     isDefault?: boolean;
@@ -38,7 +38,8 @@ export const FontFamily = ({
     variants = [],
     onAddFont,
     onRemoveFont,
-    onSetFont,
+    onSetDefault,
+    onClearDefault,
     showDropdown = false,
     showAddButton = true,
     isDefault = false,
@@ -46,7 +47,12 @@ export const FontFamily = ({
     const [expanded, setExpanded] = useState(false);
 
     const handleToggleDefault = () => {
-        onSetFont?.();
+        console.log('handleToggleDefault', isDefault);
+        if (isDefault) {
+            onClearDefault?.();
+        } else {
+            onSetDefault?.();
+        }
     };
 
     return (
@@ -94,13 +100,13 @@ export const FontFamily = ({
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="min-w-fit">
-                                <DropdownMenuCheckboxItem
-                                    checked={isDefault}
-                                    onCheckedChange={handleToggleDefault}
+                                <DropdownMenuItem
+                                    onClick={handleToggleDefault}
                                     className="flex items-center pr-2 cursor-pointer"
                                 >
-                                    <span>Set as default font</span>
-                                </DropdownMenuCheckboxItem>
+                                    <Icons.Check className={cn("h-4 w-4 mr-2", isDefault ? "opacity-100" : "opacity-0")} />
+                                    {isDefault ? <span>Unset default font</span> : <span>Set as default font</span>}
+                                </DropdownMenuItem>
                                 <DropdownMenuItem
                                     className="flex items-center"
                                     onClick={() => onRemoveFont?.()}
