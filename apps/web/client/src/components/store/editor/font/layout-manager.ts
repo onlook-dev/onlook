@@ -91,8 +91,10 @@ export const removeFontVariableFromRootLayout = async (
 
         if (elementsFound) {
             for (const classNameAttr of classNameAttrs) {
+                // Remove both font variable (e.g., ${fontName.variable}) and font class (e.g., font-inter)
+                // Pass both camelCase name and original fontId to handle both cases
                 const updated = removeFontsFromClassName(classNameAttr, {
-                    fontIds: [fontName],
+                    fontIds: [fontName, fontId],
                 });
                 if (updated) {
                     hasUpdated = true;

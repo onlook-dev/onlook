@@ -50,7 +50,6 @@ export class SearchReplaceEditTool extends ClientTool {
         }
     }
 
-
     static getLabel(input?: z.infer<typeof SearchReplaceEditTool.parameters>): string {
         if (input?.file_path) {
             return 'Editing ' + (input.file_path.split('/').pop() || '');

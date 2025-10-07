@@ -5,7 +5,7 @@ import type { Font } from '@onlook/models/assets';
 import { generate } from '@onlook/parser';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
-import { addFontToConfig, ensureFontConfigFileExists, getFontConfigPath, readFontConfigFile, removeFontFromConfig, scanExistingFonts, scanFontConfig } from './font-config-manager';
+import { addFontToConfig, ensureFontConfigFileExists, getFontConfigPath, readFontConfigFile, removeFontFromConfig, scanExistingFonts, scanFontConfig } from './font-config';
 import { FontSearchManager } from './font-search-manager';
 import { uploadFonts } from './font-upload-manager';
 import { addFontVariableToRootLayout, getCurrentDefaultFont, removeFontVariableFromRootLayout, updateDefaultFontInRootLayout, } from './layout-manager';
@@ -146,6 +146,12 @@ export class FontManager {
                 if (font.id === this._defaultFont) {
                     this._defaultFont = null;
                 }
+
+                // Remove font variable and font class from layout file
+                await removeFontVariableFromRootLayout(font.id, this.editorEngine);
+
+                // Remove font from Tailwind config
+                await removeFontFromTailwindConfig(font, this.editorEngine.activeSandbox);
 
                 return result;
             }
