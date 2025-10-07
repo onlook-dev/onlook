@@ -214,8 +214,11 @@ const FontPanel = observer(() => {
                                                     onRemoveFont={() =>
                                                         fontManager.removeFont(font)
                                                     }
-                                                    onSetFont={() =>
+                                                    onSetDefault={() =>
                                                         fontManager.setDefaultFont(font)
+                                                    }
+                                                    onClearDefault={() =>
+                                                        fontManager.clearDefaultFont()
                                                     }
                                                 />
                                             </div>

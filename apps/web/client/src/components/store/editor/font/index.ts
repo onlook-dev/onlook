@@ -5,10 +5,10 @@ import type { Font } from '@onlook/models/assets';
 import { generate } from '@onlook/parser';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
-import { addFontToConfig, ensureFontConfigFileExists, getFontConfigPath, readFontConfigFile, removeFontFromConfig, scanExistingFonts, scanFontConfig } from './font-config-manager';
+import { addFontToConfig, ensureFontConfigFileExists, getFontConfigPath, readFontConfigFile, removeFontFromConfig, scanExistingFonts, scanFontConfig } from './font-config';
 import { FontSearchManager } from './font-search-manager';
 import { uploadFonts } from './font-upload-manager';
-import { addFontVariableToRootLayout, getCurrentDefaultFont, removeFontVariableFromRootLayout, updateDefaultFontInRootLayout, } from './layout-manager';
+import { addFontVariableToRootLayout, clearDefaultFontFromRootLayout, getCurrentDefaultFont, removeFontVariableFromRootLayout, updateDefaultFontInRootLayout, } from './layout-manager';
 import {
     addFontToTailwindConfig,
     ensureTailwindConfigExists,
@@ -147,6 +147,12 @@ export class FontManager {
                     this._defaultFont = null;
                 }
 
+                // Remove font variable and font class from layout file
+                await removeFontVariableFromRootLayout(font.id, this.editorEngine);
+
+                // Remove font from Tailwind config
+                await removeFontFromTailwindConfig(font, this.editorEngine.activeSandbox);
+
                 return result;
             }
             return false;
@@ -172,6 +178,33 @@ export class FontManager {
             return true;
         } catch (error) {
             console.error('Error setting default font:', error);
+            return false;
+        }
+    }
+
+    async clearDefaultFont(): Promise<boolean> {
+        try {
+            if (!this._defaultFont) {
+                return true; // Already no default font
+            }
+
+            const currentDefaultFontId = this._defaultFont;
+            const success = await clearDefaultFontFromRootLayout(currentDefaultFontId, this.editorEngine);
+
+            if (success) {
+                this._defaultFont = null;
+
+                // Reload all views after a delay
+                setTimeout(async () => {
+                    await this.editorEngine.frames.reloadAllViews();
+                }, 500);
+
+                return true;
+            }
+
+            return false;
+        } catch (error) {
+            console.error('Error clearing default font:', error);
             return false;
         }
     }
