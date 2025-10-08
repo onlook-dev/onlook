@@ -376,21 +376,26 @@ export class FileSystem {
                 const timeout = setTimeout(async () => {
                     const fullPath = path.join(this.basePath, filePath);
 
+                    // Log raw event from Node's fs.watch
+                    console.log(`[FileSystem] 🟣 RAW FS.WATCH EVENT: eventType="${eventType}", filePath="${filePath}", watched=${watchedPaths.has(fullPath)}, timestamp=${Date.now()}`);
+
                     // For rename events, check if the file exists to determine the actual event type
                     if (eventType === 'rename') {
                         try {
                             const stats = await this.fs!.promises.stat(fullPath);
+                            console.log(`[FileSystem] ✅ STAT SUCCESS: path="${filePath}", isDir=${stats.isDirectory()}, size=${stats.size}`);
 
                             // File exists - determine if it's create or update
                             if (watchedPaths.has(fullPath)) {
                                 // Path was already being watched, so it's an update
+                                console.log(`[FileSystem] 🔄 EMITTING UPDATE: path="${filePath}"`);
                                 callback({
                                     type: 'update',
                                     path: filePath,
                                 });
                             } else {
                                 // New path, it's a create
-                                console.log(`[FileSystem] Detected create for ${filePath}`);
+                                console.log(`[FileSystem] ➕ EMITTING CREATE: path="${filePath}"`);
                                 callback({
                                     type: 'create',
                                     path: filePath,
@@ -403,7 +408,8 @@ export class FileSystem {
                             }
                         } catch (error) {
                             // File doesn't exist, it was deleted
-                            console.log(`[FileSystem] Detected delete for ${filePath}`);
+                            console.log(`[FileSystem] ❌ STAT FAILED: path="${filePath}", error="${error instanceof Error ? error.message : String(error)}"`);
+                            console.log(`[FileSystem] ➖ EMITTING DELETE: path="${filePath}"`);
                             callback({
                                 type: 'delete',
                                 path: filePath,
@@ -414,6 +420,7 @@ export class FileSystem {
                         }
                     } else {
                         // Change event is an update
+                        console.log(`[FileSystem] 🔄 EMITTING UPDATE (change event): path="${filePath}"`);
                         callback({
                             type: 'update',
                             path: filePath,

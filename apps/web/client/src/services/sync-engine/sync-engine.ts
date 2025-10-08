@@ -16,6 +16,9 @@ export interface SyncConfig {
 
 const DEFAULT_EXCLUDES = ['node_modules', '.git', '.next', 'dist', 'build', '.turbo'];
 
+// Global set of sandbox IDs that should not sync
+const pausedSandboxes = new Set<string>();
+
 export async function hashContent(content: string | Uint8Array): Promise<string> {
     const encoder = new TextEncoder();
     const data = typeof content === 'string' ? encoder.encode(content) : new Uint8Array(content);
@@ -31,12 +34,20 @@ export class CodeProviderSync {
     private readonly excludes: string[];
     private readonly excludePatterns: string[];
     private fileHashes = new Map<string, string>();
+    private readonly instanceId: string;
+    private readonly sandboxId: string;
 
     constructor(
         private provider: Provider,
         private fs: CodeFileSystem,
+        sandboxId: string,
         private config: SyncConfig = { include: [], exclude: [] },
     ) {
+        // Generate unique instance ID for debugging
+        this.instanceId = Math.random().toString(36).substring(7);
+        this.sandboxId = sandboxId;
+        console.log(`[Sync:${this.instanceId}] 🆕 Creating new sync engine instance for sandbox ${sandboxId}`);
+
         // Compute excludes once
         this.excludes = [...DEFAULT_EXCLUDES, ...(this.config.exclude ?? [])];
         this.excludePatterns = this.excludes.map((dir) => `${dir}/**`);
@@ -75,6 +86,32 @@ export class CodeProviderSync {
 
         // Clear file hashes
         this.fileHashes.clear();
+    }
+
+    /**
+     * Pause syncing to prevent event processing during bulk operations like git restore.
+     * Watchers remain active but events are ignored.
+     */
+    pause(reason = 'manual'): void {
+        console.log(`[Sync:${this.instanceId}] ⏸️  Pausing sandbox ${this.sandboxId} (reason: ${reason})...`);
+        pausedSandboxes.add(this.sandboxId);
+    }
+
+    /**
+     * Resume syncing and optionally re-sync from sandbox to catch any changes that happened while paused.
+     */
+    async resume(resyncFromSandbox = false, reason = 'manual'): Promise<void> {
+        console.log(`[Sync:${this.instanceId}] ▶️  Resuming sandbox ${this.sandboxId} (reason: ${reason})...`);
+        pausedSandboxes.delete(this.sandboxId);
+
+        if (resyncFromSandbox && this.isRunning) {
+            console.log(`[Sync:${this.instanceId}] 🔄 Re-syncing from sandbox after pause...`);
+            await this.pullFromSandbox();
+        }
+    }
+
+    private get isPaused(): boolean {
+        return pausedSandboxes.has(this.sandboxId);
     }
 
     private async pullFromSandbox(): Promise<void> {
@@ -261,6 +298,15 @@ export class CodeProviderSync {
                     excludes: this.excludePatterns,
                 },
                 onFileChange: async (event) => {
+                    // Log raw event from sandbox watcher
+                    console.log(`[Sync:${this.instanceId}] 🔵 SANDBOX EVENT: type="${event.type}", paths=[${event.paths.join(', ')}], pathCount=${event.paths.length}, paused=${this.isPaused}`);
+
+                    // Skip processing if sync is paused
+                    if (this.isPaused) {
+                        console.log(`[Sync:${this.instanceId}] ⏭️  Skipping event (paused): type="${event.type}"`);
+                        return;
+                    }
+
                     // Process based on event type
                     if (event.type === 'change' || event.type === 'add') {
                         // Check if this is a rename (change event with 2 paths)
@@ -413,8 +459,10 @@ export class CodeProviderSync {
                                             const existingHash = this.fileHashes.get(localPath);
 
                                             if (newHash !== existingHash) {
+                                                console.log(`[Sync] 📥 SANDBOX→LOCAL WRITE: path="${localPath}", hashChanged=${!existingHash ? 'new' : 'yes'}, timestamp=${Date.now()}`);
                                                 await this.fs.writeFile(localPath, file.content);
                                                 this.fileHashes.set(localPath, newHash);
+                                                console.log(`[Sync] ✅ WRITE COMPLETE: path="${localPath}", timestamp=${Date.now()}`);
                                             } else {
                                                 console.debug(
                                                     `[Sync] Skipping ${localPath} - content unchanged`,
@@ -485,6 +533,15 @@ export class CodeProviderSync {
         this.localWatcher = this.fs.watchDirectory('/', async (event) => {
             const { path, type } = event;
 
+            // Log raw event from local FS watcher
+            console.log(`[Sync] 🟠 LOCAL FS EVENT: type="${type}", path="${path}", timestamp=${Date.now()}, paused=${this.isPaused}`);
+
+            // Skip processing if sync is paused
+            if (this.isPaused) {
+                console.log(`[Sync] ⏭️  Skipping local event (paused): type="${type}"`);
+                return;
+            }
+
             // Check if file should be synced
             // Need to remove leading / for sandbox path
             const sandboxPath = path.startsWith('/') ? path.substring(1) : path;
@@ -532,6 +589,10 @@ export class CodeProviderSync {
                     case 'delete': {
                         // Always attempt to sync local deletions to sandbox
                         // The user initiated this deletion locally, so it should be reflected in the sandbox
+
+                        const hasHash = this.fileHashes.has(path);
+                        const hash = this.fileHashes.get(path);
+                        console.log(`[Sync] 🔴 LOCAL→SANDBOX DELETE: path="${path}", hasHash=${hasHash}, hash="${hash?.substring(0, 8)}...", timestamp=${Date.now()}`);
 
                         try {
                             await this.provider.deleteFiles({

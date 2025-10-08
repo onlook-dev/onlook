@@ -14,7 +14,9 @@ export const ONLOOK_DEV_PRELOAD_SCRIPT_PATH = `public/${ONLOOK_PRELOAD_SCRIPT_FI
 const ONLOOK_PROD_PRELOAD_SCRIPT_SRC =
     'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@d3887f2/apps/web/client/public/onlook-preload-script.js';
 // Officially exported src to load from local or CDN
-export const ONLOOK_PRELOAD_SCRIPT_SRC = isDev ? ONLOOK_DEV_PRELOAD_SCRIPT_SRC : ONLOOK_PROD_PRELOAD_SCRIPT_SRC;
+export const ONLOOK_PRELOAD_SCRIPT_SRC = isDev
+    ? ONLOOK_DEV_PRELOAD_SCRIPT_SRC
+    : ONLOOK_PROD_PRELOAD_SCRIPT_SRC;
 
 export const DEPRECATED_PRELOAD_SCRIPT_SRCS = [
     'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/client/public/onlook-preload-script.js',
@@ -31,6 +33,7 @@ export const EXCLUDED_SYNC_PATHS = [
     CUSTOM_OUTPUT_DIR,
     ONLOOK_CACHE_DIRECTORY,
     ONLOOK_DEV_PRELOAD_SCRIPT_PATH,
+    '.git',
 ];
 
 export const IGNORED_UPLOAD_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, CUSTOM_OUTPUT_DIR];

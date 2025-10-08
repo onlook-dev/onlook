@@ -16,10 +16,14 @@ export class SandboxManager {
     readonly session: SessionManager;
     readonly gitManager: GitManager;
     private providerReactionDisposer?: () => void;
-    private sync: CodeProviderSync | null = null;
+    private _sync: CodeProviderSync | null = null;
     preloadScriptInjected: boolean = false;
     preloadScriptLoading: boolean = false;
     routerConfig: RouterConfig | null = null;
+
+    get sync(): CodeProviderSync | null {
+        return this._sync;
+    }
 
     constructor(
         private branch: Branch,
@@ -40,10 +44,10 @@ export class SandboxManager {
                     await this.initializeSyncEngine(provider);
                     // Initialize git after provider is ready
                     await this.gitManager.init();
-                } else if (this.sync) {
+                } else if (this._sync) {
                     // If the provider is null, stop the sync engine
-                    this.sync.stop();
-                    this.sync = null;
+                    this._sync.stop();
+                    this._sync = null;
                 }
             },
         );
@@ -61,16 +65,16 @@ export class SandboxManager {
     }
 
     async initializeSyncEngine(provider: Provider) {
-        if (this.sync) {
-            this.sync?.stop();
-            this.sync = null;
+        if (this._sync) {
+            this._sync?.stop();
+            this._sync = null;
         }
 
-        this.sync = new CodeProviderSync(provider, this.fs, {
+        this._sync = new CodeProviderSync(provider, this.fs, this.branch.id, {
             exclude: EXCLUDED_SYNC_PATHS,
         });
 
-        await this.sync.start();
+        await this._sync.start();
         await this.ensurePreloadScriptExists();
         await this.fs.rebuildIndex();
     }

@@ -111,6 +111,11 @@ export const VersionRow = observer(
         };
 
         const handleCheckout = async () => {
+            if (isCheckingOut) {
+                console.log('[Restore] Ignoring restore request - already in progress');
+                return;
+            }
+
             setIsCheckingOut(true);
 
             editorEngine.posthog.capture('versions_checkout_commit', {
