@@ -12,9 +12,9 @@ import { VersionRow, VersionRowType } from './version-row';
 
 export const Versions = observer(() => {
     const editorEngine = useEditorEngine();
-    const [selectedBranchId, setSelectedBranchId] = useState(editorEngine.branches.activeBranch.id);
     const [commitToRename, setCommitToRename] = useState<string | null>(null);
-
+    const [isCreatingBackup, setIsCreatingBackup] = useState(false);
+    const selectedBranchId = editorEngine.branches.activeBranch.id;
     const branchData = editorEngine.branches.getBranchDataById(selectedBranchId);
     const gitManager = branchData?.sandbox.gitManager;
     const commits = gitManager?.commits;
@@ -52,61 +52,67 @@ export const Versions = observer(() => {
     );
 
     const handleNewBackup = async () => {
-        if (!gitManager) {
-            toast.error('Git not initialized');
-            return;
-        }
+        try {
+            setIsCreatingBackup(true);
+            if (!gitManager) {
+                toast.error('Git not initialized');
+                return;
+            }
 
-        const result = await gitManager.createCommit();
-        if (!result.success) {
+            const result = await gitManager.createCommit();
+            if (!result.success) {
+                toast.error('Failed to create backup', {
+                    description: result.error || 'Unknown error',
+                });
+                return;
+            }
+
+            toast.success('Backup created successfully!');
+            editorEngine.posthog.capture('versions_create_commit_success');
+
+            const latestCommit = gitManager.commits?.[0];
+            if (!latestCommit) {
+                console.error('No latest commit found');
+                return;
+            }
+            setCommitToRename(latestCommit.oid);
+        } catch (error) {
             toast.error('Failed to create backup', {
-                description: result.error || 'Unknown error',
+                description: error instanceof Error ? error.message : 'Unknown error',
             });
-            return;
+        } finally {
+            setIsCreatingBackup(false);
         }
-
-        toast.success('Backup created successfully!');
-        editorEngine.posthog.capture('versions_create_commit_success');
-
-        const latestCommit = gitManager.commits?.[0];
-        if (!latestCommit) {
-            console.error('No latest commit found');
-            return;
-        }
-        setCommitToRename(latestCommit.oid);
     };
 
     return (
         <div className="flex flex-col text-sm">
-            <div className="flex flex-col gap-4 px-6 py-6">
-                <div className="flex flex-row items-center gap-3">
-                    <h2 className="text-lg">Versions</h2>
+            <div className="flex flex-row justify-center items-center gap-3 px-6 py-6">
+                <h2 className="text-lg">Backup Versions</h2>
 
-                    {isLoadingCommits && (
-                        <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
-                    )}
+                {isLoadingCommits && (
+                    <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
+                )}
 
-                    {/* Branch selector */}
-                    <Select value={selectedBranchId} onValueChange={setSelectedBranchId}>
-                        <SelectTrigger className="w-[180px] ml-auto">
-                            <SelectValue placeholder="Select branch" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {editorEngine.branches.allBranches.map((branch) => (
-                                <SelectItem key={branch.id} value={branch.id}>
-                                    {branch.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-
+                {/* Branch selector */}
+                <Select value={selectedBranchId} onValueChange={(value) => { editorEngine.branches.switchToBranch(value); }}>
+                    <SelectTrigger className="min-w-38 ml-auto">
+                        <SelectValue placeholder="Select branch" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {editorEngine.branches.allBranches.map((branch) => (
+                            <SelectItem key={branch.id} value={branch.id}>
+                                {branch.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
                 {gitManager && (
                     <Button
                         variant="outline"
-                        className="bg-background-secondary w-full rounded text-sm font-normal mt-2"
-                        size="sm"
+                        className="bg-background-secondary rounded text-sm font-normal "
                         onClick={handleNewBackup}
+                        disabled={isLoadingCommits}
                     >
                         <Icons.Plus className="mr-2 h-4 w-4" />
                         New backup
