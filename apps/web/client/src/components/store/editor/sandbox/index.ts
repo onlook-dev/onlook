@@ -41,8 +41,8 @@ export class SandboxManager {
                     // Initialize git after provider is ready
                     await this.gitManager.init();
                 } else if (this.sync) {
-                    // If the provider is null, stop the sync engine
-                    this.sync.stop();
+                    // If the provider is null, release the sync engine reference
+                    this.sync.release();
                     this.sync = null;
                 }
             },
@@ -62,11 +62,11 @@ export class SandboxManager {
 
     async initializeSyncEngine(provider: Provider) {
         if (this.sync) {
-            this.sync?.stop();
+            this.sync.release();
             this.sync = null;
         }
 
-        this.sync = new CodeProviderSync(provider, this.fs, {
+        this.sync = CodeProviderSync.getInstance(provider, this.fs, {
             exclude: EXCLUDED_SYNC_PATHS,
         });
 
@@ -115,6 +115,10 @@ export class SandboxManager {
 
     get errors() {
         return this.errorManager.errors;
+    }
+
+    get syncEngine() {
+        return this.sync;
     }
 
     async readFile(path: string): Promise<string | Uint8Array> {
@@ -201,7 +205,7 @@ export class SandboxManager {
     clear() {
         this.providerReactionDisposer?.();
         this.providerReactionDisposer = undefined;
-        this.sync?.stop();
+        this.sync?.release();
         this.sync = null;
         this.preloadScriptInjected = false;
         this.session.clear();

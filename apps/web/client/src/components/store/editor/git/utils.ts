@@ -1,5 +1,6 @@
 import type { GitMessageCheckpoint } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
+
 import type { EditorEngine } from '../engine';
 
 export const BACKUP_COMMIT_MESSAGE = 'Save before restoring backup';
@@ -43,7 +44,10 @@ export async function restoreCheckpoint(
             throw new Error(restoreResult.error || 'Failed to restore commit');
         }
 
-        const branchName = editorEngine.branches.getBranchById(targetBranchId)?.name || targetBranchId;
+        await branchData.sandbox.gitManager.listCommits();
+
+        const branchName =
+            editorEngine.branches.getBranchById(targetBranchId)?.name || targetBranchId;
         toast.success('Restored to backup!', {
             description: `Branch "${branchName}" has been restored`,
         });
