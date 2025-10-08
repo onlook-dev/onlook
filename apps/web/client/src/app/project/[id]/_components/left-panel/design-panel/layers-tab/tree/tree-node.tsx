@@ -2,13 +2,13 @@ import { useEditorEngine } from '@/components/store/editor';
 import { MouseAction } from '@onlook/models/editor';
 import type { DomElement, LayerNode } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
+import { NodeIcon } from '@onlook/ui/node-icon';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { memo, useCallback, useMemo, useRef } from 'react';
 import type { NodeApi } from 'react-arborist';
-import { NodeIcon } from './node-icon';
 
 const isComponentAncestor = (node: NodeApi<LayerNode>): boolean => {
     if (!node) {

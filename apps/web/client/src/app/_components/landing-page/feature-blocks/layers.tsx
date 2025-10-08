@@ -1,7 +1,7 @@
 import { Icons } from '@onlook/ui/icons';
+import { NodeIcon } from '@onlook/ui/node-icon';
 import { cn } from '@onlook/ui/utils';
 import React from 'react';
-import { NodeIcon } from '../../../project/[id]/_components/design-panel/layers-tab/tree/node-icon';
 import { Illustrations } from '../illustrations';
 
 // Mock data for layers with nested structure

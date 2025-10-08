@@ -99,13 +99,11 @@ export const DesignPanel = observer(() => {
 
     return (
         <div
-            className={cn(
-                'flex h-full',
-            )}
+            className="flex h-full overflow-auto"
             onMouseLeave={handleMouseLeave}
         >
             {/* Left sidebar with tabs */}
-            <div className="w-20 bg-background-onlook/60 backdrop-blur-xl flex flex-col items-center py-0.5 gap-2">
+            <div className="w-20 flex flex-col items-center py-0.5 gap-2 bg-background-onlook/60 backdrop-blur-xl">
                 {tabs.map((tab) => (
                     <button
                         key={tab.value}

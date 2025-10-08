@@ -12,7 +12,7 @@ export const CodePanel = () => {
 
     return (
         <div
-            className={cn('flex h-full w-full transition-width duration-300 bg-background/95 group/panel border-[0.5px] backdrop-blur-xl shadow rounded-tr-xl',
+            className={cn('flex size-full transition-width duration-300 bg-background/95 group/panel border-[0.5px] backdrop-blur-xl shadow rounded-tr-xl overflow-hidden',
                 editorEngine.state.editorMode !== EditorMode.CODE && 'hidden'
             )}
         >

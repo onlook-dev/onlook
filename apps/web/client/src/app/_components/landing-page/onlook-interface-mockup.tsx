@@ -1,7 +1,7 @@
 import { Icons } from '@onlook/ui/icons';
+import { NodeIcon } from '@onlook/ui/node-icon';
 import { cn } from '@onlook/ui/utils';
 import React, { useState } from 'react';
-import { NodeIcon } from '../../project/[id]/_components/design-panel/layers-tab/tree/node-icon';
 import { DesignMockup, DesignMockupMobile } from './design-mockup/design-mockup';
 
 // Notes Component for Villainstagram

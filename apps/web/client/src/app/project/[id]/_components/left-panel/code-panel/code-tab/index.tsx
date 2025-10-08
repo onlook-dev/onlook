@@ -414,8 +414,9 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
         };
     }, []);
 
+
     return (
-        <div className="flex flex-col size-full flex-1 min-h-0">
+        <div className="flex flex-col size-full">
             <CodeControls
                 isDirty={hasUnsavedChanges}
                 currentPath={getCurrentPath()}
@@ -426,7 +427,7 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
                 isSidebarOpen={isSidebarOpen}
                 setIsSidebarOpen={setIsSidebarOpen}
             />
-            <div className="flex flex-1 min-h-0">
+            <div className="flex flex-1 overflow-auto min-h-0">
                 <motion.div
                     initial={false}
                     animate={{
@@ -437,7 +438,7 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
                         duration: 0.3,
                         ease: [0.4, 0.0, 0.2, 1]
                     }}
-                    className="flex-shrink-0 overflow-y-auto"
+                    className="flex-shrink-0 overflow-y-auto min-h-0"
                     style={{ minWidth: 0 }}>
                     <FileTree
                         onFileSelect={handleFileTreeSelect}

@@ -1,10 +1,8 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
 import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { SettingsModalWithProjects } from '@/components/ui/settings-modal/with-project';
 import { EditorAttributes } from '@onlook/constants';
-import { EditorMode } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { TooltipProvider } from '@onlook/ui/tooltip';
@@ -15,15 +13,13 @@ import { usePanelMeasurements } from '../_hooks/use-panel-measure';
 import { useStartProject } from '../_hooks/use-start-project';
 import { BottomBar } from './bottom-bar';
 import { Canvas } from './canvas';
-import { CodePanel } from './code-panel';
-import { DesignPanel } from './design-panel';
 import { EditorBar } from './editor-bar';
+import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
 
 export const Main = observer(() => {
     const router = useRouter();
-    const editorEngine = useEditorEngine();
     const { isProjectReady, error } = useStartProject();
     const leftPanelRef = useRef<HTMLDivElement | null>(null);
     const rightPanelRef = useRef<HTMLDivElement | null>(null);
@@ -93,7 +89,7 @@ export const Main = observer(() => {
                     ref={leftPanelRef}
                     className="absolute top-10 left-0 h-[calc(100%-40px)] z-50"
                 >
-                    {editorEngine.state.editorMode === EditorMode.DESIGN ? <DesignPanel /> : <CodePanel />}
+                    <LeftPanel />
                 </div>
                 {/* EditorBar anchored between panels */}
                 <div
@@ -126,6 +122,6 @@ export const Main = observer(() => {
             </div>
             <SettingsModalWithProjects />
             <SubscriptionModal />
-        </TooltipProvider>
+        </TooltipProvider >
     );
 });

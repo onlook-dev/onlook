@@ -102,6 +102,7 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
             }
             if (
                 editorEngine.state.editorMode === EditorMode.DESIGN ||
+                editorEngine.state.editorMode === EditorMode.CODE ||
                 ((editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
                     editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
                     editorEngine.state.editorMode === EditorMode.INSERT_IMAGE) &&
@@ -129,14 +130,14 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
     );
 
     async function handleDoubleClick(e: React.MouseEvent<HTMLDivElement>) {
-        if (editorEngine.state.editorMode !== EditorMode.DESIGN) {
+        if (editorEngine.state.editorMode === EditorMode.PREVIEW) {
             return;
         }
         await handleMouseEvent(e, MouseAction.DOUBLE_CLICK);
     }
 
     async function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
-        if (editorEngine.state.editorMode === EditorMode.DESIGN) {
+        if (editorEngine.state.editorMode === EditorMode.DESIGN || editorEngine.state.editorMode === EditorMode.CODE) {
             await handleMouseEvent(e, MouseAction.MOUSE_DOWN);
         } else if (
             editorEngine.state.editorMode === EditorMode.INSERT_DIV ||

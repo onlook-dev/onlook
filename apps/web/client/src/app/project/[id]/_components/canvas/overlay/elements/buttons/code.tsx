@@ -1,12 +1,12 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { EditorTabValue } from '@onlook/models';
+import { EditorMode } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 
 export const OverlayOpenCode = observer(({ isInputting }: { isInputting: boolean }) => {
     const editorEngine = useEditorEngine();
-    const isDevMode = editorEngine.state.rightPanelTab === EditorTabValue.CODE;
+    const isDevMode = editorEngine.state.editorMode === EditorMode.CODE;
     const oid = editorEngine.elements.selected[0]?.oid;
 
     if (isDevMode || isInputting || !oid) {

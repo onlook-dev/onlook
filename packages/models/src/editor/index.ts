@@ -14,11 +14,6 @@ export enum EditorMode {
     INSERT_IMAGE = 'insert-image',
 }
 
-export enum EditorTabValue {
-    CHAT = 'chat',
-    CODE = 'code',
-}
-
 export enum SettingsTabValue {
     SITE = 'site',
     DOMAIN = 'domain',

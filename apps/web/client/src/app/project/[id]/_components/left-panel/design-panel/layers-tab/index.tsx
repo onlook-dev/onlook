@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { type NodeApi, Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
-import { RightClickMenu } from '../../right-click-menu';
+import { RightClickMenu } from '../../../right-click-menu';
 import { TreeNode } from './tree/tree-node';
 import { TreeRow } from './tree/tree-row';
 

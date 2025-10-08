@@ -5,7 +5,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
 import { transKeys } from '@/i18n/keys';
 import type { ChatMessage, QueuedMessage } from '@onlook/models';
-import { ChatType, EditorTabValue, type ImageMessageContext } from '@onlook/models';
+import { ChatType, EditorMode, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -66,10 +66,10 @@ export const ChatInput = observer(({
     }, [isStreaming, messages]);
 
     useEffect(() => {
-        if (editorEngine.state.rightPanelTab === EditorTabValue.CHAT) {
+        if (editorEngine.state.editorMode === EditorMode.DESIGN || editorEngine.state.editorMode === EditorMode.CODE) {
             focusInput();
         }
-    }, [editorEngine.state.rightPanelTab]);
+    }, [editorEngine.state.editorMode]);
 
     useEffect(() => {
         const focusHandler = () => {

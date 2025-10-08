@@ -1,4 +1,4 @@
-import { EditorTabValue, type CodeNavigationTarget } from "@onlook/models";
+import { EditorMode, type CodeNavigationTarget } from "@onlook/models";
 import { makeAutoObservable } from "mobx";
 import type { EditorEngine } from "../engine";
 
@@ -54,7 +54,7 @@ export class IdeManager {
             this._codeNavigationOverride = target;
 
             // Switch to code tab
-            this.editorEngine.state.rightPanelTab = EditorTabValue.CODE;
+            this.editorEngine.state.editorMode = EditorMode.CODE;
         } catch (error) {
             console.error('[IdeManager] Error opening code block:', error);
         }

@@ -2,7 +2,6 @@ import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
 import type { ChatSettings } from '@onlook/models';
-import { EditorTabValue } from '@onlook/models';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -35,7 +34,6 @@ export const ChatPanelDropdown = observer(({
     const { data: userSettings } = api.user.settings.get.useQuery();
     const apiUtils = api.useUtils();
     const editorEngine = useEditorEngine();
-    const selectedTab = editorEngine.state.rightPanelTab;
 
     const debouncedUpdateSettings = useMemo(
         () => debounce((settings: Partial<ChatSettings>) => {
@@ -71,7 +69,7 @@ export const ChatPanelDropdown = observer(({
 
     return (
         <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild disabled={selectedTab !== EditorTabValue.CHAT}>
+            <DropdownMenuTrigger asChild>
                 <div className="flex items-center">{children}</div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="min-w-[220px]">

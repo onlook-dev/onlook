@@ -1,7 +1,7 @@
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store/editor';
 import { DefaultSettings } from '@onlook/constants';
-import { EditorMode, EditorTabValue } from '@onlook/models';
+import { EditorMode } from '@onlook/models';
 import type { ReactNode } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
@@ -88,17 +88,23 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     // AI
     useHotkeys(
         Hotkey.ADD_AI_CHAT.command,
-        () => (editorEngine.state.rightPanelTab = EditorTabValue.CHAT),
+        () => {
+            if (editorEngine.state.editorMode === EditorMode.PREVIEW) {
+                editorEngine.state.editorMode = EditorMode.DESIGN;
+            }
+            editorEngine.chat.focusChatInput();
+        }
     );
     useHotkeys(Hotkey.NEW_AI_CHAT.command, () => {
-        editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
+        editorEngine.state.editorMode = EditorMode.DESIGN;
         editorEngine.chat.conversation.startNewConversation();
     });
     useHotkeys(
         Hotkey.CHAT_MODE_TOGGLE.command,
         () => {
-            editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
-            // Trigger open chat mode menu
+            if (editorEngine.state.editorMode === EditorMode.PREVIEW) {
+                editorEngine.state.editorMode = EditorMode.DESIGN;
+            }            // Trigger open chat mode menu
             window.dispatchEvent(new CustomEvent('open-chat-mode-menu'));
         },
         { preventDefault: true },

@@ -5,7 +5,7 @@ import type { TailwindColor } from '@onlook/models';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { toNormalCase, type Color } from '@onlook/utility';
 import { useEffect, useState } from 'react';
-import { ColorPickerContent } from '../../../editor-bar/inputs/color-picker';
+import { ColorPickerContent } from '../../../../editor-bar/inputs/color-picker';
 import { ColorNameInput } from './color-name-input';
 
 export const ColorPopover = ({
