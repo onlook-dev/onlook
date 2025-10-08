@@ -27,13 +27,12 @@ export const addFontVariableToRootLayout = async (
         const context = await getLayoutContext(editorEngine);
         if (!context) return false;
 
-        const { layoutPath } = context;
+        const { layoutPath, targetElements } = context;
 
         const fontName = camelCase(fontId);
         let hasUpdated = false;
 
-        // Add font variable only to html element
-        const results = await traverseClassName(layoutPath, ['html'], editorEngine);
+        const results = await traverseClassName(layoutPath, targetElements, editorEngine);
         if (!results) return false;
         const { classNameAttrs, elementsFound, ast } = results;
 
@@ -73,70 +72,37 @@ export const removeFontVariableFromRootLayout = async (
     try {
         const context = await getLayoutContext(editorEngine);
         if (!context) return false;
-        const { layoutPath } = context;
+        const { layoutPath, targetElements } = context;
 
         let hasUpdated = false;
         const fontName = camelCase(fontId);
 
-        // Traverse both html and body elements in one pass
+        // Traverse the className attributes in the layout file
+        // and remove the font variable from the className attributes
         const results = await traverseClassName(
             layoutPath,
-            ['html', 'body'],
+            targetElements,
             editorEngine,
-            true, // Check all elements
+            true, // Should check all elements
         );
 
         if (!results) return false;
-        const { ast } = results;
+        const { classNameAttrs, elementsFound, ast } = results;
 
-        // We need to identify which className belongs to which element
-        // So let's traverse again to separate them
-        const sandbox = editorEngine.activeSandbox;
-        const file = await sandbox.readFile(layoutPath);
-        if (typeof file !== 'string') return false;
-
-        const content = file;
-        const workingAst = getAstFromContent(content);
-        if (!workingAst) return false;
-
-        traverse(workingAst, {
-            JSXOpeningElement: (path) => {
-                if (!t.isJSXIdentifier(path.node.name)) return;
-
-                const elementName = path.node.name.name;
-                if (elementName !== 'html' && elementName !== 'body') return;
-
-                let classNameAttr = path.node.attributes.find(
-                    (attr): attr is T.JSXAttribute =>
-                        t.isJSXAttribute(attr) &&
-                        t.isJSXIdentifier(attr.name) &&
-                        attr.name.name === 'className',
-                );
-
-                if (!classNameAttr) return;
-
-                let updated = false;
-                if (elementName === 'html') {
-                    // Remove font variable (e.g., ${fontName.variable}) from html
-                    updated = removeFontsFromClassName(classNameAttr, {
-                        fontIds: [fontName],
-                    });
-                } else if (elementName === 'body') {
-                    // Remove font class (e.g., font-inter) from body
-                    updated = removeFontsFromClassName(classNameAttr, {
-                        fontIds: [fontId],
-                    });
-                }
-
+        if (elementsFound) {
+            for (const classNameAttr of classNameAttrs) {
+                const updated = removeFontsFromClassName(classNameAttr, {
+                    fontIds: [fontName],
+                });
                 if (updated) {
                     hasUpdated = true;
                 }
-            },
-        });
+            }
+        }
 
-        if (hasUpdated && workingAst) {
+        if (hasUpdated && ast) {
             // Remove the font import if it exists
-            const newContent = removeFontImportFromFile(fontImportPath, fontName, workingAst);
+            const newContent = removeFontImportFromFile(fontImportPath, fontName, ast);
             if (!newContent) {
                 return false;
             }
@@ -160,14 +126,13 @@ export const updateDefaultFontInRootLayout = async (
     const context = await getLayoutContext(editorEngine);
     if (!context) return null;
 
-    const { layoutPath, layoutContent } = context;
+    const { layoutPath, targetElements, layoutContent } = context;
     let updatedAst = false;
     const fontClassName = `font-${font.id}`;
 
-    // Add font className only to body element
     const results = await traverseClassName(
         layoutPath,
-        ['body'],
+        targetElements,
         editorEngine,
         true, // Should check all elements
     );
@@ -206,64 +171,6 @@ export const updateDefaultFontInRootLayout = async (
     }
 
     return null;
-}
-
-/**
- * Clears the default font from the layout file by removing font className from body
- */
-export const clearDefaultFontFromRootLayout = async (
-    fontId: string,
-    editorEngine: EditorEngine,
-): Promise<boolean> => {
-    try {
-        const context = await getLayoutContext(editorEngine);
-        if (!context) return false;
-        const { layoutPath } = context;
-
-        const sandbox = editorEngine.activeSandbox;
-        const file = await sandbox.readFile(layoutPath);
-        if (typeof file !== 'string') return false;
-
-        const content = file;
-        const ast = getAstFromContent(content);
-        if (!ast) return false;
-
-        let hasUpdated = false;
-        traverse(ast, {
-            JSXOpeningElement: (path) => {
-                if (!t.isJSXIdentifier(path.node.name)) return;
-                if (path.node.name.name !== 'body') return;
-
-                const classNameAttr = path.node.attributes.find(
-                    (attr): attr is T.JSXAttribute =>
-                        t.isJSXAttribute(attr) &&
-                        t.isJSXIdentifier(attr.name) &&
-                        attr.name.name === 'className',
-                );
-
-                if (!classNameAttr) return;
-
-                const updated = removeFontsFromClassName(classNameAttr, {
-                    fontIds: [fontId],
-                });
-
-                if (updated) {
-                    hasUpdated = true;
-                }
-            },
-        });
-
-        if (hasUpdated) {
-            const { code } = generate(ast);
-            await editorEngine.activeSandbox.writeFile(layoutPath, code);
-            return true;
-        }
-
-        return false;
-    } catch (error) {
-        console.error('Error clearing default font from layout:', error);
-        return false;
-    }
 }
 
 /**
@@ -401,4 +308,63 @@ export const getLayoutContext = async (
     const layoutContent = file;
 
     return { layoutPath, targetElements, layoutContent };
+}
+
+
+/**
+ * Clears the default font from the layout file by removing font className from body
+ */
+export const clearDefaultFontFromRootLayout = async (
+    fontId: string,
+    editorEngine: EditorEngine,
+): Promise<boolean> => {
+    try {
+        const context = await getLayoutContext(editorEngine);
+        if (!context) return false;
+        const { layoutPath } = context;
+
+        const sandbox = editorEngine.activeSandbox;
+        const file = await sandbox.readFile(layoutPath);
+        if (typeof file !== 'string') return false;
+
+        const content = file;
+        const ast = getAstFromContent(content);
+        if (!ast) return false;
+
+        let hasUpdated = false;
+        traverse(ast, {
+            JSXOpeningElement: (path) => {
+                if (!t.isJSXIdentifier(path.node.name)) return;
+                if (path.node.name.name !== 'body') return;
+
+                const classNameAttr = path.node.attributes.find(
+                    (attr): attr is T.JSXAttribute =>
+                        t.isJSXAttribute(attr) &&
+                        t.isJSXIdentifier(attr.name) &&
+                        attr.name.name === 'className',
+                );
+
+                if (!classNameAttr) return;
+
+                const updated = removeFontsFromClassName(classNameAttr, {
+                    fontIds: [fontId],
+                });
+
+                if (updated) {
+                    hasUpdated = true;
+                }
+            },
+        });
+
+        if (hasUpdated) {
+            const { code } = generate(ast);
+            await editorEngine.activeSandbox.writeFile(layoutPath, code);
+            return true;
+        }
+
+        return false;
+    } catch (error) {
+        console.error('Error clearing default font from layout:', error);
+        return false;
+    }
 }

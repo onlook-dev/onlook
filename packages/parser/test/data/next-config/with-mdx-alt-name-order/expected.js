@@ -7,7 +7,7 @@ const nextConfig = {
   sassOptions: {
     compiler: 'modern',
     silenceDeprecations: ['legacy-js-api']
-  }, output: "standalone", distDir: process.env.NODE_ENV === "production" ? ".next-prod" : ".next", typescript: { ignoreBuildErrors: true }, eslint: { ignoreDuringBuilds: true }
+  }, output: "standalone", distDir: process.env.NODE_ENV === "production" ? ".next" : ".next", typescript: { ignoreBuildErrors: true }, eslint: { ignoreDuringBuilds: true }
 };
 
 const withMDX = mdx({
