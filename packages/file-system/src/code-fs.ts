@@ -239,7 +239,7 @@ export class CodeFileSystem extends FileSystem {
         void this.debouncedSaveIndexToFile();
     }
 
-    private async undobounceSaveIndexToFile(): Promise<void> {
+    private async undebounceSaveIndexToFile(): Promise<void> {
         try {
             await this.createDirectory(ONLOOK_CACHE_DIRECTORY);
         } catch {
@@ -251,7 +251,7 @@ export class CodeFileSystem extends FileSystem {
         }
     }
 
-    private debouncedSaveIndexToFile = debounce(this.undobounceSaveIndexToFile, 1000);
+    private debouncedSaveIndexToFile = debounce(this.undebounceSaveIndexToFile, 1000);
 
     private isJsxFile(path: string): boolean {
         // Exclude the onlook preload script from JSX processing
@@ -264,7 +264,7 @@ export class CodeFileSystem extends FileSystem {
     async cleanup(): Promise<void> {
         const cacheKey = this.getCacheKey();
         if (getIndexFromCache(cacheKey)) {
-            await this.undobounceSaveIndexToFile();
+            await this.undebounceSaveIndexToFile();
         }
 
         clearIndexCache(cacheKey);
