@@ -48,7 +48,7 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
     };
 
     return (
-        <div className="flex flex-row items-center justify-between px-3 py-2 border-b border-border w-full">
+        <div className="flex flex-row items-center justify-between p-1 px-2 border-b border-border w-full h-10">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button

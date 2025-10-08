@@ -45,7 +45,7 @@ export const RightPanel = observer(() => {
                     setIsChatHistoryOpen={setIsChatHistoryOpen}
                 >
                     <div
-                        className="flex flex-row w-full items-center gap-2 bg-transparent px-3 border-b border-border py-2 text-small hover:text-foreground-hover cursor-pointer"
+                        className="flex flex-row w-full items-center gap-2 bg-transparent p-1 px-2 border-b border-border text-small hover:text-foreground-hover cursor-pointer h-10"
                     >
                         <Icons.Sparkles className="mr-0.5 mb-0.5 h-4 w-4" />
                         {t(transKeys.editor.panels.edit.tabs.chat.name)}

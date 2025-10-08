@@ -56,7 +56,7 @@ export const FileTabs = ({
     }, [activeFile?.path]);
 
     return (
-        <div className="flex items-center justify-between h-11 pl-0 border-b-[0.5px] flex-shrink-0 relative">
+        <div className="flex items-center justify-between h-10 pl-0 border-b-[0.5px] flex-shrink-0 relative">
             <div className="flex items-center h-full overflow-x-auto w-full" ref={ref}>
                 {openedFiles.map((file) => (
                     <FileTab
