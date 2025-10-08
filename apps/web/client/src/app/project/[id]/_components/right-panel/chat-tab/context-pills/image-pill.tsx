@@ -1,18 +1,18 @@
-import { type MessageContext, MessageContextType } from '@onlook/models/chat';
+import { type ImageMessageContext, type LocalImageMessageContext, MessageContextType } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
 import { motion } from 'motion/react';
 import React from 'react';
 import { getTruncatedName } from './helpers';
 
-export const DraftImagePill = React.forwardRef<
+export const ImagePill = React.forwardRef<
     HTMLDivElement,
     {
-        context: MessageContext;
+        context: ImageMessageContext | LocalImageMessageContext;
         onRemove: () => void;
     }
 >(({ context, onRemove }, ref) => {
-    if (context.type !== MessageContextType.IMAGE) {
-        console.warn('DraftingImagePill received non-image context');
+    if (context.type !== MessageContextType.IMAGE && context.type !== MessageContextType.LOCAL_IMAGE) {
+        console.warn('ImagePill received non-image context');
         return null;
     }
 
@@ -63,4 +63,4 @@ export const DraftImagePill = React.forwardRef<
     );
 });
 
-DraftImagePill.displayName = 'DraftImagePill';
+ImagePill.displayName = 'ImagePill';

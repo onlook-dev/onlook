@@ -1,12 +1,11 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { ImageMessageContext, LocalImageMessageContext, MessageContext } from '@onlook/models/chat';
+import type { MessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
 import { useMemo } from 'react';
 import { DraftContextPill } from './draft-context-pill';
-import { DraftImagePill } from './draft-image-pill';
-import { LocalImagePill } from './local-image-pill';
+import { ImagePill } from './image-pill';
 
 const typeOrder = {
     [MessageContextType.BRANCH]: 0,
@@ -39,19 +38,11 @@ export const InputContextPills = observer(() => {
         <div className="flex flex-row flex-wrap items-center gap-1.5 px-1 pt-1">
             <AnimatePresence mode="popLayout">
                 {sortedContexts.map((context: MessageContext, index: number) => {
-                    if (context.type === MessageContextType.IMAGE) {
+                    if (context.type === MessageContextType.IMAGE || context.type === MessageContextType.LOCAL_IMAGE) {
                         return (
-                            <DraftImagePill
+                            <ImagePill
                                 key={`${context.type}-${context.content}-${index}`}
-                                context={context as ImageMessageContext}
-                                onRemove={() => handleRemoveContext(context)}
-                            />
-                        );
-                    } else if (context.type === MessageContextType.LOCAL_IMAGE) {
-                        return (
-                            <LocalImagePill
-                                key={`${context.type}-${context.content}-${index}`}
-                                context={context as LocalImageMessageContext}
+                                context={context}
                                 onRemove={() => handleRemoveContext(context)}
                             />
                         );
