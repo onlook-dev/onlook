@@ -91,67 +91,79 @@ export class CodeProviderSync {
             return !sandboxEntriesSet.has(entry.path) && !sandboxEntriesSet.has(sandboxPath);
         });
 
-        for (const entry of entriesToDelete) {
-            try {
-                if (entry.type === 'file') {
-                    await this.fs.deleteFile(entry.path);
-                    console.log(`[Sync] Deleted file: ${entry.path}`);
-                } else {
-                    await this.fs.deleteDirectory(entry.path);
-                    console.log(`[Sync] Deleted directory: ${entry.path}`);
-                }
-            } catch (error) {
-                console.debug(
-                    `[Sync] Failed to delete ${entry.path}:`,
-                    error instanceof Error ? error.message : 'Unknown error',
-                );
-            }
-        }
-
-        // Process sandbox entries
-        const directoriesToCreate = [];
-        const filesToWrite = [];
-
-        for (const entry of sandboxEntries) {
-            if (entry.type === 'directory') {
-                directoriesToCreate.push(entry.path);
-            } else {
+        await Promise.all(
+            entriesToDelete.map(async (entry) => {
                 try {
-                    const result = await this.provider.readFile({ args: { path: entry.path } });
-                    const { file } = result;
-
-                    if ((file.type === 'text' || file.type === 'binary') && file.content) {
-                        filesToWrite.push({ path: entry.path, content: file.content });
+                    if (entry.type === 'file') {
+                        await this.fs.deleteFile(entry.path);
+                        console.log(`[Sync] Deleted file: ${entry.path}`);
+                    } else {
+                        await this.fs.deleteDirectory(entry.path);
+                        console.log(`[Sync] Deleted directory: ${entry.path}`);
                     }
                 } catch (error) {
-                    console.debug(`[Sync] Skipping ${entry.path}:`, error);
+                    console.debug(
+                        `[Sync] Failed to delete ${entry.path}:`,
+                        error instanceof Error ? error.message : 'Unknown error',
+                    );
                 }
-            }
-        }
+            }),
+        );
+
+        // Process sandbox entries
+        const directoriesToCreate = sandboxEntries
+            .filter((entry) => entry.type === 'directory')
+            .map((entry) => entry.path);
+
+        const fileEntries = sandboxEntries.filter((entry) => entry.type === 'file');
+
+        const filesToWrite = (
+            await Promise.all(
+                fileEntries.map(async (entry) => {
+                    try {
+                        const result = await this.provider.readFile({ args: { path: entry.path } });
+                        const { file } = result;
+
+                        if ((file.type === 'text' || file.type === 'binary') && file.content) {
+                            return { path: entry.path, content: file.content };
+                        }
+                    } catch (error) {
+                        console.debug(`[Sync] Skipping ${entry.path}:`, error);
+                    }
+                    return null;
+                }),
+            )
+        ).filter((item): item is { path: string; content: string | Uint8Array } => item !== null);
 
         // Create directories first
-        for (const dirPath of directoriesToCreate) {
-            try {
-                await this.fs.createDirectory(dirPath);
-            } catch (error) {
-                console.debug(`[Sync] Error creating directory ${dirPath}:`, error);
-            }
-        }
+        await Promise.all(
+            directoriesToCreate.map(async (dirPath) => {
+                try {
+                    await this.fs.createDirectory(dirPath);
+                } catch (error) {
+                    console.debug(`[Sync] Error creating directory ${dirPath}:`, error);
+                }
+            }),
+        );
 
-        // Write files sequentially to avoid race conditions
-        for (const { path, content } of filesToWrite) {
-            try {
-                await this.fs.writeFile(path, content);
-            } catch (error) {
-                console.error(`[Sync] Failed to write ${path}:`, error);
-            }
-        }
+        // Write files in parallel
+        await Promise.all(
+            filesToWrite.map(async ({ path, content }) => {
+                try {
+                    await this.fs.writeFile(path, content);
+                } catch (error) {
+                    console.error(`[Sync] Failed to write ${path}:`, error);
+                }
+            }),
+        );
 
-        // Store hashes of files so we can skip syncing if the content hasn't changed later.
-        for (const { path, content } of filesToWrite) {
-            const hash = await hashContent(content);
-            this.fileHashes.set(path, hash);
-        }
+        // Store hashes of files in parallel
+        await Promise.all(
+            filesToWrite.map(async ({ path, content }) => {
+                const hash = await hashContent(content);
+                this.fileHashes.set(path, hash);
+            }),
+        );
     }
 
     private async getAllSandboxFiles(
