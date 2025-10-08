@@ -1,18 +1,20 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
+import { EditorMode } from '@onlook/models';
 import { ResizablePanel } from '@onlook/ui/resizable';
-import { useTranslations } from 'next-intl';
+import { cn } from '@onlook/ui/utils';
 import { CodeTab } from './code-tab';
 
 export const CodePanel = () => {
     const editorEngine = useEditorEngine();
-    const t = useTranslations();
     const editPanelWidth = 700
 
     return (
         <div
-            className='flex h-full w-full transition-width duration-300 bg-background/95 group/panel border-[0.5px] backdrop-blur-xl shadow rounded-tr-xl'
+            className={cn('flex h-full w-full transition-width duration-300 bg-background/95 group/panel border-[0.5px] backdrop-blur-xl shadow rounded-tr-xl',
+                editorEngine.state.editorMode !== EditorMode.CODE && 'hidden'
+            )}
         >
             <ResizablePanel
                 side="left"
