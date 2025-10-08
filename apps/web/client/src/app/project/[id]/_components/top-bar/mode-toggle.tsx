@@ -31,13 +31,7 @@ const MODE_TOGGLE_ITEMS: {
 export const ModeToggle = observer(() => {
     const t = useTranslations();
     const editorEngine = useEditorEngine();
-    const mode: EditorMode.DESIGN | EditorMode.PREVIEW = getNormalizedMode(
-        editorEngine.state.editorMode,
-    );
-
-    function getNormalizedMode(unnormalizedMode: EditorMode) {
-        return unnormalizedMode === EditorMode.PREVIEW ? EditorMode.PREVIEW : EditorMode.DESIGN;
-    }
+    const mode = editorEngine.state.editorMode;
 
     return (
         <div className="relative">
@@ -77,8 +71,13 @@ export const ModeToggle = observer(() => {
                 className="absolute -top-1 h-0.5 bg-foreground"
                 initial={false}
                 animate={{
-                    width: '50%',
-                    x: mode === EditorMode.DESIGN ? '0%' : '100%',
+                    width: '33.333%',
+                    x:
+                        mode === EditorMode.DESIGN
+                            ? '0%'
+                            : mode === EditorMode.CODE
+                              ? '100%'
+                              : '200%',
                 }}
                 transition={{
                     type: 'tween',

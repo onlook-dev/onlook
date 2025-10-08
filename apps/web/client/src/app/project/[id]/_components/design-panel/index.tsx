@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
-import { EditorMode, LeftPanelTabValue } from '@onlook/models';
+import { LeftPanelTabValue } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
@@ -47,7 +47,7 @@ const tabs: {
         },
     ];
 
-export const LeftPanel = observer(() => {
+export const DesignPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const isLocked = editorEngine.state.leftPanelLocked;
@@ -101,7 +101,6 @@ export const LeftPanel = observer(() => {
         <div
             className={cn(
                 'flex h-full',
-                editorEngine.state.editorMode === EditorMode.PREVIEW && 'hidden',
             )}
             onMouseLeave={handleMouseLeave}
         >
