@@ -8,6 +8,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
@@ -52,6 +53,10 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const gitCheckpoints =
         message.metadata?.checkpoints?.filter((s) => s.type === MessageCheckpointType.GIT) ?? [];
+
+    // Legacy checkpoints (created before multi-branch support) don't have branchId.
+    // If any exist, fall back to simple single-branch restore UI.
+    const hasLegacyCheckpoints = gitCheckpoints.some((cp) => !cp.branchId);
 
     useEffect(() => {
         if (isEditing && textareaRef.current) {
@@ -114,7 +119,20 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
         setIsRestoring(false);
     };
 
-    const getBranchName = (branchId: string): string => {
+    const handleRestoreLegacy = async () => {
+        // Legacy checkpoints without branchId will restore to the active branch
+        const firstCheckpoint = gitCheckpoints[0];
+        if (firstCheckpoint) {
+            setIsRestoring(true);
+            await restoreCheckpoint(firstCheckpoint, editorEngine);
+            setIsRestoring(false);
+        }
+    };
+
+    const getBranchName = (branchId: string | undefined): string => {
+        if (!branchId) {
+            return editorEngine.branches.activeBranch.name;
+        }
         const branch = editorEngine.branches.getBranchById(branchId);
         return branch?.name || branchId;
     };
@@ -229,55 +247,82 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
             </div>
             {gitCheckpoints.length > 0 && (
                 <div className="absolute top-1/2 left-2 -translate-y-1/2">
-                    <Tooltip>
-                        <DropdownMenu>
+                    {hasLegacyCheckpoints ? (
+                        <Tooltip>
                             <TooltipTrigger asChild>
-                                <DropdownMenuTrigger asChild>
-                                    <button
-                                        className={cn(
-                                            'rounded-md p-2 text-xs opacity-0 group-hover:opacity-100 hover:opacity-80',
-                                            isRestoring ? 'opacity-100' : 'opacity-0',
-                                        )}
-                                        disabled={isRestoring}
-                                    >
-                                        {isRestoring ? (
-                                            <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
-                                        ) : (
-                                            <Icons.Reset className="h-4 w-4" />
-                                        )}
-                                    </button>
-                                </DropdownMenuTrigger>
+                                <button
+                                    onClick={handleRestoreLegacy}
+                                    className={cn(
+                                        'rounded-md p-2 text-xs opacity-0 group-hover:opacity-100 hover:opacity-80',
+                                        isRestoring ? 'opacity-100' : 'opacity-0',
+                                    )}
+                                    disabled={isRestoring}
+                                >
+                                    {isRestoring ? (
+                                        <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Icons.Reset className="h-4 w-4" />
+                                    )}
+                                </button>
                             </TooltipTrigger>
                             <TooltipContent side="top" sideOffset={5}>
-                                {isRestoring ? 'Restoring...' : 'Restore Branch'}
+                                {isRestoring ? 'Restoring...' : 'Restore to here'}
                             </TooltipContent>
-                            <DropdownMenuContent align="start" side="right">
-                                {gitCheckpoints.map((checkpoint) => (
-                                    <DropdownMenuItem
-                                        key={checkpoint.branchId}
-                                        onClick={() => handleRestoreSingleBranch(checkpoint)}
-                                    >
-                                        {getBranchName(checkpoint.branchId)}
-                                    </DropdownMenuItem>
-                                ))}
-                                {gitCheckpoints.length > 1 && (
-                                    <>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem
-                                            onClick={() => setIsMultiBranchModalOpen(true)}
-                                        >
-                                            Select Multiple Branches...
-                                        </DropdownMenuItem>
-                                    </>
-                                )}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </Tooltip>
-                    <MultiBranchRevertModal
-                        open={isMultiBranchModalOpen}
-                        onOpenChange={setIsMultiBranchModalOpen}
-                        checkpoints={gitCheckpoints}
-                    />
+                        </Tooltip>
+                    ) : (
+                        <>
+                            <Tooltip>
+                                <DropdownMenu>
+                                    <TooltipTrigger asChild>
+                                        <DropdownMenuTrigger asChild>
+                                            <button
+                                                className={cn(
+                                                    'rounded-md p-2 text-xs opacity-0 group-hover:opacity-100 hover:opacity-80',
+                                                    isRestoring ? 'opacity-100' : 'opacity-0',
+                                                )}
+                                                disabled={isRestoring}
+                                            >
+                                                {isRestoring ? (
+                                                    <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    <Icons.Reset className="h-4 w-4" />
+                                                )}
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" sideOffset={5}>
+                                        {isRestoring ? 'Restoring...' : 'Restore to here'}
+                                    </TooltipContent>
+                                    <DropdownMenuContent align="start" side="right">
+                                        <DropdownMenuLabel>Restore Branch</DropdownMenuLabel>
+                                        {gitCheckpoints.map((checkpoint) => (
+                                            <DropdownMenuItem
+                                                key={checkpoint.branchId}
+                                                onClick={() => handleRestoreSingleBranch(checkpoint)}
+                                            >
+                                                {getBranchName(checkpoint.branchId)}
+                                            </DropdownMenuItem>
+                                        ))}
+                                        {gitCheckpoints.length > 1 && (
+                                            <>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem
+                                                    onClick={() => setIsMultiBranchModalOpen(true)}
+                                                >
+                                                    Select Multiple Branches...
+                                                </DropdownMenuItem>
+                                            </>
+                                        )}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </Tooltip>
+                            <MultiBranchRevertModal
+                                open={isMultiBranchModalOpen}
+                                onOpenChange={setIsMultiBranchModalOpen}
+                                checkpoints={gitCheckpoints}
+                            />
+                        </>
+                    )}
                 </div>
             )}
         </div>

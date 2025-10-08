@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { GitCommit } from '@onlook/git';
+import { MessageCheckpointType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
@@ -11,6 +12,7 @@ import { cn } from '@onlook/ui/utils';
 import { formatCommitDate, timeAgo } from '@onlook/utility';
 
 import { useEditorEngine } from '@/components/store/editor';
+import { restoreCheckpoint } from '@/components/store/editor/git';
 import { useStateManager } from '@/components/store/state';
 
 export enum VersionRowType {
@@ -106,38 +108,29 @@ export const VersionRow = observer(
         const handleCheckout = async () => {
             setIsCheckingOut(true);
 
-            const branchData = editorEngine.branches.activeBranchData;
-
             editorEngine.posthog.capture('versions_checkout_commit', {
                 commit: commit.displayName ?? commit.message,
             });
 
-            // Save current state before restoring
-            const saveResult = await branchData.sandbox.gitManager.createCommit(
-                'Save before restoring backup',
-            );
-            if (!saveResult.success) {
-                toast.warning('Failed to save before restoring backup');
-            }
+            const checkpoint = {
+                type: MessageCheckpointType.GIT,
+                oid: commit.oid,
+                branchId: editorEngine.branches.activeBranch.id,
+                createdAt: new Date(),
+            };
 
-            // Restore to the specified commit
-            const restoreResult = await branchData.sandbox.gitManager.restoreToCommit(commit.oid);
+            const result = await restoreCheckpoint(checkpoint, editorEngine);
 
             setIsCheckingOut(false);
 
-            if (!restoreResult.success) {
-                toast.error('Failed to restore backup');
+            if (!result.success) {
                 editorEngine.posthog.capture('versions_checkout_commit_failed', {
                     commit: commit.displayName || commit.message,
-                    error: restoreResult.error,
+                    error: result.error,
                 });
                 setIsCheckoutSuccess(false);
                 return;
             }
-
-            toast.success('Restored to backup!', {
-                description: `Your project has been restored to version "${commit.displayName || commit.message}"`,
-            });
 
             editorEngine.posthog.capture('versions_checkout_commit_success', {
                 commit: commit.displayName || commit.message,

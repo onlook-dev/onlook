@@ -14,13 +14,17 @@ export interface RestoreResult {
  * - Creates a backup commit before restoring
  * - Restores the branch to the checkpoint's commit
  * - Shows appropriate toast notifications
+ * - Falls back to active branch for legacy checkpoints without branchId
  */
 export async function restoreCheckpoint(
     checkpoint: GitMessageCheckpoint,
     editorEngine: EditorEngine,
 ): Promise<RestoreResult> {
     try {
-        const branchData = editorEngine.branches.getBranchDataById(checkpoint.branchId);
+        // Fall back to active branch for legacy checkpoints
+        const targetBranchId = checkpoint.branchId ?? editorEngine.branches.activeBranch.id;
+        const branchData = editorEngine.branches.getBranchDataById(targetBranchId);
+
         if (!branchData) {
             toast.error('Branch not found');
             return { success: false, error: 'Branch not found' };
@@ -39,7 +43,7 @@ export async function restoreCheckpoint(
             throw new Error(restoreResult.error || 'Failed to restore commit');
         }
 
-        const branchName = editorEngine.branches.getBranchById(checkpoint.branchId)?.name || checkpoint.branchId;
+        const branchName = editorEngine.branches.getBranchById(targetBranchId)?.name || targetBranchId;
         toast.success('Restored to backup!', {
             description: `Branch "${branchName}" has been restored`,
         });

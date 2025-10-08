@@ -41,7 +41,7 @@ export const MultiBranchRevertModal = ({
     };
 
     const selectAll = () => {
-        setSelectedBranchIds(checkpoints.map((cp) => cp.branchId));
+        setSelectedBranchIds(checkpoints.map((cp) => cp.branchId).filter((id): id is string => !!id));
     };
 
     const selectNone = () => {
@@ -122,11 +122,13 @@ export const MultiBranchRevertModal = ({
                     </div>
                     <div className="flex flex-col gap-2">
                         {checkpoints.map((checkpoint) => {
+                            // Skip legacy checkpoints without branchId (shouldn't happen in multi-branch modal)
+                            if (!checkpoint.branchId) return null;
                             const isSelected = selectedBranchIds.includes(checkpoint.branchId);
                             return (
                                 <button
                                     key={checkpoint.branchId}
-                                    onClick={() => toggleBranch(checkpoint.branchId)}
+                                    onClick={() => toggleBranch(checkpoint.branchId!)}
                                     disabled={isRestoring}
                                     className={cn(
                                         'flex items-center justify-between rounded-md border px-3 py-2.5 text-left transition-all',

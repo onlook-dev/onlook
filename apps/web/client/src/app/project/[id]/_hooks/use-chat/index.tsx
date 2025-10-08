@@ -4,13 +4,14 @@ import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { api } from '@/trpc/client';
 import { useChat as useAiChat } from '@ai-sdk/react';
-import { ChatType, MessageCheckpointType, type ChatMessage, type MessageContext, type QueuedMessage } from '@onlook/models';
+import { ChatType, type ChatMessage, type GitMessageCheckpoint, type MessageContext, type QueuedMessage } from '@onlook/models';
 import { jsonClone } from '@onlook/utility';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, type FinishReason } from 'ai';
 import { usePostHog } from 'posthog-js/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
+    createCheckpointsForAllBranches,
     getUserChatMessageFromString
 } from './utils';
 
@@ -244,40 +245,8 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                     return;
                 }
 
-                // Detect all branches with modifications and create checkpoints
-                const checkpoints: Array<{
-                    type: typeof MessageCheckpointType.GIT;
-                    oid: string;
-                    branchId: string;
-                    createdAt: Date;
-                }> = [];
-
-                for (const branch of editorEngine.branches.allBranches) {
-                    const branchData = editorEngine.branches.getBranchDataById(branch.id);
-
-                    if (!branchData) {
-                        continue;
-                    }
-
-                    // Check if branch has modifications
-                    const status = await branchData.sandbox.gitManager.getStatus();
-
-                    if (status && status.files.length > 0) {
-                        const result = await branchData.sandbox.gitManager.createCommit(content);
-
-                        if (result.success) {
-                            const latestCommit = branchData.sandbox.gitManager.commits?.[0];
-                            if (latestCommit) {
-                                checkpoints.push({
-                                    type: MessageCheckpointType.GIT,
-                                    oid: latestCommit.oid,
-                                    branchId: branch.id,
-                                    createdAt: new Date(),
-                                });
-                            }
-                        }
-                    }
-                }
+                // Create checkpoints for all branches
+                const checkpoints = await createCheckpointsForAllBranches(editorEngine, content);
 
                 if (checkpoints.length === 0) {
                     return;
@@ -297,10 +266,13 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                     context: lastUserMessage.metadata?.context ?? [],
                 };
 
-                // Save checkpoints to database
+                // Save checkpoints to database (filter out legacy checkpoints without branchId)
+                const checkpointsWithBranchId = [...oldCheckpoints, ...checkpoints].filter(
+                    (cp): cp is GitMessageCheckpoint & { branchId: string } => !!cp.branchId
+                );
                 void api.chat.message.updateCheckpoints.mutate({
                     messageId: lastUserMessage.id,
-                    checkpoints: [...oldCheckpoints, ...checkpoints],
+                    checkpoints: checkpointsWithBranchId,
                 });
 
                 setMessages(
