@@ -6,9 +6,9 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { DivSelected } from './div-selected';
+import { FrameSelected } from './frame-selected';
 import { DropdownManagerProvider } from './hooks/use-dropdown-manager';
 import { TextSelected } from './text-selected';
-import { FrameSelected } from './frame-selected';
 
 enum TAG_CATEGORIES {
     TEXT = 'text',
@@ -98,7 +98,7 @@ export const EditorBar = observer(({ availableWidth }: { availableWidth?: number
                 exit={{ opacity: 0, y: 20 }}
                 className={cn(
                     'flex flex-col border-[0.5px] border-border p-1 px-1 bg-background rounded-xl backdrop-blur drop-shadow-xl z-50 overflow-hidden',
-                    editorEngine.state.editorMode === EditorMode.PREVIEW && !windowSelected && 'hidden',
+                    editorEngine.state.editorMode !== EditorMode.DESIGN && !windowSelected && 'hidden',
                 )}
                 transition={{
                     type: 'spring',
