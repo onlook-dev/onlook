@@ -2,15 +2,16 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
+import { api } from '@/trpc/client';
 import { useChat as useAiChat } from '@ai-sdk/react';
-import { ChatType, type ChatMessage, type MessageContext, type QueuedMessage } from '@onlook/models';
+import { ChatType, type ChatMessage, type GitMessageCheckpoint, type MessageContext, type QueuedMessage } from '@onlook/models';
 import { jsonClone } from '@onlook/utility';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, type FinishReason } from 'ai';
 import { usePostHog } from 'posthog-js/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
-    attachCommitToUserMessage,
+    createCheckpointsForAllBranches,
     getUserChatMessageFromString
 } from './utils';
 
@@ -244,20 +245,40 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                     return;
                 }
 
-                const { commit } = await editorEngine.versions.createCommit(content, false);
-                if (!commit) {
-                    throw new Error('Failed to create commit');
+                // Create checkpoints for all branches
+                const checkpoints = await createCheckpointsForAllBranches(editorEngine, content);
+
+                if (checkpoints.length === 0) {
+                    return;
                 }
 
-                const messageWithCommit = attachCommitToUserMessage(
-                    commit,
-                    lastUserMessage,
+                // Update message with all checkpoints
+                const oldCheckpoints = lastUserMessage.metadata?.checkpoints.map((checkpoint) => ({
+                    ...checkpoint,
+                    createdAt: new Date(checkpoint.createdAt),
+                })) ?? [];
+
+                lastUserMessage.metadata = {
+                    ...lastUserMessage.metadata,
+                    createdAt: lastUserMessage.metadata?.createdAt ?? new Date(),
                     conversationId,
+                    checkpoints: [...oldCheckpoints, ...checkpoints],
+                    context: lastUserMessage.metadata?.context ?? [],
+                };
+
+                // Save checkpoints to database (filter out legacy checkpoints without branchId)
+                const checkpointsWithBranchId = [...oldCheckpoints, ...checkpoints].filter(
+                    (cp): cp is GitMessageCheckpoint & { branchId: string } => !!cp.branchId
                 );
+                void api.chat.message.updateCheckpoints.mutate({
+                    messageId: lastUserMessage.id,
+                    checkpoints: checkpointsWithBranchId,
+                });
+
                 setMessages(
                     jsonClone(
                         messagesRef.current.map((m) =>
-                            m.id === lastUserMessage.id ? messageWithCommit : m,
+                            m.id === lastUserMessage.id ? lastUserMessage : m,
                         ),
                     ),
                 );

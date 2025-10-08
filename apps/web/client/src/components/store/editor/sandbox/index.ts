@@ -7,12 +7,14 @@ import type { Branch, RouterConfig } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
+import { GitManager } from '../git';
 import { detectRouterConfig } from '../pages/helper';
 import { copyPreloadScriptToPublic, getLayoutPath as detectLayoutPath } from './preload-script';
 import { SessionManager } from './session';
 
 export class SandboxManager {
     readonly session: SessionManager;
+    readonly gitManager: GitManager;
     private providerReactionDisposer?: () => void;
     private sync: CodeProviderSync | null = null;
     preloadScriptInjected: boolean = false;
@@ -26,15 +28,18 @@ export class SandboxManager {
         private readonly fs: CodeFileSystem,
     ) {
         this.session = new SessionManager(this.branch, this.errorManager);
+        this.gitManager = new GitManager(this);
         makeAutoObservable(this);
     }
 
     async init() {
         this.providerReactionDisposer = reaction(
             () => this.session.provider,
-            (provider) => {
+            async (provider) => {
                 if (provider) {
-                    this.initializeSyncEngine(provider);
+                    await this.initializeSyncEngine(provider);
+                    // Initialize git after provider is ready
+                    await this.gitManager.init();
                 } else if (this.sync) {
                     // If the provider is null, stop the sync engine
                     this.sync.stop();

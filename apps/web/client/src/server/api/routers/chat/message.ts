@@ -71,6 +71,7 @@ export const messageRouter = createTRPCRouter({
             checkpoints: z.array(z.object({
                 type: z.enum(MessageCheckpointType),
                 oid: z.string(),
+                branchId: z.string(),
                 createdAt: z.date(),
             })),
         }))

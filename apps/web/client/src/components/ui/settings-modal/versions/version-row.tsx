@@ -1,16 +1,19 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { useStateManager } from '@/components/store/state';
+import { observer } from 'mobx-react-lite';
+import { useEffect, useRef, useState } from 'react';
+
 import type { GitCommit } from '@onlook/git';
+import { MessageCheckpointType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { toast } from '@onlook/ui/sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-
 import { cn } from '@onlook/ui/utils';
 import { formatCommitDate, timeAgo } from '@onlook/utility';
-import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
+
+import { useEditorEngine } from '@/components/store/editor';
+import { restoreCheckpoint } from '@/components/store/editor/git';
+import { useStateManager } from '@/components/store/state';
 
 export enum VersionRowType {
     SAVED = 'saved',
@@ -64,8 +67,33 @@ export const VersionRow = observer(
             });
         };
 
-        const updateCommitDisplayName = (name: string) => {
-            editorEngine.versions.renameCommit(commit.oid, name);
+        const updateCommitDisplayName = async (name: string) => {
+            const branchData = editorEngine.branches.activeBranchData;
+            if (!branchData) {
+                toast.error('No active branch');
+                return;
+            }
+
+            const result = await branchData.sandbox.gitManager.addCommitNote(commit.oid, name);
+
+            if (!result.success) {
+                toast.error('Failed to rename backup');
+                editorEngine.posthog.capture('versions_rename_commit_failed', {
+                    commit: commit.oid,
+                    newName: name,
+                    error: result.error,
+                });
+                return;
+            }
+
+            toast.success('Backup renamed successfully!', {
+                description: `Renamed to: "${name}"`,
+            });
+
+            editorEngine.posthog.capture('versions_rename_commit_success', {
+                commit: commit.oid,
+                newName: name,
+            });
         };
 
         const startRenaming = () => {
@@ -83,82 +111,92 @@ export const VersionRow = observer(
         };
 
         const handleCheckout = async () => {
-            setIsCheckingOut(true);
-            const success = await editorEngine.versions.checkoutCommit(commit);
-            setIsCheckingOut(false);
-            setIsCheckoutSuccess(success ?? false);
+            try {
+                setIsCheckingOut(true);
 
-            if (!success) {
-                console.error('Failed to checkout commit', commit.displayName || commit.message);
-                toast.error('Failed to restore');
-                return;
+                editorEngine.posthog.capture('versions_checkout_commit', {
+                    commit: commit.displayName ?? commit.message,
+                });
+
+                const checkpoint = {
+                    type: MessageCheckpointType.GIT,
+                    oid: commit.oid,
+                    branchId: editorEngine.branches.activeBranch.id,
+                    createdAt: new Date(),
+                };
+
+                const result = await restoreCheckpoint(checkpoint, editorEngine);
+
+                setIsCheckingOut(false);
+
+                if (!result.success) {
+                    editorEngine.posthog.capture('versions_checkout_commit_failed', {
+                        commit: commit.displayName || commit.message,
+                        error: result.error,
+                    });
+                    setIsCheckoutSuccess(false);
+                    return;
+                }
+
+                editorEngine.posthog.capture('versions_checkout_commit_success', {
+                    commit: commit.displayName || commit.message,
+                });
+
+                setIsCheckoutSuccess(true);
+                setTimeout(() => {
+                    stateManager.isSettingsModalOpen = false;
+                }, 1000);
+            } catch (error) {
+                toast.error('Failed to restore backup', {
+                    description: error instanceof Error ? error.message : 'Unknown error',
+                });
+            } finally {
+                setIsCheckingOut(false);
             }
-            setTimeout(() => {
-                stateManager.isSettingsModalOpen = false;
-            }, 1000);
         };
 
         return (
             <div
                 key={commit.oid}
-                className="py-4 px-6 grid grid-cols-6 items-center justify-between hover:bg-background-secondary/80 transition-colors group"
+                className="hover:bg-background-secondary/80 group grid grid-cols-6 items-center justify-between px-6 py-4 transition-colors"
             >
                 <span className="col-span-4 flex flex-col gap-0.5">
-                    {isRenaming ? (
-                        <Input
-                            ref={inputRef}
-                            value={commitDisplayName}
-                            onChange={(e) => setCommitDisplayName(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === 'Escape') {
-                                    e.currentTarget.blur();
-                                }
-                            }}
-                            onBlur={finishRenaming}
-                            className="p-0 pl-2 h-8 border border-transparent hover:border-border/50 focus-visible:border-primary/10 focus-visible:ring-0 focus-visible:outline-none focus-visible:bg-transparent bg-transparent hover:bg-transparent transition-all duration-100"
-                        />
-                    ) : (
-                        <span>{commit.displayName ?? commit.message ?? 'Backup'}</span>
-                    )}
+                    <div className="flex h-8 items-center">
+                        {isRenaming ? (
+                            <Input
+                                ref={inputRef}
+                                value={commitDisplayName}
+                                onChange={(e) => setCommitDisplayName(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === 'Escape') {
+                                        e.currentTarget.blur();
+                                    }
+                                }}
+                                onBlur={finishRenaming}
+                                className="hover:border-border/50 focus-visible:border-primary/10 -mt-0.5 -ml-[10px] h-8 w-full border border-transparent bg-transparent p-0 pl-2 transition-all duration-100 hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:outline-none"
+                            />
+                        ) : (
+                            <span>{commit.displayName ?? commit.message ?? 'Backup'}</span>
+                        )}
+                    </div>
                     <span className="text-muted-foreground font-light">
                         {commit.author.name}{' '}
-                        <span className="text-xs mx-0.45 inline-block scale-75">•</span>{' '}
+                        <span className="mx-0.45 inline-block scale-75 text-xs">•</span>{' '}
                         {renderDate()}
                     </span>
                 </span>
-                <span className="col-span-1 text-muted-foreground"></span>
+                <span className="text-muted-foreground col-span-1"></span>
                 <div
                     className={cn(
-                        'col-span-1 gap-2 flex justify-end group-hover:opacity-100 opacity-0 transition-opacity',
+                        'col-span-1 flex justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100',
                         (isCheckoutSuccess || isCheckingOut || isRenaming) && 'opacity-100',
                     )}
                 >
-                    {type === VersionRowType.SAVED ? (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-2 bg-background-secondary"
-                            onClick={() => editorEngine.versions.removeSavedCommit(commit)}
-                        >
-                            <Icons.BookmarkFilled />
-                            <span className="text-muted-foreground">Remove</span>
-                        </Button>
-                    ) : (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-2 bg-background-secondary hidden"
-                            onClick={() => editorEngine.versions.saveCommit(commit)}
-                        >
-                            <Icons.Bookmark />
-                            <span className="text-muted-foreground">Save</span>
-                        </Button>
-                    )}
                     {isCheckoutSuccess ? (
                         <Button
                             variant="outline"
                             size="sm"
-                            className="gap-2 bg-background-secondary"
+                            className="bg-background-secondary gap-2"
                         >
                             <Icons.Check className="h-4 w-4 text-green-500" />
                             <span className="text-muted-foreground">Restored</span>
@@ -174,7 +212,7 @@ export const VersionRow = observer(
                                         onClick={startRenaming}
                                         disabled={isRenaming || isCheckingOut}
                                     >
-                                        <Icons.Pencil className="h-4 w-4 mr-2" />
+                                        <Icons.Pencil className="mr-2 h-4 w-4" />
                                         Rename
                                     </Button>
                                 </TooltipTrigger>
@@ -191,7 +229,7 @@ export const VersionRow = observer(
                                         onClick={handleCheckout}
                                         disabled={isCheckingOut}
                                     >
-                                        <Icons.CounterClockwiseClock className="h-4 w-4 mr-2" />
+                                        <Icons.CounterClockwiseClock className="mr-2 h-4 w-4" />
                                         {isCheckingOut ? 'Restoring...' : 'Restore'}
                                     </Button>
                                 </TooltipTrigger>

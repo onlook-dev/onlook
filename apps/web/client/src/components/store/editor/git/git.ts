@@ -1,8 +1,11 @@
-import { prepareCommitMessage, sanitizeCommitMessage } from '@/utils/git';
+import { makeAutoObservable } from 'mobx';
+import stripAnsi from 'strip-ansi';
+
 import { SUPPORT_EMAIL } from '@onlook/constants';
 import { type GitCommit } from '@onlook/git';
-import stripAnsi from 'strip-ansi';
-import type { EditorEngine } from '../engine';
+
+import { prepareCommitMessage, sanitizeCommitMessage } from '@/utils/git';
+import type { SandboxManager } from '../sandbox';
 
 export const ONLOOK_DISPLAY_NAME_NOTE_REF = 'refs/notes/onlook-display-name';
 
@@ -17,14 +20,30 @@ export interface GitCommandResult {
 }
 
 export class GitManager {
-    constructor(private editorEngine: EditorEngine) { }
+    commits: GitCommit[] | null = null;
+    isLoadingCommits = false;
+
+    constructor(private sandbox: SandboxManager) {
+        makeAutoObservable(this);
+    }
+
+    /**
+     * Initialize git manager - auto-initializes repo if needed and preloads commits
+     */
+    async init(): Promise<void> {
+        const isInitialized = await this.isRepoInitialized();
+        if (!isInitialized) {
+            await this.initRepo();
+        }
+        await this.listCommits();
+    }
 
     /**
      * Check if git repository is initialized
      */
     async isRepoInitialized(): Promise<boolean> {
         try {
-            return (await this.editorEngine?.activeSandbox.fileExists('.git')) || false;
+            return (await this.sandbox.fileExists('.git')) || false;
         } catch (error) {
             console.error('Error checking if repository is initialized:', error);
             return false;
@@ -36,8 +55,8 @@ export class GitManager {
      */
     async ensureGitConfig(): Promise<boolean> {
         try {
-            if (!this.editorEngine.activeSandbox.session) {
-                console.error('No editor engine or session available');
+            if (!this.sandbox.session) {
+                console.error('No sandbox session available');
                 return false;
             }
 
@@ -89,8 +108,8 @@ export class GitManager {
                 return true;
             }
 
-            if (!this.editorEngine.activeSandbox.session) {
-                console.error('No editor engine or session available');
+            if (!this.sandbox.session) {
+                console.error('No sandbox session available');
                 return false;
             }
 
@@ -122,7 +141,7 @@ export class GitManager {
      */
     async getStatus(): Promise<GitStatus | null> {
         try {
-            const status = await this.editorEngine?.activeSandbox.session.provider?.gitStatus({});
+            const status = await this.sandbox.session.provider?.gitStatus({});
             if (!status) {
                 console.error('Failed to get git status');
                 return null;
@@ -145,75 +164,138 @@ export class GitManager {
     }
 
     /**
-     * Create a commit
+     * Create a commit (low-level) - auto-refreshes commits after successful commit
      */
     async commit(message: string): Promise<GitCommandResult> {
         const sanitizedMessage = sanitizeCommitMessage(message);
         const escapedMessage = prepareCommitMessage(sanitizedMessage);
-        return this.runCommand(`git commit --allow-empty --no-verify -m ${escapedMessage}`);
+        const result = await this.runCommand(`git commit --allow-empty --no-verify -m ${escapedMessage}`);
+        if (result.success) {
+            await this.listCommits();
+        }
+        return result;
     }
 
     /**
-     * List commits with formatted output
+     * Create a commit (high-level) - handles full flow: stage, config, commit
      */
-    async listCommits(maxRetries = 2): Promise<GitCommit[]> {
-        let lastError: Error | null = null;
+    async createCommit(message: string = 'New Onlook backup'): Promise<GitCommandResult> {
+        const status = await this.getStatus();
 
-        for (let attempt = 0; attempt <= maxRetries; attempt++) {
-            try {
-                // Use a more robust format with unique separators and handle multiline messages
-                const result = await this.runCommand(
-                    'git --no-pager log --pretty=format:"COMMIT_START%n%H%n%an <%ae>%n%ad%n%B%nCOMMIT_END" --date=iso',
-                );
-
-                if (result.success && result.output) {
-                    return this.parseGitLog(result.output);
-                }
-
-                // If git command failed but didn't throw, treat as error for retry logic
-                lastError = new Error(`Git command failed: ${result.error || 'Unknown error'}`);
-
-                if (attempt < maxRetries) {
-                    // Wait before retry with exponential backoff
-                    await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
-                    continue;
-                }
-
-                return [];
-            } catch (error) {
-                lastError = error instanceof Error ? error : new Error(String(error));
-                console.warn(`Attempt ${attempt + 1} failed to list commits:`, lastError.message);
-
-                if (attempt < maxRetries) {
-                    // Wait before retry with exponential backoff
-                    await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
-                    continue;
-                }
-
-                console.error('All attempts failed to list commits', lastError);
-                return [];
-            }
+        // Stage all files
+        const addResult = await this.stageAll();
+        if (!addResult.success) {
+            return addResult;
         }
 
-        return [];
+        // Ensure git config
+        await this.ensureGitConfig();
+
+        // Create the commit
+        return await this.commit(message);
     }
 
     /**
-     * Checkout/restore to a specific commit
+     * List commits with formatted output - stores results in this.commits
+     */
+    async listCommits(maxRetries = 2): Promise<GitCommit[]> {
+        this.isLoadingCommits = true;
+        let lastError: Error | null = null;
+
+        try {
+            for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                try {
+                    // Use a more robust format with unique separators and handle multiline messages
+                    const result = await this.runCommand(
+                        'git --no-pager log --pretty=format:"COMMIT_START%n%H%n%an <%ae>%n%ad%n%B%nCOMMIT_END" --date=iso',
+                    );
+
+                    if (result.success && result.output) {
+                        const parsedCommits = this.parseGitLog(result.output);
+
+                        // Enhance commits with display names from notes
+                        if (parsedCommits.length > 0) {
+                            const enhancedCommits = await Promise.all(
+                                parsedCommits.map(async (commit) => {
+                                    const displayName = await this.getCommitNote(commit.oid);
+                                    return {
+                                        ...commit,
+                                        displayName: displayName || commit.message,
+                                    };
+                                }),
+                            );
+                            this.commits = enhancedCommits;
+                            return enhancedCommits;
+                        }
+
+                        this.commits = parsedCommits;
+                        return parsedCommits;
+                    }
+
+                    // If git command failed but didn't throw, treat as error for retry logic
+                    lastError = new Error(`Git command failed: ${result.error || 'Unknown error'}`);
+
+                    if (attempt < maxRetries) {
+                        // Wait before retry with exponential backoff
+                        await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
+                        continue;
+                    }
+
+                    this.commits = [];
+                    return [];
+                } catch (error) {
+                    lastError = error instanceof Error ? error : new Error(String(error));
+                    console.warn(`Attempt ${attempt + 1} failed to list commits:`, lastError.message);
+
+                    if (attempt < maxRetries) {
+                        // Wait before retry with exponential backoff
+                        await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
+                        continue;
+                    }
+
+                    console.error('All attempts failed to list commits', lastError);
+                    this.commits = [];
+                    return [];
+                }
+            }
+
+            this.commits = [];
+            return [];
+        } finally {
+            this.isLoadingCommits = false;
+        }
+    }
+
+    /**
+     * Checkout/restore to a specific commit - auto-refreshes commits after restore
      */
     async restoreToCommit(commitOid: string): Promise<GitCommandResult> {
-        return this.runCommand(`git restore --source ${commitOid} .`);
+        const result = await this.runCommand(`git restore --source ${commitOid} .`);
+        if (result.success) {
+            await this.listCommits();
+        }
+        return result;
     }
 
     /**
-     * Add a display name note to a commit
+     * Add a display name note to a commit - updates commit in local cache
      */
     async addCommitNote(commitOid: string, displayName: string): Promise<GitCommandResult> {
         const sanitizedDisplayName = sanitizeCommitMessage(displayName);
         const escapedDisplayName = prepareCommitMessage(sanitizedDisplayName);
-        return this.runCommand(
+        const result = await this.runCommand(
             `git --no-pager notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} add -f -m ${escapedDisplayName} ${commitOid}`,
         );
+
+        if (result.success && this.commits) {
+            // Update the commit in local cache instead of re-fetching all commits
+            const commitIndex = this.commits.findIndex((commit) => commit.oid === commitOid);
+            if (commitIndex !== -1) {
+                this.commits[commitIndex]!.displayName = sanitizedDisplayName;
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -239,8 +321,8 @@ export class GitManager {
     /**
      * Run a git command through the sandbox session
      */
-    private runCommand(command: string, ignoreError: boolean = false): Promise<GitCommandResult> {
-        return this.editorEngine.activeSandbox.session.runCommand(command, undefined, ignoreError);
+    private runCommand(command: string, ignoreError = false): Promise<GitCommandResult> {
+        return this.sandbox.session.runCommand(command, undefined, ignoreError);
     }
 
     /**
@@ -280,7 +362,7 @@ export class GitManager {
             if (!hash || !authorLine || !dateLine) continue;
 
             // Parse author name and email
-            const authorMatch = authorLine.match(/^(.+?)\s*<(.+?)>$/);
+            const authorMatch = /^(.+?)\s*<(.+?)>$/.exec(authorLine);
             const authorName = authorMatch?.[1]?.trim() || authorLine;
             const authorEmail = authorMatch?.[2]?.trim() || '';
 
