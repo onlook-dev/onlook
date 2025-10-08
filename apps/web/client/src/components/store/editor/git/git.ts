@@ -279,9 +279,15 @@ export class GitManager {
      * Checkout/restore to a specific commit - auto-refreshes commits after restore
      */
     async restoreToCommit(commitOid: string): Promise<GitCommandResult> {
-        return withSyncPaused(this.sandbox.syncEngine, () => {
+        const result = await withSyncPaused(this.sandbox.syncEngine, () => {
             return this.runCommand(`git restore --source ${commitOid} .`);
         });
+
+        if (result.success) {
+            await this.listCommits();
+        }
+
+        return result;
     }
 
     /**
