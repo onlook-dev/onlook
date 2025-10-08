@@ -4,6 +4,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { MessageContextType, type LocalImageMessageContext } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
+import { getMimeType } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { BreadcrumbNavigation } from './breadcrumb-navigation';
 import { FolderList } from './folder-list';
@@ -72,14 +73,7 @@ export const ImagesTab = observer(() => {
     const handleAddToChat = async (imagePath: string) => {
         try {
             const fileName = imagePath.split('/').pop() || imagePath;
-
-            // Determine mimeType from file extension
-            const mimeType = fileName.endsWith('.svg') ? 'image/svg+xml' :
-                           fileName.endsWith('.png') ? 'image/png' :
-                           fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') ? 'image/jpeg' :
-                           fileName.endsWith('.gif') ? 'image/gif' :
-                           fileName.endsWith('.webp') ? 'image/webp' :
-                           'image/*';
+            const mimeType = getMimeType(fileName);
 
             // Create LOCAL_IMAGE context with path reference
             const localImageContext: LocalImageMessageContext = {
