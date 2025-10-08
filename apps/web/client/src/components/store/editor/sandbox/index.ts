@@ -66,7 +66,7 @@ export class SandboxManager {
             this.sync = null;
         }
 
-        this.sync = CodeProviderSync.getInstance(provider, this.fs, {
+        this.sync = CodeProviderSync.getInstance(provider, this.fs, this.branch.sandbox.id, {
             exclude: EXCLUDED_SYNC_PATHS,
         });
 

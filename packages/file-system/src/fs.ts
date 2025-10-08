@@ -23,6 +23,10 @@ export class FileSystem {
         this.basePath = path.resolve('/', rootDir);
     }
 
+    get rootPath(): string {
+        return this.basePath;
+    }
+
     async initialize(): Promise<void> {
         if (this.isInitialized) {
             return;

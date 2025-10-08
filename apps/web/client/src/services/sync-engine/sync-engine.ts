@@ -54,16 +54,29 @@ export class CodeProviderSync {
     /**
      * Get or create a sync instance for the given provider and filesystem.
      * Uses reference counting to ensure the same provider+fs combination shares a single sync instance.
+     *
+     * Note: Config is only applied on first creation. Subsequent calls with the same provider+fs
+     * will reuse the existing instance with its original config. In practice, configs are static
+     * (EXCLUDED_SYNC_PATHS) so this shouldn't cause issues, but a warning is logged if detected.
      */
     static getInstance(
         provider: Provider,
         fs: CodeFileSystem,
+        sandboxId: string,
         config: SyncConfig = { include: [], exclude: [] },
     ): CodeProviderSync {
-        const key = CodeProviderSync.generateKey(provider, fs);
+        const key = CodeProviderSync.generateKey(sandboxId, fs);
 
         const existing = CodeProviderSync.instances.get(key);
         if (existing) {
+            // Warn if configs differ to help debug unexpected behavior
+            const sameConfig =
+                JSON.stringify(existing.sync.config ?? {}) === JSON.stringify(config ?? {});
+            if (!sameConfig) {
+                console.warn(
+                    `[Sync] getInstance(${key}) called with different config; reusing existing instance config`,
+                );
+            }
             existing.refCount++;
             console.log(`[Sync] Reusing existing sync instance for ${key} (refCount: ${existing.refCount})`);
             return existing.sync;
@@ -79,12 +92,8 @@ export class CodeProviderSync {
     /**
      * Generate a unique key for a provider+filesystem combination.
      */
-    private static generateKey(provider: Provider, fs: CodeFileSystem): string {
-        // Access sandboxId from CodesandboxProvider options
-        const sandboxId = (provider as any).options?.sandboxId || 'unknown';
-        // Use filesystem object identity as part of the key
-        const fsId = (fs as any).id || fs.constructor.name;
-        return `${sandboxId}:${fsId}`;
+    private static generateKey(sandboxId: string, fs: CodeFileSystem): string {
+        return `${sandboxId}:${fs.rootPath}`;
     }
 
     /**
