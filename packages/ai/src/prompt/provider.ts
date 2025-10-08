@@ -65,6 +65,7 @@ export function getHydratedUserMessage(
     const errors = context.filter((c) => c.type === MessageContextType.ERROR).map((c) => c);
     const agentRules = context.filter((c) => c.type === MessageContextType.AGENT_RULE).map((c) => c);
     const images = context.filter((c) => c.type === MessageContextType.IMAGE).map((c) => c);
+    const localImages = context.filter((c) => c.type === MessageContextType.LOCAL_IMAGE).map((c) => c);
     const branches = context.filter((c) => c.type === MessageContextType.BRANCH).map((c) => c);
 
     // If there are 50 user messages in the contexts, we can trim all of them except
@@ -100,11 +101,27 @@ export function getHydratedUserMessage(
         prompt += branchPrompt;
     }
 
+    if (localImages.length > 0) {
+        const localImageList = localImages
+            .map((img) => {
+                if ('path' in img && 'branchId' in img) {
+                    return `- ${img.displayName}: ${img.path} (branch: ${img.branchId})`;
+                }
+                return `- ${img.displayName}`;
+            })
+            .join('\n');
+        prompt += wrapXml('local-images',
+            'These images already exist in the project at the specified paths. Reference them directly in your code without uploading:\n' + localImageList
+        );
+    }
+
     if (images.length > 0) {
         const imageList = images
             .map((img, idx) => `${idx + 1}. ${img.displayName} (ID: ${img.id || 'unknown'})`)
             .join('\n');
-        prompt += wrapXml('available-images', imageList);
+        prompt += wrapXml('available-images',
+            'These are new images that need to be uploaded to the project using the upload_image tool:\n' + imageList
+        );
     }
 
     const textContent = parts
