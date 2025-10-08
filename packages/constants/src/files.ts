@@ -1,7 +1,7 @@
 const isDev = process.env.NODE_ENV === 'development';
 const BASE_EXCLUDED_DIRECTORIES = ['node_modules', 'dist', 'build', '.git', '.next'] as const;
 
-export const CUSTOM_OUTPUT_DIR = '.next';
+export const CUSTOM_OUTPUT_DIR = '.next-prod';
 export const ONLOOK_CACHE_DIRECTORY = '.onlook';
 
 // Preload script. Fetch from local public folder in dev, fetch from CDN in prod.
