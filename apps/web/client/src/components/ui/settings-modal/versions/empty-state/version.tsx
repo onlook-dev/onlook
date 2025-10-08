@@ -10,28 +10,36 @@ export const NoVersions = observer(() => {
     const [isCreating, setIsCreating] = useState(false);
 
     const handleCreateBackup = async () => {
-        setIsCreating(true);
-        const branchData = editorEngine.branches.activeBranchData;
+        try {
+            setIsCreating(true);
+            const branchData = editorEngine.branches.activeBranchData;
 
-        if (!branchData) {
+            if (!branchData) {
+                setIsCreating(false);
+                toast.error('No active branch available to create backup');
+                return;
+            }
+
+            const result = await branchData.sandbox.gitManager.createCommit('Initial commit');
+
             setIsCreating(false);
-            toast.error('No active branch available to create backup');
-            return;
-        }
 
-        const result = await branchData.sandbox.gitManager.createCommit('Initial commit');
+            if (!result.success) {
+                toast.error('Failed to create backup', {
+                    description: result.error || 'Unknown error',
+                });
+                return;
+            }
 
-        setIsCreating(false);
-
-        if (!result.success) {
+            toast.success('Backup created successfully!');
+            editorEngine.posthog.capture('versions_create_first_commit');
+        } catch (error) {
             toast.error('Failed to create backup', {
-                description: result.error || 'Unknown error',
+                description: error instanceof Error ? error.message : 'Unknown error',
             });
-            return;
+        } finally {
+            setIsCreating(false);
         }
-
-        toast.success('Backup created successfully!');
-        editorEngine.posthog.capture('versions_create_first_commit');
     };
 
     return (
