@@ -5,15 +5,13 @@ import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
 import { useMemo } from 'react';
 import { DraftContextPill } from './draft-context-pill';
-import { DraftImagePill } from './draft-image-pill';
 
 const typeOrder = {
     [MessageContextType.BRANCH]: 0,
     [MessageContextType.FILE]: 1,
     [MessageContextType.HIGHLIGHT]: 2,
     [MessageContextType.ERROR]: 3,
-    [MessageContextType.IMAGE]: 4,
-    [MessageContextType.AGENT_RULE]: 5,
+    [MessageContextType.AGENT_RULE]: 4,
 };
 
 export const InputContextPills = observer(() => {
@@ -28,32 +26,24 @@ export const InputContextPills = observer(() => {
     };
 
     const sortedContexts = useMemo(() => {
-        return [...editorEngine.chat.context.context].sort((a, b) => {
-            return typeOrder[a.type] - typeOrder[b.type];
-        });
+        // Filter out images - they're rendered separately in AttachedImages component
+        return [...editorEngine.chat.context.context]
+            .filter((context) => context.type !== MessageContextType.IMAGE)
+            .sort((a, b) => {
+                return typeOrder[a.type] - typeOrder[b.type];
+            });
     }, [editorEngine.chat.context.context]);
 
     return (
         <div className="flex flex-row flex-wrap items-center gap-1.5 px-1 pt-1">
             <AnimatePresence mode="popLayout">
-                {sortedContexts.map((context: MessageContext, index: number) => {
-                    if (context.type === MessageContextType.IMAGE) {
-                        return (
-                            <DraftImagePill
-                                key={`image-${context.content}-${index}`}
-                                context={context}
-                                onRemove={() => handleRemoveContext(context)}
-                            />
-                        );
-                    }
-                    return (
-                        <DraftContextPill
-                            key={`${context.type}-${context.content}-${index}`}
-                            context={context}
-                            onRemove={() => handleRemoveContext(context)}
-                        />
-                    );
-                })}
+                {sortedContexts.map((context: MessageContext, index: number) => (
+                    <DraftContextPill
+                        key={`${context.type}-${context.content}-${index}`}
+                        context={context}
+                        onRemove={() => handleRemoveContext(context)}
+                    />
+                ))}
             </AnimatePresence>
         </div>
     );

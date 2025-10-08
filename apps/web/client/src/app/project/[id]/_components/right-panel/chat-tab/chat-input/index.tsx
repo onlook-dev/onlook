@@ -22,6 +22,7 @@ import { validateImageLimit } from '../context-pills/helpers';
 import { InputContextPills } from '../context-pills/input-context-pills';
 import { type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
+import { AttachedImages } from './attached-images';
 import { ChatContextWindow } from './chat-context';
 import { ChatModeToggle } from './chat-mode-toggle';
 import { QueueItems } from './queue-items';
@@ -193,9 +194,7 @@ export const ChatInput = observer(({
     };
 
     const handleImageEvent = async (file: File, displayName?: string) => {
-        const currentImages = editorEngine.chat.context.context.filter(
-            ctx => ctx.type === MessageContextType.IMAGE
-        );
+        const currentImages = editorEngine.chat.context.imageContext;
         const { success, errorMessage } = validateImageLimit(currentImages, 1);
         if (!success) {
             toast.error(errorMessage);
@@ -220,9 +219,7 @@ export const ChatInput = observer(({
 
     const handleScreenshot = async () => {
         try {
-            const currentImages = editorEngine.chat.context.context.filter(
-                ctx => ctx.type === MessageContextType.IMAGE
-            );
+            const currentImages = editorEngine.chat.context.imageContext;
 
             const { success, errorMessage } = validateImageLimit(currentImages, 1);
             if (!success) {
@@ -336,6 +333,7 @@ export const ChatInput = observer(({
                     queuedMessages={queuedMessages}
                     removeFromQueue={removeFromQueue}
                 />
+                <AttachedImages />
                 <InputContextPills />
                 <Textarea
                     ref={textareaRef}

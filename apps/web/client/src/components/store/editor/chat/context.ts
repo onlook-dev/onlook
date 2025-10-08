@@ -16,6 +16,7 @@ import { type FrameData } from '../frames';
 
 export class ChatContext {
     private _context: MessageContext[] = [];
+    private _imageContext: ImageMessageContext[] = [];
     private selectedReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
@@ -42,8 +43,25 @@ export class ChatContext {
         this._context = context;
     }
 
+    get imageContext(): ImageMessageContext[] {
+        return this._imageContext;
+    }
+
+    set imageContext(context: ImageMessageContext[]) {
+        this._imageContext = context;
+    }
+
     addContexts(contexts: MessageContext[]) {
-        this._context = [...this._context, ...contexts];
+        // Route images to separate image context, everything else to canvas context
+        const images = contexts.filter((c) => c.type === MessageContextType.IMAGE) as ImageMessageContext[];
+        const canvasContext = contexts.filter((c) => c.type !== MessageContextType.IMAGE);
+
+        if (images.length > 0) {
+            this._imageContext = [...this._imageContext, ...images];
+        }
+        if (canvasContext.length > 0) {
+            this._context = [...this._context, ...canvasContext];
+        }
     }
 
     async getContextByChatType(type: ChatType): Promise<MessageContext[]> {
@@ -60,7 +78,12 @@ export class ChatContext {
     }
 
     async getChatEditContext(): Promise<MessageContext[]> {
-        return [...await this.getRefreshedContext(this.context), ...await this.getAgentRuleContext()];
+        // Merge canvas context with image context
+        return [
+            ...await this.getRefreshedContext(this.context),
+            ...this.imageContext,
+            ...await this.getAgentRuleContext()
+        ];
     }
 
     private async generateContextFromReaction({ elements, frames }: { elements: DomElement[], frames: FrameData[] }): Promise<MessageContext[]> {
@@ -68,12 +91,11 @@ export class ChatContext {
         if (elements.length) {
             highlightedContext = await this.getHighlightedContext(elements);
         }
-        const imageContext = await this.getImageContext();
 
-        // Derived from highlighted context
+        // Derived from highlighted context - images are managed separately now
         const fileContext = await this.getFileContext(highlightedContext);
         const branchContext = this.getBranchContext(highlightedContext, frames);
-        const context = [...fileContext, ...highlightedContext, ...imageContext, ...branchContext];
+        const context = [...fileContext, ...highlightedContext, ...branchContext];
         return context;
     }
 
@@ -112,13 +134,6 @@ export class ChatContext {
                 return c;
             }),
         )) satisfies MessageContext[];
-    }
-
-    private async getImageContext(): Promise<ImageMessageContext[]> {
-        const imageContext = this.context.filter(
-            (context) => context.type === MessageContextType.IMAGE,
-        );
-        return imageContext;
     }
 
     private async getFileContext(highlightedContext: HighlightMessageContext[]): Promise<FileMessageContext[]> {
@@ -387,12 +402,13 @@ export class ChatContext {
     }
 
     clearImagesFromContext() {
-        this.context = this.context.filter((context) => context.type !== MessageContextType.IMAGE);
+        this.imageContext = [];
     }
 
     clear() {
         this.selectedReactionDisposer?.();
         this.selectedReactionDisposer = undefined;
         this.context = [];
+        this.imageContext = [];
     }
 }
