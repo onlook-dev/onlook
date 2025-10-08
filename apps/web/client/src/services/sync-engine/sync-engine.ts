@@ -126,9 +126,15 @@ export class CodeProviderSync {
      * Resume syncing after being paused. Pulls fresh state from sandbox to ensure consistency.
      */
     async unpause(): Promise<void> {
-        this.isPaused = false;
+        // Keep paused while reconciling to avoid echoing local writes back to the provider
         if (this.isRunning) {
-            await this.pullFromSandbox();
+            try {
+                await this.pullFromSandbox();
+            } finally {
+                this.isPaused = false;
+            }
+        } else {
+            this.isPaused = false;
         }
     }
 
