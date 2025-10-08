@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import { useEffect, useRef, useState } from 'react';
 
 import type { GitCommit } from '@onlook/git';
 import { MessageCheckpointType } from '@onlook/models';
@@ -111,40 +111,48 @@ export const VersionRow = observer(
         };
 
         const handleCheckout = async () => {
-            setIsCheckingOut(true);
+            try {
+                setIsCheckingOut(true);
 
-            editorEngine.posthog.capture('versions_checkout_commit', {
-                commit: commit.displayName ?? commit.message,
-            });
-
-            const checkpoint = {
-                type: MessageCheckpointType.GIT,
-                oid: commit.oid,
-                branchId: editorEngine.branches.activeBranch.id,
-                createdAt: new Date(),
-            };
-
-            const result = await restoreCheckpoint(checkpoint, editorEngine);
-
-            setIsCheckingOut(false);
-
-            if (!result.success) {
-                editorEngine.posthog.capture('versions_checkout_commit_failed', {
-                    commit: commit.displayName || commit.message,
-                    error: result.error,
+                editorEngine.posthog.capture('versions_checkout_commit', {
+                    commit: commit.displayName ?? commit.message,
                 });
-                setIsCheckoutSuccess(false);
-                return;
+
+                const checkpoint = {
+                    type: MessageCheckpointType.GIT,
+                    oid: commit.oid,
+                    branchId: editorEngine.branches.activeBranch.id,
+                    createdAt: new Date(),
+                };
+
+                const result = await restoreCheckpoint(checkpoint, editorEngine);
+
+                setIsCheckingOut(false);
+
+                if (!result.success) {
+                    editorEngine.posthog.capture('versions_checkout_commit_failed', {
+                        commit: commit.displayName || commit.message,
+                        error: result.error,
+                    });
+                    setIsCheckoutSuccess(false);
+                    return;
+                }
+
+                editorEngine.posthog.capture('versions_checkout_commit_success', {
+                    commit: commit.displayName || commit.message,
+                });
+
+                setIsCheckoutSuccess(true);
+                setTimeout(() => {
+                    stateManager.isSettingsModalOpen = false;
+                }, 1000);
+            } catch (error) {
+                toast.error('Failed to restore backup', {
+                    description: error instanceof Error ? error.message : 'Unknown error',
+                });
+            } finally {
+                setIsCheckingOut(false);
             }
-
-            editorEngine.posthog.capture('versions_checkout_commit_success', {
-                commit: commit.displayName || commit.message,
-            });
-
-            setIsCheckoutSuccess(true);
-            setTimeout(() => {
-                stateManager.isSettingsModalOpen = false;
-            }, 1000);
         };
 
         return (
