@@ -29,6 +29,7 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
 
     // Modes
     useHotkeys(Hotkey.SELECT.command, () => (editorEngine.state.editorMode = EditorMode.DESIGN));
+    useHotkeys(Hotkey.CODE.command, () => (editorEngine.state.editorMode = EditorMode.CODE));
     useHotkeys(Hotkey.ESCAPE.command, () => {
         editorEngine.state.editorMode = EditorMode.DESIGN;
         if (!editorEngine.text.isEditing) {

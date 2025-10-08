@@ -20,9 +20,11 @@ interface CodeControlsProps {
     onRefresh: () => void;
     onCreateFile: (filePath: string, content?: string) => Promise<void>;
     onCreateFolder: (folderPath: string) => Promise<void>;
+    isSidebarOpen: boolean;
+    setIsSidebarOpen: (isSidebarOpen: boolean) => void;
 }
 
-export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreateFile, onCreateFolder }: CodeControlsProps) => {
+export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreateFile, onCreateFolder, isSidebarOpen, setIsSidebarOpen }: CodeControlsProps) => {
     const [showFileModal, setShowFileModal] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showFolderModal, setShowFolderModal] = useState(false);
@@ -46,8 +48,23 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
     };
 
     return (
-        <>
-            <div className="flex flex-row items-center transition-opacity duration-200">
+        <div className="flex flex-row items-center justify-between px-3 py-2 border-b border-border w-full">
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        className="text-muted-foreground hover:text-foreground"
+                    >
+                        {isSidebarOpen ? <Icons.SidebarLeftCollapse /> : <Icons.MoveToFolder />}
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="mt-1" hideArrow>
+                    {isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+                </TooltipContent>
+            </Tooltip>
+            <div className="flex flex-row items-center transition-opacity duration-200 ml-auto">
                 <Tooltip>
                     <DropdownMenu>
                         <TooltipTrigger asChild>
@@ -148,6 +165,6 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
                 onSuccess={handleModalSuccess}
                 onCreateFile={onCreateFile}
             />
-        </>
+        </div>
     );
 };

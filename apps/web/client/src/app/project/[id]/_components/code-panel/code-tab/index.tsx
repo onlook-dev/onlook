@@ -10,6 +10,7 @@ import { motion } from 'motion/react';
 import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { CodeEditorArea } from './file-content';
 import { FileTabs } from './file-tabs';
+import { CodeControls } from './header-controls';
 import { useCodeNavigation } from './hooks/use-code-navigation';
 import type { BinaryEditorFile, EditorFile, TextEditorFile } from './shared/types';
 import { isDirty } from './shared/utils';
@@ -27,7 +28,6 @@ export interface CodeTabRef {
 interface CodeTabProps {
     projectId: string;
     branchId: string;
-    onUnsavedChangesChange?: (hasUnsavedChanges: boolean) => void;
 }
 
 const createEditorFile = async (filePath: string, content: string | Uint8Array): Promise<EditorFile> => {
@@ -53,12 +53,12 @@ const createEditorFile = async (filePath: string, content: string | Uint8Array):
     }
 }
 
-export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, branchId, onUnsavedChangesChange }, ref) => {
+export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, branchId }, ref) => {
     const editorEngine = useEditorEngine();
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const navigationTarget = useCodeNavigation();
 
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
     const [activeEditorFile, setActiveEditorFile] = useState<EditorFile | null>(null);
     const [openedEditorFiles, setOpenedEditorFiles] = useState<EditorFile[]>([]);
@@ -154,11 +154,6 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
 
         checkDirtyState();
     }, [openedEditorFiles]);
-
-    // Notify parent when hasUnsavedChanges changes
-    useEffect(() => {
-        onUnsavedChangesChange?.(hasUnsavedChanges);
-    }, [hasUnsavedChanges, onUnsavedChangesChange]);
 
     const refreshFileTree = () => {
         // Force refresh of file entries
@@ -400,55 +395,67 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
     }, []);
 
     return (
-        <div className="size-full flex flex-row flex-1 min-h-0">
-            <motion.div
-                initial={false}
-                animate={{
-                    width: isSidebarOpen ? "auto" : 0,
-                    opacity: isSidebarOpen ? 1 : 0
-                }}
-                transition={{
-                    duration: 0.3,
-                    ease: [0.4, 0.0, 0.2, 1]
-                }}
-                className="flex-shrink-0 overflow-y-auto"
-                style={{ minWidth: 0 }}>
-                <FileTree
-                    onFileSelect={handleFileTreeSelect}
-                    fileEntries={fileEntries}
-                    isLoading={filesLoading}
-                    selectedFilePath={selectedFilePath}
-                    onDeleteFile={handleDeleteFile}
-                    onRenameFile={handleRenameFile}
-                    onRefresh={() => { }}
-                />
-            </motion.div>
-            <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-                <FileTabs
-                    openedFiles={openedEditorFiles}
-                    activeFile={activeEditorFile}
-                    isSidebarOpen={isSidebarOpen}
-                    setIsSidebarOpen={setIsSidebarOpen}
-                    onFileSelect={handleLocalFileTabSelect}
-                    onCloseFile={closeLocalFile}
-                    onCloseAllFiles={closeAllLocalFiles}
-                />
-                <CodeEditorArea
-                    editorViewsRef={editorViewsRef}
-                    openedFiles={openedEditorFiles}
-                    activeFile={activeEditorFile}
-                    showUnsavedDialog={showLocalUnsavedDialog}
-                    navigationTarget={navigationTarget}
-                    onSaveFile={handleSaveFile}
-                    onSaveAndCloseFiles={handleSaveAndCloseFiles}
-                    onUpdateFileContent={updateLocalFileContent}
-                    onDiscardChanges={discardLocalFileChanges}
-                    onCancelUnsaved={() => {
-                        setFilesToClose([]);
-                        setShowLocalUnsavedDialog(false);
+        <div className="flex flex-col size-full flex-1 min-h-0">
+            <CodeControls
+                isDirty={hasUnsavedChanges}
+                currentPath={getCurrentPath()}
+                onSave={handleSaveFile}
+                onRefresh={refreshFileTree}
+                onCreateFile={handleCreateFile}
+                onCreateFolder={handleCreateFolder}
+                isSidebarOpen={isSidebarOpen}
+                setIsSidebarOpen={setIsSidebarOpen}
+            />
+            <div className="flex flex-1 min-h-0">
+                <motion.div
+                    initial={false}
+                    animate={{
+                        width: isSidebarOpen ? "auto" : 0,
+                        opacity: isSidebarOpen ? 1 : 0
                     }}
-                    fileCountToClose={filesToClose.length}
-                />
+                    transition={{
+                        duration: 0.3,
+                        ease: [0.4, 0.0, 0.2, 1]
+                    }}
+                    className="flex-shrink-0 overflow-y-auto"
+                    style={{ minWidth: 0 }}>
+                    <FileTree
+                        onFileSelect={handleFileTreeSelect}
+                        fileEntries={fileEntries}
+                        isLoading={filesLoading}
+                        selectedFilePath={selectedFilePath}
+                        onDeleteFile={handleDeleteFile}
+                        onRenameFile={handleRenameFile}
+                        onRefresh={() => { }}
+                    />
+                </motion.div>
+                <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+                    <FileTabs
+                        openedFiles={openedEditorFiles}
+                        activeFile={activeEditorFile}
+                        isSidebarOpen={isSidebarOpen}
+                        setIsSidebarOpen={setIsSidebarOpen}
+                        onFileSelect={handleLocalFileTabSelect}
+                        onCloseFile={closeLocalFile}
+                        onCloseAllFiles={closeAllLocalFiles}
+                    />
+                    <CodeEditorArea
+                        editorViewsRef={editorViewsRef}
+                        openedFiles={openedEditorFiles}
+                        activeFile={activeEditorFile}
+                        showUnsavedDialog={showLocalUnsavedDialog}
+                        navigationTarget={navigationTarget}
+                        onSaveFile={handleSaveFile}
+                        onSaveAndCloseFiles={handleSaveAndCloseFiles}
+                        onUpdateFileContent={updateLocalFileContent}
+                        onDiscardChanges={discardLocalFileChanges}
+                        onCancelUnsaved={() => {
+                            setFilesToClose([]);
+                            setShowLocalUnsavedDialog(false);
+                        }}
+                        fileCountToClose={filesToClose.length}
+                    />
+                </div>
             </div>
         </div>
     );
