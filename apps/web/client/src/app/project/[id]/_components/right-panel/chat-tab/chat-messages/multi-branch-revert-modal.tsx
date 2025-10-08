@@ -34,6 +34,8 @@ export const MultiBranchRevertModal = ({
     const [selectedBranchIds, setSelectedBranchIds] = useState<string[]>([]);
     const [isRestoring, setIsRestoring] = useState(false);
 
+    const allAreSelected = selectedBranchIds.length === checkpoints.length;
+
     const toggleBranch = (branchId: string) => {
         setSelectedBranchIds((prev) =>
             prev.includes(branchId) ? prev.filter((id) => id !== branchId) : [...prev, branchId],
@@ -49,47 +51,49 @@ export const MultiBranchRevertModal = ({
     };
 
     const handleRevert = async () => {
-        if (selectedBranchIds.length === 0) {
-            toast.error('Please select at least one branch to revert');
-            return;
-        }
-
-        setIsRestoring(true);
-        let successCount = 0;
-        let failCount = 0;
-
-        for (const branchId of selectedBranchIds) {
-            const checkpoint = checkpoints.find((cp) => cp.branchId === branchId);
-            if (!checkpoint) {
-                failCount++;
-                continue;
+        try {
+            if (selectedBranchIds.length === 0) {
+                toast.error('Please select at least one branch to revert');
+                return;
             }
 
-            const result = await restoreCheckpoint(checkpoint, editorEngine);
-            if (result.success) {
-                successCount++;
-            } else {
-                failCount++;
+            setIsRestoring(true);
+
+            const restorePromises = selectedBranchIds.map(async (branchId) => {
+                const checkpoint = checkpoints.find((cp) => cp.branchId === branchId);
+                if (!checkpoint) {
+                    return { success: false };
+                }
+                return restoreCheckpoint(checkpoint, editorEngine);
+            });
+
+            const results = await Promise.all(restorePromises);
+            const successCount = results.filter((r) => r.success).length;
+            const failCount = results.length - successCount;
+
+            if (successCount > 0) {
+                toast.success(
+                    `Successfully restored ${successCount} branch${successCount > 1 ? 'es' : ''}`,
+                    {
+                        description:
+                            failCount > 0
+                                ? `${failCount} branch${failCount > 1 ? 'es' : ''} failed to restore`
+                                : undefined,
+                    },
+                );
+            } else if (failCount > 0) {
+                toast.error('Failed to restore all selected branches');
             }
-        }
+        } catch (error) {
+            toast.error('Failed to restore branches', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
+        } finally {
 
-        if (successCount > 0) {
-            toast.success(
-                `Successfully restored ${successCount} branch${successCount > 1 ? 'es' : ''}`,
-                {
-                    description:
-                        failCount > 0
-                            ? `${failCount} branch${failCount > 1 ? 'es' : ''} failed to restore`
-                            : undefined,
-                },
-            );
-        } else if (failCount > 0) {
-            toast.error('Failed to restore all selected branches');
+            setIsRestoring(false);
+            onOpenChange(false);
+            setSelectedBranchIds([]);
         }
-
-        setIsRestoring(false);
-        onOpenChange(false);
-        setSelectedBranchIds([]);
     };
 
     return (
@@ -103,22 +107,25 @@ export const MultiBranchRevertModal = ({
                 </DialogHeader>
                 <div className="flex flex-col gap-2 py-4">
                     <div className="mb-1 flex justify-end gap-1">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={selectAll}
-                            disabled={isRestoring}
-                        >
-                            Select All
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={selectNone}
-                            disabled={isRestoring}
-                        >
-                            Select None
-                        </Button>
+                        {allAreSelected ? (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={selectNone}
+                                disabled={isRestoring}
+                            >
+                                Select None
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={selectAll}
+                                disabled={isRestoring}
+                            >
+                                Select All
+                            </Button>
+                        )}
                     </div>
                     <div className="flex flex-col gap-2">
                         {checkpoints.map((checkpoint) => {
@@ -167,7 +174,7 @@ export const MultiBranchRevertModal = ({
                         disabled={isRestoring || selectedBranchIds.length === 0}
                         className="order-1 sm:order-2"
                     >
-                        {isRestoring ? 'Restoring...' : 'Revert Selected'}
+                        {isRestoring ? 'Restoring...' : 'Restore Selected'}
                     </Button>
                 </DialogFooter>
             </DialogContent>
