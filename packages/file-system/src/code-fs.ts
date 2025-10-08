@@ -52,10 +52,23 @@ export class CodeFileSystem extends FileSystem {
     }
 
     async writeFiles(files: Array<{ path: string; content: string | Uint8Array }>): Promise<void> {
+        const startTime = performance.now();
+        console.log(`[CodeFileSystem] Starting writeFiles for ${files.length} files...`);
+
         // Write files sequentially to avoid race conditions to metadata file
         for (const { path, content } of files) {
+            const fileStart = performance.now();
             await this.writeFile(path, content);
+            const fileDuration = performance.now() - fileStart;
+            if (fileDuration > 100) {
+                console.log(`[CodeFileSystem] Wrote ${path} in ${fileDuration.toFixed(2)}ms`);
+            }
         }
+
+        const totalDuration = performance.now() - startTime;
+        console.log(
+            `[CodeFileSystem] Completed writeFiles for ${files.length} files in ${totalDuration.toFixed(2)}ms (avg: ${(totalDuration / files.length).toFixed(2)}ms/file)`,
+        );
     }
 
     private async processJsxFile(path: string, content: string): Promise<string> {
@@ -137,24 +150,40 @@ export class CodeFileSystem extends FileSystem {
     }
 
     async rebuildIndex(): Promise<void> {
-        const startTime = Date.now();
+        const startTime = performance.now();
+        console.log('[CodeEditorApi] Starting index rebuild...');
+
         const index: Record<string, JsxElementMetadata> = {};
 
+        const listStart = performance.now();
         const entries = await this.listAll();
         const jsxFiles = entries.filter(
             (entry) => entry.type === 'file' && this.isJsxFile(entry.path),
         );
+        console.log(
+            `[CodeEditorApi] Listed ${entries.length} entries (${jsxFiles.length} JSX files) in ${(performance.now() - listStart).toFixed(2)}ms`,
+        );
 
         const BATCH_SIZE = 10;
         let processedCount = 0;
+        let totalReadTime = 0;
+        let totalParseTime = 0;
+        let totalIndexTime = 0;
 
         for (let i = 0; i < jsxFiles.length; i += BATCH_SIZE) {
             const batch = jsxFiles.slice(i, i + BATCH_SIZE);
+            const batchStart = performance.now();
+
             await Promise.all(
                 batch.map(async (entry) => {
                     try {
+                        const readStart = performance.now();
                         const content = await this.readFile(entry.path);
+                        const readDuration = performance.now() - readStart;
+                        totalReadTime += readDuration;
+
                         if (typeof content === 'string') {
+                            const parseStart = performance.now();
                             const ast = getAstFromContent(content);
                             if (!ast) return;
 
@@ -163,7 +192,10 @@ export class CodeFileSystem extends FileSystem {
                                 filename: entry.path,
                                 branchId: this.branchId,
                             });
+                            const parseDuration = performance.now() - parseStart;
+                            totalParseTime += parseDuration;
 
+                            const indexStart = performance.now();
                             for (const [oid, node] of templateNodeMap.entries()) {
                                 const code = await getContentFromTemplateNode(node, content);
                                 index[oid] = {
@@ -172,6 +204,8 @@ export class CodeFileSystem extends FileSystem {
                                     code: code || '',
                                 };
                             }
+                            const indexDuration = performance.now() - indexStart;
+                            totalIndexTime += indexDuration;
 
                             processedCount++;
                         }
@@ -180,13 +214,23 @@ export class CodeFileSystem extends FileSystem {
                     }
                 }),
             );
+
+            const batchDuration = performance.now() - batchStart;
+            console.log(
+                `[CodeEditorApi] Processed batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(jsxFiles.length / BATCH_SIZE)} (${batch.length} files) in ${batchDuration.toFixed(2)}ms`,
+            );
         }
 
+        const saveStart = performance.now();
         await this.saveIndex(index);
+        const saveDuration = performance.now() - saveStart;
 
-        const duration = Date.now() - startTime;
+        const totalDuration = performance.now() - startTime;
         console.log(
-            `[CodeEditorApi] Index built: ${Object.keys(index).length} elements from ${processedCount} files in ${duration}ms`,
+            `[CodeEditorApi] Index built: ${Object.keys(index).length} elements from ${processedCount} files in ${totalDuration.toFixed(2)}ms`,
+        );
+        console.log(
+            `[CodeEditorApi] Timing breakdown: read=${totalReadTime.toFixed(2)}ms, parse=${totalParseTime.toFixed(2)}ms, index=${totalIndexTime.toFixed(2)}ms, save=${saveDuration.toFixed(2)}ms`,
         );
     }
 

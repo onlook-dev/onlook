@@ -522,30 +522,65 @@ export class FileSystem {
 
         const allPaths: Array<{ path: string; type: 'file' | 'directory' }> = [];
 
-        const listRecursive = async (dirPath: string): Promise<void> => {
+        const listRecursive = async (
+            dirPath: string,
+        ): Promise<Array<{ path: string; type: 'file' | 'directory' }>> => {
             try {
                 const entries = await this.fs!.promises.readdir(dirPath);
 
-                for (const entry of entries) {
-                    const entryPath = path.join(dirPath, entry);
-                    const stats = await this.fs!.promises.stat(entryPath);
+                // First, stat all entries in parallel
+                const entryStats = await Promise.all(
+                    entries.map(async (entry) => {
+                        const entryPath = path.join(dirPath, entry);
+                        try {
+                            const stats = await this.fs!.promises.stat(entryPath);
+                            const relativePath = entryPath.substring(this.basePath.length);
+                            return {
+                                entryPath,
+                                relativePath,
+                                isDirectory: stats.isDirectory(),
+                                isFile: stats.isFile(),
+                            };
+                        } catch (err) {
+                            return null;
+                        }
+                    }),
+                );
 
-                    const relativePath = entryPath.substring(this.basePath.length);
+                const results: Array<{ path: string; type: 'file' | 'directory' }> = [];
+                const subdirPromises: Promise<
+                    Array<{ path: string; type: 'file' | 'directory' }>
+                >[] = [];
 
-                    if (stats.isDirectory()) {
-                        allPaths.push({ path: relativePath, type: 'directory' });
-                        await listRecursive(entryPath);
-                    } else if (stats.isFile()) {
-                        allPaths.push({ path: relativePath, type: 'file' });
+                for (const entryStat of entryStats) {
+                    if (!entryStat) continue;
+
+                    if (entryStat.isDirectory) {
+                        results.push({ path: entryStat.relativePath, type: 'directory' });
+                        // Recursively list subdirectories in parallel
+                        subdirPromises.push(listRecursive(entryStat.entryPath));
+                    } else if (entryStat.isFile) {
+                        results.push({ path: entryStat.relativePath, type: 'file' });
                     }
                 }
+
+                // Wait for all subdirectories to be processed
+                const subdirResults = await Promise.all(subdirPromises);
+
+                // Flatten results
+                for (const subdirResult of subdirResults) {
+                    results.push(...subdirResult);
+                }
+
+                return results;
             } catch (err) {
                 // Ignore errors
+                return [];
             }
         };
 
-        await listRecursive(this.basePath);
-        return allPaths;
+        const results = await listRecursive(this.basePath);
+        return results;
     }
 
     cleanup(): void {
