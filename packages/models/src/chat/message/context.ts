@@ -4,6 +4,7 @@ export enum MessageContextType {
     FILE = 'file',
     HIGHLIGHT = 'highlight',
     IMAGE = 'image',
+    LOCAL_IMAGE = 'local_image',
     ERROR = 'error',
     BRANCH = 'branch',
     AGENT_RULE = 'agent_rule',
@@ -41,6 +42,13 @@ export type ImageMessageContext = BaseMessageContext & {
     id?: string;
 };
 
+export type LocalImageMessageContext = BaseMessageContext & {
+    type: MessageContextType.LOCAL_IMAGE;
+    path: string;
+    branchId: string;
+    mimeType: string;
+};
+
 export type ErrorMessageContext = BaseMessageContext & {
     type: MessageContextType.ERROR;
     branchId: string;
@@ -54,6 +62,7 @@ export type AgentRuleMessageContext = BaseMessageContext & {
 export type MessageContext =
     | HighlightMessageContext
     | ImageMessageContext
+    | LocalImageMessageContext
     | ErrorMessageContext
     | AgentRuleMessageContext
     | BranchMessageContext

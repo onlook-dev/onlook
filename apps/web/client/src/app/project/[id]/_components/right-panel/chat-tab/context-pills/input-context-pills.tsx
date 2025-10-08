@@ -12,6 +12,7 @@ const typeOrder = {
     [MessageContextType.HIGHLIGHT]: 2,
     [MessageContextType.ERROR]: 3,
     [MessageContextType.AGENT_RULE]: 4,
+    [MessageContextType.LOCAL_IMAGE]: 5,
 };
 
 export const InputContextPills = observer(() => {
@@ -26,9 +27,12 @@ export const InputContextPills = observer(() => {
     };
 
     const sortedContexts = useMemo(() => {
-        // Filter out images - they're rendered separately in AttachedImages component
+        // Filter out images (both IMAGE and LOCAL_IMAGE) - they're rendered separately in AttachedImages component
         return [...editorEngine.chat.context.context]
-            .filter((context) => context.type !== MessageContextType.IMAGE)
+            .filter((context) =>
+                context.type !== MessageContextType.IMAGE &&
+                context.type !== MessageContextType.LOCAL_IMAGE
+            )
             .sort((a, b) => {
                 return typeOrder[a.type] - typeOrder[b.type];
             });

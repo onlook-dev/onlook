@@ -5,7 +5,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
 import { transKeys } from '@/i18n/keys';
 import type { ChatMessage, QueuedMessage } from '@onlook/models';
-import { ChatType, EditorTabValue, type ImageMessageContext } from '@onlook/models';
+import { ChatType, EditorTabValue, type ImageMessageContext, type LocalImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -178,8 +178,41 @@ export const ChatInput = observer(({
 
     const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
+        setIsDragging(false);
         e.currentTarget.removeAttribute('data-dragging-image');
 
+        // First, check for internal drag-and-drop from image panel
+        const jsonData = e.dataTransfer.getData('application/json');
+        if (jsonData) {
+            try {
+                const data = JSON.parse(jsonData);
+                if (data.type === 'image' && data.originPath) {
+                    // Handle drag from image panel - create LOCAL_IMAGE context
+                    const currentImages = editorEngine.chat.context.imageContext;
+                    const { success, errorMessage } = validateImageLimit(currentImages, 1);
+                    if (!success) {
+                        toast.error(errorMessage);
+                        return;
+                    }
+
+                    const localImageContext: LocalImageMessageContext = {
+                        type: MessageContextType.LOCAL_IMAGE,
+                        path: data.originPath,
+                        branchId: editorEngine.branches.activeBranch.id,
+                        content: data.originPath, // Use path as content for display purposes
+                        displayName: data.fileName,
+                        mimeType: data.mimeType,
+                    };
+                    editorEngine.chat.context.addContexts([localImageContext]);
+                    toast.success('Image added to chat');
+                    return;
+                }
+            } catch (error) {
+                console.error('Failed to parse drag data:', error);
+            }
+        }
+
+        // Fall back to handling external file drops
         const items = e.dataTransfer.items;
         for (const item of items) {
             if (item.type.startsWith('image/')) {

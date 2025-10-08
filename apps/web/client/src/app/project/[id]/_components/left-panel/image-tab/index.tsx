@@ -1,7 +1,7 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
-import { MessageContextType, type FileMessageContext } from '@onlook/models/chat';
+import { MessageContextType, type LocalImageMessageContext } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { observer } from 'mobx-react-lite';
@@ -71,17 +71,27 @@ export const ImagesTab = observer(() => {
 
     const handleAddToChat = async (imagePath: string) => {
         try {
-            // Convert the image path to file context for chat
             const fileName = imagePath.split('/').pop() || imagePath;
-            const fileContext: FileMessageContext = {
-                type: MessageContextType.FILE,
-                content: '', // File content will be loaded by the chat system
-                displayName: fileName,
+
+            // Determine mimeType from file extension
+            const mimeType = fileName.endsWith('.svg') ? 'image/svg+xml' :
+                           fileName.endsWith('.png') ? 'image/png' :
+                           fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') ? 'image/jpeg' :
+                           fileName.endsWith('.gif') ? 'image/gif' :
+                           fileName.endsWith('.webp') ? 'image/webp' :
+                           'image/*';
+
+            // Create LOCAL_IMAGE context with path reference
+            const localImageContext: LocalImageMessageContext = {
+                type: MessageContextType.LOCAL_IMAGE,
                 path: imagePath,
                 branchId: branchId,
+                content: imagePath, // Use path as content for display purposes
+                displayName: fileName,
+                mimeType: mimeType,
             };
 
-            editorEngine.chat.context.addContexts([fileContext]);
+            editorEngine.chat.context.addContexts([localImageContext]);
             toast.success('Image added to chat');
         } catch (error) {
             console.error('Failed to add image to chat:', error);

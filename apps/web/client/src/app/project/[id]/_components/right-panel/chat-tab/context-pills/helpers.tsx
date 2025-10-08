@@ -7,7 +7,7 @@ import { NodeIcon } from '../../../left-panel/layers-tab/tree/node-icon';
 export function getTruncatedName(context: MessageContext) {
     let name = getContextLabel(context);
 
-    if (context.type === MessageContextType.FILE || context.type === MessageContextType.IMAGE) {
+    if (context.type === MessageContextType.FILE || context.type === MessageContextType.IMAGE || context.type === MessageContextType.LOCAL_IMAGE) {
         name = getTruncatedFileName(name);
     }
     if (context.type === MessageContextType.HIGHLIGHT) {

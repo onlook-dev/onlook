@@ -7,6 +7,7 @@ import {
     type FileMessageContext,
     type HighlightMessageContext,
     type ImageMessageContext,
+    type LocalImageMessageContext,
     type MessageContext
 } from '@onlook/models/chat';
 import { assertNever, type ParsedError } from '@onlook/utility';
@@ -16,7 +17,7 @@ import { type FrameData } from '../frames';
 
 export class ChatContext {
     private _context: MessageContext[] = [];
-    private _imageContext: ImageMessageContext[] = [];
+    private _imageContext: (ImageMessageContext | LocalImageMessageContext)[] = [];
     private selectedReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
@@ -43,18 +44,22 @@ export class ChatContext {
         this._context = context;
     }
 
-    get imageContext(): ImageMessageContext[] {
+    get imageContext(): (ImageMessageContext | LocalImageMessageContext)[] {
         return this._imageContext;
     }
 
-    set imageContext(context: ImageMessageContext[]) {
+    set imageContext(context: (ImageMessageContext | LocalImageMessageContext)[]) {
         this._imageContext = context;
     }
 
     addContexts(contexts: MessageContext[]) {
-        // Route images to separate image context, everything else to canvas context
-        const images = contexts.filter((c) => c.type === MessageContextType.IMAGE) as ImageMessageContext[];
-        const canvasContext = contexts.filter((c) => c.type !== MessageContextType.IMAGE);
+        // Route images (both IMAGE and LOCAL_IMAGE) to separate image context, everything else to canvas context
+        const images = contexts.filter(
+            (c) => c.type === MessageContextType.IMAGE || c.type === MessageContextType.LOCAL_IMAGE
+        ) as (ImageMessageContext | LocalImageMessageContext)[];
+        const canvasContext = contexts.filter(
+            (c) => c.type !== MessageContextType.IMAGE && c.type !== MessageContextType.LOCAL_IMAGE
+        );
 
         if (images.length > 0) {
             this._imageContext = [...this._imageContext, ...images];

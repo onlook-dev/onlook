@@ -1,5 +1,6 @@
 import { MessageContextType, type MessageContext } from '@onlook/models';
 import { AgentRuleContext, BranchContext, ErrorContext, FileContext, HighlightContext, ImageContext } from './classes';
+import { LocalImageContext } from './classes/local-image';
 import type { ContextClass } from './models';
 
 const CONTEXT_CLASSES_MAP: Map<string, ContextClass> = new Map(Object.entries({
@@ -8,6 +9,7 @@ const CONTEXT_CLASSES_MAP: Map<string, ContextClass> = new Map(Object.entries({
     [MessageContextType.ERROR]: ErrorContext,
     [MessageContextType.BRANCH]: BranchContext,
     [MessageContextType.IMAGE]: ImageContext,
+    [MessageContextType.LOCAL_IMAGE]: LocalImageContext,
     [MessageContextType.AGENT_RULE]: AgentRuleContext,
 }));
 

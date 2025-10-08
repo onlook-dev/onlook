@@ -1,16 +1,17 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
-import type { ImageMessageContext } from '@onlook/models/chat';
+import type { ImageMessageContext, LocalImageMessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
 import { DraftImagePill } from '../context-pills/draft-image-pill';
+import { LocalImagePill } from '../context-pills/local-image-pill';
 
 export const AttachedImages = observer(() => {
     const editorEngine = useEditorEngine();
 
-    const handleRemoveImage = (imageToRemove: ImageMessageContext) => {
+    const handleRemoveImage = (imageToRemove: ImageMessageContext | LocalImageMessageContext) => {
         const newImageContext = editorEngine.chat.context.imageContext.filter(
             (image) => image !== imageToRemove,
         );
@@ -30,17 +31,25 @@ export const AttachedImages = observer(() => {
             </div>
             <div className="flex flex-row flex-wrap items-center gap-1.5 px-1">
                 <AnimatePresence mode="popLayout">
-                    {images.map((image: ImageMessageContext, index: number) => {
-                        if (image.type !== MessageContextType.IMAGE) {
-                            return null;
+                    {images.map((image, index: number) => {
+                        if (image.type === MessageContextType.IMAGE) {
+                            return (
+                                <DraftImagePill
+                                    key={`image-${image.id ?? image.content}-${index}`}
+                                    context={image}
+                                    onRemove={() => handleRemoveImage(image)}
+                                />
+                            );
+                        } else if (image.type === MessageContextType.LOCAL_IMAGE) {
+                            return (
+                                <LocalImagePill
+                                    key={`local-image-${image.path}-${index}`}
+                                    context={image}
+                                    onRemove={() => handleRemoveImage(image)}
+                                />
+                            );
                         }
-                        return (
-                            <DraftImagePill
-                                key={`image-${image.id ?? image.content}-${index}`}
-                                context={image}
-                                onRemove={() => handleRemoveImage(image)}
-                            />
-                        );
+                        return null;
                     })}
                 </AnimatePresence>
             </div>
