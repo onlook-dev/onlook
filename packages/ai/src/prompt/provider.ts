@@ -103,12 +103,7 @@ export function getHydratedUserMessage(
 
     if (localImages.length > 0) {
         const localImageList = localImages
-            .map((img) => {
-                if ('path' in img && 'branchId' in img) {
-                    return `- ${img.displayName}: ${img.path} (branch: ${img.branchId})`;
-                }
-                return `- ${img.displayName}`;
-            })
+            .map((img) => `- ${img.displayName}: ${img.path} (branch: ${img.branchId})`)
             .join('\n');
         prompt += wrapXml('local-images',
             'These images already exist in the project at the specified paths. Reference them directly in your code without uploading:\n' + localImageList
@@ -135,6 +130,15 @@ export function getHydratedUserMessage(
     if (images.length > 0) {
         const fileParts: FileUIPart[] = ImageContext.toFileUIParts(images);
         userParts = userParts.concat(fileParts);
+    }
+
+    if (localImages.length > 0) {
+        const localFileParts: FileUIPart[] = localImages.map((img) => ({
+            type: 'file' as const,
+            mediaType: img.mimeType,
+            url: img.content, // base64 data URL
+        }));
+        userParts = userParts.concat(localFileParts);
     }
 
     return {

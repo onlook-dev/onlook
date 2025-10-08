@@ -17,7 +17,6 @@ import { type FrameData } from '../frames';
 
 export class ChatContext {
     private _context: MessageContext[] = [];
-    private _imageContext: (ImageMessageContext | LocalImageMessageContext)[] = [];
     private selectedReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
@@ -32,7 +31,13 @@ export class ChatContext {
             }),
             (
                 { elements, frames },
-            ) => this.generateContextFromReaction({ elements, frames }).then((context) => (this.context = context)),
+            ) => this.generateContextFromReaction({ elements, frames }).then((context) => {
+                // Preserve existing images when updating context from canvas selection
+                const existingImages = this._context.filter(
+                    (c) => c.type === MessageContextType.IMAGE || c.type === MessageContextType.LOCAL_IMAGE
+                );
+                this.context = [...context, ...existingImages];
+            }),
         );
     }
 
@@ -44,29 +49,8 @@ export class ChatContext {
         this._context = context;
     }
 
-    get imageContext(): (ImageMessageContext | LocalImageMessageContext)[] {
-        return this._imageContext;
-    }
-
-    set imageContext(context: (ImageMessageContext | LocalImageMessageContext)[]) {
-        this._imageContext = context;
-    }
-
     addContexts(contexts: MessageContext[]) {
-        // Route images (both IMAGE and LOCAL_IMAGE) to separate image context, everything else to canvas context
-        const images = contexts.filter(
-            (c) => c.type === MessageContextType.IMAGE || c.type === MessageContextType.LOCAL_IMAGE
-        ) as (ImageMessageContext | LocalImageMessageContext)[];
-        const canvasContext = contexts.filter(
-            (c) => c.type !== MessageContextType.IMAGE && c.type !== MessageContextType.LOCAL_IMAGE
-        );
-
-        if (images.length > 0) {
-            this._imageContext = [...this._imageContext, ...images];
-        }
-        if (canvasContext.length > 0) {
-            this._context = [...this._context, ...canvasContext];
-        }
+        this._context = [...this._context, ...contexts];
     }
 
     async getContextByChatType(type: ChatType): Promise<MessageContext[]> {
@@ -83,10 +67,8 @@ export class ChatContext {
     }
 
     async getChatEditContext(): Promise<MessageContext[]> {
-        // Merge canvas context with image context
         return [
             ...await this.getRefreshedContext(this.context),
-            ...this.imageContext,
             ...await this.getAgentRuleContext()
         ];
     }
@@ -407,13 +389,14 @@ export class ChatContext {
     }
 
     clearImagesFromContext() {
-        this.imageContext = [];
+        this.context = this.context.filter(
+            (c) => c.type !== MessageContextType.IMAGE && c.type !== MessageContextType.LOCAL_IMAGE
+        );
     }
 
     clear() {
         this.selectedReactionDisposer?.();
         this.selectedReactionDisposer = undefined;
         this.context = [];
-        this.imageContext = [];
     }
 }

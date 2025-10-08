@@ -110,3 +110,20 @@ export const convertToBase64 = (content: Uint8Array): string => {
             .join(''),
     );
 };
+
+/**
+ * Convert file content (string or binary) to a base64 data URL
+ * @param content - File content (string for text files, Uint8Array for binary)
+ * @param mimeType - MIME type of the file
+ * @returns Base64 data URL
+ */
+export const convertToBase64DataUrl = (content: string | Uint8Array, mimeType: string): string => {
+    if (typeof content === 'string') {
+        // Text file (e.g., SVG)
+        return `data:${mimeType};base64,${btoa(content)}`;
+    } else {
+        // Binary file (e.g., PNG, JPG)
+        const base64 = convertToBase64(content);
+        return `data:${mimeType};base64,${base64}`;
+    }
+};

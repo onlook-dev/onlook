@@ -13,7 +13,7 @@ import { toast } from '@onlook/ui/sonner';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { compressImageInBrowser } from '@onlook/utility';
+import { compressImageInBrowser, convertToBase64DataUrl } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -22,7 +22,6 @@ import { validateImageLimit } from '../context-pills/helpers';
 import { InputContextPills } from '../context-pills/input-context-pills';
 import { type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
-import { AttachedImages } from './attached-images';
 import { ChatContextWindow } from './chat-context';
 import { ChatModeToggle } from './chat-mode-toggle';
 import { QueueItems } from './queue-items';
@@ -176,7 +175,7 @@ export const ChatInput = observer(({
         }
     };
 
-    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         setIsDragging(false);
         e.currentTarget.removeAttribute('data-dragging-image');
@@ -188,18 +187,36 @@ export const ChatInput = observer(({
                 const data = JSON.parse(jsonData);
                 if (data.type === 'image' && data.originPath) {
                     // Handle drag from image panel - create LOCAL_IMAGE context
-                    const currentImages = editorEngine.chat.context.imageContext;
+                    const currentImages = editorEngine.chat.context.context.filter(
+                        (c) => c.type === MessageContextType.IMAGE || c.type === MessageContextType.LOCAL_IMAGE
+                    );
                     const { success, errorMessage } = validateImageLimit(currentImages, 1);
                     if (!success) {
                         toast.error(errorMessage);
                         return;
                     }
 
+                    // Load the actual image file content
+                    const branchData = editorEngine.branches.getBranchDataById(editorEngine.branches.activeBranch.id);
+                    if (!branchData) {
+                        toast.error('Failed to get branch data');
+                        return;
+                    }
+
+                    const fileContent = await branchData.codeEditor.readFile(data.originPath);
+                    if (!fileContent) {
+                        toast.error('Failed to load image file');
+                        return;
+                    }
+
+                    // Convert to base64 data URL
+                    const base64Content = convertToBase64DataUrl(fileContent, data.mimeType);
+
                     const localImageContext: LocalImageMessageContext = {
                         type: MessageContextType.LOCAL_IMAGE,
                         path: data.originPath,
                         branchId: editorEngine.branches.activeBranch.id,
-                        content: data.originPath, // Use path as content for display purposes
+                        content: base64Content,
                         displayName: data.fileName,
                         mimeType: data.mimeType,
                     };
@@ -227,7 +244,9 @@ export const ChatInput = observer(({
     };
 
     const handleImageEvent = async (file: File, displayName?: string) => {
-        const currentImages = editorEngine.chat.context.imageContext;
+        const currentImages = editorEngine.chat.context.context.filter(
+            (c) => c.type === MessageContextType.IMAGE || c.type === MessageContextType.LOCAL_IMAGE
+        );
         const { success, errorMessage } = validateImageLimit(currentImages, 1);
         if (!success) {
             toast.error(errorMessage);
@@ -252,7 +271,9 @@ export const ChatInput = observer(({
 
     const handleScreenshot = async () => {
         try {
-            const currentImages = editorEngine.chat.context.imageContext;
+            const currentImages = editorEngine.chat.context.context.filter(
+            (c) => c.type === MessageContextType.IMAGE || c.type === MessageContextType.LOCAL_IMAGE
+        );
 
             const { success, errorMessage } = validateImageLimit(currentImages, 1);
             if (!success) {
@@ -313,6 +334,7 @@ export const ChatInput = observer(({
             Array.from(e.dataTransfer.items).some(
                 (item) =>
                     item.type.startsWith('image/') ||
+                    item.type === 'application/json' || // Internal drag from image panel
                     (item.type === 'Files' && e.dataTransfer.types.includes('public.file-url')),
             );
         if (hasImage) {
@@ -366,7 +388,6 @@ export const ChatInput = observer(({
                     queuedMessages={queuedMessages}
                     removeFromQueue={removeFromQueue}
                 />
-                <AttachedImages />
                 <InputContextPills />
                 <Textarea
                     ref={textareaRef}
@@ -374,7 +395,6 @@ export const ChatInput = observer(({
                     className={cn(
                         'bg-transparent dark:bg-transparent mt-1 overflow-auto max-h-32 text-small p-2 border-0 focus-visible:ring-0 shadow-none rounded-none caret-[#FA003C] resize-none',
                         'selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary placeholder:text-foreground-primary/50 cursor-text',
-                        isDragging ? 'pointer-events-none' : 'pointer-events-auto',
                     )}
                     rows={3}
                     value={inputValue}
@@ -385,18 +405,6 @@ export const ChatInput = observer(({
                     onCompositionStart={() => setIsComposing(true)}
                     onCompositionEnd={(e) => {
                         setIsComposing(false);
-                    }}
-                    onDragEnter={(e) => {
-                        bubbleDragEvent(e, 'dragenter');
-                    }}
-                    onDragOver={(e) => {
-                        bubbleDragEvent(e, 'dragover');
-                    }}
-                    onDragLeave={(e) => {
-                        bubbleDragEvent(e, 'dragleave');
-                    }}
-                    onDrop={(e) => {
-                        bubbleDragEvent(e, 'drop');
                     }}
                 />
             </div>

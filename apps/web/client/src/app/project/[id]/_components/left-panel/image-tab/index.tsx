@@ -4,7 +4,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { MessageContextType, type LocalImageMessageContext } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
-import { getMimeType } from '@onlook/utility';
+import { convertToBase64DataUrl, getMimeType } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { BreadcrumbNavigation } from './breadcrumb-navigation';
 import { FolderList } from './folder-list';
@@ -75,12 +75,21 @@ export const ImagesTab = observer(() => {
             const fileName = imagePath.split('/').pop() || imagePath;
             const mimeType = getMimeType(fileName);
 
-            // Create LOCAL_IMAGE context with path reference
+            // Load the actual image file content
+            const fileContent = await branchData?.codeEditor.readFile(imagePath);
+            if (!fileContent) {
+                throw new Error('Failed to load image file');
+            }
+
+            // Convert to base64 data URL
+            const base64Content = convertToBase64DataUrl(fileContent, mimeType);
+
+            // Create LOCAL_IMAGE context with actual image data
             const localImageContext: LocalImageMessageContext = {
                 type: MessageContextType.LOCAL_IMAGE,
                 path: imagePath,
                 branchId: branchId,
-                content: imagePath, // Use path as content for display purposes
+                content: base64Content,
                 displayName: fileName,
                 mimeType: mimeType,
             };
