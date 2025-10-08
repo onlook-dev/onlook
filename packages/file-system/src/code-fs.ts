@@ -1,3 +1,5 @@
+import debounce from 'lodash.debounce';
+
 import { ONLOOK_CACHE_DIRECTORY, ONLOOK_PRELOAD_SCRIPT_FILE } from '@onlook/constants';
 import { RouterType } from '@onlook/models';
 import {
@@ -10,15 +12,14 @@ import {
     injectPreloadScript,
 } from '@onlook/parser';
 import { isRootLayoutFile, pathsEqual } from '@onlook/utility';
-import debounce from 'lodash.debounce';
 
+import type { JsxElementMetadata } from './index-cache';
 import { FileSystem } from './fs';
 import {
     clearIndexCache,
     getIndexFromCache,
     getOrLoadIndex,
     saveIndexToCache,
-    type JsxElementMetadata,
 } from './index-cache';
 
 export type { JsxElementMetadata } from './index-cache';
@@ -59,27 +60,24 @@ export class CodeFileSystem extends FileSystem {
     }
 
     private async processJsxFile(path: string, content: string): Promise<string> {
+        let processedContent = content;
+
         const ast = getAstFromContent(content);
-        if (!ast) {
-            console.warn(`Failed to parse ${path}, writing as-is`);
-            return content;
+        if (ast) {
+            if (isRootLayoutFile(path, this.options.routerType)) {
+                injectPreloadScript(ast);
+            }
+
+            const existingOids = await this.getFileOids(path);
+            const { ast: processedAst } = addOidsToAst(ast, existingOids);
+
+            processedContent = await getContentFromAst(processedAst, content);
+            await this.updateMetadataForFile(path, processedContent);
+        } else {
+            console.warn(`Failed to parse ${path}, skipping OID injection but will still format`);
         }
 
-        if (isRootLayoutFile(path, this.options.routerType)) {
-            injectPreloadScript(ast);
-        }
-
-        const existingOids = await this.getFileOids(path);
-
-        const { ast: processedAst, modified } = addOidsToAst(ast, existingOids);
-
-        const processedContent = await getContentFromAst(processedAst, content);
-
-        const formattedContent = await formatContent(path, processedContent);
-
-        await this.updateMetadataForFile(path, formattedContent);
-
-        return formattedContent;
+        return await formatContent(path, processedContent);
     }
 
     private async getFileOids(path: string): Promise<Set<string>> {
