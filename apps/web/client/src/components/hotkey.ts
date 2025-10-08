@@ -3,6 +3,7 @@ import { capitalizeFirstLetter } from '@onlook/utility';
 export class Hotkey {
     // Modes
     static readonly SELECT = new Hotkey('v', 'Select');
+    static readonly CODE = new Hotkey('c', 'Code');
     static readonly ESCAPE = new Hotkey('esc', 'Escape');
     static readonly PAN = new Hotkey('h', 'Pan');
     static readonly PREVIEW = new Hotkey('p', 'Preview');

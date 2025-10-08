@@ -2,7 +2,7 @@ import { getContextClass, getContextLabel } from '@onlook/ai';
 import { DefaultSettings } from '@onlook/constants';
 import { MessageContextType, type MessageContext } from '@onlook/models/chat';
 import { getTruncatedFileName } from '@onlook/ui/utils';
-import { NodeIcon } from '../../../left-panel/layers-tab/tree/node-icon';
+import { NodeIcon } from '../../../design-panel/layers-tab/tree/node-icon';
 
 export function getTruncatedName(context: MessageContext) {
     let name = getContextLabel(context);

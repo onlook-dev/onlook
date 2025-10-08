@@ -19,6 +19,10 @@ const MODE_TOGGLE_ITEMS: {
             hotkey: Hotkey.SELECT,
         },
         {
+            mode: EditorMode.CODE,
+            hotkey: Hotkey.CODE,
+        },
+        {
             mode: EditorMode.PREVIEW,
             hotkey: Hotkey.PREVIEW,
         },

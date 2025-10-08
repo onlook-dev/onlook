@@ -199,6 +199,11 @@
                 "description": "웹사이트 디자인 편집 및 수정",
                 "tooltip": "디자인 모드로 변경"
             },
+            "code": {
+                "name": "코드",
+                "description": "웹사이트 코드 편집 및 수정",
+                "tooltip": "코드 모드로 변경"
+            },
             "preview": {
                 "name": "미리보기",
                 "description": "웹사이트 기능 미리보기 및 테스트",

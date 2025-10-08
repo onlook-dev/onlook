@@ -13,8 +13,8 @@ import { usePanelMeasurements } from '../_hooks/use-panel-measure';
 import { useStartProject } from '../_hooks/use-start-project';
 import { BottomBar } from './bottom-bar';
 import { Canvas } from './canvas';
+import { LeftPanel } from './design-panel';
 import { EditorBar } from './editor-bar';
-import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
 

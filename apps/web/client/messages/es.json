@@ -199,6 +199,11 @@
                 "description": "Edite y modifique el diseño de su sitio web",
                 "tooltip": "Cambiar al modo diseño"
             },
+            "code": {
+                "name": "Código",
+                "description": "Edite y modifique el código de su sitio web",
+                "tooltip": "Cambiar al modo código"
+            },
             "preview": {
                 "name": "Vista Previa",
                 "description": "Previsualice y pruebe la funcionalidad de su sitio web",

@@ -202,6 +202,11 @@ declare const messages: {
                 "description": "Edit and modify your website's design",
                 "tooltip": "Switch to design mode"
             },
+            "code": {
+                "name": "Code",
+                "description": "Edit and modify your website's code",
+                "tooltip": "Switch to code mode"
+            },
             "preview": {
                 "name": "Preview",
                 "description": "Preview and test your website's functionality",

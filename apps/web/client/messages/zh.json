@@ -199,6 +199,11 @@
                 "description": "编辑并修改网站的设计",
                 "tooltip": "切换到设计模式"
             },
+            "code": {
+                "name": "代码",
+                "description": "编辑并修改网站的代码",
+                "tooltip": "切换到代码模式"
+            },
             "preview": {
                 "name": "预览",
                 "description": "预览并测试网站功能",
