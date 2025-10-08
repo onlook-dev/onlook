@@ -112,9 +112,13 @@ export const Versions = observer(() => {
                         variant="outline"
                         className="bg-background-secondary rounded text-sm font-normal "
                         onClick={handleNewBackup}
-                        disabled={isLoadingCommits}
+                        disabled={isLoadingCommits || isCreatingBackup}
                     >
-                        <Icons.Plus className="mr-2 h-4 w-4" />
+                        {isCreatingBackup ? (
+                            <Icons.LoadingSpinner className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                            <Icons.Plus className="mr-2 h-4 w-4" />
+                        )}
                         New backup
                     </Button>
                 )}
