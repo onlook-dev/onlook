@@ -43,7 +43,36 @@ export class ChatContext {
     }
 
     addContexts(contexts: MessageContext[]) {
-        this._context = [...this._context, ...contexts];
+        const newContexts = [...this._context, ...contexts];
+
+        // Deduplicate file contexts by path and branchId
+        const fileMap = new Map<string, FileMessageContext>();
+        const otherContexts: MessageContext[] = [];
+
+        for (const context of newContexts) {
+            if (context.type === MessageContextType.FILE) {
+                const key = `${context.path}::${context.branchId}`;
+                // Keep the most recent file context (last one wins)
+                fileMap.set(key, context);
+            } else {
+                otherContexts.push(context);
+            }
+        }
+
+        this._context = [...Array.from(fileMap.values()), ...otherContexts];
+    }
+
+    addHighlightContext(path: string, content: string, start: number, end: number, branchId: string, displayName: string) {
+        const highlightContext: HighlightMessageContext = {
+            type: MessageContextType.HIGHLIGHT,
+            path,
+            content,
+            displayName,
+            start,
+            end,
+            branchId,
+        };
+        this.addContexts([highlightContext]);
     }
 
     async getContextByChatType(type: ChatType): Promise<MessageContext[]> {

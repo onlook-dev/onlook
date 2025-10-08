@@ -421,6 +421,9 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
             <CodeControls
                 isDirty={hasUnsavedChanges}
                 currentPath={getCurrentPath()}
+                currentFilePath={selectedFilePath}
+                currentFileContent={activeEditorFile?.type === 'text' && typeof activeEditorFile.content === 'string' ? activeEditorFile.content : null}
+                branchId={branchId}
                 onSave={handleSaveFile}
                 onRefresh={refreshFileTree}
                 onCreateFile={handleCreateFile}

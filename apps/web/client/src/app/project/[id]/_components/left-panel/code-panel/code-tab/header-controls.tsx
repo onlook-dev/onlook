@@ -1,3 +1,5 @@
+import { useEditorEngine } from '@/components/store/editor';
+import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -6,6 +8,7 @@ import {
     DropdownMenuTrigger
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { useState } from 'react';
@@ -16,6 +19,9 @@ import { UploadModal } from './modals/upload-modal';
 interface CodeControlsProps {
     isDirty: boolean;
     currentPath: string;
+    currentFilePath: string | null;
+    currentFileContent: string | null;
+    branchId: string;
     onSave: () => Promise<void>;
     onRefresh: () => void;
     onCreateFile: (filePath: string, content?: string) => Promise<void>;
@@ -25,7 +31,8 @@ interface CodeControlsProps {
     selection?: { from: number; to: number; text: string } | null;
 }
 
-export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreateFile, onCreateFolder, isSidebarOpen, setIsSidebarOpen, selection }: CodeControlsProps) => {
+export const CodeControls = ({ isDirty, currentPath, currentFilePath, currentFileContent, branchId, onSave, onRefresh, onCreateFile, onCreateFolder, isSidebarOpen, setIsSidebarOpen, selection }: CodeControlsProps) => {
+    const editorEngine = useEditorEngine();
     const [showFileModal, setShowFileModal] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showFolderModal, setShowFolderModal] = useState(false);
@@ -48,6 +55,44 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
         onRefresh();
     };
 
+    const handleAddSelectionToChat = async () => {
+        if (!selection || !currentFilePath || !currentFileContent) return;
+
+        try {
+            // Calculate line numbers from character positions
+            const beforeSelection = currentFileContent.substring(0, selection.from);
+            const selectionContent = currentFileContent.substring(selection.from, selection.to);
+            const startLine = beforeSelection.split('\n').length;
+            const endLine = startLine + selectionContent.split('\n').length - 1;
+
+            const fileName = currentFilePath.split('/').pop() || currentFilePath;
+            // Add highlight context (selected code snippet)
+            editorEngine.chat.context.addContexts([{
+                type: MessageContextType.HIGHLIGHT,
+                path: currentFilePath,
+                content: selection.text,
+                displayName: fileName + ' (' + startLine + ':' + endLine + ')',
+                start: startLine,
+                end: endLine,
+                branchId: branchId,
+            }]);
+
+            // Also add full file context
+            editorEngine.chat.context.addContexts([{
+                type: MessageContextType.FILE,
+                path: currentFilePath,
+                content: currentFileContent,
+                displayName: currentFilePath.split('/').pop() || currentFilePath,
+                branchId: branchId,
+            }]);
+
+            toast.success('Selection added to chat');
+        } catch (error) {
+            console.error('Failed to add selection to chat:', error);
+            toast.error('Failed to add selection to chat');
+        }
+    };
+
     return (
         <div className="flex flex-row items-center justify-between p-1 px-2 border-b border-border w-full h-10">
             <Tooltip>
@@ -66,22 +111,7 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
                 </TooltipContent>
             </Tooltip>
             <div className="flex flex-row items-center transition-opacity duration-200 ml-auto">
-                {selection && (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="px-2 h-fit text-xs text-muted-foreground"
-                            >
-                                {selection.from}-{selection.to} ({selection.to - selection.from} chars)
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" hideArrow>
-                            <p>Selection: {selection.text.substring(0, 50)}{selection.text.length > 50 ? '...' : ''}</p>
-                        </TooltipContent>
-                    </Tooltip>
-                )}
+
                 <Tooltip>
                     <DropdownMenu>
                         <TooltipTrigger asChild>
@@ -160,6 +190,26 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
                         <p>{isSaving ? 'Saving changes...' : 'Save changes'}</p>
                     </TooltipContent>
                 </Tooltip>
+                {selection && currentFilePath && currentFileContent && (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className={cn(
+                                    "px-1.5 py-0.75 w-fit h-fit cursor-pointer mr-0.5 ml-1"
+                                )}
+                                onClick={handleAddSelectionToChat}
+                            >
+                                <Icons.Sparkles className="h-4 w-4 " />
+                                <span className="text-small">Add to Chat</span>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" hideArrow>
+                            <p>Add selection to chat</p>
+                        </TooltipContent>
+                    </Tooltip>
+                )}
             </div>
             <FileModal
                 basePath={currentPath}
@@ -182,6 +232,6 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
                 onSuccess={handleModalSuccess}
                 onCreateFile={onCreateFile}
             />
-        </div>
+        </div >
     );
 };
