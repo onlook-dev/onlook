@@ -16,6 +16,9 @@ import type { BinaryEditorFile, EditorFile, TextEditorFile } from './shared/type
 import { isDirty } from './shared/utils';
 import { FileTree } from './sidebar/file-tree';
 
+// Keep the number of opened files below the soft limit to avoid performance issues
+const SOFT_MAX_OPENED_FILES = 7;
+
 export interface CodeTabRef {
     hasUnsavedChanges: boolean;
     getCurrentPath: () => string;
@@ -104,7 +107,24 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
             setActiveEditorFile(updatedFile);
         };
 
-        const addNewFile = (newFile: EditorFile) => {
+        const addNewFile = async (newFile: EditorFile) => {
+            // If we've reached the limit, try to close first non-dirty file
+            if (openedEditorFiles.length >= SOFT_MAX_OPENED_FILES) {
+                const dirtyChecks = await Promise.all(
+                    openedEditorFiles.map(async file => ({
+                        file,
+                        dirty: await isDirty(file)
+                    }))
+                );
+
+                // Find first non-dirty file
+                const fileToClose = dirtyChecks.find(check => !check.dirty)?.file;
+
+                if (fileToClose) {
+                    closeFileInternal(fileToClose.path);
+                }
+            }
+
             setOpenedEditorFiles(prev => [...prev, newFile]);
             setActiveEditorFile(newFile);
         };

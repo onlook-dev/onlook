@@ -93,16 +93,7 @@ export const Main = observer(() => {
                     ref={leftPanelRef}
                     className="absolute top-10 left-0 h-[calc(100%-40px)] z-50"
                 >
-                    {
-                        editorEngine.state.editorMode === EditorMode.DESIGN && (
-                            <DesignPanel />
-                        )
-                    }
-                    {
-                        editorEngine.state.editorMode === EditorMode.CODE && (
-                            <CodePanel />
-                        )
-                    }
+                    {editorEngine.state.editorMode === EditorMode.DESIGN ? <DesignPanel /> : <CodePanel />}
                 </div>
                 {/* EditorBar anchored between panels */}
                 <div

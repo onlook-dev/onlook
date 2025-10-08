@@ -29,7 +29,7 @@ export const FileTab = ({
     }, [file.path, file.content, file.type, file.type === 'text' ? file.originalHash : null]);
 
     return (
-        <div className="h-full pl-3 pr-3 relative group min-w-28" data-active={dataActive}>
+        <div className="h-full pl-3 pr-3 relative group min-w-28 overflow-hidden" data-active={dataActive}>
             <div className="absolute right-0 h-[50%] w-[0.5px] bg-foreground/10 top-1/2 -translate-y-1/2"></div>
             <div className="flex items-center h-full relative">
                 <button
@@ -45,7 +45,7 @@ export const FileTab = ({
                     )}
                     onClick={onClick}
                 >
-                    <span className="truncate">{filename}</span>
+                    <span className="truncate text-ellipsis">{filename}</span>
                     {isFileDirty && (
                         <span className={cn(
                             "ml-1 flex-shrink-0",
