@@ -351,50 +351,77 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
         setShowLocalUnsavedDialog(false);
     };
 
-    const handleRenameFile = (oldPath: string, newName: string) => {
+    const handleRenameFile = (oldPath: string, newPath: string) => {
         if (!branchData?.codeEditor) return;
-        try {
-            branchData.codeEditor.moveFile(oldPath, newName);
-        } catch (error) {
-            console.error('Failed to rename file:', error);
-            toast.error(`Failed to rename: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
+
+        const fileName = oldPath.split('/').pop() || 'file';
+        const newFileName = newPath.split('/').pop() || 'file';
+
+        toast.promise(
+            branchData.codeEditor.moveFile(oldPath, newPath),
+            {
+                loading: `Renaming ${fileName}...`,
+                success: `Renamed to ${newFileName}`,
+                error: (error) => `Failed to rename: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            }
+        );
     };
 
     const handleDeleteFile = (path: string) => {
         if (!branchData?.codeEditor) return;
-        try {
-            branchData.codeEditor.deleteFile(path);
-        } catch (error) {
-            console.error('Failed to delete file:', error);
-            toast.error(`Failed to delete: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
+
+        const fileName = path.split('/').pop() || 'item';
+        const isDirectory = fileEntries.some(entry => {
+            const checkPath = (e: typeof fileEntries[0]): boolean => {
+                if (pathsEqual(e.path, path)) return e.isDirectory;
+                if (e.children) return e.children.some(checkPath);
+                return false;
+            };
+            return checkPath(entry);
+        });
+
+        toast.promise(
+            branchData.codeEditor.deleteFile(path),
+            {
+                loading: `Deleting ${fileName}...`,
+                success: `${isDirectory ? 'Folder' : 'File'} "${fileName}" deleted`,
+                error: (error) => `Failed to delete: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            }
+        );
     };
 
     const handleCreateFile = async (filePath: string, content: string = '') => {
-        try {
-            if (!branchData) {
-                throw new Error('Branch data not found');
-            }
-
-            await branchData.codeEditor.writeFile(filePath, content);
-
-            toast(`File "${filePath.split('/').pop()}" created successfully!`);
-        } catch (error) {
-            console.error('Failed to create file:', error);
-            throw error;
+        if (!branchData) {
+            throw new Error('Branch data not found');
         }
+
+        const fileName = filePath.split('/').pop() || 'file';
+
+        await toast.promise(
+            branchData.codeEditor.writeFile(filePath, content),
+            {
+                loading: `Creating ${fileName}...`,
+                success: `File "${fileName}" created`,
+                error: (error) => `Failed to create file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            }
+        );
     };
 
     const handleCreateFolder = async (folderPath: string) => {
-        if (!branchData?.codeEditor) throw new Error('Code editor not available');
-        try {
-            await branchData.codeEditor.createDirectory(folderPath);
-            toast(`Folder "${folderPath.split('/').pop()}" created successfully!`);
-        } catch (error) {
-            console.error('Failed to create folder:', error);
-            throw error;
+        if (!branchData?.codeEditor) {
+            throw new Error('Code editor not available');
         }
+
+        const folderName = folderPath.split('/').pop() || 'folder';
+
+        await toast.promise(
+            branchData.codeEditor.createDirectory(folderPath),
+            {
+                loading: `Creating ${folderName}...`,
+                success: `Folder "${folderName}" created`,
+                error: (error) => `Failed to create folder: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            }
+        );
     };
 
     // Expose functions through ref. This won't be needed once we move the code controls

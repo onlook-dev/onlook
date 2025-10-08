@@ -66,12 +66,6 @@ export const ChatInput = observer(({
     }, [isStreaming, messages]);
 
     useEffect(() => {
-        if (editorEngine.state.editorMode === EditorMode.DESIGN || editorEngine.state.editorMode === EditorMode.CODE) {
-            focusInput();
-        }
-    }, [editorEngine.state.editorMode]);
-
-    useEffect(() => {
         const focusHandler = () => {
             if (textareaRef.current && !isStreaming) {
                 focusInput();
