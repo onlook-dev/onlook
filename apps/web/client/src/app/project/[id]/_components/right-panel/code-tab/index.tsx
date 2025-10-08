@@ -202,16 +202,27 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
     };
 
     const handleSaveFile = async () => {
-        if (!selectedFilePath || !activeEditorFile) return;
+        if (!selectedFilePath || !activeEditorFile || !branchData) return;
         try {
-            const updatedFile = await saveFileWithHash(selectedFilePath, activeEditorFile);
+            await saveFileWithHash(selectedFilePath, activeEditorFile);
 
-            // Update in opened files list
-            const updatedFiles = openedEditorFiles.map(file =>
-                pathsEqual(file.path, selectedFilePath) ? updatedFile : file
-            );
-            setOpenedEditorFiles(updatedFiles);
-            setActiveEditorFile(updatedFile);
+            // Read back the formatted content from disk
+            const formattedContent = await branchData.codeEditor.readFile(selectedFilePath);
+            if (typeof formattedContent === 'string') {
+                const newHash = await hashContent(formattedContent);
+                const formattedFile: TextEditorFile = {
+                    ...activeEditorFile as TextEditorFile,
+                    content: formattedContent,
+                    originalHash: newHash
+                };
+
+                // Update in opened files list
+                const updatedFiles = openedEditorFiles.map(file =>
+                    pathsEqual(file.path, selectedFilePath) ? formattedFile : file
+                );
+                setOpenedEditorFiles(updatedFiles);
+                setActiveEditorFile(formattedFile);
+            }
         } catch (error) {
             console.error('Failed to save file:', error);
             alert(`Failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`);
