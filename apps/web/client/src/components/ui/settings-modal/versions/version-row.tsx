@@ -69,6 +69,11 @@ export const VersionRow = observer(
 
         const updateCommitDisplayName = async (name: string) => {
             const branchData = editorEngine.branches.activeBranchData;
+            if (!branchData) {
+                toast.error('No active branch');
+                return;
+            }
+
             const result = await branchData.sandbox.gitManager.addCommitNote(commit.oid, name);
 
             if (!result.success) {

@@ -101,7 +101,7 @@ export const Versions = observer(() => {
                     </Select>
                 </div>
 
-                {commits && commits.length > 0 && (
+                {gitManager && (
                     <Button
                         variant="outline"
                         className="bg-background-secondary w-full rounded text-sm font-normal mt-2"
