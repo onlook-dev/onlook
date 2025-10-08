@@ -14,7 +14,7 @@ import { BRANCH_ID_SCHEMA } from '../shared/type';
 export class UploadImageTool extends ClientTool {
     static readonly toolName = 'upload_image';
     static readonly description =
-        "Uploads an image from the chat context to the project's file system. Use this tool when the user asks you to save, add, or upload an image to their project. The image will be stored in public/images/ directory by default and can be referenced in code. After uploading, you can use the file path in your code changes.";
+        "Uploads an image from the chat context to the project's file system. Use this tool when the user asks you to save, add, or upload an image to their project. The image will be stored in public directory by default and can be referenced in code. After uploading, you can use the file path in your code changes.";
     static readonly parameters = z.object({
         image_id: z.string().describe('The unique ID of the image from the available images list'),
         destination_path: z
