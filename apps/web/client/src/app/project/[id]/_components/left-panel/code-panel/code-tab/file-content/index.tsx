@@ -19,6 +19,7 @@ interface CodeEditorAreaProps {
     onDiscardChanges: () => void;
     onCancelUnsaved: () => void;
     fileCountToClose?: number;
+    onSelectionChange?: (selection: { from: number; to: number; text: string } | null) => void;
 }
 
 export const CodeEditorArea = ({
@@ -33,6 +34,7 @@ export const CodeEditorArea = ({
     onDiscardChanges,
     onCancelUnsaved,
     fileCountToClose,
+    onSelectionChange,
 }: CodeEditorAreaProps) => {
     const [activeFileIsDirty, setActiveFileIsDirty] = useState(false);
 
@@ -80,6 +82,7 @@ export const CodeEditorArea = ({
                             editorViewsRef={editorViewsRef}
                             onSaveFile={onSaveFile}
                             onUpdateFileContent={onUpdateFileContent}
+                            onSelectionChange={pathsEqual(activeFile?.path, file.path) ? onSelectionChange : undefined}
                         />
                     ))
                 )}

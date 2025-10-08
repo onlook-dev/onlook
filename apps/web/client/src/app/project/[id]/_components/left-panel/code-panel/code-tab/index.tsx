@@ -61,12 +61,13 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const navigationTarget = useCodeNavigation();
 
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
     const [activeEditorFile, setActiveEditorFile] = useState<EditorFile | null>(null);
     const [openedEditorFiles, setOpenedEditorFiles] = useState<EditorFile[]>([]);
     const [showLocalUnsavedDialog, setShowLocalUnsavedDialog] = useState(false);
     const [filesToClose, setFilesToClose] = useState<string[]>([]);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(openedEditorFiles.length === 0);
+    const [editorSelection, setEditorSelection] = useState<{ from: number; to: number; text: string } | null>(null);
 
     // This is a workaround to allow code controls to access the hasUnsavedChanges state
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -426,6 +427,7 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
                 onCreateFolder={handleCreateFolder}
                 isSidebarOpen={isSidebarOpen}
                 setIsSidebarOpen={setIsSidebarOpen}
+                selection={editorSelection}
             />
             <div className="flex flex-1 overflow-auto min-h-0">
                 <motion.div
@@ -475,6 +477,7 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
                             setShowLocalUnsavedDialog(false);
                         }}
                         fileCountToClose={filesToClose.length}
+                        onSelectionChange={setEditorSelection}
                     />
                 </div>
             </div>

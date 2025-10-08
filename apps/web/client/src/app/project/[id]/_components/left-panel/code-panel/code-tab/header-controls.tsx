@@ -22,9 +22,10 @@ interface CodeControlsProps {
     onCreateFolder: (folderPath: string) => Promise<void>;
     isSidebarOpen: boolean;
     setIsSidebarOpen: (isSidebarOpen: boolean) => void;
+    selection?: { from: number; to: number; text: string } | null;
 }
 
-export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreateFile, onCreateFolder, isSidebarOpen, setIsSidebarOpen }: CodeControlsProps) => {
+export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreateFile, onCreateFolder, isSidebarOpen, setIsSidebarOpen, selection }: CodeControlsProps) => {
     const [showFileModal, setShowFileModal] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showFolderModal, setShowFolderModal] = useState(false);
@@ -65,6 +66,22 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
                 </TooltipContent>
             </Tooltip>
             <div className="flex flex-row items-center transition-opacity duration-200 ml-auto">
+                {selection && (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="px-2 h-fit text-xs text-muted-foreground"
+                            >
+                                {selection.from}-{selection.to} ({selection.to - selection.from} chars)
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" hideArrow>
+                            <p>Selection: {selection.text.substring(0, 50)}{selection.text.length > 50 ? '...' : ''}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                )}
                 <Tooltip>
                     <DropdownMenu>
                         <TooltipTrigger asChild>

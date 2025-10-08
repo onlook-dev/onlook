@@ -1,7 +1,7 @@
-import { EditorView } from '@codemirror/view';
+import { EditorView, ViewUpdate } from '@codemirror/view';
 import { convertToBase64, getMimeType } from '@onlook/utility/src/file';
 import CodeMirror from '@uiw/react-codemirror';
-import { type RefObject, useEffect } from 'react';
+import { type RefObject, useEffect, useMemo } from 'react';
 import type { CodeNavigationTarget } from '@onlook/models';
 import type { BinaryEditorFile, EditorFile } from '../shared/types';
 import { getBasicSetup, getExtensions, highlightElementRange, scrollToLineColumn } from './code-mirror-config';
@@ -13,6 +13,7 @@ interface CodeEditorProps {
     editorViewsRef: RefObject<Map<string, EditorView>>;
     onSaveFile: () => Promise<void>;
     onUpdateFileContent: (fileId: string, content: string) => void;
+    onSelectionChange?: (selection: { from: number; to: number; text: string } | null) => void;
 }
 
 export const CodeEditor = ({
@@ -22,12 +23,36 @@ export const CodeEditor = ({
     editorViewsRef,
     onSaveFile,
     onUpdateFileContent,
+    onSelectionChange,
 }: CodeEditorProps) => {
     const getFileUrl = (file: BinaryEditorFile) => {
         const mime = getMimeType(file.path.toLowerCase());
         const base64 = convertToBase64(new Uint8Array(file.content));
         return `data:${mime};base64,${base64}`;
     };
+
+    const selectionExtension = useMemo(() => {
+        if (!onSelectionChange) return [];
+
+        return [
+            EditorView.updateListener.of((update: ViewUpdate) => {
+                if (update.selectionSet) {
+                    const selection = update.state.selection.main;
+                    const selectedText = update.state.sliceDoc(selection.from, selection.to);
+
+                    if (selection.from !== selection.to) {
+                        onSelectionChange({
+                            from: selection.from,
+                            to: selection.to,
+                            text: selectedText
+                        });
+                    } else {
+                        onSelectionChange(null);
+                    }
+                }
+            })
+        ];
+    }, [onSelectionChange]);
 
     const onCreateEditor = (editor: EditorView) => {
         editorViewsRef.current?.set(file.path, editor);
@@ -89,6 +114,7 @@ export const CodeEditor = ({
                     extensions={[
                         ...getBasicSetup(onSaveFile),
                         ...getExtensions(file.path.split('.').pop() || ''),
+                        ...selectionExtension,
                     ]}
                     onChange={(value) => {
                         onUpdateFileContent(file.path, value);
