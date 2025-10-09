@@ -48,15 +48,15 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
     };
 
     return (
-        <div className="flex flex-row items-center justify-between p-1 px-2 border-b border-border w-full h-10">
+        <div className="flex flex-row items-center justify-between p-1 border-b border-border w-full h-10">
             <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="text-foreground-secondary hover:text-foreground-primary p-1.5 w-fit h-fit bg-transparent hover:!bg-transparent cursor-pointer"
+                className="text-foreground-secondary hover:text-foreground-primary py-1 px-2 w-fit h-fit bg-transparent hover:!bg-transparent cursor-pointer"
             >
                 {isSidebarOpen ? <Icons.SidebarLeftCollapse className="h-4 w-4" /> : <Icons.MoveToFolder className="h-4 w-4" />}
-                <span className="text-small ml-1.5">
+                <span className="text-small ml-0.5">
                     {isSidebarOpen ? '' : 'View Files'}
                 </span>
             </Button>
@@ -69,7 +69,7 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="p-1.5 w-fit h-fit bg-transparent hover:!bg-transparent cursor-pointer text-foreground-secondary hover:text-foreground-primary"
+                                    className="py-1 px-2 w-fit h-fit bg-transparent hover:!bg-transparent cursor-pointer text-foreground-secondary hover:text-foreground-primary"
                                 >
                                     <Icons.FilePlus className="h-4 w-4" />
                                 </Button>
@@ -102,7 +102,7 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
                             variant="ghost"
                             size="icon"
                             onClick={() => setShowFolderModal(true)}
-                            className="p-1.5 w-fit h-fit bg-transparent hover:!bg-transparent cursor-pointer text-foreground-secondary hover:text-foreground-primary"
+                            className="py-1 px-2 w-fit h-fit bg-transparent hover:!bg-transparent cursor-pointer text-foreground-secondary hover:text-foreground-primary"
                         >
                             <Icons.DirectoryPlus className="h-4 w-4" />
                         </Button>
@@ -119,7 +119,7 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
                             onClick={handleSave}
                             disabled={!isDirty || isSaving}
                             className={cn(
-                                "px-1.5 py-0.75 w-fit h-fit cursor-pointer mr-0.5 ml-1",
+                                "px-2 py-1 w-fit h-fit cursor-pointer mr-0.5 ml-1",
                                 isDirty
                                     ? "text-background-primary hover:text-teal-100 hover:bg-teal-500 bg-foreground-primary"
                                     : "hover:bg-background-onlook hover:text-teal-200"

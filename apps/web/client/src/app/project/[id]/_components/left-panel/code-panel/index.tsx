@@ -8,7 +8,7 @@ import { CodeTab } from './code-tab';
 
 export const CodePanel = () => {
     const editorEngine = useEditorEngine();
-    const editPanelWidth = 700
+    const editPanelWidth = 500
 
     return (
         <div
@@ -19,7 +19,6 @@ export const CodePanel = () => {
             <ResizablePanel
                 side="left"
                 defaultWidth={editPanelWidth}
-                forceWidth={editPanelWidth}
                 minWidth={240}
                 maxWidth={1440}
             >

@@ -16,6 +16,25 @@ const typeOrder = {
     [MessageContextType.AGENT_RULE]: 5,
 };
 
+const getStableKey = (context: MessageContext, index: number): string => {
+    switch (context.type) {
+        case MessageContextType.FILE:
+            return `file-${context.path}-${context.branchId}`;
+        case MessageContextType.HIGHLIGHT:
+            return `highlight-${context.path}-${context.start}-${context.end}-${context.branchId}`;
+        case MessageContextType.IMAGE:
+            return `image-${context.id || index}`;
+        case MessageContextType.BRANCH:
+            return `branch-${context.branch.id}`;
+        case MessageContextType.ERROR:
+            return `error-${context.branchId}`;
+        case MessageContextType.AGENT_RULE:
+            return `agent-rule-${context.path}`;
+        default:
+            return `${context.type}-${index}`;
+    }
+};
+
 export const InputContextPills = observer(() => {
     const editorEngine = useEditorEngine();
 
@@ -37,10 +56,12 @@ export const InputContextPills = observer(() => {
         <div className="flex flex-row flex-wrap items-center gap-1.5 px-1 pt-1">
             <AnimatePresence mode="popLayout">
                 {sortedContexts.map((context: MessageContext, index: number) => {
+                    const key = getStableKey(context, index);
+                    
                     if (context.type === MessageContextType.IMAGE) {
                         return (
                             <DraftImagePill
-                                key={`image-${context.content}-${index}`}
+                                key={key}
                                 context={context}
                                 onRemove={() => handleRemoveContext(context)}
                             />
@@ -48,7 +69,7 @@ export const InputContextPills = observer(() => {
                     }
                     return (
                         <DraftContextPill
-                            key={`${context.type}-${context.content}-${index}`}
+                            key={key}
                             context={context}
                             onRemove={() => handleRemoveContext(context)}
                         />
