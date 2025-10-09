@@ -104,7 +104,7 @@ export const CodeEditor = ({
                 }
             ])
         ];
-    }, [onSelectionChange, onAddSelectionToChat]);
+    }, [onSelectionChange, onAddSelectionToChat, onFocusChatInput]);
 
     const onCreateEditor = (editor: EditorView) => {
         editorViewsRef.current?.set(file.path, editor);
