@@ -155,6 +155,9 @@ export const ChatInput = observer(
             try {
                 await onSendMessage(savedInput, chatMode);
                 setInputValue('');
+                setTimeout(() => {
+                    onScrollToBottom();
+                }, 0);
             } catch (error) {
                 console.error('Error sending message', error);
                 toast.error('Failed to send message. Please try again.');
