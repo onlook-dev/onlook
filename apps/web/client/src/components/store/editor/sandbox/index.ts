@@ -33,12 +33,20 @@ export class SandboxManager {
     }
 
     async init() {
+        // Start connection asynchronously (don't wait)
+        if (!this.session.provider) {
+            this.session.start(this.branch.sandbox.id).catch(err => {
+                console.error('[SandboxManager] Initial connection failed:', err);
+                // Don't throw - let reaction handle retries/reconnects
+            });
+        }
+
+        // React to provider becoming available (now or later)
         this.providerReactionDisposer = reaction(
             () => this.session.provider,
             async (provider) => {
                 if (provider) {
                     await this.initializeSyncEngine(provider);
-                    // Initialize git after provider is ready
                     await this.gitManager.init();
                 } else if (this.sync) {
                     // If the provider is null, release the sync engine reference
@@ -46,6 +54,7 @@ export class SandboxManager {
                     this.sync = null;
                 }
             },
+            { fireImmediately: true },
         );
     }
 
@@ -100,6 +109,9 @@ export class SandboxManager {
             this.preloadScriptInjected = true;
         } catch (error) {
             console.error('[SandboxManager] Failed to ensure preload script exists:', error);
+            // Mark as injected to prevent blocking frames indefinitely
+            // Frames will handle the missing preload script gracefully
+            this.preloadScriptInjected = true;
         } finally {
             this.preloadScriptLoading = false;
         }
