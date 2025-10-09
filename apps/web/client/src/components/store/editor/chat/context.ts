@@ -45,6 +45,11 @@ export class ChatContext {
                     const allHighlights = this._context.filter(c => c.type === MessageContextType.HIGHLIGHT);
                     const manualCodeEditorHighlights = allHighlights.filter(c => c.oid === undefined);
 
+                    // Preserve existing images when updating context from canvas selection
+                    const existingImages = this._context.filter(
+                        (c) => c.type === MessageContextType.IMAGE
+                    );
+
                     console.log('[ChatContext] Selection reaction fired:', {
                         selectedElementsCount: elements.length,
                         totalHighlightsInOldContext: allHighlights.length,
@@ -56,11 +61,11 @@ export class ChatContext {
                         })),
                         manualCodeEditorHighlightsToPreserve: manualCodeEditorHighlights.length,
                         newHighlightsFromCanvas: context.filter(c => c.type === MessageContextType.HIGHLIGHT).length,
+                        existingImagesToPreserve: existingImages.length,
                     });
 
-                    // Merge: new auto-generated context + preserved manual code editor highlights
-                    // (images are already preserved via getImageContext() call in generateContextFromReaction)
-                    this.context = [...context, ...manualCodeEditorHighlights];
+                    // Merge: new auto-generated context + preserved manual code editor highlights + existing images
+                    this.context = [...context, ...manualCodeEditorHighlights, ...existingImages];
 
                     console.log('[ChatContext] Final context after merge:', {
                         total: this.context.length,
@@ -68,6 +73,7 @@ export class ChatContext {
                             displayName: h.displayName,
                             hasOid: h.oid !== undefined,
                         })),
+                        images: existingImages.length,
                     });
                 });
             },
@@ -135,7 +141,10 @@ export class ChatContext {
     }
 
     async getChatEditContext(): Promise<MessageContext[]> {
-        return [...await this.getRefreshedContext(this.context), ...await this.getAgentRuleContext()];
+        return [
+            ...await this.getRefreshedContext(this.context),
+            ...await this.getAgentRuleContext()
+        ];
     }
 
     private async generateContextFromReaction({ elements, frames }: { elements: DomElement[], frames: FrameData[] }): Promise<MessageContext[]> {
@@ -143,12 +152,11 @@ export class ChatContext {
         if (elements.length) {
             highlightedContext = await this.getHighlightedContext(elements);
         }
-        const imageContext = await this.getImageContext();
 
-        // Derived from highlighted context
+        // Derived from highlighted context - images are managed separately now
         const fileContext = await this.getFileContext(highlightedContext);
         const branchContext = this.getBranchContext(highlightedContext, frames);
-        const context = [...fileContext, ...highlightedContext, ...imageContext, ...branchContext];
+        const context = [...fileContext, ...highlightedContext, ...branchContext];
         return context;
     }
 
@@ -187,13 +195,6 @@ export class ChatContext {
                 return c;
             }),
         )) satisfies MessageContext[];
-    }
-
-    private async getImageContext(): Promise<ImageMessageContext[]> {
-        const imageContext = this.context.filter(
-            (context) => context.type === MessageContextType.IMAGE,
-        );
-        return imageContext;
     }
 
     private async getFileContext(highlightedContext: HighlightMessageContext[]): Promise<FileMessageContext[]> {
@@ -464,7 +465,9 @@ export class ChatContext {
     }
 
     clearImagesFromContext() {
-        this.context = this.context.filter((context) => context.type !== MessageContextType.IMAGE);
+        this.context = this.context.filter(
+            (c) => c.type !== MessageContextType.IMAGE
+        );
     }
 
     clear() {

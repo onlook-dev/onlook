@@ -98,6 +98,7 @@ export const useStartProject = () => {
                 .filter((context) => context.type === CreateRequestContextType.IMAGE)
                 .map((context) => ({
                     type: MessageContextType.IMAGE,
+                    source: 'external',
                     content: context.content,
                     mimeType: context.mimeType,
                     displayName: 'user image',
