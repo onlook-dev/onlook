@@ -17,26 +17,41 @@ export const MessageContent = observer(
         applied: boolean;
         isStream: boolean;
     }) => {
+        let lastIncompleteToolIndex = -1;
+        if (isStream) {
+            for (let i = parts.length - 1; i >= 0; i--) {
+                const part = parts[i];
+                if (part?.type.startsWith('tool-')) {
+                    const toolPart = part as ToolUIPart;
+                    if (toolPart.state !== 'output-available') {
+                        lastIncompleteToolIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
         const renderedParts = parts.map((part, idx) => {
-            if (part.type === 'text') {
+            if (part?.type === 'text') {
                 return (
                     <Response key={part.text}>
                         {part.text}
                     </Response>
 
                 );
-            } else if (part.type.startsWith('tool-')) {
-                const toolPart = part as ToolUIPart;
+            } else if (part?.type.startsWith('tool-')) {
+                const toolPart = part as ToolUIPart;// Only show loading animation for the last incomplete tool call
+                const isLoadingThisTool = isStream && idx === lastIncompleteToolIndex;
                 return (
                     <ToolCallDisplay
                         messageId={messageId}
                         toolPart={toolPart}
                         key={toolPart.toolCallId}
-                        isStream={isStream}
+                        isStream={isLoadingThisTool}
                         applied={applied}
                     />
                 );
-            } else if (part.type === 'reasoning') {
+            } else if (part?.type === 'reasoning') {
                 const isLastPart = idx === parts.length - 1;
                 return (
                     <Reasoning key={part.text} className={cn(

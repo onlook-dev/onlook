@@ -13,7 +13,8 @@ import { Icons } from '@onlook/ui/icons';
 import { assertNever } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useCallback } from 'react';
+import { forwardRef, useCallback, useImperativeHandle } from 'react';
+import { useStickToBottomContext } from 'use-stick-to-bottom';
 import { AssistantMessage } from './assistant-message';
 import { ErrorMessage } from './error-message';
 import { UserMessage } from './user-message';
@@ -25,7 +26,11 @@ interface ChatMessagesProps {
     error?: Error;
 }
 
-export const ChatMessages = observer(({
+export interface ChatMessagesHandle {
+    scrollToBottom: () => void;
+}
+
+const ChatMessagesInner = observer(({
     messages,
     onEditMessage,
     isStreaming,
@@ -75,7 +80,7 @@ export const ChatMessages = observer(({
     }
 
     return (
-        <Conversation className="h-full w-full">
+        <>
             <ConversationContent className="p-0 m-0">
                 {messages.map((message, index) => renderMessage(message, index))}
                 {error && <ErrorMessage error={error} />}
@@ -85,7 +90,32 @@ export const ChatMessages = observer(({
                 </div>}
             </ConversationContent>
             <ConversationScrollButton />
-        </Conversation>
+        </>
     );
-},
+});
+
+export const ChatMessages = observer(
+    forwardRef<ChatMessagesHandle, ChatMessagesProps>(({ messages, onEditMessage, isStreaming, error }, ref) => {
+        const ScrollController = () => {
+            const { scrollToBottom } = useStickToBottomContext();
+
+            useImperativeHandle(ref, () => ({
+                scrollToBottom,
+            }), [scrollToBottom]);
+
+            return null;
+        };
+
+        return (
+            <Conversation className="h-full w-full">
+                <ScrollController />
+                <ChatMessagesInner
+                    messages={messages}
+                    onEditMessage={onEditMessage}
+                    isStreaming={isStreaming}
+                    error={error}
+                />
+            </Conversation>
+        );
+    })
 );

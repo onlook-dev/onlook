@@ -30,7 +30,7 @@ export const FileTree = ({
     const inputRef = useRef<HTMLInputElement>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
-    const { ref: containerRef, width: filesWidth, height: filesHeight } = useResizeObserver();
+    const { ref: treeContainerRef, width: filesWidth, height: filesHeight } = useResizeObserver();
 
     // Create flat entry index for efficient operations
     const flatEntryIndex = useMemo(() => {
@@ -173,67 +173,62 @@ export const FileTree = ({
     const filesTreeDimensions = useMemo(
         () => ({
             width: filesWidth ?? 224, // Match w-56 container width (224px)
-            height: (filesHeight ?? 300) - 10,
+            height: (filesHeight ?? 300) - 50,
         }),
         [filesWidth, filesHeight],
     );
 
     return (
-        <div
-            ref={containerRef}
-            className="w-56 h-full border-r-[0.5px] flex-shrink-0 overflow-hidden flex flex-col"
-        >
-            <div className="flex flex-col w-full h-full overflow-hidden">
-                <FileTreeSearch
-                    ref={inputRef}
-                    searchQuery={searchQuery}
-                    isLoading={isLoading}
-                    onSearchChange={setSearchQuery}
-                    onRefresh={onRefresh}
-                    onKeyDown={handleKeyDown}
-                />
-                <div className="w-full h-full overflow-auto text-xs px-2 flex-1">
-                    {isLoading ? (
-                        <div className="flex flex-col justify-start items-center h-full text-sm text-foreground/50 pt-4">
-                            <div className="animate-spin h-6 w-6 border-2 border-foreground-hover rounded-full border-t-transparent mb-2"></div>
-                            <span>Loading files...</span>
-                        </div>
-                    ) : filteredFiles.length === 0 ? (
-                        <div className="flex flex-col justify-start items-center h-full text-sm text-foreground/50 pt-4">
-                            {fileEntries.length === 0 ? 'No files found' : 'No files match your search'}
-                        </div>
-                    ) : (
-                        <Tree
-                            ref={treeRef}
-                            data={filteredFiles}
-                            className="h-full"
-                            idAccessor={(entry: FileEntry) => entry.path}
-                            childrenAccessor={(entry: FileEntry) =>
-                                entry.children && entry.children.length > 0
-                                    ? entry.children
-                                    : null
-                            }
-                            onSelect={handleFileTreeSelect}
-                            height={filesTreeDimensions.height}
-                            width={filesTreeDimensions.width}
-                            indent={8}
-                            rowHeight={24}
-                            openByDefault={false}
-                            renderRow={(props: RowRendererProps<FileEntry>) => (
-                                <FileTreeRow
-                                    {...props}
-                                    isHighlighted={
-                                        highlightedIndex !== null &&
-                                        treeRef.current?.visibleNodes[highlightedIndex]?.id ===
-                                        props.node.id
-                                    }
-                                />
-                            )}
-                        >
-                            {(props) => <FileTreeNode {...props} onFileSelect={onFileSelect} onRenameFile={onRenameFile} onDeleteFile={onDeleteFile} />}
-                        </Tree>
-                    )}
-                </div>
+        <div className="w-56 border-r-[0.5px] flex flex-col h-full">
+            <FileTreeSearch
+                ref={inputRef}
+                searchQuery={searchQuery}
+                isLoading={isLoading}
+                onSearchChange={setSearchQuery}
+                onRefresh={onRefresh}
+                onKeyDown={handleKeyDown}
+            />
+            <div ref={treeContainerRef} className="w-full text-xs px-2 flex-1 min-h-0">
+                {isLoading ? (
+                    <div className="flex flex-col justify-start items-center h-full text-sm text-foreground/50 pt-4">
+                        <div className="animate-spin h-6 w-6 border-2 border-foreground-hover rounded-full border-t-transparent mb-2"></div>
+                        <span>Loading files...</span>
+                    </div>
+                ) : filteredFiles.length === 0 ? (
+                    <div className="flex flex-col justify-start items-center h-full text-sm text-foreground/50 pt-4">
+                        {fileEntries.length === 0 ? 'No files found' : 'No files match your search'}
+                    </div>
+                ) : (
+                    <Tree
+                        ref={treeRef}
+                        data={filteredFiles}
+                        className="h-full overflow-hidden"
+                        idAccessor={(entry: FileEntry) => entry.path}
+                        childrenAccessor={(entry: FileEntry) =>
+                            entry.children && entry.children.length > 0
+                                ? entry.children
+                                : null
+                        }
+                        onSelect={handleFileTreeSelect}
+                        height={filesTreeDimensions.height}
+                        width={filesTreeDimensions.width}
+                        indent={8}
+                        rowHeight={24}
+                        openByDefault={false}
+                        renderRow={(props: RowRendererProps<FileEntry>) => (
+                            <FileTreeRow
+                                {...props}
+                                isHighlighted={
+                                    highlightedIndex !== null &&
+                                    treeRef.current?.visibleNodes[highlightedIndex]?.id ===
+                                    props.node.id
+                                }
+                            />
+                        )}
+                    >
+                        {(props) => <FileTreeNode {...props} onFileSelect={onFileSelect} onRenameFile={onRenameFile} onDeleteFile={onDeleteFile} />}
+                    </Tree>
+                )}
             </div>
         </div>
     );

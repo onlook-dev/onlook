@@ -27,10 +27,50 @@ export class ChatContext {
             () => ({
                 elements: this.editorEngine.elements.selected,
                 frames: this.editorEngine.frames.selected,
+                editorMode: this.editorEngine.state.editorMode,
             }),
             (
-                { elements, frames },
-            ) => this.generateContextFromReaction({ elements, frames }).then((context) => (this.context = context)),
+                { elements, frames, editorMode },
+            ) => {
+                console.log('[ChatContext] Selection/Mode changed:', {
+                    mode: editorMode,
+                    elementsCount: elements.length,
+                    elementTagNames: elements.map(el => el.tagName),
+                });
+
+                this.generateContextFromReaction({ elements, frames }).then((context) => {
+                    // Preserve ONLY manually added highlights from code editor (CMD+L / "Add to Chat" button)
+                    // Canvas selections should be fluid and replaced on every selection change
+                    // Manual code editor highlights don't have an oid since they're text selections, not DOM element selections
+                    const allHighlights = this._context.filter(c => c.type === MessageContextType.HIGHLIGHT);
+                    const manualCodeEditorHighlights = allHighlights.filter(c => c.oid === undefined);
+
+                    console.log('[ChatContext] Selection reaction fired:', {
+                        selectedElementsCount: elements.length,
+                        totalHighlightsInOldContext: allHighlights.length,
+                        detailsOfAllHighlights: allHighlights.map(h => ({
+                            displayName: h.displayName,
+                            hasOid: h.oid !== undefined,
+                            oidValue: h.oid,
+                            path: h.path
+                        })),
+                        manualCodeEditorHighlightsToPreserve: manualCodeEditorHighlights.length,
+                        newHighlightsFromCanvas: context.filter(c => c.type === MessageContextType.HIGHLIGHT).length,
+                    });
+
+                    // Merge: new auto-generated context + preserved manual code editor highlights
+                    // (images are already preserved via getImageContext() call in generateContextFromReaction)
+                    this.context = [...context, ...manualCodeEditorHighlights];
+
+                    console.log('[ChatContext] Final context after merge:', {
+                        total: this.context.length,
+                        highlights: this.context.filter(c => c.type === MessageContextType.HIGHLIGHT).map(h => ({
+                            displayName: h.displayName,
+                            hasOid: h.oid !== undefined,
+                        })),
+                    });
+                });
+            },
         );
     }
 
@@ -43,7 +83,42 @@ export class ChatContext {
     }
 
     addContexts(contexts: MessageContext[]) {
-        this._context = [...this._context, ...contexts];
+        const newContexts = [...this._context, ...contexts];
+
+        // Deduplicate file contexts by path and branchId
+        const fileMap = new Map<string, FileMessageContext>();
+        // Deduplicate highlight contexts by path, start, end, and branchId
+        const highlightMap = new Map<string, HighlightMessageContext>();
+        const otherContexts: MessageContext[] = [];
+
+        for (const context of newContexts) {
+            if (context.type === MessageContextType.FILE) {
+                const key = `${context.path}::${context.branchId}`;
+                // Keep the most recent file context (last one wins)
+                fileMap.set(key, context);
+            } else if (context.type === MessageContextType.HIGHLIGHT) {
+                const key = `${context.path}::${context.start}::${context.end}::${context.branchId}`;
+                // Keep the most recent highlight context (last one wins)
+                highlightMap.set(key, context);
+            } else {
+                otherContexts.push(context);
+            }
+        }
+
+        this._context = [...Array.from(fileMap.values()), ...Array.from(highlightMap.values()), ...otherContexts];
+    }
+
+    addHighlightContext(path: string, content: string, start: number, end: number, branchId: string, displayName: string) {
+        const highlightContext: HighlightMessageContext = {
+            type: MessageContextType.HIGHLIGHT,
+            path,
+            content,
+            displayName,
+            start,
+            end,
+            branchId,
+        };
+        this.addContexts([highlightContext]);
     }
 
     async getContextByChatType(type: ChatType): Promise<MessageContext[]> {
@@ -221,11 +296,11 @@ export class ChatContext {
 
         const metadata = await branchData.codeEditor.getJsxElementMetadata(id);
         if (!metadata) {
-            console.error('No metadata found for id', id);
+            console.error('No metadata found for id', id, 'tagName:', tagName);
             return null;
         }
 
-        return {
+        const highlight: HighlightMessageContext = {
             type: MessageContextType.HIGHLIGHT,
             displayName:
                 isInstance && metadata.component ? metadata.component : tagName.toLowerCase(),
@@ -236,6 +311,8 @@ export class ChatContext {
             oid: id,
             branchId: branchId,
         };
+
+        return highlight;
     }
 
     private async getAgentRuleContext(): Promise<AgentRuleMessageContext[]> {

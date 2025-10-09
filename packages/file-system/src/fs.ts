@@ -154,7 +154,19 @@ export class FileSystem {
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = path.join(this.basePath, inputPath);
-        await this.fs.promises.rm(fullPath);
+
+        // Check if it's a directory to use recursive deletion
+        try {
+            const stats = await this.fs.promises.stat(fullPath);
+            if (stats.isDirectory()) {
+                await this.fs.promises.rm(fullPath, { recursive: true });
+            } else {
+                await this.fs.promises.rm(fullPath);
+            }
+        } catch (error) {
+            // If stat fails, try to delete anyway (let rm handle the error)
+            await this.fs.promises.rm(fullPath, { recursive: true });
+        }
     }
 
     async moveFile(from: string, to: string): Promise<void> {

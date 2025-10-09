@@ -58,7 +58,7 @@ export const ActionButtons = ({
                     </DropdownMenuTrigger>
                 </TooltipTrigger>
                 <TooltipPortal>
-                    <TooltipContent side="top" sideOffset={5}>
+                    <TooltipContent side="top" sideOffset={6} hideArrow>
                         {disabled ? 'Select an element to start' : 'Add Image or Screenshot'}
                     </TooltipContent>
                 </TooltipPortal>

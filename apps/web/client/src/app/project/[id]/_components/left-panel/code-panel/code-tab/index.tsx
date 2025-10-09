@@ -4,16 +4,21 @@ import { useEditorEngine } from '@/components/store/editor';
 import { hashContent } from '@/services/sync-engine/sync-engine';
 import { EditorView } from '@codemirror/view';
 import { useDirectory, useFile } from '@onlook/file-system/hooks';
+import { MessageContextType } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { pathsEqual } from '@onlook/utility';
 import { motion } from 'motion/react';
 import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { CodeEditorArea } from './file-content';
 import { FileTabs } from './file-tabs';
+import { CodeControls } from './header-controls';
 import { useCodeNavigation } from './hooks/use-code-navigation';
 import type { BinaryEditorFile, EditorFile, TextEditorFile } from './shared/types';
 import { isDirty } from './shared/utils';
 import { FileTree } from './sidebar/file-tree';
+
+// Keep the number of opened files below the soft limit to avoid performance issues
+const SOFT_MAX_OPENED_FILES = 7;
 
 export interface CodeTabRef {
     hasUnsavedChanges: boolean;
@@ -27,7 +32,6 @@ export interface CodeTabRef {
 interface CodeTabProps {
     projectId: string;
     branchId: string;
-    onUnsavedChangesChange?: (hasUnsavedChanges: boolean) => void;
 }
 
 const createEditorFile = async (filePath: string, content: string | Uint8Array): Promise<EditorFile> => {
@@ -53,17 +57,18 @@ const createEditorFile = async (filePath: string, content: string | Uint8Array):
     }
 }
 
-export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, branchId, onUnsavedChangesChange }, ref) => {
+export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, branchId }, ref) => {
     const editorEngine = useEditorEngine();
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const navigationTarget = useCodeNavigation();
 
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
     const [activeEditorFile, setActiveEditorFile] = useState<EditorFile | null>(null);
     const [openedEditorFiles, setOpenedEditorFiles] = useState<EditorFile[]>([]);
     const [showLocalUnsavedDialog, setShowLocalUnsavedDialog] = useState(false);
     const [filesToClose, setFilesToClose] = useState<string[]>([]);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [editorSelection, setEditorSelection] = useState<{ from: number; to: number; text: string } | null>(null);
 
     // This is a workaround to allow code controls to access the hasUnsavedChanges state
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -104,7 +109,24 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
             setActiveEditorFile(updatedFile);
         };
 
-        const addNewFile = (newFile: EditorFile) => {
+        const addNewFile = async (newFile: EditorFile) => {
+            // If we've reached the limit, try to close first non-dirty file
+            if (openedEditorFiles.length >= SOFT_MAX_OPENED_FILES) {
+                const dirtyChecks = await Promise.all(
+                    openedEditorFiles.map(async file => ({
+                        file,
+                        dirty: await isDirty(file)
+                    }))
+                );
+
+                // Find first non-dirty file
+                const fileToClose = dirtyChecks.find(check => !check.dirty)?.file;
+
+                if (fileToClose) {
+                    closeFileInternal(fileToClose.path);
+                }
+            }
+
             setOpenedEditorFiles(prev => [...prev, newFile]);
             setActiveEditorFile(newFile);
         };
@@ -155,11 +177,6 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
         checkDirtyState();
     }, [openedEditorFiles]);
 
-    // Notify parent when hasUnsavedChanges changes
-    useEffect(() => {
-        onUnsavedChangesChange?.(hasUnsavedChanges);
-    }, [hasUnsavedChanges, onUnsavedChangesChange]);
-
     const refreshFileTree = () => {
         // Force refresh of file entries
         // This will cause the file tree to re-render with updated file list
@@ -204,6 +221,13 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
     const handleSaveFile = async () => {
         if (!selectedFilePath || !activeEditorFile || !branchData) return;
         try {
+            // Preserve scroll position and cursor before save
+            const editorView = editorViewsRef.current.get(selectedFilePath);
+            const scrollPos = editorView ? {
+                top: editorView.scrollDOM.scrollTop,
+                left: editorView.scrollDOM.scrollLeft
+            } : null;
+
             await saveFileWithHash(selectedFilePath, activeEditorFile);
 
             // Read back the formatted content from disk
@@ -222,6 +246,23 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
                 );
                 setOpenedEditorFiles(updatedFiles);
                 setActiveEditorFile(formattedFile);
+
+                // Restore scroll position after content update with multiple attempts to ensure it sticks
+                if (scrollPos && editorView) {
+                    const restoreScroll = () => {
+                        editorView.scrollDOM.scrollTop = scrollPos.top;
+                        editorView.scrollDOM.scrollLeft = scrollPos.left;
+                    };
+
+                    // Use multiple RAF cycles to ensure the scroll is applied after all reflows
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            restoreScroll();
+                            // One more check after a short delay to handle any final adjustments
+                            setTimeout(restoreScroll, 10);
+                        });
+                    });
+                }
             }
         } catch (error) {
             console.error('Failed to save file:', error);
@@ -335,50 +376,77 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
         setShowLocalUnsavedDialog(false);
     };
 
-    const handleRenameFile = (oldPath: string, newName: string) => {
+    const handleRenameFile = (oldPath: string, newPath: string) => {
         if (!branchData?.codeEditor) return;
-        try {
-            branchData.codeEditor.moveFile(oldPath, newName);
-        } catch (error) {
-            console.error('Failed to rename file:', error);
-            toast.error(`Failed to rename: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
+
+        const fileName = oldPath.split('/').pop() || 'file';
+        const newFileName = newPath.split('/').pop() || 'file';
+
+        toast.promise(
+            branchData.codeEditor.moveFile(oldPath, newPath),
+            {
+                loading: `Renaming ${fileName}...`,
+                success: `Renamed to ${newFileName}`,
+                error: (error) => `Failed to rename: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            }
+        );
     };
 
     const handleDeleteFile = (path: string) => {
         if (!branchData?.codeEditor) return;
-        try {
-            branchData.codeEditor.deleteFile(path);
-        } catch (error) {
-            console.error('Failed to delete file:', error);
-            toast.error(`Failed to delete: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
+
+        const fileName = path.split('/').pop() || 'item';
+        const isDirectory = fileEntries.some(entry => {
+            const checkPath = (e: typeof fileEntries[0]): boolean => {
+                if (pathsEqual(e.path, path)) return e.isDirectory;
+                if (e.children) return e.children.some(checkPath);
+                return false;
+            };
+            return checkPath(entry);
+        });
+
+        toast.promise(
+            branchData.codeEditor.deleteFile(path),
+            {
+                loading: `Deleting ${fileName}...`,
+                success: `${isDirectory ? 'Folder' : 'File'} "${fileName}" deleted`,
+                error: (error) => `Failed to delete: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            }
+        );
     };
 
     const handleCreateFile = async (filePath: string, content: string = '') => {
-        try {
-            if (!branchData) {
-                throw new Error('Branch data not found');
-            }
-
-            await branchData.codeEditor.writeFile(filePath, content);
-
-            toast(`File "${filePath.split('/').pop()}" created successfully!`);
-        } catch (error) {
-            console.error('Failed to create file:', error);
-            throw error;
+        if (!branchData) {
+            throw new Error('Branch data not found');
         }
+
+        const fileName = filePath.split('/').pop() || 'file';
+
+        await toast.promise(
+            branchData.codeEditor.writeFile(filePath, content),
+            {
+                loading: `Creating ${fileName}...`,
+                success: `File "${fileName}" created`,
+                error: (error) => `Failed to create file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            }
+        );
     };
 
     const handleCreateFolder = async (folderPath: string) => {
-        if (!branchData?.codeEditor) throw new Error('Code editor not available');
-        try {
-            await branchData.codeEditor.createDirectory(folderPath);
-            toast(`Folder "${folderPath.split('/').pop()}" created successfully!`);
-        } catch (error) {
-            console.error('Failed to create folder:', error);
-            throw error;
+        if (!branchData?.codeEditor) {
+            throw new Error('Code editor not available');
         }
+
+        const folderName = folderPath.split('/').pop() || 'folder';
+
+        await toast.promise(
+            branchData.codeEditor.createDirectory(folderPath),
+            {
+                loading: `Creating ${folderName}...`,
+                success: `Folder "${folderName}" created`,
+                error: (error) => `Failed to create folder: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            }
+        );
     };
 
     // Expose functions through ref. This won't be needed once we move the code controls
@@ -391,6 +459,63 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
         handleCreateFolder
     }), [hasUnsavedChanges, getCurrentPath, handleSaveFile, refreshFileTree, handleCreateFile, handleCreateFolder]);
 
+    // Handle adding selection to chat
+    const handleAddSelectionToChat = useCallback((selection: { from: number; to: number; text: string }) => {
+        if (!selection || !selectedFilePath || !activeEditorFile?.content) return;
+
+        try {
+            // Calculate line numbers from character positions
+            const content = typeof activeEditorFile.content === 'string' ? activeEditorFile.content : '';
+
+            // Validate selection indices
+            if (typeof selection.from !== 'number' || typeof selection.to !== 'number') {
+                console.error('Invalid selection: from and to must be numbers', selection);
+                toast.error('Invalid selection');
+                return;
+            }
+
+            // Ensure from < to
+            if (selection.from >= selection.to) {
+                console.error('Invalid selection: from must be less than to', selection);
+                toast.error('Invalid selection range');
+                return;
+            }
+
+            // Clamp indices to valid range [0, content.length]
+            const from = Math.max(0, Math.min(selection.from, content.length));
+            const to = Math.max(0, Math.min(selection.to, content.length));
+
+            // Double-check after clamping
+            if (from >= to) {
+                console.error('Invalid selection after clamping', { from, to, contentLength: content.length });
+                toast.error('Selection is out of bounds');
+                return;
+            }
+
+            const beforeSelection = content.substring(0, from);
+            const selectionContent = content.substring(from, to);
+            const startLine = beforeSelection.split('\n').length;
+            const endLine = startLine + selectionContent.split('\n').length - 1;
+
+            const fileName = selectedFilePath.split('/').pop() || selectedFilePath;
+            // Add highlight context (selected code snippet)
+            editorEngine.chat.context.addContexts([{
+                type: MessageContextType.HIGHLIGHT,
+                path: selectedFilePath,
+                content: selection.text,
+                displayName: fileName + ' (' + startLine + ':' + endLine + ')',
+                start: startLine,
+                end: endLine,
+                branchId: branchId,
+            }]);
+
+            toast.success('Selection added to chat context');
+        } catch (error) {
+            console.error('Error adding selection to chat:', error);
+            toast.error('Failed to add selection to chat');
+        }
+    }, [selectedFilePath, activeEditorFile, branchId, editorEngine.chat.context]);
+
     // Cleanup editor instances when component unmounts
     useEffect(() => {
         return () => {
@@ -399,56 +524,70 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
         };
     }, []);
 
+
     return (
-        <div className="size-full flex flex-row flex-1 min-h-0">
-            <motion.div
-                initial={false}
-                animate={{
-                    width: isSidebarOpen ? "auto" : 0,
-                    opacity: isSidebarOpen ? 1 : 0
-                }}
-                transition={{
-                    duration: 0.3,
-                    ease: [0.4, 0.0, 0.2, 1]
-                }}
-                className="flex-shrink-0 overflow-y-auto"
-                style={{ minWidth: 0 }}>
-                <FileTree
-                    onFileSelect={handleFileTreeSelect}
-                    fileEntries={fileEntries}
-                    isLoading={filesLoading}
-                    selectedFilePath={selectedFilePath}
-                    onDeleteFile={handleDeleteFile}
-                    onRenameFile={handleRenameFile}
-                    onRefresh={() => { }}
-                />
-            </motion.div>
-            <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-                <FileTabs
-                    openedFiles={openedEditorFiles}
-                    activeFile={activeEditorFile}
-                    isSidebarOpen={isSidebarOpen}
-                    setIsSidebarOpen={setIsSidebarOpen}
-                    onFileSelect={handleLocalFileTabSelect}
-                    onCloseFile={closeLocalFile}
-                    onCloseAllFiles={closeAllLocalFiles}
-                />
-                <CodeEditorArea
-                    editorViewsRef={editorViewsRef}
-                    openedFiles={openedEditorFiles}
-                    activeFile={activeEditorFile}
-                    showUnsavedDialog={showLocalUnsavedDialog}
-                    navigationTarget={navigationTarget}
-                    onSaveFile={handleSaveFile}
-                    onSaveAndCloseFiles={handleSaveAndCloseFiles}
-                    onUpdateFileContent={updateLocalFileContent}
-                    onDiscardChanges={discardLocalFileChanges}
-                    onCancelUnsaved={() => {
-                        setFilesToClose([]);
-                        setShowLocalUnsavedDialog(false);
+        <div className="flex flex-col size-full">
+            <CodeControls
+                isDirty={hasUnsavedChanges}
+                currentPath={getCurrentPath()}
+                onSave={handleSaveFile}
+                onRefresh={refreshFileTree}
+                onCreateFile={handleCreateFile}
+                onCreateFolder={handleCreateFolder}
+                isSidebarOpen={isSidebarOpen}
+                setIsSidebarOpen={setIsSidebarOpen}
+            />
+            <div className="flex flex-1 overflow-auto min-h-0">
+                <motion.div
+                    initial={false}
+                    animate={{
+                        width: isSidebarOpen ? "auto" : 0,
+                        opacity: isSidebarOpen ? 1 : 0
                     }}
-                    fileCountToClose={filesToClose.length}
-                />
+                    transition={{
+                        duration: 0.3,
+                        ease: [0.4, 0.0, 0.2, 1]
+                    }}
+                    className="flex-shrink-0 overflow-y-auto min-h-0"
+                    style={{ minWidth: 0 }}>
+                    <FileTree
+                        onFileSelect={handleFileTreeSelect}
+                        fileEntries={fileEntries}
+                        isLoading={filesLoading}
+                        selectedFilePath={selectedFilePath}
+                        onDeleteFile={handleDeleteFile}
+                        onRenameFile={handleRenameFile}
+                        onRefresh={() => { }}
+                    />
+                </motion.div>
+                <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+                    <FileTabs
+                        openedFiles={openedEditorFiles}
+                        activeFile={activeEditorFile}
+                        onFileSelect={handleLocalFileTabSelect}
+                        onCloseFile={closeLocalFile}
+                        onCloseAllFiles={closeAllLocalFiles}
+                    />
+                    <CodeEditorArea
+                        editorViewsRef={editorViewsRef}
+                        openedFiles={openedEditorFiles}
+                        activeFile={activeEditorFile}
+                        showUnsavedDialog={showLocalUnsavedDialog}
+                        navigationTarget={navigationTarget}
+                        onSaveFile={handleSaveFile}
+                        onSaveAndCloseFiles={handleSaveAndCloseFiles}
+                        onUpdateFileContent={updateLocalFileContent}
+                        onDiscardChanges={discardLocalFileChanges}
+                        onCancelUnsaved={() => {
+                            setFilesToClose([]);
+                            setShowLocalUnsavedDialog(false);
+                        }}
+                        fileCountToClose={filesToClose.length}
+                        onSelectionChange={setEditorSelection}
+                        onAddSelectionToChat={handleAddSelectionToChat}
+                        onFocusChatInput={() => editorEngine.chat.focusChatInput()}
+                    />
+                </div>
             </div>
         </div>
     );

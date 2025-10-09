@@ -42,9 +42,10 @@ export const TopBar = observer(() => {
     ];
 
     return (
-        <div className="bg-background-primary/20 backdrop-blur-md flex flex-row h-10 p-0 justify-center items-center">
+        <div className="flex flex-row h-10 p-0 justify-center items-center bg-background-onlook/60 backdrop-blur-xl">
             <div className="flex flex-row flex-grow basis-0 justify-start items-center">
                 <ProjectBreadcrumb />
+                <span className="text-foreground-secondary/50 text-small">/</span>
                 <BranchDisplay />
             </div>
             <ModeToggle />

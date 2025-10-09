@@ -122,12 +122,12 @@ export const customDarkTheme = EditorView.theme({
         backgroundColor: '#4b5563'
     },
     '.cm-search-highlight': {
-        backgroundColor: 'rgba(26, 198, 156, 0.3)',
-        borderRadius: '2px'
+        backgroundColor: 'rgba(138, 194, 255, 0.42)',
     },
     '.cm-element-highlight': {
         backgroundColor: 'rgba(26, 198, 156, 0.2)',
-        borderRadius: '2px',
+        padding: '0.1735em 0',
+        boxDecorationBreak: 'clone',
     },
 }, { dark: true });
 

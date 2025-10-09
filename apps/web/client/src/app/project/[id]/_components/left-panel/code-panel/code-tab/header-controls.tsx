@@ -20,9 +20,11 @@ interface CodeControlsProps {
     onRefresh: () => void;
     onCreateFile: (filePath: string, content?: string) => Promise<void>;
     onCreateFolder: (folderPath: string) => Promise<void>;
+    isSidebarOpen: boolean;
+    setIsSidebarOpen: (isSidebarOpen: boolean) => void;
 }
 
-export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreateFile, onCreateFolder }: CodeControlsProps) => {
+export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreateFile, onCreateFolder, isSidebarOpen, setIsSidebarOpen }: CodeControlsProps) => {
     const [showFileModal, setShowFileModal] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showFolderModal, setShowFolderModal] = useState(false);
@@ -46,8 +48,20 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
     };
 
     return (
-        <>
-            <div className="flex flex-row items-center transition-opacity duration-200">
+        <div className="flex flex-row items-center justify-between p-1 border-b border-border w-full h-10">
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="text-foreground-secondary hover:text-foreground-primary py-1 px-2 w-fit h-fit bg-transparent hover:!bg-transparent cursor-pointer"
+            >
+                {isSidebarOpen ? <Icons.SidebarLeftCollapse className="h-4 w-4" /> : <Icons.MoveToFolder className="h-4 w-4" />}
+                <span className="text-small ml-0.5">
+                    {isSidebarOpen ? '' : 'View Files'}
+                </span>
+            </Button>
+            <div className="flex flex-row items-center transition-opacity duration-200 ml-auto">
+
                 <Tooltip>
                     <DropdownMenu>
                         <TooltipTrigger asChild>
@@ -55,7 +69,7 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="p-2 w-fit h-fit hover:bg-background-onlook cursor-pointer"
+                                    className="py-1 px-2 w-fit h-fit bg-transparent hover:!bg-transparent cursor-pointer text-foreground-secondary hover:text-foreground-primary"
                                 >
                                     <Icons.FilePlus className="h-4 w-4" />
                                 </Button>
@@ -88,7 +102,7 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
                             variant="ghost"
                             size="icon"
                             onClick={() => setShowFolderModal(true)}
-                            className="p-2 w-fit h-fit hover:bg-background-onlook cursor-pointer"
+                            className="py-1 px-2 w-fit h-fit bg-transparent hover:!bg-transparent cursor-pointer text-foreground-secondary hover:text-foreground-primary"
                         >
                             <Icons.DirectoryPlus className="h-4 w-4" />
                         </Button>
@@ -105,7 +119,7 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
                             onClick={handleSave}
                             disabled={!isDirty || isSaving}
                             className={cn(
-                                "px-1.5 py-0.75 w-fit h-fit cursor-pointer mr-0.5 ml-1",
+                                "px-2 py-1 w-fit h-fit cursor-pointer mr-0.5 ml-1",
                                 isDirty
                                     ? "text-background-primary hover:text-teal-100 hover:bg-teal-500 bg-foreground-primary"
                                     : "hover:bg-background-onlook hover:text-teal-200"
@@ -148,6 +162,6 @@ export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreate
                 onSuccess={handleModalSuccess}
                 onCreateFile={onCreateFile}
             />
-        </>
+        </div >
     );
 };

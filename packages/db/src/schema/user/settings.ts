@@ -13,7 +13,7 @@ export const userSettings = pgTable("user_settings", {
     autoApplyCode: boolean("auto_apply_code").notNull().default(true),
     expandCodeBlocks: boolean("expand_code_blocks").notNull().default(true),
     showSuggestions: boolean("show_suggestions").notNull().default(true),
-    showMiniChat: boolean("show_mini_chat").notNull().default(true),
+    showMiniChat: boolean("show_mini_chat").notNull().default(false),
     shouldWarnDelete: boolean("should_warn_delete").notNull().default(true),
 }).enableRLS();
 

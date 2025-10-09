@@ -14,7 +14,7 @@ import { inferPageFromUrl, pathsEqual } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import React, { useMemo, useState } from 'react';
 import { HoverOnlyTooltip } from '../../../editor-bar/hover-tooltip';
-import { PageModal } from '../../../left-panel/page-tab/page-modal';
+import { PageModal } from '../../../left-panel/design-panel/page-tab/page-modal';
 
 interface PageSelectorProps {
     frame: Frame;

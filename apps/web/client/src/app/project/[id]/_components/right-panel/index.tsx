@@ -2,122 +2,64 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
-import { EditorMode, EditorTabValue } from '@onlook/models';
-import { Icons } from '@onlook/ui/icons';
+import { Icons } from '@onlook/ui/icons/index';
 import { ResizablePanel } from '@onlook/ui/resizable';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
-import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { ChatTab } from './chat-tab';
 import { ChatControls } from './chat-tab/controls';
 import { ChatHistory } from './chat-tab/history';
 import { ChatPanelDropdown } from './chat-tab/panel-dropdown';
-import { CodeTab, type CodeTabRef } from './code-tab';
-import { CodeControls } from './code-tab/header-controls';
-
-const EDIT_PANEL_WIDTHS = {
-    [EditorTabValue.CHAT]: 352,
-    [EditorTabValue.CODE]: 700,
-};
 
 export const RightPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
-    const [codeTabHasUnsavedChanges, setCodeTabHasUnsavedChanges] = useState(false);
-    const codeTabRef = useRef<CodeTabRef>(null);
-    const selectedTab = editorEngine.state.rightPanelTab;
     const currentConversation = editorEngine.chat.conversation.current;
-    const editPanelWidth = EDIT_PANEL_WIDTHS[selectedTab];
+    const editPanelWidth = 352
 
     return (
         <div
-            className={cn(
-                'flex h-full w-full transition-width duration-300 bg-background/95 group/panel border-[0.5px] backdrop-blur-xl shadow rounded-tl-xl',
-                editorEngine.state.editorMode === EditorMode.PREVIEW && 'hidden',
-            )}
+            className='flex h-full w-full transition-width duration-300 bg-background/95 group/panel border-[0.5px] backdrop-blur-xl shadow rounded-tl-xl'
         >
             <ResizablePanel
                 side="right"
                 defaultWidth={editPanelWidth}
                 forceWidth={editPanelWidth}
                 minWidth={240}
-                maxWidth={1440}
+                maxWidth={500}
             >
-                <Tabs
-                    className="h-full gap-0"
-                    onValueChange={(value) =>
-                        (editorEngine.state.rightPanelTab = value as EditorTabValue)
-                    }
-                    value={selectedTab}
-                >
-                    <TabsList className="flex flex-row h-10 w-full border-b-1 border-border items-center bg-transparent select-none pr-1 pl-1.5 justify-between">
-                        <div className="flex flex-row items-center gap-2 ">
-                            <ChatPanelDropdown
-                                isChatHistoryOpen={isChatHistoryOpen}
-                                setIsChatHistoryOpen={setIsChatHistoryOpen}
+                <div className='flex flex-col h-full'>
+                    <div className="flex flex-row p-1 w-full h-10 border-b border-border ">
+                        <ChatPanelDropdown
+                            isChatHistoryOpen={isChatHistoryOpen}
+                            setIsChatHistoryOpen={setIsChatHistoryOpen}
+                        >
+                            <div
+                                className="flex items-center gap-1.5 bg-transparent p-1 px-2 text-sm text-foreground-secondary hover:text-foreground-primary cursor-pointer group"
                             >
-                                <TabsTrigger
-                                    className="bg-transparent py-2 px-1 text-small hover:text-foreground-hover cursor-pointer"
-                                    value={EditorTabValue.CHAT}
-                                >
-                                    <Icons.Sparkles className="mr-0.5 mb-0.5 h-4 w-4" />
-                                    {t(transKeys.editor.panels.edit.tabs.chat.name)}
-                                    <Icons.ChevronDown className="ml-0.5 h-3 w-3 text-muted-foreground" />
-                                </TabsTrigger>
-                            </ChatPanelDropdown>
-                            <TabsTrigger
-                                className="bg-transparent py-2 px-1 text-small hover:text-foreground-hover cursor-pointer"
-                                value={EditorTabValue.CODE}
-                            >
-                                <Icons.Code className="mr-1 h-4 w-4" />
-                                Code
-                            </TabsTrigger>
+                                <Icons.Sparkles className="mr-0.5 mb-0.5 h-4 w-4" />
+                                {t(transKeys.editor.panels.edit.tabs.chat.name)}
+                                <Icons.ChevronDown className="ml-0.5 h-3 w-3 text-muted-foreground group-hover:text-foreground-primary" />
+                            </div>
+                        </ChatPanelDropdown>
+                        <div className='ml-auto'>
+                            <ChatControls />
                         </div>
-                        {selectedTab === EditorTabValue.CHAT && <ChatControls />}
-                        {selectedTab === EditorTabValue.CODE && codeTabRef.current && <CodeControls
-                            isDirty={codeTabHasUnsavedChanges}
-                            currentPath={codeTabRef.current.getCurrentPath()}
-                            onSave={codeTabRef.current.handleSaveFile}
-                            onRefresh={codeTabRef.current.refreshFileTree}
-                            onCreateFile={codeTabRef.current.handleCreateFile}
-                            onCreateFolder={codeTabRef.current.handleCreateFolder}
-                        />}
-                    </TabsList>
+                    </div>
                     <ChatHistory isOpen={isChatHistoryOpen} onOpenChange={setIsChatHistoryOpen} />
-                    <TabsContent
-                        forceMount
-                        className={cn(
-                            "h-full overflow-y-auto",
-                            editorEngine.state.rightPanelTab !== EditorTabValue.CHAT && 'hidden',
-                        )} value={EditorTabValue.CHAT}>
+
+                    <div className='flex-1 overflow-y-auto'>
                         {currentConversation && (
                             <ChatTab
                                 conversationId={currentConversation.id}
                                 projectId={editorEngine.projectId}
                             />
                         )}
-                    </TabsContent>
-                    <TabsContent
-                        forceMount
-                        className={cn(
-                            'h-full overflow-y-auto',
-                            editorEngine.state.rightPanelTab !== EditorTabValue.CODE && 'hidden',
-                        )}
-                        value={EditorTabValue.CODE}
-                    >
-                        {/* Force remount when branch changes to reset all editor state (opened files, selection, etc.) */}
-                        <CodeTab
-                            projectId={editorEngine.projectId}
-                            branchId={editorEngine.branches.activeBranch.id}
-                            ref={codeTabRef}
-                            onUnsavedChangesChange={setCodeTabHasUnsavedChanges}
-                        />
-                    </TabsContent>
-                </Tabs>
-            </ResizablePanel>
-        </div>
+                    </div>
+                </div>
+            </ResizablePanel >
+        </div >
     );
 });

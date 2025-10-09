@@ -1,7 +1,7 @@
 import { Icons } from '@onlook/ui/icons';
-import React from 'react';
+import { NodeIcon } from '@onlook/ui/node-icon';
 import { cn } from '@onlook/ui/utils';
-import { NodeIcon } from '../../../project/[id]/_components/left-panel/layers-tab/tree/node-icon';
+import React from 'react';
 import { Illustrations } from '../illustrations';
 
 // Mock data for layers with nested structure
@@ -10,7 +10,7 @@ const mockLayers = [
     { id: '2.1', name: 'Models', tagName: 'DIV', selected: false, level: 1, isInstance: false },
     { id: '2.1.1', name: 'Exotic', tagName: 'SPAN', selected: false, level: 2, isInstance: false },
     { id: '2.1.2', name: 'Roadster', tagName: 'SPAN', selected: false, level: 2, isInstance: false },
-    { id: '2.1.3', name: 'Terrestrial', tagName: 'SPAN', selected: false, level: 2, isInstance: false },    
+    { id: '2.1.3', name: 'Terrestrial', tagName: 'SPAN', selected: false, level: 2, isInstance: false },
     { id: '2.2', name: 'Logo', tagName: 'IMG', selected: false, level: 1, isInstance: false },
     { id: '2.3', name: 'Reserve', tagName: 'SPAN', selected: false, level: 1, isInstance: false },
     { id: '3', name: 'Header', tagName: 'Section', selected: true, level: 0, isInstance: false },
@@ -106,7 +106,7 @@ export function LayersBlock() {
                             <Illustrations.LayersOrderNow className='w-18' />
                         </div>
                     </div>
-                   
+
                 </div>
             </div>
             <div className="flex flex-row items-start gap-8 w-full">

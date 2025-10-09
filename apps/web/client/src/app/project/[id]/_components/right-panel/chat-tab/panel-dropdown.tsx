@@ -1,8 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { api } from '@/trpc/react';
 import { transKeys } from '@/i18n/keys';
+import { api } from '@/trpc/react';
 import type { ChatSettings } from '@onlook/models';
-import { EditorTabValue } from '@onlook/models';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -12,10 +11,10 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useMemo } from 'react';
 import { debounce } from 'lodash';
+import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useMemo } from 'react';
 
 export const ChatPanelDropdown = observer(({
     children,
@@ -35,7 +34,6 @@ export const ChatPanelDropdown = observer(({
     const { data: userSettings } = api.user.settings.get.useQuery();
     const apiUtils = api.useUtils();
     const editorEngine = useEditorEngine();
-    const selectedTab = editorEngine.state.rightPanelTab;
 
     const debouncedUpdateSettings = useMemo(
         () => debounce((settings: Partial<ChatSettings>) => {
@@ -65,48 +63,16 @@ export const ChatPanelDropdown = observer(({
                 },
             };
         });
-        
+
         debouncedUpdateSettings(settings);
     }, [apiUtils.user.settings.get, debouncedUpdateSettings]);
 
     return (
         <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild disabled={selectedTab !== EditorTabValue.CHAT}>
+            <DropdownMenuTrigger asChild>
                 <div className="flex items-center">{children}</div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="min-w-[220px]">
-                {/* <DropdownMenuItem
-                    className="flex items-center py-1.5"
-                    onClick={(e) => {
-                        updateChatSettings(e, {
-                            autoApplyCode: !chatSettings.autoApplyCode,
-                        });
-                    }}
-                >
-                    <Icons.Check
-                        className={cn(
-                            'mr-2 h-4 w-4',
-                            chatSettings.autoApplyCode ? 'opacity-100' : 'opacity-0',
-                        )}
-                    />
-                    {t(transKeys.editor.panels.edit.tabs.chat.settings.autoApplyCode)}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                    className="flex items-center py-1.5"
-                    onClick={(e) => {
-                        updateChatSettings(e, {
-                            expandCodeBlocks: !chatSettings.expandCodeBlocks,
-                        });
-                    }}
-                >
-                    <Icons.Check
-                        className={cn(
-                            'mr-2 h-4 w-4',
-                            chatSettings.expandCodeBlocks ? 'opacity-100' : 'opacity-0',
-                        )}
-                    />
-                    {t(transKeys.editor.panels.edit.tabs.chat.settings.expandCodeBlocks)}
-                </DropdownMenuItem> */}
                 <DropdownMenuItem
                     className="flex items-center py-1.5"
                     onClick={(e) => {

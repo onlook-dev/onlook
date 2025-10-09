@@ -5,7 +5,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
 import { transKeys } from '@/i18n/keys';
 import type { ChatMessage, QueuedMessage } from '@onlook/models';
-import { ChatType, EditorTabValue, type ImageMessageContext } from '@onlook/models';
+import { ChatType, EditorMode, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -31,6 +31,7 @@ interface ChatInputProps {
     isStreaming: boolean;
     onStop: () => Promise<void>;
     onSendMessage: SendMessage;
+    onScrollToBottom: () => void;
     queuedMessages: QueuedMessage[];
     removeFromQueue: (id: string) => void;
 }
@@ -40,6 +41,7 @@ export const ChatInput = observer(({
     isStreaming,
     onStop,
     onSendMessage,
+    onScrollToBottom,
     queuedMessages,
     removeFromQueue,
 }: ChatInputProps) => {
@@ -64,12 +66,6 @@ export const ChatInput = observer(({
             focusInput();
         }
     }, [isStreaming, messages]);
-
-    useEffect(() => {
-        if (editorEngine.state.rightPanelTab === EditorTabValue.CHAT) {
-            focusInput();
-        }
-    }, [editorEngine.state.rightPanelTab]);
 
     useEffect(() => {
         const focusHandler = () => {
@@ -145,6 +141,10 @@ export const ChatInput = observer(({
         try {
             await onSendMessage(savedInput, chatMode);
             setInputValue('');
+            // Scroll to bottom after sending message
+            setTimeout(() => {
+                onScrollToBottom();
+            }, 0);
         } catch (error) {
             console.error('Error sending message', error);
             toast.error('Failed to send message. Please try again.');
@@ -388,7 +388,7 @@ export const ChatInput = observer(({
                                 <Button
                                     size={'icon'}
                                     variant={'secondary'}
-                                    className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
+                                    className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary bg-background-primary rounded-full"
                                     onClick={() => {
                                         setActionTooltipOpen(false);
                                         void onStop();
@@ -397,13 +397,20 @@ export const ChatInput = observer(({
                                     <Icons.Stop />
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent>{'Stop response'}</TooltipContent>
+                            <TooltipContent side="top" sideOffset={6} hideArrow>{'Stop response'}</TooltipContent>
                         </Tooltip>
                     ) : (
                         <Button
                             size={'icon'}
                             variant={'secondary'}
-                            className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
+                            className={cn(
+                                "text-smallPlus w-fit h-full py-0.5 px-2.5 rounded-full",
+                                inputEmpty 
+                                    ? "text-primary" 
+                                    : chatMode === ChatType.ASK 
+                                        ? "bg-blue-300 text-background hover:bg-blue-600" 
+                                        : "bg-foreground-primary text-background hover:bg-foreground-primary/80"
+                            )}
                             disabled={inputEmpty}
                             onClick={() => void sendMessage()}
                         >

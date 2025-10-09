@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
-import { ChatType, EditorTabValue } from '@onlook/models';
+import { ChatType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
@@ -25,7 +25,6 @@ export const OverlayChatInput = observer(({
 
     const handleSubmit = async () => {
         toast.promise(async () => {
-            editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
             void editorEngine.chat.sendMessage(inputState.value, ChatType.EDIT);
         }, {
             loading: 'Sending message...',
