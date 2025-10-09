@@ -7,7 +7,7 @@ import type {
     ImageContentData,
     RectDimensions,
 } from '@onlook/models';
-import { EditorMode } from '@onlook/models';
+import { EditorMode, InsertMode } from '@onlook/models';
 import {
     type ActionElement,
     type ActionLocation,
@@ -18,7 +18,7 @@ import {
 } from '@onlook/models/actions';
 import { StyleChangeType } from '@onlook/models/style';
 import { colors } from '@onlook/ui/tokens';
-import { canHaveBackgroundImage, createDomId, createOid, urlToRelativePath, sanitizeFilename } from '@onlook/utility';
+import { canHaveBackgroundImage, createDomId, createOid, urlToRelativePath } from '@onlook/utility';
 import type React from 'react';
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
@@ -30,9 +30,9 @@ export class InsertManager {
 
     constructor(private editorEngine: EditorEngine) { }
 
-    getDefaultProperties(mode: EditorMode): DropElementProperties {
+    getDefaultProperties(mode: InsertMode): DropElementProperties {
         switch (mode) {
-            case EditorMode.INSERT_TEXT:
+            case InsertMode.INSERT_TEXT:
                 return {
                     tagName: 'p',
                     styles: {
@@ -42,7 +42,7 @@ export class InsertManager {
                     },
                     textContent: null,
                 };
-            case EditorMode.INSERT_DIV:
+            case InsertMode.INSERT_DIV:
                 return {
                     tagName: 'div',
                     styles: {
@@ -172,14 +172,14 @@ export class InsertManager {
             return;
         }
         const branchId = frameData.frame.branchId;
-        
-        const mode = this.editorEngine.state.editorMode;
+
+        const mode = this.editorEngine.state.insertMode;
         const domId = createDomId();
         const oid = createOid();
         const width = Math.max(Math.round(newRect.width), 30);
         const height = Math.max(Math.round(newRect.height), 30);
         const styles: Record<string, string> =
-            mode === EditorMode.INSERT_TEXT
+            mode === InsertMode.INSERT_TEXT
                 ? {
                     width: `${width}px`,
                     height: `${height}px`,
@@ -194,7 +194,7 @@ export class InsertManager {
             domId,
             oid,
             branchId,
-            tagName: mode === EditorMode.INSERT_TEXT ? 'p' : 'div',
+            tagName: mode === InsertMode.INSERT_TEXT ? 'p' : 'div',
             attributes: {
                 [EditorAttributes.DATA_ONLOOK_DOM_ID]: domId,
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
@@ -219,7 +219,7 @@ export class InsertManager {
             targets: targets,
             location: location,
             element: actionElement,
-            editText: mode === EditorMode.INSERT_TEXT,
+            editText: mode === InsertMode.INSERT_TEXT,
             pasteParams: null,
             codeBlock: null,
         };

@@ -8,7 +8,7 @@ import { DesignPanel } from "./design-panel";
 export const LeftPanel = observer(() => {
     const editorEngine = useEditorEngine();
     return <>
-        <div className={cn('size-full', editorEngine.state.editorMode !== EditorMode.DESIGN && 'hidden')}>
+        <div className={cn('size-full', editorEngine.state.editorMode !== EditorMode.DESIGN && editorEngine.state.editorMode !== EditorMode.PAN && 'hidden')}>
             <DesignPanel />
         </div>
         <div className={cn('size-full', editorEngine.state.editorMode !== EditorMode.CODE && 'hidden')}>

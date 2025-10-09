@@ -2,7 +2,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import type { FrameData } from '@/components/store/editor/frames';
 import { getRelativeMousePositionToFrameView } from '@/components/store/editor/overlay/utils';
 import type { DomElement, ElementPosition, Frame } from '@onlook/models';
-import { EditorMode, MouseAction } from '@onlook/models';
+import { EditorMode, InsertMode, MouseAction } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import throttle from 'lodash/throttle';
@@ -52,7 +52,7 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
                     case MouseAction.MOVE:
                         editorEngine.elements.mouseover(el);
                         if (e.altKey) {
-                            if (editorEngine.state.editorMode !== EditorMode.INSERT_IMAGE) {
+                            if (editorEngine.state.insertMode !== InsertMode.INSERT_IMAGE) {
                                 editorEngine.overlay.showMeasurement();
                             }
                         } else {
@@ -103,9 +103,9 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
             if (
                 editorEngine.state.editorMode === EditorMode.DESIGN ||
                 editorEngine.state.editorMode === EditorMode.CODE ||
-                ((editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
-                    editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
-                    editorEngine.state.editorMode === EditorMode.INSERT_IMAGE) &&
+                ((editorEngine.state.insertMode === InsertMode.INSERT_DIV ||
+                    editorEngine.state.insertMode === InsertMode.INSERT_TEXT ||
+                    editorEngine.state.insertMode === InsertMode.INSERT_IMAGE) &&
                     !editorEngine.insert.isDrawing)
             ) {
                 await handleMouseEvent(e, MouseAction.MOVE);
@@ -140,9 +140,9 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
         if (editorEngine.state.editorMode === EditorMode.DESIGN || editorEngine.state.editorMode === EditorMode.CODE) {
             await handleMouseEvent(e, MouseAction.MOUSE_DOWN);
         } else if (
-            editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
-            editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
-            editorEngine.state.editorMode === EditorMode.INSERT_IMAGE
+            editorEngine.state.insertMode === InsertMode.INSERT_DIV ||
+            editorEngine.state.insertMode === InsertMode.INSERT_TEXT ||
+            editorEngine.state.insertMode === InsertMode.INSERT_IMAGE
         ) {
             editorEngine.insert.start(e);
         }
@@ -192,6 +192,7 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
             }
 
             editorEngine.state.editorMode = EditorMode.DESIGN;
+            editorEngine.state.insertMode = null;
         } catch (error) {
             console.error('drop operation failed:', error);
             toast.error('Failed to drop element', {
@@ -206,8 +207,8 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, is
             editorEngine.state.editorMode === EditorMode.PREVIEW && !isResizing
                 ? 'hidden'
                 : 'visible',
-            editorEngine.state.editorMode === EditorMode.INSERT_DIV && 'cursor-crosshair',
-            editorEngine.state.editorMode === EditorMode.INSERT_TEXT && 'cursor-text',
+            editorEngine.state.insertMode === InsertMode.INSERT_DIV && 'cursor-crosshair',
+            editorEngine.state.insertMode === InsertMode.INSERT_TEXT && 'cursor-text',
         );
     }, [editorEngine.state.editorMode, isResizing]);
 

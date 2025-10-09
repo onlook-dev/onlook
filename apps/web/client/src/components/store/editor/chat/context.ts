@@ -6,7 +6,6 @@ import {
     type ErrorMessageContext,
     type FileMessageContext,
     type HighlightMessageContext,
-    type ImageMessageContext,
     type MessageContext
 } from '@onlook/models/chat';
 import { assertNever, type ParsedError } from '@onlook/utility';
@@ -27,54 +26,18 @@ export class ChatContext {
             () => ({
                 elements: this.editorEngine.elements.selected,
                 frames: this.editorEngine.frames.selected,
-                editorMode: this.editorEngine.state.editorMode,
             }),
             (
-                { elements, frames, editorMode },
+                { elements, frames },
             ) => {
-                console.log('[ChatContext] Selection/Mode changed:', {
-                    mode: editorMode,
-                    elementsCount: elements.length,
-                    elementTagNames: elements.map(el => el.tagName),
-                });
-
                 this.generateContextFromReaction({ elements, frames }).then((context) => {
-                    // Preserve ONLY manually added highlights from code editor (CMD+L / "Add to Chat" button)
-                    // Canvas selections should be fluid and replaced on every selection change
-                    // Manual code editor highlights don't have an oid since they're text selections, not DOM element selections
+                    // Preserve some context when edited element changes
                     const allHighlights = this._context.filter(c => c.type === MessageContextType.HIGHLIGHT);
                     const manualCodeEditorHighlights = allHighlights.filter(c => c.oid === undefined);
-
-                    // Preserve existing images when updating context from canvas selection
                     const existingImages = this._context.filter(
                         (c) => c.type === MessageContextType.IMAGE
                     );
-
-                    console.log('[ChatContext] Selection reaction fired:', {
-                        selectedElementsCount: elements.length,
-                        totalHighlightsInOldContext: allHighlights.length,
-                        detailsOfAllHighlights: allHighlights.map(h => ({
-                            displayName: h.displayName,
-                            hasOid: h.oid !== undefined,
-                            oidValue: h.oid,
-                            path: h.path
-                        })),
-                        manualCodeEditorHighlightsToPreserve: manualCodeEditorHighlights.length,
-                        newHighlightsFromCanvas: context.filter(c => c.type === MessageContextType.HIGHLIGHT).length,
-                        existingImagesToPreserve: existingImages.length,
-                    });
-
-                    // Merge: new auto-generated context + preserved manual code editor highlights + existing images
                     this.context = [...context, ...manualCodeEditorHighlights, ...existingImages];
-
-                    console.log('[ChatContext] Final context after merge:', {
-                        total: this.context.length,
-                        highlights: this.context.filter(c => c.type === MessageContextType.HIGHLIGHT).map(h => ({
-                            displayName: h.displayName,
-                            hasOid: h.oid !== undefined,
-                        })),
-                        images: existingImages.length,
-                    });
                 });
             },
         );
