@@ -3,7 +3,7 @@ import { type Frame } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { colors } from '@onlook/ui/tokens';
 import { observer } from 'mobx-react-lite';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { RightClickMenu } from '../../right-click-menu';
 import { GestureScreen } from './gesture';
 import { ResizeHandles } from './resize-handles';
@@ -29,8 +29,24 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
 
     const isSelected = editorEngine.frames.isSelected(frame.id);
     const branchData = editorEngine.branches.getBranchDataById(frame.branchId);
-    const preloadScriptReady = branchData?.sandbox?.preloadScriptInjected ?? false;
-    const isFrameReady = preloadScriptReady && !(isConnecting && !hasTimedOut);
+    const sandbox = branchData?.sandbox;
+    const connectionState = sandbox?.connectionState ?? 'idle';
+    const preloadScriptReady = sandbox?.preloadScriptInjected ?? false;
+    const sessionConnecting = sandbox?.session?.isConnecting ?? false;
+
+    // Lazily trigger sandbox connection when needed
+    useEffect(() => {
+        if (sandbox && connectionState === 'idle') {
+            sandbox.ensureConnected().catch((err) => {
+                console.error('[Frame] Failed to connect sandbox:', err);
+            });
+        }
+    }, [sandbox, connectionState]);
+
+    const isFrameReady =
+        connectionState === 'connected' &&
+        preloadScriptReady &&
+        !(sessionConnecting && !hasTimedOut);
 
     return (
         <div
@@ -64,7 +80,7 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
                 />
                 <GestureScreen frame={frame} isResizing={isResizing} />
 
-                {!isFrameReady && (
+                {!isFrameReady && connectionState !== 'error' && (
                     <div
                         className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-md"
                         style={{
@@ -77,6 +93,45 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
                             style={{ transform: `scale(${1 / editorEngine.canvas.scale})` }}
                         >
                             <Icons.LoadingSpinner className="animate-spin h-8 w-8" />
+                        </div>
+                    </div>
+                )}
+
+                {connectionState === 'error' && (
+                    <div
+                        className="absolute inset-0 bg-background/90 backdrop-blur-sm flex items-center justify-center z-50 rounded-md"
+                        style={{
+                            width: frame.dimension.width,
+                            height: frame.dimension.height,
+                        }}
+                    >
+                        <div
+                            className="flex flex-col items-center gap-4 text-foreground p-4 max-w-md"
+                            style={{ transform: `scale(${1 / editorEngine.canvas.scale})` }}
+                        >
+                            <div className="text-center">
+                                <p className="font-semibold text-red-500 mb-2">Connection Failed</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {sandbox?.connectionError?.message ?? 'Unknown error'}
+                                </p>
+                                {sandbox && sandbox.connectionRetryCount > 0 && (
+                                    <p className="text-xs text-muted-foreground mt-2">
+                                        Retry attempts: {sandbox.connectionRetryCount}
+                                    </p>
+                                )}
+                            </div>
+                            <button
+                                onClick={() => {
+                                    if (sandbox) {
+                                        sandbox.connect().catch((err) => {
+                                            console.error('[Frame] Retry failed:', err);
+                                        });
+                                    }
+                                }}
+                                className="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-md text-sm font-medium transition-colors"
+                            >
+                                Retry Connection
+                            </button>
                         </div>
                     </div>
                 )}

@@ -76,7 +76,7 @@ export const FrameComponent = observer(
             try {
                 if (!iframeRef.current?.contentWindow) {
                     console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - No iframe found`);
-                    onConnectionFailed;
+                    onConnectionFailed();
                     return;
                 }
 
@@ -133,7 +133,7 @@ export const FrameComponent = observer(
                             console.error(
                                 `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Connection failed: child is null`,
                             );
-                            onConnectionFailed;
+                            onConnectionFailed();
                             return;
                         }
 
@@ -147,7 +147,7 @@ export const FrameComponent = observer(
                         remote.processDom();
 
                         // Notify parent of successful connection
-                        onConnectionSuccess;
+                        onConnectionSuccess();
                     })
                     .catch((error) => {
                         isConnecting.current = false;
@@ -155,12 +155,12 @@ export const FrameComponent = observer(
                             `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection:`,
                             error,
                         );
-                        onConnectionFailed;
+                        onConnectionFailed();
                     });
             } catch (error) {
                 isConnecting.current = false;
                 console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Setup failed:`, error);
-                onConnectionFailed;
+                onConnectionFailed();
             }
         };
 
@@ -283,6 +283,17 @@ export const FrameComponent = observer(
                 isConnecting.current = false;
             };
         }, []);
+
+        // Reset connection state when frame URL changes (dev server restarts, hot reload, etc.)
+        useEffect(() => {
+            // Clear any existing connection when the frame URL changes
+            isConnecting.current = false;
+            if (connectionRef.current) {
+                connectionRef.current.destroy();
+                connectionRef.current = null;
+            }
+            setPenpalChild(null);
+        }, [frame.url]);
 
         return (
             <WebPreview>

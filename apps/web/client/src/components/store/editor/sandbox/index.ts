@@ -4,7 +4,7 @@ import { EXCLUDED_SYNC_PATHS } from '@onlook/constants';
 import type { CodeFileSystem } from '@onlook/file-system';
 import { type FileEntry } from '@onlook/file-system';
 import type { Branch, RouterConfig } from '@onlook/models';
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
 import { GitManager } from '../git';
@@ -12,14 +12,21 @@ import { detectRouterConfig } from '../pages/helper';
 import { copyPreloadScriptToPublic, getLayoutPath as detectLayoutPath } from './preload-script';
 import { SessionManager } from './session';
 
+export type SandboxConnectionState = 'idle' | 'connecting' | 'connected' | 'error';
+
 export class SandboxManager {
     readonly session: SessionManager;
     readonly gitManager: GitManager;
-    private providerReactionDisposer?: () => void;
     private sync: CodeProviderSync | null = null;
     preloadScriptInjected: boolean = false;
     preloadScriptLoading: boolean = false;
     routerConfig: RouterConfig | null = null;
+
+    // Connection state observables
+    connectionState: SandboxConnectionState = 'idle';
+    connectionError: Error | null = null;
+    connectionRetryCount: number = 0;
+    private connectionPromise: Promise<void> | null = null;
 
     constructor(
         private branch: Branch,
@@ -32,21 +39,57 @@ export class SandboxManager {
         makeAutoObservable(this);
     }
 
-    async init() {
-        this.providerReactionDisposer = reaction(
-            () => this.session.provider,
-            async (provider) => {
-                if (provider) {
-                    await this.initializeSyncEngine(provider);
-                    // Initialize git after provider is ready
+    /**
+     * Ensures the sandbox is connected. If already connected, returns immediately.
+     * If a connection is in progress, waits for it. Otherwise, starts a new connection.
+     */
+    async ensureConnected(): Promise<void> {
+        // Already connected and healthy
+        if (this.connectionState === 'connected' && this.session.provider) {
+            return;
+        }
+
+        // Connection in progress - wait for it
+        if (this.connectionState === 'connecting' && this.connectionPromise) {
+            return this.connectionPromise;
+        }
+
+        // Start new connection
+        return this.connect();
+    }
+
+    /**
+     * Attempts to connect to the sandbox. Can be called to retry after an error.
+     */
+    async connect(): Promise<void> {
+        this.connectionState = 'connecting';
+        this.connectionError = null;
+
+        this.connectionPromise = (async () => {
+            try {
+                await this.session.start(this.branch.sandbox.id);
+
+                // Initialize sync engine and git after successful connection
+                if (this.session.provider) {
+                    await this.initializeSyncEngine(this.session.provider);
                     await this.gitManager.init();
-                } else if (this.sync) {
-                    // If the provider is null, release the sync engine reference
-                    this.sync.release();
-                    this.sync = null;
                 }
-            },
-        );
+
+                this.connectionState = 'connected';
+                this.connectionRetryCount = 0;
+                console.log(`[SandboxManager] Successfully connected to sandbox ${this.branch.sandbox.id}`);
+            } catch (error) {
+                this.connectionState = 'error';
+                this.connectionError = error instanceof Error ? error : new Error('Unknown connection error');
+                this.connectionRetryCount++;
+                console.error(`[SandboxManager] Failed to connect to sandbox ${this.branch.sandbox.id}:`, error);
+                throw error;
+            } finally {
+                this.connectionPromise = null;
+            }
+        })();
+
+        return this.connectionPromise;
     }
 
     async getRouterConfig(): Promise<RouterConfig | null> {
@@ -76,6 +119,8 @@ export class SandboxManager {
     }
 
     private async ensurePreloadScriptExists(): Promise<void> {
+        const PRELOAD_SCRIPT_TIMEOUT_MS = 10000;
+
         try {
             if (this.preloadScriptInjected) {
                 return;
@@ -96,10 +141,23 @@ export class SandboxManager {
                 throw new Error('No router config found for preload script injection');
             }
 
-            await copyPreloadScriptToPublic(this.session.provider, routerConfig);
+            // Add timeout wrapper
+            const timeoutPromise = new Promise<never>((_, reject) => {
+                setTimeout(() => {
+                    reject(new Error(`Preload script injection timeout after ${PRELOAD_SCRIPT_TIMEOUT_MS}ms`));
+                }, PRELOAD_SCRIPT_TIMEOUT_MS);
+            });
+
+            await Promise.race([
+                copyPreloadScriptToPublic(this.session.provider, routerConfig),
+                timeoutPromise
+            ]);
             this.preloadScriptInjected = true;
         } catch (error) {
             console.error('[SandboxManager] Failed to ensure preload script exists:', error);
+            // Mark as injected to prevent blocking frames indefinitely
+            // Frames will handle the missing preload script gracefully
+            this.preloadScriptInjected = true;
         } finally {
             this.preloadScriptLoading = false;
         }
@@ -203,8 +261,6 @@ export class SandboxManager {
     }
 
     clear() {
-        this.providerReactionDisposer?.();
-        this.providerReactionDisposer = undefined;
         this.sync?.release();
         this.sync = null;
         this.preloadScriptInjected = false;

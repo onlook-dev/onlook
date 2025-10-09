@@ -109,15 +109,24 @@ function addScriptImport(ast: T.File): void {
 }
 
 function getPreloadScript(): T.JSXElement {
+    const attributes = [
+        t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(ONLOOK_PRELOAD_SCRIPT_SRC)),
+        t.jsxAttribute(t.jsxIdentifier('strategy'), t.stringLiteral('afterInteractive')),
+        t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
+        t.jsxAttribute(t.jsxIdentifier('id'), t.stringLiteral('onlook-preload-script')),
+    ];
+
+    // Add crossOrigin for CDN scripts to fix CORS preload issues
+    if (ONLOOK_PRELOAD_SCRIPT_SRC.startsWith('http')) {
+        attributes.push(
+            t.jsxAttribute(t.jsxIdentifier('crossOrigin'), t.stringLiteral('anonymous'))
+        );
+    }
+
     return t.jsxElement(
         t.jsxOpeningElement(
             t.jsxIdentifier('Script'),
-            [
-                t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(ONLOOK_PRELOAD_SCRIPT_SRC)),
-                t.jsxAttribute(t.jsxIdentifier('strategy'), t.stringLiteral('afterInteractive')),
-                t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                t.jsxAttribute(t.jsxIdentifier('id'), t.stringLiteral('onlook-preload-script')),
-            ],
+            attributes,
             false,
         ),
         t.jsxClosingElement(t.jsxIdentifier('Script')),

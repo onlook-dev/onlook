@@ -15,11 +15,14 @@ export class SessionManager {
         private readonly branch: Branch,
         private readonly errorManager: ErrorManager
     ) {
-        void this.start(this.branch.sandbox.id);
+        // Connection is now lazy - started on-demand via SandboxManager.ensureConnected()
         makeAutoObservable(this);
     }
 
-    async start(sandboxId: string, userId?: string) {
+    async start(sandboxId: string, userId?: string, retryCount = 0): Promise<void> {
+        const MAX_RETRIES = 3;
+        const RETRY_DELAY_MS = 2000;
+
         if (this.isConnecting || this.provider) {
             return;
         }
@@ -40,8 +43,17 @@ export class SessionManager {
             });
             await this.createTerminalSessions(this.provider);
         } catch (error) {
-            console.error('Failed to start sandbox session:', error);
+            console.error(`Failed to start sandbox session (attempt ${retryCount + 1}/${MAX_RETRIES + 1}):`, error);
             this.provider = null;
+
+            // Retry on network errors (Bad gateway, timeouts, etc.)
+            if (retryCount < MAX_RETRIES) {
+                this.isConnecting = false; // Reset before retry
+                console.log(`Retrying sandbox connection in ${RETRY_DELAY_MS}ms...`);
+                await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+                return this.start(sandboxId, userId, retryCount + 1);
+            }
+
             throw error;
         } finally {
             this.isConnecting = false;

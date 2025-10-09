@@ -22,6 +22,8 @@ interface ProjectReadyState {
     sandbox: boolean;
 }
 
+const QUERY_TIMEOUT_MS = 30000; // 30 second timeout for queries
+
 export const useStartProject = () => {
     const editorEngine = useEditorEngine();
     const sandbox = editorEngine.activeSandbox;
@@ -29,10 +31,31 @@ export const useStartProject = () => {
     const processedRequestIdRef = useRef<string | null>(null);
     const { tabState } = useTabActive();
     const apiUtils = api.useUtils();
-    const { data: user, error: userError } = api.user.get.useQuery();
-    const { data: canvasWithFrames, error: canvasError } = api.userCanvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
-    const { data: conversations, error: conversationsError } = api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
-    const { data: creationRequest, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
+    const { data: user, error: userError } = api.user.get.useQuery(undefined, {
+        retry: 3,
+        retryDelay: 1000,
+    });
+    const { data: canvasWithFrames, error: canvasError } = api.userCanvas.getWithFrames.useQuery(
+        { projectId: editorEngine.projectId },
+        {
+            retry: 3,
+            retryDelay: 1000,
+        }
+    );
+    const { data: conversations, error: conversationsError } = api.chat.conversation.getAll.useQuery(
+        { projectId: editorEngine.projectId },
+        {
+            retry: 3,
+            retryDelay: 1000,
+        }
+    );
+    const { data: creationRequest, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery(
+        { projectId: editorEngine.projectId },
+        {
+            retry: 3,
+            retryDelay: 1000,
+        }
+    );
     const { mutateAsync: updateCreateRequest } = api.project.createRequest.updateStatus.useMutation({
         onSettled: async () => {
             await apiUtils.project.createRequest.getPendingRequest.invalidate({ projectId: editorEngine.projectId });
@@ -43,14 +66,52 @@ export const useStartProject = () => {
         conversations: false,
         sandbox: false,
     });
+    const loadingStartTimeRef = useRef<number>(Date.now());
 
     const updateProjectReadyState = (state: Partial<ProjectReadyState>) => {
         setProjectReadyState((prev) => ({ ...prev, ...state }));
     };
 
+    // Add timeout safety mechanism
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            const isProjectReady = Object.values(projectReadyState).every((value) => value);
+            if (!isProjectReady) {
+                const pendingStates = Object.entries(projectReadyState)
+                    .filter(([_, value]) => !value)
+                    .map(([key]) => key);
+
+                console.error('[useStartProject] Loading timeout - pending states:', pendingStates);
+                console.error('[useStartProject] Sandbox isConnecting:', sandbox.session.isConnecting);
+                console.error('[useStartProject] Errors:', { userError, canvasError, conversationsError, creationRequestError });
+
+                setError(
+                    `Project loading timed out after ${QUERY_TIMEOUT_MS / 1000}s. Pending: ${pendingStates.join(', ')}. Please refresh the page.`
+                );
+            }
+        }, QUERY_TIMEOUT_MS);
+
+        return () => clearTimeout(timeoutId);
+    }, [projectReadyState, sandbox.session.isConnecting, userError, canvasError, conversationsError, creationRequestError]);
+
     useEffect(() => {
         if (!sandbox.session.isConnecting) {
             updateProjectReadyState({ sandbox: true });
+        }
+    }, [sandbox.session.isConnecting]);
+
+    // Add a safety mechanism for sandbox connection
+    useEffect(() => {
+        if (sandbox.session.isConnecting) {
+            const sandboxTimeoutId = setTimeout(() => {
+                if (sandbox.session.isConnecting) {
+                    console.error('[useStartProject] Sandbox connection timeout');
+                    // Force mark sandbox as ready even if still connecting to prevent permanent blocking
+                    updateProjectReadyState({ sandbox: true });
+                }
+            }, 15000); // Give sandbox 15 seconds to connect
+
+            return () => clearTimeout(sandboxTimeoutId);
         }
     }, [sandbox.session.isConnecting]);
 

@@ -56,7 +56,7 @@ export class BranchManager {
     async init(): Promise<void> {
         for (const branchData of this.branchMap.values()) {
             await branchData.codeEditor.initialize();
-            await branchData.sandbox.init();
+            // Sandbox connection is now lazy - triggered on-demand by frames
         }
         this.setupActiveFrameReaction();
     }
@@ -172,7 +172,7 @@ export class BranchManager {
             // Add the new branch to the local branch map
             const branchData = this.createBranchData(result.branch);
             await branchData.codeEditor.initialize();
-            await branchData.sandbox.init();
+            // Sandbox connection is now lazy - triggered on-demand by frames
 
             // Add the created frames to the frame manager
             if (result.frames && result.frames.length > 0) {
@@ -227,7 +227,7 @@ export class BranchManager {
             // Add the new branch to the local branch map
             const branchData = this.createBranchData(result.branch, routerConfig?.type);
             await branchData.codeEditor.initialize();
-            await branchData.sandbox.init();
+            // Sandbox connection is now lazy - triggered on-demand by frames
 
             // Add the created frames to the frame manager
             if (result.frames && result.frames.length > 0) {
