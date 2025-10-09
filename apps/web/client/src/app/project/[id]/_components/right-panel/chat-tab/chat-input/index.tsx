@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 
 import type { ChatMessage, ImageMessageContext, QueuedMessage } from '@onlook/models';
-import { ChatType, EditorMode, EditorTabValue } from '@onlook/models';
+import { ChatType } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -80,12 +80,6 @@ export const ChatInput = observer(
                 focusInput();
             }
         }, [isStreaming, messages]);
-
-        useEffect(() => {
-            if (editorEngine.state.rightPanelTab === EditorTabValue.CHAT) {
-                focusInput();
-            }
-        }, [editorEngine.state.rightPanelTab]);
 
         useEffect(() => {
             const focusHandler = () => {

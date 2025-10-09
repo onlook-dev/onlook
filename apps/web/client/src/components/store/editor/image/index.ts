@@ -1,5 +1,5 @@
 import { type ActionTarget, type ImageContentData } from '@onlook/models';
-import { convertToBase64, getBaseName, getMimeType, isImageFile, sanitizeFilename, stripImageFolderPrefix } from '@onlook/utility';
+import { convertToBase64DataUrl, getBaseName, getMimeType, isImageFile, sanitizeFilename, stripImageFolderPrefix } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import path from 'path';
 import type { EditorEngine } from '../engine';
@@ -163,8 +163,7 @@ export class ImageManager {
                 content = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(file)}`;
             } else if (file instanceof Uint8Array) {
                 // For binary files, convert to base64
-                const base64Data = convertToBase64(file);
-                content = `data:${mimeType};base64,${base64Data}`;
+                content = convertToBase64DataUrl(file, mimeType);
             } else {
                 console.warn(`Unexpected file type or content format for ${imagePath}`);
                 return null;

@@ -1,12 +1,11 @@
-import { EditorView, ViewUpdate } from '@codemirror/view';
-import { convertToBase64, getMimeType } from '@onlook/utility/src/file';
+import { EditorView, keymap, ViewUpdate } from '@codemirror/view';
+import type { CodeNavigationTarget } from '@onlook/models';
+import { convertToBase64DataUrl, getMimeType } from '@onlook/utility/src/file';
 import CodeMirror from '@uiw/react-codemirror';
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
-import type { CodeNavigationTarget } from '@onlook/models';
 import type { BinaryEditorFile, EditorFile } from '../shared/types';
 import { getBasicSetup, getExtensions, highlightElementRange, scrollToLineColumn } from './code-mirror-config';
 import { FloatingAddToChatButton } from './floating-add-to-chat-button';
-import { keymap } from '@codemirror/view';
 
 interface CodeEditorProps {
     file: EditorFile;
@@ -38,8 +37,7 @@ export const CodeEditor = ({
 
     const getFileUrl = (file: BinaryEditorFile) => {
         const mime = getMimeType(file.path.toLowerCase());
-        const base64 = convertToBase64(new Uint8Array(file.content));
-        return `data:${mime};base64,${base64}`;
+        return convertToBase64DataUrl(file.content, mime);
     };
 
     const selectionExtension = useMemo(() => {
