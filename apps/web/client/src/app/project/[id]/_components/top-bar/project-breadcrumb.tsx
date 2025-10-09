@@ -2,6 +2,8 @@ import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
+import { ProductType } from '@onlook/stripe';
+import { Badge } from '@onlook/ui/badge';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -27,6 +29,8 @@ export const ProjectBreadcrumb = observer(() => {
     const stateManager = useStateManager();
     const posthog = usePostHog();
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: subscription } = api.subscription.get.useQuery();
+    const isPro = subscription?.product.type === ProductType.PRO;
     const t = useTranslations();
     const closeTimeoutRef = useRef<Timer | null>(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -94,7 +98,7 @@ export const ProjectBreadcrumb = observer(() => {
     }
 
     return (
-        <div className="mr-1 flex flex-row items-center text-small gap-2">
+        <div className="mr-0 flex flex-row items-center text-small gap-2">
             <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button
@@ -110,12 +114,11 @@ export const ProjectBreadcrumb = observer(() => {
                         <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer group-hover:text-foreground-active">
                             {isClosingProject ? 'Stopping project...' : project?.name}
                         </span>
-                        <Icons.ChevronDown className="text-foreground-onlook group-hover:text-foreground-active" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                     align="start"
-                    className="w-48"
+                    className="w-56"
                     onMouseEnter={() => {
                         if (closeTimeoutRef.current) {
                             clearTimeout(closeTimeoutRef.current);
@@ -142,14 +145,17 @@ export const ProjectBreadcrumb = observer(() => {
                     <NewProjectMenu onShowCloneDialog={setShowCloneDialog} />
                     <DropdownMenuItem
                         onClick={handleDownloadCode}
-                        disabled={isDownloading}
+                        disabled={isDownloading || !isPro}
                         className="cursor-pointer"
                     >
-                        <div className="flex flex-row center items-center group">
-                            <Icons.Download className="mr-2" />
-                            {isDownloading
-                                ? t(transKeys.projects.actions.downloadingCode)
-                                : t(transKeys.projects.actions.downloadCode)}
+                        <div className="flex flex-row center items-center justify-between group w-full">
+                            <div className="flex flex-row center items-center">
+                                <Icons.Download className="mr-2" />
+                                {isDownloading
+                                    ? t(transKeys.projects.actions.downloadingCode)
+                                    : t(transKeys.projects.actions.downloadCode)}
+                            </div>
+                            <Badge variant="secondary" className="ml-2 text-xs bg-blue-400 text-white rounded-full p-0.5 px-1.5">PRO</Badge>
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />

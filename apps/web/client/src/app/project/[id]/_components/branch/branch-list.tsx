@@ -34,7 +34,7 @@ export function BranchList({
 
     return (
         <>
-            <div className="p-1.5 border-b select-none">
+            <div className="p-1.5 border-b select-none text-small">
                 <DropdownMenuLabel>Branches</DropdownMenuLabel>
             </div>
             <ScrollArea className="max-h-[300px]">
