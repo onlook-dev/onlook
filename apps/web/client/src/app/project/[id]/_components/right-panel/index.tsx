@@ -28,7 +28,7 @@ export const RightPanel = observer(() => {
                 defaultWidth={editPanelWidth}
                 forceWidth={editPanelWidth}
                 minWidth={240}
-                maxWidth={1440}
+                maxWidth={500}
             >
                 <div className='flex flex-col h-full'>
                     <div className="flex flex-row p-1 w-full h-10 border-b border-border ">

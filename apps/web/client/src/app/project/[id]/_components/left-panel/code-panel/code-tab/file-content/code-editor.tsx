@@ -1,7 +1,7 @@
 import { EditorView, ViewUpdate } from '@codemirror/view';
 import { convertToBase64, getMimeType } from '@onlook/utility/src/file';
 import CodeMirror from '@uiw/react-codemirror';
-import { type RefObject, useEffect, useMemo, useState } from 'react';
+import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import type { CodeNavigationTarget } from '@onlook/models';
 import type { BinaryEditorFile, EditorFile } from '../shared/types';
 import { getBasicSetup, getExtensions, highlightElementRange, scrollToLineColumn } from './code-mirror-config';
@@ -34,6 +34,7 @@ export const CodeEditor = ({
     const [currentSelection, setCurrentSelection] = useState<{ from: number; to: number; text: string } | null>(null);
     const [selectionAddedToChat, setSelectionAddedToChat] = useState(false);
     const [showButton, setShowButton] = useState(false);
+    const lastNavigationTargetRef = useRef<CodeNavigationTarget | null>(null);
 
     const getFileUrl = (file: BinaryEditorFile) => {
         const mime = getMimeType(file.path.toLowerCase());
@@ -117,13 +118,28 @@ export const CodeEditor = ({
     }
 
     useEffect(() => {
-        if (!navigationTarget || !isActive || file.type !== 'text') return;
+        // Reset last navigation when target is cleared or file changes
+        if (!navigationTarget) {
+            lastNavigationTargetRef.current = null;
+            return;
+        }
+
+        if (!isActive || file.type !== 'text') return;
 
         const editor = editorViewsRef.current?.get(file.path);
         if (!editor) return;
 
-        handleNavigation(editor, navigationTarget);
-    }, [navigationTarget, isActive, file.originalHash, file.type, file.path, editorViewsRef.current]);
+        // Only navigate if this is a new navigation target (not just a file save)
+        const isSameTarget = lastNavigationTargetRef.current &&
+            lastNavigationTargetRef.current.filePath === navigationTarget.filePath &&
+            lastNavigationTargetRef.current.range.start.line === navigationTarget.range.start.line &&
+            lastNavigationTargetRef.current.range.start.column === navigationTarget.range.start.column;
+
+        if (!isSameTarget) {
+            lastNavigationTargetRef.current = navigationTarget;
+            handleNavigation(editor, navigationTarget);
+        }
+    }, [navigationTarget, isActive, file.type, file.path, editorViewsRef.current]);
 
     const handleNavigation = (editor: EditorView, target: CodeNavigationTarget) => {
         const { range } = target;

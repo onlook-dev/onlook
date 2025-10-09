@@ -221,6 +221,13 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
     const handleSaveFile = async () => {
         if (!selectedFilePath || !activeEditorFile || !branchData) return;
         try {
+            // Preserve scroll position and cursor before save
+            const editorView = editorViewsRef.current.get(selectedFilePath);
+            const scrollPos = editorView ? {
+                top: editorView.scrollDOM.scrollTop,
+                left: editorView.scrollDOM.scrollLeft
+            } : null;
+
             await saveFileWithHash(selectedFilePath, activeEditorFile);
 
             // Read back the formatted content from disk
@@ -239,6 +246,23 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
                 );
                 setOpenedEditorFiles(updatedFiles);
                 setActiveEditorFile(formattedFile);
+
+                // Restore scroll position after content update with multiple attempts to ensure it sticks
+                if (scrollPos && editorView) {
+                    const restoreScroll = () => {
+                        editorView.scrollDOM.scrollTop = scrollPos.top;
+                        editorView.scrollDOM.scrollLeft = scrollPos.left;
+                    };
+                    
+                    // Use multiple RAF cycles to ensure the scroll is applied after all reflows
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            restoreScroll();
+                            // One more check after a short delay to handle any final adjustments
+                            setTimeout(restoreScroll, 10);
+                        });
+                    });
+                }
             }
         } catch (error) {
             console.error('Failed to save file:', error);
