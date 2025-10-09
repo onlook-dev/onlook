@@ -4,11 +4,11 @@ import { useEditorEngine } from '@/components/store/editor';
 import { hashContent } from '@/services/sync-engine/sync-engine';
 import { EditorView } from '@codemirror/view';
 import { useDirectory, useFile } from '@onlook/file-system/hooks';
+import { MessageContextType } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { pathsEqual } from '@onlook/utility';
 import { motion } from 'motion/react';
 import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { MessageContextType } from '@onlook/models';
 import { CodeEditorArea } from './file-content';
 import { FileTabs } from './file-tabs';
 import { CodeControls } from './header-controls';
@@ -253,7 +253,7 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
                         editorView.scrollDOM.scrollTop = scrollPos.top;
                         editorView.scrollDOM.scrollLeft = scrollPos.left;
                     };
-                    
+
                     // Use multiple RAF cycles to ensure the scroll is applied after all reflows
                     requestAnimationFrame(() => {
                         requestAnimationFrame(() => {
@@ -466,8 +466,34 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
         try {
             // Calculate line numbers from character positions
             const content = typeof activeEditorFile.content === 'string' ? activeEditorFile.content : '';
-            const beforeSelection = content.substring(0, selection.from);
-            const selectionContent = content.substring(selection.from, selection.to);
+
+            // Validate selection indices
+            if (typeof selection.from !== 'number' || typeof selection.to !== 'number') {
+                console.error('Invalid selection: from and to must be numbers', selection);
+                toast.error('Invalid selection');
+                return;
+            }
+
+            // Ensure from < to
+            if (selection.from >= selection.to) {
+                console.error('Invalid selection: from must be less than to', selection);
+                toast.error('Invalid selection range');
+                return;
+            }
+
+            // Clamp indices to valid range [0, content.length]
+            const from = Math.max(0, Math.min(selection.from, content.length));
+            const to = Math.max(0, Math.min(selection.to, content.length));
+
+            // Double-check after clamping
+            if (from >= to) {
+                console.error('Invalid selection after clamping', { from, to, contentLength: content.length });
+                toast.error('Selection is out of bounds');
+                return;
+            }
+
+            const beforeSelection = content.substring(0, from);
+            const selectionContent = content.substring(from, to);
             const startLine = beforeSelection.split('\n').length;
             const endLine = startLine + selectionContent.split('\n').length - 1;
 
@@ -538,8 +564,6 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
                     <FileTabs
                         openedFiles={openedEditorFiles}
                         activeFile={activeEditorFile}
-                        isSidebarOpen={isSidebarOpen}
-                        setIsSidebarOpen={setIsSidebarOpen}
                         onFileSelect={handleLocalFileTabSelect}
                         onCloseFile={closeLocalFile}
                         onCloseAllFiles={closeAllLocalFiles}

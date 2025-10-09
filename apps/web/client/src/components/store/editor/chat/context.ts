@@ -37,38 +37,38 @@ export class ChatContext {
                     elementsCount: elements.length,
                     elementTagNames: elements.map(el => el.tagName),
                 });
-                
+
                 this.generateContextFromReaction({ elements, frames }).then((context) => {
-                // Preserve ONLY manually added highlights from code editor (CMD+L / "Add to Chat" button)
-                // Canvas selections should be fluid and replaced on every selection change
-                // Manual code editor highlights don't have an oid since they're text selections, not DOM element selections
-                const allHighlights = this._context.filter(c => c.type === MessageContextType.HIGHLIGHT);
-                const manualCodeEditorHighlights = allHighlights.filter(c => c.oid === undefined);
-                
-                console.log('[ChatContext] Selection reaction fired:', {
-                    selectedElementsCount: elements.length,
-                    totalHighlightsInOldContext: allHighlights.length,
-                    detailsOfAllHighlights: allHighlights.map(h => ({ 
-                        displayName: h.displayName, 
-                        hasOid: h.oid !== undefined,
-                        oidValue: h.oid,
-                        path: h.path
-                    })),
-                    manualCodeEditorHighlightsToPreserve: manualCodeEditorHighlights.length,
-                    newHighlightsFromCanvas: context.filter(c => c.type === MessageContextType.HIGHLIGHT).length,
-                });
-                
-                // Merge: new auto-generated context + preserved manual code editor highlights
-                // (images are already preserved via getImageContext() call in generateContextFromReaction)
-                this.context = [...context, ...manualCodeEditorHighlights];
-                
-                console.log('[ChatContext] Final context after merge:', {
-                    total: this.context.length,
-                    highlights: this.context.filter(c => c.type === MessageContextType.HIGHLIGHT).map(h => ({
-                        displayName: h.displayName,
-                        hasOid: h.oid !== undefined,
-                    })),
-                });
+                    // Preserve ONLY manually added highlights from code editor (CMD+L / "Add to Chat" button)
+                    // Canvas selections should be fluid and replaced on every selection change
+                    // Manual code editor highlights don't have an oid since they're text selections, not DOM element selections
+                    const allHighlights = this._context.filter(c => c.type === MessageContextType.HIGHLIGHT);
+                    const manualCodeEditorHighlights = allHighlights.filter(c => c.oid === undefined);
+
+                    console.log('[ChatContext] Selection reaction fired:', {
+                        selectedElementsCount: elements.length,
+                        totalHighlightsInOldContext: allHighlights.length,
+                        detailsOfAllHighlights: allHighlights.map(h => ({
+                            displayName: h.displayName,
+                            hasOid: h.oid !== undefined,
+                            oidValue: h.oid,
+                            path: h.path
+                        })),
+                        manualCodeEditorHighlightsToPreserve: manualCodeEditorHighlights.length,
+                        newHighlightsFromCanvas: context.filter(c => c.type === MessageContextType.HIGHLIGHT).length,
+                    });
+
+                    // Merge: new auto-generated context + preserved manual code editor highlights
+                    // (images are already preserved via getImageContext() call in generateContextFromReaction)
+                    this.context = [...context, ...manualCodeEditorHighlights];
+
+                    console.log('[ChatContext] Final context after merge:', {
+                        total: this.context.length,
+                        highlights: this.context.filter(c => c.type === MessageContextType.HIGHLIGHT).map(h => ({
+                            displayName: h.displayName,
+                            hasOid: h.oid !== undefined,
+                        })),
+                    });
                 });
             },
         );
@@ -300,7 +300,7 @@ export class ChatContext {
             return null;
         }
 
-        const highlight = {
+        const highlight: HighlightMessageContext = {
             type: MessageContextType.HIGHLIGHT,
             displayName:
                 isInstance && metadata.component ? metadata.component : tagName.toLowerCase(),
@@ -311,14 +311,7 @@ export class ChatContext {
             oid: id,
             branchId: branchId,
         };
-        
-        console.log('[ChatContext] Created highlight from canvas selection:', {
-            tagName,
-            displayName: highlight.displayName,
-            hasOid: highlight.oid !== undefined,
-            oid: highlight.oid,
-        });
-        
+
         return highlight;
     }
 

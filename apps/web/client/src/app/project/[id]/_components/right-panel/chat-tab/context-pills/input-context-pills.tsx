@@ -1,6 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import type { MessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
+import { assertNever } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
 import { useMemo } from 'react';
@@ -31,7 +32,7 @@ const getStableKey = (context: MessageContext, index: number): string => {
         case MessageContextType.AGENT_RULE:
             return `agent-rule-${context.path}`;
         default:
-            return `${context.type}-${index}`;
+            assertNever(context);
     }
 };
 
@@ -57,7 +58,7 @@ export const InputContextPills = observer(() => {
             <AnimatePresence mode="popLayout">
                 {sortedContexts.map((context: MessageContext, index: number) => {
                     const key = getStableKey(context, index);
-                    
+
                     if (context.type === MessageContextType.IMAGE) {
                         return (
                             <DraftImagePill

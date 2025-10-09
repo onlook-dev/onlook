@@ -15,8 +15,6 @@ import { FileTab } from './file-tab';
 interface FileTabsProps {
     openedFiles: EditorFile[];
     activeFile: EditorFile | null;
-    isSidebarOpen: boolean;
-    setIsSidebarOpen: (isSidebarOpen: boolean) => void;
     onFileSelect: (file: EditorFile) => void;
     onCloseFile: (fileId: string) => void;
     onCloseAllFiles: () => void;
