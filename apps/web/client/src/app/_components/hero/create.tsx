@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuthContext } from '@/app/auth/auth-context';
-import { DraftImagePill } from '@/app/project/[id]/_components/right-panel/chat-tab/context-pills/draft-image-pill';
+import { ImagePill } from '@/app/project/[id]/_components/right-panel/chat-tab/context-pills/image-pill';
 import { validateImageLimit } from '@/app/project/[id]/_components/right-panel/chat-tab/context-pills/helpers';
 import { useCreateManager } from '@/components/store/create';
 import { Routes } from '@/utils/constants';
@@ -198,6 +198,7 @@ export const Create = observer(({
 
             return {
                 type: MessageContextType.IMAGE,
+                source: 'external',
                 content: base64,
                 displayName: file.name,
                 mimeType: file.type,
@@ -287,7 +288,7 @@ export const Create = observer(({
                         >
                             <AnimatePresence mode="popLayout">
                                 {selectedImages.map((imageContext) => (
-                                    <DraftImagePill
+                                    <ImagePill
                                         key={imageContext.content}
                                         context={imageContext}
                                         onRemove={() => handleRemoveImage(imageContext)}

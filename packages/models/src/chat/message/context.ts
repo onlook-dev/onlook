@@ -39,6 +39,9 @@ export type ImageMessageContext = BaseMessageContext & {
     type: MessageContextType.IMAGE;
     mimeType: string;
     id?: string;
+    source: 'external' | 'local';
+    path?: string;
+    branchId?: string;
 };
 
 export type ErrorMessageContext = BaseMessageContext & {

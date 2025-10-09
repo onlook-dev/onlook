@@ -152,6 +152,7 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
 
     const handleAddToChat = () => {
         onAddToChat(image.path);
+        setDropdownOpen(false);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {

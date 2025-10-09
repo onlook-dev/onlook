@@ -1,20 +1,20 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { MessageContext } from '@onlook/models/chat';
+import type { ImageMessageContext, MessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
 import { assertNever } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
 import { useMemo } from 'react';
 import { DraftContextPill } from './draft-context-pill';
-import { DraftImagePill } from './draft-image-pill';
+import { ImagePill } from './image-pill';
 
 const typeOrder = {
     [MessageContextType.BRANCH]: 0,
     [MessageContextType.FILE]: 1,
     [MessageContextType.HIGHLIGHT]: 2,
     [MessageContextType.ERROR]: 3,
-    [MessageContextType.IMAGE]: 4,
-    [MessageContextType.AGENT_RULE]: 5,
+    [MessageContextType.AGENT_RULE]: 4,
+    [MessageContextType.IMAGE]: 5,
 };
 
 const getStableKey = (context: MessageContext, index: number): string => {
@@ -43,14 +43,14 @@ export const InputContextPills = observer(() => {
         const newContext = [...editorEngine.chat.context.context].filter(
             (context) => context !== contextToRemove,
         );
-
         editorEngine.chat.context.context = newContext;
     };
 
     const sortedContexts = useMemo(() => {
-        return [...editorEngine.chat.context.context].sort((a, b) => {
-            return typeOrder[a.type] - typeOrder[b.type];
-        });
+        return [...editorEngine.chat.context.context]
+            .sort((a, b) => {
+                return typeOrder[a.type] - typeOrder[b.type];
+            });
     }, [editorEngine.chat.context.context]);
 
     return (
@@ -61,9 +61,9 @@ export const InputContextPills = observer(() => {
 
                     if (context.type === MessageContextType.IMAGE) {
                         return (
-                            <DraftImagePill
+                            <ImagePill
                                 key={key}
-                                context={context}
+                                context={context as ImageMessageContext}
                                 onRemove={() => handleRemoveContext(context)}
                             />
                         );

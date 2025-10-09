@@ -1,37 +1,41 @@
-import { Icons } from '@onlook/ui/icons';
-import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
-import type { SandboxManager } from '@onlook/web-client/src/components/store/editor/sandbox';
-import { MessageContextType, type ImageMessageContext } from '@onlook/models';
 import mime from 'mime-lite';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
+
+import type { ImageMessageContext } from '@onlook/models';
+import type { EditorEngine } from '@onlook/web-client/src/components/store/editor/engine';
+import type { SandboxManager } from '@onlook/web-client/src/components/store/editor/sandbox';
+import { MessageContextType } from '@onlook/models';
+import { Icons } from '@onlook/ui/icons';
+
 import { ClientTool } from '../models/client';
 import { BRANCH_ID_SCHEMA } from '../shared/type';
 
 export class UploadImageTool extends ClientTool {
     static readonly toolName = 'upload_image';
-    static readonly description = "Uploads an image from the chat context to the project's file system. Use this tool when the user asks you to save, add, or upload an image to their project. The image will be stored in public/images/ directory by default and can be referenced in code. After uploading, you can use the file path in your code changes.";
+    static readonly description =
+        "Uploads a NEW image from the <available-images> list in the chat context to the project's file system. IMPORTANT: Only use this for images listed in the <available-images> section that need to be uploaded. DO NOT use this for images in the <local-images> section - those already exist in the project and should be referenced directly by their existing path. The image will be stored in public/ directory by default and can be referenced in code. After uploading, you can use the file path in your code changes.";
     static readonly parameters = z.object({
-        image_id: z
-            .string()
-            .describe(
-                'The unique ID of the image from the available images list',
-            ),
+        image_id: z.string().describe('The unique ID of the image from the available images list'),
         destination_path: z
             .string()
             .optional()
-            .describe('Destination path within the project. Defaults to "public/images" if not specified.'),
+            .describe(
+                'Destination path within the project. Defaults to "public" if not specified.',
+            ),
         filename: z
             .string()
             .optional()
-            .describe('Custom filename (without extension). If not provided, a UUID will be generated'),
+            .describe(
+                'Custom filename (without extension). If not provided, a UUID will be generated',
+            ),
         branchId: BRANCH_ID_SCHEMA,
     });
     static readonly icon = Icons.Image;
 
     async handle(
         args: z.infer<typeof UploadImageTool.parameters>,
-        editorEngine: EditorEngine
+        editorEngine: EditorEngine,
     ): Promise<string> {
         try {
             const sandbox = editorEngine.branches.getSandboxById(args.branchId);
@@ -52,11 +56,11 @@ export class UploadImageTool extends ClientTool {
             let imageContext: ImageMessageContext | null = null;
             for (let i = messages.length - 1; i >= 0; i--) {
                 const message = messages[i];
-                if (!message || !message.metadata?.context) continue;
+                if (!message?.metadata?.context) continue;
 
                 const contexts = message.metadata.context;
                 const imageContexts = contexts.filter(
-                    (ctx) => ctx.type === MessageContextType.IMAGE
+                    (ctx) => ctx.type === MessageContextType.IMAGE,
                 );
 
                 // Find image by ID
@@ -70,6 +74,14 @@ export class UploadImageTool extends ClientTool {
 
             if (!imageContext) {
                 throw new Error(`No image found with ID: ${args.image_id}`);
+            }
+
+            // Check if this is a local image that already exists in the project
+            if (imageContext.source === 'local') {
+                throw new Error(
+                    `Image "${imageContext.displayName}" already exists in the project at ${imageContext.path}. ` +
+                    `Reference it directly in your code without uploading.`
+                );
             }
 
             // Upload the image to the sandbox
@@ -91,12 +103,14 @@ export class UploadImageTool extends ClientTool {
     private async uploadImageToSandbox(
         imageContext: ImageMessageContext,
         args: z.infer<typeof UploadImageTool.parameters>,
-        sandbox: SandboxManager
+        sandbox: SandboxManager,
     ): Promise<string> {
         const mimeType = imageContext.mimeType;
         const extension = mime.getExtension(mimeType) || 'png';
-        const filename = args.filename ? `${args.filename}.${extension}` : `${uuidv4()}.${extension}`;
-        const destinationPath = args.destination_path?.trim() || 'public/images';
+        const filename = args.filename
+            ? `${args.filename}.${extension}`
+            : `${uuidv4()}.${extension}`;
+        const destinationPath = args.destination_path?.trim() || 'public';
         const fullPath = `${destinationPath}/${filename}`;
 
         // Extract base64 data from the content (remove data URL prefix if present)

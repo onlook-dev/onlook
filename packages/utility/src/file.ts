@@ -110,3 +110,16 @@ export const convertToBase64 = (content: Uint8Array): string => {
             .join(''),
     );
 };
+
+/**
+ * Convert file content (string or binary) to a base64 data URL
+ * @param content - File content (string for text files, Uint8Array for binary)
+ * @param mimeType - MIME type of the file
+ * @returns Base64 data URL
+ */
+export const convertToBase64DataUrl = (content: string | Uint8Array, mimeType: string): string => {
+    // Convert string to UTF-8 bytes to handle Unicode safely (e.g., emoji, localized text in SVGs)
+    const bytes = typeof content === 'string' ? new TextEncoder().encode(content) : content;
+    const base64 = convertToBase64(bytes);
+    return `data:${mimeType};base64,${base64}`;
+};
