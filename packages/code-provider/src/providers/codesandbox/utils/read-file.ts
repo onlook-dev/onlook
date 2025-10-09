@@ -29,6 +29,7 @@ export async function readFile(
                 content: file.content,
                 type: file.type,
                 toString: () => {
+                    // WARNING: This is not correct base64
                     return file.content ? convertToBase64(file.content) : '';
                 },
             },

@@ -64,7 +64,9 @@ export function getHydratedUserMessage(
     const highlights = context.filter((c) => c.type === MessageContextType.HIGHLIGHT).map((c) => c);
     const errors = context.filter((c) => c.type === MessageContextType.ERROR).map((c) => c);
     const agentRules = context.filter((c) => c.type === MessageContextType.AGENT_RULE).map((c) => c);
-    const images = context.filter((c) => c.type === MessageContextType.IMAGE).map((c) => c);
+    const allImages = context.filter((c) => c.type === MessageContextType.IMAGE).map((c) => c);
+    const externalImages = allImages.filter((img) => img.source === 'external');
+    const localImages = allImages.filter((img) => img.source === 'local');
     const branches = context.filter((c) => c.type === MessageContextType.BRANCH).map((c) => c);
 
     // If there are 50 user messages in the contexts, we can trim all of them except
@@ -100,11 +102,22 @@ export function getHydratedUserMessage(
         prompt += branchPrompt;
     }
 
-    if (images.length > 0) {
-        const imageList = images
+    if (localImages.length > 0) {
+        const localImageList = localImages
+            .map((img) => `- ${img.displayName}: ${img.path} (branch: ${img.branchId})`)
+            .join('\n');
+        prompt += wrapXml('local-images',
+            'These images already exist in the project at the specified paths. Reference them directly in your code without uploading:\n' + localImageList
+        );
+    }
+
+    if (externalImages.length > 0) {
+        const imageList = externalImages
             .map((img, idx) => `${idx + 1}. ${img.displayName} (ID: ${img.id || 'unknown'})`)
             .join('\n');
-        prompt += wrapXml('available-images', imageList);
+        prompt += wrapXml('available-images',
+            'These are new images that need to be uploaded to the project using the upload_image tool:\n' + imageList
+        );
     }
 
     const textContent = parts
@@ -115,8 +128,8 @@ export function getHydratedUserMessage(
 
     userParts.push({ type: 'text', text: prompt });
 
-    if (images.length > 0) {
-        const fileParts: FileUIPart[] = ImageContext.toFileUIParts(images);
+    if (allImages.length > 0) {
+        const fileParts: FileUIPart[] = ImageContext.toFileUIParts(allImages);
         userParts = userParts.concat(fileParts);
     }
 

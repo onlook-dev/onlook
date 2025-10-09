@@ -6,7 +6,6 @@ import {
     type ErrorMessageContext,
     type FileMessageContext,
     type HighlightMessageContext,
-    type ImageMessageContext,
     type MessageContext
 } from '@onlook/models/chat';
 import { assertNever, type ParsedError } from '@onlook/utility';
@@ -27,16 +26,18 @@ export class ChatContext {
             () => ({
                 elements: this.editorEngine.elements.selected,
                 frames: this.editorEngine.frames.selected,
-                editorMode: this.editorEngine.state.editorMode,
             }),
             (
                 { elements, frames },
             ) => {
                 this.generateContextFromReaction({ elements, frames }).then((context) => {
+                    // Preserve some context when edited element changes
                     const allHighlights = this._context.filter(c => c.type === MessageContextType.HIGHLIGHT);
                     const manualCodeEditorHighlights = allHighlights.filter(c => c.oid === undefined);
-                    const allImages = this._context.filter(c => c.type === MessageContextType.IMAGE);
-                    this.context = [...context, ...manualCodeEditorHighlights, ...allImages];
+                    const existingImages = this._context.filter(
+                        (c) => c.type === MessageContextType.IMAGE
+                    );
+                    this.context = [...context, ...manualCodeEditorHighlights, ...existingImages];
                 });
             },
         );
@@ -103,7 +104,10 @@ export class ChatContext {
     }
 
     async getChatEditContext(): Promise<MessageContext[]> {
-        return [...await this.getRefreshedContext(this.context), ...await this.getAgentRuleContext()];
+        return [
+            ...await this.getRefreshedContext(this.context),
+            ...await this.getAgentRuleContext()
+        ];
     }
 
     private async generateContextFromReaction({ elements, frames }: { elements: DomElement[], frames: FrameData[] }): Promise<MessageContext[]> {
@@ -111,12 +115,11 @@ export class ChatContext {
         if (elements.length) {
             highlightedContext = await this.getHighlightedContext(elements);
         }
-        const imageContext = await this.getImageContext();
 
-        // Derived from highlighted context
+        // Derived from highlighted context - images are managed separately now
         const fileContext = await this.getFileContext(highlightedContext);
         const branchContext = this.getBranchContext(highlightedContext, frames);
-        const context = [...fileContext, ...highlightedContext, ...imageContext, ...branchContext];
+        const context = [...fileContext, ...highlightedContext, ...branchContext];
         return context;
     }
 
@@ -155,13 +158,6 @@ export class ChatContext {
                 return c;
             }),
         )) satisfies MessageContext[];
-    }
-
-    private async getImageContext(): Promise<ImageMessageContext[]> {
-        const imageContext = this.context.filter(
-            (context) => context.type === MessageContextType.IMAGE,
-        );
-        return imageContext;
     }
 
     private async getFileContext(highlightedContext: HighlightMessageContext[]): Promise<FileMessageContext[]> {
@@ -432,7 +428,9 @@ export class ChatContext {
     }
 
     clearImagesFromContext() {
-        this.context = this.context.filter((context) => context.type !== MessageContextType.IMAGE);
+        this.context = this.context.filter(
+            (c) => c.type !== MessageContextType.IMAGE
+        );
     }
 
     clear() {
