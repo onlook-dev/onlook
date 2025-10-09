@@ -1,7 +1,7 @@
 import { api } from '@/trpc/client';
 import { CodeProvider, createCodeProviderClient, type Provider } from '@onlook/code-provider';
 import type { Branch } from '@onlook/models';
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import type { ErrorManager } from '../error';
 import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
 
@@ -27,9 +27,7 @@ export class SessionManager {
             return;
         }
 
-        runInAction(() => {
-            this.isConnecting = true;
-        });
+        this.isConnecting = true;
 
         try {
             const provider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
@@ -45,23 +43,17 @@ export class SessionManager {
                 },
             });
 
-            runInAction(() => {
-                this.provider = provider;
-            });
+            this.provider = provider;
 
             await this.createTerminalSessions(provider);
         } catch (error) {
             console.error(`Failed to start sandbox session (attempt ${retryCount + 1}/${MAX_RETRIES + 1}):`, error);
 
-            runInAction(() => {
-                this.provider = null;
-            });
+            this.provider = null;
 
             // Retry on network errors (Bad gateway, timeouts, etc.)
             if (retryCount < MAX_RETRIES) {
-                runInAction(() => {
-                    this.isConnecting = false; // Reset before retry
-                });
+                this.isConnecting = false; // Reset before retry
                 console.log(`Retrying sandbox connection in ${RETRY_DELAY_MS}ms...`);
                 await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
                 return this.start(sandboxId, userId, retryCount + 1);
@@ -69,9 +61,7 @@ export class SessionManager {
 
             throw error;
         } finally {
-            runInAction(() => {
-                this.isConnecting = false;
-            });
+            this.isConnecting = false;
         }
     }
 
@@ -173,9 +163,7 @@ export class SessionManager {
             await this.restartProvider(sandboxId, userId);
         } catch (error) {
             console.error('Failed to reconnect to sandbox', error);
-            runInAction(() => {
-                this.isConnecting = false;
-            });
+            this.isConnecting = false;
         }
     }
 
@@ -184,9 +172,7 @@ export class SessionManager {
             return;
         }
         await this.provider.destroy();
-        runInAction(() => {
-            this.provider = null;
-        });
+        this.provider = null;
         await this.start(sandboxId, userId);
     }
 
@@ -249,10 +235,8 @@ export class SessionManager {
         if (this.provider) {
             await this.provider.destroy();
         }
-        runInAction(() => {
-            this.provider = null;
-            this.isConnecting = false;
-            this.terminalSessions.clear();
-        });
+        this.provider = null;
+        this.isConnecting = false;
+        this.terminalSessions.clear();
     }
 }
