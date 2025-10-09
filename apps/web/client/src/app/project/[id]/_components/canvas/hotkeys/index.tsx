@@ -1,7 +1,7 @@
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store/editor';
 import { DefaultSettings } from '@onlook/constants';
-import { EditorMode } from '@onlook/models';
+import { EditorMode, InsertMode } from '@onlook/models';
 import type { ReactNode } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
@@ -38,18 +38,18 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     });
     useHotkeys(Hotkey.PAN.command, () => (editorEngine.state.editorMode = EditorMode.PAN));
     useHotkeys(Hotkey.PREVIEW.command, () => (editorEngine.state.editorMode = EditorMode.PREVIEW));
-    
+
     // Quick mode switching with CMD+1/2/3 (overrides browser defaults)
     useHotkeys('mod+1', () => (editorEngine.state.editorMode = EditorMode.DESIGN), { preventDefault: true });
     useHotkeys('mod+2', () => (editorEngine.state.editorMode = EditorMode.CODE), { preventDefault: true });
     useHotkeys('mod+3', () => (editorEngine.state.editorMode = EditorMode.PREVIEW), { preventDefault: true });
     useHotkeys(
         Hotkey.INSERT_DIV.command,
-        () => (editorEngine.state.editorMode = EditorMode.INSERT_DIV),
+        () => (editorEngine.state.insertMode = InsertMode.INSERT_DIV),
     );
     useHotkeys(
         Hotkey.INSERT_TEXT.command,
-        () => (editorEngine.state.editorMode = EditorMode.INSERT_TEXT),
+        () => (editorEngine.state.insertMode = InsertMode.INSERT_TEXT),
     );
     useHotkeys('space', () => (editorEngine.state.editorMode = EditorMode.PAN), { keydown: true });
     useHotkeys('space', () => (editorEngine.state.editorMode = EditorMode.DESIGN), { keyup: true });

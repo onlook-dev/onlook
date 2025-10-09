@@ -33,38 +33,39 @@ const TOOLBAR_ITEMS = ({ t }: { t: ReturnType<typeof useTranslations> }) => [
         label: t(transKeys.editor.toolbar.tools.pan.name),
         tooltip: t(transKeys.editor.toolbar.tools.pan.tooltip),
     },
-    {
-        mode: EditorMode.INSERT_DIV,
-        icon: Icons.Square,
-        hotkey: Hotkey.INSERT_DIV,
-        disabled: false,
-        draggable: true,
-        label: t(transKeys.editor.toolbar.tools.insertDiv.name),
-        tooltip: t(transKeys.editor.toolbar.tools.insertDiv.tooltip),
-    },
-    {
-        mode: EditorMode.INSERT_TEXT,
-        icon: Icons.Text,
-        hotkey: Hotkey.INSERT_TEXT,
-        disabled: false,
-        draggable: true,
-        label: t(transKeys.editor.toolbar.tools.insertText.name),
-        tooltip: t(transKeys.editor.toolbar.tools.insertText.tooltip),
-    },
+    // {
+    //     mode: InsertMode.INSERT_DIV,
+    //     icon: Icons.Square,
+    //     hotkey: Hotkey.INSERT_DIV,
+    //     disabled: false,
+    //     draggable: true,
+    //     label: t(transKeys.editor.toolbar.tools.insertDiv.name),
+    //     tooltip: t(transKeys.editor.toolbar.tools.insertDiv.tooltip),
+    // },
+    // {
+    //     mode: InsertMode.INSERT_TEXT,
+    //     icon: Icons.Text,
+    //     hotkey: Hotkey.INSERT_TEXT,
+    //     disabled: false,
+    //     draggable: true,
+    //     label: t(transKeys.editor.toolbar.tools.insertText.name),
+    //     tooltip: t(transKeys.editor.toolbar.tools.insertText.tooltip),
+    // },
 ];
 
 export const BottomBar = observer(() => {
     const t = useTranslations();
     const editorEngine = useEditorEngine();
     const toolbarItems = TOOLBAR_ITEMS({ t });
+    const shouldShow = editorEngine.state.editorMode === EditorMode.DESIGN || editorEngine.state.editorMode === EditorMode.PAN;
 
     return (
         <AnimatePresence mode="wait">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{
-                    opacity: editorEngine.state.editorMode === EditorMode.DESIGN ? 1 : 0,
-                    y: editorEngine.state.editorMode === EditorMode.DESIGN ? 0 : 20,
+                    opacity: shouldShow ? 1 : 0,
+                    y: shouldShow ? 0 : 20,
                 }}
                 className="absolute left-1/2 -translate-x-1/2 bottom-4 flex flex-col border-[0.5px] border-border p-1 px-1 bg-background rounded-lg backdrop-blur drop-shadow-xl overflow-hidden"
                 transition={{
@@ -75,8 +76,8 @@ export const BottomBar = observer(() => {
                     damping: 25,
                 }}
                 style={{
-                    pointerEvents: editorEngine.state.editorMode === EditorMode.DESIGN ? 'auto' : 'none',
-                    visibility: editorEngine.state.editorMode === EditorMode.DESIGN ? 'visible' : 'hidden'
+                    pointerEvents: shouldShow ? 'auto' : 'none',
+                    visibility: shouldShow ? 'visible' : 'hidden'
                 }}
             >
                 <TerminalArea>
