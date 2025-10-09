@@ -15,11 +15,10 @@ export class SessionManager {
         private readonly branch: Branch,
         private readonly errorManager: ErrorManager
     ) {
-        // Connection is now lazy - started on-demand via SandboxManager.init()
         makeAutoObservable(this);
     }
 
-    async start(sandboxId: string, userId?: string, retryCount = 0): Promise<void> {
+    async start(sandboxId: string, userId?: string): Promise<void> {
         const MAX_RETRIES = 3;
         const RETRY_DELAY_MS = 2000;
 
@@ -29,7 +28,7 @@ export class SessionManager {
 
         this.isConnecting = true;
 
-        try {
+        const attemptConnection = async () => {
             const provider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
                 providerOptions: {
                     codesandbox: {
@@ -44,25 +43,31 @@ export class SessionManager {
             });
 
             this.provider = provider;
-
             await this.createTerminalSessions(provider);
-        } catch (error) {
-            console.error(`Failed to start sandbox session (attempt ${retryCount + 1}/${MAX_RETRIES + 1}):`, error);
+        };
 
-            this.provider = null;
+        let lastError: Error | null = null;
 
-            // Retry on network errors (Bad gateway, timeouts, etc.)
-            if (retryCount < MAX_RETRIES) {
-                this.isConnecting = false; // Reset before retry
-                console.log(`Retrying sandbox connection in ${RETRY_DELAY_MS}ms...`);
-                await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
-                return this.start(sandboxId, userId, retryCount + 1);
+        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                await attemptConnection();
+                this.isConnecting = false;
+                return;
+            } catch (error) {
+                lastError = error instanceof Error ? error : new Error(String(error));
+                console.error(`Failed to start sandbox session (attempt ${attempt + 1}/${MAX_RETRIES + 1}):`, error);
+
+                this.provider = null;
+
+                if (attempt < MAX_RETRIES) {
+                    console.log(`Retrying sandbox connection in ${RETRY_DELAY_MS}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+                }
             }
-
-            throw error;
-        } finally {
-            this.isConnecting = false;
         }
+
+        this.isConnecting = false;
+        throw lastError;
     }
 
     async restartDevServer(): Promise<boolean> {
