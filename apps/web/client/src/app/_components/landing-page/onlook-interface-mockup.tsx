@@ -1,3 +1,5 @@
+'use client';
+
 import { Icons } from '@onlook/ui/icons';
 import { NodeIcon } from '@onlook/ui/node-icon';
 import { cn } from '@onlook/ui/utils';

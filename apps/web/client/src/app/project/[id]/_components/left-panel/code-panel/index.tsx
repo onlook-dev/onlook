@@ -4,9 +4,10 @@ import { useEditorEngine } from '@/components/store/editor';
 import { EditorMode } from '@onlook/models';
 import { ResizablePanel } from '@onlook/ui/resizable';
 import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
 import { CodeTab } from './code-tab';
 
-export const CodePanel = () => {
+export const CodePanel = observer(() => {
     const editorEngine = useEditorEngine();
     const editPanelWidth = 500
 
@@ -29,4 +30,4 @@ export const CodePanel = () => {
             </ResizablePanel>
         </div>
     );
-};  
+});  
