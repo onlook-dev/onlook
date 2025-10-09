@@ -3,6 +3,7 @@ import {
     type BrandTabValue,
     ChatType,
     EditorMode,
+    InsertMode,
     type LeftPanelTabValue
 } from '@onlook/models';
 import { debounce } from 'lodash';
@@ -17,6 +18,7 @@ export class StateManager {
     isDragSelecting = false;
 
     editorMode: EditorMode = EditorMode.DESIGN;
+    insertMode: InsertMode | null = null;
     leftPanelTab: LeftPanelTabValue | null = null;
     brandTab: BrandTabValue | null = null;
     branchTab: BranchTabValue | null = null;

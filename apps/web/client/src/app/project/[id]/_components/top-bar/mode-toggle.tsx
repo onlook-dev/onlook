@@ -33,6 +33,16 @@ export const ModeToggle = observer(() => {
     const editorEngine = useEditorEngine();
     const mode = editorEngine.state.editorMode;
 
+    const getXPosition = () => {
+        if (mode === EditorMode.PREVIEW) {
+            return '200%';
+        }
+        if (mode === EditorMode.CODE) {
+            return '100%';
+        };
+        return '0%';
+    };
+
     return (
         <div className="relative">
             <ToggleGroup
@@ -72,12 +82,7 @@ export const ModeToggle = observer(() => {
                 initial={false}
                 animate={{
                     width: '33.333%',
-                    x:
-                        mode === EditorMode.DESIGN
-                            ? '0%'
-                            : mode === EditorMode.CODE
-                              ? '100%'
-                              : '200%',
+                    x: getXPosition(),
                 }}
                 transition={{
                     type: 'tween',

@@ -9,6 +9,9 @@ export enum EditorMode {
     CODE = 'code',
     PREVIEW = 'preview',
     PAN = 'pan',
+}
+
+export enum InsertMode {
     INSERT_TEXT = 'insert-text',
     INSERT_DIV = 'insert-div',
     INSERT_IMAGE = 'insert-image',

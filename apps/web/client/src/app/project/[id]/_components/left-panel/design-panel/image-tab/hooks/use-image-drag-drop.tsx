@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { EditorMode, type ImageContentData } from '@onlook/models';
+import { EditorMode, InsertMode, type ImageContentData } from '@onlook/models';
 import { usePostHog } from 'posthog-js/react';
 import { useCallback, useState } from 'react';
 
@@ -55,7 +55,7 @@ export const useImageDragDrop = (onUpload?: (files: FileList) => Promise<void>) 
                 }),
             );
 
-            editorEngine.state.editorMode = EditorMode.INSERT_IMAGE;
+            editorEngine.state.insertMode = InsertMode.INSERT_IMAGE;
             for (const frame of editorEngine.frames.getAll()) {
                 if (!frame.view) {
                     console.error('No frame view found');
@@ -69,11 +69,12 @@ export const useImageDragDrop = (onUpload?: (files: FileList) => Promise<void>) 
     );
 
     const onImageMouseDown = useCallback(() => {
-        editorEngine.state.editorMode = EditorMode.INSERT_IMAGE;
+        editorEngine.state.insertMode = InsertMode.INSERT_IMAGE;
     }, [editorEngine.state]);
 
     const onImageMouseUp = useCallback(() => {
         editorEngine.state.editorMode = EditorMode.DESIGN;
+        editorEngine.state.insertMode = null;
     }, [editorEngine.state]);
 
     const onImageDragEnd = useCallback(() => {
