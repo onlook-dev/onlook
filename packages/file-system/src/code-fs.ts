@@ -72,12 +72,14 @@ export class CodeFileSystem extends FileSystem {
             const { ast: processedAst } = addOidsToAst(ast, existingOids);
 
             processedContent = await getContentFromAst(processedAst, content);
-            await this.updateMetadataForFile(path, processedContent);
         } else {
             console.warn(`Failed to parse ${path}, skipping OID injection but will still format`);
         }
 
-        return await formatContent(path, processedContent);
+        const formattedContent = await formatContent(path, processedContent);
+        await this.updateMetadataForFile(path, formattedContent);
+
+        return formattedContent;
     }
 
     private async getFileOids(path: string): Promise<Set<string>> {
