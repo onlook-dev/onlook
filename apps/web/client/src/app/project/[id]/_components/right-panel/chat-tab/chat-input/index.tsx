@@ -433,7 +433,7 @@ export const ChatInput = observer(
                                     <Button
                                         size={'icon'}
                                         variant={'secondary'}
-                                        className="text-smallPlus text-primary h-full w-fit px-2.5 py-0.5"
+                                        className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary bg-background-primary rounded-full"
                                         onClick={() => {
                                             setActionTooltipOpen(false);
                                             void onStop();
@@ -442,13 +442,20 @@ export const ChatInput = observer(
                                         <Icons.Stop />
                                     </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>{'Stop response'}</TooltipContent>
+                                <TooltipContent side="top" sideOffset={6} hideArrow>{'Stop response'}</TooltipContent>
                             </Tooltip>
                         ) : (
                             <Button
                                 size={'icon'}
                                 variant={'secondary'}
-                                className="text-smallPlus text-primary h-full w-fit px-2.5 py-0.5"
+                                className={cn(
+                                    "text-smallPlus w-fit h-full py-0.5 px-2.5 rounded-full",
+                                    inputEmpty
+                                        ? "text-primary"
+                                        : chatMode === ChatType.ASK
+                                            ? "bg-blue-300 text-background hover:bg-blue-600"
+                                            : "bg-foreground-primary text-background hover:bg-foreground-primary/80"
+                                )}
                                 disabled={inputEmpty}
                                 onClick={() => void sendMessage()}
                             >
