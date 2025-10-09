@@ -37,11 +37,11 @@ export const RightPanel = observer(() => {
                             setIsChatHistoryOpen={setIsChatHistoryOpen}
                         >
                             <div
-                                className="flex items-center gap-2 bg-transparent p-1 px-2 text-small hover:text-foreground-hover cursor-pointe"
+                                className="flex items-center gap-1.5 bg-transparent p-1 px-2 text-sm text-foreground-secondary hover:text-foreground-primary cursor-pointer background-none group"
                             >
                                 <Icons.Sparkles className="mr-0.5 mb-0.5 h-4 w-4" />
                                 {t(transKeys.editor.panels.edit.tabs.chat.name)}
-                                <Icons.ChevronDown className="ml-0.5 h-3 w-3 text-muted-foreground" />
+                                <Icons.ChevronDown className="ml-0.5 h-3 w-3 text-muted-foreground group-hover:text-foreground-primary" />
                             </div>
                         </ChatPanelDropdown>
                         <div className='ml-auto'>

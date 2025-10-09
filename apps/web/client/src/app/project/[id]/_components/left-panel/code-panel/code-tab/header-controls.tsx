@@ -1,5 +1,3 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -8,7 +6,6 @@ import {
     DropdownMenuTrigger
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { toast } from '@onlook/ui/sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { useState } from 'react';
@@ -19,20 +16,15 @@ import { UploadModal } from './modals/upload-modal';
 interface CodeControlsProps {
     isDirty: boolean;
     currentPath: string;
-    currentFilePath: string | null;
-    currentFileContent: string | null;
-    branchId: string;
     onSave: () => Promise<void>;
     onRefresh: () => void;
     onCreateFile: (filePath: string, content?: string) => Promise<void>;
     onCreateFolder: (folderPath: string) => Promise<void>;
     isSidebarOpen: boolean;
     setIsSidebarOpen: (isSidebarOpen: boolean) => void;
-    selection?: { from: number; to: number; text: string } | null;
 }
 
-export const CodeControls = ({ isDirty, currentPath, currentFilePath, currentFileContent, branchId, onSave, onRefresh, onCreateFile, onCreateFolder, isSidebarOpen, setIsSidebarOpen, selection }: CodeControlsProps) => {
-    const editorEngine = useEditorEngine();
+export const CodeControls = ({ isDirty, currentPath, onSave, onRefresh, onCreateFile, onCreateFolder, isSidebarOpen, setIsSidebarOpen }: CodeControlsProps) => {
     const [showFileModal, setShowFileModal] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showFolderModal, setShowFolderModal] = useState(false);
@@ -55,61 +47,19 @@ export const CodeControls = ({ isDirty, currentPath, currentFilePath, currentFil
         onRefresh();
     };
 
-    const handleAddSelectionToChat = async () => {
-        if (!selection || !currentFilePath || !currentFileContent) return;
-
-        try {
-            // Calculate line numbers from character positions
-            const beforeSelection = currentFileContent.substring(0, selection.from);
-            const selectionContent = currentFileContent.substring(selection.from, selection.to);
-            const startLine = beforeSelection.split('\n').length;
-            const endLine = startLine + selectionContent.split('\n').length - 1;
-
-            const fileName = currentFilePath.split('/').pop() || currentFilePath;
-            // Add highlight context (selected code snippet)
-            editorEngine.chat.context.addContexts([{
-                type: MessageContextType.HIGHLIGHT,
-                path: currentFilePath,
-                content: selection.text,
-                displayName: fileName + ' (' + startLine + ':' + endLine + ')',
-                start: startLine,
-                end: endLine,
-                branchId: branchId,
-            }]);
-
-            // Also add full file context
-            editorEngine.chat.context.addContexts([{
-                type: MessageContextType.FILE,
-                path: currentFilePath,
-                content: currentFileContent,
-                displayName: currentFilePath.split('/').pop() || currentFilePath,
-                branchId: branchId,
-            }]);
-
-            toast.success('Selection added to chat');
-        } catch (error) {
-            console.error('Failed to add selection to chat:', error);
-            toast.error('Failed to add selection to chat');
-        }
-    };
-
     return (
         <div className="flex flex-row items-center justify-between p-1 px-2 border-b border-border w-full h-10">
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="text-muted-foreground hover:text-foreground"
-                    >
-                        {isSidebarOpen ? <Icons.SidebarLeftCollapse /> : <Icons.MoveToFolder />}
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="mt-1" hideArrow>
-                    {isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-                </TooltipContent>
-            </Tooltip>
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="text-foreground-secondary hover:text-foreground-primary p-1.5 w-fit h-fit bg-transparent hover:!bg-transparent cursor-pointer"
+            >
+                {isSidebarOpen ? <Icons.SidebarLeftCollapse className="h-4 w-4" /> : <Icons.MoveToFolder className="h-4 w-4" />}
+                <span className="text-small ml-1.5">
+                    {isSidebarOpen ? '' : 'View Files'}
+                </span>
+            </Button>
             <div className="flex flex-row items-center transition-opacity duration-200 ml-auto">
 
                 <Tooltip>
@@ -119,7 +69,7 @@ export const CodeControls = ({ isDirty, currentPath, currentFilePath, currentFil
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="p-2 w-fit h-fit hover:bg-background-onlook cursor-pointer"
+                                    className="p-1.5 w-fit h-fit bg-transparent hover:!bg-transparent cursor-pointer text-foreground-secondary hover:text-foreground-primary"
                                 >
                                     <Icons.FilePlus className="h-4 w-4" />
                                 </Button>
@@ -152,7 +102,7 @@ export const CodeControls = ({ isDirty, currentPath, currentFilePath, currentFil
                             variant="ghost"
                             size="icon"
                             onClick={() => setShowFolderModal(true)}
-                            className="p-2 w-fit h-fit hover:bg-background-onlook cursor-pointer"
+                            className="p-1.5 w-fit h-fit bg-transparent hover:!bg-transparent cursor-pointer text-foreground-secondary hover:text-foreground-primary"
                         >
                             <Icons.DirectoryPlus className="h-4 w-4" />
                         </Button>
@@ -190,26 +140,6 @@ export const CodeControls = ({ isDirty, currentPath, currentFilePath, currentFil
                         <p>{isSaving ? 'Saving changes...' : 'Save changes'}</p>
                     </TooltipContent>
                 </Tooltip>
-                {selection && currentFilePath && currentFileContent && (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className={cn(
-                                    "px-1.5 py-0.75 w-fit h-fit cursor-pointer mr-0.5 ml-1"
-                                )}
-                                onClick={handleAddSelectionToChat}
-                            >
-                                <Icons.Sparkles className="h-4 w-4 " />
-                                <span className="text-small">Add to Chat</span>
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" hideArrow>
-                            <p>Add selection to chat</p>
-                        </TooltipContent>
-                    </Tooltip>
-                )}
             </div>
             <FileModal
                 basePath={currentPath}

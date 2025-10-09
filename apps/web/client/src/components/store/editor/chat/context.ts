@@ -30,7 +30,17 @@ export class ChatContext {
             }),
             (
                 { elements, frames },
-            ) => this.generateContextFromReaction({ elements, frames }).then((context) => (this.context = context)),
+            ) => this.generateContextFromReaction({ elements, frames }).then((context) => {
+                // Preserve manually added highlights (from CMD+L / "Add to Chat" button)
+                // Manually added highlights don't have an oid since they're code selections, not DOM selections
+                const manualHighlights = this._context.filter(
+                    (c) => c.type === MessageContextType.HIGHLIGHT && c.oid === undefined
+                );
+                
+                // Merge: new auto-generated context + preserved manual highlights
+                // (images are already preserved via getImageContext() call in generateContextFromReaction)
+                this.context = [...context, ...manualHighlights];
+            }),
         );
     }
 
@@ -47,6 +57,8 @@ export class ChatContext {
 
         // Deduplicate file contexts by path and branchId
         const fileMap = new Map<string, FileMessageContext>();
+        // Deduplicate highlight contexts by path, start, end, and branchId
+        const highlightMap = new Map<string, HighlightMessageContext>();
         const otherContexts: MessageContext[] = [];
 
         for (const context of newContexts) {
@@ -54,12 +66,16 @@ export class ChatContext {
                 const key = `${context.path}::${context.branchId}`;
                 // Keep the most recent file context (last one wins)
                 fileMap.set(key, context);
+            } else if (context.type === MessageContextType.HIGHLIGHT) {
+                const key = `${context.path}::${context.start}::${context.end}::${context.branchId}`;
+                // Keep the most recent highlight context (last one wins)
+                highlightMap.set(key, context);
             } else {
                 otherContexts.push(context);
             }
         }
 
-        this._context = [...Array.from(fileMap.values()), ...otherContexts];
+        this._context = [...Array.from(fileMap.values()), ...Array.from(highlightMap.values()), ...otherContexts];
     }
 
     addHighlightContext(path: string, content: string, start: number, end: number, branchId: string, displayName: string) {

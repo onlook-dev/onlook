@@ -8,6 +8,7 @@ import { toast } from '@onlook/ui/sonner';
 import { pathsEqual } from '@onlook/utility';
 import { motion } from 'motion/react';
 import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { MessageContextType } from '@onlook/models';
 import { CodeEditorArea } from './file-content';
 import { FileTabs } from './file-tabs';
 import { CodeControls } from './header-controls';
@@ -66,7 +67,7 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
     const [openedEditorFiles, setOpenedEditorFiles] = useState<EditorFile[]>([]);
     const [showLocalUnsavedDialog, setShowLocalUnsavedDialog] = useState(false);
     const [filesToClose, setFilesToClose] = useState<string[]>([]);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(openedEditorFiles.length === 0);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [editorSelection, setEditorSelection] = useState<{ from: number; to: number; text: string } | null>(null);
 
     // This is a workaround to allow code controls to access the hasUnsavedChanges state
@@ -434,6 +435,37 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
         handleCreateFolder
     }), [hasUnsavedChanges, getCurrentPath, handleSaveFile, refreshFileTree, handleCreateFile, handleCreateFolder]);
 
+    // Handle adding selection to chat
+    const handleAddSelectionToChat = useCallback((selection: { from: number; to: number; text: string }) => {
+        if (!selection || !selectedFilePath || !activeEditorFile?.content) return;
+
+        try {
+            // Calculate line numbers from character positions
+            const content = typeof activeEditorFile.content === 'string' ? activeEditorFile.content : '';
+            const beforeSelection = content.substring(0, selection.from);
+            const selectionContent = content.substring(selection.from, selection.to);
+            const startLine = beforeSelection.split('\n').length;
+            const endLine = startLine + selectionContent.split('\n').length - 1;
+
+            const fileName = selectedFilePath.split('/').pop() || selectedFilePath;
+            // Add highlight context (selected code snippet)
+            editorEngine.chat.context.addContexts([{
+                type: MessageContextType.HIGHLIGHT,
+                path: selectedFilePath,
+                content: selection.text,
+                displayName: fileName + ' (' + startLine + ':' + endLine + ')',
+                start: startLine,
+                end: endLine,
+                branchId: branchId,
+            }]);
+
+            toast.success('Selection added to chat context');
+        } catch (error) {
+            console.error('Error adding selection to chat:', error);
+            toast.error('Failed to add selection to chat');
+        }
+    }, [selectedFilePath, activeEditorFile, branchId, editorEngine.chat.context]);
+
     // Cleanup editor instances when component unmounts
     useEffect(() => {
         return () => {
@@ -448,16 +480,12 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
             <CodeControls
                 isDirty={hasUnsavedChanges}
                 currentPath={getCurrentPath()}
-                currentFilePath={selectedFilePath}
-                currentFileContent={activeEditorFile?.type === 'text' && typeof activeEditorFile.content === 'string' ? activeEditorFile.content : null}
-                branchId={branchId}
                 onSave={handleSaveFile}
                 onRefresh={refreshFileTree}
                 onCreateFile={handleCreateFile}
                 onCreateFolder={handleCreateFolder}
                 isSidebarOpen={isSidebarOpen}
                 setIsSidebarOpen={setIsSidebarOpen}
-                selection={editorSelection}
             />
             <div className="flex flex-1 overflow-auto min-h-0">
                 <motion.div
@@ -508,6 +536,8 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
                         }}
                         fileCountToClose={filesToClose.length}
                         onSelectionChange={setEditorSelection}
+                        onAddSelectionToChat={handleAddSelectionToChat}
+                        onFocusChatInput={() => editorEngine.chat.focusChatInput()}
                     />
                 </div>
             </div>

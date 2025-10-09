@@ -15,26 +15,29 @@ export const ChatControls = observer(() => {
     };
 
     return (
-        <div className="flex flex-row opacity-50 transition-opacity duration-200 group-hover/panel:opacity-100">
+        <div className="flex flex-row">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
                         variant={'ghost'}
                         size={'icon'}
-                        className="p-2 w-fit h-fit hover:bg-background-onlook cursor-pointer"
+                        className="py-1 px-2 w-fit h-fit bg-transparent hover:!bg-transparent cursor-pointer group text-foreground-secondary hover:text-foreground-primary"
                         onClick={handleNewChat}
                         disabled={editorEngine.chat.isStreaming || isStartingNewConversation}
                     >
                         {isStartingNewConversation ? (
-                            <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
+                            <>
+                                <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
+                                <span className="text-small">New Chat</span>
+                            </>
                         ) : (
-                            <Icons.Edit className="h-4 w-4" />
+                            <>
+                                <Icons.Edit className="h-4 w-4" />
+                                <span className="text-small">New Chat</span>
+                            </>
                         )}
                     </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">
-                    <p>New Chat</p>
-                </TooltipContent>
             </Tooltip>
         </div>
     );

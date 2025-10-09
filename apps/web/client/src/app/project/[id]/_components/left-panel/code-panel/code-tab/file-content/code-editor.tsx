@@ -1,10 +1,12 @@
 import { EditorView, ViewUpdate } from '@codemirror/view';
 import { convertToBase64, getMimeType } from '@onlook/utility/src/file';
 import CodeMirror from '@uiw/react-codemirror';
-import { type RefObject, useEffect, useMemo } from 'react';
+import { type RefObject, useEffect, useMemo, useState } from 'react';
 import type { CodeNavigationTarget } from '@onlook/models';
 import type { BinaryEditorFile, EditorFile } from '../shared/types';
 import { getBasicSetup, getExtensions, highlightElementRange, scrollToLineColumn } from './code-mirror-config';
+import { FloatingAddToChatButton } from './floating-add-to-chat-button';
+import { keymap } from '@codemirror/view';
 
 interface CodeEditorProps {
     file: EditorFile;
@@ -14,6 +16,8 @@ interface CodeEditorProps {
     onSaveFile: () => Promise<void>;
     onUpdateFileContent: (fileId: string, content: string) => void;
     onSelectionChange?: (selection: { from: number; to: number; text: string } | null) => void;
+    onAddSelectionToChat?: (selection: { from: number; to: number; text: string }) => void;
+    onFocusChatInput?: () => void;
 }
 
 export const CodeEditor = ({
@@ -24,7 +28,13 @@ export const CodeEditor = ({
     onSaveFile,
     onUpdateFileContent,
     onSelectionChange,
+    onAddSelectionToChat,
+    onFocusChatInput,
 }: CodeEditorProps) => {
+    const [currentSelection, setCurrentSelection] = useState<{ from: number; to: number; text: string } | null>(null);
+    const [selectionAddedToChat, setSelectionAddedToChat] = useState(false);
+    const [showButton, setShowButton] = useState(false);
+
     const getFileUrl = (file: BinaryEditorFile) => {
         const mime = getMimeType(file.path.toLowerCase());
         const base64 = convertToBase64(new Uint8Array(file.content));
@@ -32,8 +42,6 @@ export const CodeEditor = ({
     };
 
     const selectionExtension = useMemo(() => {
-        if (!onSelectionChange) return [];
-
         return [
             EditorView.updateListener.of((update: ViewUpdate) => {
                 if (update.selectionSet) {
@@ -41,18 +49,61 @@ export const CodeEditor = ({
                     const selectedText = update.state.sliceDoc(selection.from, selection.to);
 
                     if (selection.from !== selection.to) {
-                        onSelectionChange({
+                        const selectionData = {
                             from: selection.from,
                             to: selection.to,
                             text: selectedText
-                        });
+                        };
+                        setCurrentSelection(selectionData);
+                        setSelectionAddedToChat(false); // Reset the flag for new selection
+                        setShowButton(false); // Hide button during selection
+                        onSelectionChange?.(selectionData);
                     } else {
-                        onSelectionChange(null);
+                        setCurrentSelection(null);
+                        setSelectionAddedToChat(false); // Reset when selection is cleared
+                        setShowButton(false); // Hide button when no selection
+                        onSelectionChange?.(null);
                     }
                 }
-            })
+            }),
+            // Add mousedown listener to hide button when starting selection
+            EditorView.domEventHandlers({
+                mousedown: () => {
+                    setShowButton(false);
+                    return false;
+                },
+                mouseup: () => {
+                    // Show button after mouse release if there's a selection
+                    setTimeout(() => {
+                        setShowButton(true);
+                    }, 0);
+                    return false;
+                }
+            }),
+            // Add CMD+L keyboard shortcut
+            keymap.of([
+                {
+                    key: 'Mod-l',
+                    run: (view) => {
+                        const selection = view.state.selection.main;
+                        if (selection.from !== selection.to) {
+                            const selectedText = view.state.sliceDoc(selection.from, selection.to);
+                            const selectionData = {
+                                from: selection.from,
+                                to: selection.to,
+                                text: selectedText
+                            };
+                            onAddSelectionToChat?.(selectionData);
+                            setSelectionAddedToChat(true); // Mark as added to chat
+                            onFocusChatInput?.(); // Focus chat input
+                            return true;
+                        }
+                        return false;
+                    }
+                }
+            ])
         ];
-    }, [onSelectionChange]);
+    }, [onSelectionChange, onAddSelectionToChat]);
 
     const onCreateEditor = (editor: EditorView) => {
         editorViewsRef.current?.set(file.path, editor);
@@ -91,9 +142,15 @@ export const CodeEditor = ({
         }
     };
 
+    const handleAddToChat = (selection: { from: number; to: number; text: string }) => {
+        onAddSelectionToChat?.(selection);
+        setSelectionAddedToChat(true); // Mark as added to chat
+        onFocusChatInput?.(); // Focus chat input
+    };
+
     return (
         <div
-            className="h-full"
+            className="h-full relative"
             style={{
                 display: isActive ? 'block' : 'none',
             }}
@@ -106,22 +163,31 @@ export const CodeEditor = ({
                 />
             )}
             {file.type === 'text' && typeof file.content === 'string' && (
-                <CodeMirror
-                    key={file.path}
-                    value={file.content}
-                    height="100%"
-                    theme="dark"
-                    extensions={[
-                        ...getBasicSetup(onSaveFile),
-                        ...getExtensions(file.path.split('.').pop() || ''),
-                        ...selectionExtension,
-                    ]}
-                    onChange={(value) => {
-                        onUpdateFileContent(file.path, value);
-                    }}
-                    className="h-full overflow-hidden"
-                    onCreateEditor={onCreateEditor}
-                />
+                <>
+                    <CodeMirror
+                        key={file.path}
+                        value={file.content}
+                        height="100%"
+                        theme="dark"
+                        extensions={[
+                            ...getBasicSetup(onSaveFile),
+                            ...getExtensions(file.path.split('.').pop() || ''),
+                            ...selectionExtension,
+                        ]}
+                        onChange={(value) => {
+                            onUpdateFileContent(file.path, value);
+                        }}
+                        className="h-full overflow-hidden"
+                        onCreateEditor={onCreateEditor}
+                    />
+                    {currentSelection && showButton && onAddSelectionToChat && editorViewsRef.current?.get(file.path) && !selectionAddedToChat && (
+                        <FloatingAddToChatButton
+                            editor={editorViewsRef.current.get(file.path)!}
+                            selection={currentSelection}
+                            onAddToChat={() => handleAddToChat(currentSelection)}
+                        />
+                    )}
+                </>
             )}
         </div>
     );
