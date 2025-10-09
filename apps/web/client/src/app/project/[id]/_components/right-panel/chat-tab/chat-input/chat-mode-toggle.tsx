@@ -3,7 +3,6 @@ import { ChatType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Kbd } from '@onlook/ui/kbd';
 import { HoverOnlyTooltip } from '../../../editor-bar/hover-tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
@@ -43,7 +42,7 @@ export const ChatModeToggle = observer(({ chatMode, onChatModeChange, disabled =
                     className='mb-1'
                     content={
                         <span>
-                            Open mode menu <Kbd>{Hotkey.CHAT_MODE_TOGGLE.readableCommand}</Kbd>
+                            Open mode menu
                         </span>
                     }
                     side="top"
@@ -64,10 +63,15 @@ export const ChatModeToggle = observer(({ chatMode, onChatModeChange, disabled =
                                     'w-4 h-4',
                                     disabled 
                                         ? 'text-foreground-tertiary' 
-                                        : 'text-foreground-secondary group-hover:text-foreground'
+                                        : chatMode === ChatType.ASK
+                                            ? 'text-blue-200'
+                                            : 'text-foreground-secondary group-hover:text-foreground'
                                 )} 
                             />
-                            <span className="text-xs font-medium">
+                            <span className={cn(
+                                "text-xs font-medium",
+                                chatMode === ChatType.ASK && "text-blue-200"
+                            )}>
                                 {getCurrentModeLabel()}
                             </span>
                         </Button>

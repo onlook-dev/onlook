@@ -38,6 +38,11 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     });
     useHotkeys(Hotkey.PAN.command, () => (editorEngine.state.editorMode = EditorMode.PAN));
     useHotkeys(Hotkey.PREVIEW.command, () => (editorEngine.state.editorMode = EditorMode.PREVIEW));
+    
+    // Quick mode switching with CMD+1/2/3 (overrides browser defaults)
+    useHotkeys('mod+1', () => (editorEngine.state.editorMode = EditorMode.DESIGN), { preventDefault: true });
+    useHotkeys('mod+2', () => (editorEngine.state.editorMode = EditorMode.CODE), { preventDefault: true });
+    useHotkeys('mod+3', () => (editorEngine.state.editorMode = EditorMode.PREVIEW), { preventDefault: true });
     useHotkeys(
         Hotkey.INSERT_DIV.command,
         () => (editorEngine.state.editorMode = EditorMode.INSERT_DIV),
@@ -102,10 +107,12 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(
         Hotkey.CHAT_MODE_TOGGLE.command,
         () => {
+            // Toggle between design and preview mode
             if (editorEngine.state.editorMode === EditorMode.PREVIEW) {
                 editorEngine.state.editorMode = EditorMode.DESIGN;
-            }            // Trigger open chat mode menu
-            window.dispatchEvent(new CustomEvent('open-chat-mode-menu'));
+            } else {
+                editorEngine.state.editorMode = EditorMode.PREVIEW;
+            }
         },
         { preventDefault: true },
     );

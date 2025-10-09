@@ -405,7 +405,11 @@ export const ChatInput = observer(({
                             variant={'secondary'}
                             className={cn(
                                 "text-smallPlus w-fit h-full py-0.5 px-2.5 rounded-full",
-                                inputEmpty ? "text-primary" : "bg-foreground-primary text-background hover:bg-foreground-primary/80"
+                                inputEmpty 
+                                    ? "text-primary" 
+                                    : chatMode === ChatType.ASK 
+                                        ? "bg-blue-300 text-background hover:bg-blue-600" 
+                                        : "bg-foreground-primary text-background hover:bg-foreground-primary/80"
                             )}
                             disabled={inputEmpty}
                             onClick={() => void sendMessage()}
