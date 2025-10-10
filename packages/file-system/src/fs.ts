@@ -114,6 +114,7 @@ export class FileSystem {
      * Read a file - automatically detects text files and returns string in that case. Otherwise, returns Uint8Array.
      */
     async readFile(inputPath: string): Promise<string | Uint8Array> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = path.join(this.basePath, inputPath);
@@ -128,6 +129,7 @@ export class FileSystem {
     }
 
     async writeFile(inputPath: string, content: string | Uint8Array): Promise<void> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = path.join(this.basePath, inputPath);
@@ -142,19 +144,51 @@ export class FileSystem {
     }
 
     async writeFiles(files: Array<{ path: string; content: string | Uint8Array }>): Promise<void> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
-        // Write files sequentially to avoid race conditions
-        for (const { path, content } of files) {
-            try {
-                await this.writeFile(path, content);
-            } catch (error) {
-                console.error(`[FileSystem] Failed to write ${path}:`, error);
+        // Group files by directory to batch mkdir operations
+        const dirSet = new Set<string>();
+        for (const { path: filePath } of files) {
+            const dir = path.dirname(path.join(this.basePath, filePath));
+            if (dir) {
+                dirSet.add(dir);
             }
+        }
+
+        // Create all directories in parallel
+        const BATCH_SIZE = 50;
+        const dirs = Array.from(dirSet);
+        for (let i = 0; i < dirs.length; i += BATCH_SIZE) {
+            const batch = dirs.slice(i, i + BATCH_SIZE);
+            await Promise.all(
+                batch.map(dir =>
+                    this.fs!.promises.mkdir(dir, { recursive: true }).catch(() => {
+                        // Ignore errors if directory already exists
+                    })
+                )
+            );
+        }
+
+        // Write all files in parallel batches for better IndexedDB performance
+        for (let i = 0; i < files.length; i += BATCH_SIZE) {
+            const batch = files.slice(i, i + BATCH_SIZE);
+
+            await Promise.all(
+                batch.map(async ({ path: filePath, content }) => {
+                    try {
+                        const fullPath = path.join(this.basePath, filePath);
+                        await this.fs!.promises.writeFile(fullPath, content);
+                    } catch (error) {
+                        console.error(`[FileSystem] Failed to write ${filePath}:`, error);
+                    }
+                })
+            );
         }
     }
 
     async deleteFile(inputPath: string): Promise<void> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = path.join(this.basePath, inputPath);
@@ -174,6 +208,7 @@ export class FileSystem {
     }
 
     async moveFile(from: string, to: string): Promise<void> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
         const fromPath = path.join(this.basePath, from);
@@ -196,6 +231,7 @@ export class FileSystem {
     }
 
     async createDirectory(inputPath: string): Promise<void> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = path.join(this.basePath, inputPath);
@@ -203,6 +239,7 @@ export class FileSystem {
     }
 
     async readDirectory(inputPath = '/'): Promise<FileEntry[]> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = path.join(this.basePath, inputPath);
@@ -498,6 +535,7 @@ export class FileSystem {
     }
 
     async listFiles(pattern = '**/*'): Promise<string[]> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
         const files: string[] = [];
@@ -534,6 +572,7 @@ export class FileSystem {
     }
 
     async listAll(): Promise<Array<{ path: string; type: 'file' | 'directory' }>> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
         const allPaths: Array<{ path: string; type: 'file' | 'directory' }> = [];

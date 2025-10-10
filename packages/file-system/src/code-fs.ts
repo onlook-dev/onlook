@@ -56,8 +56,25 @@ export class CodeFileSystem extends FileSystem {
         const startTime = performance.now();
         console.log(`[CodeFileSystem] Starting writeFiles for ${files.length} files...`);
 
-        // Write files sequentially to avoid race conditions to metadata file
-        for (const { path, content } of files) {
+        // Separate JSX files from other files
+        const jsxFiles: Array<{ path: string; content: string | Uint8Array }> = [];
+        const nonJsxFiles: Array<{ path: string; content: string | Uint8Array }> = [];
+
+        for (const file of files) {
+            if (this.isJsxFile(file.path) && typeof file.content === 'string') {
+                jsxFiles.push(file);
+            } else {
+                nonJsxFiles.push(file);
+            }
+        }
+
+        // Write non-JSX files using optimized base class batch write
+        if (nonJsxFiles.length > 0) {
+            await super.writeFiles(nonJsxFiles);
+        }
+
+        // Write JSX files sequentially to avoid race conditions on metadata
+        for (const { path, content } of jsxFiles) {
             const fileStart = performance.now();
             await this.writeFile(path, content);
             const fileDuration = performance.now() - fileStart;
