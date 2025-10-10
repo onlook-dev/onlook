@@ -293,7 +293,6 @@ export class FileSystem {
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = path.join(this.basePath, inputPath);
-        console.log('Deleting directory', fullPath);
         await this.fs.promises.rm(fullPath, { recursive: true });
     }
 
@@ -444,7 +443,6 @@ export class FileSystem {
                                 });
                             } else {
                                 // New path, it's a create
-                                console.log(`[FileSystem] Detected create for ${filePath}`);
                                 callback({
                                     type: 'create',
                                     path: filePath,
@@ -457,7 +455,6 @@ export class FileSystem {
                             }
                         } catch (error) {
                             // File doesn't exist, it was deleted
-                            console.log(`[FileSystem] Detected delete for ${filePath}`);
                             callback({
                                 type: 'delete',
                                 path: filePath,

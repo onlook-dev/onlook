@@ -78,14 +78,12 @@ export class CodeProviderSync {
                 );
             }
             existing.refCount++;
-            console.log(`[Sync] Reusing existing sync instance for ${key} (refCount: ${existing.refCount})`);
             return existing.sync;
         }
 
         const sync = new CodeProviderSync(provider, fs, config);
         sync.instanceKey = key;
         CodeProviderSync.instances.set(key, { sync, refCount: 1 });
-        console.log(`[Sync] Created new sync instance for ${key} (refCount: 1)`);
         return sync;
     }
 
@@ -113,10 +111,8 @@ export class CodeProviderSync {
         }
 
         instance.refCount--;
-        console.log(`[Sync] Released reference to ${this.instanceKey} (refCount: ${instance.refCount})`);
 
         if (instance.refCount <= 0) {
-            console.log(`[Sync] Stopping and removing sync instance ${this.instanceKey}`);
             this.stop();
             CodeProviderSync.instances.delete(this.instanceKey);
             this.instanceKey = null;
@@ -181,24 +177,13 @@ export class CodeProviderSync {
     }
 
     private async pullFromSandbox(): Promise<void> {
-        const startTime = performance.now();
-        console.log('[Sync] Starting pullFromSandbox...');
-
-        const listSandboxStart = performance.now();
         const sandboxEntries = await this.getAllSandboxFiles('./');
-        console.log(
-            `[Sync] Listed ${sandboxEntries.length} sandbox entries in ${(performance.now() - listSandboxStart).toFixed(2)}ms`,
-        );
 
         const sandboxEntriesSet = new Set(
             sandboxEntries.map((e) => (e.path.startsWith('/') ? e.path : `/${e.path}`)),
         );
 
-        const listLocalStart = performance.now();
         const localEntries = await this.fs.listAll();
-        console.log(
-            `[Sync] Listed ${localEntries.length} local entries in ${(performance.now() - listLocalStart).toFixed(2)}ms`,
-        );
 
         // Find entries to delete (exist locally but not in sandbox)
         const entriesToDelete = localEntries.filter((entry) => {
@@ -208,16 +193,13 @@ export class CodeProviderSync {
             return !sandboxEntriesSet.has(entry.path) && !sandboxEntriesSet.has(sandboxPath);
         });
 
-        const deleteStart = performance.now();
         await Promise.all(
             entriesToDelete.map(async (entry) => {
                 try {
                     if (entry.type === 'file') {
                         await this.fs.deleteFile(entry.path);
-                        console.log(`[Sync] Deleted file: ${entry.path}`);
                     } else {
                         await this.fs.deleteDirectory(entry.path);
-                        console.log(`[Sync] Deleted directory: ${entry.path}`);
                     }
                 } catch (error) {
                     console.debug(
@@ -227,11 +209,6 @@ export class CodeProviderSync {
                 }
             }),
         );
-        if (entriesToDelete.length > 0) {
-            console.log(
-                `[Sync] Deleted ${entriesToDelete.length} entries in ${(performance.now() - deleteStart).toFixed(2)}ms`,
-            );
-        }
 
         // Process sandbox entries
         const directoriesToCreate = sandboxEntries
@@ -240,7 +217,6 @@ export class CodeProviderSync {
 
         const fileEntries = sandboxEntries.filter((entry) => entry.type === 'file');
 
-        const readFilesStart = performance.now();
         const filesToWrite = (
             await Promise.all(
                 fileEntries.map(async (entry) => {
@@ -258,12 +234,8 @@ export class CodeProviderSync {
                 }),
             )
         ).filter((item): item is { path: string; content: string | Uint8Array } => item !== null);
-        console.log(
-            `[Sync] Read ${filesToWrite.length} files from sandbox in ${(performance.now() - readFilesStart).toFixed(2)}ms`,
-        );
 
         // Create directories first
-        const createDirsStart = performance.now();
         await Promise.all(
             directoriesToCreate.map(async (dirPath) => {
                 try {
@@ -273,14 +245,8 @@ export class CodeProviderSync {
                 }
             }),
         );
-        if (directoriesToCreate.length > 0) {
-            console.log(
-                `[Sync] Created ${directoriesToCreate.length} directories in ${(performance.now() - createDirsStart).toFixed(2)}ms`,
-            );
-        }
 
         // Write files in parallel
-        const writeFilesStart = performance.now();
         await Promise.all(
             filesToWrite.map(async ({ path, content }) => {
                 try {
@@ -290,24 +256,13 @@ export class CodeProviderSync {
                 }
             }),
         );
-        console.log(
-            `[Sync] Wrote ${filesToWrite.length} files in ${(performance.now() - writeFilesStart).toFixed(2)}ms`,
-        );
 
         // Store hashes of files in parallel
-        const hashStart = performance.now();
         await Promise.all(
             filesToWrite.map(async ({ path, content }) => {
                 const hash = await hashContent(content);
                 this.fileHashes.set(path, hash);
             }),
-        );
-        console.log(
-            `[Sync] Computed ${filesToWrite.length} file hashes in ${(performance.now() - hashStart).toFixed(2)}ms`,
-        );
-
-        console.log(
-            `[Sync] pullFromSandbox completed in ${(performance.now() - startTime).toFixed(2)}ms`,
         );
     }
 
@@ -351,8 +306,6 @@ export class CodeProviderSync {
     }
 
     private async pushModifiedFilesToSandbox(): Promise<void> {
-        console.log('[Sync] Pushing locally modified files back to sandbox...');
-
         try {
             // Get all local JSX/TSX files that might have been modified with OIDs
             const localFiles = await this.fs.listFiles('/');
@@ -371,7 +324,6 @@ export class CodeProviderSync {
                                     overwrite: true
                                 }
                             });
-                            console.log(`[Sync] Pushed ${filePath} to sandbox`);
                         }
                     } catch (error) {
                         console.warn(`[Sync] Failed to push ${filePath} to sandbox:`, error);
@@ -534,8 +486,6 @@ export class CodeProviderSync {
                                                                         // Update hash tracking
                                                                         const hash = await hashContent(fileResult.file.content || '');
                                                                         this.fileHashes.set(itemLocalPath, hash);
-                                                                    } else {
-                                                                        console.log(`[Sync] File ${itemSandboxPath} has undefined content, skipping`);
                                                                     }
                                                                 } catch (fileError) {
                                                                     console.error(`[Sync] Error syncing file ${itemSandboxPath}:`, fileError);
