@@ -4,8 +4,8 @@ import stripAnsi from 'strip-ansi';
 import { SUPPORT_EMAIL } from '@onlook/constants';
 import { type GitCommit } from '@onlook/git';
 
-import { prepareCommitMessage, sanitizeCommitMessage } from '@/utils/git';
 import type { SandboxManager } from '../sandbox';
+import { prepareCommitMessage, sanitizeCommitMessage, withSyncPaused } from '@/utils/git';
 
 export const ONLOOK_DISPLAY_NAME_NOTE_REF = 'refs/notes/onlook-display-name';
 
@@ -169,7 +169,9 @@ export class GitManager {
     async commit(message: string): Promise<GitCommandResult> {
         const sanitizedMessage = sanitizeCommitMessage(message);
         const escapedMessage = prepareCommitMessage(sanitizedMessage);
-        const result = await this.runCommand(`git commit --allow-empty --no-verify -m ${escapedMessage}`);
+        const result = await this.runCommand(
+            `git commit --allow-empty --no-verify -m ${escapedMessage}`,
+        );
         if (result.success) {
             await this.listCommits();
         }
@@ -179,7 +181,7 @@ export class GitManager {
     /**
      * Create a commit (high-level) - handles full flow: stage, config, commit
      */
-    async createCommit(message: string = 'New Onlook backup'): Promise<GitCommandResult> {
+    async createCommit(message = 'New Onlook backup'): Promise<GitCommandResult> {
         const status = await this.getStatus();
 
         // Stage all files
@@ -237,7 +239,9 @@ export class GitManager {
 
                     if (attempt < maxRetries) {
                         // Wait before retry with exponential backoff
-                        await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, Math.pow(2, attempt) * 100),
+                        );
                         continue;
                     }
 
@@ -245,11 +249,16 @@ export class GitManager {
                     return [];
                 } catch (error) {
                     lastError = error instanceof Error ? error : new Error(String(error));
-                    console.warn(`Attempt ${attempt + 1} failed to list commits:`, lastError.message);
+                    console.warn(
+                        `Attempt ${attempt + 1} failed to list commits:`,
+                        lastError.message,
+                    );
 
                     if (attempt < maxRetries) {
                         // Wait before retry with exponential backoff
-                        await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, Math.pow(2, attempt) * 100),
+                        );
                         continue;
                     }
 
@@ -270,10 +279,14 @@ export class GitManager {
      * Checkout/restore to a specific commit - auto-refreshes commits after restore
      */
     async restoreToCommit(commitOid: string): Promise<GitCommandResult> {
-        const result = await this.runCommand(`git restore --source ${commitOid} .`);
+        const result = await withSyncPaused(this.sandbox.syncEngine, () => {
+            return this.runCommand(`git restore --source ${commitOid} .`);
+        });
+
         if (result.success) {
             await this.listCommits();
         }
+
         return result;
     }
 
