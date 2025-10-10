@@ -255,9 +255,9 @@ export class FileSystem {
 
                     const entry: FileEntry = {
                         name,
-                        path: path.relative(this.basePath, entryPath), // Remove base path
+                        path: path.relative(this.basePath, entryPath),
                         isDirectory: stats.isDirectory(),
-                        size: Number(stats.size), // Convert BigInt to number
+                        size: Number(stats.size),
                         modifiedTime: stats.mtime,
                     };
 
@@ -281,6 +281,7 @@ export class FileSystem {
                 if ((err as any).code === 'ENOENT') {
                     return [];
                 }
+                console.error(`[FileSystem] Error reading ${dirPath}:`, err);
                 throw err;
             }
         };
@@ -451,7 +452,7 @@ export class FileSystem {
 
                                 // If it's a new directory, start watching it
                                 if (stats.isDirectory()) {
-                                    await setupWatchersRecursive(fullPath);
+                                    void setupWatchersRecursive(fullPath);
                                 }
                             }
                         } catch (error) {
@@ -500,7 +501,8 @@ export class FileSystem {
         };
 
         const fullPath = path.join(this.basePath, inputPath);
-        setupWatchersRecursive(fullPath);
+        // Start setup async but don't wait - watchers will be added as they're set up
+        void setupWatchersRecursive(fullPath);
 
         // Return cleanup function
         return () => {

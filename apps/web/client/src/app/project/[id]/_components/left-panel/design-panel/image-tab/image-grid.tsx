@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { useImageDragDrop } from './hooks/use-image-drag-drop';
@@ -17,24 +18,57 @@ interface ImageGridProps {
     onAddToChat: (imagePath: string) => void;
 }
 
+const INITIAL_LOAD = 20;
+const LOAD_MORE_THRESHOLD = 400; // pixels from bottom
+
 export const ImageGrid = ({ images, projectId, branchId, search, onUpload, onRename, onDelete, onAddToChat }: ImageGridProps) => {
+    const [visibleCount, setVisibleCount] = useState(INITIAL_LOAD);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
     const {
         handleDragEnter, handleDragLeave, handleDragOver, handleDrop, isDragging,
         onImageDragStart, onImageDragEnd, onImageMouseDown, onImageMouseUp
     } = useImageDragDrop(onUpload);
 
+    // Reset visible count when images change
+    useEffect(() => {
+        setVisibleCount(INITIAL_LOAD);
+    }, [images.length, search]);
+
+    // Load more images as user scrolls
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        const handleScroll = () => {
+            const { scrollTop, scrollHeight, clientHeight } = container;
+            const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+            if (distanceFromBottom < LOAD_MORE_THRESHOLD && visibleCount < images.length) {
+                setVisibleCount(prev => Math.min(prev + INITIAL_LOAD, images.length));
+            }
+        };
+
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, [visibleCount, images.length]);
+
+    const visibleImages = images.slice(0, visibleCount);
+
     return (
-        <div className={cn(
-            "flex-1 overflow-auto",
-            isDragging && 'cursor-copy bg-teal-500/40', 'h-full')
-        }
+        <div
+            ref={scrollContainerRef}
+            className={cn(
+                "flex-1 overflow-auto",
+                isDragging && 'cursor-copy bg-teal-500/40',
+                'h-full'
+            )}
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
         >
             <div className="grid grid-cols-2 gap-2">
-                {images.map((image) => (
+                {visibleImages.map((image) => (
                     <ImageItem
                         key={image.path}
                         image={image}
@@ -56,6 +90,11 @@ export const ImageGrid = ({ images, projectId, branchId, search, onUpload, onRen
                     <div className="text-sm">
                         {search ? 'No images match your search' : 'No images in this folder'}
                     </div>
+                </div>
+            )}
+            {visibleCount < images.length && (
+                <div className="flex justify-center py-4 text-xs text-foreground-secondary">
+                    Loading more images...
                 </div>
             )}
         </div>
