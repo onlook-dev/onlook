@@ -296,8 +296,10 @@ export const FrameComponent = observer(
                         !isActiveBranch && isInDragSelection && 'outline-teal-500',
                     )}
                     src={frame.url}
-                    sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
-                    allow="geolocation; microphone; camera; midi; encrypted-media"
+                    sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads allow-top-navigation-by-user-activation allow-storage-access-by-user-activation allow-popups-to-escape-sandbox allow-presentation"
+                    allow="geolocation; microphone; camera; midi; encrypted-media; cross-origin-isolated; clipboard-read; clipboard-write; web-share; autoplay; fullscreen"
+                    credentialless="true"
+                    loading="eager"
                     style={{ width: frame.dimension.width, height: frame.dimension.height }}
                     onLoad={setupPenpalConnection}
                     {...props} />
