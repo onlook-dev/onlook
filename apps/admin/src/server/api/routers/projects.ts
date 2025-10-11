@@ -59,13 +59,13 @@ export const projectsRouter = createTRPCRouter({
                 if (projectIdsFromUsers.length > 0) {
                     whereConditions = or(
                         ilike(projects.name, `%${search}%`),
-                        ilike(projects.id, `%${search}%`),
+                        sql`${projects.id}::text ilike ${`%${search}%`}`,
                         inArray(projects.id, projectIdsFromUsers)
                     );
                 } else {
                     whereConditions = or(
                         ilike(projects.name, `%${search}%`),
-                        ilike(projects.id, `%${search}%`)
+                        sql`${projects.id}::text ilike ${`%${search}%`}`
                     );
                 }
             }

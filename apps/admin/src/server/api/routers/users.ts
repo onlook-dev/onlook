@@ -37,7 +37,7 @@ export const usersRouter = createTRPCRouter({
                     ilike(users.displayName, `%${search}%`),
                     ilike(users.firstName, `%${search}%`),
                     ilike(users.lastName, `%${search}%`),
-                    ilike(users.id, `%${search}%`)
+                    sql`${users.id}::text ilike ${`%${search}%`}`
                 );
             }
 
