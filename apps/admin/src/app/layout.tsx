@@ -1,4 +1,5 @@
 import '@/styles/globals.css';
+import { TRPCReactProvider } from '@/trpc/react';
 import { type Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -11,7 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="en" suppressHydrationWarning>
             <body>
-                {children}
+                <TRPCReactProvider>{children}</TRPCReactProvider>
             </body>
         </html>
     );

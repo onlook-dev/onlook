@@ -9,7 +9,9 @@
         }
     },
     "include": [
-        "src",
+        "next-env.d.ts",
+        "src/**/*.ts",
+        "src/**/*.tsx",
         ".next/types/**/*.ts"
     ],
     "exclude": [
