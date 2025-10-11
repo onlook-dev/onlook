@@ -85,9 +85,6 @@ Required environment variables (configure in `.env.local`):
 # Database
 SUPABASE_DATABASE_URL=postgresql://...
 SUPABASE_SERVICE_ROLE_KEY=...
-
-# Node
-NODE_ENV=development
 ```
 
 #### Client-side (NEXT_PUBLIC_*)

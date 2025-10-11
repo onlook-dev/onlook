@@ -14,10 +14,18 @@ import {
     TableHeader,
     TableRow,
 } from '@onlook/ui/table';
-import { ArrowUpDown, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@onlook/ui/tooltip';
+import { ArrowUpDown, ChevronLeft, ChevronRight, Code2, ExternalLink } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export function ProjectsList() {
+    const router = useRouter();
     const [page, setPage] = useState(1);
     const [pageSize] = useState(20);
     const [sortBy, setSortBy] = useState<'updated_at' | 'created_at' | 'name'>('updated_at');
@@ -135,7 +143,11 @@ export function ProjectsList() {
                                 </TableRow>
                             ) : (
                                 data?.projects.map((project) => (
-                                    <TableRow key={project.id}>
+                                    <TableRow
+                                        key={project.id}
+                                        className="cursor-pointer"
+                                        onClick={() => router.push(`/projects/${project.id}`)}
+                                    >
                                         <TableCell>
                                             <div className="flex items-center gap-3">
                                                 <Avatar className="size-10">
@@ -149,18 +161,62 @@ export function ProjectsList() {
                                         </TableCell>
                                         <TableCell>
                                             {project.sandboxes.length > 0 ? (
-                                                <div className="flex flex-col gap-1">
-                                                    {project.sandboxes.map((sandbox) => (
-                                                        <div key={sandbox.sandboxId} className="text-sm">
-                                                            <Badge variant="secondary" className="font-mono text-xs">
-                                                                {sandbox.sandboxId}
-                                                            </Badge>
-                                                            <span className="text-muted-foreground ml-2">
-                                                                ({sandbox.branchName})
-                                                            </span>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                                <TooltipProvider>
+                                                    <div className="flex flex-col gap-1">
+                                                        {project.sandboxes.map((sandbox) => {
+                                                            const editorUrl = `https://codesandbox.io/s/${sandbox.sandboxId}`;
+                                                            const previewUrl = `https://${sandbox.sandboxId}-3000.csb.app`;
+                                                            return (
+                                                                <div key={sandbox.sandboxId} className="flex items-center gap-2 text-sm">
+                                                                    <Badge variant="secondary" className="font-mono text-xs">
+                                                                        {sandbox.sandboxId}
+                                                                    </Badge>
+                                                                    <span className="text-muted-foreground">
+                                                                        ({sandbox.branchName})
+                                                                    </span>
+                                                                    <div className="flex gap-1">
+                                                                        <Tooltip>
+                                                                            <TooltipTrigger asChild>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="sm"
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        window.open(editorUrl, '_blank');
+                                                                                    }}
+                                                                                    className="h-6 px-2"
+                                                                                >
+                                                                                    <Code2 className="size-3.5" />
+                                                                                </Button>
+                                                                            </TooltipTrigger>
+                                                                            <TooltipContent>
+                                                                                <p className="text-xs">{editorUrl}</p>
+                                                                            </TooltipContent>
+                                                                        </Tooltip>
+                                                                        <Tooltip>
+                                                                            <TooltipTrigger asChild>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="sm"
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        window.open(previewUrl, '_blank');
+                                                                                    }}
+                                                                                    className="h-6 px-2"
+                                                                                >
+                                                                                    <ExternalLink className="size-3.5" />
+                                                                                </Button>
+                                                                            </TooltipTrigger>
+                                                                            <TooltipContent>
+                                                                                <p className="text-xs">{previewUrl}</p>
+                                                                            </TooltipContent>
+                                                                        </Tooltip>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </TooltipProvider>
                                             ) : (
                                                 <span className="text-muted-foreground">—</span>
                                             )}
@@ -170,7 +226,15 @@ export function ProjectsList() {
                                                 <div className="flex flex-col gap-1">
                                                     {project.users.map((user) => (
                                                         <div key={user.id} className="text-sm">
-                                                            <span className="font-medium">{user.name}</span>
+                                                            <span
+                                                                className="font-medium hover:text-primary hover:underline cursor-pointer"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    router.push(`/users/${user.id}`);
+                                                                }}
+                                                            >
+                                                                {user.name}
+                                                            </span>
                                                             <span className="text-muted-foreground ml-2">
                                                                 {user.email}
                                                             </span>
