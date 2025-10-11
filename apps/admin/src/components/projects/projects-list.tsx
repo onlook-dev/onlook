@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar';
 import { Badge } from '@onlook/ui/badge';
 import { Button } from '@onlook/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@onlook/ui/card';
+import { Input } from '@onlook/ui/input';
 import { Skeleton } from '@onlook/ui/skeleton';
 import {
     Table,
@@ -20,7 +21,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@onlook/ui/tooltip';
-import { ArrowUpDown, ChevronLeft, ChevronRight, Code2, ExternalLink } from 'lucide-react';
+import { ArrowUpDown, ChevronLeft, ChevronRight, Code2, ExternalLink, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -30,12 +31,14 @@ export function ProjectsList() {
     const [pageSize] = useState(20);
     const [sortBy, setSortBy] = useState<'updated_at' | 'created_at' | 'name'>('updated_at');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+    const [search, setSearch] = useState('');
 
     const { data, isLoading, error } = api.projects.list.useQuery({
         page,
         pageSize,
         sortBy,
         sortOrder,
+        search: search || undefined,
     });
 
     const handleSort = (column: 'updated_at' | 'created_at' | 'name') => {
@@ -69,6 +72,20 @@ export function ProjectsList() {
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search by project name, ID, or user email/name..."
+                                value={search}
+                                onChange={(e) => {
+                                    setSearch(e.target.value);
+                                    setPage(1);
+                                }}
+                                className="pl-9"
+                            />
+                        </div>
+                    </div>
                     <Table>
                         <TableHeader>
                             <TableRow>

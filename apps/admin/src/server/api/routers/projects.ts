@@ -1,5 +1,5 @@
 import { branches, projects, userProjects, users } from '@onlook/db/src/schema';
-import { desc, asc, sql, eq, inArray } from 'drizzle-orm';
+import { desc, asc, sql, eq, inArray, or, ilike } from 'drizzle-orm';
 import { z } from 'zod';
 import { adminProcedure, createTRPCRouter } from '../trpc';
 
@@ -11,10 +11,11 @@ export const projectsRouter = createTRPCRouter({
                 pageSize: z.number().min(1).max(100).default(20),
                 sortBy: z.enum(['updated_at', 'created_at', 'name']).default('updated_at'),
                 sortOrder: z.enum(['asc', 'desc']).default('desc'),
+                search: z.string().optional(),
             }),
         )
         .query(async ({ ctx, input }) => {
-            const { page, pageSize, sortBy, sortOrder } = input;
+            const { page, pageSize, sortBy, sortOrder, search } = input;
             const offset = (page - 1) * pageSize;
 
             // Determine the order column
@@ -26,6 +27,49 @@ export const projectsRouter = createTRPCRouter({
 
             const orderFn = sortOrder === 'asc' ? asc : desc;
 
+            // Build where conditions for search
+            let whereConditions;
+            if (search) {
+                // First get user IDs that match the search
+                const matchingUsers = await ctx.db
+                    .select({ id: users.id })
+                    .from(users)
+                    .where(
+                        or(
+                            ilike(users.email, `%${search}%`),
+                            ilike(users.displayName, `%${search}%`),
+                            ilike(users.firstName, `%${search}%`),
+                            ilike(users.lastName, `%${search}%`)
+                        )
+                    );
+
+                const matchingUserIds = matchingUsers.map(u => u.id);
+
+                // Get project IDs that have these users
+                let projectIdsFromUsers: string[] = [];
+                if (matchingUserIds.length > 0) {
+                    const userProjectMatches = await ctx.db
+                        .select({ projectId: userProjects.projectId })
+                        .from(userProjects)
+                        .where(inArray(userProjects.userId, matchingUserIds));
+                    projectIdsFromUsers = userProjectMatches.map(up => up.projectId);
+                }
+
+                // Combine search conditions
+                if (projectIdsFromUsers.length > 0) {
+                    whereConditions = or(
+                        ilike(projects.name, `%${search}%`),
+                        ilike(projects.id, `%${search}%`),
+                        inArray(projects.id, projectIdsFromUsers)
+                    );
+                } else {
+                    whereConditions = or(
+                        ilike(projects.name, `%${search}%`),
+                        ilike(projects.id, `%${search}%`)
+                    );
+                }
+            }
+
             // Fetch projects with pagination
             const projectList = await ctx.db
                 .select({
@@ -36,6 +80,8 @@ export const projectsRouter = createTRPCRouter({
                     updatedAt: projects.updatedAt,
                 })
                 .from(projects)
+                .$dynamic()
+                .where(whereConditions ?? sql`true`)
                 .orderBy(orderFn(orderColumn))
                 .limit(pageSize)
                 .offset(offset);
@@ -102,7 +148,9 @@ export const projectsRouter = createTRPCRouter({
             // Get total count
             const countResult = await ctx.db
                 .select({ count: sql<number>`cast(count(*) as int)` })
-                .from(projects);
+                .from(projects)
+                .$dynamic()
+                .where(whereConditions ?? sql`true`);
 
             const count = countResult[0]?.count ?? 0;
 

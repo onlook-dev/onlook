@@ -1,5 +1,5 @@
 import { users, userProjects, projects } from '@onlook/db/src/schema';
-import { desc, asc, sql, eq, inArray } from 'drizzle-orm';
+import { desc, asc, sql, eq, inArray, or, ilike } from 'drizzle-orm';
 import { z } from 'zod';
 import { adminProcedure, createTRPCRouter } from '../trpc';
 
@@ -11,10 +11,11 @@ export const usersRouter = createTRPCRouter({
                 pageSize: z.number().min(1).max(100).default(20),
                 sortBy: z.enum(['updated_at', 'created_at', 'email', 'name']).default('updated_at'),
                 sortOrder: z.enum(['asc', 'desc']).default('desc'),
+                search: z.string().optional(),
             }),
         )
         .query(async ({ ctx, input }) => {
-            const { page, pageSize, sortBy, sortOrder } = input;
+            const { page, pageSize, sortBy, sortOrder, search } = input;
             const offset = (page - 1) * pageSize;
 
             // Determine the order column
@@ -27,6 +28,18 @@ export const usersRouter = createTRPCRouter({
                 : users.updatedAt;
 
             const orderFn = sortOrder === 'asc' ? asc : desc;
+
+            // Build where conditions for search
+            let whereConditions;
+            if (search) {
+                whereConditions = or(
+                    ilike(users.email, `%${search}%`),
+                    ilike(users.displayName, `%${search}%`),
+                    ilike(users.firstName, `%${search}%`),
+                    ilike(users.lastName, `%${search}%`),
+                    ilike(users.id, `%${search}%`)
+                );
+            }
 
             // Fetch users with pagination
             const userList = await ctx.db
@@ -41,6 +54,8 @@ export const usersRouter = createTRPCRouter({
                     updatedAt: users.updatedAt,
                 })
                 .from(users)
+                .$dynamic()
+                .where(whereConditions ?? sql`true`)
                 .orderBy(orderFn(orderColumn))
                 .limit(pageSize)
                 .offset(offset);
@@ -84,7 +99,9 @@ export const usersRouter = createTRPCRouter({
             // Get total count
             const countResult = await ctx.db
                 .select({ count: sql<number>`cast(count(*) as int)` })
-                .from(users);
+                .from(users)
+                .$dynamic()
+                .where(whereConditions ?? sql`true`);
 
             const count = countResult[0]?.count ?? 0;
 
