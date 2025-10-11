@@ -1,5 +1,5 @@
-import { projects } from '@onlook/db/src/schema';
-import { desc, asc, sql } from 'drizzle-orm';
+import { branches, projects, userProjects, users } from '@onlook/db/src/schema';
+import { desc, asc, sql, eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { adminProcedure, createTRPCRouter } from '../trpc';
 
@@ -40,6 +40,65 @@ export const projectsRouter = createTRPCRouter({
                 .limit(pageSize)
                 .offset(offset);
 
+            // Fetch branches with sandboxes for each project
+            const projectIds = projectList.map(p => p.id);
+
+            let branchesData: Array<{ projectId: string; sandboxId: string; name: string }> = [];
+            let usersData: Array<{
+                projectId: string;
+                userId: string;
+                email: string | null;
+                firstName: string | null;
+                lastName: string | null;
+                displayName: string | null;
+                role: string;
+            }> = [];
+
+            if (projectIds.length > 0) {
+                branchesData = await ctx.db
+                    .select({
+                        projectId: branches.projectId,
+                        sandboxId: branches.sandboxId,
+                        name: branches.name,
+                    })
+                    .from(branches)
+                    .where(inArray(branches.projectId, projectIds));
+
+                // Fetch users with access for each project
+                usersData = await ctx.db
+                    .select({
+                        projectId: userProjects.projectId,
+                        userId: users.id,
+                        email: users.email,
+                        firstName: users.firstName,
+                        lastName: users.lastName,
+                        displayName: users.displayName,
+                        role: userProjects.role,
+                    })
+                    .from(userProjects)
+                    .innerJoin(users, eq(userProjects.userId, users.id))
+                    .where(inArray(userProjects.projectId, projectIds));
+            }
+
+            // Map data to projects
+            const projectsWithData = projectList.map(project => ({
+                ...project,
+                sandboxes: branchesData
+                    .filter(b => b.projectId === project.id)
+                    .map(b => ({
+                        sandboxId: b.sandboxId,
+                        branchName: b.name,
+                    })),
+                users: usersData
+                    .filter(u => u.projectId === project.id)
+                    .map(u => ({
+                        id: u.userId,
+                        email: u.email,
+                        name: u.displayName || `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email,
+                        role: u.role,
+                    })),
+            }));
+
             // Get total count
             const countResult = await ctx.db
                 .select({ count: sql<number>`cast(count(*) as int)` })
@@ -50,7 +109,7 @@ export const projectsRouter = createTRPCRouter({
             const totalPages = Math.ceil(count / pageSize);
 
             return {
-                projects: projectList,
+                projects: projectsWithData,
                 pagination: {
                     page,
                     pageSize,

@@ -75,7 +75,8 @@ export function ProjectsList() {
                                         <ArrowUpDown className="size-3" />
                                     </Button>
                                 </TableHead>
-                                <TableHead>ID</TableHead>
+                                <TableHead>Sandboxes</TableHead>
+                                <TableHead>Users</TableHead>
                                 <TableHead>
                                     <Button
                                         variant="ghost"
@@ -111,7 +112,10 @@ export function ProjectsList() {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Skeleton className="h-4 w-48" />
+                                            <Skeleton className="h-4 w-24" />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Skeleton className="h-4 w-32" />
                                         </TableCell>
                                         <TableCell>
                                             <Skeleton className="h-4 w-24" />
@@ -123,7 +127,7 @@ export function ProjectsList() {
                                 ))
                             ) : data?.projects.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={4} className="h-24 text-center">
+                                    <TableCell colSpan={5} className="h-24 text-center">
                                         <div className="text-muted-foreground">
                                             No projects found
                                         </div>
@@ -144,9 +148,38 @@ export function ProjectsList() {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="text-muted-foreground text-sm">
-                                                {project.id}
-                                            </span>
+                                            {project.sandboxes.length > 0 ? (
+                                                <div className="flex flex-col gap-1">
+                                                    {project.sandboxes.map((sandbox) => (
+                                                        <div key={sandbox.sandboxId} className="text-sm">
+                                                            <Badge variant="secondary" className="font-mono text-xs">
+                                                                {sandbox.sandboxId}
+                                                            </Badge>
+                                                            <span className="text-muted-foreground ml-2">
+                                                                ({sandbox.branchName})
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <span className="text-muted-foreground">—</span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            {project.users.length > 0 ? (
+                                                <div className="flex flex-col gap-1">
+                                                    {project.users.map((user) => (
+                                                        <div key={user.id} className="text-sm">
+                                                            <span className="font-medium">{user.name}</span>
+                                                            <span className="text-muted-foreground ml-2">
+                                                                {user.email}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <span className="text-muted-foreground">—</span>
+                                            )}
                                         </TableCell>
                                         <TableCell className="text-muted-foreground">
                                             {new Date(project.createdAt).toLocaleDateString('en-US', {
