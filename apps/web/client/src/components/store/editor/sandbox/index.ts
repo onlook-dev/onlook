@@ -12,13 +12,17 @@ import { detectRouterConfig } from '../pages/helper';
 import { copyPreloadScriptToPublic, getLayoutPath as detectLayoutPath } from './preload-script';
 import { SessionManager } from './session';
 
+export enum PreloadScriptState {
+    NOT_INJECTED = 'not-injected',
+    LOADING = 'loading',
+    INJECTED = 'injected'
+}
 export class SandboxManager {
     readonly session: SessionManager;
     readonly gitManager: GitManager;
     private providerReactionDisposer?: () => void;
     private sync: CodeProviderSync | null = null;
-    preloadScriptInjected: boolean = false;
-    preloadScriptLoading: boolean = false;
+    preloadScriptState: PreloadScriptState = PreloadScriptState.NOT_INJECTED
     routerConfig: RouterConfig | null = null;
 
     constructor(
@@ -86,15 +90,12 @@ export class SandboxManager {
 
     private async ensurePreloadScriptExists(): Promise<void> {
         try {
-            if (this.preloadScriptInjected) {
+            if (this.preloadScriptState !== PreloadScriptState.NOT_INJECTED
+            ) {
                 return;
             }
 
-            // Ensures multiple frames pointing to the same sandbox don't try to inject the preload script at the same time.
-            if (this.preloadScriptLoading) {
-                return;
-            }
-            this.preloadScriptLoading = true;
+            this.preloadScriptState = PreloadScriptState.LOADING
 
             if (!this.session.provider) {
                 throw new Error('No provider available for preload script injection');
@@ -106,14 +107,12 @@ export class SandboxManager {
             }
 
             await copyPreloadScriptToPublic(this.session.provider, routerConfig);
-            this.preloadScriptInjected = true;
+            this.preloadScriptState = PreloadScriptState.INJECTED
         } catch (error) {
             console.error('[SandboxManager] Failed to ensure preload script exists:', error);
             // Mark as injected to prevent blocking frames indefinitely
             // Frames will handle the missing preload script gracefully
-            this.preloadScriptInjected = true;
-        } finally {
-            this.preloadScriptLoading = false;
+            this.preloadScriptState = PreloadScriptState.NOT_INJECTED
         }
     }
 
@@ -219,7 +218,7 @@ export class SandboxManager {
         this.providerReactionDisposer = undefined;
         this.sync?.release();
         this.sync = null;
-        this.preloadScriptInjected = false;
+        this.preloadScriptState = PreloadScriptState.NOT_INJECTED
         this.session.clear();
     }
 }

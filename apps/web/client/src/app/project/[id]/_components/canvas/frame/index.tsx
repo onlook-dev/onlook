@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { PreloadScriptState } from '@/components/store/editor/sandbox';
 import { type Frame } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { colors } from '@onlook/ui/tokens';
@@ -29,7 +30,7 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
 
     const isSelected = editorEngine.frames.isSelected(frame.id);
     const branchData = editorEngine.branches.getBranchDataById(frame.branchId);
-    const preloadScriptReady = branchData?.sandbox?.preloadScriptInjected ?? false;
+    const preloadScriptReady = branchData?.sandbox?.preloadScriptState === PreloadScriptState.INJECTED;
     const isFrameReady = preloadScriptReady && !(isConnecting && !hasTimedOut);
 
     return (
