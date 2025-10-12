@@ -280,7 +280,11 @@ export function UserDetail({ userId }: UserDetailProps) {
                                                     <p className="font-medium">
                                                         {rateLimit.max - rateLimit.left} / {rateLimit.max} used
                                                     </p>
-                                                    {isActive && <Badge variant="default">Active</Badge>}
+                                                    {isActive ? (
+                                                        <Badge variant="default">Active</Badge>
+                                                    ) : (
+                                                        <Badge variant="secondary">Cancelled</Badge>
+                                                    )}
                                                 </div>
                                                 <p className="text-xs text-muted-foreground">
                                                     {rateLimit.left} requests remaining
