@@ -5,6 +5,7 @@
         "docker-compose",
         "cloud-deployment",
         "external-services",
-        "oauth-setup"
+        "oauth-setup",
+        "admin-dashboard"
     ]
 }
