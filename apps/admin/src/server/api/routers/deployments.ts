@@ -1,5 +1,6 @@
-import { deployments, projects, users } from '@onlook/db/src/schema';
-import { desc, asc, sql, eq, ilike, or } from 'drizzle-orm';
+import { deployments, projects, users, previewDomains, projectCustomDomains } from '@onlook/db/src/schema';
+import { ProjectCustomDomainStatus } from '@onlook/db/src/schema/domain/custom/project-custom-domain';
+import { desc, asc, sql, eq, ilike, or, inArray, and } from 'drizzle-orm';
 import { z } from 'zod';
 import { adminProcedure, createTRPCRouter } from '../trpc';
 
@@ -81,13 +82,76 @@ export const deploymentsRouter = createTRPCRouter({
             const count = countResult[0]?.count ?? 0;
             const totalPages = Math.ceil(count / pageSize);
 
+            // Fetch domains for all projects in this page
+            const projectIds = deploymentsData.map(d => d.projectId);
+
+            let previewDomainsData: Array<{ projectId: string | null; fullDomain: string }> = [];
+            let customDomainsData: Array<{ projectId: string; fullDomain: string }> = [];
+
+            if (projectIds.length > 0) {
+                // Fetch preview domains
+                previewDomainsData = await ctx.db
+                    .select({
+                        projectId: previewDomains.projectId,
+                        fullDomain: previewDomains.fullDomain,
+                    })
+                    .from(previewDomains)
+                    .where(inArray(previewDomains.projectId, projectIds));
+
+                // Fetch custom domains
+                customDomainsData = await ctx.db
+                    .select({
+                        projectId: projectCustomDomains.projectId,
+                        fullDomain: projectCustomDomains.fullDomain,
+                    })
+                    .from(projectCustomDomains)
+                    .where(
+                        and(
+                            inArray(projectCustomDomains.projectId, projectIds),
+                            eq(projectCustomDomains.status, ProjectCustomDomainStatus.ACTIVE)
+                        )
+                    );
+            }
+
+            // Create maps for quick lookup
+            const previewDomainsByProject = new Map<string, string[]>();
+            previewDomainsData.forEach(pd => {
+                if (pd.projectId) {
+                    if (!previewDomainsByProject.has(pd.projectId)) {
+                        previewDomainsByProject.set(pd.projectId, []);
+                    }
+                    previewDomainsByProject.get(pd.projectId)!.push(`https://${pd.fullDomain}`);
+                }
+            });
+
+            const customDomainsByProject = new Map<string, string[]>();
+            customDomainsData.forEach(cd => {
+                if (!customDomainsByProject.has(cd.projectId)) {
+                    customDomainsByProject.set(cd.projectId, []);
+                }
+                customDomainsByProject.get(cd.projectId)!.push(`https://${cd.fullDomain}`);
+            });
+
             return {
-                deployments: deploymentsData.map(deployment => ({
-                    ...deployment,
-                    requestedByName: deployment.requestedByName ||
-                        `${deployment.requestedByFirstName || ''} ${deployment.requestedByLastName || ''}`.trim() ||
-                        deployment.requestedByEmail || '',
-                })),
+                deployments: deploymentsData.map(deployment => {
+                    const urls: string[] = [];
+
+                    // Add preview domains
+                    const previewUrls = previewDomainsByProject.get(deployment.projectId) || [];
+                    urls.push(...previewUrls);
+
+                    // Add custom domains
+                    const customUrls = customDomainsByProject.get(deployment.projectId) || [];
+                    urls.push(...customUrls);
+
+                    return {
+                        ...deployment,
+                        requestedByName: deployment.requestedByName ||
+                            `${deployment.requestedByFirstName || ''} ${deployment.requestedByLastName || ''}`.trim() ||
+                            deployment.requestedByEmail || '',
+                        urls,
+                    };
+                }),
                 pagination: {
                     page,
                     pageSize,
