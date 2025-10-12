@@ -79,7 +79,7 @@ export function ProductsList() {
                                                 <div
                                                     key={price.id}
                                                     className="flex items-center justify-between p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
-                                                    onClick={() => router.push(`/subscriptions/prices/${price.id}`)}
+                                                    onClick={() => router.push(`/products/prices/${price.id}`)}
                                                 >
                                                     <div>
                                                         <p className="font-medium text-sm">{price.key}</p>

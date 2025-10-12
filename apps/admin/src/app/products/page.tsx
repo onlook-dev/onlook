@@ -1,18 +1,18 @@
-import { SubscriptionsList } from '@/components/subscriptions/subscriptions-list';
+import { ProductsList } from '@/components/subscriptions/products-list';
 
-export default function SubscriptionsPage() {
+export default function ProductsPage() {
     return (
         <div className="bg-background">
             <div className="container mx-auto px-4 py-8 space-y-8">
                 <div>
                     <h1 className="text-4xl font-bold tracking-tight">
-                        Subscriptions
+                        Products & Pricing
                     </h1>
                     <p className="mt-2 text-muted-foreground">
-                        View and manage user subscriptions
+                        Manage products and pricing tiers
                     </p>
                 </div>
-                <SubscriptionsList />
+                <ProductsList />
             </div>
         </div>
     );

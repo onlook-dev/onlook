@@ -7,8 +7,8 @@ export default function PriceDetailPage({ params }: { params: { id: string } }) 
             <div className="container mx-auto px-4 py-8 space-y-6">
                 <Breadcrumb
                     items={[
-                        { label: 'Subscriptions', href: '/subscriptions' },
-                        { label: 'Price Details', href: `/subscriptions/prices/${params.id}` },
+                        { label: 'Products', href: '/products' },
+                        { label: 'Price Details', href: `/products/prices/${params.id}` },
                     ]}
                 />
                 <PriceDetail priceId={params.id} />
