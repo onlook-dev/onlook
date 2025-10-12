@@ -5,114 +5,19 @@ description: Optional admin dashboard for managing users, subscriptions, and dep
 
 # Admin Dashboard
 
-The Onlook admin dashboard is an optional component for self-hosted deployments that provides comprehensive management capabilities for your Onlook instance.
-
-## Overview
-
-The admin dashboard allows you to:
-
-- **User Management**: View and manage user accounts, projects, and access
-- **Subscription Management**: Handle user subscriptions and pricing tiers
-- **Rate Limit Management**: Monitor and adjust API rate limits for users
-- **Deployment Tracking**: View and manage user deployments
-- **Domain Management**: Manage custom domains and verification status
-- **Product & Pricing**: Configure available products and pricing tiers
-
-## Availability
-
-The admin dashboard is available for self-hosting setups and is maintained in a separate private repository. This component is optional - the core Onlook application functions independently without it.
-
-### Access for Self-Hosting
-
-If you're interested in deploying Onlook with the admin dashboard for your organization, please contact us:
-
-📧 **Email**: [contact@onlook.com](mailto:contact@onlook.com)
-
-We'll discuss:
-- Your self-hosting requirements
-- Admin dashboard access and licensing
-- Technical setup and integration
-- Support and maintenance options
+The Onlook admin dashboard is an optional management tool for self-hosted deployments.
 
 ## Features
 
-### User Management
+- **User Management** - View and manage user accounts, projects, and access
+- **Subscription Management** - Handle user subscriptions and pricing tiers
+- **Rate Limit Management** - Monitor and adjust API rate limits
+- **Deployment Tracking** - View and manage user deployments
+- **Domain Management** - Manage custom domains and verification status
+- **Product & Pricing** - Configure available products and pricing tiers
 
-- Browse all users with pagination and search
-- View detailed user information including:
-  - Projects and roles
-  - Active subscriptions
-  - Rate limits and usage
-  - Stripe customer details
-- Search users by name, email, or ID
+## Get Access
 
-### Subscription Management
+The admin dashboard is available for self-hosting setups. To discuss access for your organization:
 
-- View all active and inactive subscriptions
-- Add subscriptions to users with product and price selection
-- Remove subscriptions with confirmation
-- Automatically create rate limits when subscriptions are added
-- View subscription history and status
-
-### Rate Limit Management
-
-- Monitor user rate limits in real-time
-- Add credits to user accounts
-- Mark rate limits as inactive/cancelled
-- View rate limit history with carry-over tracking
-- Set custom limits per subscription tier
-
-### Deployment Management
-
-- View all user deployments
-- Track deployment URLs (preview and custom domains)
-- Monitor sandbox instances
-- View deployment status and timestamps
-- Quick access to CodeSandbox editor and preview links
-
-### Domain Management
-
-- View all custom domains
-- Monitor domain verification status
-- See domain owners and associated projects
-- Track active and inactive domains
-
-### Product & Pricing Configuration
-
-- View available products and pricing tiers
-- See subscriber counts per price tier
-- View monthly message limits
-- Quick links to Stripe dashboard for product management
-
-## Technical Details
-
-### Architecture
-
-The admin dashboard is built with:
-- **Next.js 15**: App Router for server-side rendering
-- **tRPC**: Type-safe API with Drizzle ORM
-- **Supabase**: Database access with service role
-- **shadcn/ui**: Modern UI components
-
-### Integration
-
-The admin dashboard integrates with your existing Onlook infrastructure:
-- Shares database schema with main application
-- Uses Supabase service role for elevated permissions
-- Accesses same Stripe data for subscription management
-- Can be deployed alongside or separately from main app
-
-### Security
-
-- Requires Supabase service role key
-- Authentication can be configured per deployment
-- Separate from user-facing application
-- Access should be restricted to internal team members
-
-## Questions?
-
-For questions about the admin dashboard or to discuss self-hosting with admin access:
-
-- 📧 Email: [contact@onlook.com](mailto:contact@onlook.com)
-- 💬 Discord: [Join our community](https://discord.gg/onlook)
-- 🐙 GitHub: [Report issues](https://github.com/onlook-dev/onlook/issues)
+📧 **Email**: [contact@onlook.com](mailto:contact@onlook.com)
