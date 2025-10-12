@@ -1,4 +1,5 @@
 import { Breadcrumb } from '@/components/layout/breadcrumb';
+import { UserDetail } from '@/components/users/user-detail';
 
 export default function UserDetailPage({ params }: { params: { id: string } }) {
     return (
@@ -10,14 +11,7 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
                         { label: params.id },
                     ]}
                 />
-                <div>
-                    <h1 className="text-4xl font-bold tracking-tight">
-                        User Details
-                    </h1>
-                    <p className="mt-2 text-muted-foreground">
-                        Hello World - User ID: {params.id}
-                    </p>
-                </div>
+                <UserDetail userId={params.id} />
             </div>
         </div>
     );

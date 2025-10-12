@@ -1,4 +1,4 @@
-import { users, userProjects, projects } from '@onlook/db/src/schema';
+import { users, userProjects, projects, subscriptions, rateLimits, products, prices } from '@onlook/db/src/schema';
 import { desc, asc, sql, eq, inArray, or, ilike } from 'drizzle-orm';
 import { z } from 'zod';
 import { adminProcedure, createTRPCRouter } from '../trpc';
@@ -155,5 +155,91 @@ export const usersRouter = createTRPCRouter({
                 ...u,
                 name: u.displayName || `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email,
             }));
+        }),
+    getById: adminProcedure
+        .input(z.string())
+        .query(async ({ ctx, input: userId }) => {
+            // Fetch user
+            const user = await ctx.db
+                .select({
+                    id: users.id,
+                    firstName: users.firstName,
+                    lastName: users.lastName,
+                    displayName: users.displayName,
+                    email: users.email,
+                    avatarUrl: users.avatarUrl,
+                    createdAt: users.createdAt,
+                    updatedAt: users.updatedAt,
+                    stripeCustomerId: users.stripeCustomerId,
+                    githubInstallationId: users.githubInstallationId,
+                })
+                .from(users)
+                .where(eq(users.id, userId))
+                .limit(1);
+
+            if (user.length === 0 || !user[0]) {
+                throw new Error('User not found');
+            }
+
+            const userData = user[0];
+
+            // Fetch projects user has access to
+            const projectsData = await ctx.db
+                .select({
+                    projectId: projects.id,
+                    projectName: projects.name,
+                    role: userProjects.role,
+                    previewImgUrl: projects.previewImgUrl,
+                })
+                .from(userProjects)
+                .innerJoin(projects, eq(userProjects.projectId, projects.id))
+                .where(eq(userProjects.userId, userId));
+
+            // Fetch subscriptions
+            const subscriptionsData = await ctx.db
+                .select({
+                    id: subscriptions.id,
+                    status: subscriptions.status,
+                    startedAt: subscriptions.startedAt,
+                    endedAt: subscriptions.endedAt,
+                    stripeSubscriptionId: subscriptions.stripeSubscriptionId,
+                    stripeCurrentPeriodStart: subscriptions.stripeCurrentPeriodStart,
+                    stripeCurrentPeriodEnd: subscriptions.stripeCurrentPeriodEnd,
+                    productName: products.name,
+                    priceKey: prices.key,
+                    monthlyMessageLimit: prices.monthlyMessageLimit,
+                })
+                .from(subscriptions)
+                .innerJoin(products, eq(subscriptions.productId, products.id))
+                .innerJoin(prices, eq(subscriptions.priceId, prices.id))
+                .where(eq(subscriptions.userId, userId));
+
+            // Fetch rate limits
+            const rateLimitsData = await ctx.db
+                .select({
+                    id: rateLimits.id,
+                    max: rateLimits.max,
+                    left: rateLimits.left,
+                    startedAt: rateLimits.startedAt,
+                    endedAt: rateLimits.endedAt,
+                    carryOverTotal: rateLimits.carryOverTotal,
+                    updatedAt: rateLimits.updatedAt,
+                })
+                .from(rateLimits)
+                .where(eq(rateLimits.userId, userId))
+                .orderBy(desc(rateLimits.startedAt));
+
+            return {
+                ...userData,
+                name: userData.displayName || `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.email || '',
+                projects: projectsData.map(p => ({
+                    id: p.projectId,
+                    name: p.projectName,
+                    role: p.role,
+                    previewImgUrl: p.previewImgUrl,
+                })),
+                subscriptions: subscriptionsData,
+                rateLimits: rateLimitsData,
+            };
         }),
 });
