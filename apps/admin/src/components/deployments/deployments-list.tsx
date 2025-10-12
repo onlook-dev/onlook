@@ -14,7 +14,8 @@ import {
     TableHeader,
     TableRow,
 } from '@onlook/ui/table';
-import { ArrowUpDown, ChevronLeft, ChevronRight, ExternalLink, Search } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { ArrowUpDown, ChevronLeft, ChevronRight, Code2, ExternalLink, MonitorPlay, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -116,6 +117,7 @@ export function DeploymentsList() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Project</TableHead>
+                                <TableHead>Sandbox</TableHead>
                                 <TableHead>Requested By</TableHead>
                                 <TableHead>
                                     <Button
@@ -159,6 +161,7 @@ export function DeploymentsList() {
                                     <TableRow key={i}>
                                         <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-32" /></TableCell>
@@ -167,7 +170,7 @@ export function DeploymentsList() {
                                 ))
                             ) : data?.deployments.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="h-24 text-center">
+                                    <TableCell colSpan={7} className="h-24 text-center">
                                         <div className="text-muted-foreground">
                                             No deployments found
                                         </div>
@@ -182,10 +185,58 @@ export function DeploymentsList() {
                                     >
                                         <TableCell>
                                             <p className="font-medium">{deployment.projectName}</p>
-                                            {deployment.sandboxId && (
-                                                <p className="text-xs text-muted-foreground font-mono">
-                                                    {deployment.sandboxId}
-                                                </p>
+                                        </TableCell>
+                                        <TableCell>
+                                            {deployment.sandboxId ? (
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-xs text-muted-foreground font-mono">
+                                                        {deployment.sandboxId}
+                                                    </p>
+                                                    <div className="flex gap-1">
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-6 w-6 p-0"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        window.open(`https://codesandbox.io/s/${deployment.sandboxId}`, '_blank');
+                                                                    }}
+                                                                >
+                                                                    <Code2 className="size-3" />
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p className="text-xs">
+                                                                    https://codesandbox.io/s/{deployment.sandboxId}
+                                                                </p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-6 w-6 p-0"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        window.open(`https://${deployment.sandboxId}-3000.csb.app`, '_blank');
+                                                                    }}
+                                                                >
+                                                                    <MonitorPlay className="size-3" />
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p className="text-xs">
+                                                                    https://{deployment.sandboxId}-3000.csb.app
+                                                                </p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <span className="text-muted-foreground">—</span>
                                             )}
                                         </TableCell>
                                         <TableCell>
