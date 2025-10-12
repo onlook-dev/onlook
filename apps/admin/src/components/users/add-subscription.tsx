@@ -24,10 +24,9 @@ import { useState, useMemo } from 'react';
 
 interface AddSubscriptionProps {
     userId: string;
-    hasStripeCustomerId: boolean;
 }
 
-export function AddSubscription({ userId, hasStripeCustomerId }: AddSubscriptionProps) {
+export function AddSubscription({ userId }: AddSubscriptionProps) {
     const [open, setOpen] = useState(false);
     const [selectedProductId, setSelectedProductId] = useState<string>('');
     const [selectedPriceId, setSelectedPriceId] = useState<string>('');
@@ -66,10 +65,6 @@ export function AddSubscription({ userId, hasStripeCustomerId }: AddSubscription
             alert('Please select both product and price');
             return;
         }
-        if (!hasStripeCustomerId) {
-            alert('User does not have a Stripe customer ID');
-            return;
-        }
         addMutation.mutate({
             userId,
             productId: selectedProductId,
@@ -85,7 +80,7 @@ export function AddSubscription({ userId, hasStripeCustomerId }: AddSubscription
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" size="sm" disabled={!hasStripeCustomerId}>
+                <Button variant="outline" size="sm">
                     <Plus className="size-4 mr-1" />
                     Add Subscription
                 </Button>

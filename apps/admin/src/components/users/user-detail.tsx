@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { AddSubscription } from './add-subscription';
 import { EditRateLimit } from './edit-rate-limit';
+import { RemoveSubscription } from './remove-subscription';
 
 interface UserDetailProps {
     userId: string;
@@ -186,10 +187,7 @@ export function UserDetail({ userId }: UserDetailProps) {
                                 {user.subscriptions.length} active subscription{user.subscriptions.length !== 1 ? 's' : ''}
                             </CardDescription>
                         </div>
-                        <AddSubscription
-                            userId={userId}
-                            hasStripeCustomerId={!!user.stripeCustomerId}
-                        />
+                        <AddSubscription userId={userId} />
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -207,9 +205,17 @@ export function UserDetail({ userId }: UserDetailProps) {
                                                 {subscription.priceKey} ({subscription.monthlyMessageLimit} messages/month)
                                             </p>
                                         </div>
-                                        <Badge variant={subscription.status === 'active' ? 'default' : 'secondary'}>
-                                            {subscription.status}
-                                        </Badge>
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant={subscription.status === 'active' ? 'default' : 'secondary'}>
+                                                {subscription.status}
+                                            </Badge>
+                                            <RemoveSubscription
+                                                subscriptionId={subscription.id}
+                                                userId={userId}
+                                                productName={subscription.productName}
+                                                priceKey={subscription.priceKey}
+                                            />
+                                        </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-2 text-sm">
                                         <div>

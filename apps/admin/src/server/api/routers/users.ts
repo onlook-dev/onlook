@@ -289,7 +289,7 @@ export const usersRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ ctx, input }) => {
-            // Fetch user to get stripeCustomerId
+            // Fetch user
             const user = await ctx.db
                 .select()
                 .from(users)
@@ -300,8 +300,15 @@ export const usersRouter = createTRPCRouter({
                 throw new Error('User not found');
             }
 
-            if (!user[0].stripeCustomerId) {
-                throw new Error('User does not have a Stripe customer ID');
+            // Fetch price to get monthly message limit
+            const price = await ctx.db
+                .select()
+                .from(prices)
+                .where(eq(prices.id, input.priceId))
+                .limit(1);
+
+            if (price.length === 0 || !price[0]) {
+                throw new Error('Price not found');
             }
 
             // Create subscription with admin/mock Stripe data
@@ -309,24 +316,80 @@ export const usersRouter = createTRPCRouter({
             const periodEnd = new Date(now);
             periodEnd.setMonth(periodEnd.getMonth() + 1);
 
+            // Use existing Stripe customer ID or generate a stub one
+            const stripeCustomerId = user[0].stripeCustomerId || `stub_stripe_customer_id_${Date.now()}`;
+            const stripeSubscriptionItemId = `si_admin_${Date.now()}`;
+
             const newSubscription = await ctx.db
                 .insert(subscriptions)
                 .values({
                     userId: input.userId,
                     productId: input.productId,
                     priceId: input.priceId,
-                    stripeCustomerId: user[0].stripeCustomerId,
+                    stripeCustomerId,
                     stripeSubscriptionId: `sub_admin_${Date.now()}`,
-                    stripeSubscriptionItemId: `si_admin_${Date.now()}`,
+                    stripeSubscriptionItemId,
                     status: SubscriptionStatus.ACTIVE,
                     stripeCurrentPeriodStart: now,
                     stripeCurrentPeriodEnd: periodEnd,
                 })
                 .returning();
 
+            if (!newSubscription[0]) {
+                throw new Error('Failed to create subscription');
+            }
+
+            // Create rate limit for the subscription
+            const carryOverKey = crypto.randomUUID();
+            await ctx.db
+                .insert(rateLimits)
+                .values({
+                    userId: input.userId,
+                    subscriptionId: newSubscription[0].id,
+                    startedAt: now,
+                    endedAt: periodEnd,
+                    max: price[0].monthlyMessageLimit,
+                    left: price[0].monthlyMessageLimit,
+                    carryOverKey,
+                    carryOverTotal: 0,
+                    stripeSubscriptionItemId,
+                });
+
             return {
                 success: true,
                 subscription: newSubscription[0],
+            };
+        }),
+    removeSubscription: adminProcedure
+        .input(
+            z.object({
+                subscriptionId: z.string().uuid(),
+                userId: z.string().uuid(),
+            }),
+        )
+        .mutation(async ({ ctx, input }) => {
+            // Verify the subscription exists and belongs to the user
+            const subscription = await ctx.db
+                .select()
+                .from(subscriptions)
+                .where(eq(subscriptions.id, input.subscriptionId))
+                .limit(1);
+
+            if (subscription.length === 0 || !subscription[0]) {
+                throw new Error('Subscription not found');
+            }
+
+            if (subscription[0].userId !== input.userId) {
+                throw new Error('Subscription does not belong to this user');
+            }
+
+            // Delete the subscription
+            await ctx.db
+                .delete(subscriptions)
+                .where(eq(subscriptions.id, input.subscriptionId));
+
+            return {
+                success: true,
             };
         }),
 });
