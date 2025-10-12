@@ -1,4 +1,5 @@
 import { branches, projects, userProjects, users } from '@onlook/db/src/schema';
+import { ProjectRole } from '@onlook/models';
 import { desc, asc, sql, eq, inArray, or, ilike } from 'drizzle-orm';
 import { z } from 'zod';
 import { adminProcedure, createTRPCRouter } from '../trpc';
@@ -167,5 +168,112 @@ export const projectsRouter = createTRPCRouter({
                     hasPrev: page > 1,
                 },
             };
+        }),
+    getById: adminProcedure
+        .input(z.string())
+        .query(async ({ ctx, input: projectId }) => {
+            // Fetch project
+            const project = await ctx.db
+                .select({
+                    id: projects.id,
+                    name: projects.name,
+                    previewImgUrl: projects.previewImgUrl,
+                    createdAt: projects.createdAt,
+                    updatedAt: projects.updatedAt,
+                })
+                .from(projects)
+                .where(eq(projects.id, projectId))
+                .limit(1);
+
+            if (project.length === 0) {
+                throw new Error('Project not found');
+            }
+
+            const projectData = project[0];
+
+            // Fetch branches with sandboxes
+            const branchesData = await ctx.db
+                .select({
+                    sandboxId: branches.sandboxId,
+                    name: branches.name,
+                })
+                .from(branches)
+                .where(eq(branches.projectId, projectId));
+
+            // Fetch users with access
+            const usersData = await ctx.db
+                .select({
+                    userId: users.id,
+                    email: users.email,
+                    firstName: users.firstName,
+                    lastName: users.lastName,
+                    displayName: users.displayName,
+                    avatarUrl: users.avatarUrl,
+                    role: userProjects.role,
+                })
+                .from(userProjects)
+                .innerJoin(users, eq(userProjects.userId, users.id))
+                .where(eq(userProjects.projectId, projectId));
+
+            return {
+                ...projectData,
+                sandboxes: branchesData.map(b => ({
+                    sandboxId: b.sandboxId,
+                    branchName: b.name,
+                })),
+                users: usersData.map(u => ({
+                    id: u.userId,
+                    email: u.email,
+                    name: u.displayName || `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email,
+                    avatarUrl: u.avatarUrl,
+                    role: u.role,
+                })),
+            };
+        }),
+    addUser: adminProcedure
+        .input(
+            z.object({
+                projectId: z.string(),
+                userId: z.string(),
+                role: z.enum(['owner', 'admin']).default('admin'),
+            }),
+        )
+        .mutation(async ({ ctx, input }) => {
+            // Check if user is already in project
+            const existing = await ctx.db
+                .select()
+                .from(userProjects)
+                .where(
+                    sql`${userProjects.projectId} = ${input.projectId} AND ${userProjects.userId} = ${input.userId}`
+                );
+
+            if (existing.length > 0) {
+                throw new Error('User is already added to this project');
+            }
+
+            // Add user to project
+            await ctx.db.insert(userProjects).values({
+                projectId: input.projectId,
+                userId: input.userId,
+                role: input.role === 'owner' ? ProjectRole.OWNER : ProjectRole.ADMIN,
+            });
+
+            return { success: true };
+        }),
+    removeUser: adminProcedure
+        .input(
+            z.object({
+                projectId: z.string(),
+                userId: z.string(),
+            }),
+        )
+        .mutation(async ({ ctx, input }) => {
+            await ctx.db
+                .delete(userProjects)
+                .where(
+                    sql`${userProjects.projectId} = ${input.projectId} AND ${userProjects.userId} = ${input.userId}`
+                );
+
+            return { success: true };
         }),
 });

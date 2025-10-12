@@ -1,4 +1,5 @@
 import { Breadcrumb } from '@/components/layout/breadcrumb';
+import { ProjectDetail } from '@/components/projects/project-detail';
 
 export default function ProjectDetailPage({ params }: { params: { id: string } }) {
     return (
@@ -10,14 +11,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                         { label: params.id },
                     ]}
                 />
-                <div>
-                    <h1 className="text-4xl font-bold tracking-tight">
-                        Project Details
-                    </h1>
-                    <p className="mt-2 text-muted-foreground">
-                        Hello World - Project ID: {params.id}
-                    </p>
-                </div>
+                <ProjectDetail projectId={params.id} />
             </div>
         </div>
     );

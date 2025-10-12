@@ -119,4 +119,41 @@ export const usersRouter = createTRPCRouter({
                 },
             };
         }),
+    search: adminProcedure
+        .input(
+            z.object({
+                query: z.string().min(1),
+                limit: z.number().min(1).max(20).default(10),
+            }),
+        )
+        .query(async ({ ctx, input }) => {
+            const { query, limit } = input;
+
+            const whereConditions = or(
+                ilike(users.email, `%${query}%`),
+                ilike(users.displayName, `%${query}%`),
+                ilike(users.firstName, `%${query}%`),
+                ilike(users.lastName, `%${query}%`),
+                sql`${users.id}::text ilike ${`%${query}%`}`
+            );
+
+            const userList = await ctx.db
+                .select({
+                    id: users.id,
+                    firstName: users.firstName,
+                    lastName: users.lastName,
+                    displayName: users.displayName,
+                    email: users.email,
+                    avatarUrl: users.avatarUrl,
+                })
+                .from(users)
+                .$dynamic()
+                .where(whereConditions)
+                .limit(limit);
+
+            return userList.map(u => ({
+                ...u,
+                name: u.displayName || `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email,
+            }));
+        }),
 });
