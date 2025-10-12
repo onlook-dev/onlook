@@ -3,9 +3,13 @@
 import { api } from '@/trpc/react';
 import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar';
 import { Badge } from '@onlook/ui/badge';
+import { Button } from '@onlook/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@onlook/ui/card';
 import { Skeleton } from '@onlook/ui/skeleton';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { EditRateLimit } from './edit-rate-limit';
 
 interface UserDetailProps {
     userId: string;
@@ -13,6 +17,7 @@ interface UserDetailProps {
 
 export function UserDetail({ userId }: UserDetailProps) {
     const router = useRouter();
+    const [isProjectsExpanded, setIsProjectsExpanded] = useState(false);
     const { data: user, isLoading, error } = api.users.getById.useQuery(userId);
 
     if (error) {
@@ -100,42 +105,65 @@ export function UserDetail({ userId }: UserDetailProps) {
 
             {/* Projects */}
             <Card>
-                <CardHeader>
-                    <CardTitle>Projects</CardTitle>
-                    <CardDescription>
-                        {user.projects.length} project{user.projects.length !== 1 ? 's' : ''} with access
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {user.projects.length > 0 ? (
-                        <div className="space-y-2">
-                            {user.projects.map((project) => (
-                                <div
-                                    key={project.id}
-                                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <Avatar className="size-10">
-                                            <AvatarImage src={project.previewImgUrl || undefined} />
-                                            <AvatarFallback>
-                                                {project.name?.[0]?.toUpperCase() || 'P'}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <button
-                                            className="font-medium hover:text-primary hover:underline cursor-pointer text-left"
-                                            onClick={() => router.push(`/projects/${project.id}`)}
-                                        >
-                                            {project.name}
-                                        </button>
-                                    </div>
-                                    <Badge variant="outline">{project.role}</Badge>
-                                </div>
-                            ))}
+                <CardHeader className="cursor-pointer" onClick={() => setIsProjectsExpanded(!isProjectsExpanded)}>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle className="flex items-center gap-2">
+                                Projects
+                                {isProjectsExpanded ? (
+                                    <ChevronDown className="size-4" />
+                                ) : (
+                                    <ChevronRight className="size-4" />
+                                )}
+                            </CardTitle>
+                            <CardDescription>
+                                {user.projects.length} project{user.projects.length !== 1 ? 's' : ''} with access
+                            </CardDescription>
                         </div>
-                    ) : (
-                        <p className="text-sm text-muted-foreground">No projects found</p>
-                    )}
-                </CardContent>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsProjectsExpanded(!isProjectsExpanded);
+                            }}
+                        >
+                            {isProjectsExpanded ? 'Collapse' : 'Expand'}
+                        </Button>
+                    </div>
+                </CardHeader>
+                {isProjectsExpanded && (
+                    <CardContent>
+                        {user.projects.length > 0 ? (
+                            <div className="space-y-2">
+                                {user.projects.map((project) => (
+                                    <div
+                                        key={project.id}
+                                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Avatar className="size-10">
+                                                <AvatarImage src={project.previewImgUrl || undefined} />
+                                                <AvatarFallback>
+                                                    {project.name?.[0]?.toUpperCase() || 'P'}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <button
+                                                className="font-medium hover:text-primary hover:underline cursor-pointer text-left"
+                                                onClick={() => router.push(`/projects/${project.id}`)}
+                                            >
+                                                {project.name}
+                                            </button>
+                                        </div>
+                                        <Badge variant="outline">{project.role}</Badge>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">No projects found</p>
+                        )}
+                    </CardContent>
+                )}
             </Card>
 
             {/* Subscriptions */}
@@ -233,11 +261,21 @@ export function UserDetail({ userId }: UserDetailProps) {
                                                     {rateLimit.left} requests remaining
                                                 </p>
                                             </div>
-                                            {rateLimit.carryOverTotal > 0 && (
-                                                <Badge variant="outline">
-                                                    Carried over {rateLimit.carryOverTotal}x
-                                                </Badge>
-                                            )}
+                                            <div className="flex items-center gap-2">
+                                                {rateLimit.carryOverTotal > 0 && (
+                                                    <Badge variant="outline">
+                                                        Carried over {rateLimit.carryOverTotal}x
+                                                    </Badge>
+                                                )}
+                                                {isActive && (
+                                                    <EditRateLimit
+                                                        rateLimitId={rateLimit.id}
+                                                        currentLeft={rateLimit.left}
+                                                        max={rateLimit.max}
+                                                        userId={userId}
+                                                    />
+                                                )}
+                                            </div>
                                         </div>
 
                                         {/* Progress bar */}

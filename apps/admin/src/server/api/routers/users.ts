@@ -242,4 +242,41 @@ export const usersRouter = createTRPCRouter({
                 rateLimits: rateLimitsData,
             };
         }),
+    updateRateLimit: adminProcedure
+        .input(
+            z.object({
+                rateLimitId: z.string(),
+                creditsToAdd: z.number().min(1).max(10000),
+            }),
+        )
+        .mutation(async ({ ctx, input }) => {
+            // Fetch the current rate limit
+            const rateLimitData = await ctx.db
+                .select()
+                .from(rateLimits)
+                .where(eq(rateLimits.id, input.rateLimitId))
+                .limit(1);
+
+            if (rateLimitData.length === 0 || !rateLimitData[0]) {
+                throw new Error('Rate limit not found');
+            }
+
+            const currentRateLimit = rateLimitData[0];
+            const newLeft = Math.min(currentRateLimit.left + input.creditsToAdd, currentRateLimit.max);
+
+            // Update the rate limit
+            await ctx.db
+                .update(rateLimits)
+                .set({
+                    left: newLeft,
+                    updatedAt: new Date(),
+                })
+                .where(eq(rateLimits.id, input.rateLimitId));
+
+            return {
+                success: true,
+                newLeft,
+                creditsAdded: newLeft - currentRateLimit.left,
+            };
+        }),
 });
