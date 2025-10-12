@@ -12,13 +12,17 @@ import { detectRouterConfig } from '../pages/helper';
 import { copyPreloadScriptToPublic, getLayoutPath as detectLayoutPath } from './preload-script';
 import { SessionManager } from './session';
 
+export enum PreloadScriptState {
+    NOT_INJECTED = 'not-injected',
+    LOADING = 'loading',
+    INJECTED = 'injected'
+}
 export class SandboxManager {
     readonly session: SessionManager;
     readonly gitManager: GitManager;
     private providerReactionDisposer?: () => void;
     private sync: CodeProviderSync | null = null;
-    preloadScriptInjected: boolean = false;
-    preloadScriptLoading: boolean = false;
+    preloadScriptState: PreloadScriptState = PreloadScriptState.NOT_INJECTED
     routerConfig: RouterConfig | null = null;
 
     constructor(
@@ -33,19 +37,28 @@ export class SandboxManager {
     }
 
     async init() {
+        // Start connection asynchronously (don't wait)
+        if (!this.session.provider) {
+            this.session.start(this.branch.sandbox.id).catch(err => {
+                console.error('[SandboxManager] Initial connection failed:', err);
+                // Don't throw - let reaction handle retries/reconnects
+            });
+        }
+
+        // React to provider becoming available (now or later)
         this.providerReactionDisposer = reaction(
             () => this.session.provider,
             async (provider) => {
                 if (provider) {
                     await this.initializeSyncEngine(provider);
-                    // Initialize git after provider is ready
                     await this.gitManager.init();
                 } else if (this.sync) {
-                    // If the provider is null, stop the sync engine
-                    this.sync.stop();
+                    // If the provider is null, release the sync engine reference
+                    this.sync.release();
                     this.sync = null;
                 }
             },
+            { fireImmediately: true },
         );
     }
 
@@ -62,11 +75,11 @@ export class SandboxManager {
 
     async initializeSyncEngine(provider: Provider) {
         if (this.sync) {
-            this.sync?.stop();
+            this.sync.release();
             this.sync = null;
         }
 
-        this.sync = new CodeProviderSync(provider, this.fs, {
+        this.sync = CodeProviderSync.getInstance(provider, this.fs, this.branch.sandbox.id, {
             exclude: EXCLUDED_SYNC_PATHS,
         });
 
@@ -77,15 +90,12 @@ export class SandboxManager {
 
     private async ensurePreloadScriptExists(): Promise<void> {
         try {
-            if (this.preloadScriptInjected) {
+            if (this.preloadScriptState !== PreloadScriptState.NOT_INJECTED
+            ) {
                 return;
             }
 
-            // Ensures multiple frames pointing to the same sandbox don't try to inject the preload script at the same time.
-            if (this.preloadScriptLoading) {
-                return;
-            }
-            this.preloadScriptLoading = true;
+            this.preloadScriptState = PreloadScriptState.LOADING
 
             if (!this.session.provider) {
                 throw new Error('No provider available for preload script injection');
@@ -97,11 +107,12 @@ export class SandboxManager {
             }
 
             await copyPreloadScriptToPublic(this.session.provider, routerConfig);
-            this.preloadScriptInjected = true;
+            this.preloadScriptState = PreloadScriptState.INJECTED
         } catch (error) {
             console.error('[SandboxManager] Failed to ensure preload script exists:', error);
-        } finally {
-            this.preloadScriptLoading = false;
+            // Mark as injected to prevent blocking frames indefinitely
+            // Frames will handle the missing preload script gracefully
+            this.preloadScriptState = PreloadScriptState.NOT_INJECTED
         }
     }
 
@@ -115,6 +126,10 @@ export class SandboxManager {
 
     get errors() {
         return this.errorManager.errors;
+    }
+
+    get syncEngine() {
+        return this.sync;
     }
 
     async readFile(path: string): Promise<string | Uint8Array> {
@@ -201,9 +216,9 @@ export class SandboxManager {
     clear() {
         this.providerReactionDisposer?.();
         this.providerReactionDisposer = undefined;
-        this.sync?.stop();
+        this.sync?.release();
         this.sync = null;
-        this.preloadScriptInjected = false;
+        this.preloadScriptState = PreloadScriptState.NOT_INJECTED
         this.session.clear();
     }
 }

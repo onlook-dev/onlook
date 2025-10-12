@@ -43,7 +43,9 @@ export const MultiBranchRevertModal = ({
     };
 
     const selectAll = () => {
-        setSelectedBranchIds(checkpoints.map((cp) => cp.branchId).filter((id): id is string => !!id));
+        setSelectedBranchIds(
+            checkpoints.map((cp) => cp.branchId).filter((id): id is string => !!id),
+        );
     };
 
     const selectNone = () => {
@@ -71,17 +73,7 @@ export const MultiBranchRevertModal = ({
             const successCount = results.filter((r) => r.success).length;
             const failCount = results.length - successCount;
 
-            if (successCount > 0) {
-                toast.success(
-                    `Successfully restored ${successCount} branch${successCount > 1 ? 'es' : ''}`,
-                    {
-                        description:
-                            failCount > 0
-                                ? `${failCount} branch${failCount > 1 ? 'es' : ''} failed to restore`
-                                : undefined,
-                    },
-                );
-            } else if (failCount > 0) {
+            if (failCount > 0) {
                 toast.error('Failed to restore all selected branches');
             }
         } catch (error) {
@@ -89,7 +81,6 @@ export const MultiBranchRevertModal = ({
                 description: error instanceof Error ? error.message : 'Unknown error',
             });
         } finally {
-
             setIsRestoring(false);
             onOpenChange(false);
             setSelectedBranchIds([]);

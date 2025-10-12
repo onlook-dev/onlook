@@ -73,3 +73,29 @@ export function prepareCommitMessage(message: string): string {
     const sanitized = sanitizeCommitMessage(message);
     return escapeShellString(sanitized);
 }
+
+/**
+ * Wraps a git operation with sync pause/unpause to prevent sync issues.
+ * Useful for operations like git restore that cause rapid file changes.
+ */
+export async function withSyncPaused<T>(
+    sync: { pause: () => void; unpause: () => Promise<void> } | null | undefined,
+    operation: () => Promise<T>,
+    delayMs: number = 1000,
+): Promise<T> {
+    if (!sync) {
+        return operation();
+    }
+
+    try {
+        sync.pause();
+        const result = await operation();
+
+        // Wait for filesystem changes to settle before unpausing
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+
+        return result;
+    } finally {
+        await sync.unpause();
+    }
+}

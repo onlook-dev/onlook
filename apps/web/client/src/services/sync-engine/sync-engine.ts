@@ -24,15 +24,24 @@ export async function hashContent(content: string | Uint8Array): Promise<string>
     return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+interface SyncInstance {
+    sync: CodeProviderSync;
+    refCount: number;
+}
+
 export class CodeProviderSync {
+    private static instances = new Map<string, SyncInstance>();
+
     private watcher: ProviderFileWatcher | null = null;
     private localWatcher: (() => void) | null = null;
     private isRunning = false;
+    private isPaused = false;
     private readonly excludes: string[];
     private readonly excludePatterns: string[];
     private fileHashes = new Map<string, string>();
+    private instanceKey: string | null = null;
 
-    constructor(
+    private constructor(
         private provider: Provider,
         private fs: CodeFileSystem,
         private config: SyncConfig = { include: [], exclude: [] },
@@ -40,6 +49,102 @@ export class CodeProviderSync {
         // Compute excludes once
         this.excludes = [...DEFAULT_EXCLUDES, ...(this.config.exclude ?? [])];
         this.excludePatterns = this.excludes.map((dir) => `${dir}/**`);
+    }
+
+    /**
+     * Get or create a sync instance for the given provider and filesystem.
+     * Uses reference counting to ensure the same provider+fs combination shares a single sync instance.
+     *
+     * Note: Config is only applied on first creation. Subsequent calls with the same provider+fs
+     * will reuse the existing instance with its original config. In practice, configs are static
+     * (EXCLUDED_SYNC_PATHS) so this shouldn't cause issues, but a warning is logged if detected.
+     */
+    static getInstance(
+        provider: Provider,
+        fs: CodeFileSystem,
+        sandboxId: string,
+        config: SyncConfig = { include: [], exclude: [] },
+    ): CodeProviderSync {
+        const key = CodeProviderSync.generateKey(sandboxId, fs);
+
+        const existing = CodeProviderSync.instances.get(key);
+        if (existing) {
+            // Warn if configs differ to help debug unexpected behavior
+            const sameConfig =
+                JSON.stringify(existing.sync.config ?? {}) === JSON.stringify(config ?? {});
+            if (!sameConfig) {
+                console.warn(
+                    `[Sync] getInstance(${key}) called with different config; reusing existing instance config`,
+                );
+            }
+            existing.refCount++;
+            console.log(`[Sync] Reusing existing sync instance for ${key} (refCount: ${existing.refCount})`);
+            return existing.sync;
+        }
+
+        const sync = new CodeProviderSync(provider, fs, config);
+        sync.instanceKey = key;
+        CodeProviderSync.instances.set(key, { sync, refCount: 1 });
+        console.log(`[Sync] Created new sync instance for ${key} (refCount: 1)`);
+        return sync;
+    }
+
+    /**
+     * Generate a unique key for a provider+filesystem combination.
+     */
+    private static generateKey(sandboxId: string, fs: CodeFileSystem): string {
+        return `${sandboxId}:${fs.rootPath}`;
+    }
+
+    /**
+     * Release a reference to this sync instance.
+     * When the last reference is released, the sync will be stopped and removed from the registry.
+     */
+    release(): void {
+        if (!this.instanceKey) {
+            console.warn('[Sync] Attempted to release sync instance without a key');
+            return;
+        }
+
+        const instance = CodeProviderSync.instances.get(this.instanceKey);
+        if (!instance) {
+            console.warn(`[Sync] Instance ${this.instanceKey} not found in registry`);
+            return;
+        }
+
+        instance.refCount--;
+        console.log(`[Sync] Released reference to ${this.instanceKey} (refCount: ${instance.refCount})`);
+
+        if (instance.refCount <= 0) {
+            console.log(`[Sync] Stopping and removing sync instance ${this.instanceKey}`);
+            this.stop();
+            CodeProviderSync.instances.delete(this.instanceKey);
+            this.instanceKey = null;
+        }
+    }
+
+    /**
+     * Pause syncing temporarily. Useful before operations that cause many file changes (e.g., git restore).
+     * While paused, file change events are ignored.
+     */
+    pause(): void {
+        this.isPaused = true;
+    }
+
+    /**
+     * Resume syncing after being paused. Pulls fresh state from sandbox to ensure consistency.
+     */
+    async unpause(): Promise<void> {
+        // Keep paused while reconciling to avoid echoing local writes back to the provider
+        if (this.isRunning) {
+            try {
+                await this.pullFromSandbox();
+            } finally {
+                this.isPaused = false;
+            }
+        } else {
+            this.isPaused = false;
+        }
     }
 
     async start(): Promise<void> {
@@ -52,6 +157,8 @@ export class CodeProviderSync {
         try {
             await this.pullFromSandbox();
             await this.setupWatching();
+            // Push any locally modified files (with OIDs) back to sandbox. This is required for the first time sync.
+            void this.pushModifiedFilesToSandbox();
         } catch (error) {
             this.isRunning = false;
             throw error;
@@ -201,6 +308,7 @@ export class CodeProviderSync {
             const localFiles = await this.fs.listFiles('/');
             const jsxFiles = localFiles.filter(path => /\.(jsx?|tsx?)$/i.test(path));
 
+            // TODO: Use available batch write API
             await Promise.all(
                 jsxFiles.map(async (filePath) => {
                     try {
@@ -259,6 +367,11 @@ export class CodeProviderSync {
                     excludes: this.excludePatterns,
                 },
                 onFileChange: async (event) => {
+                    // Skip processing if paused
+                    if (this.isPaused) {
+                        return;
+                    }
+
                     // Process based on event type
                     if (event.type === 'change' || event.type === 'add') {
                         // Check if this is a rename (change event with 2 paths)
@@ -481,6 +594,11 @@ export class CodeProviderSync {
     private async setupLocalWatching(): Promise<void> {
         // Watch the root directory for local changes
         this.localWatcher = this.fs.watchDirectory('/', async (event) => {
+            // Skip processing if paused
+            if (this.isPaused) {
+                return;
+            }
+
             const { path, type } = event;
 
             // Check if file should be synced
