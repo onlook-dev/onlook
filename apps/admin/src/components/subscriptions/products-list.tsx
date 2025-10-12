@@ -69,6 +69,8 @@ export function ProductsList() {
                                                         <p className="font-medium text-sm">{price.key}</p>
                                                         <p className="text-xs text-muted-foreground">
                                                             {price.monthlyMessageLimit.toLocaleString()} messages/month
+                                                            {' • '}
+                                                            {price.subscriberCount} {price.subscriberCount === 1 ? 'subscriber' : 'subscribers'}
                                                         </p>
                                                     </div>
                                                     <Badge variant="outline" className="font-mono text-xs">

@@ -1,4 +1,5 @@
 import { products, prices, subscriptions, users } from '@onlook/db/src/schema';
+import { SubscriptionStatus } from '@onlook/stripe';
 import { desc, sql, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { adminProcedure, createTRPCRouter } from '../trpc';
@@ -26,10 +27,30 @@ export const subscriptionsRouter = createTRPCRouter({
                 })
                 .from(prices);
 
-            // Map prices to products
+            // Get subscriber count for each price
+            const subscriberCounts = await ctx.db
+                .select({
+                    priceId: subscriptions.priceId,
+                    count: sql<number>`cast(count(*) as int)`,
+                })
+                .from(subscriptions)
+                .where(eq(subscriptions.status, SubscriptionStatus.ACTIVE))
+                .groupBy(subscriptions.priceId);
+
+            // Create a map for quick lookup
+            const countMap = new Map(
+                subscriberCounts.map(sc => [sc.priceId, sc.count])
+            );
+
+            // Map prices to products with subscriber counts
             const productsWithPrices = productsData.map(product => ({
                 ...product,
-                prices: pricesData.filter(price => price.productId === product.id),
+                prices: pricesData
+                    .filter(price => price.productId === product.id)
+                    .map(price => ({
+                        ...price,
+                        subscriberCount: countMap.get(price.id) ?? 0,
+                    })),
             }));
 
             return productsWithPrices;
