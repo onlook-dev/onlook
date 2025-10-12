@@ -11,7 +11,7 @@ export const domainsRouter = createTRPCRouter({
             z.object({
                 page: z.number().min(1).default(1),
                 pageSize: z.number().min(1).max(100).default(20),
-                sortBy: z.enum(['createdAt', 'verified', 'apexDomain']).default('createdAt'),
+                sortBy: z.enum(['createdAt', 'verified', 'apexDomain']).default('verified'),
                 sortOrder: z.enum(['asc', 'desc']).default('desc'),
                 search: z.string().optional(),
             }),

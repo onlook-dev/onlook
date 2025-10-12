@@ -25,7 +25,7 @@ export function DomainsList() {
     const router = useRouter();
     const [page, setPage] = useState(1);
     const [pageSize] = useState(20);
-    const [sortBy, setSortBy] = useState<SortBy>('createdAt');
+    const [sortBy, setSortBy] = useState<SortBy>('verified');
     const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
     const [search, setSearch] = useState('');
 
