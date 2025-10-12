@@ -20,7 +20,6 @@ export function useFS(projectId: string, branchId: string) {
                 setIsInitializing(false);
             })
             .catch((err) => {
-                console.error(`[useFS] Failed to initialize for ${projectId}/${branchId}:`, err);
                 setError(
                     err instanceof Error ? err : new Error('Failed to initialize file system'),
                 );

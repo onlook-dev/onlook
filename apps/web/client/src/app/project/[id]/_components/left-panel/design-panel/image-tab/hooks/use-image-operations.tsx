@@ -11,21 +11,22 @@ export const useImageOperations = (projectId: string, branchId: string, activeFo
     const [isUploading, setIsUploading] = useState(false);
 
     // Get directory entries
-    const { entries, loading, error } = useDirectory(projectId, branchId, activeFolder);
+    const { entries: rootEntries, loading, error } = useDirectory(projectId, branchId, activeFolder);
+    const { entries: activeFolderEntries } = useDirectory(projectId, branchId, activeFolder);
 
     // Get available folders
     const folders = useMemo(() => {
-        if (!entries) return [];
-        return entries.filter(entry => entry.isDirectory);
-    }, [entries]);
+        if (!rootEntries) return [];
+        return rootEntries.filter(entry => entry.isDirectory);
+    }, [rootEntries]);
 
     // Get images in the active folder
     const images = useMemo(() => {
-        if (!entries) return [];
-        const imageEntries = entries.filter(entry => !entry.isDirectory && isImageFile(entry.name));
+        if (!activeFolderEntries) return [];
+        const imageEntries = activeFolderEntries.filter(entry => !entry.isDirectory && isImageFile(entry.name));
 
         return imageEntries;
-    }, [entries]);
+    }, [activeFolderEntries]);
 
     // Handle file upload
     const handleUpload = async (files: FileList) => {

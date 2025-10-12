@@ -53,25 +53,8 @@ export class CodeFileSystem extends FileSystem {
     }
 
     async writeFiles(files: Array<{ path: string; content: string | Uint8Array }>): Promise<void> {
-        // Separate JSX files from other files
-        const jsxFiles: Array<{ path: string; content: string | Uint8Array }> = [];
-        const nonJsxFiles: Array<{ path: string; content: string | Uint8Array }> = [];
-
-        for (const file of files) {
-            if (this.isJsxFile(file.path) && typeof file.content === 'string') {
-                jsxFiles.push(file);
-            } else {
-                nonJsxFiles.push(file);
-            }
-        }
-
-        // Write non-JSX files using optimized base class batch write
-        if (nonJsxFiles.length > 0) {
-            await super.writeFiles(nonJsxFiles);
-        }
-
-        // Write JSX files sequentially to avoid race conditions on metadata
-        for (const { path, content } of jsxFiles) {
+        // Write files sequentially to avoid race conditions to metadata file
+        for (const { path, content } of files) {
             await this.writeFile(path, content);
         }
     }
@@ -154,6 +137,7 @@ export class CodeFileSystem extends FileSystem {
     }
 
     async rebuildIndex(): Promise<void> {
+        const startTime = Date.now();
         const index: Record<string, JsxElementMetadata> = {};
 
         const entries = await this.listAll();
@@ -162,15 +146,14 @@ export class CodeFileSystem extends FileSystem {
         );
 
         const BATCH_SIZE = 10;
+        let processedCount = 0;
 
         for (let i = 0; i < jsxFiles.length; i += BATCH_SIZE) {
             const batch = jsxFiles.slice(i, i + BATCH_SIZE);
-
             await Promise.all(
                 batch.map(async (entry) => {
                     try {
                         const content = await this.readFile(entry.path);
-
                         if (typeof content === 'string') {
                             const ast = getAstFromContent(content);
                             if (!ast) return;
@@ -189,6 +172,8 @@ export class CodeFileSystem extends FileSystem {
                                     code: code || '',
                                 };
                             }
+
+                            processedCount++;
                         }
                     } catch (error) {
                         console.error(`Error indexing ${entry.path}:`, error);
@@ -198,6 +183,11 @@ export class CodeFileSystem extends FileSystem {
         }
 
         await this.saveIndex(index);
+
+        const duration = Date.now() - startTime;
+        console.log(
+            `[CodeEditorApi] Index built: ${Object.keys(index).length} elements from ${processedCount} files in ${duration}ms`,
+        );
     }
 
     async deleteFile(path: string): Promise<void> {
@@ -249,7 +239,7 @@ export class CodeFileSystem extends FileSystem {
         void this.debouncedSaveIndexToFile();
     }
 
-    private async undebounceSaveIndexToFile(): Promise<void> {
+    private async undobounceSaveIndexToFile(): Promise<void> {
         try {
             await this.createDirectory(ONLOOK_CACHE_DIRECTORY);
         } catch {
@@ -261,7 +251,7 @@ export class CodeFileSystem extends FileSystem {
         }
     }
 
-    private debouncedSaveIndexToFile = debounce(this.undebounceSaveIndexToFile, 1000);
+    private debouncedSaveIndexToFile = debounce(this.undobounceSaveIndexToFile, 1000);
 
     private isJsxFile(path: string): boolean {
         // Exclude the onlook preload script from JSX processing
@@ -274,7 +264,7 @@ export class CodeFileSystem extends FileSystem {
     async cleanup(): Promise<void> {
         const cacheKey = this.getCacheKey();
         if (getIndexFromCache(cacheKey)) {
-            await this.undebounceSaveIndexToFile();
+            await this.undobounceSaveIndexToFile();
         }
 
         clearIndexCache(cacheKey);

@@ -44,7 +44,7 @@ export const FileTreeSearch = forwardRef<HTMLInputElement, FileTreeSearchProps>(
             />
             {searchQuery && (
                 <button
-                    className="absolute right-[1px] top-[1px] bottom-[1px] aspect-square active:bg-transparent flex items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] group"
+                    className="absolute right-[1px] top-[1px] bottom-[1px] aspect-square hover:bg-background-onlook active:bg-transparent flex items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] group"
                     onClick={clearSearch}
                 >
                     <Icons.CrossS className="h-3 w-3 text-foreground-primary/50 group-hover:text-foreground-primary" />
