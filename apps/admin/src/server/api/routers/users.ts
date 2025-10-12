@@ -1,6 +1,6 @@
-import { users, userProjects, projects, subscriptions, rateLimits, products, prices } from '@onlook/db/src/schema';
+import { prices, products, projects, rateLimits, subscriptions, userProjects, users } from '@onlook/db/src/schema';
 import { SubscriptionStatus } from '@onlook/stripe';
-import { desc, asc, sql, eq, inArray, or, ilike } from 'drizzle-orm';
+import { asc, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { adminProcedure, createTRPCRouter } from '../trpc';
 
@@ -23,10 +23,10 @@ export const usersRouter = createTRPCRouter({
             const orderColumn = sortBy === 'email'
                 ? users.email
                 : sortBy === 'name'
-                ? users.displayName
-                : sortBy === 'created_at'
-                ? users.createdAt
-                : users.updatedAt;
+                    ? users.displayName
+                    : sortBy === 'created_at'
+                        ? users.createdAt
+                        : users.updatedAt;
 
             const orderFn = sortOrder === 'asc' ? asc : desc;
 

@@ -184,7 +184,7 @@ export function UserDetail({ userId }: UserDetailProps) {
                         <div>
                             <CardTitle>Subscriptions</CardTitle>
                             <CardDescription>
-                                {user.subscriptions.length} active subscription{user.subscriptions.length !== 1 ? 's' : ''}
+                                {user.subscriptions.filter(s => s.status === 'active').length} active, {user.subscriptions.filter(s => s.status !== 'active').length} inactive
                             </CardDescription>
                         </div>
                         <AddSubscription userId={userId} />
