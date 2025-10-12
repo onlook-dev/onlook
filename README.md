@@ -112,6 +112,14 @@ builders.
 Available soon with a [hosted app](https://onlook.com) or
 [run locally](https://docs.onlook.com/developers/running-locally).
 
+### Admin Dashboard (Optional)
+
+Onlook includes an optional admin dashboard for managing users, subscriptions, and deployments. The admin module is available for self-hosting setups.
+
+**For self-hosting with admin access:** Contact us at [contact@onlook.com](mailto:contact@onlook.com) to discuss access to the admin dashboard module.
+
+The main Onlook application works perfectly without the admin module.
+
 ### Usage
 
 Onlook will run on any Next.js + TailwindCSS project, import your project into
