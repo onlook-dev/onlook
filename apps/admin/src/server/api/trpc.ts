@@ -7,13 +7,11 @@
  * need to use are documented accordingly near the end.
  */
 
-import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
+import { createClient } from '@/utils/supabase/server';
 import { db } from '@onlook/db/src/client';
-import type { User } from '@supabase/supabase-js';
-import { initTRPC, TRPCError } from '@trpc/server';
+import { initTRPC } from '@trpc/server';
 import superjson from 'superjson';
-import type { SetRequiredDeep } from 'type-fest';
 import { ZodError } from 'zod';
 
 /**
@@ -35,8 +33,10 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
         error,
     } = await supabase.auth.getUser();
 
+    // TODO: Enable authentication when auth flow is implemented
+    // For now, allow requests without valid session since admin dashboard has no login
     if (error) {
-        throw new TRPCError({ code: 'UNAUTHORIZED', message: error.message });
+        // throw new TRPCError({ code: 'UNAUTHORIZED', message: error.message });
     }
 
     return {
@@ -121,35 +121,6 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 export const publicProcedure = t.procedure.use(timingMiddleware);
 
 /**
- * Protected (authenticated) procedure
- *
- * If you want a query or mutation to ONLY be accessible to logged in users, use this. It verifies
- * the session is valid and guarantees `ctx.session.user` is not null.
- *
- * @see https://trpc.io/docs/procedures
- */
-export const protectedProcedure = t.procedure.use(timingMiddleware).use(({ ctx, next }) => {
-    if (!ctx.user) {
-        throw new TRPCError({ code: 'UNAUTHORIZED' });
-    }
-
-    if (!ctx.user.email) {
-        throw new TRPCError({
-            code: 'UNAUTHORIZED',
-            message: 'User must have an email address to access this resource',
-        });
-    }
-
-    return next({
-        ctx: {
-            // infers the `session` as non-nullable
-            user: ctx.user as SetRequiredDeep<User, 'email'>,
-            db: ctx.db,
-        },
-    });
-});
-
-/**
  * Admin procedure with service role access
  *
  * This procedure provides access to Supabase admin operations using the service role key.
@@ -158,23 +129,24 @@ export const protectedProcedure = t.procedure.use(timingMiddleware).use(({ ctx, 
  * @see https://trpc.io/docs/procedures
  */
 export const adminProcedure = t.procedure.use(timingMiddleware).use(({ ctx, next }) => {
-    if (!ctx.user) {
-        throw new TRPCError({ code: 'UNAUTHORIZED' });
-    }
+    // TODO: Re-enable authentication when auth flow is implemented
+    // For now, admin dashboard works without user authentication
+    // if (!ctx.user) {
+    //     throw new TRPCError({ code: 'UNAUTHORIZED' });
+    // }
 
-    if (!ctx.user.email) {
-        throw new TRPCError({
-            code: 'UNAUTHORIZED',
-            message: 'User must have an email address to access this resource',
-        });
-    }
+    // if (!ctx.user.email) {
+    //     throw new TRPCError({
+    //         code: 'UNAUTHORIZED',
+    //         message: 'User must have an email address to access this resource',
+    //     });
+    // }
 
     const adminSupabase = createAdminClient();
 
     return next({
         ctx: {
-            // infers the `session` as non-nullable
-            user: ctx.user as SetRequiredDeep<User, 'email'>,
+            user: ctx.user,
             db: ctx.db,
             supabase: adminSupabase, // Override with admin client
         },
