@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@onlook/ui/utils';
-import { CreditCard, FolderKanban, Rocket, Users } from 'lucide-react';
+import { CreditCard, FolderKanban, Globe, Rocket, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -10,6 +10,7 @@ const navigation = [
     { name: 'Users', href: '/users', icon: Users },
     { name: 'Subscriptions', href: '/subscriptions', icon: CreditCard },
     { name: 'Deployments', href: '/deployments', icon: Rocket },
+    { name: 'Domains', href: '/domains', icon: Globe },
 ];
 
 export function Sidebar() {
