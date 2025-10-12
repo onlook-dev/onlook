@@ -9,6 +9,7 @@ import { Skeleton } from '@onlook/ui/skeleton';
 import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { AddSubscription } from './add-subscription';
 import { EditRateLimit } from './edit-rate-limit';
 
 interface UserDetailProps {
@@ -178,10 +179,18 @@ export function UserDetail({ userId }: UserDetailProps) {
             {/* Subscriptions */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Subscriptions</CardTitle>
-                    <CardDescription>
-                        {user.subscriptions.length} active subscription{user.subscriptions.length !== 1 ? 's' : ''}
-                    </CardDescription>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle>Subscriptions</CardTitle>
+                            <CardDescription>
+                                {user.subscriptions.length} active subscription{user.subscriptions.length !== 1 ? 's' : ''}
+                            </CardDescription>
+                        </div>
+                        <AddSubscription
+                            userId={userId}
+                            hasStripeCustomerId={!!user.stripeCustomerId}
+                        />
+                    </div>
                 </CardHeader>
                 <CardContent>
                     {user.subscriptions.length > 0 ? (

@@ -1,4 +1,5 @@
 import { users, userProjects, projects, subscriptions, rateLimits, products, prices } from '@onlook/db/src/schema';
+import { SubscriptionStatus } from '@onlook/stripe';
 import { desc, asc, sql, eq, inArray, or, ilike } from 'drizzle-orm';
 import { z } from 'zod';
 import { adminProcedure, createTRPCRouter } from '../trpc';
@@ -277,6 +278,55 @@ export const usersRouter = createTRPCRouter({
                 success: true,
                 newLeft,
                 creditsAdded: newLeft - currentRateLimit.left,
+            };
+        }),
+    addSubscription: adminProcedure
+        .input(
+            z.object({
+                userId: z.string().uuid(),
+                productId: z.string().uuid(),
+                priceId: z.string().uuid(),
+            }),
+        )
+        .mutation(async ({ ctx, input }) => {
+            // Fetch user to get stripeCustomerId
+            const user = await ctx.db
+                .select()
+                .from(users)
+                .where(eq(users.id, input.userId))
+                .limit(1);
+
+            if (user.length === 0 || !user[0]) {
+                throw new Error('User not found');
+            }
+
+            if (!user[0].stripeCustomerId) {
+                throw new Error('User does not have a Stripe customer ID');
+            }
+
+            // Create subscription with admin/mock Stripe data
+            const now = new Date();
+            const periodEnd = new Date(now);
+            periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+            const newSubscription = await ctx.db
+                .insert(subscriptions)
+                .values({
+                    userId: input.userId,
+                    productId: input.productId,
+                    priceId: input.priceId,
+                    stripeCustomerId: user[0].stripeCustomerId,
+                    stripeSubscriptionId: `sub_admin_${Date.now()}`,
+                    stripeSubscriptionItemId: `si_admin_${Date.now()}`,
+                    status: SubscriptionStatus.ACTIVE,
+                    stripeCurrentPeriodStart: now,
+                    stripeCurrentPeriodEnd: periodEnd,
+                })
+                .returning();
+
+            return {
+                success: true,
+                subscription: newSubscription[0],
             };
         }),
 });
