@@ -78,12 +78,14 @@ export class CodeProviderSync {
                 );
             }
             existing.refCount++;
+            console.log(`[Sync] Reusing existing sync instance for ${key} (refCount: ${existing.refCount})`);
             return existing.sync;
         }
 
         const sync = new CodeProviderSync(provider, fs, config);
         sync.instanceKey = key;
         CodeProviderSync.instances.set(key, { sync, refCount: 1 });
+        console.log(`[Sync] Created new sync instance for ${key} (refCount: 1)`);
         return sync;
     }
 
@@ -111,8 +113,10 @@ export class CodeProviderSync {
         }
 
         instance.refCount--;
+        console.log(`[Sync] Released reference to ${this.instanceKey} (refCount: ${instance.refCount})`);
 
         if (instance.refCount <= 0) {
+            console.log(`[Sync] Stopping and removing sync instance ${this.instanceKey}`);
             this.stop();
             CodeProviderSync.instances.delete(this.instanceKey);
             this.instanceKey = null;
@@ -180,7 +184,6 @@ export class CodeProviderSync {
 
     private async pullFromSandbox(): Promise<void> {
         const sandboxEntries = await this.getAllSandboxFiles('./');
-
         const sandboxEntriesSet = new Set(
             sandboxEntries.map((e) => (e.path.startsWith('/') ? e.path : `/${e.path}`)),
         );
@@ -195,77 +198,67 @@ export class CodeProviderSync {
             return !sandboxEntriesSet.has(entry.path) && !sandboxEntriesSet.has(sandboxPath);
         });
 
-        await Promise.all(
-            entriesToDelete.map(async (entry) => {
-                try {
-                    if (entry.type === 'file') {
-                        await this.fs.deleteFile(entry.path);
-                    } else {
-                        await this.fs.deleteDirectory(entry.path);
-                    }
-                } catch (error) {
-                    console.debug(
-                        `[Sync] Failed to delete ${entry.path}:`,
-                        error instanceof Error ? error.message : 'Unknown error',
-                    );
+        for (const entry of entriesToDelete) {
+            try {
+                if (entry.type === 'file') {
+                    await this.fs.deleteFile(entry.path);
+                    console.log(`[Sync] Deleted file: ${entry.path}`);
+                } else {
+                    await this.fs.deleteDirectory(entry.path);
+                    console.log(`[Sync] Deleted directory: ${entry.path}`);
                 }
-            }),
-        );
+            } catch (error) {
+                console.debug(
+                    `[Sync] Failed to delete ${entry.path}:`,
+                    error instanceof Error ? error.message : 'Unknown error',
+                );
+            }
+        }
 
         // Process sandbox entries
-        const directoriesToCreate = sandboxEntries
-            .filter((entry) => entry.type === 'directory')
-            .map((entry) => entry.path);
+        const directoriesToCreate = [];
+        const filesToWrite = [];
 
-        const fileEntries = sandboxEntries.filter((entry) => entry.type === 'file');
+        for (const entry of sandboxEntries) {
+            if (entry.type === 'directory') {
+                directoriesToCreate.push(entry.path);
+            } else {
+                try {
+                    const result = await this.provider.readFile({ args: { path: entry.path } });
+                    const { file } = result;
 
-        const filesToWrite = (
-            await Promise.all(
-                fileEntries.map(async (entry) => {
-                    try {
-                        const result = await this.provider.readFile({ args: { path: entry.path } });
-                        const { file } = result;
-
-                        if ((file.type === 'text' || file.type === 'binary') && file.content) {
-                            return { path: entry.path, content: file.content };
-                        }
-                    } catch (error) {
-                        console.debug(`[Sync] Skipping ${entry.path}:`, error);
+                    if ((file.type === 'text' || file.type === 'binary') && file.content) {
+                        filesToWrite.push({ path: entry.path, content: file.content });
                     }
-                    return null;
-                }),
-            )
-        ).filter((item): item is { path: string; content: string | Uint8Array } => item !== null);
+                } catch (error) {
+                    console.debug(`[Sync] Skipping ${entry.path}:`, error);
+                }
+            }
+        }
 
         // Create directories first
-        await Promise.all(
-            directoriesToCreate.map(async (dirPath) => {
-                try {
-                    await this.fs.createDirectory(dirPath);
-                } catch (error) {
-                    console.debug(`[Sync] Error creating directory ${dirPath}:`, error);
-                }
-            }),
-        );
+        for (const dirPath of directoriesToCreate) {
+            try {
+                await this.fs.createDirectory(dirPath);
+            } catch (error) {
+                console.debug(`[Sync] Error creating directory ${dirPath}:`, error);
+            }
+        }
 
-        // Write files in parallel
-        await Promise.all(
-            filesToWrite.map(async ({ path, content }) => {
-                try {
-                    await this.fs.writeFile(path, content);
-                } catch (error) {
-                    console.error(`[Sync] Failed to write ${path}:`, error);
-                }
-            }),
-        );
+        // Write files sequentially to avoid race conditions
+        for (const { path, content } of filesToWrite) {
+            try {
+                await this.fs.writeFile(path, content);
+            } catch (error) {
+                console.error(`[Sync] Failed to write ${path}:`, error);
+            }
+        }
 
-        // Store hashes of files in parallel
-        await Promise.all(
-            filesToWrite.map(async ({ path, content }) => {
-                const hash = await hashContent(content);
-                this.fileHashes.set(path, hash);
-            }),
-        );
+        // Store hashes of files so we can skip syncing if the content hasn't changed later.
+        for (const { path, content } of filesToWrite) {
+            const hash = await hashContent(content);
+            this.fileHashes.set(path, hash);
+        }
     }
 
     private async getAllSandboxFiles(
@@ -308,6 +301,8 @@ export class CodeProviderSync {
     }
 
     private async pushModifiedFilesToSandbox(): Promise<void> {
+        console.log('[Sync] Pushing locally modified files back to sandbox...');
+
         try {
             // Get all local JSX/TSX files that might have been modified with OIDs
             const localFiles = await this.fs.listFiles('/');
@@ -327,6 +322,7 @@ export class CodeProviderSync {
                                     overwrite: true
                                 }
                             });
+                            console.log(`[Sync] Pushed ${filePath} to sandbox`);
                         }
                     } catch (error) {
                         console.warn(`[Sync] Failed to push ${filePath} to sandbox:`, error);
@@ -489,6 +485,8 @@ export class CodeProviderSync {
                                                                         // Update hash tracking
                                                                         const hash = await hashContent(fileResult.file.content || '');
                                                                         this.fileHashes.set(itemLocalPath, hash);
+                                                                    } else {
+                                                                        console.log(`[Sync] File ${itemSandboxPath} has undefined content, skipping`);
                                                                     }
                                                                 } catch (fileError) {
                                                                     console.error(`[Sync] Error syncing file ${itemSandboxPath}:`, fileError);

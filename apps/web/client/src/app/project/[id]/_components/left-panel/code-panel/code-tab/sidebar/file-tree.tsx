@@ -94,7 +94,7 @@ export const FileTree = ({
                 // Add all parent paths to ensure they're included
                 const pathSegments = path.split('/').filter(Boolean);
                 for (let i = 1; i < pathSegments.length; i++) {
-                    const parentPath = pathSegments.slice(0, i).join('/');
+                    const parentPath = '/' + pathSegments.slice(0, i).join('/');
                     matchingPaths.add(parentPath);
                 }
             }
