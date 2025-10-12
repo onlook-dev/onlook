@@ -13,19 +13,36 @@ import {
     TableHeader,
     TableRow,
 } from '@onlook/ui/table';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+
+type SortBy = 'startedAt' | 'priceKey' | 'status';
+type SortOrder = 'asc' | 'desc';
 
 export function SubscriptionsList() {
     const router = useRouter();
     const [page, setPage] = useState(1);
     const [pageSize] = useState(20);
+    const [sortBy, setSortBy] = useState<SortBy>('startedAt');
+    const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
     const { data, isLoading, error } = api.subscriptions.listSubscriptions.useQuery({
         page,
         pageSize,
+        sortBy,
+        sortOrder,
     });
+
+    const handleSort = (column: SortBy) => {
+        if (sortBy === column) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy(column);
+            setSortOrder('desc');
+        }
+        setPage(1); // Reset to first page when sorting changes
+    };
 
     if (error) {
         return (
@@ -53,9 +70,39 @@ export function SubscriptionsList() {
                             <TableRow>
                                 <TableHead>User</TableHead>
                                 <TableHead>Product</TableHead>
-                                <TableHead>Plan</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Period</TableHead>
+                                <TableHead>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="-ml-3 h-8 data-[state=open]:bg-accent"
+                                        onClick={() => handleSort('priceKey')}
+                                    >
+                                        Plan
+                                        <ArrowUpDown className="ml-2 size-4" />
+                                    </Button>
+                                </TableHead>
+                                <TableHead>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="-ml-3 h-8 data-[state=open]:bg-accent"
+                                        onClick={() => handleSort('status')}
+                                    >
+                                        Status
+                                        <ArrowUpDown className="ml-2 size-4" />
+                                    </Button>
+                                </TableHead>
+                                <TableHead>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="-ml-3 h-8 data-[state=open]:bg-accent"
+                                        onClick={() => handleSort('startedAt')}
+                                    >
+                                        Period
+                                        <ArrowUpDown className="ml-2 size-4" />
+                                    </Button>
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>

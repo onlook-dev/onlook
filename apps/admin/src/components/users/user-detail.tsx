@@ -6,7 +6,7 @@ import { Badge } from '@onlook/ui/badge';
 import { Button } from '@onlook/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@onlook/ui/card';
 import { Skeleton } from '@onlook/ui/skeleton';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { EditRateLimit } from './edit-rate-limit';
@@ -89,9 +89,18 @@ export function UserDetail({ userId }: UserDetailProps) {
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <p className="text-sm font-medium text-muted-foreground">Stripe Customer ID</p>
-                            <p className="text-sm font-mono mt-1">
-                                {user.stripeCustomerId || '—'}
-                            </p>
+                            {user.stripeCustomerId ? (
+                                <Button
+                                    variant="link"
+                                    className="h-auto p-0 text-sm font-mono mt-1"
+                                    onClick={() => window.open(`https://dashboard.stripe.com/customers/${user.stripeCustomerId}`, '_blank')}
+                                >
+                                    {user.stripeCustomerId}
+                                    <ExternalLink className="ml-1 size-3" />
+                                </Button>
+                            ) : (
+                                <p className="text-sm font-mono mt-1">—</p>
+                            )}
                         </div>
                         <div>
                             <p className="text-sm font-medium text-muted-foreground">GitHub Installation ID</p>
