@@ -114,6 +114,7 @@ export class FileSystem {
      * Read a file - automatically detects text files and returns string in that case. Otherwise, returns Uint8Array.
      */
     async readFile(inputPath: string): Promise<string | Uint8Array> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = path.join(this.basePath, inputPath);
@@ -128,6 +129,7 @@ export class FileSystem {
     }
 
     async writeFile(inputPath: string, content: string | Uint8Array): Promise<void> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = path.join(this.basePath, inputPath);
@@ -142,19 +144,51 @@ export class FileSystem {
     }
 
     async writeFiles(files: Array<{ path: string; content: string | Uint8Array }>): Promise<void> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
-        // Write files sequentially to avoid race conditions
-        for (const { path, content } of files) {
-            try {
-                await this.writeFile(path, content);
-            } catch (error) {
-                console.error(`[FileSystem] Failed to write ${path}:`, error);
+        // Group files by directory to batch mkdir operations
+        const dirSet = new Set<string>();
+        for (const { path: filePath } of files) {
+            const dir = path.dirname(path.join(this.basePath, filePath));
+            if (dir) {
+                dirSet.add(dir);
             }
+        }
+
+        // Create all directories in parallel
+        const BATCH_SIZE = 50;
+        const dirs = Array.from(dirSet);
+        for (let i = 0; i < dirs.length; i += BATCH_SIZE) {
+            const batch = dirs.slice(i, i + BATCH_SIZE);
+            await Promise.all(
+                batch.map(dir =>
+                    this.fs!.promises.mkdir(dir, { recursive: true }).catch(() => {
+                        // Ignore errors if directory already exists
+                    })
+                )
+            );
+        }
+
+        // Write all files in parallel batches for better IndexedDB performance
+        for (let i = 0; i < files.length; i += BATCH_SIZE) {
+            const batch = files.slice(i, i + BATCH_SIZE);
+
+            await Promise.all(
+                batch.map(async ({ path: filePath, content }) => {
+                    try {
+                        const fullPath = path.join(this.basePath, filePath);
+                        await this.fs!.promises.writeFile(fullPath, content);
+                    } catch (error) {
+                        console.error(`[FileSystem] Failed to write ${filePath}:`, error);
+                    }
+                })
+            );
         }
     }
 
     async deleteFile(inputPath: string): Promise<void> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = path.join(this.basePath, inputPath);
@@ -174,6 +208,7 @@ export class FileSystem {
     }
 
     async moveFile(from: string, to: string): Promise<void> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
         const fromPath = path.join(this.basePath, from);
@@ -196,6 +231,7 @@ export class FileSystem {
     }
 
     async createDirectory(inputPath: string): Promise<void> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = path.join(this.basePath, inputPath);
@@ -203,6 +239,7 @@ export class FileSystem {
     }
 
     async readDirectory(inputPath = '/'): Promise<FileEntry[]> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = path.join(this.basePath, inputPath);
@@ -218,9 +255,9 @@ export class FileSystem {
 
                     const entry: FileEntry = {
                         name,
-                        path: path.relative(this.basePath, entryPath), // Remove base path
+                        path: path.relative(this.basePath, entryPath),
                         isDirectory: stats.isDirectory(),
-                        size: Number(stats.size), // Convert BigInt to number
+                        size: Number(stats.size),
                         modifiedTime: stats.mtime,
                     };
 
@@ -244,6 +281,7 @@ export class FileSystem {
                 if ((err as any).code === 'ENOENT') {
                     return [];
                 }
+                console.error(`[FileSystem] Error reading ${dirPath}:`, err);
                 throw err;
             }
         };
@@ -255,7 +293,6 @@ export class FileSystem {
         if (!this.fs) throw new Error('File system not initialized');
 
         const fullPath = path.join(this.basePath, inputPath);
-        console.log('Deleting directory', fullPath);
         await this.fs.promises.rm(fullPath, { recursive: true });
     }
 
@@ -406,7 +443,6 @@ export class FileSystem {
                                 });
                             } else {
                                 // New path, it's a create
-                                console.log(`[FileSystem] Detected create for ${filePath}`);
                                 callback({
                                     type: 'create',
                                     path: filePath,
@@ -414,12 +450,11 @@ export class FileSystem {
 
                                 // If it's a new directory, start watching it
                                 if (stats.isDirectory()) {
-                                    await setupWatchersRecursive(fullPath);
+                                    void setupWatchersRecursive(fullPath);
                                 }
                             }
                         } catch (error) {
                             // File doesn't exist, it was deleted
-                            console.log(`[FileSystem] Detected delete for ${filePath}`);
                             callback({
                                 type: 'delete',
                                 path: filePath,
@@ -463,7 +498,8 @@ export class FileSystem {
         };
 
         const fullPath = path.join(this.basePath, inputPath);
-        setupWatchersRecursive(fullPath);
+        // Start setup async but don't wait - watchers will be added as they're set up
+        void setupWatchersRecursive(fullPath);
 
         // Return cleanup function
         return () => {
@@ -498,6 +534,7 @@ export class FileSystem {
     }
 
     async listFiles(pattern = '**/*'): Promise<string[]> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
         const files: string[] = [];
@@ -534,34 +571,70 @@ export class FileSystem {
     }
 
     async listAll(): Promise<Array<{ path: string; type: 'file' | 'directory' }>> {
+        await this.initialize();
         if (!this.fs) throw new Error('File system not initialized');
 
         const allPaths: Array<{ path: string; type: 'file' | 'directory' }> = [];
 
-        const listRecursive = async (dirPath: string): Promise<void> => {
+        const listRecursive = async (
+            dirPath: string,
+        ): Promise<Array<{ path: string; type: 'file' | 'directory' }>> => {
             try {
                 const entries = await this.fs!.promises.readdir(dirPath);
 
-                for (const entry of entries) {
-                    const entryPath = path.join(dirPath, entry);
-                    const stats = await this.fs!.promises.stat(entryPath);
+                // First, stat all entries in parallel
+                const entryStats = await Promise.all(
+                    entries.map(async (entry) => {
+                        const entryPath = path.join(dirPath, entry);
+                        try {
+                            const stats = await this.fs!.promises.stat(entryPath);
+                            const relativePath = entryPath.substring(this.basePath.length);
+                            return {
+                                entryPath,
+                                relativePath,
+                                isDirectory: stats.isDirectory(),
+                                isFile: stats.isFile(),
+                            };
+                        } catch (err) {
+                            return null;
+                        }
+                    }),
+                );
 
-                    const relativePath = entryPath.substring(this.basePath.length);
+                const results: Array<{ path: string; type: 'file' | 'directory' }> = [];
+                const subdirPromises: Promise<
+                    Array<{ path: string; type: 'file' | 'directory' }>
+                >[] = [];
 
-                    if (stats.isDirectory()) {
-                        allPaths.push({ path: relativePath, type: 'directory' });
-                        await listRecursive(entryPath);
-                    } else if (stats.isFile()) {
-                        allPaths.push({ path: relativePath, type: 'file' });
+                for (const entryStat of entryStats) {
+                    if (!entryStat) continue;
+
+                    if (entryStat.isDirectory) {
+                        results.push({ path: entryStat.relativePath, type: 'directory' });
+                        // Recursively list subdirectories in parallel
+                        subdirPromises.push(listRecursive(entryStat.entryPath));
+                    } else if (entryStat.isFile) {
+                        results.push({ path: entryStat.relativePath, type: 'file' });
                     }
                 }
+
+                // Wait for all subdirectories to be processed
+                const subdirResults = await Promise.all(subdirPromises);
+
+                // Flatten results
+                for (const subdirResult of subdirResults) {
+                    results.push(...subdirResult);
+                }
+
+                return results;
             } catch (err) {
                 // Ignore errors
+                return [];
             }
         };
 
-        await listRecursive(this.basePath);
-        return allPaths;
+        const results = await listRecursive(this.basePath);
+        return results;
     }
 
     cleanup(): void {
