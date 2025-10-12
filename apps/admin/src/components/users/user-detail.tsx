@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { AddSubscription } from './add-subscription';
 import { EditRateLimit } from './edit-rate-limit';
+import { MarkRateLimitInactive } from './mark-rate-limit-inactive';
 import { RemoveSubscription } from './remove-subscription';
 
 interface UserDetailProps {
@@ -292,12 +293,20 @@ export function UserDetail({ userId }: UserDetailProps) {
                                                     </Badge>
                                                 )}
                                                 {isActive && (
-                                                    <EditRateLimit
-                                                        rateLimitId={rateLimit.id}
-                                                        currentLeft={rateLimit.left}
-                                                        max={rateLimit.max}
-                                                        userId={userId}
-                                                    />
+                                                    <>
+                                                        <EditRateLimit
+                                                            rateLimitId={rateLimit.id}
+                                                            currentLeft={rateLimit.left}
+                                                            max={rateLimit.max}
+                                                            userId={userId}
+                                                        />
+                                                        <MarkRateLimitInactive
+                                                            rateLimitId={rateLimit.id}
+                                                            userId={userId}
+                                                            max={rateLimit.max}
+                                                            left={rateLimit.left}
+                                                        />
+                                                    </>
                                                 )}
                                             </div>
                                         </div>

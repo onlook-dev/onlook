@@ -392,4 +392,41 @@ export const usersRouter = createTRPCRouter({
                 success: true,
             };
         }),
+    markRateLimitInactive: adminProcedure
+        .input(
+            z.object({
+                rateLimitId: z.string().uuid(),
+                userId: z.string().uuid(),
+            }),
+        )
+        .mutation(async ({ ctx, input }) => {
+            // Verify the rate limit exists and belongs to the user
+            const rateLimit = await ctx.db
+                .select()
+                .from(rateLimits)
+                .where(eq(rateLimits.id, input.rateLimitId))
+                .limit(1);
+
+            if (rateLimit.length === 0 || !rateLimit[0]) {
+                throw new Error('Rate limit not found');
+            }
+
+            if (rateLimit[0].userId !== input.userId) {
+                throw new Error('Rate limit does not belong to this user');
+            }
+
+            // Set endedAt to now to mark as inactive
+            const now = new Date();
+            await ctx.db
+                .update(rateLimits)
+                .set({
+                    endedAt: now,
+                    updatedAt: now,
+                })
+                .where(eq(rateLimits.id, input.rateLimitId));
+
+            return {
+                success: true,
+            };
+        }),
 });
