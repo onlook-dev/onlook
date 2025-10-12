@@ -109,7 +109,7 @@ builders.
 
 ## Getting Started
 
-Available soon with a [hosted app](https://onlook.com) or
+Use our [hosted app](https://onlook.com) or
 [run locally](https://docs.onlook.com/developers/running-locally).
 
 ### Usage
