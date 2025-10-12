@@ -157,6 +157,8 @@ export class CodeProviderSync {
         try {
             await this.pullFromSandbox();
             await this.setupWatching();
+            // Push any locally modified files (with OIDs) back to sandbox. This is required for the first time sync.
+            void this.pushModifiedFilesToSandbox();
         } catch (error) {
             this.isRunning = false;
             throw error;
@@ -306,6 +308,7 @@ export class CodeProviderSync {
             const localFiles = await this.fs.listFiles('/');
             const jsxFiles = localFiles.filter(path => /\.(jsx?|tsx?)$/i.test(path));
 
+            // TODO: Use available batch write API
             await Promise.all(
                 jsxFiles.map(async (filePath) => {
                     try {
