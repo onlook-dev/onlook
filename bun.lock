@@ -142,7 +142,7 @@
         "tailwind-merge": "^3.2.0",
         "tldts": "^7.0.12",
         "tw-animate-css": "^1.2.5",
-        "unicornstudio-react": "^1.4.31",
+        "unicornstudio-react": "^1.4.33",
         "use-resize-observer": "^9.1.0",
         "uuid": "^11.1.0",
         "webfontloader": "^1.6.28",
@@ -4270,7 +4270,7 @@
 
     "unicorn-magic": ["unicorn-magic@0.3.0", "", {}, "sha512-+QBBXBCvifc56fsbuxZQ6Sic3wqqc3WWaqxs58gvJrcOuN83HGTCwz3oS5phzU9LthRNE9VrJCFCLUgHeeFnfA=="],
 
-    "unicornstudio-react": ["unicornstudio-react@1.4.31", "", { "peerDependencies": { "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-EYPeBPyOXiL6ltLMQRJFbBktnai+RQee4UZk5OcFWbVXii//E8pRF9p4++5ByEiBvDIX4jyj5Mgtxi76Kr12kQ=="],
+    "unicornstudio-react": ["unicornstudio-react@1.4.33", "", { "peerDependencies": { "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-K6TQXqQ2szHOrx2ja9yts56WDjZ9bsy5yz+2fBDdjX0AOvepeSy1wtZXiaqYo8KYQ22xp81VZIldI04eoirzhQ=="],
 
     "unified": ["unified@11.0.5", "", { "dependencies": { "@types/unist": "^3.0.0", "bail": "^2.0.0", "devlop": "^1.0.0", "extend": "^3.0.0", "is-plain-obj": "^4.0.0", "trough": "^2.0.0", "vfile": "^6.0.0" } }, "sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA=="],
 
