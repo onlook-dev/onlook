@@ -1,10 +1,10 @@
-import { initModel } from '@onlook/ai';
+import { initModel } from '@/lib/ai';
 import {
     conversationInsertSchema,
     conversations,
     conversationUpdateSchema,
-    fromDbConversation
 } from '@onlook/db';
+import { fromDbConversation } from '@/lib/ai/chat/mappers/conversation';
 import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
 import { generateText } from 'ai';
 import { eq } from 'drizzle-orm';

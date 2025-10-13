@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
-import { ChatType } from '@onlook/models';
+import { ChatType } from '@/lib/ai/models/chat'
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';

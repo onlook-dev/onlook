@@ -1,4 +1,4 @@
-import { type MessageContext, MessageContextType } from '@onlook/models/chat';
+import { type MessageContext, MessageContextType } from '@onlook/db';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { motion } from 'motion/react';

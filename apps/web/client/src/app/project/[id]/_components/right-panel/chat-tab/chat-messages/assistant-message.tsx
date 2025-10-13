@@ -1,4 +1,4 @@
-import type { ChatMessage } from '@onlook/models';
+import type { ChatMessage } from '@/lib/ai/models/chat';
 import { MessageContent } from './message-content';
 
 export const AssistantMessage = ({ message, isStreaming }: { message: ChatMessage, isStreaming: boolean }) => {

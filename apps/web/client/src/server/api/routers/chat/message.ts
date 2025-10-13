@@ -1,10 +1,10 @@
 import {
     conversations,
-    fromDbMessage,
     messageInsertSchema,
     messages,
     messageUpdateSchema
 } from '@onlook/db';
+import { fromDbMessage } from '@/lib/ai/chat/mappers/message';
 import { MessageCheckpointType } from '@onlook/models';
 import { asc, eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';

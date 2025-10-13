@@ -1,8 +1,8 @@
 import { api } from '@/trpc/server';
 import { trackEvent } from '@/utils/analytics/server';
-import { createRootAgentStream } from '@onlook/ai';
-import { toDbMessage } from '@onlook/db';
-import { ChatType, type ChatMessage, type ChatMetadata } from '@onlook/models';
+import { createRootAgentStream } from '@/lib/ai';
+import { toDbMessage } from '@/lib/ai/chat/mappers/message';
+import { ChatType, type ChatMessage, type ChatMetadata } from '@/lib/ai/models/chat';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { checkMessageLimit, decrementUsage, errorHandler, getSupabaseUser, incrementUsage } from './helpers';

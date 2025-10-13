@@ -1,5 +1,5 @@
 import { Hotkey } from '@/components/hotkey';
-import { ChatType } from '@onlook/models';
+import { ChatType } from '@/lib/ai/models/chat'
 import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';

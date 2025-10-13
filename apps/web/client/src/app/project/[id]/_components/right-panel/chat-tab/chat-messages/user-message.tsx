@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { nanoid } from 'nanoid';
 
-import type { ChatMessage, GitMessageCheckpoint } from '@onlook/models';
-import { ChatType, MessageCheckpointType } from '@onlook/models';
+import { ChatType, type ChatMessage, type GitMessageCheckpoint, MessageCheckpointType } from '@/lib/ai/models/chat';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,

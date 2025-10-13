@@ -30,11 +30,8 @@ import {
     type User
 } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
-import {
-    MessageContextType,
-    ProjectRole,
-    type MessageContext,
-} from '@onlook/models';
+import { ProjectRole } from '@onlook/models';
+import { MessageContextType, type MessageContext } from '../types/chat';
 import { PriceKey, ProductType, SubscriptionStatus } from '@onlook/stripe';
 import { v4 as uuidv4 } from 'uuid';
 import { createDefaultBranch } from '../defaults/branch';
@@ -132,6 +129,7 @@ const userCanvas1 = createDefaultUserCanvas(user0.id, canvas1.id);
 const conversation0 = {
     id: uuidv4(),
     projectId: project0.id,
+    agentType: null,
     displayName: 'Test Conversation',
     createdAt: new Date(),
     updatedAt: new Date(),

@@ -1,5 +1,4 @@
-import type { ChatMessage } from "@onlook/models";
-import { type MessageCheckpoints, type MessageContext } from "@onlook/models";
+import type { MessageCheckpoints, MessageContext, MessagePart } from "../../types/chat";
 import type { LanguageModelUsage } from 'ai';
 import { relations } from "drizzle-orm";
 import { boolean, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
@@ -18,7 +17,7 @@ export const messages = pgTable("messages", {
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     role: messageRole("role").notNull(),
     context: jsonb("context").$type<MessageContext[]>().default([]).notNull(),
-    parts: jsonb("parts").$type<ChatMessage['parts']>().default([]).notNull(),
+    parts: jsonb("parts").$type<MessagePart[]>().default([]).notNull(),
     checkpoints: jsonb("checkpoints").$type<MessageCheckpoints[]>().default([]).notNull(),
     usage: jsonb("usage").$type<LanguageModelUsage>(),
 

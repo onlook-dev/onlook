@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { ImageMessageContext, MessageContext } from '@onlook/models/chat';
-import { MessageContextType } from '@onlook/models/chat';
+import type { ImageMessageContext, MessageContext } from '@onlook/db';
+import { MessageContextType } from '@onlook/db';
 import { assertNever } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';

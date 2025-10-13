@@ -2,7 +2,7 @@ import { api } from '@/trpc/client';
 import { SandboxTemplates, Templates } from '@onlook/constants';
 import { createDefaultProject } from '@onlook/db';
 import { CreateRequestContextType } from '@onlook/models';
-import { type ImageMessageContext } from '@onlook/models/chat';
+import { type ImageMessageContext } from '@onlook/db';
 import { makeAutoObservable } from "mobx";
 import { parseRepoUrl } from '../editor/pages/helper';
 

@@ -1,4 +1,4 @@
-import { type MessageContext } from '@onlook/models/chat';
+import { type MessageContext } from '@onlook/db';
 import { getContextIcon, getTruncatedName } from './helpers';
 
 export function SentContextPill({ context }: { context: MessageContext }) {
