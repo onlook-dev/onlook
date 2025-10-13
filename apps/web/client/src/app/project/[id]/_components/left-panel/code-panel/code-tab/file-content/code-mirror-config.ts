@@ -10,6 +10,7 @@ import { highlightSelectionMatches } from '@codemirror/search';
 import { StateEffect, StateField } from '@codemirror/state';
 import { Decoration, type DecorationSet, drawSelection, EditorView, highlightActiveLine, highlightActiveLineGutter, highlightSpecialChars, keymap, lineNumbers } from '@codemirror/view';
 import { tags } from '@lezer/highlight';
+import { debounce } from 'lodash';
 
 // Custom colors for CodeMirror
 const customColors = {
@@ -302,11 +303,7 @@ export function clearElementHighlight() {
     return clearElementHighlightEffect.of(null);
 }
 
-export function scrollToLineColumn(view: EditorView, line: number, column: number): void {
-    setTimeout(() => {
-        undebounceScrollToLineColumn(view, line, column);
-    }, 100, { leading: true, });
-}
+export const scrollToLineColumn = debounce(undebounceScrollToLineColumn, 100, { leading: true, });
 
 function undebounceScrollToLineColumn(view: EditorView, line: number, column: number): void {
     const doc = view.state.doc;
