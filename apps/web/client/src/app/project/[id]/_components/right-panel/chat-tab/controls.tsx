@@ -3,11 +3,9 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
 
 export const ChatControls = observer(() => {
     const editorEngine = useEditorEngine();
-    const [isHovering, setIsHovering] = useState(false);
 
     const isStartingNewConversation = editorEngine.chat.conversation.creatingConversation;
     const isDisabled = editorEngine.chat.isStreaming || isStartingNewConversation;
@@ -19,13 +17,9 @@ export const ChatControls = observer(() => {
 
     return (
         <div className="flex flex-row">
-            <Tooltip open={isHovering && isDisabled}>
+            <Tooltip>
                 <TooltipTrigger asChild>
-                    <span
-                        className="inline-block"
-                        onMouseEnter={() => setIsHovering(true)}
-                        onMouseLeave={() => setIsHovering(false)}
-                    >
+                    <span className="inline-block">
                         <Button
                             variant={'ghost'}
                             size={'icon'}
@@ -47,7 +41,11 @@ export const ChatControls = observer(() => {
                         </Button>
                     </span>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" hideArrow>AI is still loading</TooltipContent>
+                {isDisabled && (
+                    <TooltipContent side="bottom" hideArrow>
+                        AI is still loading
+                    </TooltipContent>
+                )}
             </Tooltip>
         </div>
     );
