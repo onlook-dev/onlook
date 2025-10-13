@@ -34,14 +34,14 @@ export class FramesManager {
     }
 
     applyFrames(frames: Frame[]) {
-        // Select the first frame
-        for (let i = 0; i < frames.length; i++) {
-            const frame = frames[i];
-            if (!frame) {
-                continue;
-            }
-            this._frameIdToData.set(frame.id, { frame, view: null, selected: i === 0 });
-        }
+        frames.forEach((frame, index) => {
+            this._frameIdToData.set(frame.id, {
+                frame,
+                view: null,
+                // Select the first frame
+                selected: index === 0
+            });
+        });
     }
 
     get selected(): FrameData[] {
