@@ -277,7 +277,10 @@ export class MemoryTool extends ClientTool {
                 return 'Error: entry is required for append action in global scope';
             }
             const newItem: GlobalMemoryItem = {
-                id: args.entry.timestamp ?? new Date().toISOString(), // Use timestamp as ID if not provided
+                id:
+                    typeof crypto !== 'undefined' && crypto.randomUUID
+                        ? crypto.randomUUID()
+                        : (args.entry.timestamp ?? new Date().toISOString()),
                 timestamp: args.entry.timestamp ?? new Date().toISOString(),
                 summary: args.entry.summary,
                 actions: args.entry.actions,
