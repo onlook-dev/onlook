@@ -77,7 +77,7 @@ export const AdvancedTypography = () => {
                         <Icons.CrossS className="h-4 w-4" />
                     </Button>
                 </div>
-                <div className="space-y-4 px-4 py-2">
+                <div className="space-y-2 px-4 py-2">
                     <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground w-20">Color</span>
                         <div className="flex-1">
@@ -88,8 +88,11 @@ export const AdvancedTypography = () => {
                         <span className="text-sm text-muted-foreground w-20">Line</span>
                         <div className="flex-1">
                             <InputIcon
-                                value={isNaN(parseFloat(textState.lineHeight)) ? 0 : parseFloat(textState.lineHeight)}
+                                value={isNaN(parseFloat(textState.lineHeight)) ? 1.5 : parseFloat(textState.lineHeight)}
                                 onChange={(value) => handleLineHeightChange(value.toString())}
+                                minValue={0.2}
+                                maxValue={15.0}
+                                stepSize={0.1}
                             />
                         </div>
                     </div>
@@ -99,6 +102,8 @@ export const AdvancedTypography = () => {
                             <InputIcon
                                 value={isNaN(parseFloat(textState.letterSpacing)) ? 0 : parseFloat(textState.letterSpacing)}
                                 onChange={(value) => handleLetterSpacingChange(value.toString())}
+                                allowNegative={true}
+                                stepSize={0.1}
                             />
                         </div>
                     </div>

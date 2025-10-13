@@ -26,11 +26,15 @@ interface InputIconProps {
     icon?: IconType;
     onChange?: (value: number) => void;
     onUnitChange?: (unit: string) => void;
+    allowNegative?: boolean;
+    minValue?: number;
+    maxValue?: number;
+    stepSize?: number;
 }
 
-export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: InputIconProps) => {
+export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange, allowNegative = false, minValue, maxValue, stepSize = 0.1 }: InputIconProps) => {
     const [unitValue, setUnitValue] = useState(unit);
-    const { localValue, handleKeyDown, handleChange } = useInputControl(value, onChange);
+    const { localValue, handleKeyDown, handleChange } = useInputControl(value, onChange, allowNegative, minValue, maxValue, stepSize);
 
     const IconComponent = icon ? Icons[icon] : null;
 

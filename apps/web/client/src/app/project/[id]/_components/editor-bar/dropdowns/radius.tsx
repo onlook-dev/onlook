@@ -8,7 +8,7 @@ import {
 import { Icons } from "@onlook/ui/icons";
 import { cn } from "@onlook/ui/utils";
 import { observer } from "mobx-react-lite";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
@@ -17,12 +17,51 @@ import { SpacingInputs } from "../inputs/spacing-inputs";
 import { ToolbarButton } from "../toolbar-button";
 
 export const Radius = observer(() => {
-    const [activeTab, setActiveTab] = useState('all');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('radius');
+
+    const areAllCornersEqual = useMemo((): boolean => {
+        const corners = {
+            topLeft: boxState.borderTopLeftRadius.num ?? 0,
+            topRight: boxState.borderTopRightRadius.num ?? 0,
+            bottomRight: boxState.borderBottomRightRadius.num ?? 0,
+            bottomLeft: boxState.borderBottomLeftRadius.num ?? 0,
+        };
+
+        const values = Object.values(corners);
+
+        return values.every(val => val === values[0]);
+    }, [boxState.borderTopLeftRadius.num, boxState.borderTopRightRadius.num, boxState.borderBottomRightRadius.num, boxState.borderBottomLeftRadius.num]);
+
+    const [activeTab, setActiveTab] = useState(areAllCornersEqual ? 'all' : 'individual');
 
     const { isOpen, onOpenChange } = useDropdownControl({
         id: 'radius-dropdown'
     });
+
+    // Track if user is actively interacting with the input
+    const [isUserInteracting, setIsUserInteracting] = useState(false);
+
+    // Determine if we should show "Mixed" in the input when on "All sides" tab
+    const shouldShowMixed = activeTab === 'all' && !areAllCornersEqual && !isUserInteracting;
+
+    // Custom onChange handler that tracks user interaction
+    const handleRadiusChange = (value: number) => {
+        setIsUserInteracting(true);
+        handleBoxChange('borderRadius', value.toString());
+    };
+
+    // Reset interaction state when switching tabs or closing dropdown
+    const handleTabChange = (tab: string) => {
+        setActiveTab(tab);
+        setIsUserInteracting(false);
+    };
+
+    const handleOpenChange = (open: boolean) => {
+        onOpenChange(open);
+        if (!open) {
+            setIsUserInteracting(false);
+        }
+    };
 
     const getRadiusIcon = () => {
         const topLeft = boxState.borderTopLeftRadius.num ?? 0;
@@ -101,7 +140,7 @@ export const Radius = observer(() => {
     const radiusValue = getRadiusDisplay();
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
+        <DropdownMenu open={isOpen} onOpenChange={handleOpenChange} modal={false}>
             <HoverOnlyTooltip content="Radius" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
@@ -118,7 +157,7 @@ export const Radius = observer(() => {
             <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">
                 <div className="flex items-center gap-2 mb-3">
                     <button
-                        onClick={() => setActiveTab('all')}
+                        onClick={() => handleTabChange('all')}
                         className={cn(
                             'flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer',
                             activeTab === 'all'
@@ -129,7 +168,7 @@ export const Radius = observer(() => {
                         All sides
                     </button>
                     <button
-                        onClick={() => setActiveTab('individual')}
+                        onClick={() => handleTabChange('individual')}
                         className={cn('flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer',
                             activeTab === 'individual'
                                 ? 'text-foreground-primary bg-background-active/50'
@@ -141,10 +180,11 @@ export const Radius = observer(() => {
                 </div>
                 {activeTab === 'all' ? (
                     <InputRange
-                        value={boxState.borderRadius.num ?? 0}
-                        onChange={(value) => handleBoxChange('borderRadius', value.toString())}
+                        value={shouldShowMixed ? 0 : (boxState.borderRadius.num ?? 0)}
+                        onChange={handleRadiusChange}
                         unit={boxState.borderRadius.unit}
                         onUnitChange={(unit) => handleUnitChange('borderRadius', unit)}
+                        displayValue={shouldShowMixed ? 'Mixed' : undefined}
                     />
                 ) : (
                     <SpacingInputs

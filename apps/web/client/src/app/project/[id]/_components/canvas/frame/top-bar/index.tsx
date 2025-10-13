@@ -184,7 +184,7 @@ export const TopBar = observer(
                             <Icons.ArrowRight />
                         </Button>
                     </HoverOnlyTooltip>
-                    <HoverOnlyTooltip content="Refresh Page" side="top" className="mb-1" hideArrow>
+                    <HoverOnlyTooltip content="Refresh Page" side="top" className="mb-2" hideArrow>
                         <Button
                             variant="ghost"
                             size="sm"
@@ -201,7 +201,7 @@ export const TopBar = observer(
                     <span className={cn("ml-1.25 mb-0.5", isSelected ? "text-teal-700" : "text-foreground-secondary/50")}>·</span>
                     <PageSelector frame={frame} />
                 </div>
-                <HoverOnlyTooltip content="Preview in new tab" side="top" hideArrow className="mb-1">
+                <HoverOnlyTooltip content="Preview in new tab" side="top" hideArrow className="mb-0">
                     <Link
                         className={cn(
                             'absolute right-1 top-1/2 -translate-y-1/2 transition-opacity duration-300',
