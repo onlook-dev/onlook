@@ -1,16 +1,14 @@
 'use client';
 
 import { useEditorEngine } from "@/components/store/editor";
-import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
-import { cn } from "@onlook/ui/utils";
 import { observer } from "mobx-react-lite";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
@@ -55,12 +53,12 @@ const MARGIN_ICON_MAP: Record<string, typeof Icons.MarginEmpty> = {
 export const Margin = observer(() => {
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('margin');
     const editorEngine = useEditorEngine();
-    
+
     const { isOpen, onOpenChange } = useDropdownControl({
         id: 'margin-dropdown'
     });
-    
-    
+
+
     const areAllMarginsEqual = useMemo((): boolean => {
         const margins = {
             top: boxState.marginTop.num ?? 0,
@@ -68,12 +66,12 @@ export const Margin = observer(() => {
             bottom: boxState.marginBottom.num ?? 0,
             left: boxState.marginLeft.num ?? 0,
         };
-        
+
         const values = Object.values(margins);
-        
+
         return values.every(val => val === values[0]);
     }, [boxState.marginTop.num, boxState.marginRight.num, boxState.marginBottom.num, boxState.marginLeft.num]);
-    
+
     const [activeTab, setActiveTab] = useState<MarginTab>(areAllMarginsEqual ? MarginTab.ALL : MarginTab.INDIVIDUAL);
 
     const getMarginIcon = () => {
@@ -86,13 +84,13 @@ export const Margin = observer(() => {
 
         const values = Object.values(margins);
         const nonZeroValues = values.filter(val => val > 0);
-        
+
         if (nonZeroValues.length === 0) {
             return Icons.MarginEmpty;
         }
 
-        const allSame = nonZeroValues.length === 4 && 
-                        nonZeroValues.every(val => val === nonZeroValues[0]);
+        const allSame = nonZeroValues.length === 4 &&
+            nonZeroValues.every(val => val === nonZeroValues[0]);
         if (allSame) {
             return Icons.MarginFull;
         }
@@ -192,6 +190,9 @@ export const Margin = observer(() => {
                         onChange={(value) => handleBoxChange('margin', value.toString())}
                         unit={boxState.margin.unit}
                         onUnitChange={(unit) => handleUnitChange('margin', unit)}
+                        min={0}
+                        max={384}
+                        step={16}
                     />
                 ) : (
                     <SpacingInputs

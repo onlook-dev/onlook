@@ -64,9 +64,8 @@ export const InputRange = ({
     const handleBlur = () => {
         const numValue = Number(localValue);
         if (!isNaN(numValue)) {
-            const clampedValue = Math.max(min, Math.min(max, numValue));
-            setLocalValue(String(clampedValue));
-            debouncedOnChange(clampedValue);
+            setLocalValue(String(numValue));
+            debouncedOnChange(numValue);
         } else {
             setLocalValue(String(value));
         }
@@ -79,7 +78,7 @@ export const InputRange = ({
             const direction = e.key === 'ArrowUp' ? 1 : -1;
             const currentValue = Number(localValue);
             if (!isNaN(currentValue)) {
-                const newValue = Math.max(min, Math.min(max, currentValue + (stepValue * direction)));
+                const newValue = currentValue + (stepValue * direction);
                 setLocalValue(String(newValue));
                 debouncedOnChange(newValue);
             }
