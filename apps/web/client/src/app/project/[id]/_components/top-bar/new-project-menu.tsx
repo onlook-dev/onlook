@@ -19,12 +19,16 @@ import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { ProjectLoadingType } from '../../_hooks/use-project-loading';
 
 interface NewProjectMenuProps {
     onShowCloneDialog: (open: boolean) => void;
+    setLoading: (type: ProjectLoadingType) => void;
+    clearLoading: () => void;
+    loadingType: ProjectLoadingType;
 }
 
-export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuProps) => {
+export const NewProjectMenu = observer(({ onShowCloneDialog, setLoading, clearLoading, loadingType }: NewProjectMenuProps) => {
     const editorEngine = useEditorEngine();
     const { data: user } = api.user.get.useQuery();
     const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
@@ -32,7 +36,6 @@ export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuPro
     const { setIsAuthModalOpen } = useAuthContext();
     const t = useTranslations();
     const router = useRouter();
-    const [isCreatingProject, setIsCreatingProject] = useState(false);
 
     const handleStartBlankProject = async () => {
         if (!user?.id) {
@@ -42,7 +45,7 @@ export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuPro
             return;
         }
 
-        setIsCreatingProject(true);
+        setLoading('creating-blank-project');
         try {
             // Capture screenshot of current project before cleanup
             try {
@@ -88,7 +91,7 @@ export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuPro
                 });
             }
         } finally {
-            setIsCreatingProject(false);
+            clearLoading();
         }
     };
 
@@ -112,11 +115,11 @@ export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuPro
                 </DropdownMenuItem>
                 <DropdownMenuItem
                     onClick={handleStartBlankProject}
-                    disabled={isCreatingProject}
+                    disabled={loadingType === 'creating-blank-project'}
                     className="cursor-pointer"
                 >
                     <div className="flex flex-row center items-center group">
-                        {isCreatingProject ? (
+                        {loadingType === 'creating-blank-project' ? (
                             <Icons.LoadingSpinner className="mr-2 animate-spin" />
                         ) : (
                             <Icons.FilePlus className="mr-2" />

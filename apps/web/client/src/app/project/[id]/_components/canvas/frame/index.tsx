@@ -74,10 +74,18 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
                         }}
                     >
                         <div
-                            className="flex items-center gap-3 text-foreground"
-                            style={{ transform: `scale(${1 / editorEngine.canvas.scale})` }}
+                            className="flex flex-col items-center gap-3 text-foreground"
+                            style={{ 
+                                transform: `scale(${1 / editorEngine.canvas.scale})`,
+                                width: `${frame.dimension.width * editorEngine.canvas.scale}px`,
+                                maxWidth: `${frame.dimension.width * editorEngine.canvas.scale}px`,
+                                padding: '0 16px'
+                            }}
                         >
                             <Icons.LoadingSpinner className="animate-spin h-8 w-8" />
+                            <p className="text-sm text-center bg-gradient-to-l from-white/20 via-white/90 to-white/20 bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer filter drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">
+                                Starting up your project... this may take a minute or two...
+                            </p>
                         </div>
                     </div>
                 )}

@@ -16,13 +16,18 @@ import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { ProjectLoadingType } from '../../_hooks/use-project-loading';
 
-export const RecentProjectsMenu = observer(() => {
+interface RecentProjectsMenuProps {
+    setLoading: (type: ProjectLoadingType) => void;
+    clearLoading: () => void;
+}
+
+export const RecentProjectsMenu = observer(({ setLoading, clearLoading }: RecentProjectsMenuProps) => {
     const editorEngine = useEditorEngine();
     const currentProjectId = editorEngine.projectId;
     const router = useRouter();
     const t = useTranslations();
-    const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
 
     const { data: projects, isLoading: isLoadingProjects } = api.project.list.useQuery({
         limit: 5,
@@ -34,7 +39,7 @@ export const RecentProjectsMenu = observer(() => {
         || [];
 
     const handleProjectClick = async (projectId: string) => {
-        setLoadingProjectId(projectId);
+        setLoading('switching-project');
         router.push(`${Routes.PROJECT}/${projectId}`);
     };
 
@@ -100,15 +105,10 @@ export const RecentProjectsMenu = observer(() => {
                     <DropdownMenuItem
                         key={project.id}
                         onClick={() => handleProjectClick(project.id)}
-                        disabled={loadingProjectId === project.id}
                         className="cursor-pointer"
                     >
                         <div className="flex flex-row center items-center group">
-                            {loadingProjectId === project.id ? (
-                                <Icons.LoadingSpinner className="mr-2 w-4 h-4 animate-spin" />
-                            ) : (
-                                <Icons.Cube className="mr-2" />
-                            )}
+                            <Icons.Cube className="mr-2" />
                             <span className="truncate max-w-[120px]">
                                 {project.name}
                             </span>
