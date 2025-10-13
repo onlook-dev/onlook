@@ -34,7 +34,6 @@ export const InputColor = ({ color, elementStyleKey, onColorChange }: InputColor
         <div className="flex h-9 w-full items-center">
             <div className="bg-background-tertiary/50 mr-[1px] flex h-full flex-1 items-center rounded-l-md px-3 py-1.5 pl-1.5">
                 <Popover onOpenChange={setIsOpen}>
-                    <PopoverAnchor className="absolute bottom-0 left-0" />
                     <PopoverTrigger>
                         <div className="flex items-center">
                             <div
@@ -52,8 +51,9 @@ export const InputColor = ({ color, elementStyleKey, onColorChange }: InputColor
                     </PopoverTrigger>
                     <PopoverContent
                         className="w-[224px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
-                        side="bottom"
+                        side="left"
                         align="start"
+                        alignOffset={-24}
                     >
                         <ColorPickerContent
                             color={tempColor}

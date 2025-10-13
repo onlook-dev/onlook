@@ -7,8 +7,8 @@ export enum DefaultFrameType {
 }
 
 export const DefaultDesktopFrame = {
-    x: '5',
-    y: '0',
+    x: '150',
+    y: '40',
     width: '1536',
     height: '960',
 } as const;
