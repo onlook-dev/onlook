@@ -50,6 +50,11 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     const [starredTemplates, setStarredTemplates] = useState<Set<string>>(
         new Set()
     );
+    
+    // Recent projects scroll state
+    const recentProjectsScrollRef = useRef<HTMLDivElement>(null);
+    const [showScrollButton, setShowScrollButton] = useState(false);
+    const [showLeftScrollButton, setShowLeftScrollButton] = useState(false);
 
     // Load starred templates from storage
     const loadStarredTemplates = async () => {
@@ -163,6 +168,73 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
         return filesOrderBy === 'Oldest first' ? sorted.reverse() : sorted;
     }, [filteredAndSortedProjects, filesSortBy, filesOrderBy]);
 
+    // Check if recent projects section has overflow
+    useEffect(() => {
+        const checkOverflow = () => {
+            if (recentProjectsScrollRef.current) {
+                const { scrollLeft, scrollWidth, clientWidth } = recentProjectsScrollRef.current;
+                const hasOverflow = scrollWidth > clientWidth;
+                const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 10;
+                setShowScrollButton(hasOverflow && !isAtEnd);
+            }
+        };
+
+        checkOverflow();
+        window.addEventListener('resize', checkOverflow);
+        
+        return () => window.removeEventListener('resize', checkOverflow);
+    }, [filteredAndSortedProjects]);
+
+    // Handle scroll position for left and right button visibility
+    useEffect(() => {
+        const handleScroll = () => {
+            if (recentProjectsScrollRef.current) {
+                const { scrollLeft, scrollWidth, clientWidth } = recentProjectsScrollRef.current;
+                
+                // Show left button if scrolled away from the left edge
+                setShowLeftScrollButton(scrollLeft > 10);
+                
+                // Hide right button if scrolled to the end (with small tolerance)
+                const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 10;
+                setShowScrollButton(!isAtEnd && scrollWidth > clientWidth);
+            }
+        };
+
+        const scrollContainer = recentProjectsScrollRef.current;
+        if (scrollContainer) {
+            scrollContainer.addEventListener('scroll', handleScroll);
+            window.addEventListener('resize', handleScroll);
+            // Also check initial scroll position
+            handleScroll();
+            return () => {
+                scrollContainer.removeEventListener('scroll', handleScroll);
+                window.removeEventListener('resize', handleScroll);
+            };
+        }
+    }, [filteredAndSortedProjects]);
+
+    // Scroll the recent projects section to the right
+    const handleScrollProjects = () => {
+        if (recentProjectsScrollRef.current) {
+            const scrollAmount = 300; // Scroll by approximately one card width
+            recentProjectsScrollRef.current.scrollBy({
+                left: scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    // Scroll the recent projects section to the left
+    const handleScrollProjectsLeft = () => {
+        if (recentProjectsScrollRef.current) {
+            const scrollAmount = 300; // Scroll by approximately one card width
+            recentProjectsScrollRef.current.scrollBy({
+                left: -scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+
     const sortOptions = [
         { value: 'Alphabetical', label: 'Alphabetical' },
         { value: 'Date created', label: 'Date created' },
@@ -222,30 +294,86 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
 
     return (
         <div className="w-full h-full flex flex-col px-6 py-8 relative overflow-x-visible" style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}>
-            <div className="max-w-6xl w-full mx-auto pb-12 overflow-x-visible">
+            <div className="max-w-6xl w-full mx-auto overflow-x-visible">
                 <div className="mb-12 overflow-x-visible">
                     <h2 className="text-2xl text-foreground font-normal mb-[12px]">
                         Recent projects
                     </h2>
 
                     <div className="relative overflow-x-visible">
-                        {/* Left gradient - positioned to start left of initial view */}
-                        <div className="absolute left-0 top-0 bottom-4 w-16 bg-gradient-to-r from-background to-transparent pointer-events-none z-10" style={{ transform: 'translateX(-48px)' }} />
+                        {/* Left gradient - only visible when scrolled */}
+                        <AnimatePresence>
+                            {showLeftScrollButton && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute left-0 top-0 bottom-4 w-16 bg-gradient-to-r from-background to-transparent pointer-events-none z-10"
+                                />
+                            )}
+                        </AnimatePresence>
                         
-                        {/* Right gradient - always visible */}
-                        <div className="absolute right-0 top-0 bottom-4 w-16 bg-gradient-to-l from-background to-transparent pointer-events-none z-10" />
+                        {/* Right gradient - only visible when not at end */}
+                        <AnimatePresence>
+                            {showScrollButton && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute right-0 top-0 bottom-4 w-16 bg-gradient-to-l from-background to-transparent pointer-events-none z-10"
+                                />
+                            )}
+                        </AnimatePresence>
                         
-                        <div className="flex gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none]">
-                        {filteredAndSortedProjects.length === 0 ? (
-                            <div className="w-full flex items-center justify-center py-8">
-                                <div className="text-center">
-                                    <div className="text-foreground-secondary text-base">No projects found</div>
-                                    <div className="text-foreground-tertiary text-sm">Try adjusting your search terms</div>
-                                </div>
-                            </div>
-                        ) : (
-                            <AnimatePresence mode="popLayout">
-                                {filteredAndSortedProjects.map((project, index) => (
+                        {/* Left floating scroll button - only visible when scrolled */}
+                        <AnimatePresence>
+                            {showLeftScrollButton && (
+                                <motion.button
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    onClick={handleScrollProjectsLeft}
+                                    className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border border-border shadow-lg hover:bg-secondary transition-colors flex items-center justify-center text-foreground-secondary hover:text-foreground"
+                                    aria-label="Scroll projects left"
+                                >
+                                    <Icons.ChevronRight className="w-5 h-5 rotate-180" />
+                                </motion.button>
+                            )}
+                        </AnimatePresence>
+                        
+                        {/* Right floating scroll button */}
+                        <AnimatePresence>
+                            {showScrollButton && (
+                                <motion.button
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    onClick={handleScrollProjects}
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border border-border shadow-lg hover:bg-secondary transition-colors flex items-center justify-center text-foreground-secondary hover:text-foreground"
+                                    aria-label="Scroll projects right"
+                                >
+                                    <Icons.ChevronRight className="w-5 h-5" />
+                                </motion.button>
+                            )}
+                        </AnimatePresence>
+                        
+                        <div ref={recentProjectsScrollRef} className="flex gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] h-[202px]">
+                        <AnimatePresence mode="popLayout">
+                            {filteredAndSortedProjects.length === 0 ? (
+                                <motion.div
+                                    key="no-results"
+                                    className="w-full flex items-center justify-center"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                >
+                                    <div className="text-center">
+                                        <div className="text-foreground-secondary text-base">No projects found</div>
+                                        <div className="text-foreground-tertiary text-sm">Try adjusting your search terms</div>
+                                    </div>
+                                </motion.div>
+                            ) : (
+                                filteredAndSortedProjects.map((project, index) => (
                                     <motion.div
                                         key={project.id}
                                         className="flex-shrink-0 w-72"
@@ -274,8 +402,10 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                                             HighlightText={HighlightText}
                                         />
                                     </motion.div>
-                                ))}
+                                ))
+                            )}
 
+                            {filteredAndSortedProjects.length > 0 && (
                                 <motion.div
                                     key="create-tile"
                                     className="flex-shrink-0 w-72"
@@ -293,8 +423,8 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                                         </div>
                                     </Link>
                                 </motion.div>
-                            </AnimatePresence>
-                        )}
+                            )}
+                        </AnimatePresence>
                         </div>
                     </div>
                 </div>
