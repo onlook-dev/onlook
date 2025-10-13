@@ -117,6 +117,9 @@ export const Border = observer(() => {
                         onChange={(value) => handleBoxChange('borderWidth', value.toString())}
                         unit={boxState.borderWidth.unit}
                         onUnitChange={(unit) => handleUnitChange('borderWidth', unit)}
+                        min={0}
+                        max={16}
+                        step={0.25}
                     />
                 ) : (
                     <SpacingInputs
