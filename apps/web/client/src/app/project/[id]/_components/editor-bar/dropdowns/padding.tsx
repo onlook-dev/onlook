@@ -62,6 +62,31 @@ export const Padding = observer(() => {
 
     const [activeTab, setActiveTab] = useState<PaddingTab>(areAllPaddingsEqual ? PaddingTab.ALL : PaddingTab.INDIVIDUAL);
 
+    // Track if user is actively interacting with the input
+    const [isUserInteracting, setIsUserInteracting] = useState(false);
+
+    // Determine if we should show "Mixed" in the input when on "All sides" tab
+    const shouldShowMixed = activeTab === PaddingTab.ALL && !areAllPaddingsEqual && !isUserInteracting;
+
+    // Custom onChange handler that tracks user interaction
+    const handlePaddingChange = (value: number) => {
+        setIsUserInteracting(true);
+        handleBoxChange('padding', value.toString());
+    };
+
+    // Reset interaction state when switching tabs or closing dropdown
+    const handleTabChange = (tab: PaddingTab) => {
+        setActiveTab(tab);
+        setIsUserInteracting(false);
+    };
+
+    const handleOpenChange = (open: boolean) => {
+        onOpenChange(open);
+        if (!open) {
+            setIsUserInteracting(false);
+        }
+    };
+
     const getPaddingIcon = () => {
         const paddings = {
             top: boxState.paddingTop.num ?? 0,
@@ -123,7 +148,7 @@ export const Padding = observer(() => {
     const paddingValue = getPaddingDisplay();
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
+        <DropdownMenu open={isOpen} onOpenChange={handleOpenChange} modal={false}>
             <HoverOnlyTooltip content="Padding" side="bottom">
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
@@ -140,16 +165,16 @@ export const Padding = observer(() => {
             <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">
                 <div className="flex items-center gap-2 mb-3">
                     <button
-                        onClick={() => setActiveTab(PaddingTab.ALL)}
+                        onClick={() => handleTabChange(PaddingTab.ALL)}
                         className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${activeTab === PaddingTab.ALL
                             ? 'text-foreground-primary bg-background-active/50'
                             : 'text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover'
                             }`}
                     >
-                        {areAllPaddingsEqual ? "All sides" : "Mixed"}
+                        All sides
                     </button>
                     <button
-                        onClick={() => setActiveTab(PaddingTab.INDIVIDUAL)}
+                        onClick={() => handleTabChange(PaddingTab.INDIVIDUAL)}
                         className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${activeTab === PaddingTab.INDIVIDUAL
                             ? 'text-foreground-primary bg-background-active/50'
                             : 'text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover'
@@ -160,10 +185,11 @@ export const Padding = observer(() => {
                 </div>
                 {activeTab === PaddingTab.ALL ? (
                     <InputRange
-                        value={boxState.padding.num ?? 0}
-                        onChange={(value) => handleBoxChange('padding', value.toString())}
+                        value={shouldShowMixed ? 0 : (boxState.padding.num ?? 0)}
+                        onChange={handlePaddingChange}
                         unit={boxState.padding.unit}
                         onUnitChange={(unit) => handleUnitChange('padding', unit)}
+                        displayValue={shouldShowMixed ? 'Mixed' : undefined}
                     />
                 ) : (
                     <SpacingInputs

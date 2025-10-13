@@ -76,6 +76,31 @@ export const Margin = observer(() => {
     
     const [activeTab, setActiveTab] = useState<MarginTab>(areAllMarginsEqual ? MarginTab.ALL : MarginTab.INDIVIDUAL);
 
+    // Track if user is actively interacting with the input
+    const [isUserInteracting, setIsUserInteracting] = useState(false);
+
+    // Determine if we should show "Mixed" in the input when on "All sides" tab
+    const shouldShowMixed = activeTab === MarginTab.ALL && !areAllMarginsEqual && !isUserInteracting;
+
+    // Custom onChange handler that tracks user interaction
+    const handleMarginChange = (value: number) => {
+        setIsUserInteracting(true);
+        handleBoxChange('margin', value.toString());
+    };
+
+    // Reset interaction state when switching tabs or closing dropdown
+    const handleTabChange = (tab: MarginTab) => {
+        setActiveTab(tab);
+        setIsUserInteracting(false);
+    };
+
+    const handleOpenChange = (open: boolean) => {
+        onOpenChange(open);
+        if (!open) {
+            setIsUserInteracting(false);
+        }
+    };
+
     const getMarginIcon = () => {
         const margins = {
             top: boxState.marginTop.num ?? 0,
@@ -148,7 +173,7 @@ export const Margin = observer(() => {
     const marginValue = getMarginDisplay();
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
+        <DropdownMenu open={isOpen} onOpenChange={handleOpenChange} modal={false}>
             <HoverOnlyTooltip content="Margin" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
@@ -168,16 +193,16 @@ export const Margin = observer(() => {
             >
                 <div className="mb-3 flex items-center gap-2">
                     <button
-                        onClick={() => setActiveTab(MarginTab.ALL)}
+                        onClick={() => handleTabChange(MarginTab.ALL)}
                         className={`flex-1 cursor-pointer rounded-md px-4 py-1.5 text-sm transition-colors ${activeTab === MarginTab.ALL
                             ? "bg-background-active/50 text-foreground-primary"
                             : "text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover"
                             }`}
                     >
-                        {areAllMarginsEqual ? "All sides" : "Mixed"}
+                        All sides
                     </button>
                     <button
-                        onClick={() => setActiveTab(MarginTab.INDIVIDUAL)}
+                        onClick={() => handleTabChange(MarginTab.INDIVIDUAL)}
                         className={`flex-1 cursor-pointer rounded-md px-4 py-1.5 text-sm transition-colors ${activeTab === MarginTab.INDIVIDUAL
                             ? "bg-background-active/50 text-foreground-primary"
                             : "text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover"
@@ -188,10 +213,11 @@ export const Margin = observer(() => {
                 </div>
                 {activeTab === MarginTab.ALL ? (
                     <InputRange
-                        value={boxState.margin.num ?? 0}
-                        onChange={(value) => handleBoxChange('margin', value.toString())}
+                        value={shouldShowMixed ? 0 : (boxState.margin.num ?? 0)}
+                        onChange={handleMarginChange}
                         unit={boxState.margin.unit}
                         onUnitChange={(unit) => handleUnitChange('margin', unit)}
+                        displayValue={shouldShowMixed ? 'Mixed' : undefined}
                     />
                 ) : (
                     <SpacingInputs

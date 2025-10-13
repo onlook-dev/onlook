@@ -40,6 +40,31 @@ export const Border = observer(() => {
 
     const [activeTab, setActiveTab] = useState<BorderTab>(areAllBordersEqual ? BorderTab.ALL : BorderTab.INDIVIDUAL);
 
+    // Track if user is actively interacting with the input
+    const [isUserInteracting, setIsUserInteracting] = useState(false);
+
+    // Determine if we should show "Mixed" in the input when on "All sides" tab
+    const shouldShowMixed = activeTab === BorderTab.ALL && !areAllBordersEqual && !isUserInteracting;
+
+    // Custom onChange handler that tracks user interaction
+    const handleBorderChange = (value: number) => {
+        setIsUserInteracting(true);
+        handleBoxChange('borderWidth', value.toString());
+    };
+
+    // Reset interaction state when switching tabs or closing dropdown
+    const handleTabChange = (tab: BorderTab) => {
+        setActiveTab(tab);
+        setIsUserInteracting(false);
+    };
+
+    const handleOpenChange = (open: boolean) => {
+        onOpenChange(open);
+        if (!open) {
+            setIsUserInteracting(false);
+        }
+    };
+
     const getBorderDisplay = () => {
         const top = boxState.borderTopWidth.num ?? 0;
         const right = boxState.borderRightWidth.num ?? 0;
@@ -64,7 +89,7 @@ export const Border = observer(() => {
     const borderValue = getBorderDisplay()
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
+        <DropdownMenu open={isOpen} onOpenChange={handleOpenChange} modal={false}>
             <HoverOnlyTooltip
                 content="Border"
                 side="bottom"
@@ -93,7 +118,7 @@ export const Border = observer(() => {
             >
                 <div className="flex items-center gap-2 mb-3">
                     <button
-                        onClick={() => setActiveTab(BorderTab.ALL)}
+                        onClick={() => handleTabChange(BorderTab.ALL)}
                         className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${activeTab === BorderTab.ALL
                             ? 'text-foreground-primary bg-background-active/50'
                             : 'text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover'
@@ -102,7 +127,7 @@ export const Border = observer(() => {
                         All sides
                     </button>
                     <button
-                        onClick={() => setActiveTab(BorderTab.INDIVIDUAL)}
+                        onClick={() => handleTabChange(BorderTab.INDIVIDUAL)}
                         className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${activeTab === BorderTab.INDIVIDUAL
                             ? 'text-foreground-primary bg-background-active/50'
                             : 'text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover'
@@ -113,10 +138,11 @@ export const Border = observer(() => {
                 </div>
                 {activeTab === BorderTab.ALL ? (
                     <InputRange
-                        value={boxState.borderWidth.num ?? 0}
-                        onChange={(value) => handleBoxChange('borderWidth', value.toString())}
+                        value={shouldShowMixed ? 0 : (boxState.borderWidth.num ?? 0)}
+                        onChange={handleBorderChange}
                         unit={boxState.borderWidth.unit}
                         onUnitChange={(unit) => handleUnitChange('borderWidth', unit)}
+                        displayValue={shouldShowMixed ? 'Mixed' : undefined}
                     />
                 ) : (
                     <SpacingInputs

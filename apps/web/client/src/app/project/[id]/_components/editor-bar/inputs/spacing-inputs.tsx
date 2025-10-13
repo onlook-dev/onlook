@@ -61,6 +61,7 @@ export const SpacingInputs = ({ type, values, onChange }: SpacingInputsProps) =>
                     icon={icons[pos]}
                     value={values[pos as keyof typeof values] ?? 0}
                     onChange={(value) => onChange(value, pos)}
+                    stepSize={1}
                 />
             ))}
         </div>

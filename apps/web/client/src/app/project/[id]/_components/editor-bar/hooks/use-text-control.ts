@@ -50,17 +50,26 @@ export const useTextControl = () => {
             textColor:
                 editorEngine.style.selectedStyle?.styles.computed.color ?? DefaultState.textColor,
             letterSpacing:
-                editorEngine.style.selectedStyle?.styles.computed.letterSpacing?.toString() ??
-                DefaultState.letterSpacing,
+                parseFloat(editorEngine.style.selectedStyle?.styles.computed.letterSpacing?.toString() ?? DefaultState.letterSpacing).toString() || DefaultState.letterSpacing,
             capitalization:
                 editorEngine.style.selectedStyle?.styles.computed.textTransform?.toString() ??
                 DefaultState.capitalization,
             textDecorationLine:
                 editorEngine.style.selectedStyle?.styles.computed.textDecorationLine?.toString() ??
                 DefaultState.textDecorationLine,
-            lineHeight:
-                editorEngine.style.selectedStyle?.styles.computed.lineHeight?.toString() ??
-                DefaultState.lineHeight,
+            lineHeight: (() => {
+                const rawValue = editorEngine.style.selectedStyle?.styles.computed.lineHeight?.toString() ?? DefaultState.lineHeight;
+                // Handle both unitless values (1.5) and pixel values (24px)
+                let parsed = parseFloat(rawValue);
+                // If it's a pixel value (like 24px), convert to unitless by dividing by font size
+                if (rawValue.includes('px')) {
+                    const fontSize = parseInt(editorEngine.style.selectedStyle?.styles.computed.fontSize?.toString() ?? '16');
+                    parsed = parsed / fontSize;
+                }
+                // Clamp to reasonable line height range (0.5 to 5.0)
+                const clamped = Math.max(0.5, Math.min(5.0, parsed));
+                return isNaN(parsed) ? DefaultState.lineHeight : clamped.toString();
+            })(),
         };
     };
 
@@ -71,6 +80,10 @@ export const useTextControl = () => {
     }, [editorEngine.style.selectedStyle]);
 
     const handleFontFamilyChange = (fontFamily: Font) => {
+        setTextState((prev) => ({
+            ...prev,
+            fontFamily: fontFamily.id,
+        }));
         editorEngine.style.updateFontFamily('fontFamily', fontFamily);
         // Reload all views after a delay to ensure the font is applied
         setTimeout(async () => {

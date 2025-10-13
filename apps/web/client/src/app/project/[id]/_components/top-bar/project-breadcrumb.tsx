@@ -21,6 +21,7 @@ import { redirect } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
 import { useRef, useState } from 'react';
 import { CloneProjectDialog } from '../clone-project-dialog';
+import { useProjectLoading } from '../../_hooks/use-project-loading';
 import { NewProjectMenu } from './new-project-menu';
 import { RecentProjectsMenu } from './recent-projects';
 
@@ -34,20 +35,19 @@ export const ProjectBreadcrumb = observer(() => {
     const t = useTranslations();
     const closeTimeoutRef = useRef<Timer | null>(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [isClosingProject, setIsClosingProject] = useState(false);
-    const [isDownloading, setIsDownloading] = useState(false);
     const [showCloneDialog, setShowCloneDialog] = useState(false);
+    const { loadingType, isLoading, setLoading, clearLoading } = useProjectLoading();
 
     async function handleNavigateToProjects(_route?: 'create' | 'import') {
         try {
-            setIsClosingProject(true);
+            setLoading('closing-project');
 
             editorEngine.screenshot.captureScreenshot();
         } catch (error) {
             console.error('Failed to take screenshots:', error);
         } finally {
             setTimeout(() => {
-                setIsClosingProject(false);
+                clearLoading();
                 redirect('/projects');
             }, 100);
         }
@@ -66,7 +66,7 @@ export const ProjectBreadcrumb = observer(() => {
         }
 
         try {
-            setIsDownloading(true);
+            setLoading('downloading-code');
 
             const result = await editorEngine.activeSandbox.downloadFiles(project.name);
 
@@ -93,7 +93,7 @@ export const ProjectBreadcrumb = observer(() => {
                 error: error instanceof Error ? error.message : 'Unknown error',
             });
         } finally {
-            setIsDownloading(false);
+            clearLoading();
         }
     }
 
@@ -105,14 +105,19 @@ export const ProjectBreadcrumb = observer(() => {
                         variant='ghost'
                         className="ml-1 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:!bg-transparent cursor-pointer group"
                     >
-                        <Icons.OnlookLogo
-                            className={cn(
-                                'w-9 h-9 hidden md:block',
-                                isClosingProject && 'animate-pulse',
-                            )}
-                        />
+                        {isLoading ? (
+                            <Icons.LoadingSpinner className="w-9 h-9 hidden md:block animate-spin" />
+                        ) : (
+                            <Icons.OnlookLogo className="w-9 h-9 hidden md:block" />
+                        )}
                         <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer group-hover:text-foreground-active">
-                            {isClosingProject ? 'Stopping project...' : project?.name}
+                            {isLoading ? (
+                                loadingType === 'closing-project' ? 'Stopping project...' :
+                                loadingType === 'downloading-code' ? 'Downloading...' :
+                                loadingType === 'creating-blank-project' ? 'Creating project...' :
+                                loadingType === 'switching-project' ? 'Switching project...' :
+                                'Loading...'
+                            ) : project?.name}
                         </span>
                     </Button>
                 </DropdownMenuTrigger>
@@ -140,18 +145,22 @@ export const ProjectBreadcrumb = observer(() => {
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <RecentProjectsMenu />
+                    <RecentProjectsMenu setLoading={setLoading} clearLoading={clearLoading} />
                     <DropdownMenuSeparator />
-                    <NewProjectMenu onShowCloneDialog={setShowCloneDialog} />
+                    <NewProjectMenu onShowCloneDialog={setShowCloneDialog} setLoading={setLoading} clearLoading={clearLoading} loadingType={loadingType} />
                     <DropdownMenuItem
                         onClick={handleDownloadCode}
-                        disabled={isDownloading || !isPro}
+                        disabled={loadingType === 'downloading-code' || !isPro}
                         className="cursor-pointer"
                     >
                         <div className="flex flex-row center items-center justify-between group w-full">
                             <div className="flex flex-row center items-center">
-                                <Icons.Download className="mr-2" />
-                                {isDownloading
+                                {loadingType === 'downloading-code' ? (
+                                    <Icons.LoadingSpinner className="mr-2 animate-spin" />
+                                ) : (
+                                    <Icons.Download className="mr-2" />
+                                )}
+                                {loadingType === 'downloading-code'
                                     ? t(transKeys.projects.actions.downloadingCode)
                                     : t(transKeys.projects.actions.downloadCode)}
                             </div>

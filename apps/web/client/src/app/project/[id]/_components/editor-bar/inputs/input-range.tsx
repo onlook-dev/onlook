@@ -15,6 +15,7 @@ interface InputRangeProps {
     unit?: string;
     onChange?: (value: number) => void;
     onUnitChange?: (unit: string) => void;
+    displayValue?: string;
 }
 
 export const InputRange = ({
@@ -23,8 +24,10 @@ export const InputRange = ({
     unit = 'px',
     onChange,
     onUnitChange,
+    displayValue,
 }: InputRangeProps) => {
     const [localValue, setLocalValue] = useState(String(value));
+    const [isTyping, setIsTyping] = useState(false);
     const rangeRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
 
@@ -32,6 +35,7 @@ export const InputRange = ({
     const debouncedOnChange = useMemo(
         () => debounce((newValue: number) => {
             onChange?.(newValue);
+            setIsTyping(false); // Reset typing state after onChange fires
         }, 500),
         [onChange]
     );
@@ -53,6 +57,7 @@ export const InputRange = ({
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
         setLocalValue(newValue);
+        setIsTyping(true);
     };
 
     const handleBlur = () => {
@@ -61,6 +66,7 @@ export const InputRange = ({
             debouncedOnChange(numValue);
         } else {
             setLocalValue(String(value));
+            setIsTyping(false);
         }
     };
 
@@ -77,6 +83,7 @@ export const InputRange = ({
             }
         } else if (e.key === 'Enter') {
             handleBlur();
+            e.currentTarget.blur(); // Unfocus the input
         }
     };
 
@@ -119,23 +126,35 @@ export const InputRange = ({
                         debouncedOnChange(newValue);
                     }}
                     onMouseDown={handleMouseDown}
-                    className="flex-1 h-3 bg-background-tertiary/50 rounded-full appearance-none cursor-pointer relative
+                    className={`flex-1 h-3 bg-background-tertiary/50 rounded-full appearance-none relative
                         [&::-webkit-slider-runnable-track]:bg-background-tertiary/50 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:h-3
                         [&::-moz-range-track]:bg-background-tertiary/50 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:h-3
-                        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:mt-[-2px] [&::-webkit-slider-thumb]:cursor-grab hover:[&::-webkit-slider-thumb]:bg-white/90 active:[&::-webkit-slider-thumb]:cursor-grabbing
-                        [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-grab hover:[&::-moz-range-thumb]:bg-white/90 active:[&::-moz-range-thumb]:cursor-grabbing
-                        [&::-ms-thumb]:appearance-none [&::-ms-thumb]:w-4 [&::-ms-thumb]:h-4 [&::-ms-thumb]:rounded-full [&::-ms-thumb]:bg-white [&::-ms-thumb]:cursor-grab hover:[&::-ms-thumb]:bg-white/90 active:[&::-ms-thumb]:cursor-grabbing"
+                        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:mt-[-2px] [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:cursor-grab hover:[&::-webkit-slider-thumb]:bg-white/90 active:[&::-webkit-slider-thumb]:cursor-grabbing
+                        [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:cursor-grab hover:[&::-moz-range-thumb]:bg-white/90 active:[&::-moz-range-thumb]:cursor-grabbing
+                        [&::-ms-thumb]:appearance-none [&::-ms-thumb]:w-4 [&::-ms-thumb]:h-4 [&::-ms-thumb]:rounded-full [&::-ms-thumb]:bg-white [&::-ms-thumb]:cursor-grab hover:[&::-ms-thumb]:bg-white/90 active:[&::-ms-thumb]:cursor-grabbing
+                        ${displayValue === 'Mixed' ? 'opacity-50 hover:opacity-100 [&::-webkit-slider-thumb]:opacity-0 hover:[&::-webkit-slider-thumb]:opacity-100 [&::-webkit-slider-thumb]:bg-muted-foreground hover:[&::-webkit-slider-thumb]:bg-foreground-primary [&::-moz-range-thumb]:opacity-0 hover:[&::-moz-range-thumb]:opacity-100 [&::-moz-range-thumb]:bg-muted-foreground hover:[&::-moz-range-thumb]:bg-foreground-primary [&::-ms-thumb]:opacity-0 hover:[&::-ms-thumb]:opacity-100 [&::-ms-thumb]:bg-muted-foreground hover:[&::-ms-thumb]:bg-foreground-primary' : 'cursor-pointer'}`}
                 />
                 <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px]">
                     <input
                         type="text"
                         inputMode="decimal"
                         pattern="[0-9]*\.?[0-9]*"
-                        value={localValue}
+                        value={isTyping ? localValue : (displayValue || localValue)}
                         onChange={handleChange}
                         onBlur={handleBlur}
                         onKeyDown={handleKeyDown}
-                        className="min-w-[40px] max-w-[40px] bg-transparent text-sm text-white focus:outline-none uppercase input-range-text"
+                        onFocus={(e) => {
+                            if (displayValue) {
+                                e.target.select();
+                                setLocalValue('');
+                                setIsTyping(true);
+                            }
+                        }}
+                        className={`min-w-[40px] max-w-[40px] bg-transparent text-sm focus:outline-none input-range-text ${
+                            displayValue === 'Mixed' 
+                                ? 'text-muted-foreground hover:text-white' 
+                                : 'text-white'
+                        }`}
                     />
 
                     <DropdownMenu modal={false}>
