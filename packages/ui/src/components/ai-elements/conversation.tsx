@@ -74,13 +74,13 @@ export const ConversationScrollButton = ({
         !isAtBottom && (
             <Button
                 className={cn(
-                    'absolute bottom-4 left-[50%] translate-x-[-50%] rounded-full',
+                    'absolute bottom-4 left-[50%] translate-x-[-50%] rounded-full bg-background-onlook/80 backdrop-blur-lg text-foreground-onlook opacity-100 hover:bg-foreground-primary hover:text-background-onlook',
                     className,
                 )}
                 onClick={handleScrollToBottom}
                 size="icon"
                 type="button"
-                variant="outline"
+                variant="default"
                 {...props}
             >
                 <ArrowDownIcon className="size-4" />
