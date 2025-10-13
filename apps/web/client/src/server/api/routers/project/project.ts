@@ -284,13 +284,6 @@ export const projectRouter = createTRPCRouter({
                     type: DefaultFrameType.DESKTOP,
                 });
                 await tx.insert(frames).values(desktopFrame);
-                const mobileFrame = createDefaultFrame({
-                    canvasId: newCanvas.id,
-                    branchId: newBranch.id,
-                    url: input.sandboxUrl,
-                    type: DefaultFrameType.MOBILE,
-                });
-                await tx.insert(frames).values(mobileFrame);
 
                 // 6. Create the default chat conversation
                 await tx.insert(conversations).values(createDefaultConversation(newProject.id));
