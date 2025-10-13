@@ -50,7 +50,7 @@ export const BranchDisplay = observer(({ frame, tooltipSide = "top", buttonSize 
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
             <DropdownMenuSeparator />
-            <DropdownMenuContent align="start" className="w-[320px] p-0">
+            <DropdownMenuContent align="start" className="w-[200px] p-0">
                 <BranchControls 
                     branch={frameBranch} 
                     onClose={() => setIsOpen(false)}
