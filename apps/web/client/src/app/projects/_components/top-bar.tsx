@@ -212,8 +212,17 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                         <Button
                             className="text-sm focus:outline-none cursor-pointer py-[0.4rem] h-8"
                             variant="default"
+                            disabled={isCreatingProject}
                         >
-                            Create <Icons.ChevronDown />
+                            {isCreatingProject ? (
+                                <>
+                                    Creating... <Icons.LoadingSpinner className="animate-spin" />
+                                </>
+                            ) : (
+                                <>
+                                    Create <Icons.ChevronDown />
+                                </>
+                            )}
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent sideOffset={8} className="translate-x-[-12px]">
