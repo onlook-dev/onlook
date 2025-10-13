@@ -40,7 +40,7 @@ export const BranchDisplay = observer(() => {
                     </span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[320px] p-0">
+            <DropdownMenuContent align="start" className="w-[240px] p-0">
                 <BranchList
                     branches={allBranches}
                     activeBranch={activeBranch}
