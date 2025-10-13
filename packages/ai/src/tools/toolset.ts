@@ -9,7 +9,9 @@ import {
     GrepTool,
     ListBranchesTool,
     ListFilesTool,
+    MemoryTool,
     OnlookInstructionsTool,
+    ReadMemoryTool,
     ReadFileTool,
     ReadStyleGuideTool,
     SandboxTool,
@@ -44,6 +46,8 @@ const readOnlyToolClasses = [
     GrepTool,
     TypecheckTool,
     CheckErrorsTool,
+    ReadMemoryTool,
+    MemoryTool,
 ];
 const editOnlyToolClasses = [
     SearchReplaceEditTool,

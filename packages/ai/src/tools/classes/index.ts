@@ -17,3 +17,4 @@ export { TerminalCommandTool } from './terminal-command';
 export { TypecheckTool } from './typecheck';
 export { WebSearchTool } from './web-search';
 export { WriteFileTool } from './write-file';
+export { MemoryTool, ReadMemoryTool } from './memory';
