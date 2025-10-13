@@ -29,15 +29,13 @@ export const ChatTabContent = ({
 
     return (
         <div className="flex flex-col h-full justify-end gap-2 pt-2">
-            <div className="h-full flex-1 overflow-y-auto">
-                <ChatMessages
-                    ref={chatMessagesRef}
-                    messages={messages}
-                    isStreaming={isStreaming}
-                    error={error}
-                    onEditMessage={editMessage}
-                />
-            </div>
+            <ChatMessages
+                ref={chatMessagesRef}
+                messages={messages}
+                isStreaming={isStreaming}
+                error={error}
+                onEditMessage={editMessage}
+            />
             <ErrorSection isStreaming={isStreaming} onSendMessage={sendMessage} />
             <ChatInput
                 messages={messages}
