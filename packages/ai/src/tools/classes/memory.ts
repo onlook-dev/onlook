@@ -15,7 +15,7 @@ const MemoryItemSchema = z.object({
     timestamp: z.string(),
     summary: z.string().optional(),
     actions: z.array(z.string()).optional(),
-    data: z.any().optional(),
+    data: z.unknown().optional(),
 });
 
 const GlobalMemoryItemSchema = z.object({
@@ -23,7 +23,7 @@ const GlobalMemoryItemSchema = z.object({
     timestamp: z.string(),
     summary: z.string().optional(),
     actions: z.array(z.string()).optional(),
-    data: z.any().optional(),
+    data: z.unknown().optional(),
     tags: z.array(z.string()).optional().describe('Tags for categorizing global memories'),
 });
 
@@ -70,8 +70,14 @@ export class ReadMemoryTool extends ClientTool {
             try {
                 const raw = await fs.readFile(MEMORY_PATH);
                 const parsed: unknown = typeof raw === 'string' ? JSON.parse(raw) : [];
-                conversationItems = Array.isArray(parsed) ? (parsed as MemoryItem[]) : [];
-                console.debug('[ReadMemoryTool] loaded conversation entries', {
+                if (Array.isArray(parsed)) {
+                    conversationItems = parsed
+                        .map(item => MemoryItemSchema.safeParse(item))
+                        .filter(result => result.success)
+                        .map(result => result.data);
+                } else {
+                    conversationItems = [];
+                } console.debug('[ReadMemoryTool] loaded conversation entries', {
                     count: conversationItems.length,
                 });
             } catch {
@@ -96,7 +102,14 @@ export class ReadMemoryTool extends ClientTool {
             try {
                 const raw = await fs.readFile(GLOBAL_MEMORY_PATH);
                 const parsed: unknown = typeof raw === 'string' ? JSON.parse(raw) : [];
-                globalItems = Array.isArray(parsed) ? (parsed as GlobalMemoryItem[]) : [];
+                if (Array.isArray(parsed)) {
+                    globalItems = parsed
+                        .map(item => GlobalMemoryItemSchema.safeParse(item))
+                        .filter(result => result.success)
+                        .map(result => result.data);
+                } else {
+                    globalItems = [];
+                }
                 console.debug('[ReadMemoryTool] loaded global entries', {
                     count: globalItems.length,
                 });
@@ -142,7 +155,7 @@ export class MemoryTool extends ClientTool {
                 timestamp: z.string().optional().describe('Timestamp for the memory entry'),
                 summary: z.string().optional().describe('Summary of the memory entry'),
                 actions: z.array(z.string()).optional().describe('Actions taken'),
-                data: z.any().optional().describe('Additional data for the memory entry'),
+                data: z.unknown().optional().describe('Additional data for the memory entry'),
                 tags: z
                     .array(z.string())
                     .optional()
@@ -150,7 +163,7 @@ export class MemoryTool extends ClientTool {
             })
             .optional()
             .describe('Memory entry data (required for append action)'),
-        branchId: BRANCH_ID_SCHEMA.optional(),
+        branchId: BRANCH_ID_SCHEMA,
     });
     static readonly icon = Icons.Save;
 
@@ -162,11 +175,8 @@ export class MemoryTool extends ClientTool {
         const providedBranchId = (args as Partial<{ branchId: string }>).branchId;
         const fallbackBranchId = (() => {
             try {
-                // Prefer active branch if available
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const active = (editorEngine as any)?.branches?.activeBranch?.id as
-                    | string
-                    | undefined;
+
+                const active = editorEngine.branches?.activeBranch?.id;
                 return active;
             } catch {
                 return undefined;
@@ -174,7 +184,7 @@ export class MemoryTool extends ClientTool {
         })();
         const branchId = providedBranchId ?? fallbackBranchId;
         if (!branchId) {
-            return 'Error: branchId is required to write memory';
+            return 'Error: branchId is required and could not be inferred from active branch';
         }
         console.debug('[MemoryTool] resolved branchId', {
             branchId,
@@ -200,7 +210,14 @@ export class MemoryTool extends ClientTool {
         try {
             const raw = await fs.readFile(MEMORY_PATH);
             const parsed: unknown = typeof raw === 'string' ? JSON.parse(raw) : [];
-            items = Array.isArray(parsed) ? (parsed as MemoryItem[]) : [];
+            if (Array.isArray(parsed)) {
+                items = parsed
+                    .map(item => MemoryItemSchema.safeParse(item))
+                    .filter(result => result.success)
+                    .map(result => result.data);
+            } else {
+                items = [];
+            }
             console.debug('[MemoryTool] loaded conversation entries', {
                 count: items.length,
             });
@@ -263,7 +280,14 @@ export class MemoryTool extends ClientTool {
         try {
             const raw = await fs.readFile(GLOBAL_MEMORY_PATH);
             const parsed: unknown = typeof raw === 'string' ? JSON.parse(raw) : [];
-            items = Array.isArray(parsed) ? (parsed as GlobalMemoryItem[]) : [];
+            if (Array.isArray(parsed)) {
+                items = parsed
+                    .map(item => GlobalMemoryItemSchema.safeParse(item))
+                    .filter(result => result.success)
+                    .map(result => result.data);
+            } else {
+                items = [];
+            }
             console.debug('[MemoryTool] loaded global entries', {
                 count: items.length,
             });
