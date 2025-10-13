@@ -107,7 +107,7 @@ export const ChatMessages = observer(
         };
 
         return (
-            <Conversation className="h-full w-full">
+            <Conversation className="h-full w-full flex-1">
                 <ScrollController />
                 <ChatMessagesInner
                     messages={messages}

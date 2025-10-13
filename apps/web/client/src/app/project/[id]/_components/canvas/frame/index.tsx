@@ -16,7 +16,7 @@ import { FrameComponent, type IFrameView } from './view';
 const LOADING_MESSAGES = [
     'Starting up your project...',
     'This may take a minute or two...',
-    'Initializing development environment...',    
+    'Initializing development environment...',
     'Tip: Use SHIFT+Click to add multiple elements on the canvas to your prompt',
     'If you have a large project, it may take a while...',
     'Tip: Click the "Branch" icon to create a new version of your project on the canvas',
@@ -44,6 +44,7 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
     const iFrameRef = useRef<IFrameView>(null);
     const [isResizing, setIsResizing] = useState(false);
     const [messageIndex, setMessageIndex] = useState(0);
+    const MESSAGE_INTERVAL = 12000;
 
     const {
         reloadKey,
@@ -61,12 +62,17 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
     const isFrameReady = preloadScriptReady && !(isConnecting && !hasTimedOut);
 
     useEffect(() => {
+        if (isFrameReady) {
+            setMessageIndex(0);
+            return;
+        }
+
         const interval = setInterval(() => {
             setMessageIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
-        }, 12000);
+        }, MESSAGE_INTERVAL);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [isFrameReady]);
 
     return (
         <div
@@ -110,7 +116,7 @@ export const FrameView = observer(({ frame, isInDragSelection = false }: { frame
                     >
                         <div
                             className="flex flex-col items-center gap-3 text-foreground"
-                            style={{ 
+                            style={{
                                 transform: `scale(${1 / editorEngine.canvas.scale})`,
                                 width: `${frame.dimension.width * editorEngine.canvas.scale}px`,
                                 maxWidth: `${frame.dimension.width * editorEngine.canvas.scale}px`,
