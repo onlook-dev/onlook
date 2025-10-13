@@ -228,7 +228,7 @@ describe('Localization Files', () => {
                 const matches = [...value.matchAll(placeholderRegex)];
 
                 if (matches.length > 0) {
-                    const placeholders = new Set(matches.map((m) => m[1]));
+                    const placeholders = new Set(matches.map((m) => m[1]).filter((p): p is string => p !== undefined));
                     keysWithPlaceholders.set(key, placeholders);
                 }
             }
@@ -251,7 +251,7 @@ describe('Localization Files', () => {
                 } // Already checked in previous tests
 
                 const matches = [...value.matchAll(placeholderRegex)];
-                const actualPlaceholders = new Set(matches.map((m) => m[1]));
+                const actualPlaceholders = new Set(matches.map((m) => m[1]).filter((p): p is string => p !== undefined));
 
                 const missing = [...refPlaceholders].filter((p) => !actualPlaceholders.has(p));
                 const extra = [...actualPlaceholders].filter((p) => !refPlaceholders.has(p));

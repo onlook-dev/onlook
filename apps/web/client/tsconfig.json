@@ -4,26 +4,18 @@
         "baseUrl": ".",
         "allowArbitraryExtensions": true,
         "paths": {
-            "@/*": [
-                "./src/*"
-            ],
-            "/*": [
-                "./*"
-            ],
-            "~/*": [
-                "./src/*"
-            ]
+            "@/*": ["./src/*"],
+            "/*": ["./*"],
+            "~/*": ["./src/*"]
         }
     },
     "include": [
         "src",
-        "tests",
+        "test",
+        "next-env.d.ts",
+        "next.config.ts",
         ".next/types/**/*.ts",
-        "messages/en.d.json.ts",
-        "../../../packages/file-system/src/code-fs.ts"
+        "messages/en.d.json.ts"
     ],
-    "exclude": [
-        "node_modules",
-        ".next"
-    ]
+    "exclude": ["node_modules", ".next"]
 }

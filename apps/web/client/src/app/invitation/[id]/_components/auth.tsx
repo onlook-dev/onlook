@@ -12,7 +12,7 @@ export const HandleAuth = () => {
     const searchParams = useSearchParams();
 
     const handleLogin = () => {
-        const currentUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+        const currentUrl = `${pathname}${searchParams && searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
         router.push(`${Routes.LOGIN}?${getReturnUrlQueryParam(currentUrl)}`);
     }
 

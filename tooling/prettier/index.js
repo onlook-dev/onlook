@@ -7,7 +7,6 @@ const config = {
     singleQuote: true,
     printWidth: 100,
     tabWidth: 4,
-    useTabs: false,
     semi: true,
     jsxSingleQuote: false,
     bracketSpacing: true,

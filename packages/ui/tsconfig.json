@@ -6,6 +6,6 @@
             "@/*": ["./src/*"]
         }
     },
-    "include": ["src", "tokens.ts"],
+    "include": ["src", "test", "tokens.ts", "tailwind.config.ts"],
     "exclude": ["node_modules"]
 }
