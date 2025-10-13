@@ -34,8 +34,13 @@ export class FramesManager {
     }
 
     applyFrames(frames: Frame[]) {
-        for (const frame of frames) {
-            this._frameIdToData.set(frame.id, { frame, view: null, selected: false });
+        // Select the first frame
+        for (let i = 0; i < frames.length; i++) {
+            const frame = frames[i];
+            if (!frame) {
+                continue;
+            }
+            this._frameIdToData.set(frame.id, { frame, view: null, selected: i === 0 });
         }
     }
 
