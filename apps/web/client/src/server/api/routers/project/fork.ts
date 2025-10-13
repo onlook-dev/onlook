@@ -154,14 +154,7 @@ function createDefaultFramesForDefaultBranch(
         type: DefaultFrameType.DESKTOP,
     });
 
-    const mobileFrame = createDefaultFrame({
-        canvasId,
-        branchId: defaultBranchMap.newBranch.id,
-        url: defaultBranchMap.newSandboxUrl,
-        type: DefaultFrameType.MOBILE,
-    });
-
-    return [desktopFrame, mobileFrame];
+    return [desktopFrame];
 }
 
 export const fork = protectedProcedure
