@@ -164,6 +164,9 @@ export const Padding = observer(() => {
                         onChange={(value) => handleBoxChange('padding', value.toString())}
                         unit={boxState.padding.unit}
                         onUnitChange={(unit) => handleUnitChange('padding', unit)}
+                        min={0}
+                        max={384}
+                        step={16}
                     />
                 ) : (
                     <SpacingInputs

@@ -145,6 +145,9 @@ export const Radius = observer(() => {
                         onChange={(value) => handleBoxChange('borderRadius', value.toString())}
                         unit={boxState.borderRadius.unit}
                         onUnitChange={(unit) => handleUnitChange('borderRadius', unit)}
+                        min={0}
+                        max={32}
+                        step={2}
                     />
                 ) : (
                     <SpacingInputs
