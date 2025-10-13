@@ -121,6 +121,9 @@ export const customDarkTheme = EditorView.theme({
     '.cm-scroller::-webkit-scrollbar-thumb:hover': {
         backgroundColor: '#4b5563'
     },
+    '.cm-scroller': {
+        scrollBehavior: 'smooth'
+    },
     '.cm-search-highlight': {
         backgroundColor: 'rgba(138, 194, 255, 0.42)',
     },
@@ -302,7 +305,7 @@ export function clearElementHighlight() {
 export function scrollToLineColumn(view: EditorView, line: number, column: number): void {
     setTimeout(() => {
         undebounceScrollToLineColumn(view, line, column);
-    }, 500, { leading: true, });
+    }, 100, { leading: true, });
 }
 
 function undebounceScrollToLineColumn(view: EditorView, line: number, column: number): void {
