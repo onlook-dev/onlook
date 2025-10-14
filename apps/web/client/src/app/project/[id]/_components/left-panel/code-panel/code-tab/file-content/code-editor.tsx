@@ -1,6 +1,6 @@
 import { EditorView, keymap, ViewUpdate } from '@codemirror/view';
 import type { CodeNavigationTarget } from '@onlook/models';
-import { convertToBase64DataUrl, getMimeType, isVideoFile } from '@onlook/utility/src/file';
+import { convertToBase64DataUrl, getMimeType, isVideoFile } from '@onlook/utility';
 import CodeMirror from '@uiw/react-codemirror';
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import type { BinaryEditorFile, EditorFile } from '../shared/types';

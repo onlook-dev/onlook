@@ -232,5 +232,13 @@ describe('isVideoFile', () => {
             expect(isVideoFile('视频.mp4')).toBe(true);
             expect(isVideoFile('ビデオ.webm')).toBe(true);
         });
+
+        it('handles full file paths with slashes', () => {
+            expect(isVideoFile('/public/gradient.mp4')).toBe(true);
+            expect(isVideoFile('/path/to/video.webm')).toBe(true);
+            expect(isVideoFile('./assets/video.mov')).toBe(true);
+            expect(isVideoFile('../videos/clip.avi')).toBe(true);
+            expect(isVideoFile('/public/image.jpg')).toBe(false);
+        });
     });
 });
