@@ -1,4 +1,4 @@
-import { MessageContextType, type MessageContext } from '@onlook/db';
+import { MessageContextType, type MessageContext } from '@onlook/models';
 import type { ComponentType } from 'react';
 
 export interface ContextIcon {

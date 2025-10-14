@@ -1,4 +1,4 @@
-import { MessageContextType, type FileMessageContext, type HighlightMessageContext } from '@onlook/db';
+import { MessageContextType, type FileMessageContext, type HighlightMessageContext } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import { FileContext } from '../../src/contexts/classes/file';
 

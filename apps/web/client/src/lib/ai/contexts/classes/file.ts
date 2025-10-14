@@ -1,4 +1,4 @@
-import { MessageContextType, type FileMessageContext, type HighlightMessageContext } from '@onlook/db';
+import { MessageContextType, type FileMessageContext, type HighlightMessageContext } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { CODE_FENCE } from '../../prompt/constants';
 import { wrapXml } from '../../prompt/helpers';

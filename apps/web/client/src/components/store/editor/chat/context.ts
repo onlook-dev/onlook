@@ -8,7 +8,7 @@ import {
     type FileMessageContext,
     type HighlightMessageContext,
     type MessageContext
-} from '@onlook/db';
+} from '@onlook/models';
 import { assertNever, type ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import { type EditorEngine } from '../engine';

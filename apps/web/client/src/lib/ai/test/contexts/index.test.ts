@@ -8,7 +8,7 @@ import {
     type ImageMessageContext,
     type AgentRuleMessageContext,
     type Branch,
-} from '@onlook/db';
+} from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import { v4 as uuidv4 } from 'uuid';
 import {

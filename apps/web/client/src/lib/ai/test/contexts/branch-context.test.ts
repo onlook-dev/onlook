@@ -1,4 +1,4 @@
-import { MessageContextType, type Branch, type BranchMessageContext } from '@onlook/db';
+import { MessageContextType, type Branch, type BranchMessageContext } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import { BranchContext } from '../../src/contexts/classes/branch';
 

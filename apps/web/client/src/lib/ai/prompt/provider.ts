@@ -2,7 +2,7 @@ import {
     MessageContextType,
     type ChatMessage,
     type MessageContext
-} from '@onlook/db';
+} from '@onlook/models';
 import type { FileUIPart } from 'ai';
 import { AgentRuleContext, BranchContext, ErrorContext, FileContext, ImageContext } from '../contexts/classes';
 import { ASK_MODE_SYSTEM_PROMPT, CREATE_NEW_PAGE_SYSTEM_PROMPT, SHELL_PROMPT, SUGGESTION_SYSTEM_PROMPT, SUMMARY_PROMPTS, SYSTEM_PROMPT } from './constants';

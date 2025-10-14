@@ -1,4 +1,4 @@
-import { MessageContextType, type ErrorMessageContext } from '@onlook/db';
+import { MessageContextType, type ErrorMessageContext } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import { ErrorContext } from '../../src/contexts/classes/error';
 

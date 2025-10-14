@@ -1,4 +1,4 @@
-import { MessageContextType, type ImageMessageContext } from '@onlook/db';
+import { MessageContextType, type ImageMessageContext } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { BaseContext } from '../models/base';
 

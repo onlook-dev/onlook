@@ -1,4 +1,4 @@
-import { MessageContextType, type AgentRuleMessageContext } from '@onlook/db';
+import { MessageContextType, type AgentRuleMessageContext } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import { AgentRuleContext } from '../../src/contexts/classes/agent-rule';
 

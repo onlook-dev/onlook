@@ -2,10 +2,10 @@ import mime from 'mime-lite';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 
-import type { ImageMessageContext } from '@onlook/db';
+import type { ImageMessageContext } from '@onlook/models';
 import type { EditorEngine } from '@/components/store/editor/engine';
 import type { SandboxManager } from '@/components/store/editor/sandbox';
-import { MessageContextType } from '@onlook/db';
+import { MessageContextType } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 
 import { ClientTool } from '../models/client';

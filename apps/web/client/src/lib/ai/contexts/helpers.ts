@@ -1,4 +1,4 @@
-import { MessageContextType, type MessageContext } from '@onlook/db';
+import { MessageContextType, type MessageContext } from '@onlook/models';
 import { AgentRuleContext, BranchContext, ErrorContext, FileContext, HighlightContext, ImageContext } from './classes';
 import type { ContextClass } from './models';
 
