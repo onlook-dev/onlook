@@ -155,14 +155,14 @@ describe('extractTextFromParts', () => {
 
 describe('ensureToolCallResults', () => {
     test('returns unchanged parts when undefined', () => {
-        const result = ensureToolCallResults(undefined);
+        const result = ensureToolCallResults(undefined as any);
         expect(result).toBeUndefined();
     });
 
     test('returns unchanged parts when no tool calls present', () => {
-        const parts = [{ type: 'text', text: 'Hello world' }];
+        const parts = [{ type: 'text', text: 'Hello world' }] as any;
 
-        const result = ensureToolCallResults(parts as any);
+        const result = ensureToolCallResults(parts);
         expect(result).toEqual(parts);
     });
 
@@ -341,7 +341,7 @@ describe('ensureToolCallResults', () => {
             {
                 type: 'tool-divide',
                 toolCallId: 'call_1',
-                state: 'error',
+                state: 'output-error',
                 input: { a: 10, b: 0 },
                 errorText: 'Division by zero',
             } as any,
@@ -361,7 +361,7 @@ describe('ensureToolCallResults', () => {
         expect(result[0]).toEqual({
             type: 'tool-divide',
             toolCallId: 'call_1',
-            state: 'error',
+            state: 'output-error',
             input: { a: 10, b: 0 },
             errorText: 'Division by zero',
         });
@@ -401,7 +401,7 @@ describe('ensureToolCallResults', () => {
             type: 'tool-sum',
             state: 'input-available',
             input: { a: 1, b: 2 },
-        });
+        } as any);
 
         // Part with toolCallId should get stub result
         expect(result[1]).toEqual({
@@ -438,7 +438,7 @@ describe('ensureToolCallResults', () => {
             type: 'tool-sum',
             toolCallId: 'call_1',
             input: { a: 1, b: 2 },
-        });
+        } as any);
 
         // Part with proper state should get stub result
         expect(result[1]).toEqual({
@@ -482,14 +482,14 @@ describe('ensureToolCallResults', () => {
             toolCallId: 'call_1',
             state: 'unknown-state',
             input: { a: 1, b: 2 },
-        });
+        } as any);
 
         expect(result[1]).toEqual({
             type: 'tool-multiply',
             toolCallId: 'call_2',
             state: 'processing',
             input: { x: 3, y: 4 },
-        });
+        } as any);
 
         // Known state should get stub result
         expect(result[2]).toEqual({

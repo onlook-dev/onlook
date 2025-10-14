@@ -10,6 +10,7 @@ describe('ImageContext', () => {
         displayName: 'Screenshot.png',
         mimeType: 'image/png',
         id: uuidv4(),
+        source: 'local',
         ...overrides,
     });
 

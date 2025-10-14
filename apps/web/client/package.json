@@ -95,6 +95,7 @@
         "gpt-tokenizer": "^3.0.1",
         "langfuse-vercel": "^3.38.4",
         "localforage": "^1.10.0",
+        "lodash": "^4.17.21",
         "lru-cache": "^11.2.1",
         "lucide-react": "^0.486.0",
         "marked": "^15.0.7",

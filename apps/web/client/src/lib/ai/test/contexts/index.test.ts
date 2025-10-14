@@ -75,6 +75,7 @@ describe('Context Index', () => {
             displayName: 'screenshot.png',
             mimeType: 'image/png',
             id: uuidv4(),
+            source: 'local',
         } as ImageMessageContext,
         
         agentRule: {
@@ -279,18 +280,27 @@ describe('Context Index', () => {
             const fileClass = getContextClass(MessageContextType.FILE);
             const highlightClass = getContextClass(MessageContextType.HIGHLIGHT);
             const errorClass = getContextClass(MessageContextType.ERROR);
-            
-            expect(fileClass.contextType).toBe(MessageContextType.FILE);
-            expect(fileClass.displayName).toBe('File');
-            expect(fileClass.icon).toBeDefined();
-            
-            expect(highlightClass.contextType).toBe(MessageContextType.HIGHLIGHT);
-            expect(highlightClass.displayName).toBe('Code Selection');
-            expect(highlightClass.icon).toBeDefined();
-            
-            expect(errorClass.contextType).toBe(MessageContextType.ERROR);
-            expect(errorClass.displayName).toBe('Error');
-            expect(errorClass.icon).toBeDefined();
+
+            expect(fileClass).toBeDefined();
+            if (fileClass) {
+                expect(fileClass.contextType).toBe(MessageContextType.FILE);
+                expect(fileClass.displayName).toBe('File');
+                expect(fileClass.icon).toBeDefined();
+            }
+
+            expect(highlightClass).toBeDefined();
+            if (highlightClass) {
+                expect(highlightClass.contextType).toBe(MessageContextType.HIGHLIGHT);
+                expect(highlightClass.displayName).toBe('Code Selection');
+                expect(highlightClass.icon).toBeDefined();
+            }
+
+            expect(errorClass).toBeDefined();
+            if (errorClass) {
+                expect(errorClass.contextType).toBe(MessageContextType.ERROR);
+                expect(errorClass.displayName).toBe('Error');
+                expect(errorClass.icon).toBeDefined();
+            }
         });
     });
 
@@ -342,13 +352,17 @@ describe('Context Index', () => {
 
         test('should maintain context type consistency', () => {
             const contexts = createMockContexts();
-            
+
             Object.entries(contexts).forEach(([key, context]) => {
                 const contextClass = getContextClass(context.type);
-                const genericPrompt = getContextPrompt(context);
-                const directPrompt = contextClass.getPrompt(context as any);
-                
-                expect(genericPrompt).toBe(directPrompt);
+                expect(contextClass).toBeDefined();
+
+                if (contextClass) {
+                    const genericPrompt = getContextPrompt(context);
+                    const directPrompt = contextClass.getPrompt(context as any);
+
+                    expect(genericPrompt).toBe(directPrompt);
+                }
             });
         });
 
