@@ -76,11 +76,8 @@ export const UploadModal = ({
 
                 const fileName = file.name;
                 const fullPath = path.join(currentPath, fileName).replace(/\\/g, '/');
-
-                // Check if file is binary
                 const isBinary = isBinaryFile(fileName);
 
-                // Read file content
                 const content = await new Promise<string | Uint8Array>((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onload = () => {
