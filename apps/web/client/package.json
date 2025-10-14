@@ -114,6 +114,7 @@
         "postgres": "^3.4.7",
         "posthog-js": "^1.246.0",
         "posthog-node": "^4.17.2",
+        "prettier": "^3.3.3",
         "prosemirror-commands": "^1.7.1",
         "prosemirror-history": "^1.4.1",
         "prosemirror-keymap": "^1.2.2",
