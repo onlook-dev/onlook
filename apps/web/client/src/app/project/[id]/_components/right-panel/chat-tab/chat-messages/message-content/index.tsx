@@ -66,9 +66,9 @@ export const MessageContent = observer(
         })
 
         return (
-            <>
+            <div className="select-text">
                 {renderedParts}
-            </>
+            </div>
         );
     },
 );
