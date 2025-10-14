@@ -106,7 +106,7 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(({
     };
 
     return (
-        <Conversation className="h-full w-full flex-1">
+        <Conversation>
             <ScrollController />
             <ChatMessagesInner
                 messages={messages}
