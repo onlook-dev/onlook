@@ -21,7 +21,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
-import { getMimeType } from '@onlook/utility';
+import { getMimeType, isVideoFile } from '@onlook/utility';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -52,8 +52,7 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
     // Check if the file is a video
-    const isVideo = image.mimeType?.startsWith('video/') ||
-        /\.(mp4|webm|ogg|ogv|mov|avi)$/i.test(image.name);
+    const isVideo = isVideoFile(image.name);
 
     // Convert content to data URL for display
     useEffect(() => {

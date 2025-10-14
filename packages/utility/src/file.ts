@@ -112,6 +112,21 @@ export const isImageFile = (fileName: string): boolean => {
     return IMAGE_EXTENSIONS.includes(mimeType);
 };
 
+/**
+ * Check if a file is a video based on its filename or MIME type
+ * @param fileNameOrMimeType - The filename (e.g., "video.mp4") or MIME type (e.g., "video/mp4")
+ * @returns True if the file is a video, false otherwise
+ */
+export const isVideoFile = (fileNameOrMimeType: string): boolean => {
+    // If it looks like a MIME type (contains '/'), check it directly
+    if (fileNameOrMimeType.includes('/')) {
+        return fileNameOrMimeType.startsWith('video/');
+    }
+    // Otherwise, treat it as a filename
+    const mimeType = getMimeType(fileNameOrMimeType);
+    return mimeType.startsWith('video/');
+};
+
 export const convertToBase64 = (content: Uint8Array): string => {
     return btoa(
         Array.from(content)

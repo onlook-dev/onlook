@@ -1,6 +1,6 @@
 import { EditorView, keymap, ViewUpdate } from '@codemirror/view';
 import type { CodeNavigationTarget } from '@onlook/models';
-import { convertToBase64DataUrl, getMimeType } from '@onlook/utility/src/file';
+import { convertToBase64DataUrl, getMimeType, isVideoFile } from '@onlook/utility/src/file';
 import CodeMirror from '@uiw/react-codemirror';
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import type { BinaryEditorFile, EditorFile } from '../shared/types';
@@ -38,11 +38,6 @@ export const CodeEditor = ({
     const getFileUrl = (file: BinaryEditorFile) => {
         const mime = getMimeType(file.path.toLowerCase());
         return convertToBase64DataUrl(file.content, mime);
-    };
-
-    const isVideoFile = (file: BinaryEditorFile) => {
-        const mime = getMimeType(file.path.toLowerCase());
-        return mime.startsWith('video/');
     };
 
     const selectionExtension = useMemo(() => {
@@ -176,7 +171,7 @@ export const CodeEditor = ({
         >
             {file.type === 'binary' && (
                 <>
-                    {isVideoFile(file as BinaryEditorFile) ? (
+                    {isVideoFile(file.path) ? (
                         <video
                             src={getFileUrl(file as BinaryEditorFile)}
                             controls

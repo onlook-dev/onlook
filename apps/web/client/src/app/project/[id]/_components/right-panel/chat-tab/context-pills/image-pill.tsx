@@ -1,5 +1,6 @@
 import { type ImageMessageContext, MessageContextType } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
+import { isVideoFile } from '@onlook/utility';
 import { motion } from 'motion/react';
 import React from 'react';
 import { getTruncatedName } from './helpers';
@@ -16,7 +17,7 @@ export const ImagePill = React.forwardRef<
         return null;
     }
 
-    const isVideo = context.mimeType?.startsWith('video/');
+    const isVideo = isVideoFile(context.mimeType);
 
     return (
         <motion.span
