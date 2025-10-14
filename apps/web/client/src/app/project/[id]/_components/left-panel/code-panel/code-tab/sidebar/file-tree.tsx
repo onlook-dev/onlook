@@ -15,7 +15,7 @@ interface FileTreeProps {
     fileEntries: FileEntry[];
     isLoading: boolean;
     selectedFilePath: string | null | undefined;
-    onAddToChat?: (filePath: string) => void;
+    onAddToChat: (filePath: string) => void;
 }
 
 export const FileTree = ({
