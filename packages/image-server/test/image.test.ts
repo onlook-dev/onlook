@@ -372,7 +372,7 @@ describe('Image Compression Server-Side', () => {
 
             // Log results for each format
             results.forEach((result, index) => {
-                const fileName = allImages[index];
+                const fileName = allImages[index]!;
                 const extension = path.extname(fileName).toLowerCase();
 
                 if (result.success) {
@@ -389,7 +389,7 @@ describe('Image Compression Server-Side', () => {
             // Verify that ICO and SVG files were skipped
             skippedResults.forEach((result, index) => {
                 const skippedIndex = results.findIndex((r) => r === result);
-                const fileName = allImages[skippedIndex];
+                const fileName = allImages[skippedIndex]!;
                 const extension = path.extname(fileName).toLowerCase();
 
                 if (extension === '.ico' || extension === '.svg') {

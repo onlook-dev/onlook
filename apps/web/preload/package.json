@@ -27,7 +27,7 @@
         "@types/lodash.debounce": "^4.0.9",
         "concurrently": "^9.1.2",
         "eslint": "^9.0.0",
-        "typescript": "^5.5.4"
+        "typescript": "^5.8.2"
     },
     "peerDependencies": {
         "typescript": "^5"
@@ -39,7 +39,7 @@
         "lodash": "^4.17.21",
         "lodash-es": "^4.17.21",
         "lodash.debounce": "^4.0.8",
-        "nanoid": "^5.1.5",
+        "nanoid": "^5.1.6",
         "penpal": "^7.0.4"
     }
 }

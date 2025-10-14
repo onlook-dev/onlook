@@ -37,11 +37,11 @@
         "@onlook/eslint": "*",
         "@onlook/typescript": "*",
         "@types/lodash.debounce": "^4.0.9",
-        "@types/node": "^20.0.0",
+        "@types/node": "^24.7.2",
         "@types/react": "^19.1.13",
         "eslint": "^9.0.0",
         "react": "^19.1.13",
-        "typescript": "^5.5.4"
+        "typescript": "^5.8.2"
     },
     "dependencies": {
         "@onlook/constants": "*",

@@ -21,14 +21,14 @@
         "db:migrate:branching": "bun src/migration-scripts/migrate-to-branching.ts"
     },
     "dependencies": {
-        "@supabase/supabase-js": "^2.49.2",
+        "@supabase/supabase-js": "^2.75.0",
         "dotenv": "^17.2.1",
         "drizzle-orm": "^0.44.6",
         "drizzle-zod": "^0.8.3",
         "pg": "^8.16.3",
         "postgres": "^3.4.7",
         "uuid": "^11.1.0",
-        "zod": "^4.1.3",
+        "zod": "^4.1.8",
         "@onlook/constants": "*",
         "@onlook/models": "*",
         "@onlook/stripe": "*"
@@ -36,7 +36,7 @@
     "devDependencies": {
         "@onlook/eslint": "*",
         "@onlook/typescript": "*",
-        "@types/node": "^20.0.0",
+        "@types/node": "^24.7.2",
         "drizzle-kit": "^0.31.4",
         "typescript": "^5.8.2",
         "ai": "5.0.60"

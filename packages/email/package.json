@@ -32,17 +32,17 @@
     "devDependencies": {
         "@onlook/eslint": "*",
         "@onlook/typescript": "*",
-        "@types/node": "^20.0.0",
-        "@types/react": "^19.1.0",
-        "@types/react-dom": "^19.1.0",
+        "@types/node": "^24.7.2",
+        "@types/react": "^19.1.13",
+        "@types/react-dom": "^19.1.13",
         "eslint": "^9.0.0",
-        "typescript": "^5.5.4"
+        "typescript": "^5.8.2"
     },
     "dependencies": {
         "@onlook/constants": "*",
         "@react-email/components": "0.0.41",
-        "react": "19.1.0",
-        "react-dom": "19.1.0",
+        "react": "^19.1.13",
+        "react-dom": "^19.1.13",
         "react-email": "4.0.15",
         "resend": "^4.5.1"
     }

@@ -2,5 +2,11 @@
     "name": "@onlook/typescript",
     "description": "The Onlook TypeScript Configuration",
     "version": "0.0.0",
-    "private": true
+    "private": true,
+    "exports": {
+        "./base.json": "./base.json",
+        "./next-react.json": "./next-react.json",
+        "./react-library.json": "./react-library.json",
+        "./vite-react.json": "./vite-react.json"
+    }
 }

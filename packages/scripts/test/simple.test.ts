@@ -65,7 +65,7 @@ EMPTY_KEY=
 
         const envContent = Object.entries(API_KEYS)
             .map(([key]) => {
-                const value = responses[key] || '';
+                const value = responses[key as keyof typeof responses] || '';
                 return `${key}=${value}`;
             })
             .join('\n');

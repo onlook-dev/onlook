@@ -31,6 +31,6 @@
         "@onlook/typescript": "*",
         "eslint": "^9.0.0",
         "prettier": "^3.3.3",
-        "typescript": "^5.5.4"
+        "typescript": "^5.8.2"
     }
 }
