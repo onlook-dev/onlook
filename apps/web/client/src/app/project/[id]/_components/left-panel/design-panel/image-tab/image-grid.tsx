@@ -54,7 +54,7 @@ export const ImageGrid = ({ images, projectId, branchId, search, onUpload, onRen
                 <div className="flex flex-col items-center justify-center py-8 text-foreground-secondary">
                     <Icons.Image className="w-8 h-8 mb-2" />
                     <div className="text-sm">
-                        {search ? 'No images match your search' : 'No images in this folder'}
+                        {search ? 'No images or videos match your search' : 'No images or videos in this folder'}
                     </div>
                 </div>
             )}
