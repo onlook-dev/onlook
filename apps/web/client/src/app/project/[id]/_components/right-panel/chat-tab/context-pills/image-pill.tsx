@@ -1,4 +1,4 @@
-import { type ImageMessageContext, MessageContextType } from '@onlook/db';
+import { type ImageMessageContext, MessageContextType } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { isVideoFile } from '@onlook/utility';
 import { motion } from 'motion/react';

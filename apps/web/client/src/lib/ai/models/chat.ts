@@ -1,6 +1,6 @@
 import type { ChatTools } from '../tools/toolset';
 import type { UIMessage, UIMessagePart, LanguageModelUsage, FinishReason, JSONValue } from 'ai';
-import type { MessageContext, MessageCheckpoints } from '@onlook/db';
+import type { MessageContext, MessageCheckpoints } from '@onlook/models';
 
 export enum ChatType {
     ASK = 'ask',
@@ -32,5 +32,5 @@ export type QueuedMessage = {
     context: MessageContext[];
 };
 
-export type { GitMessageCheckpoint, MessageContext } from '@onlook/db';
-export { MessageCheckpointType } from '@onlook/db';
+export type { GitMessageCheckpoint, MessageContext } from '@onlook/models';
+export { MessageCheckpointType } from '@onlook/models';

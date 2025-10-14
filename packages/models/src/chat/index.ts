@@ -1,4 +1,4 @@
-import type { Branch } from '@onlook/models';
+import type { Branch } from '../branching';
 import { z } from 'zod';
 
 // Message Context Types

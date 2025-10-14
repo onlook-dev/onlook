@@ -1,4 +1,4 @@
-import type { MessageCheckpoints, MessageContext, MessagePart } from "../../types/chat";
+import type { MessageCheckpoints, MessageContext, MessagePart } from "@onlook/models";
 import type { LanguageModelUsage } from 'ai';
 import { relations } from "drizzle-orm";
 import { boolean, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";

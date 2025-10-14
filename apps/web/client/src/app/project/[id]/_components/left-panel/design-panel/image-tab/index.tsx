@@ -2,8 +2,8 @@
 
 import { observer } from 'mobx-react-lite';
 
-import type { ImageMessageContext } from '@onlook/db';
-import { MessageContextType } from '@onlook/db';
+import type { ImageMessageContext } from '@onlook/models';
+import { MessageContextType } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { convertToBase64DataUrl, getMimeType } from '@onlook/utility';
