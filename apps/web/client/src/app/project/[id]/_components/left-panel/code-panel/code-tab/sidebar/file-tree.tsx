@@ -15,6 +15,7 @@ interface FileTreeProps {
     fileEntries: FileEntry[];
     isLoading: boolean;
     selectedFilePath: string | null | undefined;
+    onAddToChat?: (filePath: string) => void;
 }
 
 export const FileTree = ({
@@ -24,7 +25,8 @@ export const FileTree = ({
     onRefresh,
     fileEntries,
     isLoading,
-    selectedFilePath
+    selectedFilePath,
+    onAddToChat
 }: FileTreeProps) => {
     const treeRef = useRef<TreeApi<FileEntry>>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -226,7 +228,7 @@ export const FileTree = ({
                             />
                         )}
                     >
-                        {(props) => <FileTreeNode {...props} onFileSelect={onFileSelect} onRenameFile={onRenameFile} onDeleteFile={onDeleteFile} />}
+                        {(props) => <FileTreeNode {...props} onFileSelect={onFileSelect} onRenameFile={onRenameFile} onDeleteFile={onDeleteFile} onAddToChat={onAddToChat} />}
                     </Tree>
                 )}
             </div>

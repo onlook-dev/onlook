@@ -31,10 +31,11 @@ interface FileTreeNodeProps {
     onFileSelect: (filePath: string, searchTerm?: string) => void;
     onRenameFile: (oldPath: string, newPath: string) => void;
     onDeleteFile: (path: string) => void;
+    onAddToChat?: (filePath: string) => void;
 }
 
 export const FileTreeNode = ({
-    node, style, onFileSelect, onRenameFile, onDeleteFile
+    node, style, onFileSelect, onRenameFile, onDeleteFile, onAddToChat
 }: FileTreeNodeProps) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editingName, setEditingName] = useState(node.data.name);
@@ -110,6 +111,19 @@ export const FileTreeNode = ({
         }
     };
 
+    const handleAddToChat = () => {
+        if (isDirectory || !onAddToChat) return;
+        onAddToChat(node.data.path);
+    };
+
+    const handleCopyPath = async () => {
+        try {
+            await navigator.clipboard.writeText(node.data.path);
+        } catch (error) {
+            console.error('Failed to copy path:', error);
+        }
+    };
+
     const menuItems: Array<{
         label: string;
         action: () => void;
@@ -117,6 +131,18 @@ export const FileTreeNode = ({
         separator: boolean;
         className?: string;
     } | null> = [
+            !isDirectory && onAddToChat ? {
+                label: 'Add to Chat',
+                action: handleAddToChat,
+                icon: <Icons.Plus className="w-4 h-4" />,
+                separator: false,
+            } : null,
+            {
+                label: 'Copy Path',
+                action: handleCopyPath,
+                icon: <Icons.Copy className="w-4 h-4" />,
+                separator: false,
+            },
             !isDirectory ? {
                 label: 'Rename',
                 action: handleRename,
