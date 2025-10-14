@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { getMimeType, isImageFile } from '../src/file';
+import { getMimeType, isImageFile, isVideoFile } from '../src/file';
 
 describe('getMimeType', () => {
     it('returns correct MIME type for .ico', () => {
@@ -124,11 +124,19 @@ describe('isImageFile', () => {
             expect(isImageFile('....')).toBe(false);
         });
 
-        it('returns false for common non-image extensions', () => {
-            expect(isImageFile('video.mp4')).toBe(false);
+        it('returns false for common non-image/non-video extensions', () => {
             expect(isImageFile('audio.mp3')).toBe(false);
             expect(isImageFile('archive.zip')).toBe(false);
             expect(isImageFile('document.pdf')).toBe(false);
+            expect(isImageFile('document.txt')).toBe(false);
+        });
+
+        it('returns true for video files', () => {
+            expect(isImageFile('video.mp4')).toBe(true);
+            expect(isImageFile('video.webm')).toBe(true);
+            expect(isImageFile('video.ogg')).toBe(true);
+            expect(isImageFile('video.mov')).toBe(true);
+            expect(isImageFile('video.avi')).toBe(true);
         });
     });
 
@@ -148,6 +156,89 @@ describe('isImageFile', () => {
             expect(isImageFile('图片.jpg')).toBe(true);
             expect(isImageFile('画像.png')).toBe(true);
             expect(isImageFile('émoji😀.svg')).toBe(true);
+        });
+    });
+});
+
+describe('isVideoFile', () => {
+    describe('should return true for video file extensions', () => {
+        it('returns true for mp4 files', () => {
+            expect(isVideoFile('video.mp4')).toBe(true);
+            expect(isVideoFile('movie.MP4')).toBe(true);
+        });
+
+        it('returns true for webm files', () => {
+            expect(isVideoFile('clip.webm')).toBe(true);
+            expect(isVideoFile('recording.WEBM')).toBe(true);
+        });
+
+        it('returns true for ogg/ogv files', () => {
+            expect(isVideoFile('video.ogg')).toBe(true);
+            expect(isVideoFile('video.ogv')).toBe(true);
+        });
+
+        it('returns true for mov files', () => {
+            expect(isVideoFile('video.mov')).toBe(true);
+            expect(isVideoFile('clip.MOV')).toBe(true);
+        });
+
+        it('returns true for avi files', () => {
+            expect(isVideoFile('video.avi')).toBe(true);
+            expect(isVideoFile('movie.AVI')).toBe(true);
+        });
+    });
+
+    describe('should return true for video MIME types', () => {
+        it('returns true for video MIME types', () => {
+            expect(isVideoFile('video/mp4')).toBe(true);
+            expect(isVideoFile('video/webm')).toBe(true);
+            expect(isVideoFile('video/ogg')).toBe(true);
+            expect(isVideoFile('video/quicktime')).toBe(true);
+            expect(isVideoFile('video/x-msvideo')).toBe(true);
+        });
+    });
+
+    describe('should return false for non-video formats', () => {
+        it('returns false for image files', () => {
+            expect(isVideoFile('image.jpg')).toBe(false);
+            expect(isVideoFile('image.png')).toBe(false);
+            expect(isVideoFile('image.gif')).toBe(false);
+        });
+
+        it('returns false for audio files', () => {
+            expect(isVideoFile('audio.mp3')).toBe(false);
+            expect(isVideoFile('audio.wav')).toBe(false);
+        });
+
+        it('returns false for document files', () => {
+            expect(isVideoFile('document.pdf')).toBe(false);
+            expect(isVideoFile('document.txt')).toBe(false);
+        });
+
+        it('returns false for image MIME types', () => {
+            expect(isVideoFile('image/jpeg')).toBe(false);
+            expect(isVideoFile('image/png')).toBe(false);
+        });
+    });
+
+    describe('edge cases', () => {
+        it('handles filenames with special characters', () => {
+            expect(isVideoFile('my-video_file.mp4')).toBe(true);
+            expect(isVideoFile('video (1).webm')).toBe(true);
+            expect(isVideoFile('clip@2x.mov')).toBe(true);
+        });
+
+        it('handles filenames with unicode characters', () => {
+            expect(isVideoFile('视频.mp4')).toBe(true);
+            expect(isVideoFile('ビデオ.webm')).toBe(true);
+        });
+
+        it('handles full file paths with slashes', () => {
+            expect(isVideoFile('/public/gradient.mp4')).toBe(true);
+            expect(isVideoFile('/path/to/video.webm')).toBe(true);
+            expect(isVideoFile('./assets/video.mov')).toBe(true);
+            expect(isVideoFile('../videos/clip.avi')).toBe(true);
+            expect(isVideoFile('/public/image.jpg')).toBe(false);
         });
     });
 });

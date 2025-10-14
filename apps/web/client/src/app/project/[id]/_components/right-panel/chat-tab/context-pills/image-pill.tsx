@@ -1,5 +1,6 @@
 import { type ImageMessageContext, MessageContextType } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
+import { isVideoFile } from '@onlook/utility';
 import { motion } from 'motion/react';
 import React from 'react';
 import { getTruncatedName } from './helpers';
@@ -15,6 +16,8 @@ export const ImagePill = React.forwardRef<
         console.warn('ImagePill received non-image context');
         return null;
     }
+
+    const isVideo = isVideoFile(context.mimeType);
 
     return (
         <motion.span
@@ -33,13 +36,22 @@ export const ImagePill = React.forwardRef<
             key={context.displayName}
             ref={ref}
         >
-            {/* Left side: Image thumbnail */}
+            {/* Left side: Image/Video thumbnail */}
             <div className="w-7 h-7 flex items-center justify-center overflow-hidden relative">
-                <img
-                    src={context.content}
-                    alt={context.displayName}
-                    className="w-full h-full object-cover rounded-l-md"
-                />
+                {isVideo ? (
+                    <video
+                        src={context.content}
+                        className="w-full h-full object-cover rounded-l-md"
+                        muted
+                        playsInline
+                    />
+                ) : (
+                    <img
+                        src={context.content}
+                        alt={context.displayName}
+                        className="w-full h-full object-cover rounded-l-md"
+                    />
+                )}
                 <div className="absolute inset-0 border-l-[1px] border-y-[1px] rounded-l-md border-white/10 pointer-events-none" />
             </div>
 

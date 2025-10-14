@@ -18,14 +18,14 @@ export const SearchUploadBar = ({ search, setSearch, isUploading, onUpload }: Se
             const input = document.createElement('input');
             input.type = 'file';
             input.multiple = true;
-            input.accept = 'image/*';
+            input.accept = 'image/*,video/*';
             input.onchange = (e) => {
                 const files = (e.target as HTMLInputElement).files;
                 if (files) onUpload(files);
             };
             input.click();
         } catch (error) {
-            console.error('Error uploading images', error);
+            console.error('Error uploading images and videos', error);
         }
     };
 
@@ -33,7 +33,7 @@ export const SearchUploadBar = ({ search, setSearch, isUploading, onUpload }: Se
         <div className="flex gap-2">
             <div className="relative flex-1">
                 <Input
-                    placeholder="Search images..."
+                    placeholder="Search images and videos..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="h-8 text-xs pr-8"
@@ -65,7 +65,7 @@ export const SearchUploadBar = ({ search, setSearch, isUploading, onUpload }: Se
                 </TooltipTrigger>
                 <TooltipPortal>
                     <TooltipContent>
-                        <p>Upload image{isUploading ? 's...' : ''}</p>
+                        <p>Upload images and videos{isUploading ? '...' : ''}</p>
                     </TooltipContent>
                 </TooltipPortal>
             </Tooltip>

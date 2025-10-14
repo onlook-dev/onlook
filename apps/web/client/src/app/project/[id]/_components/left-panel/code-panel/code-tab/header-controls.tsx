@@ -18,7 +18,7 @@ interface CodeControlsProps {
     currentPath: string;
     onSave: () => Promise<void>;
     onRefresh: () => void;
-    onCreateFile: (filePath: string, content?: string) => Promise<void>;
+    onCreateFile: (filePath: string, content?: string | Uint8Array) => Promise<void>;
     onCreateFolder: (folderPath: string) => Promise<void>;
     isSidebarOpen: boolean;
     setIsSidebarOpen: (isSidebarOpen: boolean) => void;

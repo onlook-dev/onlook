@@ -1,6 +1,6 @@
 import { EditorView, keymap, ViewUpdate } from '@codemirror/view';
 import type { CodeNavigationTarget } from '@onlook/models';
-import { convertToBase64DataUrl, getMimeType } from '@onlook/utility/src/file';
+import { convertToBase64DataUrl, getMimeType, isVideoFile } from '@onlook/utility';
 import CodeMirror from '@uiw/react-codemirror';
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import type { BinaryEditorFile, EditorFile } from '../shared/types';
@@ -170,11 +170,23 @@ export const CodeEditor = ({
             }}
         >
             {file.type === 'binary' && (
-                <img
-                    src={getFileUrl(file as BinaryEditorFile)}
-                    alt={file.path}
-                    className="w-full h-full object-contain p-5"
-                />
+                <>
+                    {isVideoFile(file.path) ? (
+                        <video
+                            src={getFileUrl(file as BinaryEditorFile)}
+                            controls
+                            className="w-full h-full object-contain p-5"
+                        >
+                            Your browser does not support the video tag.
+                        </video>
+                    ) : (
+                        <img
+                            src={getFileUrl(file as BinaryEditorFile)}
+                            alt={file.path}
+                            className="w-full h-full object-contain p-5"
+                        />
+                    )}
+                </>
             )}
             {file.type === 'text' && typeof file.content === 'string' && (
                 <>
