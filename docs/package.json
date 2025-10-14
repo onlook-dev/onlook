@@ -15,9 +15,9 @@
     },
     "dependencies": {
         "@onlook/ui": "*",
-        "fumadocs-core": "^15.6.9",
-        "fumadocs-mdx": "^11.7.4",
-        "fumadocs-ui": "^15.6.9",
+        "fumadocs-core": "15.6.9",
+        "fumadocs-mdx": "11.7.4",
+        "fumadocs-ui": "15.6.9",
         "next": ">=15.5.3",
         "next-sitemap": "^4.2.3",
         "react": "^19.1.13",

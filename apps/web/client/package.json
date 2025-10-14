@@ -130,6 +130,7 @@
         "react-markdown": "^10.1.0",
         "remark-gfm": "^4.0.1",
         "server-only": "^0.0.1",
+        "sharp": "^0.33.5",
         "shiki": "^3.2.2",
         "sonner": "^2.0.4",
         "strip-ansi": "^7.1.0",
