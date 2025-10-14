@@ -4,7 +4,7 @@ import { rateLimits } from '@/schema/subscription/rate-limits';
 import { subscriptions, type Subscription } from '@/schema/subscription/subscription';
 import { usageRecords } from '@/schema/subscription/usage';
 import { users } from '@/schema/user/user';
-import { db } from '@onlook/db/src/client';
+import { db } from '../../client';
 import { UsageType } from '@onlook/models';
 import { SubscriptionStatus } from '@onlook/stripe';
 import { createStripeClient } from '@onlook/stripe/src/client';

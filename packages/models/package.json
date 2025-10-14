@@ -9,6 +9,7 @@
     "type": "module",
     "module": "src/index.ts",
     "main": "dist/index.js",
+    "types": "src/index.ts",
     "scripts": {
         "build": "bun build src/index.ts --outfile=dist/index.js",
         "clean": "rm -rf node_modules",
@@ -33,11 +34,13 @@
     "devDependencies": {
         "@onlook/eslint": "*",
         "@onlook/typescript": "*",
+        "@types/node": "^20.0.0",
         "ai": "5.0.60",
         "eslint": "^9.0.0",
         "typescript": "^5.5.4"
     },
     "dependencies": {
-        "zod": "^4.1.3"
+        "zod": "^4.1.3",
+        "@onlook/constants": "*"
     }
 }

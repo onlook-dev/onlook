@@ -1,4 +1,4 @@
-import type { Project as DbProject } from '@onlook/db';
+import type { Project as DbProject } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
 
 export const createDefaultProject = ({

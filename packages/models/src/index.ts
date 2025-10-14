@@ -1,7 +1,6 @@
 export * from './actions/';
 export * from './assets/';
 export * from './auth/';
-export * from './branching/';
 export * from './chat/';
 export * from './code/';
 export * from './create/';

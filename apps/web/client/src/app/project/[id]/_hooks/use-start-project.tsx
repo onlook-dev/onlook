@@ -3,8 +3,8 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { type ProjectCreateRequest } from '@onlook/db';
+import { ChatType } from '@/lib/ai/models/chat';
 import {
-    ChatType,
     CreateRequestContextType,
     MessageContextType,
     ProjectCreateRequestStatus,

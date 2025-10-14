@@ -4,7 +4,6 @@ import {
     branches,
     canvases,
     conversations,
-    createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas,
     deployments,
     frames,
     legacySubscriptions,
@@ -28,13 +27,16 @@ import {
     type RateLimit,
     type Subscription,
     type User
-} from '@onlook/db';
-import { db } from '@onlook/db/src/client';
+} from '../schema';
+import { db } from '../client';
 import { ProjectRole } from '@onlook/models';
-import { MessageContextType, type MessageContext } from '../types/chat';
+import { MessageContextType, type MessageContext } from '@onlook/models';
 import { PriceKey, ProductType, SubscriptionStatus } from '@onlook/stripe';
 import { v4 as uuidv4 } from 'uuid';
 import { createDefaultBranch } from '../defaults/branch';
+import { createDefaultCanvas } from '../defaults/canvas';
+import { createDefaultFrame } from '../defaults/frame';
+import { createDefaultUserCanvas } from '../defaults/user-canvas';
 import { SEED_USER } from './constants';
 
 const user0 = {

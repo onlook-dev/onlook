@@ -1,5 +1,5 @@
 import { legacySubscriptions } from '@/schema/subscription/legacy';
-import { db } from '@onlook/db/src/client';
+import { db } from '../../client';
 import { createStripeClient } from '@onlook/stripe/src/client';
 import { createCodeForCoupon, createLegacyCoupon } from '@onlook/stripe/src/scripts/production/coupon';
 import { config } from 'dotenv';

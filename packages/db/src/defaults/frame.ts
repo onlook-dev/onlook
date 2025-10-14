@@ -1,4 +1,4 @@
-import type { Frame as DbFrame } from '@onlook/db';
+import type { Frame as DbFrame } from '../schema';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum DefaultFrameType {
