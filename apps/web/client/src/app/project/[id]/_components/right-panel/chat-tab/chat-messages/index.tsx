@@ -40,7 +40,7 @@ const ChatMessagesInner = observer(({
     const t = useTranslations();
 
     const renderMessage = useCallback(
-        (message: ChatMessage, index: number) => {
+        (message: ChatMessage) => {
             let messageNode;
             switch (message.role) {
                 case 'assistant':
@@ -82,7 +82,7 @@ const ChatMessagesInner = observer(({
     return (
         <>
             <ConversationContent className="p-0 m-0">
-                {messages.map((message, index) => renderMessage(message, index))}
+                {messages.map((message) => renderMessage(message))}
                 {error && <ErrorMessage error={error} />}
                 {isStreaming && <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
                     <Icons.LoadingSpinner className="animate-spin" />
