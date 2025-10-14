@@ -172,19 +172,18 @@ export const ChatInput = observer(
             return t(transKeys.editor.panels.edit.tabs.chat.input.placeholder);
         };
 
-        const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-            const items = e.clipboardData.items;
+        const extractImageFiles = (items: DataTransferItemList | DataTransferItem[]): File[] => {
+            return Array.from(items)
+                .filter((item) => item.type.startsWith('image/'))
+                .map((item) => item.getAsFile())
+                .filter((file): file is File => file !== null);
+        };
 
-            for (const item of items) {
-                if (item.type.startsWith('image/')) {
-                    e.preventDefault();
-                    const file = item.getAsFile();
-                    if (!file) {
-                        continue;
-                    }
-                    void handleImageEvent(file, 'Pasted image');
-                    break;
-                }
+        const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+            const imageFiles = extractImageFiles(e.clipboardData.items);
+            if (imageFiles.length > 0) {
+                e.preventDefault();
+                void handleImageEvents(imageFiles, 'Pasted image');
             }
         };
 
@@ -248,44 +247,66 @@ export const ChatInput = observer(
             }
 
             // Fall back to handling external file drops
-            const items = e.dataTransfer.items;
-            for (const item of items) {
-                if (item.type.startsWith('image/')) {
-                    const file = item.getAsFile();
-                    if (!file) {
-                        continue;
-                    }
-                    void handleImageEvent(file, 'Dropped image');
-                    break;
-                }
+            const imageFiles = extractImageFiles(e.dataTransfer.items);
+            if (imageFiles.length > 0) {
+                void handleImageEvents(imageFiles);
             }
         };
 
-        const handleImageEvent = async (file: File, displayName?: string) => {
+        const processImageFile = async (file: File): Promise<string> => {
+            const compressedImage = await compressImageInBrowser(file);
+            if (compressedImage) {
+                return compressedImage;
+            }
+
+            return new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (event) => resolve(event.target?.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        };
+
+        const handleImageEvents = async (files: File[], customDisplayName?: string) => {
             const currentImages = editorEngine.chat.context.context.filter(
                 (c) => c.type === MessageContextType.IMAGE,
             );
-            const { success, errorMessage } = validateImageLimit(currentImages, 1);
+            const { success, errorMessage } = validateImageLimit(currentImages, files.length);
             if (!success) {
                 toast.error(errorMessage);
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                const compressedImage = await compressImageInBrowser(file);
-                const base64URL = compressedImage ?? (event.target?.result as string);
-                const contextImage: ImageMessageContext = {
-                    id: uuidv4(),
-                    type: MessageContextType.IMAGE,
-                    source: 'external',
-                    content: base64URL,
-                    mimeType: file.type,
-                    displayName: displayName ?? file.name,
-                };
-                editorEngine.chat.context.addContexts([contextImage]);
-            };
-            reader.readAsDataURL(file);
+            const imageContexts: ImageMessageContext[] = [];
+
+            for (const file of files) {
+                try {
+                    const base64URL = await processImageFile(file);
+                    const contextImage: ImageMessageContext = {
+                        id: uuidv4(),
+                        type: MessageContextType.IMAGE,
+                        source: 'external',
+                        content: base64URL,
+                        mimeType: file.type,
+                        displayName: customDisplayName && files.length === 1 ? customDisplayName : file.name,
+                    };
+                    imageContexts.push(contextImage);
+                } catch (error) {
+                    console.error(`Failed to process image ${file.name}:`, error);
+                    toast.error(`Failed to process image: ${file.name}`);
+                }
+            }
+
+            if (imageContexts.length > 0) {
+                editorEngine.chat.context.addContexts(imageContexts);
+                if (imageContexts.length > 1) {
+                    toast.success(`Added ${imageContexts.length} images to chat`);
+                }
+            }
+        };
+
+        const handleImageEvent = async (file: File, displayName?: string) => {
+            await handleImageEvents([file], displayName);
         };
 
         const handleScreenshot = async () => {
