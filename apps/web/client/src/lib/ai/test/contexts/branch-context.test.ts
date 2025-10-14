@@ -1,6 +1,6 @@
 import { MessageContextType, type Branch, type BranchMessageContext } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
-import { BranchContext } from '../../src/contexts/classes/branch';
+import { BranchContext } from '../../contexts/classes/branch';
 
 describe('BranchContext', () => {
     const createMockBranch = (overrides: Partial<Branch> = {}): Branch => ({

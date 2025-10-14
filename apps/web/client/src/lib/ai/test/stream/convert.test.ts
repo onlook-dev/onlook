@@ -4,7 +4,7 @@ import {
     convertToStreamMessages,
     ensureToolCallResults,
     extractTextFromParts,
-} from '../../src/stream';
+} from '../../stream';
 
 function createMessage(
     id: string,

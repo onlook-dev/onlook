@@ -8,7 +8,7 @@ import {
     getFileTypePattern,
     escapeForShell,
     isPathExcluded
-} from '@onlook/ai/src/tools/shared/helpers/cli';
+} from '../../tools/shared/helpers/cli';
 
 describe('Tool Helpers', () => {
     describe('DEFAULT_EXCLUDED_PATTERNS', () => {

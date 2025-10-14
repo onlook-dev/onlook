@@ -1,7 +1,7 @@
 import type { ChatMessage } from '@/lib/ai/models/chat';
 import { describe, expect, test } from 'bun:test';
 import { encode } from 'gpt-tokenizer';
-import { countTokensWithRoles } from '../src/tokens/index.ts';
+import { countTokensWithRoles } from '../tokens';
 type Part =
     | { type: 'text'; text: string }
     | { type: `tool-${string}`; input: unknown }

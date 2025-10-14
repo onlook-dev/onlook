@@ -1,4 +1,4 @@
-import { ReadFileTool } from '@onlook/ai/src/tools/classes/read-file';
+import { ReadFileTool } from '../../tools/classes/read-file';
 import type { EditorEngine } from '@/components/store/editor/engine';
 import { describe, expect, test, mock } from 'bun:test';
 

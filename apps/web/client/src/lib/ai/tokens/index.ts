@@ -1,4 +1,4 @@
-import { type ChatMessage } from '@onlook/db';
+import { type ChatMessage } from '../models/chat';
 import type { TextUIPart, ToolUIPart } from 'ai';
 import { encode } from 'gpt-tokenizer';
 

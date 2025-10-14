@@ -1,5 +1,5 @@
 import type { Conversation as DbConversation } from "@onlook/db";
-import { AgentType, type ChatSuggestion } from "@onlook/db/types/chat";
+import { AgentType, type ChatSuggestion } from "@onlook/models";
 
 export type ChatConversation = {
     id: string;

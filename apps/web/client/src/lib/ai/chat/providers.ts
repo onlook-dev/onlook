@@ -4,7 +4,7 @@ import {
     OPENROUTER_MODELS,
     type InitialModelPayload,
     type ModelConfig
-} from '@onlook/db';
+} from '@onlook/models';
 import { assertNever } from '@onlook/utility';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import type { LanguageModel } from 'ai';

@@ -21,7 +21,7 @@ import {
     BranchContext,
     ImageContext,
     AgentRuleContext,
-} from '../../src/contexts';
+} from '../../contexts';
 
 describe('Context Index', () => {
     const createMockBranch = (): Branch => ({

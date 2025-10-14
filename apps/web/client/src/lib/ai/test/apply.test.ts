@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { applyCodeChange } from '../src/apply';
+import { applyCodeChange } from '../apply';
 
 const hasFastApplyEnv = Boolean(process.env.MORPH_API_KEY) || Boolean(process.env.RELACE_API_KEY);
 

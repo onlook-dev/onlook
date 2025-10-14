@@ -1,14 +1,14 @@
 import { MessageContextType } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import path from 'path';
-import { FileContext, HighlightContext } from '../../src/contexts/classes';
+import { FileContext, HighlightContext } from '../../contexts/classes';
 import {
     type HydrateMessageOptions,
     getCreatePageSystemPrompt,
     getHydratedUserMessage,
     getSummaryPrompt,
     getSystemPrompt,
-} from '../../src/prompt/provider';
+} from '../../prompt/provider';
 
 const __dirname = import.meta.dir;
 

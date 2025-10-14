@@ -1,5 +1,5 @@
-import { SearchReplaceEditTool } from '@onlook/ai/src/tools/classes/search-replace-edit';
-import { SearchReplaceMultiEditFileTool } from '@onlook/ai/src/tools/classes/search-replace-multi-edit';
+import { SearchReplaceEditTool } from '../../tools/classes/search-replace-edit';
+import { SearchReplaceMultiEditFileTool } from '../../tools/classes/search-replace-multi-edit';
 import type { EditorEngine } from '@/components/store/editor/engine';
 import { describe, expect, test, mock } from 'bun:test';
 

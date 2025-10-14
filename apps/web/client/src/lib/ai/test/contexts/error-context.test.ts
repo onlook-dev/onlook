@@ -1,6 +1,6 @@
 import { MessageContextType, type ErrorMessageContext } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
-import { ErrorContext } from '../../src/contexts/classes/error';
+import { ErrorContext } from '../../contexts/classes/error';
 
 describe('ErrorContext', () => {
     const createMockErrorContext = (overrides: Partial<ErrorMessageContext> = {}): ErrorMessageContext => ({

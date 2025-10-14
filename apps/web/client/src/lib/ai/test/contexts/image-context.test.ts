@@ -1,7 +1,7 @@
 import { MessageContextType, type ImageMessageContext } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import { v4 as uuidv4 } from 'uuid';
-import { ImageContext } from '../../src/contexts/classes/image';
+import { ImageContext } from '../../contexts/classes/image';
 
 describe('ImageContext', () => {
     const createMockImageContext = (overrides: Partial<ImageMessageContext> = {}): ImageMessageContext => ({

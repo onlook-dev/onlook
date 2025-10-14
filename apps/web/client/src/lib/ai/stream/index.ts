@@ -1,4 +1,4 @@
-import { type ChatMessage } from '@onlook/db';
+import { type ChatMessage } from '../models/chat';
 import { convertToModelMessages, type ModelMessage, type ToolUIPart } from 'ai';
 import { getHydratedUserMessage, type HydrateMessageOptions } from '../prompt';
 

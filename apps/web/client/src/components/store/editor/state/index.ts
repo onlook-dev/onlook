@@ -1,11 +1,11 @@
 import {
     type BranchTabValue,
     type BrandTabValue,
-    ChatType,
     EditorMode,
     InsertMode,
     type LeftPanelTabValue
 } from '@onlook/models';
+import { ChatType } from '@/lib/ai/models/chat';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 
