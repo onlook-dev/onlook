@@ -26,10 +26,10 @@
         "@onlook/eslint": "*",
         "@onlook/typescript": "*",
         "@types/bun": "^1.3.0",
-        "eslint": "^9.0.0",
         "@types/jest": "^30.0.0",
         "@types/node": "^24.7.2",
         "@types/prompts": "^2.4.9",
+        "eslint": "^9.0.0",
         "jest": "^30.0.5",
         "typescript": "^5.8.2"
     }

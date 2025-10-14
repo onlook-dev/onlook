@@ -41,7 +41,7 @@
         "docker:down": "docker compose down",
         "docker:logs": "docker compose logs -f",
         "docker:restart": "docker compose down && docker compose up -d --build",
-        "postinstall": "sherif -r unordered-dependencies"
+        "postinstall": "sherif"
     },
     "repository": {
         "type": "git",

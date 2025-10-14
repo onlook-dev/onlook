@@ -40,7 +40,7 @@
         "typescript": "^5.8.2"
     },
     "dependencies": {
-        "zod": "^4.1.8",
-        "@onlook/constants": "*"
+        "@onlook/constants": "*",
+        "zod": "^4.1.8"
     }
 }
