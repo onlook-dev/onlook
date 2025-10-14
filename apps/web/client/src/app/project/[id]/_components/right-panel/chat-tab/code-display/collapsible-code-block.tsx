@@ -1,11 +1,9 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { api } from '@/trpc/react';
 import { CodeBlock } from '@onlook/ui/ai-elements';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
 import { cn, getTruncatedFileName } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 
@@ -18,13 +16,12 @@ interface CollapsibleCodeBlockProps {
     branchId?: string;
 }
 
-export const CollapsibleCodeBlock = observer(({
+export const CollapsibleCodeBlock = ({
     path,
     content,
     isStream,
     branchId,
 }: CollapsibleCodeBlockProps) => {
-    const { data: settings } = api.user.settings.get.useQuery();
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -36,9 +33,6 @@ export const CollapsibleCodeBlock = observer(({
     };
 
     const getAnimation = () => {
-        if (isStream && settings?.chat?.expandCodeBlocks) {
-            return { height: 'auto', opacity: 1 };
-        }
         return isOpen ? { height: 'auto', opacity: 1 } : { height: 0, opacity: 0 };
     };
 
@@ -90,7 +84,6 @@ export const CollapsibleCodeBlock = observer(({
                             </div>
                         </CollapsibleTrigger>
                     </div>
-
                     <CollapsibleContent forceMount>
                         <AnimatePresence mode="wait">
                             <motion.div
@@ -129,4 +122,4 @@ export const CollapsibleCodeBlock = observer(({
             </Collapsible>
         </div >
     );
-});
+};
