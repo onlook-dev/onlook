@@ -173,6 +173,13 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
                 className="aspect-square bg-background-secondary rounded-md border border-border-primary overflow-hidden cursor-pointer hover:border-border-onlook transition-colors relative"
                 onDragStart={handleDragStart}
                 onDragEnd={onImageDragEnd}
+                onDragOver={(e) => {
+                    // Allow external file drops by preventing default but not stopping propagation
+                    const isExternalDrag = e.dataTransfer.types.includes('Files') && !e.dataTransfer.types.includes('application/json');
+                    if (isExternalDrag) {
+                        e.preventDefault();
+                    }
+                }}
                 onMouseDown={onImageMouseDown}
                 onMouseUp={onImageMouseUp}
             >
