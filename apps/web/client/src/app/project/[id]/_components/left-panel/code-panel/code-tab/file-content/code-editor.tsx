@@ -40,6 +40,11 @@ export const CodeEditor = ({
         return convertToBase64DataUrl(file.content, mime);
     };
 
+    const isVideoFile = (file: BinaryEditorFile) => {
+        const mime = getMimeType(file.path.toLowerCase());
+        return mime.startsWith('video/');
+    };
+
     const selectionExtension = useMemo(() => {
         return [
             EditorView.updateListener.of((update: ViewUpdate) => {
@@ -170,11 +175,23 @@ export const CodeEditor = ({
             }}
         >
             {file.type === 'binary' && (
-                <img
-                    src={getFileUrl(file as BinaryEditorFile)}
-                    alt={file.path}
-                    className="w-full h-full object-contain p-5"
-                />
+                <>
+                    {isVideoFile(file as BinaryEditorFile) ? (
+                        <video
+                            src={getFileUrl(file as BinaryEditorFile)}
+                            controls
+                            className="w-full h-full object-contain p-5"
+                        >
+                            Your browser does not support the video tag.
+                        </video>
+                    ) : (
+                        <img
+                            src={getFileUrl(file as BinaryEditorFile)}
+                            alt={file.path}
+                            className="w-full h-full object-contain p-5"
+                        />
+                    )}
+                </>
             )}
             {file.type === 'text' && typeof file.content === 'string' && (
                 <>
