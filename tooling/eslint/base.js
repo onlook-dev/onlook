@@ -58,10 +58,11 @@ export default tseslint.config(
                     varsIgnorePattern: '^_',
                 },
             ],
-            '@typescript-eslint/consistent-type-imports': [
-                'warn',
-                { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
-            ],
+            // Disabled: Let prettier handle type import style via @ianvs/prettier-plugin-sort-imports
+            // '@typescript-eslint/consistent-type-imports': [
+            //     'warn',
+            //     { prefer: 'type-imports', fixStyle: 'separate-type-imports' },
+            // ],
             '@typescript-eslint/no-misused-promises': [
                 2,
                 { checksVoidReturn: { attributes: false } },
@@ -73,7 +74,6 @@ export default tseslint.config(
                 },
             ],
             '@typescript-eslint/no-non-null-assertion': 'error',
-            'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
         },
     },
     {
