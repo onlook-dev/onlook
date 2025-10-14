@@ -23,7 +23,7 @@
     "dependencies": {
         "@supabase/supabase-js": "^2.49.2",
         "dotenv": "^17.2.1",
-        "drizzle-orm": "^0.44.5",
+        "drizzle-orm": "^0.44.6",
         "drizzle-zod": "^0.8.3",
         "pg": "^8.16.3",
         "postgres": "^3.4.7",
