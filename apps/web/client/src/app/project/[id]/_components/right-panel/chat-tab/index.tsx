@@ -1,13 +1,15 @@
 import { api } from '@/trpc/react';
+import type { DomElement } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons/index';
 import { ChatTabContent } from './chat-tab-content';
 
 interface ChatTabProps {
     conversationId: string;
     projectId: string;
+    selectedElements: DomElement[];
 }
 
-export const ChatTab = ({ conversationId, projectId }: ChatTabProps) => {
+export const ChatTab = ({ conversationId, projectId, selectedElements }: ChatTabProps) => {
     const { data: initialMessages, isLoading } = api.chat.message.getAll.useQuery(
         { conversationId: conversationId },
         { enabled: !!conversationId },
@@ -29,6 +31,7 @@ export const ChatTab = ({ conversationId, projectId }: ChatTabProps) => {
             conversationId={conversationId}
             projectId={projectId}
             initialMessages={initialMessages}
+            selectedElements={selectedElements}
         />
     );
 };

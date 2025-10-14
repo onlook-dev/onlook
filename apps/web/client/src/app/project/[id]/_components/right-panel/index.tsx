@@ -17,6 +17,7 @@ export const RightPanel = observer(() => {
     const t = useTranslations();
     const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
     const currentConversation = editorEngine.chat.conversation.current;
+    const selectedElements = editorEngine.elements.selected;
     const editPanelWidth = 352
 
     return (
@@ -55,6 +56,7 @@ export const RightPanel = observer(() => {
                             <ChatTab
                                 conversationId={currentConversation.id}
                                 projectId={editorEngine.projectId}
+                                selectedElements={selectedElements}
                             />
                         )}
                     </div>

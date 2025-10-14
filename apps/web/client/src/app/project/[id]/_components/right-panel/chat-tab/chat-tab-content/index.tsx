@@ -1,4 +1,4 @@
-import { type ChatMessage } from '@onlook/models';
+import { type ChatMessage, type DomElement } from '@onlook/models';
 import { useRef } from 'react';
 import { useChat } from '../../../../_hooks/use-chat';
 import { ChatInput } from '../chat-input';
@@ -7,6 +7,7 @@ import { ErrorSection } from '../error';
 
 interface ChatTabContentProps {
     conversationId: string;
+    selectedElements: DomElement[];
     projectId: string;
     initialMessages: ChatMessage[];
 }
@@ -15,6 +16,7 @@ export const ChatTabContent = ({
     conversationId,
     projectId,
     initialMessages,
+    selectedElements,
 }: ChatTabContentProps) => {
     const { isStreaming, sendMessage, editMessage, messages, error, stop, queuedMessages, removeFromQueue } = useChat({
         conversationId,
@@ -31,6 +33,7 @@ export const ChatTabContent = ({
         <div className="flex flex-col h-full justify-end gap-2 pt-2">
             <ChatMessages
                 ref={chatMessagesRef}
+                selectedElements={selectedElements}
                 messages={messages}
                 isStreaming={isStreaming}
                 error={error}

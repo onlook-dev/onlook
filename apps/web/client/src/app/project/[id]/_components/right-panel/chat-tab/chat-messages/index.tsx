@@ -1,8 +1,8 @@
 'use client';
 
 import type { EditMessage } from '@/app/project/[id]/_hooks/use-chat';
-import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
+import type { DomElement } from '@onlook/models';
 import { type ChatMessage } from '@onlook/models/chat';
 import {
     Conversation,
@@ -11,7 +11,6 @@ import {
 } from '@onlook/ui/ai-elements';
 import { Icons } from '@onlook/ui/icons';
 import { assertNever } from '@onlook/utility';
-import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { forwardRef, useCallback, useImperativeHandle } from 'react';
 import { useStickToBottomContext } from 'use-stick-to-bottom';
@@ -21,6 +20,7 @@ import { UserMessage } from './user-message';
 
 interface ChatMessagesProps {
     messages: ChatMessage[];
+    selectedElements: DomElement[];
     onEditMessage: EditMessage;
     isStreaming: boolean;
     error?: Error;
@@ -30,14 +30,18 @@ export interface ChatMessagesHandle {
     scrollToBottom: () => void;
 }
 
-const ChatMessagesInner = observer(({
-    messages,
-    onEditMessage,
-    isStreaming,
-    error,
-}: ChatMessagesProps) => {
-    const editorEngine = useEditorEngine();
+export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(({ selectedElements, messages, onEditMessage, isStreaming, error }, ref) => {
     const t = useTranslations();
+
+    const ScrollController = () => {
+        const { scrollToBottom } = useStickToBottomContext();
+
+        useImperativeHandle(ref, () => ({
+            scrollToBottom,
+        }), [scrollToBottom]);
+
+        return null;
+    };
 
     const renderMessage = useCallback(
         (message: ChatMessage) => {
@@ -68,7 +72,7 @@ const ChatMessagesInner = observer(({
 
     if (!messages || messages.length === 0) {
         return (
-            !editorEngine.elements.selected.length && (
+            !selectedElements.length && (
                 <div className="flex-1 flex flex-col items-center justify-center text-foreground-tertiary/80 h-full">
                     <Icons.EmptyState className="size-32" />
                     <p className="text-center text-regularPlus text-balance max-w-[300px]">
@@ -80,7 +84,7 @@ const ChatMessagesInner = observer(({
     }
 
     return (
-        <>
+        <Conversation className="h-full w-full flex-1">
             <ConversationContent className="p-0 m-0">
                 {messages.map((message) => renderMessage(message))}
                 {error && <ErrorMessage error={error} />}
@@ -90,30 +94,7 @@ const ChatMessagesInner = observer(({
                 </div>}
             </ConversationContent>
             <ConversationScrollButton />
-        </>
-    );
-});
-
-export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(({ messages, onEditMessage, isStreaming, error }, ref) => {
-    const ScrollController = () => {
-        const { scrollToBottom } = useStickToBottomContext();
-
-        useImperativeHandle(ref, () => ({
-            scrollToBottom,
-        }), [scrollToBottom]);
-
-        return null;
-    };
-
-    return (
-        <Conversation>
             <ScrollController />
-            <ChatMessagesInner
-                messages={messages}
-                onEditMessage={onEditMessage}
-                isStreaming={isStreaming}
-                error={error}
-            />
         </Conversation>
     );
 });
