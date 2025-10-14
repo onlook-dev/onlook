@@ -61,9 +61,9 @@ const ChatMessagesInner = observer(({
                 default:
                     assertNever(message.role);
             }
-            return <div key={`message-${message.id}-${index}`} className="my-2">{messageNode}</div>;
+            return <div key={message.id} className="my-2">{messageNode}</div>;
         },
-        [onEditMessage],
+        [onEditMessage, isStreaming],
     );
 
     if (!messages || messages.length === 0) {
