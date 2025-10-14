@@ -35,5 +35,7 @@
         "eslint": "^9.0.0",
         "typescript": "^5.5.4"
     },
-    "dependencies": {}
+    "dependencies": {
+        "@onlook/models": "*"
+    }
 }

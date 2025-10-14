@@ -31,10 +31,15 @@
     "devDependencies": {
         "@onlook/eslint": "*",
         "@onlook/typescript": "*",
+        "@types/bun": "^1.1.16",
+        "@types/lodash": "^4.17.16",
+        "@types/node": "^20.0.0",
         "eslint": "^9.0.0",
         "typescript": "^5.5.4"
     },
     "dependencies": {
-        "@onlook/parser": "*"
+        "@onlook/models": "*",
+        "@onlook/parser": "*",
+        "lodash": "^4.17.21"
     }
 }

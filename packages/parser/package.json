@@ -30,14 +30,22 @@
     "devDependencies": {
         "@onlook/eslint": "*",
         "@onlook/typescript": "*",
+        "@types/babel__generator": "^7.6.8",
         "@types/babel__standalone": "^7.1.9",
         "@types/babel__traverse": "^7.0.14",
+        "@types/bun": "^1.1.16",
+        "@types/node": "^24.7.2",
         "eslint": "^9.0.0",
         "typescript": "^5.5.4"
     },
     "dependencies": {
+        "@babel/generator": "^7.27.0",
         "@babel/standalone": "^7.27.0",
         "@babel/types": "^7.27.0",
-        "@onlook/models": "*"
+        "@onlook/constants": "*",
+        "@onlook/models": "*",
+        "@onlook/utility": "*",
+        "nanoid": "^5.0.9",
+        "prettier": "^3.4.2"
     }
 }

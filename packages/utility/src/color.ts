@@ -1,3 +1,4 @@
+// @ts-expect-error - color-namer has no type definitions
 import colorNamer from 'color-namer';
 import type cssColorNames from 'css-color-names';
 import { oklch, rgb } from 'culori';
@@ -376,9 +377,11 @@ export class Color {
     }
 
     get name(): string {
-        return this._name
-            ? this._name
-            : (colorNamer(this.toHex6()).ntc[0]?.name?.toLowerCase().replace(' ', '-') ?? '');
+        if (this._name) {
+            return this._name;
+        }
+        const ntcResult = colorNamer(this.toHex6()).ntc?.[0];
+        return ntcResult?.name?.toLowerCase().replace(' ', '-') ?? '';
     }
 
     set name(newName: string) {
