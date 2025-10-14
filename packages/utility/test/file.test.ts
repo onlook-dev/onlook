@@ -124,11 +124,19 @@ describe('isImageFile', () => {
             expect(isImageFile('....')).toBe(false);
         });
 
-        it('returns false for common non-image extensions', () => {
-            expect(isImageFile('video.mp4')).toBe(false);
+        it('returns false for common non-image/non-video extensions', () => {
             expect(isImageFile('audio.mp3')).toBe(false);
             expect(isImageFile('archive.zip')).toBe(false);
             expect(isImageFile('document.pdf')).toBe(false);
+            expect(isImageFile('document.txt')).toBe(false);
+        });
+
+        it('returns true for video files', () => {
+            expect(isImageFile('video.mp4')).toBe(true);
+            expect(isImageFile('video.webm')).toBe(true);
+            expect(isImageFile('video.ogg')).toBe(true);
+            expect(isImageFile('video.mov')).toBe(true);
+            expect(isImageFile('video.avi')).toBe(true);
         });
     });
 

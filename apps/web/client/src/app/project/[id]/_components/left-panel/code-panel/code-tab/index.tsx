@@ -25,7 +25,7 @@ export interface CodeTabRef {
     getCurrentPath: () => string;
     handleSaveFile: () => Promise<void>;
     refreshFileTree: () => void;
-    handleCreateFile: (filePath: string, content?: string) => Promise<void>;
+    handleCreateFile: (filePath: string, content?: string | Uint8Array) => Promise<void>;
     handleCreateFolder: (folderPath: string) => Promise<void>;
 }
 
@@ -415,7 +415,7 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
         );
     };
 
-    const handleCreateFile = async (filePath: string, content: string = '') => {
+    const handleCreateFile = async (filePath: string, content: string | Uint8Array = '') => {
         if (!branchData) {
             throw new Error('Branch data not found');
         }

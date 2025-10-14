@@ -11,6 +11,7 @@ import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
+import { isBinaryFile } from '@onlook/utility';
 import path from 'path';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -19,7 +20,7 @@ interface UploadModalProps {
     show: boolean;
     setShow: (show: boolean) => void;
     onSuccess?: () => void;
-    onCreateFile: (filePath: string, content?: string) => Promise<void>;
+    onCreateFile: (filePath: string, content?: string | Uint8Array) => Promise<void>;
 }
 
 export const UploadModal = ({
@@ -76,12 +77,29 @@ export const UploadModal = ({
                 const fileName = file.name;
                 const fullPath = path.join(currentPath, fileName).replace(/\\/g, '/');
 
+                // Check if file is binary
+                const isBinary = isBinaryFile(fileName);
+
                 // Read file content
-                const content = await new Promise<string>((resolve, reject) => {
+                const content = await new Promise<string | Uint8Array>((resolve, reject) => {
                     const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result as string);
+                    reader.onload = () => {
+                        if (isBinary) {
+                            // For binary files, convert ArrayBuffer to Uint8Array
+                            resolve(new Uint8Array(reader.result as ArrayBuffer));
+                        } else {
+                            // For text files, use string result
+                            resolve(reader.result as string);
+                        }
+                    };
                     reader.onerror = () => reject(reader.error);
-                    reader.readAsText(file);
+
+                    // Use appropriate read method
+                    if (isBinary) {
+                        reader.readAsArrayBuffer(file);
+                    } else {
+                        reader.readAsText(file);
+                    }
                 });
 
                 await onCreateFile(fullPath, content);
