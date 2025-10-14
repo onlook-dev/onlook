@@ -120,7 +120,7 @@ export const isImageFile = (fileName: string): boolean => {
 export const isVideoFile = (fileNameOrMimeType: string): boolean => {
     // If it looks like a MIME type (starts with 'video/' pattern), check it directly
     if (fileNameOrMimeType.startsWith('video/') || fileNameOrMimeType.startsWith('audio/') || fileNameOrMimeType.startsWith('image/')) {
-        return fileNameOrMimeType.startsWith('video/');
+        return fileNameOrMimeType.toLowerCase().startsWith('video/');
     }
     // Otherwise, treat it as a filename or file path
     const mimeType = getMimeType(fileNameOrMimeType);
