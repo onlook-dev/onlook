@@ -22,6 +22,7 @@ export const createRootAgentStream = ({
     const systemPrompt = getSystemPromptFromType(chatType);
     const toolSet = getToolSetFromType(chatType);
     return streamText({
+        maxOutputTokens: modelConfig.maxOutputTokens,
         providerOptions: modelConfig.providerOptions,
         messages: convertToStreamMessages(messages),
         model: modelConfig.model,
