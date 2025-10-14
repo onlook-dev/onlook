@@ -1,7 +1,27 @@
-import { PENPAL_CHILD_CHANNEL, type PromisifiedPenpalParentMethods } from '@onlook/penpal';
+import type { LayerNode } from '@onlook/models';
 import debounce from 'lodash/debounce';
 import { WindowMessenger, connect } from 'penpal';
 import { preloadMethods } from './api';
+
+const PENPAL_CHILD_CHANNEL = 'PENPAL_CHILD';
+
+// Type for parent window methods (matches @onlook/penpal PenpalParentMethods)
+type PenpalParentMethods = {
+    getFrameId: () => string;
+    getBranchId: () => string;
+    onWindowMutated: (data: {
+        added: Record<string, LayerNode>;
+        removed: Record<string, LayerNode>;
+    }) => void;
+    onWindowResized: () => void;
+    onDomProcessed: (data: { layerMap: Record<string, LayerNode>; rootNode: LayerNode }) => void;
+};
+
+type PromisifiedPenpalParentMethods = {
+    [K in keyof PenpalParentMethods]: (
+        ...args: Parameters<PenpalParentMethods[K]>
+    ) => Promise<ReturnType<PenpalParentMethods[K]>>;
+};
 
 export let penpalParent: PromisifiedPenpalParentMethods | null = null;
 let isConnecting = false;

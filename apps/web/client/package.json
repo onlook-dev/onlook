@@ -47,6 +47,7 @@
         "@onlook/parser": "*",
         "@onlook/penpal": "*",
         "@onlook/rpc": "*",
+        "@onlook/web-preload": "*",
         "@onlook/stripe": "*",
         "@onlook/ui": "*",
         "@onlook/utility": "*",
