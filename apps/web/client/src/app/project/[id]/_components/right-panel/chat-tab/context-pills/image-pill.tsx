@@ -16,6 +16,8 @@ export const ImagePill = React.forwardRef<
         return null;
     }
 
+    const isVideo = context.mimeType?.startsWith('video/');
+
     return (
         <motion.span
             layout="position"
@@ -33,13 +35,22 @@ export const ImagePill = React.forwardRef<
             key={context.displayName}
             ref={ref}
         >
-            {/* Left side: Image thumbnail */}
+            {/* Left side: Image/Video thumbnail */}
             <div className="w-7 h-7 flex items-center justify-center overflow-hidden relative">
-                <img
-                    src={context.content}
-                    alt={context.displayName}
-                    className="w-full h-full object-cover rounded-l-md"
-                />
+                {isVideo ? (
+                    <video
+                        src={context.content}
+                        className="w-full h-full object-cover rounded-l-md"
+                        muted
+                        playsInline
+                    />
+                ) : (
+                    <img
+                        src={context.content}
+                        alt={context.displayName}
+                        className="w-full h-full object-cover rounded-l-md"
+                    />
+                )}
                 <div className="absolute inset-0 border-l-[1px] border-y-[1px] rounded-l-md border-white/10 pointer-events-none" />
             </div>
 
