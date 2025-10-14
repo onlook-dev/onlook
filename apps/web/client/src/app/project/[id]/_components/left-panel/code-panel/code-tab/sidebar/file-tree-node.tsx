@@ -31,7 +31,7 @@ interface FileTreeNodeProps {
     onFileSelect: (filePath: string, searchTerm?: string) => void;
     onRenameFile: (oldPath: string, newPath: string) => void;
     onDeleteFile: (path: string) => void;
-    onAddToChat?: (filePath: string) => void;
+    onAddToChat: (filePath: string) => void;
 }
 
 export const FileTreeNode = ({
@@ -131,7 +131,7 @@ export const FileTreeNode = ({
         separator: boolean;
         className?: string;
     } | null> = [
-            !isDirectory && onAddToChat ? {
+            !isDirectory ? {
                 label: 'Add to Chat',
                 action: handleAddToChat,
                 icon: <Icons.Plus className="w-4 h-4" />,
