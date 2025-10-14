@@ -524,6 +524,39 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
         };
     }, []);
 
+    // Handle adding file to chat
+    const handleAddFileToChat = useCallback(async (filePath: string) => {
+        if (!branchData) return;
+
+        try {
+            const fileName = filePath.split('/').pop() || filePath;
+
+            // Load the file content
+            const fileContent = await branchData.codeEditor.readFile(filePath);
+            if (!fileContent) {
+                throw new Error('Failed to load file');
+            }
+
+            // Convert content to string (handle both string and Uint8Array)
+            const contentString = typeof fileContent === 'string'
+                ? fileContent
+                : new TextDecoder().decode(fileContent);
+
+            editorEngine.chat.context.addContexts([{
+                type: MessageContextType.FILE,
+                path: filePath,
+                displayName: fileName,
+                branchId: branchId,
+                content: contentString,
+            }]);
+
+            toast.success('File added to chat');
+        } catch (error) {
+            console.error('Failed to add file to chat:', error);
+            toast.error('Failed to add file to chat');
+        }
+    }, [branchId, branchData, editorEngine.chat.context]);
+
 
     return (
         <div className="flex flex-col size-full">
@@ -558,6 +591,7 @@ export const CodeTab = memo(forwardRef<CodeTabRef, CodeTabProps>(({ projectId, b
                         onDeleteFile={handleDeleteFile}
                         onRenameFile={handleRenameFile}
                         onRefresh={() => { }}
+                        onAddToChat={handleAddFileToChat}
                     />
                 </motion.div>
                 <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
