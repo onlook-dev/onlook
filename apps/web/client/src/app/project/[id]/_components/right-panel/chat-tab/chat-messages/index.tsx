@@ -94,28 +94,27 @@ const ChatMessagesInner = observer(({
     );
 });
 
-export const ChatMessages = observer(
-    forwardRef<ChatMessagesHandle, ChatMessagesProps>(({ messages, onEditMessage, isStreaming, error }, ref) => {
-        const ScrollController = () => {
-            const { scrollToBottom } = useStickToBottomContext();
+export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(({ messages, onEditMessage, isStreaming, error }, ref) => {
+    const ScrollController = () => {
+        const { scrollToBottom } = useStickToBottomContext();
 
-            useImperativeHandle(ref, () => ({
-                scrollToBottom,
-            }), [scrollToBottom]);
+        useImperativeHandle(ref, () => ({
+            scrollToBottom,
+        }), [scrollToBottom]);
 
-            return null;
-        };
+        return null;
+    };
 
-        return (
-            <Conversation className="h-full w-full flex-1">
-                <ScrollController />
-                <ChatMessagesInner
-                    messages={messages}
-                    onEditMessage={onEditMessage}
-                    isStreaming={isStreaming}
-                    error={error}
-                />
-            </Conversation>
-        );
-    })
-);
+    return (
+        <Conversation className="h-full w-full flex-1">
+            <ScrollController />
+            <ChatMessagesInner
+                messages={messages}
+                onEditMessage={onEditMessage}
+                isStreaming={isStreaming}
+                error={error}
+            />
+        </Conversation>
+    );
+});
+
