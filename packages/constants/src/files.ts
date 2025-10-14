@@ -107,6 +107,11 @@ export const IMAGE_EXTENSIONS = [
     'image/ico',
     'image/x-icon',
     'image/avif',
+    'video/mp4',
+    'video/webm',
+    'video/ogg',
+    'video/quicktime',
+    'video/x-msvideo',
 ];
 
 /**

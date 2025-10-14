@@ -51,6 +51,10 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
+    // Check if the file is a video
+    const isVideo = image.mimeType?.startsWith('video/') ||
+        /\.(mp4|webm|ogg|ogv|mov|avi)$/i.test(image.name);
+
     // Convert content to data URL for display
     useEffect(() => {
         if (!content) {
@@ -72,7 +76,7 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
             return;
         }
 
-        // Handle binary content (PNG, JPG, etc.)
+        // Handle binary content (PNG, JPG, videos, etc.)
         const blob = new Blob([content as BlobPart], { type: image.mimeType || 'image/*' });
         const url = URL.createObjectURL(blob);
         setImageUrl(url);
@@ -173,12 +177,28 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
                 onMouseDown={onImageMouseDown}
                 onMouseUp={onImageMouseUp}
             >
-                <img
-                    src={imageUrl}
-                    alt={image.name}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                />
+                {isVideo ? (
+                    <video
+                        src={imageUrl}
+                        className="w-full h-full object-cover"
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                        onMouseEnter={(e) => e.currentTarget.play()}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.pause();
+                            e.currentTarget.currentTime = 0;
+                        }}
+                    />
+                ) : (
+                    <img
+                        src={imageUrl}
+                        alt={image.name}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                    />
+                )}
 
                 {/* Action menu */}
                 {!isRenaming && (
@@ -260,7 +280,7 @@ export const ImageItem = ({ image, projectId, branchId, onImageDragStart, onImag
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Image</AlertDialogTitle>
+                        <AlertDialogTitle>Delete {isVideo ? 'Video' : 'Image'}</AlertDialogTitle>
                         <AlertDialogDescription>
                             Are you sure you want to delete {image.name}? This action cannot be undone.
                         </AlertDialogDescription>
