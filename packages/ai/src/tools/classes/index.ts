@@ -18,3 +18,4 @@ export { TypecheckTool } from './typecheck';
 export { UploadImageTool } from './upload-image';
 export { WebSearchTool } from './web-search';
 export { WriteFileTool } from './write-file';
+export { MemoryTool, ReadMemoryTool } from './memory';
