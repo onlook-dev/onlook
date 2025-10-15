@@ -32,8 +32,11 @@
     "devDependencies": {
         "@onlook/eslint": "*",
         "@onlook/typescript": "*",
+        "@types/node": "^24.7.2",
         "eslint": "^9.0.0",
-        "typescript": "^5.5.4"
+        "typescript": "^5.8.2"
     },
-    "dependencies": {}
+    "dependencies": {
+        "@onlook/models": "*"
+    }
 }

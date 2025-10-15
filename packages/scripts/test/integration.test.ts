@@ -167,7 +167,7 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
         };
 
         const missingKeys = Object.entries(API_KEYS)
-            .filter(([key, config]) => config.required && !responses[key])
+            .filter(([key, config]) => config.required && !responses[key as keyof typeof responses])
             .map(([key]) => key);
 
         expect(missingKeys).toEqual(['REQUIRED_KEY']);
@@ -179,7 +179,7 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
         };
 
         const validMissingKeys = Object.entries(API_KEYS)
-            .filter(([key, config]) => config.required && !validResponses[key])
+            .filter(([key, config]) => config.required && !validResponses[key as keyof typeof validResponses])
             .map(([key]) => key);
 
         expect(validMissingKeys).toEqual([]);

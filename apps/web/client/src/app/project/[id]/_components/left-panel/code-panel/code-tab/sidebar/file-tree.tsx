@@ -190,7 +190,7 @@ export const FileTree = ({
                 onRefresh={onRefresh}
                 onKeyDown={handleKeyDown}
             />
-            <div ref={treeContainerRef} className="w-full text-xs px-2 flex-1 min-h-0">
+            <div ref={treeContainerRef as React.Ref<HTMLDivElement>} className="w-full text-xs px-2 flex-1 min-h-0">
                 {isLoading ? (
                     <div className="flex flex-col justify-start items-center h-full text-sm text-foreground/50 pt-4">
                         <div className="animate-spin h-6 w-6 border-2 border-foreground-hover rounded-full border-t-transparent mb-2"></div>

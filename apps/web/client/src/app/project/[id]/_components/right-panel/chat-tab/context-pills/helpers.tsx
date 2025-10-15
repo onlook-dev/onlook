@@ -1,6 +1,6 @@
-import { getContextClass, getContextLabel } from '@onlook/ai';
+import { getContextClass, getContextLabel } from '@/lib/ai';
 import { DefaultSettings } from '@onlook/constants';
-import { MessageContextType, type MessageContext } from '@onlook/models/chat';
+import { MessageContextType, type MessageContext } from '@onlook/models';
 import { NodeIcon } from '@onlook/ui/node-icon';
 import { getTruncatedFileName } from '@onlook/ui/utils';
 

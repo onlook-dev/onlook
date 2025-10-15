@@ -1,7 +1,6 @@
 import * as path from 'node:path';
 import { includeIgnoreFile } from '@eslint/compat';
 import eslint from '@eslint/js';
-import prettierConfigPlugin from 'eslint-config-prettier';
 import importPlugin from 'eslint-plugin-import';
 import * as jsoncPlugin from 'eslint-plugin-jsonc';
 import onlyWarn from 'eslint-plugin-only-warn';
@@ -48,19 +47,33 @@ export default tseslint.config(
             ...tseslint.configs.recommended,
             ...tseslint.configs.recommendedTypeChecked,
             ...tseslint.configs.stylisticTypeChecked,
-            prettierConfigPlugin,
         ],
         rules: {
             'prettier/prettier': ['error', prettierConfig],
-            '@typescript-eslint/array-type': 'off',
-            '@typescript-eslint/consistent-type-definitions': 'off',
+            '@typescript-eslint/no-unused-vars': [
+                'error',
+                {
+                    args: 'all',
+                    argsIgnorePattern: '^_',
+                    varsIgnorePattern: '^_',
+                },
+            ],
             '@typescript-eslint/consistent-type-imports': [
                 'warn',
-                { prefer: 'type-imports', fixStyle: 'separate-type-imports' },
+                { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
             ],
-            '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-            '@typescript-eslint/require-await': 'off',
-            '@typescript-eslint/no-misused-promises': 'warn',
+            '@typescript-eslint/no-misused-promises': [
+                2,
+                { checksVoidReturn: { attributes: false } },
+            ],
+            '@typescript-eslint/no-unnecessary-condition': [
+                'error',
+                {
+                    allowConstantLoopConditions: true,
+                },
+            ],
+            '@typescript-eslint/no-non-null-assertion': 'error',
+            'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
         },
     },
     {

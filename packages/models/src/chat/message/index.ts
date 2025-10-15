@@ -1,6 +1,5 @@
-export * from '../response';
 export * from './checkpoint';
-export * from './code';
 export * from './context';
-export * from './message';
-export * from './queue';
+
+// MessagePart type (generic - actual structure defined by AI SDK)
+export type MessagePart = any;

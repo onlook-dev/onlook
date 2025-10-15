@@ -1,5 +1,5 @@
 /** @type {import('next-sitemap').IConfig} */
-module.exports = {
+export default {
   siteUrl: 'https://docs.onlook.dev',
   generateRobotsTxt: false, // handled by route handler
   generateIndexSitemap: true,

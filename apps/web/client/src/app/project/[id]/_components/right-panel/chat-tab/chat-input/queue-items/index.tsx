@@ -1,6 +1,6 @@
 'use client';
 
-import { type QueuedMessage } from '@onlook/models';
+import { type QueuedMessage } from '@/lib/ai/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';

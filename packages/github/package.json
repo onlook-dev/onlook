@@ -16,10 +16,11 @@
     },
     "devDependencies": {
         "@onlook/eslint": "*",
-        "@types/node": "^18.16.3",
+        "@onlook/typescript": "*",
+        "@types/node": "^24.7.2",
         "@types/uuid": "^10.0.0",
         "eslint": "^9.0.0",
-        "typescript": "^5.5.4"
+        "typescript": "^5.8.2"
     },
     "scripts": {
         "build": "tsc",

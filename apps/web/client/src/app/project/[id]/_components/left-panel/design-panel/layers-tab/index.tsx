@@ -130,7 +130,7 @@ export const LayersTab = observer(() => {
 
     return (
         <div
-            ref={ref}
+            ref={ref as React.Ref<HTMLDivElement>}
             className="flex h-full w-full overflow-hidden text-xs text-active p-3"
             onMouseOver={() => setTreeHovered(true)}
             onMouseLeave={handleMouseLeaveTree}

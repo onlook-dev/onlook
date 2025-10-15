@@ -1,4 +1,4 @@
-import type { Conversation as DbConversation } from '@onlook/db';
+import type { Conversation as DbConversation } from '../schema';
 import { AgentType } from '@onlook/models';
 import { v4 as uuidv4 } from 'uuid';
 

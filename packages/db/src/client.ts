@@ -1,4 +1,4 @@
-import * as schema from '@onlook/db/src/schema';
+import * as schema from './schema';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 

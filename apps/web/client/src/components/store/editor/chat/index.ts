@@ -1,5 +1,5 @@
 import type { SendMessage } from '@/app/project/[id]/_hooks/use-chat';
-import { type ChatType } from '@onlook/models';
+import { type ChatType } from '@/lib/ai/models/chat'
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { ChatContext } from './context';

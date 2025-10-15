@@ -27,12 +27,15 @@
     "homepage": "https://onlook.com",
     "devDependencies": {
         "@onlook/eslint": "*",
+        "@onlook/typescript": "*",
+        "@types/bun": "^1.3.0",
         "eslint": "^9.0.0",
-        "typescript": "^5.5.4"
+        "typescript": "^5.8.2"
     },
     "dependencies": {
+        "@onlook/models": "*",
+        "dotenv": "^17.2.1",
         "stripe": "^18.2.1",
-        "dotenv": "^16.5.0",
-        "@onlook/models": "*"
+        "uuid": "^11.1.0"
     }
 }

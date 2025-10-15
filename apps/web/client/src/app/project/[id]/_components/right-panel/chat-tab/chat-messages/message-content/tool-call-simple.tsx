@@ -1,4 +1,4 @@
-import { BaseTool, TOOLS_MAP } from '@onlook/ai';
+import { BaseTool, TOOLS_MAP } from '@/lib/ai';
 import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from '@onlook/ui/ai-elements';
 import { Icons } from '@onlook/ui/icons';
 import type { ToolUIPart } from 'ai';

@@ -5,7 +5,7 @@ import {
     migrateFontsFromLayout,
 } from '../src/helpers/font-extractors';
 import { runDataDrivenTests } from './test-utils';
-import { parse, traverse, T } from '@onlook/parser';
+import { parse, traverse, type T } from '@onlook/parser';
 import path from 'path';
 
 const __dirname = import.meta.dir;
@@ -211,7 +211,7 @@ describe('migrateFontsFromLayout', () => {
     test('should generate default variable if not provided', () => {
         const content = `
             import { Inter } from 'next/font/google';
-            
+
             export const inter = Inter({
                 subsets: ['latin'],
                 weight: ['400']
@@ -220,6 +220,6 @@ describe('migrateFontsFromLayout', () => {
 
         const result = migrateFontsFromLayout(content);
         expect(result.fonts).toHaveLength(1);
-        expect(result.fonts[0].variable).toBe('--font-inter');
+        expect(result.fonts[0]?.variable).toBe('--font-inter');
     });
 });

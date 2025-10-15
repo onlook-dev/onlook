@@ -1,4 +1,4 @@
-import { type ChatMessage } from '@onlook/models';
+import { type ChatMessage } from '@/lib/ai/models/chat'
 import { useRef } from 'react';
 import { useChat } from '../../../../_hooks/use-chat';
 import { ChatInput } from '../chat-input';

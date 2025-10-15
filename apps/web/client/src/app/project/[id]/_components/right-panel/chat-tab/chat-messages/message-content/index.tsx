@@ -1,4 +1,4 @@
-import type { ChatMessage } from '@onlook/models';
+import type { ChatMessage } from '@/lib/ai/models/chat';
 import { Reasoning, ReasoningContent, ReasoningTrigger, Response } from '@onlook/ui/ai-elements';
 import { cn } from '@onlook/ui/utils';
 import type { ToolUIPart } from 'ai';

@@ -18,7 +18,7 @@ describe('FileCacheManager', () => {
     let mockWriteFile: any;
 
     beforeEach(async () => {
-        fileCacheManager = new FileCacheManager();
+        fileCacheManager = new FileCacheManager('test-project', 'test-branch');
         await fileCacheManager.init();
 
         mockReadFile = mock(async (path: string): Promise<SandboxFile | null> => {
@@ -73,11 +73,11 @@ describe('FileCacheManager', () => {
         expect(retrieved).toEqual(binaryFile);
     });
 
-    test('should handle files with null content', () => {
+    test('should handle files with empty content', () => {
         const emptyFile: SandboxFile = {
             type: 'text',
             path: 'empty.tsx',
-            content: null
+            content: ''
         };
 
         fileCacheManager.setFile(emptyFile);
@@ -138,8 +138,8 @@ describe('FileCacheManager', () => {
         };
 
         const unloadedFile: SandboxFile = {
-            type: 'text',
-            path: 'unloaded.tsx',
+            type: 'binary',
+            path: 'unloaded.png',
             content: null
         };
 

@@ -20,6 +20,8 @@ export default function GitHubInstallCallbackPage() {
     const handleInstallationCallback = api.github.handleInstallationCallbackUrl.useMutation();
 
     useEffect(() => {
+        if (!searchParams) return;
+
         const installationId = searchParams.get('installation_id');
         const setupAction = searchParams.get('setup_action');
         const stateParam = searchParams.get('state');

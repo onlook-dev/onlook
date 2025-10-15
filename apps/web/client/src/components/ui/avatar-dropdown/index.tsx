@@ -36,7 +36,7 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
         // Clear analytics/feedback identities before signing out
         void resetTelemetry();
         await supabase.auth.signOut();
-        const returnUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+        const returnUrl = `${pathname}${searchParams && searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
         router.push(`${Routes.LOGIN}?${getReturnUrlQueryParam(returnUrl)}`);
     };
 

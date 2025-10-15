@@ -1,4 +1,4 @@
-import { FuzzyEditFileTool, SearchReplaceEditTool, SearchReplaceMultiEditFileTool, TerminalCommandTool, TypecheckTool, WebSearchTool, WriteFileTool } from '@onlook/ai';
+import { FuzzyEditFileTool, SearchReplaceEditTool, SearchReplaceMultiEditFileTool, TerminalCommandTool, TypecheckTool, WebSearchTool, WriteFileTool } from '@/lib/ai';
 import type { WebSearchResult } from '@onlook/models';
 import type { ToolUIPart } from 'ai';
 import stripAnsi from 'strip-ansi';

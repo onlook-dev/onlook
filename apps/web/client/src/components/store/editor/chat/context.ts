@@ -1,4 +1,5 @@
-import { ChatType, type DomElement } from '@onlook/models';
+import { ChatType } from '@/lib/ai/models/chat';
+import type { DomElement } from '@onlook/models';
 import {
     MessageContextType,
     type AgentRuleMessageContext,
@@ -7,7 +8,7 @@ import {
     type FileMessageContext,
     type HighlightMessageContext,
     type MessageContext
-} from '@onlook/models/chat';
+} from '@onlook/models';
 import { assertNever, type ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import { type EditorEngine } from '../engine';

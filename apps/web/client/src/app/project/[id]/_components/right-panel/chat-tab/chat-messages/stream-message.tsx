@@ -1,4 +1,4 @@
-import { type ChatMessage } from '@onlook/models';
+import { type ChatMessage } from '@/lib/ai/models/chat'
 import { MessageContent } from './message-content';
 
 export const StreamMessage = ({ message }: { message: ChatMessage }) => {

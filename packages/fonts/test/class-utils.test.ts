@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import fs from 'fs';
 import path from 'path';
-import { generate, parse, t, T } from '@onlook/parser';
+import { generate, parse, t, type T } from '@onlook/parser';
 import {
     updateJSXExpressionClassNameWithFont,
     updateStringLiteralClassNameWithFont,

@@ -6,9 +6,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 
-import type { ChatMessage, ImageMessageContext, QueuedMessage } from '@onlook/models';
-import { ChatType } from '@onlook/models';
-import { MessageContextType } from '@onlook/models/chat';
+import { ChatType, type ChatMessage, type QueuedMessage } from '@/lib/ai/models/chat';
+import type { ImageMessageContext } from '@onlook/models';
+import { MessageContextType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';

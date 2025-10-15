@@ -1,4 +1,4 @@
-import { type QueuedMessage } from '@onlook/models';
+import { type QueuedMessage } from '@/lib/ai/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';

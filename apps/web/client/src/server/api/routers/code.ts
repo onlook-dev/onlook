@@ -1,6 +1,6 @@
 import { env } from '@/env';
 import FirecrawlApp from '@mendable/firecrawl-js';
-import { applyCodeChange } from '@onlook/ai';
+import { applyCodeChange } from '@/lib/ai';
 import type { WebSearchResult } from '@onlook/models';
 import Exa from 'exa-js';
 import { z } from 'zod';

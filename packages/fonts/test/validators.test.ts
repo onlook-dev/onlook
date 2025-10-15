@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import { parse, traverse, t, T, NodePath } from '@onlook/parser';
+import { parse, traverse, t, type T, type NodePath } from '@onlook/parser';
 import {
     isTailwindThemeProperty,
     hasPropertyName,
@@ -59,7 +59,10 @@ describe('isValidLocalFontDeclaration', () => {
         const declStmt = ast.program.body[0];
         if (t.isVariableDeclaration(declStmt)) {
             const decl = declStmt.declarations[0];
-            expect(isValidLocalFontDeclaration(decl, 'myFont')).toBe(true);
+            expect(decl).toBeDefined();
+            if (decl) {
+                expect(isValidLocalFontDeclaration(decl, 'myFont')).toBe(true);
+            }
         }
     });
     test('returns false for wrong variable name', () => {
@@ -67,7 +70,10 @@ describe('isValidLocalFontDeclaration', () => {
         const declStmt = ast.program.body[0];
         if (t.isVariableDeclaration(declStmt)) {
             const decl = declStmt.declarations[0];
-            expect(isValidLocalFontDeclaration(decl, 'myFont')).toBe(false);
+            expect(decl).toBeDefined();
+            if (decl) {
+                expect(isValidLocalFontDeclaration(decl, 'myFont')).toBe(false);
+            }
         }
     });
     test('returns false for non-localFont call', () => {
@@ -75,7 +81,10 @@ describe('isValidLocalFontDeclaration', () => {
         const declStmt = ast.program.body[0];
         if (t.isVariableDeclaration(declStmt)) {
             const decl = declStmt.declarations[0];
-            expect(isValidLocalFontDeclaration(decl, 'myFont')).toBe(false);
+            expect(decl).toBeDefined();
+            if (decl) {
+                expect(isValidLocalFontDeclaration(decl, 'myFont')).toBe(false);
+            }
         }
     });
     test('returns false for missing object config', () => {
@@ -83,7 +92,10 @@ describe('isValidLocalFontDeclaration', () => {
         const declStmt = ast.program.body[0];
         if (t.isVariableDeclaration(declStmt)) {
             const decl = declStmt.declarations[0];
-            expect(isValidLocalFontDeclaration(decl, 'myFont')).toBe(false);
+            expect(decl).toBeDefined();
+            if (decl) {
+                expect(isValidLocalFontDeclaration(decl, 'myFont')).toBe(false);
+            }
         }
     });
 });

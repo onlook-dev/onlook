@@ -1,7 +1,7 @@
 import { api } from "@/trpc/client";
 import { makeAutoObservable } from "mobx";
 import type { EditorEngine } from "../engine";
-import type { ChatMessage } from "@onlook/models";
+import type { ChatMessage } from "@/lib/ai/models/chat";
 
 export class ApiManager {
     constructor(private editorEngine: EditorEngine) {

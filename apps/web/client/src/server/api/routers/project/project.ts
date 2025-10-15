@@ -2,7 +2,7 @@ import { env } from '@/env';
 import { createTRPCRouter, protectedProcedure } from '@/server/api/trpc';
 import { trackEvent } from '@/utils/analytics/server';
 import FirecrawlApp from '@mendable/firecrawl-js';
-import { initModel } from '@onlook/ai';
+import { initModel } from '@/lib/ai';
 import { getSandboxPreviewUrl, STORAGE_BUCKETS } from '@onlook/constants';
 import {
     branches,

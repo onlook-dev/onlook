@@ -1,15 +1,16 @@
 {
-    "extends": "@onlook/typescript/base.json",
+    "extends": "@onlook/typescript/react-library.json",
     "compilerOptions": {
         "paths": {
             "@/*": [
                 "./src/*"
             ]
-        }
+        },
+        "skipLibCheck": true
     },
     "include": [
-        "script",
-        "server"
+        "script/**/*",
+        "server/**/*"
     ],
     "exclude": [
         "node_modules"

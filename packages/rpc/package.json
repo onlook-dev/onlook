@@ -31,7 +31,7 @@
         "@onlook/eslint": "*",
         "@onlook/typescript": "*",
         "eslint": "^9.0.0",
-        "typescript": "^5.5.4"
+        "typescript": "^5.8.2"
     },
     "dependencies": {
         "@onlook/web-server": "*"

@@ -15,7 +15,7 @@ export function Main({ invitationId }: { invitationId: string }) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const token = useSearchParams().get('token');
+    const token = searchParams?.get('token') ?? null;
     const { data: invitation, isLoading: loadingInvitation, error: getInvitationError } = api.invitation.getWithoutToken.useQuery({
         id: invitationId,
     });
@@ -35,7 +35,7 @@ export function Main({ invitationId }: { invitationId: string }) {
         // Clear analytics/feedback identities before signing out
         void resetTelemetry();
         await supabase.auth.signOut();
-        const currentUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+        const currentUrl = `${pathname}${searchParams && searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
         router.push(`${Routes.LOGIN}?${getReturnUrlQueryParam(currentUrl)}`);
     }
 

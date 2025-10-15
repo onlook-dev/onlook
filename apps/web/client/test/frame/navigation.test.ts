@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'bun:test';
 import { FrameNavigationManager } from '../../src/components/store/editor/frames/index';
 
 describe('FrameNavigationManager', () => {

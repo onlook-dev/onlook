@@ -2,7 +2,6 @@
     "extends": "@onlook/typescript/base.json",
     "compilerOptions": {
         "outDir": "dist",
-        "rootDir": "src",
         "module": "ESNext",
         "moduleResolution": "node",
         "target": "ES2020",

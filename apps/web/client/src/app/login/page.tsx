@@ -15,7 +15,8 @@ export default function LoginPage() {
     const isDev = process.env.NODE_ENV === 'development';
     const t = useTranslations();
     const backgroundUrl = useGetBackground('login');
-    const returnUrl = useSearchParams().get(LocalForageKeys.RETURN_URL);
+    const searchParams = useSearchParams();
+    const returnUrl = searchParams?.get(LocalForageKeys.RETURN_URL) ?? null;
 
     return (
         <div className="flex h-screen w-screen justify-center">

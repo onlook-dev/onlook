@@ -1,4 +1,4 @@
-import { db } from '@onlook/db/src/client';
+import { db } from '../../client';
 import { PriceKey, PRO_PRODUCT_CONFIG, ProductType } from "@onlook/stripe";
 import { getProProductAndPrices } from "@onlook/stripe/src/scripts/dev/product";
 import { config } from 'dotenv';

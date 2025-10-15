@@ -37,17 +37,22 @@
         "@onlook/eslint": "*",
         "@onlook/typescript": "*",
         "@types/lodash.debounce": "^4.0.9",
-        "@types/react": "^18.3.1",
+        "@types/node": "^24.7.2",
+        "@types/react": "^19.1.13",
         "eslint": "^9.0.0",
-        "react": "^18.3.1",
-        "typescript": "^5.5.4"
+        "react": "^19.1.13",
+        "typescript": "^5.8.2"
     },
     "dependencies": {
+        "@onlook/constants": "*",
+        "@onlook/models": "*",
+        "@onlook/parser": "*",
+        "@onlook/utility": "*",
         "@zenfs/core": "2.4.0",
         "@zenfs/dom": "1.2.5",
         "lodash.debounce": "^4.0.8"
     },
     "peerDependencies": {
-        "react": "^18.0.0"
+        "react": "^19.0.0"
     }
 }

@@ -4,10 +4,16 @@ import { useEditorEngine } from '@/components/store/editor';
 import type { Frame } from '@onlook/models';
 import {
     PENPAL_PARENT_CHANNEL,
-    type PenpalChildMethods,
     type PenpalParentMethods,
-    type PromisifiedPendpalChildMethods,
 } from '@onlook/penpal';
+import type { PenpalChildMethods } from '@onlook/web-preload/script/api';
+
+// Promisified version of PenpalChildMethods for async RPC calls
+type PromisifiedPendpalChildMethods = {
+    [K in keyof PenpalChildMethods]: (
+        ...args: Parameters<PenpalChildMethods[K]>
+    ) => Promise<ReturnType<PenpalChildMethods[K]>>;
+};
 import { WebPreview, WebPreviewBody } from '@onlook/ui/ai-elements';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
