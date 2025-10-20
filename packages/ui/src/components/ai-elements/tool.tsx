@@ -3,6 +3,7 @@
 import type { ToolUIPart } from 'ai';
 import { CheckCircleIcon, CircleIcon, ClockIcon, WrenchIcon, XCircleIcon } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
+import { memo } from 'react';
 import { Badge } from '../../components/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../components/collapsible';
 import { cn } from '../../utils/index';
@@ -94,23 +95,27 @@ export const ToolContent = ({ className, ...props }: ToolContentProps) => (
 
 export type ToolInputProps = ComponentProps<'div'> & {
     input: ToolUIPart['input'];
+    isStreaming?: boolean;
 };
 
-export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
+const ToolInputComponent = ({ className, input, isStreaming, ...props }: ToolInputProps) => (
     <div className={cn('space-y-2 overflow-hidden p-1', className)} {...props}>
         <h4 className="font-medium text-muted-foreground text-xs capitalize tracking-wide">
             Parameters
         </h4>
-        <CodeBlock className="p-0 m-0" code={JSON.stringify(input, null, 2)} language="json" />
+        <CodeBlock className="p-0 m-0" code={JSON.stringify(input, null, 2)} language="json" isStreaming={isStreaming} />
     </div>
 );
+
+export const ToolInput = memo(ToolInputComponent);
 
 export type ToolOutputProps = ComponentProps<'div'> & {
     output: ToolUIPart['output'];
     errorText: ToolUIPart['errorText'];
+    isStreaming?: boolean;
 };
 
-export const ToolOutput = ({ className, output, errorText, ...props }: ToolOutputProps) => {
+const ToolOutputComponent = ({ className, output, errorText, isStreaming, ...props }: ToolOutputProps) => {
     if (!(output || errorText)) {
         return null;
     }
@@ -118,9 +123,9 @@ export const ToolOutput = ({ className, output, errorText, ...props }: ToolOutpu
     let Output = <div>{output as ReactNode}</div>;
 
     if (typeof output === 'object') {
-        Output = <CodeBlock code={JSON.stringify(output, null, 2)} language="json" />;
+        Output = <CodeBlock code={JSON.stringify(output, null, 2)} language="json" isStreaming={isStreaming} />;
     } else if (typeof output === 'string') {
-        Output = <CodeBlock code={output} language="json" />;
+        Output = <CodeBlock code={output} language="json" isStreaming={isStreaming} />;
     }
 
     return (
@@ -142,3 +147,5 @@ export const ToolOutput = ({ className, output, errorText, ...props }: ToolOutpu
         </div>
     );
 };
+
+export const ToolOutput = memo(ToolOutputComponent);

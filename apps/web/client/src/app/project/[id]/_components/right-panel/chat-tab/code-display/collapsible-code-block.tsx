@@ -5,7 +5,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/
 import { Icons } from '@onlook/ui/icons';
 import { cn, getTruncatedFileName } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'motion/react';
-import { useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { memo, useState } from 'react';
 
 interface CollapsibleCodeBlockProps {
     path: string;
@@ -16,7 +17,7 @@ interface CollapsibleCodeBlockProps {
     branchId?: string;
 }
 
-export const CollapsibleCodeBlock = ({
+const CollapsibleCodeBlockComponent = ({
     path,
     content,
     isStream,
@@ -35,6 +36,10 @@ export const CollapsibleCodeBlock = ({
     const getAnimation = () => {
         return isOpen ? { height: 'auto', opacity: 1 } : { height: 0, opacity: 0 };
     };
+
+    const branch = branchId
+        ? editorEngine.branches.allBranches.find(b => b.id === branchId)
+        : editorEngine.branches.activeBranch;
 
     return (
         <div className="group relative">
@@ -70,16 +75,11 @@ export const CollapsibleCodeBlock = ({
                                     )}
                                 >
                                     <span className="truncate flex-1 min-w-0">{getTruncatedFileName(path)}</span>
-                                    {(() => {
-                                        const branch = branchId
-                                            ? editorEngine.branches.allBranches.find(b => b.id === branchId)
-                                            : editorEngine.branches.activeBranch;
-                                        return branch && (
-                                            <span className="text-foreground-tertiary group-hover:text-foreground-secondary text-mini ml-0.5 flex-shrink-0 truncate max-w-24">
-                                                {' • '}{branch.name}
-                                            </span>
-                                        );
-                                    })()}
+                                    {branch && (
+                                        <span className="text-foreground-tertiary group-hover:text-foreground-secondary text-mini ml-0.5 flex-shrink-0 truncate max-w-24">
+                                            {' • '}{branch.name}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </CollapsibleTrigger>
@@ -93,28 +93,32 @@ export const CollapsibleCodeBlock = ({
                                 transition={{ duration: 0.2, ease: 'easeInOut' }}
                                 style={{ overflow: 'hidden' }}
                             >
-                                <div className="border-t">
-                                    <CodeBlock code={content} language="jsx" className="text-xs overflow-x-auto" />
-                                    <div className="flex justify-end gap-1.5 p-1 border-t">                                        <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        className="h-7 px-2 text-foreground-secondary hover:text-foreground font-sans select-none"
-                                        onClick={copyToClipboard}
-                                    >
-                                        {copied ? (
-                                            <>
-                                                <Icons.Check className="h-4 w-4 mr-2" />
-                                                Copied
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Icons.Copy className="h-4 w-4 mr-2" />
-                                                Copy
-                                            </>
-                                        )}
-                                    </Button>
+                                {/* Only render this content when open to avoid rendering the expensive code block. */}
+                                {isOpen && (
+                                    <div className="border-t">
+                                        <CodeBlock code={content} language="jsx" isStreaming={isStream} className="text-xs overflow-x-auto" />
+                                        <div className="flex justify-end gap-1.5 p-1 border-t">
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-7 px-2 text-foreground-secondary hover:text-foreground font-sans select-none"
+                                                onClick={copyToClipboard}
+                                            >
+                                                {copied ? (
+                                                    <>
+                                                        <Icons.Check className="h-4 w-4 mr-2" />
+                                                        Copied
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Icons.Copy className="h-4 w-4 mr-2" />
+                                                        Copy
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </motion.div>
                         </AnimatePresence>
                     </CollapsibleContent>
@@ -123,3 +127,5 @@ export const CollapsibleCodeBlock = ({
         </div >
     );
 };
+
+export const CollapsibleCodeBlock = memo(observer(CollapsibleCodeBlockComponent));
