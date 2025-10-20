@@ -1,6 +1,7 @@
 import { FuzzyEditFileTool, SearchReplaceEditTool, SearchReplaceMultiEditFileTool, TerminalCommandTool, TypecheckTool, WebSearchTool, WriteFileTool } from '@onlook/ai';
 import type { WebSearchResult } from '@onlook/models';
 import type { ToolUIPart } from 'ai';
+import { observer } from 'mobx-react-lite';
 import stripAnsi from 'strip-ansi';
 import { type z } from 'zod';
 import { BashCodeDisplay } from '../../code-display/bash-code-display';
@@ -8,7 +9,7 @@ import { CollapsibleCodeBlock } from '../../code-display/collapsible-code-block'
 import { SearchSourcesDisplay } from '../../code-display/search-sources-display';
 import { ToolCallSimple } from './tool-call-simple';
 
-export const ToolCallDisplay = ({
+const ToolCallDisplayComponent = ({
     messageId,
     toolPart,
     isStream,
@@ -224,4 +225,6 @@ export const ToolCallDisplay = ({
             key={toolPart.toolCallId}
         />
     );
-}
+};
+
+export const ToolCallDisplay = observer(ToolCallDisplayComponent);

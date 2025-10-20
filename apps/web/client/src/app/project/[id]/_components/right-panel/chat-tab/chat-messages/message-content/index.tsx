@@ -2,9 +2,10 @@ import type { ChatMessage } from '@onlook/models';
 import { Reasoning, ReasoningContent, ReasoningTrigger, Response } from '@onlook/ui/ai-elements';
 import { cn } from '@onlook/ui/utils';
 import type { ToolUIPart } from 'ai';
+import { observer } from 'mobx-react-lite';
 import { ToolCallDisplay } from './tool-call-display';
 
-export const MessageContent = ({
+const MessageContentComponent = ({
     messageId,
     parts,
     applied,
@@ -69,3 +70,5 @@ export const MessageContent = ({
         </div>
     );
 };
+
+export const MessageContent = observer(MessageContentComponent);

@@ -17,8 +17,7 @@ jobs:
 
   #     - uses: oven-sh/setup-bun@v1
   #       with:
-  #         bun-version: latest
-
+  #         bun-version: 1.2.21
   #     - name: Cache dependencies
   #       uses: actions/cache@v4
   #       with:
@@ -41,7 +40,7 @@ jobs:
 
       - uses: oven-sh/setup-bun@v1
         with:
-          bun-version: latest
+          bun-version: 1.2.21
 
       - name: Cache dependencies
         uses: actions/cache@v4
@@ -65,7 +64,7 @@ jobs:
 
       - uses: oven-sh/setup-bun@v1
         with:
-          bun-version: latest
+          bun-version: 1.2.21
 
       - name: Cache dependencies
         uses: actions/cache@v4

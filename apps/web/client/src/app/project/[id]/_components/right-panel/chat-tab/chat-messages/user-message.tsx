@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import { nanoid } from 'nanoid';
 
 import type { ChatMessage, GitMessageCheckpoint } from '@onlook/models';
@@ -21,6 +21,7 @@ import { cn } from '@onlook/ui/utils';
 import type { EditMessage } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { restoreCheckpoint } from '@/components/store/editor/git';
+import { observer } from 'mobx-react-lite';
 import { SentContextPill } from '../context-pills/sent-context-pill';
 import { MessageContent } from './message-content';
 import { MultiBranchRevertModal } from './multi-branch-revert-modal';
@@ -41,7 +42,7 @@ export const getUserMessageContent = (message: ChatMessage) => {
         .join('');
 };
 
-export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
+const UserMessageComponent = ({ onEditMessage, message }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
     const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -328,3 +329,5 @@ export const UserMessage = ({ onEditMessage, message }: UserMessageProps) => {
         </div>
     );
 };
+
+export const UserMessage = memo(observer(UserMessageComponent));
