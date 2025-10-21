@@ -22,6 +22,19 @@ export class SnapManager {
         makeAutoObservable(this);
     }
 
+    private isAlignedWithFrame(currentPosition: RectPosition, otherFrame: SnapFrame): boolean {
+        // Check if frames are horizontally aligned for width snapping
+        const yDifference = Math.abs(currentPosition.y - otherFrame.bounds.top);
+        const isHorizontallyAligned = yDifference <= this.config.threshold;
+        
+        // Check if frames are vertically aligned for height snapping  
+        const xDifference = Math.abs(currentPosition.x - otherFrame.bounds.left);
+        const isVerticallyAligned = xDifference <= this.config.threshold;
+        
+        // Frame is aligned if it's either horizontally OR vertically aligned
+        return isHorizontallyAligned || isVerticallyAligned;
+    }
+
     private createSnapBounds(position: RectPosition, dimension: RectDimension): SnapBounds {
         const left = position.x;
         const top = position.y;
@@ -244,9 +257,16 @@ export class SnapManager {
             return null;
         }
 
-        const otherFrames = this.getSnapFrames(frameId);
+        const allFrames = this.getSnapFrames(frameId);
 
-        if (otherFrames.length === 0) {
+        if (allFrames.length === 0) {
+            return null;
+        }
+
+        // Filter frames that are spatially aligned with the current frame
+        const alignedFrames = allFrames.filter(frame => this.isAlignedWithFrame(position, frame));
+        
+        if (alignedFrames.length === 0) {
             return null;
         }
 
@@ -255,7 +275,7 @@ export class SnapManager {
         const snapLines: SnapLine[] = [];
 
         // Find width matches and prioritize closest
-        const widthMatches = otherFrames
+        const widthMatches = alignedFrames
             .map((frame) => ({
                 frame,
                 difference: Math.abs(dimension.width - frame.bounds.width),
@@ -286,7 +306,7 @@ export class SnapManager {
         }
 
         // Find height matches and prioritize closest
-        const heightMatches = otherFrames
+        const heightMatches = alignedFrames
             .map((frame) => ({
                 frame,
                 difference: Math.abs(dimension.height - frame.bounds.height),
