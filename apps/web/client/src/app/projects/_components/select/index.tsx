@@ -1,15 +1,18 @@
 'use client';
 
-import { api } from '@/trpc/react';
-import { getFileUrlFromStorage } from '@/utils/supabase/client';
-import { STORAGE_BUCKETS, Tags } from '@onlook/constants';
-import type { Project } from '@onlook/models';
-import { Icons } from '@onlook/ui/icons';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
+import { Carousel } from '../carousel';
 import localforage from 'localforage';
 import { AnimatePresence, motion } from 'motion/react';
-import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+
+import type { Project } from '@onlook/models';
+import { STORAGE_BUCKETS, Tags } from '@onlook/constants';
+import { Icons } from '@onlook/ui/icons';
+
+import { api } from '@/trpc/react';
+import { getFileUrlFromStorage } from '@/utils/supabase/client';
 import { Templates } from '../templates';
 import { TemplateModal } from '../templates/template-modal';
 import { HighlightText } from './highlight-text';
@@ -27,10 +30,12 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     const { mutateAsync: removeTag } = api.project.removeTag.useMutation();
 
     // Search and filters
-    const [internalQuery] = useState("");
-    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+    const [internalQuery] = useState('');
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
     const searchQuery = externalSearchQuery ?? internalQuery;
-    const [filesOrderBy, setFilesOrderBy] = useState<'Newest first' | 'Oldest first'>('Newest first');
+    const [filesOrderBy, setFilesOrderBy] = useState<'Newest first' | 'Oldest first'>(
+        'Newest first',
+    );
     const [filesSortBy, setFilesSortBy] = useState<'Alphabetical' | 'Date created' | 'Last viewed'>(
         'Last viewed',
     );
@@ -42,19 +47,14 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     const [spacing] = useState<number>(24);
 
     // Templates
-    const projects = fetchedProjects?.filter(project => !project.metadata.tags.includes(Tags.TEMPLATE)) ?? [];
-    const templateProjects = fetchedProjects?.filter(project => project.metadata.tags.includes(Tags.TEMPLATE)) ?? [];
+    const projects =
+        fetchedProjects?.filter((project) => !project.metadata.tags.includes(Tags.TEMPLATE)) ?? [];
+    const templateProjects =
+        fetchedProjects?.filter((project) => project.metadata.tags.includes(Tags.TEMPLATE)) ?? [];
     const shouldShowTemplate = templateProjects.length > 0;
     const [selectedTemplate, setSelectedTemplate] = useState<Project | null>(null);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-    const [starredTemplates, setStarredTemplates] = useState<Set<string>>(
-        new Set()
-    );
-    
-    // Recent projects scroll state
-    const recentProjectsScrollRef = useRef<HTMLDivElement>(null);
-    const [showScrollButton, setShowScrollButton] = useState(false);
-    const [showLeftScrollButton, setShowLeftScrollButton] = useState(false);
+    const [starredTemplates, setStarredTemplates] = useState<Set<string>>(new Set());
 
     // Load starred templates from storage
     const loadStarredTemplates = async () => {
@@ -109,7 +109,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
         try {
             await removeTag({
                 projectId: selectedTemplate.id,
-                tag: Tags.TEMPLATE
+                tag: Tags.TEMPLATE,
             });
 
             toast.success('Removed from templates');
@@ -117,9 +117,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
             setIsTemplateModalOpen(false);
             setSelectedTemplate(null);
 
-            await Promise.all([
-                utils.project.list.invalidate(),
-            ]);
+            await Promise.all([utils.project.list.invalidate()]);
 
             refetch();
         } catch (error) {
@@ -150,7 +148,10 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                 ),
             );
         }
-        return [...filtered].sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
+        return [...filtered].sort(
+            (a, b) =>
+                new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime(),
+        );
     }, [projects, debouncedSearchQuery]);
 
     const filesProjects = useMemo(() => {
@@ -159,81 +160,20 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                 case 'Alphabetical':
                     return a.name.localeCompare(b.name);
                 case 'Date created':
-                    return new Date(a.metadata.createdAt).getTime() - new Date(b.metadata.createdAt).getTime();
+                    return (
+                        new Date(a.metadata.createdAt).getTime() -
+                        new Date(b.metadata.createdAt).getTime()
+                    );
                 case 'Last viewed':
                 default:
-                    return new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime();
+                    return (
+                        new Date(b.metadata.updatedAt).getTime() -
+                        new Date(a.metadata.updatedAt).getTime()
+                    );
             }
         });
         return filesOrderBy === 'Oldest first' ? sorted.reverse() : sorted;
     }, [filteredAndSortedProjects, filesSortBy, filesOrderBy]);
-
-    // Check if recent projects section has overflow
-    useEffect(() => {
-        const checkOverflow = () => {
-            if (recentProjectsScrollRef.current) {
-                const { scrollLeft, scrollWidth, clientWidth } = recentProjectsScrollRef.current;
-                const hasOverflow = scrollWidth > clientWidth;
-                const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 10;
-                setShowScrollButton(hasOverflow && !isAtEnd);
-            }
-        };
-
-        checkOverflow();
-        window.addEventListener('resize', checkOverflow);
-        
-        return () => window.removeEventListener('resize', checkOverflow);
-    }, [filteredAndSortedProjects]);
-
-    // Handle scroll position for left and right button visibility
-    useEffect(() => {
-        const handleScroll = () => {
-            if (recentProjectsScrollRef.current) {
-                const { scrollLeft, scrollWidth, clientWidth } = recentProjectsScrollRef.current;
-                
-                // Show left button if scrolled away from the left edge
-                setShowLeftScrollButton(scrollLeft > 10);
-                
-                // Hide right button if scrolled to the end (with small tolerance)
-                const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 10;
-                setShowScrollButton(!isAtEnd && scrollWidth > clientWidth);
-            }
-        };
-
-        const scrollContainer = recentProjectsScrollRef.current;
-        if (scrollContainer) {
-            scrollContainer.addEventListener('scroll', handleScroll);
-            window.addEventListener('resize', handleScroll);
-            // Also check initial scroll position
-            handleScroll();
-            return () => {
-                scrollContainer.removeEventListener('scroll', handleScroll);
-                window.removeEventListener('resize', handleScroll);
-            };
-        }
-    }, [filteredAndSortedProjects]);
-
-    // Scroll the recent projects section to the right
-    const handleScrollProjects = () => {
-        if (recentProjectsScrollRef.current) {
-            const scrollAmount = 300; // Scroll by approximately one card width
-            recentProjectsScrollRef.current.scrollBy({
-                left: scrollAmount,
-                behavior: 'smooth'
-            });
-        }
-    };
-
-    // Scroll the recent projects section to the left
-    const handleScrollProjectsLeft = () => {
-        if (recentProjectsScrollRef.current) {
-            const scrollAmount = 300; // Scroll by approximately one card width
-            recentProjectsScrollRef.current.scrollBy({
-                left: -scrollAmount,
-                behavior: 'smooth'
-            });
-        }
-    };
 
     const sortOptions = [
         { value: 'Alphabetical', label: 'Alphabetical' },
@@ -245,7 +185,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
         { value: 'Oldest first', label: 'Oldest first' },
         { value: 'Newest first', label: 'Newest first' },
     ] as const;
-
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -265,10 +204,10 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
 
     if (isLoading) {
         return (
-            <div className="w-screen h-screen flex flex-col items-center justify-center">
+            <div className="flex h-screen w-screen flex-col items-center justify-center">
                 <div className="flex flex-row items-center gap-2">
-                    <Icons.LoadingSpinner className="h-6 w-6 animate-spin text-foreground-primary" />
-                    <div className="text-lg text-foreground-secondary">Loading projects...</div>
+                    <Icons.LoadingSpinner className="text-foreground-primary h-6 w-6 animate-spin" />
+                    <div className="text-foreground-secondary text-lg">Loading projects...</div>
                 </div>
             </div>
         );
@@ -276,13 +215,15 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
 
     if (projects.length === 0) {
         return (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-                <div className="text-xl text-foreground-secondary">No projects found</div>
-                <div className="text-md text-foreground-tertiary">Create a new project to get started</div>
+            <div className="flex h-full w-full flex-col items-center justify-center gap-4">
+                <div className="text-foreground-secondary text-xl">No projects found</div>
+                <div className="text-md text-foreground-tertiary">
+                    Create a new project to get started
+                </div>
                 <div className="flex justify-center">
                     <Link
                         href="/"
-                        className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-primary inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2"
                     >
                         <Icons.ArrowLeft className="h-4 w-4" />
                         Back to home
@@ -293,140 +234,107 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     }
 
     return (
-        <div className="w-full h-full flex flex-col px-6 py-8 relative overflow-x-visible" style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}>
-            <div className="max-w-6xl w-full mx-auto overflow-x-visible">
+        <div
+            className="relative flex h-full w-full flex-col overflow-x-visible px-6 py-8"
+            style={{
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                MozUserSelect: 'none',
+                msUserSelect: 'none',
+            }}
+        >
+            <div className="mx-auto w-full max-w-6xl overflow-x-visible">
                 <div className="mb-12 overflow-x-visible">
-                    <h2 className="text-2xl text-foreground font-normal mb-[12px]">
+                    <h2 className="text-foreground mb-[12px] text-2xl font-normal">
                         Recent projects
                     </h2>
 
-                    <div className="relative overflow-x-visible">
-                        {/* Left gradient - only visible when scrolled */}
-                        <AnimatePresence>
-                            {showLeftScrollButton && (
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="absolute left-0 top-0 bottom-4 w-16 bg-gradient-to-r from-background to-transparent pointer-events-none z-10"
-                                />
-                            )}
-                        </AnimatePresence>
-                        
-                        {/* Right gradient - only visible when not at end */}
-                        <AnimatePresence>
-                            {showScrollButton && (
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="absolute right-0 top-0 bottom-4 w-16 bg-gradient-to-l from-background to-transparent pointer-events-none z-10"
-                                />
-                            )}
-                        </AnimatePresence>
-                        
-                        {/* Left floating scroll button - only visible when scrolled */}
-                        <AnimatePresence>
-                            {showLeftScrollButton && (
-                                <motion.button
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    onClick={handleScrollProjectsLeft}
-                                    className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border border-border shadow-lg hover:bg-secondary transition-colors flex items-center justify-center text-foreground-secondary hover:text-foreground"
-                                    aria-label="Scroll projects left"
-                                >
-                                    <Icons.ChevronRight className="w-5 h-5 rotate-180" />
-                                </motion.button>
-                            )}
-                        </AnimatePresence>
-                        
-                        {/* Right floating scroll button */}
-                        <AnimatePresence>
-                            {showScrollButton && (
-                                <motion.button
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    onClick={handleScrollProjects}
-                                    className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border border-border shadow-lg hover:bg-secondary transition-colors flex items-center justify-center text-foreground-secondary hover:text-foreground"
-                                    aria-label="Scroll projects right"
-                                >
-                                    <Icons.ChevronRight className="w-5 h-5" />
-                                </motion.button>
-                            )}
-                        </AnimatePresence>
-                        
-                        <div ref={recentProjectsScrollRef} className="flex gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] h-[202px]">
+                    <Carousel gap="gap-4" className="h-[202px] pb-4">
                         <AnimatePresence mode="popLayout">
                             {filteredAndSortedProjects.length === 0 ? (
                                 <motion.div
                                     key="no-results"
-                                    className="w-full flex items-center justify-center"
+                                    className="flex w-full items-center justify-center"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
                                 >
                                     <div className="text-center">
-                                        <div className="text-foreground-secondary text-base">No projects found</div>
-                                        <div className="text-foreground-tertiary text-sm">Try adjusting your search terms</div>
+                                        <div className="text-foreground-secondary text-base">
+                                            No projects found
+                                        </div>
+                                        <div className="text-foreground-tertiary text-sm">
+                                            Try adjusting your search terms
+                                        </div>
                                     </div>
                                 </motion.div>
                             ) : (
-                                filteredAndSortedProjects.map((project, index) => (
+                                [
                                     <motion.div
-                                        key={project.id}
-                                        className="flex-shrink-0 w-72"
-                                        initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+                                        key="create-tile"
+                                        className="w-72 flex-shrink-0"
+                                        initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
                                         animate={{
                                             opacity: 1,
                                             y: 0,
-                                            filter: "blur(0px)",
+                                            filter: 'blur(0px)',
                                             transition: {
                                                 duration: 0.4,
-                                                delay: index * 0.1,
                                                 ease: [0.25, 0.46, 0.45, 0.94],
                                             },
                                         }}
                                         exit={{
                                             opacity: 0,
                                             y: -20,
-                                            filter: "blur(10px)",
+                                            filter: 'blur(10px)',
                                             transition: { duration: 0.2 },
                                         }}
                                         layout
                                     >
-                                        <SquareProjectCard
-                                            project={project}
-                                            searchQuery={debouncedSearchQuery}
-                                            HighlightText={HighlightText}
-                                        />
-                                    </motion.div>
-                                ))
-                            )}
-
-                            {filteredAndSortedProjects.length > 0 && (
-                                <motion.div
-                                    key="create-tile"
-                                    className="flex-shrink-0 w-72"
-                                    initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                                    animate={{ opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.4, delay: filteredAndSortedProjects.length * 0.1, ease: [0.25, 0.46, 0.45, 0.94] } }}
-                                    exit={{ opacity: 0, y: -20, filter: "blur(10px)", transition: { duration: 0.2 } }}
-                                    layout
-                                >
-                                    <Link href="/">
-                                        <div className="relative aspect-[4/2.8] rounded-lg border border-border bg-secondary/40 hover:bg-secondary transition-colors flex items-center justify-center">
-                                            <div className="flex flex-col items-center justify-center text-foreground-tertiary">
-                                                <Icons.Plus className="w-7 h-7 mb-1" />
-                                                <span className="text-sm">Create</span>
+                                        <Link href="/">
+                                            <div className="border-border bg-secondary/40 hover:bg-secondary relative flex aspect-[4/2.8] items-center justify-center rounded-lg border transition-colors">
+                                                <div className="text-foreground-tertiary flex flex-col items-center justify-center">
+                                                    <Icons.Plus className="mb-1 h-7 w-7" />
+                                                    <span className="text-sm">Create</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </Link>
-                                </motion.div>
+                                        </Link>
+                                    </motion.div>,
+                                    /* Project cards */
+                                    ...filteredAndSortedProjects.map((project, index) => (
+                                        <motion.div
+                                            key={project.id}
+                                            className="w-72 flex-shrink-0"
+                                            initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+                                            animate={{
+                                                opacity: 1,
+                                                y: 0,
+                                                filter: 'blur(0px)',
+                                                transition: {
+                                                    duration: 0.4,
+                                                    delay: (index + 1) * 0.1,
+                                                    ease: [0.25, 0.46, 0.45, 0.94],
+                                                },
+                                            }}
+                                            exit={{
+                                                opacity: 0,
+                                                y: -20,
+                                                filter: 'blur(10px)',
+                                                transition: { duration: 0.2 },
+                                            }}
+                                            layout
+                                        >
+                                            <SquareProjectCard
+                                                project={project}
+                                                searchQuery={debouncedSearchQuery}
+                                                HighlightText={HighlightText}
+                                            />
+                                        </motion.div>
+                                    ))
+                                ]
                             )}
                         </AnimatePresence>
-                        </div>
-                    </div>
+                    </Carousel>
                 </div>
 
                 {shouldShowTemplate && (
@@ -440,31 +348,33 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                 )}
 
                 <div>
-                    <div className="flex items-center justify-between mb-[12px]">
-                        <h2 className="text-2xl text-foreground font-normal">Projects</h2>
+                    <div className="mb-[12px] flex items-center justify-between">
+                        <h2 className="text-foreground text-2xl font-normal">Projects</h2>
                         <div className="flex items-center gap-2">
-
                             <button
-                                onClick={() => setLayoutMode((m) => (m === 'masonry' ? 'grid' : 'masonry'))}
-                                className="p-2 rounded transition-colors hover:bg-secondary text-foreground-tertiary hover:text-foreground"
+                                onClick={() =>
+                                    setLayoutMode((m) => (m === 'masonry' ? 'grid' : 'masonry'))
+                                }
+                                className="hover:bg-secondary text-foreground-tertiary hover:text-foreground rounded p-2 transition-colors"
                                 aria-label="Toggle layout"
                             >
                                 {layoutMode === 'masonry' ? (
-                                    <Icons.LayoutWindow className="w-5 h-5" />
+                                    <Icons.LayoutWindow className="h-5 w-5" />
                                 ) : (
-                                    <Icons.LayoutMasonry className="w-5 h-5" />
+                                    <Icons.LayoutMasonry className="h-5 w-5" />
                                 )}
                             </button>
 
-
                             <div className="relative" ref={settingsDropdownRef}>
                                 <button
-                                    onClick={() => setIsSettingsDropdownOpen(!isSettingsDropdownOpen)}
-                                    className="p-2 rounded transition-colors hover:bg-secondary hover:text-foreground text-foreground-tertiary"
+                                    onClick={() =>
+                                        setIsSettingsDropdownOpen(!isSettingsDropdownOpen)
+                                    }
+                                    className="hover:bg-secondary hover:text-foreground text-foreground-tertiary rounded p-2 transition-colors"
                                     aria-haspopup="menu"
                                     aria-expanded={isSettingsDropdownOpen}
                                 >
-                                    <Icons.Gear className="w-4 h-4" />
+                                    <Icons.Gear className="h-4 w-4" />
                                 </button>
 
                                 <AnimatePresence>
@@ -473,11 +383,16 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                                             initial={{ opacity: 0, y: -6, scale: 0.98 }}
                                             animate={{ opacity: 1, y: 0, scale: 1 }}
                                             exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                                            transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
-                                            className="absolute right-0 top-full mt-2 w-48 bg-background border border-border rounded-md shadow-lg z-50"
+                                            transition={{
+                                                duration: 0.18,
+                                                ease: [0.25, 0.46, 0.45, 0.94],
+                                            }}
+                                            className="bg-background border-border absolute top-full right-0 z-50 mt-2 w-48 rounded-md border shadow-lg"
                                         >
                                             <div className="p-2">
-                                                <div className="text-xs font-medium text-foreground-tertiary mb-2 px-2">Sort by</div>
+                                                <div className="text-foreground-tertiary mb-2 px-2 text-xs font-medium">
+                                                    Sort by
+                                                </div>
                                                 {sortOptions.map((option) => (
                                                     <button
                                                         key={option.value}
@@ -485,16 +400,21 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                                                             setFilesSortBy(option.value);
                                                             setIsSettingsDropdownOpen(false);
                                                         }}
-                                                        className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-secondary transition-colors ${filesSortBy === option.value ? 'text-foreground bg-secondary' : 'text-foreground-secondary'
-                                                            }`}
+                                                        className={`hover:bg-secondary w-full rounded px-2 py-1.5 text-left text-sm transition-colors ${
+                                                            filesSortBy === option.value
+                                                                ? 'text-foreground bg-secondary'
+                                                                : 'text-foreground-secondary'
+                                                        }`}
                                                     >
                                                         {option.label}
                                                     </button>
                                                 ))}
 
-                                                <div className="border-t border-border my-2"></div>
+                                                <div className="border-border my-2 border-t"></div>
 
-                                                <div className="text-xs font-medium text-foreground-tertiary mb-2 px-2">Order</div>
+                                                <div className="text-foreground-tertiary mb-2 px-2 text-xs font-medium">
+                                                    Order
+                                                </div>
                                                 {orderOptions.map((option) => (
                                                     <button
                                                         key={option.value}
@@ -502,8 +422,11 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                                                             setFilesOrderBy(option.value);
                                                             setIsSettingsDropdownOpen(false);
                                                         }}
-                                                        className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-secondary transition-colors ${filesOrderBy === option.value ? 'text-foreground bg-secondary' : 'text-foreground-secondary'
-                                                            }`}
+                                                        className={`hover:bg-secondary w-full rounded px-2 py-1.5 text-left text-sm transition-colors ${
+                                                            filesOrderBy === option.value
+                                                                ? 'text-foreground bg-secondary'
+                                                                : 'text-foreground-secondary'
+                                                        }`}
                                                     >
                                                         {option.label}
                                                     </button>
@@ -512,12 +435,9 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
-
                             </div>
-
                         </div>
                     </div>
-
 
                     {layoutMode === 'masonry' ? (
                         <MasonryLayout
@@ -535,7 +455,10 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                             )}
                         />
                     ) : (
-                        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <motion.div
+                            layout
+                            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                        >
                             {filesProjects.map((project) => (
                                 <ProjectCard
                                     key={`files-${project.id}`}
@@ -551,36 +474,37 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                 </div>
             </div>
 
-            {
-                selectedTemplate && shouldShowTemplate && (
-                    <TemplateModal
-                        isOpen={isTemplateModalOpen}
-                        onClose={handleCloseTemplateModal}
-                        title={selectedTemplate.name}
-                        description={selectedTemplate.metadata?.description || 'No description available'}
-                        image={
-                            selectedTemplate.metadata?.previewImg?.url ||
-                            (selectedTemplate.metadata?.previewImg?.storagePath?.bucket && selectedTemplate.metadata.previewImg.storagePath.path
-                                ? getFileUrlFromStorage(
-                                    selectedTemplate.metadata.previewImg.storagePath.bucket,
-                                    selectedTemplate.metadata.previewImg.storagePath.path
+            {selectedTemplate && shouldShowTemplate && (
+                <TemplateModal
+                    isOpen={isTemplateModalOpen}
+                    onClose={handleCloseTemplateModal}
+                    title={selectedTemplate.name}
+                    description={
+                        selectedTemplate.metadata?.description || 'No description available'
+                    }
+                    image={
+                        selectedTemplate.metadata?.previewImg?.url ||
+                        (selectedTemplate.metadata?.previewImg?.storagePath?.bucket &&
+                        selectedTemplate.metadata.previewImg.storagePath.path
+                            ? getFileUrlFromStorage(
+                                  selectedTemplate.metadata.previewImg.storagePath.bucket,
+                                  selectedTemplate.metadata.previewImg.storagePath.path,
+                              )
+                            : selectedTemplate.metadata?.previewImg?.storagePath?.path
+                              ? getFileUrlFromStorage(
+                                    STORAGE_BUCKETS.PREVIEW_IMAGES,
+                                    selectedTemplate.metadata.previewImg.storagePath.path,
                                 )
-                                : selectedTemplate.metadata?.previewImg?.storagePath?.path
-                                    ? getFileUrlFromStorage(
-                                        STORAGE_BUCKETS.PREVIEW_IMAGES,
-                                        selectedTemplate.metadata.previewImg.storagePath.path
-                                    )
-                                    : null)
-                        }
-                        isNew={false}
-                        isStarred={selectedTemplate ? starredTemplates.has(selectedTemplate.id) : false}
-                        onToggleStar={() => selectedTemplate && handleToggleStar(selectedTemplate.id)}
-                        templateProject={selectedTemplate}
-                        onUnmarkTemplate={handleUnmarkTemplate}
-                        user={user}
-                    />
-                )
-            }
-        </div >
+                              : null)
+                    }
+                    isNew={false}
+                    isStarred={selectedTemplate ? starredTemplates.has(selectedTemplate.id) : false}
+                    onToggleStar={() => selectedTemplate && handleToggleStar(selectedTemplate.id)}
+                    templateProject={selectedTemplate}
+                    onUnmarkTemplate={handleUnmarkTemplate}
+                    user={user}
+                />
+            )}
+        </div>
     );
 };
