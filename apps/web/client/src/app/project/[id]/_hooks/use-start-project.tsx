@@ -38,6 +38,11 @@ export const useStartProject = () => {
             await apiUtils.project.createRequest.getPendingRequest.invalidate({ projectId: editorEngine.projectId });
         },
     });
+    const { mutateAsync: trackProjectAccess } = api.project.trackAccess.useMutation({
+        onSuccess: () => {
+            apiUtils.project.list.invalidate();
+        },
+    });
     const [projectReadyState, setProjectReadyState] = useState<ProjectReadyState>({
         canvas: false,
         conversations: false,
@@ -53,6 +58,10 @@ export const useStartProject = () => {
             updateProjectReadyState({ sandbox: true });
         }
     }, [sandbox.session.isConnecting]);
+
+    useEffect(() => {
+        trackProjectAccess({ projectId: editorEngine.projectId }).catch(console.error);
+    }, [editorEngine.projectId, trackProjectAccess]);
 
     useEffect(() => {
         if (tabState === 'reactivated') {
