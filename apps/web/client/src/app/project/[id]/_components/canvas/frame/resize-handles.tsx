@@ -91,10 +91,19 @@ export const ResizeHandles = observer((
 
                 if (dimensionSnapTarget) {
                     // Apply snapped dimensions
-                    editorEngine.snap.showSnapLines(dimensionSnapTarget.snapLines);
-                    editorEngine.frames.updateAndSaveToStorage(frame.id, {
-                        dimension: dimensionSnapTarget.dimension,
-                    });
+                    const clamped = {
+                        width: Math.max(Math.round(dimensionSnapTarget.dimension.width), minWidth),
+                        height: Math.max(Math.round(dimensionSnapTarget.dimension.height), minHeight),
+                    };
+                    const clampedChanged =
+                        clamped.width !== dimensionSnapTarget.dimension.width ||
+                        clamped.height !== dimensionSnapTarget.dimension.height;
+                    if (clampedChanged) {
+                        editorEngine.snap.hideSnapLines();
+                    } else {
+                        editorEngine.snap.showSnapLines(dimensionSnapTarget.snapLines);
+                    }
+                    editorEngine.frames.updateAndSaveToStorage(frame.id, { dimension: clamped });
                     editorEngine.overlay.undebouncedRefresh();
                     return;
                 } else {
