@@ -42,7 +42,7 @@ const CollapsibleCodeBlockComponent = ({
         : editorEngine.branches.activeBranch;
 
     return (
-        <div className="group relative">
+        <div className="group relative my-3">
             <Collapsible open={isOpen} onOpenChange={setIsOpen}>
                 <div
                     className={cn(
