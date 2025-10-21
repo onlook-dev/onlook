@@ -234,53 +234,6 @@ export class SnapManager {
         this.activeSnapLines = [];
     }
 
-    detectDimensionAlignment(
-        frameId: string,
-        dimension: RectDimension,
-        position: RectPosition,
-    ): SnapLine[] {
-        if (!this.config.enabled) {
-            return [];
-        }
-
-        const dragBounds = this.createSnapBounds(position, dimension);
-        const otherFrames = this.getSnapFrames(frameId);
-
-        if (otherFrames.length === 0) {
-            return [];
-        }
-
-        const snapLines: SnapLine[] = [];
-
-        for (const otherFrame of otherFrames) {
-            const widthDifference = Math.abs(dimension.width - otherFrame.bounds.width);
-            if (widthDifference <= this.config.threshold) {
-                const widthLine = this.createSnapLine(
-                    SnapLineType.EDGE_RIGHT,
-                    'vertical',
-                    dragBounds.right,
-                    otherFrame,
-                    dragBounds,
-                );
-                snapLines.push(widthLine);
-            }
-
-            const heightDifference = Math.abs(dimension.height - otherFrame.bounds.height);
-            if (heightDifference <= this.config.threshold) {
-                const heightLine = this.createSnapLine(
-                    SnapLineType.EDGE_BOTTOM,
-                    'horizontal',
-                    dragBounds.bottom,
-                    otherFrame,
-                    dragBounds,
-                );
-                snapLines.push(heightLine);
-            }
-        }
-
-        return snapLines;
-    }
-
     calculateDimensionSnapTarget(
         frameId: string,
         dimension: RectDimension,
