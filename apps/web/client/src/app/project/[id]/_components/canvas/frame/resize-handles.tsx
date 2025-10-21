@@ -100,9 +100,7 @@ export const ResizeHandles = observer((
                 } else {
                     editorEngine.snap.hideSnapLines();
                 }
-            } else {
-                editorEngine.snap.hideSnapLines();
-            }
+            } 
 
             // No snapping or snapping disabled 
             editorEngine.snap.hideSnapLines();
