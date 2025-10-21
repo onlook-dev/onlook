@@ -13,7 +13,7 @@ export type ToolProps = ComponentProps<typeof Collapsible>;
 
 export const Tool = ({ className, ...props }: ToolProps) => (
     <Collapsible
-        className={cn('flex flex-col text-foreground-tertiary/80 p-0 my-1', className)}
+        className={cn('flex flex-col text-foreground-tertiary/80 p-0 my-2', className)}
         {...props}
     />
 );
