@@ -27,8 +27,20 @@ export const ResizeHandles = observer((
         const startWidth = frame.dimension.width;
         const startHeight = frame.dimension.height;
         const aspectRatio = startWidth / startHeight;
+        let isResizeActive = false;
 
         const resize = (e: MouseEvent) => {
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            
+            // Check deadzone - only start resizing after 5px movement
+            if (!isResizeActive) {
+                if (dx * dx + dy * dy <= 25) {
+                    return; // Still within deadzone
+                }
+                isResizeActive = true;
+            }
+
             const scale = editorEngine.canvas.scale;
             let widthDelta = types.includes(HandleType.Right) ? (e.clientX - startX) / scale : 0;
             let heightDelta = types.includes(HandleType.Bottom) ? (e.clientY - startY) / scale : 0;
@@ -65,7 +77,38 @@ export const ResizeHandles = observer((
                 newHeight = Math.max(newHeight, minHeight);
             }
 
-            editorEngine.frames.updateAndSaveToStorage(frame.id, { dimension: { width: Math.round(newWidth), height: Math.round(newHeight) } });
+            // Apply dimension snapping if enabled 
+            if (editorEngine.snap.config.enabled && !e.ctrlKey && !e.metaKey) {
+                const dimensionSnapTarget = editorEngine.snap.calculateDimensionSnapTarget(
+                    frame.id,
+                    { width: Math.round(newWidth), height: Math.round(newHeight) },
+                    frame.position,
+                    {
+                        width: types.includes(HandleType.Right),
+                        height: types.includes(HandleType.Bottom),
+                    },
+                );
+
+                if (dimensionSnapTarget) {
+                    // Apply snapped dimensions
+                    editorEngine.snap.showSnapLines(dimensionSnapTarget.snapLines);
+                    editorEngine.frames.updateAndSaveToStorage(frame.id, {
+                        dimension: dimensionSnapTarget.dimension,
+                    });
+                    editorEngine.overlay.undebouncedRefresh();
+                    return;
+                } else {
+                    editorEngine.snap.hideSnapLines();
+                }
+            } else {
+                editorEngine.snap.hideSnapLines();
+            }
+
+            // No snapping or snapping disabled 
+            editorEngine.snap.hideSnapLines();
+            editorEngine.frames.updateAndSaveToStorage(frame.id, {
+                dimension: { width: Math.round(newWidth), height: Math.round(newHeight) },
+            });
             editorEngine.overlay.undebouncedRefresh();
         };
 
@@ -73,6 +116,7 @@ export const ResizeHandles = observer((
             e.preventDefault();
             e.stopPropagation();
             setIsResizing(false);
+            editorEngine.snap.hideSnapLines();
             window.removeEventListener('mousemove', resize as unknown as EventListener);
             window.removeEventListener('mouseup', stopResize as unknown as EventListener);
         };
