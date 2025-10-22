@@ -1,8 +1,8 @@
 'use client';
 
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 
@@ -155,9 +155,6 @@ export const ChatInput = observer(
             try {
                 await onSendMessage(savedInput, chatMode);
                 setInputValue('');
-                setTimeout(() => {
-                    onScrollToBottom();
-                }, 0);
             } catch (error) {
                 console.error('Error sending message', error);
                 toast.error('Failed to send message. Please try again.');
@@ -288,7 +285,8 @@ export const ChatInput = observer(
                         source: 'external',
                         content: base64URL,
                         mimeType: file.type,
-                        displayName: customDisplayName && files.length === 1 ? customDisplayName : file.name,
+                        displayName:
+                            customDisplayName && files.length === 1 ? customDisplayName : file.name,
                     };
                     imageContexts.push(contextImage);
                 } catch (error) {
@@ -454,7 +452,7 @@ export const ChatInput = observer(
                                     <Button
                                         size={'icon'}
                                         variant={'secondary'}
-                                        className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary bg-background-primary rounded-full"
+                                        className="text-smallPlus text-primary bg-background-primary h-full w-fit rounded-full px-2.5 py-0.5"
                                         onClick={() => {
                                             setActionTooltipOpen(false);
                                             void onStop();
@@ -463,19 +461,21 @@ export const ChatInput = observer(
                                         <Icons.Stop />
                                     </Button>
                                 </TooltipTrigger>
-                                <TooltipContent side="top" sideOffset={6} hideArrow>{'Stop response'}</TooltipContent>
+                                <TooltipContent side="top" sideOffset={6} hideArrow>
+                                    {'Stop response'}
+                                </TooltipContent>
                             </Tooltip>
                         ) : (
                             <Button
                                 size={'icon'}
                                 variant={'secondary'}
                                 className={cn(
-                                    "text-smallPlus w-fit h-full py-0.5 px-2.5 rounded-full",
+                                    'text-smallPlus h-full w-fit rounded-full px-2.5 py-0.5',
                                     inputEmpty
-                                        ? "text-primary"
+                                        ? 'text-primary'
                                         : chatMode === ChatType.ASK
-                                            ? "bg-blue-300 text-background hover:bg-blue-600"
-                                            : "bg-foreground-primary text-background hover:bg-foreground-primary/80"
+                                            ? 'text-background bg-blue-300 hover:bg-blue-600'
+                                            : 'bg-foreground-primary text-background hover:bg-foreground-primary/80',
                                 )}
                                 disabled={inputEmpty}
                                 onClick={() => void sendMessage()}
