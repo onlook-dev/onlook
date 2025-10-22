@@ -13,8 +13,7 @@ import { Icons } from '@onlook/ui/icons';
 import { assertNever } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react';
-import { useStickToBottomContext } from 'use-stick-to-bottom';
+import { useCallback } from 'react';
 import { AssistantMessage } from './assistant-message';
 import { ErrorMessage } from './error-message';
 import { UserMessage } from './user-message';
@@ -26,11 +25,7 @@ interface ChatMessagesProps {
     error?: Error;
 }
 
-export interface ChatMessagesHandle {
-    scrollToBottom: () => void;
-}
-
-const ChatMessagesInner = observer(({
+export const ChatMessages = observer(({
     messages,
     onEditMessage,
     isStreaming,
@@ -80,7 +75,7 @@ const ChatMessagesInner = observer(({
     }
 
     return (
-        <>
+        <Conversation>
             <ConversationContent className="p-0 m-0">
                 {messages.map((message) => renderMessage(message))}
                 {error && <ErrorMessage error={error} />}
@@ -90,53 +85,6 @@ const ChatMessagesInner = observer(({
                 </div>}
             </ConversationContent>
             <ConversationScrollButton />
-        </>
-    );
-});
-
-export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(({ messages, onEditMessage, isStreaming, error }, ref) => {
-    const ScrollController = () => {
-        const { scrollToBottom, isAtBottom } = useStickToBottomContext();
-        const prevMessagesLengthRef = useRef(messages.length);
-        const isAtBottomRef = useRef(isAtBottom);
-
-        // Keep track of current isAtBottom state
-        useEffect(() => {
-            isAtBottomRef.current = isAtBottom;
-        }, [isAtBottom]);
-
-        useImperativeHandle(ref, () => ({
-            scrollToBottom,
-        }), [scrollToBottom]);
-
-        // Auto-scroll when new messages are added, but only if user was already at bottom
-        useEffect(() => {
-            const hasNewMessages = messages.length > prevMessagesLengthRef.current;
-            prevMessagesLengthRef.current = messages.length;
-
-            // Only auto-scroll if user was at the bottom (or close to it)
-            if (hasNewMessages && isAtBottomRef.current) {
-                // Use double requestAnimationFrame to ensure DOM has fully updated
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        scrollToBottom();
-                    });
-                });
-            }
-        }, [messages, scrollToBottom]);
-
-        return null;
-    };
-
-    return (
-        <Conversation>
-            <ScrollController />
-            <ChatMessagesInner
-                messages={messages}
-                onEditMessage={onEditMessage}
-                isStreaming={isStreaming}
-                error={error}
-            />
         </Conversation>
     );
 });

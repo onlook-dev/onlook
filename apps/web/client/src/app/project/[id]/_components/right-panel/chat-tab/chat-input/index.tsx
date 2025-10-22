@@ -34,7 +34,6 @@ interface ChatInputProps {
     isStreaming: boolean;
     onStop: () => Promise<void>;
     onSendMessage: SendMessage;
-    onScrollToBottom: () => void;
     queuedMessages: QueuedMessage[];
     removeFromQueue: (id: string) => void;
 }
@@ -52,7 +51,6 @@ export const ChatInput = observer(
         isStreaming,
         onStop,
         onSendMessage,
-        onScrollToBottom,
         queuedMessages,
         removeFromQueue,
     }: ChatInputProps) => {
