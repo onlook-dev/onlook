@@ -1,11 +1,9 @@
 'use client';
 
-import { useAuthContext } from '@/app/auth/auth-context';
 import { useEditorEngine } from '@/components/store/editor';
+import { useCreateBlankProject } from '@/hooks/use-create-blank-project';
 import { transKeys } from '@/i18n/keys';
-import { api } from '@/trpc/react';
-import { LocalForageKeys, Routes } from '@/utils/constants';
-import { SandboxTemplates, Templates } from '@onlook/constants';
+import { Routes } from '@/utils/constants';
 import {
     DropdownMenuItem,
     DropdownMenuSub,
@@ -13,12 +11,9 @@ import {
     DropdownMenuSubTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { toast } from '@onlook/ui/sonner';
-import localforage from 'localforage';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 
 interface NewProjectMenuProps {
     onShowCloneDialog: (open: boolean) => void;
@@ -26,70 +21,19 @@ interface NewProjectMenuProps {
 
 export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuProps) => {
     const editorEngine = useEditorEngine();
-    const { data: user } = api.user.get.useQuery();
-    const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
-    const { mutateAsync: createProject } = api.project.create.useMutation();
-    const { setIsAuthModalOpen } = useAuthContext();
+    const { handleStartBlankProject, isCreatingProject } = useCreateBlankProject();
     const t = useTranslations();
     const router = useRouter();
-    const [isCreatingProject, setIsCreatingProject] = useState(false);
 
-    const handleStartBlankProject = async () => {
-        if (!user?.id) {
-            // Store the return URL and open auth modal
-            await localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
-            setIsAuthModalOpen(true);
-            return;
-        }
-
-        setIsCreatingProject(true);
+    const handleStartBlankWithScreenshot = async () => {
+        // Capture screenshot of current project before cleanup
         try {
-            // Capture screenshot of current project before cleanup
-            try {
-                editorEngine.screenshot.captureScreenshot();
-            } catch (error) {
-                console.error('Failed to capture screenshot:', error);
-            }
-
-            // Create a blank project using the BLANK template
-            const { sandboxId, previewUrl } = await forkSandbox({
-                sandbox: SandboxTemplates[Templates.EMPTY_NEXTJS],
-                config: {
-                    title: `Blank project - ${user.id}`,
-                    tags: ['blank', user.id],
-                },
-            });
-
-            const newProject = await createProject({
-                project: {
-                    name: 'New Project',
-                    description: 'Your new blank project',
-                    tags: ['blank'],
-                },
-                sandboxId,
-                sandboxUrl: previewUrl,
-                userId: user.id,
-            });
-
-            if (newProject) {
-                router.push(`${Routes.PROJECT}/${newProject.id}`);
-            }
+            editorEngine.screenshot.captureScreenshot();
         } catch (error) {
-            console.error('Error creating blank project:', error);
-            const errorMessage = error instanceof Error ? error.message : String(error);
-
-            if (errorMessage.includes('502') || errorMessage.includes('sandbox')) {
-                toast.error('Sandbox service temporarily unavailable', {
-                    description: 'Please try again in a few moments. Our servers may be experiencing high load.',
-                });
-            } else {
-                toast.error('Failed to create project', {
-                    description: errorMessage,
-                });
-            }
-        } finally {
-            setIsCreatingProject(false);
+            console.error('Failed to capture screenshot:', error);
         }
+
+        await handleStartBlankProject();
     };
 
     return (
@@ -111,7 +55,7 @@ export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuPro
                     </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                    onClick={handleStartBlankProject}
+                    onClick={handleStartBlankWithScreenshot}
                     disabled={isCreatingProject}
                     className="cursor-pointer"
                 >
