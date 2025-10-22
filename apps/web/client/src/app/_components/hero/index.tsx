@@ -7,19 +7,15 @@ import { Icons } from '@onlook/ui/icons';
 
 import { api } from '@/trpc/react';
 import { vujahdayScript } from '../../fonts';
-import { Create } from './create';
+import { BookDemo } from './book-demo';
 import { CreateError } from './create-error';
 import { HighDemand } from './high-demand';
-import { Import } from './import';
 import { MobileEmailCapture } from './mobile-email-capture';
-import { StartBlank } from './start-blank';
+import { SignIn } from './sign-in';
 import { UnicornBackground } from './unicorn-background';
 
 export function Hero() {
-    const [cardKey, setCardKey] = useState(0);
     const [isShortScreen, setIsShortScreen] = useState(false);
-    const [isCreatingProject, setIsCreatingProject] = useState(false);
-    const { data: user } = api.user.get.useQuery();
 
     useEffect(() => {
         const checkScreenHeight = () => {
@@ -86,31 +82,22 @@ export function Hero() {
                     <HighDemand />
                     <CreateError />
                 </div>
-                <div className="relative z-20 hidden flex-col items-center gap-4 sm:flex">
+                <div className="relative z-20 hidden flex-row items-center gap-4 sm:flex">
+                    {/*}
                     <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
-                        onAnimationComplete={() => {
-                            setCardKey((prev) => prev + 1);
-                        }}
                     >
-                        <Create
-                            user={user ?? null}
-                            cardKey={cardKey}
-                            isCreatingProject={isCreatingProject}
-                            setIsCreatingProject={setIsCreatingProject}
-                        />
+                        <SignIn />
                     </motion.div>
+                    */}
                     <motion.div
-                        className="mt-0 flex gap-12"
-                        initial={{ opacity: 0, filter: 'blur(4px)' }}
-                        animate={{ opacity: 1, filter: 'blur(0px)' }}
-                        transition={{ duration: 0.6, delay: 0.6, ease: 'easeOut' }}
-                        style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.4, ease: 'easeOut' }}
                     >
-                        <StartBlank />
-                        <Import />
+                        <BookDemo />
                     </motion.div>
                 </div>
                 <MobileEmailCapture />
