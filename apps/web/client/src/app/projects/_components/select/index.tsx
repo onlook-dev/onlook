@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 import type { Project } from '@onlook/models';
 import { STORAGE_BUCKETS, Tags } from '@onlook/constants';
+import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 
 import { api } from '@/trpc/react';
@@ -222,10 +223,10 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                     Create a new project to get started
                 </div>
                 <div className="flex justify-center">
-                    <button
+                    <Button
                         onClick={handleStartBlankProject}
                         disabled={isCreatingProject}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-primary inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        variant="default"
                     >
                         {isCreatingProject ? (
                             <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
@@ -233,7 +234,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                             <Icons.Plus className="h-4 w-4" />
                         )}
                         Create blank project
-                    </button>
+                    </Button>
                 </div>
             </div>
         );
