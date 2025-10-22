@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
 import { Carousel } from '../carousel';
 import localforage from 'localforage';
 import { AnimatePresence, motion } from 'motion/react';
@@ -12,6 +11,7 @@ import { STORAGE_BUCKETS, Tags } from '@onlook/constants';
 import { Icons } from '@onlook/ui/icons';
 
 import { api } from '@/trpc/react';
+import { useCreateBlankProject } from '@/hooks/use-create-blank-project';
 import { getFileUrlFromStorage } from '@/utils/supabase/client';
 import { Templates } from '../templates';
 import { TemplateModal } from '../templates/template-modal';
@@ -28,6 +28,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     const { data: user } = api.user.get.useQuery();
     const { data: fetchedProjects, isLoading, refetch } = api.project.list.useQuery();
     const { mutateAsync: removeTag } = api.project.removeTag.useMutation();
+    const { handleStartBlankProject, isCreatingProject } = useCreateBlankProject();
 
     // Search and filters
     const [internalQuery] = useState('');
@@ -221,13 +222,18 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                     Create a new project to get started
                 </div>
                 <div className="flex justify-center">
-                    <Link
-                        href="/"
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-primary inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+                    <button
+                        onClick={handleStartBlankProject}
+                        disabled={isCreatingProject}
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-primary inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <Icons.ArrowLeft className="h-4 w-4" />
-                        Back to home
-                    </Link>
+                        {isCreatingProject ? (
+                            <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Icons.Plus className="h-4 w-4" />
+                        )}
+                        Create blank project
+                    </button>
                 </div>
             </div>
         );
@@ -291,14 +297,20 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                                         }}
                                         layout
                                     >
-                                        <Link href="/">
-                                            <div className="border-border bg-secondary/40 hover:bg-secondary relative flex aspect-[4/2.8] items-center justify-center rounded-lg border transition-colors">
-                                                <div className="text-foreground-tertiary flex flex-col items-center justify-center">
+                                        <button
+                                            onClick={handleStartBlankProject}
+                                            disabled={isCreatingProject}
+                                            className="border-border bg-secondary/40 hover:bg-secondary relative flex aspect-[4/2.8] w-full items-center justify-center rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <div className="text-foreground-tertiary flex flex-col items-center justify-center">
+                                                {isCreatingProject ? (
+                                                    <Icons.LoadingSpinner className="mb-1 h-7 w-7 animate-spin" />
+                                                ) : (
                                                     <Icons.Plus className="mb-1 h-7 w-7" />
-                                                    <span className="text-sm">Create</span>
-                                                </div>
+                                                )}
+                                                <span className="text-sm">Create</span>
                                             </div>
-                                        </Link>
+                                        </button>
                                     </motion.div>,
                                     /* Project cards */
                                     ...filteredAndSortedProjects.map((project, index) => (

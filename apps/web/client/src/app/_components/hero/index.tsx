@@ -17,8 +17,8 @@ import { UnicornBackground } from './unicorn-background';
 
 export function Hero() {
     const [cardKey, setCardKey] = useState(0);
-    const [isCreatingProject, setIsCreatingProject] = useState(false);
     const [isShortScreen, setIsShortScreen] = useState(false);
+    const [isCreatingProject, setIsCreatingProject] = useState(false);
     const { data: user } = api.user.get.useQuery();
 
     useEffect(() => {
@@ -109,11 +109,7 @@ export function Hero() {
                         transition={{ duration: 0.6, delay: 0.6, ease: 'easeOut' }}
                         style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                     >
-                        <StartBlank
-                            user={user ?? null}
-                            isCreatingProject={isCreatingProject}
-                            setIsCreatingProject={setIsCreatingProject}
-                        />
+                        <StartBlank />
                         <Import />
                     </motion.div>
                 </div>
