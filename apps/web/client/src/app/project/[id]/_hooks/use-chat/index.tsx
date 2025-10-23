@@ -1,6 +1,7 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
+// TEMP: Remove editorEngine for performance testing
+// import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { api } from '@/trpc/client';
 import { useChat as useAiChat } from '@ai-sdk/react';
@@ -8,7 +9,7 @@ import { ChatType, type ChatMessage, type GitMessageCheckpoint, type MessageCont
 import { jsonClone } from '@onlook/utility';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, type FinishReason } from 'ai';
 import { usePostHog } from 'posthog-js/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useRef, useState, useTransition } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
     createCheckpointsForAllBranches,
@@ -34,7 +35,8 @@ interface UseChatProps {
 }
 
 export function useChat({ conversationId, projectId, initialMessages }: UseChatProps) {
-    const editorEngine = useEditorEngine();
+    // TEMP: Remove editorEngine for performance testing
+    // const editorEngine = useEditorEngine();
     const posthog = usePostHog();
 
     const [finishReason, setFinishReason] = useState<FinishReason | null>(null);
@@ -55,8 +57,21 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 },
             }),
             onToolCall: async (toolCall) => {
+                // TEMP: Check if we should skip tool execution entirely
+                const SKIP_TOOLS = typeof window !== 'undefined' && (window as any).__ONLOOK_SKIP_TOOLS;
+                if (SKIP_TOOLS) {
+                    console.log('[SKIP] Tool execution bypassed entirely', toolCall.toolCall.toolName);
+                    void addToolResult({
+                        tool: toolCall.toolCall.toolName,
+                        toolCallId: toolCall.toolCall.toolCallId,
+                        output: { skipped: true, message: 'Tool execution skipped' },
+                    });
+                    return;
+                }
+
                 setIsExecutingToolCall(true);
-                void handleToolCall(toolCall.toolCall, editorEngine, addToolResult).then(() => {
+                // TEMP: editorEngine now accessed directly in handleToolCall
+                void handleToolCall(toolCall.toolCall, addToolResult).then(() => {
                     setIsExecutingToolCall(false);
                 });
             },
@@ -68,19 +83,29 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
 
     const isStreaming = status === 'streaming' || status === 'submitted' || isExecutingToolCall;
 
+    // TEMP: Defer message updates to prevent jitter during streaming
+    const [isPending, startTransition] = useTransition();
+    const deferredMessages = useDeferredValue(messages);
+
     useEffect(() => {
-        editorEngine.chat.setIsStreaming(isStreaming);
-    }, [editorEngine.chat, isStreaming]);
+        // TEMP: Disable MobX state sync to test if this is causing the freeze
+        console.log('[PERF TEST] Skipping editorEngine.chat.setIsStreaming', isStreaming);
+    }, [isStreaming]);
 
     // Store messages in a ref to avoid re-rendering sendMessage/editMessage
     const messagesRef = useRef(messages);
     useEffect(() => {
+        // TEMP: Track message updates
+        if (typeof window !== 'undefined' && (window as any).__ONLOOK_PERF_LOG) {
+            console.log('[MESSAGE UPDATE]', messages.length, 'messages', performance.now());
+        }
         messagesRef.current = messages;
     }, [messages]);
 
     const processMessage = useCallback(
         async (content: string, type: ChatType, context?: MessageContext[]) => {
-            const messageContext = context || await editorEngine.chat.context.getContextByChatType(type);
+            // TEMP: Stub out context - just use empty array for testing
+            const messageContext = context || [];
             const newMessage = getUserChatMessageFromString(content, messageContext, conversationId);
             setMessages(jsonClone([...messagesRef.current, newMessage]));
 
@@ -91,11 +116,11 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                     context: messageContext,
                 },
             });
-            void editorEngine.chat.conversation.generateTitle(content);
+            // TEMP: Skip title generation for testing
+            // void editorEngine.chat.conversation.generateTitle(content);
             return newMessage;
         },
         [
-            editorEngine.chat.context,
             messagesRef,
             setMessages,
             regenerate,
@@ -107,7 +132,8 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         async (content: string, type: ChatType) => {
             posthog.capture('user_send_message', { type });
 
-            const context = await editorEngine.chat.context.getContextByChatType(type);
+            // TEMP: Stub out context - just use empty array for testing
+            const context: MessageContext[] = [];
 
             const newMessage: QueuedMessage = {
                 id: uuidv4(),
@@ -130,7 +156,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
 
             return getUserChatMessageFromString(content, [], conversationId);
         },
-        [processMessage, posthog, editorEngine.chat.context, isStreaming, queuedMessages.length, conversationId],
+        [processMessage, posthog, isStreaming, queuedMessages.length, conversationId],
     );
 
     const processMessageEdit = useCallback(
@@ -146,7 +172,8 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
 
             // For resubmitted messages, we want to keep the previous context and refresh if possible
             const previousContext = message.metadata?.context ?? [];
-            const updatedContext = await editorEngine.chat.context.getRefreshedContext(previousContext);
+            // TEMP: Stub out context refresh
+            const updatedContext = previousContext;
 
             message.metadata = {
                 ...message.metadata,
@@ -169,7 +196,6 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             return message;
         },
         [
-            editorEngine.chat.context,
             regenerate,
             conversationId,
             setMessages,
@@ -189,7 +215,8 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         isProcessingQueue.current = true;
 
         try {
-            const refreshedContext = await editorEngine.chat.context.getRefreshedContext(nextMessage.context);
+            // TEMP: Stub out context refresh
+            const refreshedContext = nextMessage.context;
             await processMessage(nextMessage.content, nextMessage.type, refreshedContext);
 
             // Remove only after successful processing
@@ -199,7 +226,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         } finally {
             isProcessingQueue.current = false;
         }
-    }, [queuedMessages, editorEngine.chat.context, processMessage, isStreaming]);
+    }, [queuedMessages, processMessage, isStreaming]);
 
     const editMessage: EditMessage = useCallback(
         async (messageId: string, newContent: string, chatType: ChatType) => {
@@ -210,14 +237,14 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 stop();
 
                 // Process edit with immediate priority (higher than queue)
-                const context = await editorEngine.chat.context.getContextByChatType(chatType);
+                // TEMP: Stub out context
                 return await processMessageEdit(messageId, newContent, chatType);
             }
 
             // Normal edit processing when not streaming
             return processMessageEdit(messageId, newContent, chatType);
         },
-        [processMessageEdit, posthog, isStreaming, stop, editorEngine.chat.context],
+        [processMessageEdit, posthog, isStreaming, stop],
     );
 
     useEffect(() => {
@@ -246,7 +273,8 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                 }
 
                 // Create checkpoints for all branches
-                const checkpoints = await createCheckpointsForAllBranches(editorEngine, content);
+                // TEMP: Stub out checkpoints
+                const checkpoints: GitMessageCheckpoint[] = [];
 
                 if (checkpoints.length === 0) {
                     return;
@@ -285,7 +313,8 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             };
 
             const cleanupContext = async () => {
-                await editorEngine.chat.context.clearImagesFromContext();
+                // TEMP: Stub out cleanup
+                // await editorEngine.chat.context.clearImagesFromContext();
             };
 
             const processNextQueuedMessage = async () => {
@@ -303,19 +332,23 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         }
     }, [finishReason, conversationId, queuedMessages.length, processNextInQueue]);
 
-    useEffect(() => {
-        editorEngine.chat.conversation.setConversationLength(messages.length);
-    }, [messages.length, editorEngine.chat.conversation]);
+    // TEMP: Stub out editorEngine useEffects
+    // useEffect(() => {
+    //     editorEngine.chat.conversation.setConversationLength(messages.length);
+    // }, [messages.length, editorEngine.chat.conversation]);
 
-    useEffect(() => {
-        editorEngine.chat.setChatActions(sendMessage);
-    }, [editorEngine.chat, sendMessage]);
+    // useEffect(() => {
+    //     editorEngine.chat.setChatActions(sendMessage);
+    // }, [editorEngine.chat, sendMessage]);
+
+    // TEMP: Test with deferred messages to reduce jitter
+    const USE_DEFERRED = typeof window !== 'undefined' && (window as any).__ONLOOK_USE_DEFERRED;
 
     return {
         status,
         sendMessage,
         editMessage,
-        messages,
+        messages: USE_DEFERRED ? deferredMessages : messages,
         error,
         stop,
         isStreaming,

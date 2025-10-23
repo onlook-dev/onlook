@@ -116,12 +116,41 @@ export class FileSystem {
     async readFile(inputPath: string): Promise<string | Uint8Array> {
         if (!this.fs) throw new Error('File system not initialized');
 
+        const perfEnabled = typeof window !== 'undefined' && (window as any).__ONLOOK_PERF_LOG;
         const fullPath = path.join(this.basePath, inputPath);
 
-        // Need to read as buffer first and check content to ensure it's not binary before converting to string
+        // ZenFS read operation (async, but may be slow)
+        const readStart = perfEnabled ? performance.now() : 0;
         const buffer = await this.fs.promises.readFile(fullPath);
-        if (this.isTextContent(buffer)) {
-            return buffer.toString('utf8');
+        const readDuration = perfEnabled ? performance.now() - readStart : 0;
+
+        // Text content detection (synchronous loop, can block for large files)
+        const detectStart = perfEnabled ? performance.now() : 0;
+        const isText = this.isTextContent(buffer);
+        const detectDuration = perfEnabled ? performance.now() - detectStart : 0;
+
+        if (isText) {
+            // String conversion (synchronous, can block for large files)
+            const convertStart = perfEnabled ? performance.now() : 0;
+            const result = buffer.toString('utf8');
+            const convertDuration = perfEnabled ? performance.now() - convertStart : 0;
+
+            if (perfEnabled) {
+                const total = readDuration + detectDuration + convertDuration;
+                console.log(`      [FS] readFile(${inputPath.split('/').pop()}): ${total.toFixed(0)}ms`);
+                console.log(`        ├─ ZenFS read: ${readDuration.toFixed(0)}ms`);
+                console.log(`        ├─ text detection: ${detectDuration.toFixed(0)}ms ${detectDuration > 10 ? '⚠️' : ''}`);
+                console.log(`        └─ string conversion: ${convertDuration.toFixed(0)}ms ${convertDuration > 50 ? '⚠️ BLOCKING' : convertDuration > 10 ? '⚠️' : ''}`);
+            }
+
+            return result;
+        }
+
+        if (perfEnabled) {
+            const total = readDuration + detectDuration;
+            console.log(`      [FS] readFile(${inputPath.split('/').pop()}) [binary]: ${total.toFixed(0)}ms`);
+            console.log(`        ├─ ZenFS read: ${readDuration.toFixed(0)}ms`);
+            console.log(`        └─ text detection: ${detectDuration.toFixed(0)}ms`);
         }
 
         return buffer;
@@ -130,15 +159,28 @@ export class FileSystem {
     async writeFile(inputPath: string, content: string | Uint8Array): Promise<void> {
         if (!this.fs) throw new Error('File system not initialized');
 
+        const perfEnabled = typeof window !== 'undefined' && (window as any).__ONLOOK_PERF_LOG;
         const fullPath = path.join(this.basePath, inputPath);
 
         // Ensure parent directory exists
+        const mkdirStart = perfEnabled ? performance.now() : 0;
         const dir = path.dirname(fullPath);
         if (dir) {
             await this.fs.promises.mkdir(dir, { recursive: true });
         }
+        const mkdirDuration = perfEnabled ? performance.now() - mkdirStart : 0;
 
+        // ZenFS write operation
+        const writeStart = perfEnabled ? performance.now() : 0;
         await this.fs.promises.writeFile(fullPath, content);
+        const writeDuration = perfEnabled ? performance.now() - writeStart : 0;
+
+        if (perfEnabled) {
+            const total = mkdirDuration + writeDuration;
+            console.log(`      [FS] writeFile(${inputPath.split('/').pop()}): ${total.toFixed(0)}ms`);
+            console.log(`        ├─ mkdir: ${mkdirDuration.toFixed(0)}ms`);
+            console.log(`        └─ ZenFS write: ${writeDuration.toFixed(0)}ms`);
+        }
     }
 
     async writeFiles(files: Array<{ path: string; content: string | Uint8Array }>): Promise<void> {

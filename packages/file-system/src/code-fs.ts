@@ -44,11 +44,30 @@ export class CodeFileSystem extends FileSystem {
     }
 
     async writeFile(path: string, content: string | Uint8Array): Promise<void> {
+        const perfEnabled = typeof window !== 'undefined' && (window as any).__ONLOOK_PERF_LOG;
+        const startTime = perfEnabled ? performance.now() : 0;
+
         if (this.isJsxFile(path) && typeof content === 'string') {
+            const processStart = perfEnabled ? performance.now() : 0;
             const processedContent = await this.processJsxFile(path, content);
+            const processDuration = perfEnabled ? performance.now() - processStart : 0;
+
+            const writeStart = perfEnabled ? performance.now() : 0;
             await super.writeFile(path, processedContent);
+            const writeDuration = perfEnabled ? performance.now() - writeStart : 0;
+
+            if (perfEnabled) {
+                const totalDuration = performance.now() - startTime;
+                console.log(`[PERF] CodeFileSystem.writeFile(${path.split('/').pop()}): ${totalDuration.toFixed(0)}ms`);
+                console.log(`  ├─ processJsxFile: ${processDuration.toFixed(0)}ms`);
+                console.log(`  └─ super.writeFile: ${writeDuration.toFixed(0)}ms`);
+            }
         } else {
             await super.writeFile(path, content);
+            if (perfEnabled) {
+                const totalDuration = performance.now() - startTime;
+                console.log(`[PERF] CodeFileSystem.writeFile(${path.split('/').pop()}) [non-JSX]: ${totalDuration.toFixed(0)}ms`);
+            }
         }
     }
 
@@ -60,24 +79,55 @@ export class CodeFileSystem extends FileSystem {
     }
 
     private async processJsxFile(path: string, content: string): Promise<string> {
+        const perfEnabled = typeof window !== 'undefined' && (window as any).__ONLOOK_PERF_LOG;
         let processedContent = content;
 
+        // Parse AST (synchronous, potentially blocking)
+        const parseStart = perfEnabled ? performance.now() : 0;
         const ast = getAstFromContent(content);
+        const parseDuration = perfEnabled ? performance.now() - parseStart : 0;
+
         if (ast) {
             if (isRootLayoutFile(path, this.options.routerType)) {
                 injectPreloadScript(ast);
             }
 
+            const oidsStart = perfEnabled ? performance.now() : 0;
             const existingOids = await this.getFileOids(path);
-            const { ast: processedAst } = addOidsToAst(ast, existingOids);
+            const oidsDuration = perfEnabled ? performance.now() - oidsStart : 0;
 
+            // Add OIDs (synchronous, potentially blocking)
+            const addOidsStart = perfEnabled ? performance.now() : 0;
+            const { ast: processedAst } = addOidsToAst(ast, existingOids);
+            const addOidsDuration = perfEnabled ? performance.now() - addOidsStart : 0;
+
+            const getContentStart = perfEnabled ? performance.now() : 0;
             processedContent = await getContentFromAst(processedAst, content);
+            const getContentDuration = perfEnabled ? performance.now() - getContentStart : 0;
+
+            if (perfEnabled) {
+                console.log(`    ├─ parseAST: ${parseDuration.toFixed(0)}ms ${parseDuration > 50 ? '⚠️' : ''}`);
+                console.log(`    ├─ getFileOids: ${oidsDuration.toFixed(0)}ms`);
+                console.log(`    ├─ addOidsToAst: ${addOidsDuration.toFixed(0)}ms ${addOidsDuration > 50 ? '⚠️' : ''}`);
+                console.log(`    ├─ getContentFromAst: ${getContentDuration.toFixed(0)}ms`);
+            }
         } else {
             console.warn(`Failed to parse ${path}, skipping OID injection but will still format`);
         }
 
+        // Format content (synchronous Prettier, definitely blocking for large files)
+        const formatStart = perfEnabled ? performance.now() : 0;
         const formattedContent = await formatContent(path, processedContent);
+        const formatDuration = perfEnabled ? performance.now() - formatStart : 0;
+
+        const metadataStart = perfEnabled ? performance.now() : 0;
         await this.updateMetadataForFile(path, formattedContent);
+        const metadataDuration = perfEnabled ? performance.now() - metadataStart : 0;
+
+        if (perfEnabled) {
+            console.log(`    ├─ formatContent: ${formatDuration.toFixed(0)}ms ${formatDuration > 100 ? '⚠️ BLOCKING' : formatDuration > 50 ? '⚠️' : ''}`);
+            console.log(`    └─ updateMetadata: ${metadataDuration.toFixed(0)}ms`);
+        }
 
         return formattedContent;
     }

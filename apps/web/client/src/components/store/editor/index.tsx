@@ -7,6 +7,16 @@ import { EditorEngine } from './engine';
 
 const EditorEngineContext = createContext<EditorEngine | null>(null);
 
+// Global ref for accessing engine outside of React components (e.g., in handleToolCall)
+let globalEngineRef: EditorEngine | null = null;
+
+export const getEditorEngine = () => {
+    if (!globalEngineRef) {
+        throw new Error('EditorEngine not initialized');
+    }
+    return globalEngineRef;
+};
+
 export const useEditorEngine = () => {
     const ctx = useContext(EditorEngineContext);
     if (!ctx) throw new Error('useEditorEngine must be inside EditorEngineProvider');
@@ -32,6 +42,7 @@ export const EditorEngineProvider = ({
         engine.init();
         engine.screenshot.lastScreenshotAt = project.metadata?.previewImg?.updatedAt ?? null;
         engineRef.current = engine;
+        globalEngineRef = engine; // Store globally for non-React access
         return engine;
     });
 
@@ -51,6 +62,7 @@ export const EditorEngineProvider = ({
                 newEngine.screenshot.lastScreenshotAt = project.metadata?.previewImg?.updatedAt ?? null;
 
                 engineRef.current = newEngine;
+                globalEngineRef = newEngine; // Update global ref
                 setEditorEngine(newEngine);
                 currentProjectId.current = project.id;
             }

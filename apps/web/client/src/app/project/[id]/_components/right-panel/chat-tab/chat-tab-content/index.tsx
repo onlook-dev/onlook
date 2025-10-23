@@ -1,8 +1,9 @@
-import { type ChatMessage } from '@onlook/models';
+import type { ChatMessage } from '@onlook/models';
+import { Button } from '@onlook/ui/button';
+
 import { useChat } from '../../../../_hooks/use-chat';
 import { ChatInput } from '../chat-input';
 import { ChatMessages } from '../chat-messages';
-import { ErrorSection } from '../error';
 
 interface ChatTabContentProps {
     conversationId: string;
@@ -15,23 +16,45 @@ export const ChatTabContent = ({
     projectId,
     initialMessages,
 }: ChatTabContentProps) => {
-    const { isStreaming, sendMessage, editMessage, messages, error, stop, queuedMessages, removeFromQueue } = useChat({
+    const {
+        isStreaming,
+        sendMessage,
+        editMessage,
+        messages,
+        error,
+        stop,
+        queuedMessages,
+        removeFromQueue,
+    } = useChat({
         conversationId,
         projectId,
         initialMessages,
     });
 
+    // TEMP: Log re-renders
+    if (typeof window !== 'undefined' && (window as any).__ONLOOK_PERF_LOG) {
+        console.log('[RENDER] ChatTabContent', performance.now());
+    }
+
+    if (isStreaming) {
+        return <Button onClick={stop}>Stop Response</Button>;
+    }
+
     return (
-        <div className="flex flex-col h-full justify-end gap-2 pt-2">
-            <ChatMessages
-                messages={messages}
-                isStreaming={isStreaming}
-                error={error}
-                onEditMessage={editMessage}
-            />
-            <ErrorSection isStreaming={isStreaming} onSendMessage={sendMessage} />
+        <div className="flex h-full flex-col justify-end gap-2 pt-2">
+            {!isStreaming && (
+                <ChatMessages
+                    messages={messages}
+                    isStreaming={isStreaming}
+                    error={error}
+                    onEditMessage={editMessage}
+                />
+            )}
+            {/* TEMP: Remove ErrorSection to test performance */}
+            {/* <ErrorSection isStreaming={isStreaming} onSendMessage={sendMessage} /> */}
+            {/* TEMP: Remove ChatInput to test performance */}
             <ChatInput
-                messages={messages}
+                messages={[]}
                 isStreaming={isStreaming}
                 onStop={stop}
                 onSendMessage={sendMessage}
