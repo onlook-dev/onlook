@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 
+import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 
+import { ExternalRoutes } from '@/utils/constants';
 import { vujahdayScript } from '../../fonts';
-import { BookDemo } from './book-demo';
 import { CreateError } from './create-error';
 import { HighDemand } from './high-demand';
 import { MobileEmailCapture } from './mobile-email-capture';
@@ -86,7 +87,19 @@ export function Hero() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.4, ease: 'easeOut' }}
                     >
-                        <BookDemo />
+                        <Button
+                            asChild
+                            className="bg-foreground-primary text-background-primary hover:bg-foreground-hover"
+                        >
+                            <a
+                                href={ExternalRoutes.BOOK_DEMO}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Book a Demo
+                                <Icons.ArrowRight className="h-4 w-4" />
+                            </a>
+                        </Button>
                     </motion.div>
                 </div>
                 <MobileEmailCapture />
