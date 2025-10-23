@@ -28,11 +28,11 @@ const defaultFaqs = [
     },
     {
         question: 'Who owns the code that I write with Onlook?',
-        answer: "The code you make with Onlook is all yours. Your code is written locally directly to your files, and isn't hosted off your device.",
+        answer: "The code you make with Onlook is all yours. You can export it on your local machine or publish it to a custom domain.",
     },
     {
         question: 'What is the difference between Onlook and other design tools?',
-        answer: 'Onlook is a visual editor for code. It allows you to create and style your own creations with code as the source of truth. While it is best suited for creating websites, it can be used for anything visual – presentations, mockups, and more. Because Onlook uses code as the source of truth, the types of designs you can create are unconstrained by Onlook interface.',
+        answer: 'Onlook is a visual editor for code. It allows you to create and style your own creations with code as the source of truth. While it is best suited for creating websites, it can be used for anything visual – presentations, mockups, and more. Because Onlook uses code as the source of truth, the types of designs you can create are unconstrained by Onlook\'s interface.',
     },
     {
         question: 'Why is Onlook open-source?',

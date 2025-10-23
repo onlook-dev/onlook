@@ -51,8 +51,9 @@ export default function BuilderFeaturesPage() {
                 <BuilderFeaturesIntroSection />
                 <BuilderFeaturesGridSection />
                 <CTASection
-                    ctaText="Start Building React Apps Visually Today"
-                    buttonText="Get Started for Free"
+                    ctaText={`Bring your team \nto Onlook today`}
+                    buttonText="Book a Demo"
+                    href="https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel"
                 />
                 <FAQSection faqs={builderFaqs} />
                 <NonProjectSettingsModal />

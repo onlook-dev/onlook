@@ -27,7 +27,7 @@ export default function Main() {
                 <ContributorSection />
                 <TestimonialsSection />
                 <FAQSection />
-                <CTASection />
+                <CTASection href="https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel" />
                 <AuthModal />
                 <NonProjectSettingsModal />
                 <SubscriptionModal />

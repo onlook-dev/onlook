@@ -51,7 +51,7 @@ export default async function Layout({ children }: Readonly<{ children: React.Re
         ),
     }) : null;
 
-    // If no subscription, redirect to demo-only page
+    // If no subscription, redirect to demo page
     if (!subscription && !legacySubscription) {
         redirect(Routes.DEMO_ONLY);
     }

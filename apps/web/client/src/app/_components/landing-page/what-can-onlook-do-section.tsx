@@ -312,8 +312,8 @@ export function WhatCanOnlookDoSection() {
                         <div className="text-foreground-secondary text-regular text-balance">Bring your existing React / Next.js / Tailwind codebase and start building</div>
                     </div>
                     <div>
-                        <div className="text-foreground-primary text-regularPlus mb-2 text-balance">Import from Figma</div>
-                        <div className="text-foreground-secondary text-regular text-balance">Make your designs come to life with a real working product</div>
+                        <div className="text-foreground-primary text-regularPlus mb-2 text-balance">Collaborate with your team</div>
+                        <div className="text-foreground-secondary text-regular text-balance">Share your project with your team and collaborate on designs in real-time</div>
                     </div>
                     <div>
                         <div className="text-foreground-primary text-regularPlus mb-2 text-balance">Publish your work</div>

@@ -31,7 +31,7 @@ const featuresFaqs = [
     },
     {
         question: 'What is the difference between Onlook and other design tools?',
-        answer: 'Onlook is a visual editor for code. It allows you to create and style your own creations with code as the source of truth. While it is best suited for creating websites, it can be used for anything visual – presentations, mockups, and more. Because Onlook uses code as the source of truth, the types of designs you can create are unconstrained by Onlook interface.',
+        answer: 'Onlook is a visual editor for code. It allows you to create and style your own creations with code as the source of truth. While it is best suited for creating websites, it can be used for anything visual – presentations, mockups, and more. Because Onlook uses code as the source of truth, the types of designs you can create are unconstrained by Onlook\'s interface.',
     },
     {
         question: 'Why is Onlook open-source?',
@@ -51,8 +51,9 @@ export default function FeaturesPage() {
                 <FeaturesIntroSection />
                 <FeaturesGridSection />
                 <CTASection
-                    ctaText={`Start building\nwith Onlook today`}
-                    buttonText="Get Started for Free"
+                    ctaText={`Bring your team \nto Onlook today`}
+                    buttonText="Book a Demo"
+                    href="https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel"
                 />
                 <FAQSection faqs={featuresFaqs} />
                 <NonProjectSettingsModal />

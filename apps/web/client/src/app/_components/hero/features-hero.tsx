@@ -13,10 +13,10 @@ export function FeaturesHero() {
     const router = useRouter();
     const { formatted: starCount } = useGitHubStats();
 
-    const handleStartBuilding = () => {
-        router.push(Routes.HOME);
+    const handleBookDemo = () => {
+        window.open('https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel', '_blank', 'noopener,noreferrer');
     };
-
+    
     return (
         <div className="relative flex h-full w-full flex-col items-center justify-center gap-12 p-8 text-center text-lg">
             <UnicornBackground />
@@ -60,9 +60,9 @@ export function FeaturesHero() {
                         variant="secondary"
                         size="lg"
                         className="hover:bg-foreground-primary hover:text-background-primary cursor-pointer p-6 transition-all duration-300"
-                        onClick={handleStartBuilding}
+                        onClick={() => window.open('https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel', '_blank', 'noopener,noreferrer')}
                     >
-                        START BUILDING
+                        Book a Demo
                     </Button>
                 </motion.div>
                 <motion.div

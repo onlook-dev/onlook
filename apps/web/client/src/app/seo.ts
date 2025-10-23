@@ -36,7 +36,7 @@ export const faqSchema = {
             name: "Who owns the code that I write with Onlook?",
             acceptedAnswer: {
                 "@type": "Answer",
-                text: "The code you make with Onlook is all yours. Your code is written locally directly to your files, and isn't hosted off your device.",
+                text: "The code you make with Onlook is all yours. You can export it on your local machine or publish it to a custom domain.",
             },
         },
     ],

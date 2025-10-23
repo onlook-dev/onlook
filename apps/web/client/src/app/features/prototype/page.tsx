@@ -25,8 +25,8 @@ function PrototypeFeaturesHero() {
     const router = useRouter();
     const { formatted: starCount } = useGitHubStats();
 
-    const handleGeneratePrototype = () => {
-        router.push(Routes.HOME);
+    const handleBookDemo = () => {
+        window.open('https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel', '_blank', 'noopener,noreferrer');
     };
 
     return (
@@ -73,9 +73,9 @@ function PrototypeFeaturesHero() {
                         variant="secondary"
                         size="lg"
                         className="hover:bg-foreground-primary hover:text-background-primary cursor-pointer p-6 transition-all duration-300"
-                        onClick={handleGeneratePrototype}
+                        onClick={() => window.open('https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel', '_blank', 'noopener,noreferrer')}
                     >
-                        Generate Your First Prototype
+                        Book a Demo
                     </Button>
                 </motion.div>
                 <motion.div
@@ -336,8 +336,9 @@ export default function PrototypeFeaturesPage() {
                 </div>
                 <PrototypeFeaturesGridSection />
                 <CTASection
-                    ctaText={`Start Prototyping with AI Today`}
-                    buttonText="Generate Your First Prototype"
+                    ctaText={`Bring your team \nto Onlook today`}
+                    buttonText="Book a Demo"
+                    href="https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel"
                 />
                 <PrototypeFAQSection />
                 <NonProjectSettingsModal />

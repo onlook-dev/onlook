@@ -53,6 +53,7 @@ export default function AiFeaturesPage() {
                 <CTASection
                     ctaText={`Start Building with AI Today`}
                     buttonText="Get Started for Free"
+                    href="https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel"
                 />
                 <FAQSection faqs={aiFaqs} />
                 <NonProjectSettingsModal />

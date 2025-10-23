@@ -13,8 +13,8 @@ export function BuilderFeaturesHero() {
     const router = useRouter();
     const { formatted: starCount } = useGitHubStats();
 
-    const handleStartBuilding = () => {
-        router.push(Routes.HOME);
+    const handleBookDemo = () => {
+        window.open('https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel', '_blank', 'noopener,noreferrer');
     };
 
     return (
@@ -61,9 +61,9 @@ export function BuilderFeaturesHero() {
                         variant="secondary"
                         size="lg"
                         className="hover:bg-foreground-primary hover:text-background-primary cursor-pointer p-6 transition-all duration-300"
-                        onClick={handleStartBuilding}
+                        onClick={() => window.open('https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel', '_blank', 'noopener,noreferrer')}
                     >
-                        Start Building React Apps
+                        Book a Demo
                     </Button>
                 </motion.div>
                 <motion.div
