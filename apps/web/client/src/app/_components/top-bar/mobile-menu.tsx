@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import * as Portal from '@radix-ui/react-portal';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@onlook/ui/accordion';
 import { cn } from '@onlook/ui/utils';
@@ -45,78 +46,82 @@ export function MobileMenu({ isOpen, onOpenChange }: MobileMenuProps) {
                 </svg>
             </button>
 
-            {/* Backdrop */}
-            <div
-                className={cn(
-                    'fixed inset-0 bg-black/60 transition-opacity duration-200 md:hidden',
-                    'top-12', // Start below the navbar
-                    isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
-                )}
-                onClick={() => onOpenChange(false)}
-                style={{ zIndex: 40 }}
-            />
+            {/* Backdrop - portaled to body */}
+            <Portal.Root>
+                <div
+                    className={cn(
+                        'fixed inset-0 bg-black/40 backdrop-blur-sm transition-all duration-200 md:hidden',
+                        'top-12', // Start below the navbar
+                        isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
+                    )}
+                    onClick={() => onOpenChange(false)}
+                    style={{ zIndex: 40 }}
+                />
+            </Portal.Root>
 
-            {/* Menu panel */}
-            <div
-                className={cn(
-                    'bg-background border-border fixed right-0 left-0 overflow-y-auto border-b shadow-lg transition-all duration-200 md:hidden',
-                    'top-12 max-h-[calc(100vh-3rem)]',
-                    isOpen
-                        ? 'translate-y-0 opacity-100'
-                        : 'pointer-events-none -translate-y-4 opacity-0',
-                )}
-                style={{ zIndex: 50 }}
-            >
-                <Accordion type="single" collapsible className="w-full">
-                    {NAVIGATION_CATEGORIES.map((category) => (
-                        <AccordionItem
-                            key={category.label}
-                            value={category.label}
-                            className="border-border border-b"
+            {/* Menu panel - portaled to body */}
+            <Portal.Root>
+                <div
+                    className={cn(
+                        'bg-background border-border fixed right-0 left-0 overflow-y-auto border-b shadow-lg transition-all duration-200 md:hidden',
+                        'top-12 max-h-[calc(100vh-3rem)]',
+                        isOpen
+                            ? 'translate-y-0 opacity-100'
+                            : 'pointer-events-none -translate-y-4 opacity-0',
+                    )}
+                    style={{ zIndex: 50 }}
+                >
+                    <Accordion type="single" collapsible className="w-full">
+                        {NAVIGATION_CATEGORIES.map((category) => (
+                            <AccordionItem
+                                key={category.label}
+                                value={category.label}
+                                className="border-border border-b"
+                            >
+                                <AccordionTrigger className="hover:bg-foreground/5 flex w-full items-center justify-between p-4 text-left">
+                                    <span className="text-regular text-foreground-primary">
+                                        {category.label}
+                                    </span>
+                                </AccordionTrigger>
+                                <AccordionContent className="bg-foreground/5">
+                                    {category.links.map((link) => (
+                                        <a
+                                            key={link.href}
+                                            href={link.href}
+                                            onClick={() => onOpenChange(false)}
+                                            className="hover:bg-foreground/10 block p-4 pl-8"
+                                            {...(link.external && {
+                                                target: '_blank',
+                                                rel: 'noopener noreferrer',
+                                            })}
+                                        >
+                                            <div className="text-foreground-primary text-sm font-medium">
+                                                {link.title}
+                                            </div>
+                                            <div className="text-foreground-secondary mt-0.5 text-xs">
+                                                {link.description}
+                                            </div>
+                                        </a>
+                                    ))}
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
+
+                    {/* Bottom CTA */}
+                    <div className="p-4">
+                        <a
+                            href={ExternalRoutes.BOOK_DEMO}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => onOpenChange(false)}
+                            className="bg-foreground-primary text-background block w-full rounded-lg px-4 py-3 text-center text-sm font-medium transition-opacity hover:opacity-90"
                         >
-                            <AccordionTrigger className="hover:bg-foreground/5 flex w-full items-center justify-between p-4 text-left">
-                                <span className="text-regular text-foreground-primary">
-                                    {category.label}
-                                </span>
-                            </AccordionTrigger>
-                            <AccordionContent className="bg-foreground/5">
-                                {category.links.map((link) => (
-                                    <a
-                                        key={link.href}
-                                        href={link.href}
-                                        onClick={() => onOpenChange(false)}
-                                        className="hover:bg-foreground/10 block p-4 pl-8"
-                                        {...(link.external && {
-                                            target: '_blank',
-                                            rel: 'noopener noreferrer',
-                                        })}
-                                    >
-                                        <div className="text-foreground-primary text-sm font-medium">
-                                            {link.title}
-                                        </div>
-                                        <div className="text-foreground-secondary mt-0.5 text-xs">
-                                            {link.description}
-                                        </div>
-                                    </a>
-                                ))}
-                            </AccordionContent>
-                        </AccordionItem>
-                    ))}
-                </Accordion>
-
-                {/* Bottom CTA */}
-                <div className="p-4">
-                    <a
-                        href={ExternalRoutes.BOOK_DEMO}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => onOpenChange(false)}
-                        className="bg-foreground-primary text-background block w-full rounded-lg px-4 py-3 text-center text-sm font-medium transition-opacity hover:opacity-90"
-                    >
-                        Book a Demo
-                    </a>
+                            Book a Demo
+                        </a>
+                    </div>
                 </div>
-            </div>
+            </Portal.Root>
         </>
     );
 }
