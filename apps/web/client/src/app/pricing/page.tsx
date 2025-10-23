@@ -6,6 +6,7 @@ import { AuthModal } from '../_components/auth-modal';
 import { CTASection } from '../_components/landing-page/cta-section';
 import { WebsiteLayout } from '../_components/website-layout';
 import { FAQSection } from '../_components/landing-page/faq-section';
+import { ExternalRoutes } from '@/utils/constants';
 import Link from 'next/link';
 
 const HIGHLIGHTED_FEATURES = [
@@ -82,10 +83,6 @@ Best regards,
         window.location.href = `mailto:daniel@onlook.com?subject=${subject}&body=${body}`;
     };
 
-    const handleBookDemo = () => {
-        window.open('https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel', '_blank');
-    };
-
     return (
         <WebsiteLayout showFooter={true}>
             <div className="w-full max-w-6xl mx-auto flex flex-col items-center px-8">
@@ -113,10 +110,12 @@ Best regards,
                                 </Button>
                                 <Button
                                     className="w-full sm:w-auto sm:min-w-[180px]"
-                                    onClick={handleBookDemo}
                                     size="lg"
+                                    asChild
                                 >
-                                    Book a demo
+                                    <a href={ExternalRoutes.BOOK_DEMO} target="_blank" rel="noopener noreferrer">
+                                        Book a demo
+                                    </a>
                                 </Button>
                             </div>
                         </div>
@@ -176,7 +175,7 @@ Best regards,
             </div>
             <div className="w-full max-w-6xl mx-auto flex flex-col items-center">
                 <div className="mt-16 w-full">
-                    <CTASection href="https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel" />
+                    <CTASection href={ExternalRoutes.BOOK_DEMO} />
                 </div>
             </div>
             <AuthModal />
