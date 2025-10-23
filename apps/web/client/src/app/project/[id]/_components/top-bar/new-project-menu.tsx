@@ -46,16 +46,7 @@ export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuPro
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="w-48 ml-2">
                 <DropdownMenuItem
-                    onClick={() => router.push(Routes.HOME)}
-                    className="cursor-pointer"
-                >
-                    <div className="flex flex-row center items-center group">
-                        <Icons.Plus className="mr-2" />
-                        {t(transKeys.projects.actions.newProject)}
-                    </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                    onClick={handleStartBlankWithScreenshot}
+                    onClick={handleStartBlankProject}
                     disabled={isCreatingProject}
                     className="cursor-pointer"
                 >

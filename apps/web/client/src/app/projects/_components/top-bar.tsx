@@ -234,21 +234,6 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                                 'dark:hover:bg-blue-900 dark:hover:text-blue-100',
                                 'cursor-pointer select-none group',
                             )}
-                            onSelect={() => {
-                                router.push(Routes.HOME);
-                            }}
-                        >
-                            <Icons.Plus className="w-4 h-4 mr-1 text-foreground-secondary group-hover:text-blue-100" />
-                            {t(transKeys.projects.actions.newProject)}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className={cn(
-                                'focus:bg-blue-100 focus:text-blue-900',
-                                'hover:bg-blue-100 hover:text-blue-900',
-                                'dark:focus:bg-blue-900 dark:focus:text-blue-100',
-                                'dark:hover:bg-blue-900 dark:hover:text-blue-100',
-                                'cursor-pointer select-none group',
-                            )}
                             onSelect={handleStartBlankProject}
                             disabled={isCreatingProject}
                         >
