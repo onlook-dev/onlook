@@ -1,14 +1,14 @@
 'use client';
 
 import { Routes } from '@/utils/constants';
-import { ABOUT_LINKS, PRODUCT_LINKS, RESOURCES_LINKS } from '@/utils/constants/navigation';
+import { NAVIGATION_CATEGORIES } from '@/utils/constants/navigation';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { GitHubButton } from './github';
 import { DropdownMenu } from './mega-menu';
-import { MobileMenuButton, MobileMenuContent } from './mobile-menu';
+import { MobileMenu } from './mobile-menu';
 import { AuthButton } from './user';
 
 const LINKS = [
@@ -43,9 +43,9 @@ export const TopBar = () => {
 
                 {/* Desktop dropdowns - hidden on mobile */}
                 <div className="hidden md:flex items-center gap-5 ml-3">
-                    <DropdownMenu label="Product" links={PRODUCT_LINKS} />
-                    <DropdownMenu label="Resources" links={RESOURCES_LINKS} />
-                    <DropdownMenu label="About" links={ABOUT_LINKS} />
+                    {NAVIGATION_CATEGORIES.map((category) => (
+                        <DropdownMenu key={category.label} label={category.label} links={category.links} />
+                    ))}
                     <GitHubButton />
                 </div>
             </div>
@@ -56,18 +56,13 @@ export const TopBar = () => {
                 <div className="hidden md:block">
                     <AuthButton />
                 </div>
-                
-                {/* Mobile hamburger menu - on far right */}
-                <div className="md:hidden">
-                    <MobileMenuButton onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
-                </div>
-            </div>
 
-            {/* Mobile menu dropdown */}
-            <MobileMenuContent 
-                isOpen={isMobileMenuOpen} 
-                onClose={() => setIsMobileMenuOpen(false)} 
-            />
+                {/* Mobile menu */}
+                <MobileMenu
+                    isOpen={isMobileMenuOpen}
+                    onOpenChange={setIsMobileMenuOpen}
+                />
+            </div>
         </div>
     );
 };

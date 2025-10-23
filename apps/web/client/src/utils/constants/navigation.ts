@@ -68,10 +68,15 @@ export const ABOUT_LINKS: NavigationLink[] = [
         href: Routes.FAQ,
         description: 'Common questions',
     },
-    {
-        title: 'Book a Demo',
-        href: ExternalRoutes.BOOK_DEMO,
-        description: 'Book a demo with our team',
-        external: true,
-    },
+];
+
+export interface NavigationCategory {
+    label: string;
+    links: NavigationLink[];
+}
+
+export const NAVIGATION_CATEGORIES: NavigationCategory[] = [
+    { label: 'Product', links: PRODUCT_LINKS },
+    { label: 'Resources', links: RESOURCES_LINKS },
+    { label: 'About', links: ABOUT_LINKS },
 ];
