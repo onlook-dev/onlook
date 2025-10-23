@@ -1,6 +1,7 @@
 'use client';
 
 import { ExternalRoutes, Routes } from '@/utils/constants';
+import { ABOUT_LINKS, PRODUCT_LINKS, RESOURCES_LINKS } from '@/utils/constants/navigation';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { useEffect, useState } from 'react';
@@ -55,11 +56,11 @@ export function MobileMenuContent({ isOpen, onClose }: MobileMenuProps) {
         <>
             {/* Backdrop - portal to body to escape height constraints */}
             {typeof window !== 'undefined' && createPortal(
-                <div 
+                <div
                     className="fixed left-0 right-0 bottom-0 bg-black md:hidden"
-                    style={{ 
+                    style={{
                         top: '3rem',
-                        zIndex: 9997,
+                        zIndex: 50,
                         opacity: shouldAnimate ? 0.6 : 0,
                         transition: 'opacity 250ms ease-out',
                         pointerEvents: shouldAnimate ? 'auto' : 'none'
@@ -68,15 +69,15 @@ export function MobileMenuContent({ isOpen, onClose }: MobileMenuProps) {
                 />,
                 document.body
             )}
-            
+
             {/* Menu Panel - also portal to body */}
             {typeof window !== 'undefined' && createPortal(
-                <div 
+                <div
                     className="fixed left-0 right-0 bg-background border-b border-border shadow-lg md:hidden overflow-y-auto"
-                    style={{ 
+                    style={{
                         top: '3rem',
                         maxHeight: 'calc(100vh - 3rem)',
-                        zIndex: 9998,
+                        zIndex: 50,
                         pointerEvents: 'auto',
                         transform: shouldAnimate ? 'translateY(0)' : 'translateY(-1rem)',
                         opacity: shouldAnimate ? 1 : 0,
@@ -103,22 +104,18 @@ export function MobileMenuContent({ isOpen, onClose }: MobileMenuProps) {
                         "bg-foreground/5 transition-all duration-200 ease-out overflow-hidden",
                         expandedCategory === 'Product' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     )}>
-                        <a href={Routes.FEATURES_AI} onClick={onClose} className="block p-4 pl-8 hover:bg-foreground/10">
-                            <div className="text-sm text-foreground-primary font-medium">AI</div>
-                            <div className="text-xs text-foreground-secondary mt-0.5">AI-powered design</div>
-                        </a>
-                        <a href={Routes.FEATURES_BUILDER} onClick={onClose} className="block p-4 pl-8 hover:bg-foreground/10">
-                            <div className="text-sm text-foreground-primary font-medium">Visual Builder</div>
-                            <div className="text-xs text-foreground-secondary mt-0.5">Craft on a canvas</div>
-                        </a>
-                        <a href={Routes.FEATURES_PROTOTYPE} onClick={onClose} className="block p-4 pl-8 hover:bg-foreground/10">
-                            <div className="text-sm text-foreground-primary font-medium">Prototyping</div>
-                            <div className="text-xs text-foreground-secondary mt-0.5">Rapid prototype creation</div>
-                        </a>
-                        <a href={Routes.FEATURES} onClick={onClose} className="block p-4 pl-8 hover:bg-foreground/10">
-                            <div className="text-sm text-foreground-primary font-medium">All Features</div>
-                            <div className="text-xs text-foreground-secondary mt-0.5">See everything Onlook offers</div>
-                        </a>
+                        {PRODUCT_LINKS.map((link) => (
+                            <a
+                                key={link.href}
+                                href={link.href}
+                                onClick={onClose}
+                                className="block p-4 pl-8 hover:bg-foreground/10"
+                                {...(link.external && { target: "_blank", rel: "noopener noreferrer" })}
+                            >
+                                <div className="text-sm text-foreground-primary font-medium">{link.title}</div>
+                                <div className="text-xs text-foreground-secondary mt-0.5">{link.description}</div>
+                            </a>
+                        ))}
                     </div>
                 </div>
 
@@ -141,22 +138,18 @@ export function MobileMenuContent({ isOpen, onClose }: MobileMenuProps) {
                         "bg-foreground/5 transition-all duration-200 ease-out overflow-hidden",
                         expandedCategory === 'Resources' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     )}>
-                        <a href={ExternalRoutes.DOCS} target="_blank" rel="noopener noreferrer" onClick={onClose} className="block p-4 pl-8 hover:bg-foreground/10">
-                            <div className="text-sm text-foreground-primary font-medium">Documentation</div>
-                            <div className="text-xs text-foreground-secondary mt-0.5">Learn how to use Onlook</div>
-                        </a>
-                        <a href={ExternalRoutes.BLOG} target="_blank" rel="noopener noreferrer" onClick={onClose} className="block p-4 pl-8 hover:bg-foreground/10">
-                            <div className="text-sm text-foreground-primary font-medium">Blog</div>
-                            <div className="text-xs text-foreground-secondary mt-0.5">News and updates</div>
-                        </a>
-                        <a href={ExternalRoutes.GITHUB} target="_blank" rel="noopener noreferrer" onClick={onClose} className="block p-4 pl-8 hover:bg-foreground/10">
-                            <div className="text-sm text-foreground-primary font-medium">GitHub</div>
-                            <div className="text-xs text-foreground-secondary mt-0.5">View the source code</div>
-                        </a>
-                        <a href={ExternalRoutes.DISCORD} target="_blank" rel="noopener noreferrer" onClick={onClose} className="block p-4 pl-8 hover:bg-foreground/10">
-                            <div className="text-sm text-foreground-primary font-medium">Discord</div>
-                            <div className="text-xs text-foreground-secondary mt-0.5">Join our community</div>
-                        </a>
+                        {RESOURCES_LINKS.map((link) => (
+                            <a
+                                key={link.href}
+                                href={link.href}
+                                onClick={onClose}
+                                className="block p-4 pl-8 hover:bg-foreground/10"
+                                {...(link.external && { target: "_blank", rel: "noopener noreferrer" })}
+                            >
+                                <div className="text-sm text-foreground-primary font-medium">{link.title}</div>
+                                <div className="text-xs text-foreground-secondary mt-0.5">{link.description}</div>
+                            </a>
+                        ))}
                     </div>
                 </div>
 
@@ -179,25 +172,25 @@ export function MobileMenuContent({ isOpen, onClose }: MobileMenuProps) {
                         "bg-foreground/5 transition-all duration-200 ease-out overflow-hidden",
                         expandedCategory === 'About' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     )}>
-                        <a href={Routes.ABOUT} onClick={onClose} className="block p-4 pl-8 hover:bg-foreground/10">
-                            <div className="text-sm text-foreground-primary font-medium">About Us</div>
-                            <div className="text-xs text-foreground-secondary mt-0.5">Learn about our mission</div>
-                        </a>
-                        <a href={Routes.FAQ} onClick={onClose} className="block p-4 pl-8 hover:bg-foreground/10">
-                            <div className="text-sm text-foreground-primary font-medium">FAQ</div>
-                            <div className="text-xs text-foreground-secondary mt-0.5">Common questions</div>
-                        </a>
-                        <a href={Routes.PRICING} onClick={onClose} className="block p-4 pl-8 hover:bg-foreground/10">
-                            <div className="text-sm text-foreground-primary font-medium">Pricing</div>
-                            <div className="text-xs text-foreground-secondary mt-0.5">View our pricing plans</div>
-                        </a>
+                        {ABOUT_LINKS.map((link) => (
+                            <a
+                                key={link.href}
+                                href={link.href}
+                                onClick={onClose}
+                                className="block p-4 pl-8 hover:bg-foreground/10"
+                                {...(link.external && { target: "_blank", rel: "noopener noreferrer" })}
+                            >
+                                <div className="text-sm text-foreground-primary font-medium">{link.title}</div>
+                                <div className="text-xs text-foreground-secondary mt-0.5">{link.description}</div>
+                            </a>
+                        ))}
                     </div>
                 </div>
 
                 {/* Bottom CTA */}
                 <div className="p-4">
                     <a
-                        href="https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel"
+                        href={ExternalRoutes.BOOK_DEMO}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={onClose}

@@ -5,17 +5,13 @@ import { motion } from 'motion/react';
 
 import { Button } from '@onlook/ui/button';
 
-import { Routes } from '@/utils/constants';
+import { ExternalRoutes, Routes } from '@/utils/constants';
 import { useGitHubStats } from '../top-bar/github';
 import { UnicornBackground } from './unicorn-background';
 
 export function BuilderFeaturesHero() {
     const router = useRouter();
     const { formatted: starCount } = useGitHubStats();
-
-    const handleBookDemo = () => {
-        window.open('https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel', '_blank', 'noopener,noreferrer');
-    };
 
     return (
         <div className="relative flex h-full w-full flex-col items-center justify-center gap-12 p-8 text-center text-lg">
@@ -58,12 +54,14 @@ export function BuilderFeaturesHero() {
                     style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                 >
                     <Button
+                        asChild
                         variant="secondary"
                         size="lg"
                         className="hover:bg-foreground-primary hover:text-background-primary cursor-pointer p-6 transition-all duration-300"
-                        onClick={() => window.open('https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel', '_blank', 'noopener,noreferrer')}
                     >
-                        Book a Demo
+                        <a href={ExternalRoutes.BOOK_DEMO} target="_blank" rel="noopener noreferrer">
+                            Book a Demo
+                        </a>
                     </Button>
                 </motion.div>
                 <motion.div

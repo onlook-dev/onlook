@@ -9,7 +9,7 @@ import { Icons } from '@onlook/ui/icons';
 import { CreateManagerProvider } from '@/components/store/create';
 import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
-import { Routes } from '@/utils/constants';
+import { ExternalRoutes, Routes } from '@/utils/constants';
 import { ButtonLink } from '../../_components/button-link';
 import { UnicornBackground } from '../../_components/hero/unicorn-background';
 import { CTASection } from '../../_components/landing-page/cta-section';
@@ -24,10 +24,6 @@ import { WebsiteLayout } from '../../_components/website-layout';
 function PrototypeFeaturesHero() {
     const router = useRouter();
     const { formatted: starCount } = useGitHubStats();
-
-    const handleBookDemo = () => {
-        window.open('https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel', '_blank', 'noopener,noreferrer');
-    };
 
     return (
         <div className="relative flex h-full w-full flex-col items-center justify-center gap-12 p-8 text-center text-lg">
@@ -70,12 +66,14 @@ function PrototypeFeaturesHero() {
                     style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                 >
                     <Button
+                        asChild
                         variant="secondary"
                         size="lg"
                         className="hover:bg-foreground-primary hover:text-background-primary cursor-pointer p-6 transition-all duration-300"
-                        onClick={() => window.open('https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel', '_blank', 'noopener,noreferrer')}
                     >
-                        Book a Demo
+                        <a href={ExternalRoutes.BOOK_DEMO} target="_blank" rel="noopener noreferrer">
+                            Book a Demo
+                        </a>
                     </Button>
                 </motion.div>
                 <motion.div
@@ -338,7 +336,7 @@ export default function PrototypeFeaturesPage() {
                 <CTASection
                     ctaText={`Bring your team \nto Onlook today`}
                     buttonText="Book a Demo"
-                    href="https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel"
+                    href={ExternalRoutes.BOOK_DEMO}
                 />
                 <PrototypeFAQSection />
                 <NonProjectSettingsModal />

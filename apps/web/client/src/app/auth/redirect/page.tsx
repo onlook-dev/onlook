@@ -6,7 +6,6 @@ import localforage from 'localforage';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { api } from '@/trpc/react';
-import { env } from '@/env';
 
 export default function AuthRedirect() {
     const router = useRouter();
@@ -22,12 +21,6 @@ export default function AuthRedirect() {
 
             const returnUrl = await localforage.getItem<string>(LocalForageKeys.RETURN_URL);
             await localforage.removeItem(LocalForageKeys.RETURN_URL);
-
-            // Force demo-only mode for testing (feature flag)
-            if (env.NEXT_PUBLIC_FORCE_DEMO_ONLY) {
-                router.replace(Routes.DEMO_ONLY);
-                return;
-            }
 
             // If user has no active subscription or legacy subscription, redirect to demo-only page
             if (!subscription && !legacySubscription) {

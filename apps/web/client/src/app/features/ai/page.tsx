@@ -3,6 +3,7 @@
 import { CreateManagerProvider } from '@/components/store/create';
 import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
+import { ExternalRoutes } from '@/utils/constants';
 import { AiFeaturesHero } from '../../_components/hero/ai-features-hero';
 import { AiBenefitsSection } from '../../_components/landing-page/ai-benefits-section';
 import { AiFeaturesGridSection } from '../../_components/landing-page/ai-features-grid-section';
@@ -53,7 +54,7 @@ export default function AiFeaturesPage() {
                 <CTASection
                     ctaText={`Start Building with AI Today`}
                     buttonText="Get Started for Free"
-                    href="https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel"
+                    href={ExternalRoutes.BOOK_DEMO}
                 />
                 <FAQSection faqs={aiFaqs} />
                 <NonProjectSettingsModal />

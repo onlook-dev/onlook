@@ -5,13 +5,11 @@ import { motion } from 'motion/react';
 
 import { Icons } from '@onlook/ui/icons';
 
-import { api } from '@/trpc/react';
 import { vujahdayScript } from '../../fonts';
 import { BookDemo } from './book-demo';
 import { CreateError } from './create-error';
 import { HighDemand } from './high-demand';
 import { MobileEmailCapture } from './mobile-email-capture';
-import { SignIn } from './sign-in';
 import { UnicornBackground } from './unicorn-background';
 
 export function Hero() {
@@ -83,15 +81,6 @@ export function Hero() {
                     <CreateError />
                 </div>
                 <div className="relative z-20 hidden flex-row items-center gap-4 sm:flex">
-                    {/*}
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
-                    >
-                        <SignIn />
-                    </motion.div>
-                    */}
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Routes } from '@/utils/constants';
+import { ExternalRoutes, Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/client';
 import { openFeedbackWidget, resetTelemetry } from '@/utils/telemetry';
 import { Button } from '@onlook/ui/button';
@@ -9,10 +9,6 @@ import { useRouter } from 'next/navigation';
 
 export default function DemoOnlyPage() {
     const router = useRouter();
-
-    const handleBookDemo = () => {
-        window.open('https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel', '_blank', 'noopener,noreferrer');
-    };
 
     const handleGoHome = () => {
         router.push(Routes.HOME);
@@ -58,18 +54,22 @@ export default function DemoOnlyPage() {
                     
                     <div className="flex flex-col sm:flex-row gap-4 mt-4">
                         <Button
-                            onClick={handleBookDemo}
+                            asChild
                             size="lg"
                             className="bg-foreground-primary text-background-primary hover:bg-foreground-hover"
                         >
-                            Book a Demo
+                            <a href={ExternalRoutes.BOOK_DEMO} target="_blank" rel="noopener noreferrer">
+                                Book a Demo
+                            </a>
                         </Button>
                         <Button
-                            onClick={() => window.open('https://docs.onlook.com', '_blank', 'noopener,noreferrer')}
+                            asChild
                             variant="outline"
                             size="lg"
                         >
-                            View Docs
+                            <a href={ExternalRoutes.DOCS} target="_blank" rel="noopener noreferrer">
+                                View Docs
+                            </a>
                         </Button>
                     </div>
 

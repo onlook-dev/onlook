@@ -1,19 +1,13 @@
 'use client';
 
+import { type NavigationLink } from '@/utils/constants/navigation';
 import { cn } from '@onlook/ui/utils';
 import { useEffect, useRef, useState } from 'react';
 import { Icons } from '@onlook/ui/icons';
 
-export interface MenuLink {
-    title: string;
-    href: string;
-    description: string;
-    external?: boolean;
-}
-
 interface DropdownMenuProps {
     label: string;
-    links: MenuLink[];
+    links: NavigationLink[];
 }
 
 export function DropdownMenu({ label, links }: DropdownMenuProps) {

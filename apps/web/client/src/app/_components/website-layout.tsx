@@ -12,7 +12,7 @@ export function WebsiteLayout({ children, showFooter = true }: WebsiteLayoutProp
     return (
         <div className="min-h-screen bg-background">
             {/* Fixed TopBar that persists across page transitions */}
-            <div className="fixed top-0 left-0 w-full h-12 bg-background/80 backdrop-blur-sm z-[9996] top-bar">
+            <div className="fixed top-0 left-0 w-full h-12 bg-background/80 backdrop-blur-sm z-50 top-bar">
                 <TopBar />
             </div>
             

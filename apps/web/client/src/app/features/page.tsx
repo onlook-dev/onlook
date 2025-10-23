@@ -3,6 +3,7 @@
 import { CreateManagerProvider } from '@/components/store/create';
 import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
+import { ExternalRoutes } from '@/utils/constants';
 import { FeaturesHero } from '../_components/hero/features-hero';
 import { BenefitsSection } from '../_components/landing-page/benefits-section';
 import { CTASection } from '../_components/landing-page/cta-section';
@@ -53,7 +54,7 @@ export default function FeaturesPage() {
                 <CTASection
                     ctaText={`Bring your team \nto Onlook today`}
                     buttonText="Book a Demo"
-                    href="https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel"
+                    href={ExternalRoutes.BOOK_DEMO}
                 />
                 <FAQSection faqs={featuresFaqs} />
                 <NonProjectSettingsModal />

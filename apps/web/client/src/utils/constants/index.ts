@@ -39,6 +39,7 @@ export const ExternalRoutes = {
     YOUTUBE: 'https://www.youtube.com/@onlookdev',
     SUBSTACK: 'https://onlook.substack.com/',
     DISCORD: 'https://discord.gg/ZZzadNQtns',
+    BOOK_DEMO: 'https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel',
 };
 
 export const Git = {
