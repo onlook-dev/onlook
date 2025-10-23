@@ -46,7 +46,7 @@ export const NewProjectMenu = observer(({ onShowCloneDialog }: NewProjectMenuPro
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="w-48 ml-2">
                 <DropdownMenuItem
-                    onClick={handleStartBlankProject}
+                    onClick={handleStartBlankWithScreenshot}
                     disabled={isCreatingProject}
                     className="cursor-pointer"
                 >
