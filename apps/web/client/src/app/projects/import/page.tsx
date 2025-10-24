@@ -1,29 +1,17 @@
 'use client';
 
-import { useGetBackground } from '@/hooks/use-get-background';
 import { Card, CardDescription, CardHeader, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
 import { useRouter } from 'next/navigation';
-import { TopBar } from '../_components/top-bar';
 
 const Page = () => {
     const router = useRouter();
     const handleCardClick = (type: 'local' | 'github') => {
         router.push(`/projects/import/${type}`);
     };
-    const backgroundUrl = useGetBackground('create');
-
 
     return (
-        <div className="w-screen h-screen flex flex-col"
-            style={{
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundImage: `url(${backgroundUrl})`,
-            }}
-        >
-            <TopBar />
-            <div className="flex items-center justify-center overflow-hidden max-w-4xl mx-auto w-full flex-1 gap-6 p-6 select-none">
+        <div className="flex gap-6 p-6 select-none max-w-4xl w-full">
                 <Card
                     className={`w-full h-64 cursor-pointer transition-all duration-200 bg-background/80 backdrop-blur-xl hover:shadow-lg hover:scale-[1.02] border-[0.5px] border-foreground-tertiary/50`}
                     onClick={() => handleCardClick('local')}
@@ -43,10 +31,9 @@ const Page = () => {
                         </div>
                     </CardHeader>
                 </Card>
-                {/* Temporary disabled */}
                 <Card
-                    className={'w-full h-64 cursor-pointer transition-all duration-200 bg-background/80 backdrop-blur-xl hover:shadow-lg hover:scale-[1.02] border-[0.5px] border-foreground-tertiary/50 cursor-not-allowed opacity-60'}
-                    onClick={() => false && handleCardClick('github')}
+                    className={'w-full h-64 cursor-pointer transition-all duration-200 bg-background/80 backdrop-blur-xl hover:shadow-lg hover:scale-[1.02] border-[0.5px] border-foreground-tertiary/50'}
+                    onClick={() => handleCardClick('github')}
                     tabIndex={0}
                     role="button"
                     aria-label="Connect to GitHub"
@@ -63,7 +50,6 @@ const Page = () => {
                         </div>
                     </CardHeader>
                 </Card>
-            </div>
         </div>
     );
 };

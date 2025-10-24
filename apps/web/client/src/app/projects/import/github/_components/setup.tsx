@@ -5,21 +5,24 @@ import { Input } from '@onlook/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@onlook/ui/select';
 import { motion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { api, type RouterOutputs } from '@/trpc/react';
+import { Routes } from '@/utils/constants';
+import { useRouter } from 'next/navigation';
 import { StepContent, StepFooter, StepHeader } from '../../steps';
-import { useImportGithubProject } from '../_context';
+
+type GitHubRepository = RouterOutputs['github']['getRepositoriesWithOAuth'][number];
+type GitHubOrganization = RouterOutputs['github']['getOrganizationsWithOAuth'][number];
 
 export const SetupGithub = () => {
-    const {
-        prevStep,
-        selectedOrg,
-        setSelectedOrg,
-        nextStep,
-        selectedRepo,
-        setSelectedRepo,
-        githubData,
-        repositoryImport,
-        installation,
-    } = useImportGithubProject();
+    const router = useRouter();
+    const [selectedOrg, setSelectedOrg] = useState<GitHubOrganization | null>(null);
+    const [selectedRepo, setSelectedRepo] = useState<GitHubRepository | null>(null);
+
+    // Use tRPC hooks for data fetching
+    const { data: organizations = [], isLoading: isLoadingOrganizations, refetch: refetchOrganizations } =
+        api.github.getOrganizationsWithOAuth.useQuery();
+    const { data: repositories = [], isLoading: isLoadingRepositories, refetch: refetchRepositories } =
+        api.github.getRepositoriesWithOAuth.useQuery();
 
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
@@ -33,14 +36,14 @@ export const SetupGithub = () => {
         if (value === 'all') {
             setSelectedOrg(null);
         } else {
-            const organization = githubData.organizations.find((org: any) => org.login === value);
+            const organization = organizations.find((org: any) => org.login === value);
             setSelectedOrg(organization || null);
         }
         setSelectedRepo(null);
     };
 
     const handleRepositorySelect = (value: string) => {
-        const repository = githubData.repositories.find((repo: any) => repo.full_name === value);
+        const repository = repositories.find((repo: any) => repo.full_name === value);
         setSelectedRepo(repository || null);
     };
 
@@ -56,7 +59,7 @@ export const SetupGithub = () => {
     };
 
     // Filter repositories by organization and search query
-    const filteredRepositories = githubData.repositories.filter((repo: any) => {
+    const filteredRepositories = repositories.filter((repo: any) => {
         const matchesOrg = selectedOrg ? repo.owner.login === selectedOrg.login : true;
         const matchesSearch = searchQuery.trim() === '' ||
             repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -116,7 +119,7 @@ export const SetupGithub = () => {
                             <Select
                                 value={selectedOrg?.login || 'all'}
                                 onValueChange={handleOrganizationSelect}
-                                disabled={githubData.isLoadingOrganizations}
+                                disabled={isLoadingOrganizations}
                             >
                                 <SelectTrigger className="w-full max-w-sm">
                                     <SelectValue placeholder="All repositories" />
@@ -128,7 +131,7 @@ export const SetupGithub = () => {
                                             <span>All repositories</span>
                                         </div>
                                     </SelectItem>
-                                    {githubData.organizations.map((org: any) => (
+                                    {organizations.map((org: any) => (
                                         <SelectItem key={org.id} value={org.login}>
                                             <div className="flex items-center gap-2 w-full">
                                                 <img
@@ -147,7 +150,7 @@ export const SetupGithub = () => {
                                     ))}
                                 </SelectContent>
                             </Select>
-                            {githubData.isLoadingOrganizations && (
+                            {isLoadingOrganizations && (
                                 <div className="flex items-center gap-2 text-sm text-foreground-secondary">
                                     <Icons.Shadow className="w-3 h-3 animate-spin" />
                                     Loading organizations...
@@ -163,14 +166,14 @@ export const SetupGithub = () => {
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => {
-                                            githubData.fetchOrganizations();
-                                            githubData.fetchRepositories();
+                                            void refetchOrganizations();
+                                            void refetchRepositories();
                                         }}
-                                        disabled={githubData.isLoadingRepositories || githubData.isLoadingOrganizations}
+                                        disabled={isLoadingRepositories || isLoadingOrganizations}
                                         className="w-8 h-8 rounded border bg-background hover:bg-secondary transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                                         title="Refresh repositories"
                                     >
-                                        <Icons.Reload className={`h-4 w-4 text-foreground-tertiary ${(githubData.isLoadingRepositories || githubData.isLoadingOrganizations) ? 'animate-spin' : ''}`} />
+                                        <Icons.Reload className={`h-4 w-4 text-foreground-tertiary ${(isLoadingRepositories || isLoadingOrganizations) ? 'animate-spin' : ''}`} />
                                     </button>
                                     <motion.div
                                         ref={searchContainerRef}
@@ -224,7 +227,7 @@ export const SetupGithub = () => {
                                         </div>
                                     )}
 
-                                    {githubData.isLoadingRepositories ? (
+                                    {isLoadingRepositories ? (
                                         <div className="flex items-center justify-center gap-2 h-full text-sm text-foreground-secondary">
                                             <Icons.Shadow className="w-3 h-3 animate-spin" />
                                             Loading repositories...
@@ -285,19 +288,27 @@ export const SetupGithub = () => {
                 </motion.div>
             </StepContent>
             <StepFooter>
-                <Button onClick={prevStep} variant="outline">
+                <Button onClick={() => router.push(Routes.IMPORT_PROJECT)} variant="outline">
                     Cancel
                 </Button>
-                <div className="flex gap-2">
-                    <Button onClick={() => installation.redirectToInstallation()} variant="outline">
-                        <Icons.Gear className="w-4 h-4 mr-2" />
-                        Configure
-                    </Button>
-                    <Button className="px-3 py-2" onClick={nextStep} disabled={!selectedRepo || repositoryImport.isImporting}>
-                        <Icons.Download className="w-4 h-4 mr-2" />
-                        <span>Import</span>
-                    </Button>
-                </div>
+                <Button
+                    className="px-3 py-2"
+                    onClick={() => {
+                        if (!selectedRepo) return;
+                        const params = new URLSearchParams({
+                            repo: selectedRepo.full_name,
+                            branch: selectedRepo.default_branch,
+                            clone_url: selectedRepo.clone_url,
+                            name: selectedRepo.name,
+                            ...(selectedRepo.description && { description: selectedRepo.description }),
+                        });
+                        router.push(`${Routes.IMPORT_GITHUB}/importing?${params.toString()}`);
+                    }}
+                    disabled={!selectedRepo}
+                >
+                    <Icons.Download className="w-4 h-4 mr-2" />
+                    <span>Import</span>
+                </Button>
             </StepFooter >
         </>
     );

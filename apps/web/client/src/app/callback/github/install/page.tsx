@@ -26,9 +26,16 @@ export default function GitHubInstallCallbackPage() {
 
         console.log('GitHub installation callback:', { installationId, setupAction, state: stateParam });
 
+        // Handle "request" action - installation pending approval
+        if (setupAction === 'request') {
+            setState('error');
+            setMessage('Installation requires approval from the repository or organization owner. You can try installing on repositories you own, or wait for the owner to approve the installation.');
+            return;
+        }
+
         if (!installationId) {
             setState('error');
-            setMessage('Missing installation_id parameter');
+            setMessage('Installation ID not provided. The installation may not have completed successfully.');
             return;
         }
 
