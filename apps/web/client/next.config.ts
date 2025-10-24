@@ -9,9 +9,6 @@ import './src/env';
 
 const nextConfig: NextConfig = {
     devIndicators: false,
-    eslint: {
-        ignoreDuringBuilds: true,
-    },
     ...(process.env.STANDALONE_BUILD === 'true' && { output: 'standalone' }),
 };
 
