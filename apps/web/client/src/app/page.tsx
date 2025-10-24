@@ -3,6 +3,7 @@
 import { CreateManagerProvider } from '@/components/store/create';
 import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
+import { ExternalRoutes } from '@/utils/constants';
 import { AuthModal } from './_components/auth-modal';
 import { Hero } from './_components/hero';
 import { ContributorSection } from './_components/landing-page/contributor-section';
@@ -27,7 +28,7 @@ export default function Main() {
                 <ContributorSection />
                 <TestimonialsSection />
                 <FAQSection />
-                <CTASection />
+                <CTASection href={ExternalRoutes.BOOK_DEMO} />
                 <AuthModal />
                 <NonProjectSettingsModal />
                 <SubscriptionModal />

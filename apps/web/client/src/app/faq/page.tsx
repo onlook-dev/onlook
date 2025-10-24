@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FAQDropdown } from '../_components/landing-page/faq-dropdown';
 import { CTASection } from '../_components/landing-page/cta-section';
 import { WebsiteLayout } from '../_components/website-layout';
+import Link from 'next/link';
 
 const faqSections = [
     {
@@ -12,23 +13,19 @@ const faqSections = [
         faqs: [
             {
                 question: "What is Onlook?",
-                answer: "Onlook is an open-source, visual editor for websites. It allows anyone to create and style their own websites without any coding knowledge."
+                answer: "Onlook is an open-source, visual editor for websites. It allows teams to create and style prototypes and websites without any coding knowledge."
             },
             {
                 question: "What can I use Onlook to do?",
                 answer: "Onlook is great for creating websites, prototypes, user interfaces, and designs. Whether you need a quick mockup or a full-fledged website, ask Onlook to craft it for you."
             },
             {
-                question: "How do I get started?",
-                answer: "Getting started with Onlook is easy. Simply sign up for an account, create a new project, and follow our step-by-step guide to deploy your first application."
-            },
-            {
-                question: "Is Onlook free to use?",
-                answer: "Onlook is free for your first prompt, but you're limited by the number of messages you can send. Please see our Pricing page for more details."
+                question: 'Is there a free version of Onlook?',
+                answer: 'Yes, Onlook can be self-hosted for free on GitHub. For the hosted cloud version, please contact our team or book a demo. We are working closely with teams to set up the best internal design and code workflow, and are happy to help you get started.',
             },
             {
                 question: "What features does Onlook offer?",
-                answer: "Onlook offers a comprehensive suite of features including real-time collaboration, automated deployments, version control integration, and powerful development tools."
+                answer: "Onlook offers a comprehensive suite of features including real-time collaboration, design system compliance, importing from GitHub, and more."
             }
         ]
     },
@@ -38,15 +35,11 @@ const faqSections = [
         faqs: [
             {
                 question: "How do I use Onlook?",
-                answer: "Onlook is a visual editor for websites. It allows you to create and style your own websites without any coding knowledge. You can use Onlook to create websites, prototypes, user interfaces, and designs."
-            },
-            {
-                question: "What features can I expect in Onlook in the months to come?",
-                answer: "You can easily get a sense of our roadmap from the open issues on our GitHub repository, but our priority right now is to make a stable, reliable editor visual editor experience. We have plans to bring many of your favorite design tool features such as layers, components, and more into the interface. And of course, we'll be continuing to enhance the AI capabilities of Onlook to make it faster to craft designs."
+                answer: <>At the core of the experience is an infinite canvas that allows you to design with code as the source of truth. You can select individual elements on the canvas and use the chat to modify them. Learn more about how to use Onlook by reading our <Link href='https://docs.onlook.com' className='underline'>documentation</Link>.</>
             },
             {
                 question: "What is the difference between Onlook and other design tools?",
-                answer: "Onlook is a visual editor for code. It allows you to create and style your own creations with code as the source of truth. While it is best suited for creating websites, it can be used for anything visual – presentations, mockups, and more. Because Onlook uses code as the source of truth, the types of designs you can create are unconstrained by Onlook's interface."
+                answer: "Onlook is a visual editor for code. It allows you to create and style your own creations with code as the source of truth, and then collaborate as a team on the code. While it is best suited for creating websites, it can be used for anything visual – presentations, mockups, and more. Because Onlook uses code as the source of truth, the types of designs you can create are unconstrained by Onlook's interface."
             }
         ]
     },
@@ -60,7 +53,7 @@ const faqSections = [
             },
             {
                 question: "What payment methods are accepted?",
-                answer: "We accept all major credit cards and PayPal."
+                answer: "We accept all major credit cards through Stripe."
             }
         ]
     },

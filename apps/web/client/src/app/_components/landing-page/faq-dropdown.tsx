@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 interface FAQ {
     question: string;
-    answer: string;
+    answer: string | React.ReactNode;
 }
 
 interface FAQDropdownProps {

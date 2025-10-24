@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { vujahdayScript } from '@/app/fonts';
 import { AiChatPreviewBlock } from './feature-blocks/ai-chat-preview-block';
 import { BrandComplianceBlock } from './feature-blocks/brand-compliance';
 import { ComponentsBlock } from './feature-blocks/components';
@@ -288,7 +289,7 @@ export function WhatCanOnlookDoSection() {
                 <div className="flex-1 flex flex-col gap-24">
                 <div className="flex-1">
                     <h2 className="text-4xl lg:text-5xl font-light text-foreground-primary leading-tight">
-                        <span className="bg-gradient-to-l from-white/20 via-white/90 to-white/20 bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer filter drop-shadow-[0_0_14px_rgba(255,255,255,1)]">AI</span> <span className="text-foreground-tertiary">•</span> <span className="font-mono">Code</span> <span className="text-foreground-tertiary">•</span> <span className="font-['Vujahday_Script'] not-italic text-5xl large:text-6xl">Design</span><br /> Side-by-side-by-side
+                        <span className="bg-gradient-to-l from-white/20 via-white/90 to-white/20 bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer filter drop-shadow-[0_0_14px_rgba(255,255,255,1)]">AI</span> <span className="text-foreground-tertiary">•</span> <span className="font-mono">Code</span> <span className="text-foreground-tertiary">•</span> <span className={`${vujahdayScript.className} not-italic text-6xl large:text-6xl`}>Design</span><br /> Side-by-side-by-side
                     </h2>
                 </div>
                     <DirectEditingBlock />
@@ -311,8 +312,8 @@ export function WhatCanOnlookDoSection() {
                         <div className="text-foreground-secondary text-regular text-balance">Bring your existing React / Next.js / Tailwind codebase and start building</div>
                     </div>
                     <div>
-                        <div className="text-foreground-primary text-regularPlus mb-2 text-balance">Import from Figma</div>
-                        <div className="text-foreground-secondary text-regular text-balance">Make your designs come to life with a real working product</div>
+                        <div className="text-foreground-primary text-regularPlus mb-2 text-balance">Collaborate with your team</div>
+                        <div className="text-foreground-secondary text-regular text-balance">Share your project with your team and collaborate on designs in real-time</div>
                     </div>
                     <div>
                         <div className="text-foreground-primary text-regularPlus mb-2 text-balance">Publish your work</div>

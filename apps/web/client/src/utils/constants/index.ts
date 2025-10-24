@@ -15,6 +15,7 @@ export const Routes = {
     AUTH_CALLBACK: '/auth/callback',
     AUTH_CODE_ERROR: '/auth/auth-code-error',
     AUTH_REDIRECT: '/auth/redirect',
+    DEMO_ONLY: '/see-a-demo',
 
     // Dashboard
     PROJECTS: '/projects',
@@ -38,6 +39,7 @@ export const ExternalRoutes = {
     YOUTUBE: 'https://www.youtube.com/@onlookdev',
     SUBSTACK: 'https://onlook.substack.com/',
     DISCORD: 'https://discord.gg/ZZzadNQtns',
+    BOOK_DEMO: 'https://meetings.hubspot.com/daniel-onlook/onboarding-to-onlook-with-daniel',
 };
 
 export const Git = {

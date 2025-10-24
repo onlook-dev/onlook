@@ -3,6 +3,7 @@
 import { CreateManagerProvider } from '@/components/store/create';
 import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
+import { ExternalRoutes } from '@/utils/constants';
 import { BuilderFeaturesHero } from '../../_components/hero/builder-features-hero';
 import { BuilderBenefitsSection } from '../../_components/landing-page/builder-benefits-section';
 import { CTASection } from '../../_components/landing-page/cta-section';
@@ -51,8 +52,9 @@ export default function BuilderFeaturesPage() {
                 <BuilderFeaturesIntroSection />
                 <BuilderFeaturesGridSection />
                 <CTASection
-                    ctaText="Start Building React Apps Visually Today"
-                    buttonText="Get Started for Free"
+                    ctaText={`Bring your team \nto Onlook today`}
+                    buttonText="Book a Demo"
+                    href={ExternalRoutes.BOOK_DEMO}
                 />
                 <FAQSection faqs={builderFaqs} />
                 <NonProjectSettingsModal />
