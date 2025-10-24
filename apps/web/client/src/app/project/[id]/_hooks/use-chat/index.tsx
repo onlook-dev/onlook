@@ -56,7 +56,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             }),
             onToolCall: async (toolCall) => {
                 setIsExecutingToolCall(true);
-                void handleToolCall(toolCall.toolCall, editorEngine, addToolResult).then(() => {
+                await handleToolCall(toolCall.toolCall, editorEngine, addToolResult).then(() => {
                     setIsExecutingToolCall(false);
                 });
             },
