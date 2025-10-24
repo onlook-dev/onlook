@@ -3,33 +3,31 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { env } from '@/env';
 import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 
-export async function connectGitHubRepos() {
+export async function connectGitHubOAuth() {
     const supabase = await createClient();
-    const origin = (await headers()).get('origin') ?? env.NEXT_PUBLIC_SITE_URL;
-    const redirectTo = `${origin}${Routes.IMPORT_GITHUB}`;
+    const origin = (await headers()).get('origin');
 
-    const {
-        data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-        redirect('/login');
+    if (!origin) {
+        throw new Error('Origin header not found');
     }
 
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const redirectTo = `${origin}${Routes.AUTH_CALLBACK}`;
+
+    // Link GitHub provider to existing account (not create new account)
+    const { data, error } = await supabase.auth.linkIdentity({
         provider: 'github',
         options: {
             redirectTo,
-            scopes: 'repo', // Request repository access
+            scopes: 'repo read:user user:email',
             skipBrowserRedirect: false,
         },
     });
 
     if (error) {
-        console.error('Error requesting GitHub repo access:', error);
+        console.error('Error linking GitHub identity:', error);
         redirect(`${Routes.IMPORT_GITHUB}?error=oauth_failed`);
     }
 

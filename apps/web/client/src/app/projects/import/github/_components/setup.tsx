@@ -10,19 +10,25 @@ import { Routes } from '@/utils/constants';
 import { useRouter } from 'next/navigation';
 import { StepContent, StepFooter, StepHeader } from '../../steps';
 
-type GitHubRepository = RouterOutputs['github']['getRepositoriesWithOAuth'][number];
-type GitHubOrganization = RouterOutputs['github']['getOrganizationsWithOAuth'][number];
+type GitHubData = RouterOutputs['github']['getRepositoriesWithOAuth'];
+type GitHubRepository = GitHubData['repos'][number];
+type GitHubOrganization = GitHubData['organizations'][number];
 
 export const SetupGithub = () => {
     const router = useRouter();
     const [selectedOrg, setSelectedOrg] = useState<GitHubOrganization | null>(null);
     const [selectedRepo, setSelectedRepo] = useState<GitHubRepository | null>(null);
+    const [importError, setImportError] = useState<string | null>(null);
+    const [isValidating, setIsValidating] = useState(false);
 
-    // Use tRPC hooks for data fetching
-    const { data: organizations = [], isLoading: isLoadingOrganizations, refetch: refetchOrganizations } =
-        api.github.getOrganizationsWithOAuth.useQuery();
-    const { data: repositories = [], isLoading: isLoadingRepositories, refetch: refetchRepositories } =
+    // Use tRPC hook for data fetching - organizations are derived from repos
+    const { data, isLoading: isLoadingRepositories, refetch: refetchRepositories } =
         api.github.getRepositoriesWithOAuth.useQuery();
+
+    const repositories = data?.repos ?? [];
+    const organizations = data?.organizations ?? [];
+
+    const validateRepo = api.github.validateWithOAuth.useMutation();
 
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
@@ -33,18 +39,50 @@ export const SetupGithub = () => {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     const handleOrganizationSelect = (value: string) => {
-        if (value === 'all') {
-            setSelectedOrg(null);
-        } else {
-            const organization = organizations.find((org: any) => org.login === value);
-            setSelectedOrg(organization || null);
-        }
+        const organization = organizations.find((org: any) => org.login === value);
+        setSelectedOrg(organization || null);
         setSelectedRepo(null);
     };
 
     const handleRepositorySelect = (value: string) => {
         const repository = repositories.find((repo: any) => repo.full_name === value);
         setSelectedRepo(repository || null);
+        setImportError(null); // Clear any previous errors
+    };
+
+    const handleImport = async () => {
+        if (!selectedRepo) return;
+
+        setIsValidating(true);
+        setImportError(null);
+
+        try {
+            const [owner, repo] = selectedRepo.full_name.split('/');
+            if (!owner || !repo) {
+                throw new Error('Invalid repository name');
+            }
+
+            // Validate repository access
+            await validateRepo.mutateAsync({ owner, repo });
+
+            // If validation succeeds, navigate to importing page
+            const params = new URLSearchParams({
+                repo: selectedRepo.full_name,
+                branch: selectedRepo.default_branch,
+                clone_url: selectedRepo.clone_url,
+                name: selectedRepo.name,
+                ...(selectedRepo.description && { description: selectedRepo.description }),
+            });
+            router.push(`${Routes.IMPORT_GITHUB}/importing?${params.toString()}`);
+        } catch (error) {
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to validate repository access';
+            setImportError(errorMessage);
+        } finally {
+            setIsValidating(false);
+        }
     };
 
     // Handle search toggle
@@ -60,7 +98,7 @@ export const SetupGithub = () => {
 
     // Filter repositories by organization and search query
     const filteredRepositories = repositories.filter((repo: any) => {
-        const matchesOrg = selectedOrg ? repo.owner.login === selectedOrg.login : true;
+        const matchesOrg = !selectedOrg || repo.owner.login === selectedOrg.login;
         const matchesSearch = searchQuery.trim() === '' ||
             repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             repo.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -80,6 +118,13 @@ export const SetupGithub = () => {
     useEffect(() => {
         updateScrollIndicators();
     }, [filteredRepositories, updateScrollIndicators]);
+
+    // Default to first organization when organizations load
+    useEffect(() => {
+        if (organizations.length > 0 && !selectedOrg && organizations[0]) {
+            setSelectedOrg(organizations[0]);
+        }
+    }, [organizations, selectedOrg]);
 
     // Handle click outside to close search
     useEffect(() => {
@@ -114,23 +159,17 @@ export const SetupGithub = () => {
                     <div className="flex flex-col gap-6">
                         <div className="flex flex-col gap-2">
                             <label className="text-sm font-medium text-foreground-primary">
-                                Organization (Optional)
+                                Organization
                             </label>
                             <Select
-                                value={selectedOrg?.login || 'all'}
+                                value={selectedOrg?.login}
                                 onValueChange={handleOrganizationSelect}
-                                disabled={isLoadingOrganizations}
+                                disabled={isLoadingRepositories}
                             >
                                 <SelectTrigger className="w-full max-w-sm">
-                                    <SelectValue placeholder="All repositories" />
+                                    <SelectValue placeholder="Select organization" />
                                 </SelectTrigger>
                                 <SelectContent className="max-w-sm">
-                                    <SelectItem value="all">
-                                        <div className="flex items-center gap-2 w-full">
-                                            <Icons.Globe className="w-4 h-4" />
-                                            <span>All repositories</span>
-                                        </div>
-                                    </SelectItem>
                                     {organizations.map((org: any) => (
                                         <SelectItem key={org.id} value={org.login}>
                                             <div className="flex items-center gap-2 w-full">
@@ -140,22 +179,11 @@ export const SetupGithub = () => {
                                                     className="w-4 h-4 rounded-full"
                                                 />
                                                 <span>{org.login}</span>
-                                                {org.description && (
-                                                    <span className="text-xs text-foreground-secondary ml-1 truncate">
-                                                        - {org.description}
-                                                    </span>
-                                                )}
                                             </div>
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
-                            {isLoadingOrganizations && (
-                                <div className="flex items-center gap-2 text-sm text-foreground-secondary">
-                                    <Icons.Shadow className="w-3 h-3 animate-spin" />
-                                    Loading organizations...
-                                </div>
-                            )}
                         </div>
 
                         <div className="flex flex-col gap-3">
@@ -166,14 +194,13 @@ export const SetupGithub = () => {
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => {
-                                            void refetchOrganizations();
                                             void refetchRepositories();
                                         }}
-                                        disabled={isLoadingRepositories || isLoadingOrganizations}
+                                        disabled={isLoadingRepositories}
                                         className="w-8 h-8 rounded border bg-background hover:bg-secondary transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                                         title="Refresh repositories"
                                     >
-                                        <Icons.Reload className={`h-4 w-4 text-foreground-tertiary ${(isLoadingRepositories || isLoadingOrganizations) ? 'animate-spin' : ''}`} />
+                                        <Icons.Reload className={`h-4 w-4 text-foreground-tertiary ${isLoadingRepositories ? 'animate-spin' : ''}`} />
                                     </button>
                                     <motion.div
                                         ref={searchContainerRef}
@@ -213,7 +240,7 @@ export const SetupGithub = () => {
                                 </div>
                             </div>
 
-                            <Card className="h-64 relative">
+                            <Card className="h-64 relative rounded-t-none">
                                 <CardContent className="p-0 h-full">
                                     {canScrollUp && (
                                         <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-background via-background/80 to-transparent z-10 flex items-start justify-center pt-1">

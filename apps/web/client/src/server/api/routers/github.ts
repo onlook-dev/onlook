@@ -65,6 +65,33 @@ export const githubRouter = createTRPCRouter({
                 isPrivateRepo: data.private,
             };
         }),
+    validateWithOAuth: protectedProcedure
+        .input(
+            z.object({
+                owner: z.string(),
+                repo: z.string(),
+            }),
+        )
+        .mutation(async ({ input }) => {
+            try {
+                const { octokit } = await getUserGitHubOAuth();
+                const { data } = await octokit.rest.repos.get({
+                    owner: input.owner,
+                    repo: input.repo,
+                });
+                return {
+                    branch: data.default_branch,
+                    isPrivateRepo: data.private,
+                    hasAccess: true,
+                };
+            } catch (error) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Unable to access this repository. Please check your permissions.',
+                    cause: error,
+                });
+            }
+        }),
     getRepo: protectedProcedure
         .input(
             z.object({
@@ -285,14 +312,38 @@ export const githubRouter = createTRPCRouter({
             try {
                 const { octokit } = await getUserGitHubOAuth();
 
-                const { data } = await octokit.rest.repos.listForAuthenticatedUser({
+                const { data: user } = await octokit.rest.users.getAuthenticated();
+
+                const { data: allRepos } = await octokit.rest.repos.listForAuthenticatedUser({
                     per_page: input?.perPage ?? 100,
                     page: input?.page ?? 1,
                     sort: 'updated',
                     affiliation: 'owner,collaborator,organization_member',
                 });
 
-                return data;
+                // Filter to only include repos owned by the user or organizations
+                // Exclude repos owned by other individual users
+                const repos = allRepos.filter((repo) => {
+                    const isOwnedByAuthUser = repo.owner.login === user.login;
+                    const isOrganization = repo.owner.type === 'Organization';
+                    return isOwnedByAuthUser || isOrganization;
+                });
+
+                // Extract unique organizations from repository owners
+                const ownerMap = new Map();
+                repos.forEach((repo) => {
+                    if (!ownerMap.has(repo.owner.login)) {
+                        ownerMap.set(repo.owner.login, {
+                            id: repo.owner.id,
+                            login: repo.owner.login,
+                            avatar_url: repo.owner.avatar_url,
+                        });
+                    }
+                });
+
+                const organizations = Array.from(ownerMap.values());
+
+                return { repos, organizations };
             } catch (error) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
@@ -302,23 +353,4 @@ export const githubRouter = createTRPCRouter({
                 });
             }
         }),
-
-    getOrganizationsWithOAuth: protectedProcedure.query(async () => {
-        try {
-            const { octokit } = await getUserGitHubOAuth();
-
-            const { data } = await octokit.rest.orgs.listForAuthenticatedUser({
-                per_page: 100,
-            });
-
-            return data;
-        } catch (error) {
-            throw new TRPCError({
-                code: 'FORBIDDEN',
-                message:
-                    'GitHub OAuth access is invalid or has been revoked. Please reconnect your GitHub account.',
-                cause: error,
-            });
-        }
-    }),
 });

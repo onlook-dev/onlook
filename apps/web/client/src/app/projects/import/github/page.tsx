@@ -3,7 +3,12 @@ import { createClient } from '@/utils/supabase/server';
 import { ImportFlow } from './_components/import-flow';
 import { OAuthConnect } from './_components/oauth-connect';
 
-const Page = async () => {
+type PageProps = {
+    searchParams: Promise<{ error?: string }>;
+};
+
+const Page = async (props: PageProps) => {
+    const searchParams = await props.searchParams;
     const supabase = await createClient();
     const {
         data: { session },
@@ -12,11 +17,10 @@ const Page = async () => {
     const hasOAuthAccess = !!session?.provider_token;
 
     if (!hasOAuthAccess) {
-        return <OAuthConnect />;
+        return <OAuthConnect error={searchParams.error} />;
     }
 
     void api.github.getRepositoriesWithOAuth.prefetch();
-    void api.github.getOrganizationsWithOAuth.prefetch();
 
     return (
         <HydrateClient>

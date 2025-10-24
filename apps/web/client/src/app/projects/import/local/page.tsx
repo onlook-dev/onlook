@@ -1,8 +1,10 @@
 'use client';
 
-import { MotionCard } from '@onlook/ui/motion-card';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import useResizeObserver from 'use-resize-observer';
+
+import { MotionCard } from '@onlook/ui/motion-card';
+
 import { FinalizingProject } from './_components/finalizing-project';
 import { NewSelectFolder } from './_components/select-folder';
 import { useProjectCreation } from './_context';
@@ -29,14 +31,10 @@ const Page = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
-                className="w-[30rem] min-h-[12rem] overflow-hidden p-0 border border-primary/20 rounded-lg shadow-lg !bg-background"
+                className="border-primary/20 !bg-background min-h-[12rem] w-[30rem] overflow-hidden rounded-lg border p-0 shadow-lg"
             >
                 <motion.div ref={ref} layout="position" className="flex flex-col">
-                    <AnimatePresence
-                        mode="popLayout"
-                        initial={false}
-                        custom={direction}
-                    >
+                    <AnimatePresence mode="popLayout" initial={false} custom={direction}>
                         <motion.div
                             key={currentStep}
                             custom={direction}
