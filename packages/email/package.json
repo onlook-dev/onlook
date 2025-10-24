@@ -32,14 +32,15 @@
     "devDependencies": {
         "@onlook/eslint": "*",
         "@onlook/typescript": "*",
+        "@react-email/preview-server": "4.3.1",
         "eslint": "^9.0.0",
         "typescript": "^5.5.4"
     },
     "dependencies": {
-        "@react-email/components": "0.0.41",
-        "react": "19.1.0",
-        "react-dom": "19.1.0",
-        "react-email": "4.0.15",
+        "@react-email/components": "0.5.7",
+        "react": "19.2.0",
+        "react-dom": "19.2.0",
+        "react-email": "4.3.1",
         "resend": "^4.5.1"
     }
 }

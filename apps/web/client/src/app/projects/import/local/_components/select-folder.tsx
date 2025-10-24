@@ -389,8 +389,10 @@ export const NewSelectFolder = () => {
                         type="file"
                         style={{ display: 'none' }}
                         onChange={handleFileInputChange}
-                        directory=""
-                        webkitdirectory=""
+                        {...({
+                            directory: '',
+                            webkitdirectory: '',
+                        } as React.InputHTMLAttributes<HTMLInputElement>)}
                     />
                 </motion.div>
             );

@@ -17,11 +17,7 @@ export default async function Page(props: {
 
     const MDXContent = page.data.body;
 
-    let filePath = '';
-    if (page.file && typeof page.file === 'object' && 'path' in page.file) {
-        const path = page.file.path as string;
-        filePath = path.replace(/^.*?\/content\//, 'content/');
-    }
+    const filePath = params.slug ? `${params.slug.join('/')}.mdx` : 'index.mdx';
 
     return (
         <DocsPage toc={page.data.toc} full={page.data.full}>

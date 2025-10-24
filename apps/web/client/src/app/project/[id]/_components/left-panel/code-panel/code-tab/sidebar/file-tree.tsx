@@ -1,3 +1,5 @@
+'use client';
+
 import { type FileEntry } from '@onlook/file-system/hooks';
 import { pathsEqual } from '@onlook/utility';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -32,7 +34,7 @@ export const FileTree = ({
     const inputRef = useRef<HTMLInputElement>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
-    const { ref: treeContainerRef, width: filesWidth, height: filesHeight } = useResizeObserver();
+    const { ref: resizeObserverRef, width: filesWidth, height: filesHeight } = useResizeObserver();
 
     // Create flat entry index for efficient operations
     const flatEntryIndex = useMemo(() => {
@@ -190,7 +192,7 @@ export const FileTree = ({
                 onRefresh={onRefresh}
                 onKeyDown={handleKeyDown}
             />
-            <div ref={treeContainerRef} className="w-full text-xs px-2 flex-1 min-h-0">
+            <div ref={resizeObserverRef} className="w-full text-xs px-2 flex-1 min-h-0">
                 {isLoading ? (
                     <div className="flex flex-col justify-start items-center h-full text-sm text-foreground/50 pt-4">
                         <div className="animate-spin h-6 w-6 border-2 border-foreground-hover rounded-full border-t-transparent mb-2"></div>

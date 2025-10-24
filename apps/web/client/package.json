@@ -81,7 +81,7 @@
         "lucide-react": "^0.486.0",
         "mobx-react-lite": "^4.1.0",
         "motion": "^12.23.19",
-        "next": "15.5.4",
+        "next": "16.0.0",
         "next-intl": "^4.0.2",
         "next-themes": "^0.4.6",
         "octokit": "^5.0.3",
@@ -91,10 +91,10 @@
         "prosemirror-commands": "^1.7.1",
         "prosemirror-history": "^1.4.1",
         "prosemirror-keymap": "^1.2.2",
-        "react": "^19.0.0",
+        "react": "19.2.0",
         "react-arborist": "^3.4.3",
         "react-codemirror-merge": "4.23.10",
-        "react-dom": "^19.0.0",
+        "react-dom": "19.2.0",
         "react-hotkeys-hook": "^5.0.1",
         "react-markdown": "^10.1.0",
         "remark-gfm": "^4.0.1",
@@ -118,8 +118,8 @@
         "@tailwindcss/postcss": "^4.0.15",
         "@types/culori": "^4.0.0",
         "@types/node": "^20.14.10",
-        "@types/react": "^19.0.0",
-        "@types/react-dom": "^19.0.0",
+        "@types/react": "19.2.2",
+        "@types/react-dom": "19.2.2",
         "@types/webfontloader": "^1.6.38",
         "eslint": "^9.0.0",
         "postcss": "^8.5.3",
@@ -129,5 +129,9 @@
     },
     "ct3aMetadata": {
         "initVersion": "7.39.2"
+    },
+    "overrides": {
+        "@types/react": "19.2.2",
+        "@types/react-dom": "19.2.2"
     }
 }
