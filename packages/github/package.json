@@ -9,7 +9,7 @@
         ".": "./src/index.ts"
     },
     "dependencies": {
-        "@octokit/app": "^14.0.2",
+        "@octokit/app": "^16.1.2",
         "@octokit/auth-app": "^6.0.1",
         "@octokit/rest": "^20.0.2",
         "uuid": "^11.1.0"
