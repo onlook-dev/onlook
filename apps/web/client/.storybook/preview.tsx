@@ -1,6 +1,20 @@
 import type { Preview } from '@storybook/nextjs-vite'
+import '@onlook/ui/globals.css'
+import { Inter } from 'next/font/google'
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+})
 
 const preview: Preview = {
+  decorators: [
+    (Story) => (
+      <div className={inter.variable}>
+        <Story />
+      </div>
+    ),
+  ],
   parameters: {
     controls: {
       matchers: {
