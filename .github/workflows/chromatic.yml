@@ -6,6 +6,8 @@ jobs:
   chromatic:
     name: Run Chromatic
     runs-on: ubuntu-latest
+    env:
+      SKIP_ENV_VALIDATION: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
