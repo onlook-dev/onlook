@@ -10,6 +10,10 @@ import './src/env';
 const nextConfig: NextConfig = {
     devIndicators: false,
     ...(process.env.STANDALONE_BUILD === 'true' && { output: 'standalone' }),
+    eslint: {
+        // Don't run ESLint during builds - handle it separately in CI
+        ignoreDuringBuilds: true,
+    },
 };
 
 if (process.env.NODE_ENV === 'development') {
