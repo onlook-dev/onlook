@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { TopBarPresentation } from '@/app/projects/_components/top-bar-presentation';
 import type { User } from '@onlook/models';
-import { action } from '@storybook/addon-actions';
+import { fn } from '@storybook/test';
 
 /**
  * TopBar displays the main navigation bar with logo, search, create dropdown, and user avatar.
@@ -53,9 +53,9 @@ const mockUser: User = {
 };
 
 // Action callbacks
-const onCreateBlank = action('onCreateBlank');
-const onImport = action('onImport');
-const onSearchChange = action('onSearchChange');
+const onCreateBlank = fn();
+const onImport = fn();
+const onSearchChange = fn();
 
 /**
  * Default top bar with logged-in user

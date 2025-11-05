@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { SelectProjectPresentation } from '@/app/projects/_components/select-presentation';
 import type { Project } from '@onlook/models';
-import { action } from '@storybook/addon-actions';
+import { fn } from '@storybook/test';
 
 /**
  * SelectProject displays the main project selection interface with recent projects carousel,
@@ -195,18 +195,18 @@ const templateProjects: Project[] = [
 ];
 
 // Action callbacks
-const onCreateBlank = action('onCreateBlank');
-const onToggleStar = action('onToggleStar');
-const onUnmarkTemplate = action('onUnmarkTemplate');
-const onRefetch = action('onRefetch');
-const onProjectClick = action('onProjectClick');
-const onRenameProject = action('onRenameProject');
-const onCloneProject = action('onCloneProject');
-const onToggleTemplate = action('onToggleTemplate');
-const onDeleteProject = action('onDeleteProject');
-const onUseTemplate = action('onUseTemplate');
-const onPreviewTemplate = action('onPreviewTemplate');
-const onEditTemplate = action('onEditTemplate');
+const onCreateBlank = fn();
+const onToggleStar = fn();
+const onUnmarkTemplate = fn();
+const onRefetch = fn();
+const onProjectClick = fn();
+const onRenameProject = fn();
+const onCloneProject = fn();
+const onToggleTemplate = fn();
+const onDeleteProject = fn();
+const onUseTemplate = fn();
+const onPreviewTemplate = fn();
+const onEditTemplate = fn();
 
 /**
  * Default view with several projects

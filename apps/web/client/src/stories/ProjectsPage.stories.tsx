@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { TopBarPresentation } from '@/app/projects/_components/top-bar-presentation';
 import { SelectProjectPresentation } from '@/app/projects/_components/select-presentation';
 import type { Project, User } from '@onlook/models';
-import { action } from '@storybook/addon-actions';
+import { fn } from '@storybook/test';
 import { useState } from 'react';
 
 /**
@@ -30,8 +30,8 @@ const ProjectsPageComposed = ({
         onSearchChange={setSearchQuery}
         recentSearches={['dashboard', 'admin', 'portfolio']}
         isCreatingProject={isCreatingProject}
-        onCreateBlank={action('onCreateBlank')}
-        onImport={action('onImport')}
+        onCreateBlank={fn()}
+        onImport={fn()}
         homeRoute="/"
       />
       <div className="flex justify-center w-full h-full overflow-y-auto overflow-x-visible">
@@ -40,19 +40,19 @@ const ProjectsPageComposed = ({
           isLoading={isLoading}
           externalSearchQuery={searchQuery}
           isCreatingProject={isCreatingProject}
-          onCreateBlank={action('onCreateBlank')}
+          onCreateBlank={fn()}
           starredTemplateIds={new Set()}
-          onToggleStar={action('onToggleStar')}
-          onUnmarkTemplate={action('onUnmarkTemplate')}
-          onRefetch={action('onRefetch')}
-          onProjectClick={action('onProjectClick')}
-          onRenameProject={action('onRenameProject')}
-          onCloneProject={action('onCloneProject')}
-          onToggleTemplate={action('onToggleTemplate')}
-          onDeleteProject={action('onDeleteProject')}
-          onUseTemplate={action('onUseTemplate')}
-          onPreviewTemplate={action('onPreviewTemplate')}
-          onEditTemplate={action('onEditTemplate')}
+          onToggleStar={fn()}
+          onUnmarkTemplate={fn()}
+          onRefetch={fn()}
+          onProjectClick={fn()}
+          onRenameProject={fn()}
+          onCloneProject={fn()}
+          onToggleTemplate={fn()}
+          onDeleteProject={fn()}
+          onUseTemplate={fn()}
+          onPreviewTemplate={fn()}
+          onEditTemplate={fn()}
           user={user}
         />
       </div>
