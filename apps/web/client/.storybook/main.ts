@@ -29,6 +29,24 @@ const config: StorybookConfig = {
   },
   "staticDirs": [
     "../public"
-  ]
+  ],
+  async viteFinal(config) {
+    const { mergeConfig } = await import('vite');
+    return mergeConfig(config, {
+      resolve: {
+        alias: {
+          '@/utils/supabase/client': fileURLToPath(
+            new URL('./mocks/supabase-client.ts', import.meta.url)
+          ),
+          '@/trpc/react': fileURLToPath(
+            new URL('./mocks/trpc-react.tsx', import.meta.url)
+          ),
+          '~/trpc/react': fileURLToPath(
+            new URL('./mocks/trpc-react.tsx', import.meta.url)
+          ),
+        },
+      },
+    });
+  },
 };
 export default config;
