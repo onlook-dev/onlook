@@ -141,7 +141,7 @@
         "playwright": "^1.56.1",
         "postcss": "^8.5.3",
         "storybook": "^10.0.4",
-        "tailwindcss": "^4.0.15",
+        "tailwindcss": "^4.1.16",
         "type-fest": "^4.41.0",
         "typescript": "^5.5.4",
         "vitest": "^4.0.7"
