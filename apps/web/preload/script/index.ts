@@ -6,6 +6,34 @@ import { preloadMethods } from './api';
 export let penpalParent: PromisifiedPenpalParentMethods | null = null;
 let isConnecting = false;
 
+/**
+ * Find the correct parent window for Onlook connection.
+ * Handles both direct iframes (Next.js) and nested iframes (Storybook).
+ */
+const findOnlookParent = (): Window => {
+    // If we're not in an iframe, something is wrong
+    if (window === window.top) {
+        console.warn(`${PENPAL_CHILD_CHANNEL} - Not in an iframe, using window.parent as fallback`);
+        return window.parent;
+    }
+
+    // Check if we're in a direct iframe (parent is the top window)
+    // This is the Next.js case: Onlook -> Next.js iframe
+    if (window.parent === window.top) {
+        return window.parent;
+    }
+
+    // We're in a nested iframe (parent is NOT the top window)
+    // This is the Storybook case: Onlook -> CodeSandbox -> Storybook preview iframe
+    if (window.top) {
+        console.log(`${PENPAL_CHILD_CHANNEL} - Using window.top for nested iframe scenario`);
+        return window.top;
+    }
+
+    // Final fallback
+    return window.parent;
+};
+
 const createMessageConnection = async () => {
     if (isConnecting || penpalParent) {
         return penpalParent;
@@ -15,7 +43,7 @@ const createMessageConnection = async () => {
     console.log(`${PENPAL_CHILD_CHANNEL} - Creating penpal connection`);
 
     const messenger = new WindowMessenger({
-        remoteWindow: window.parent,
+        remoteWindow: findOnlookParent(),
         // TODO: Use a proper origin
         allowedOrigins: ['*'],
     });
