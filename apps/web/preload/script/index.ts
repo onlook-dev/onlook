@@ -17,14 +17,14 @@ const findOnlookParent = (): Window => {
         return window.parent;
     }
 
-    // Try window.parent first (works for Next.js and direct iframe scenarios)
-    // In most cases, this is the Onlook parent
-    if (window.parent !== window) {
+    // Check if we're in a direct iframe (parent is the top window)
+    // This is the Next.js case: Onlook -> Next.js iframe
+    if (window.parent === window.top) {
         return window.parent;
     }
 
-    // Fallback to window.top for nested iframe scenarios (like Storybook)
-    // In Storybook: window.top = Onlook, window.parent = Storybook manager
+    // We're in a nested iframe (parent is NOT the top window)
+    // This is the Storybook case: Onlook -> CodeSandbox -> Storybook preview iframe
     if (window.top) {
         console.log(`${PENPAL_CHILD_CHANNEL} - Using window.top for nested iframe scenario`);
         return window.top;
