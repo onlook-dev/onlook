@@ -57,8 +57,9 @@ export const utilsRouter = createTRPCRouter({
 
                 const app = new FirecrawlApp({ apiKey: env.FIRECRAWL_API_KEY });
 
+                // Cast formats to SDK type - 'branding' is supported by API but not in SDK types yet
                 const result = await app.scrapeUrl(input.url, {
-                    formats: input.formats,
+                    formats: input.formats as any,
                     onlyMainContent: input.onlyMainContent,
                     ...(input.includeTags && { includeTags: input.includeTags }),
                     ...(input.excludeTags && { excludeTags: input.excludeTags }),
@@ -72,9 +73,10 @@ export const utilsRouter = createTRPCRouter({
                 const hasBranding = input.formats.includes('branding');
                 const hasContentFormats = input.formats.some(f => ['markdown', 'html', 'json'].includes(f));
 
-                // Extract branding data if requested
-                const brandingData = hasBranding && result.branding
-                    ? JSON.stringify(result.branding, null, 2)
+                // Extract branding data if requested - access via type assertion since SDK types may not include it yet
+                const resultWithBranding = result as { branding?: unknown };
+                const brandingData = hasBranding && resultWithBranding.branding
+                    ? JSON.stringify(resultWithBranding.branding, null, 2)
                     : null;
 
                 // Return the primary content format (markdown by default)
@@ -83,12 +85,21 @@ export const utilsRouter = createTRPCRouter({
 
                 // Combine content and branding if both are requested
                 if (hasBranding && hasContentFormats) {
+                    // Ensure at least one format is available
+                    if (!content && !brandingData) {
+                        throw new Error('No content or branding data was extracted from the URL');
+                    }
+                    
                     const parts: string[] = [];
                     if (content) {
                         parts.push(content);
                     }
                     if (brandingData) {
-                        parts.push('\n\n--- Brand Identity ---\n');
+                        // Only add separator if we have both content and branding
+                        if (content) {
+                            parts.push('\n\n=== Brand Identity ===\n');
+                            parts.push('The following brand identity information was extracted from the website:\n');
+                        }
                         parts.push(brandingData);
                     }
                     return {
