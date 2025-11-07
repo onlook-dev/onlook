@@ -1,3 +1,4 @@
+export { ArrangeBranchesTool } from './arrange-branches';
 export { BashEditTool } from './bash-edit';
 export { BashReadTool } from './bash-read';
 export { CheckErrorsTool } from './check-errors';
