@@ -1,6 +1,7 @@
 export { BashEditTool } from './bash-edit';
 export { BashReadTool } from './bash-read';
 export { CheckErrorsTool } from './check-errors';
+export { CreateMultipleBranchesTool } from './create-multiple-branches';
 export { FuzzyEditFileTool } from './fuzzy-edit-file';
 export { GlobTool } from './glob';
 export { GrepTool } from './grep';

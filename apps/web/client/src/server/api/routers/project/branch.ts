@@ -86,6 +86,10 @@ export const branchRouter = createTRPCRouter({
         .input(
             z.object({
                 branchId: z.uuid(),
+                positionOverride: z.object({
+                    x: z.number(),
+                    y: z.number(),
+                }).optional(),
             }),
         )
         .mutation(async ({ ctx, input }) => {
@@ -178,7 +182,7 @@ export const branchRouter = createTRPCRouter({
                             id: uuidv4(),
                             branchId: newBranchId,
                             canvasId: canvas.id,
-                            position: {
+                            position: input.positionOverride ?? {
                                 x: baseX + frameWidth + 100, // Initial offset to the right
                                 y: baseY,
                             },
