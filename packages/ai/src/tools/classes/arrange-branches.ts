@@ -326,14 +326,16 @@ export class ArrangeBranchesTool extends ClientTool {
                 const fuzzyResult = findBranchesByFuzzyMatch([args.relativeTo], allBranches);
                 if (fuzzyResult.matches.length > 0) {
                     const refBranch = fuzzyResult.matches[0];
-                    const refFrames = editorEngine.frames.getByBranchId(refBranch.id);
-                    if (refFrames.length > 0) {
-                        referenceBranch = {
-                            branch: refBranch,
-                            frames: refFrames.map(fd => fd.frame),
-                            primaryFrame: refFrames[0]!.frame,
-                            relativeOffsets: [],
-                        };
+                    if (refBranch) {
+                        const refFrames = editorEngine.frames.getByBranchId(refBranch.id);
+                        if (refFrames.length > 0) {
+                            referenceBranch = {
+                                branch: refBranch,
+                                frames: refFrames.map(fd => fd.frame),
+                                primaryFrame: refFrames[0]!.frame,
+                                relativeOffsets: [],
+                            };
+                        }
                     }
                 }
             }
