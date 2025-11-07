@@ -43,11 +43,11 @@ export const utilsRouter = createTRPCRouter({
     scrapeUrl: protectedProcedure
         .input(z.object({
             url: z.string().url(),
-            formats: z.array(z.enum(['markdown', 'html', 'json'])).default(['markdown']),
+            formats: z.array(z.enum(['markdown', 'html', 'json', 'branding'])).default(['markdown']),
             onlyMainContent: z.boolean().default(true),
             includeTags: z.array(z.string()).optional(),
             excludeTags: z.array(z.string()).optional(),
-            waitFor: z.number().optional(),
+            waitFor: z.number().min(0).optional(),
         }))
         .mutation(async ({ input }): Promise<{ result: string | null, error: string | null }> => {
             try {
@@ -57,8 +57,9 @@ export const utilsRouter = createTRPCRouter({
 
                 const app = new FirecrawlApp({ apiKey: env.FIRECRAWL_API_KEY });
 
+                // Cast formats to SDK type - 'branding' is supported by API but not in SDK types yet
                 const result = await app.scrapeUrl(input.url, {
-                    formats: input.formats,
+                    formats: input.formats as any,
                     onlyMainContent: input.onlyMainContent,
                     ...(input.includeTags && { includeTags: input.includeTags }),
                     ...(input.excludeTags && { excludeTags: input.excludeTags }),
@@ -69,10 +70,56 @@ export const utilsRouter = createTRPCRouter({
                     throw new Error(`Failed to scrape URL: ${result.error || 'Unknown error'}`);
                 }
 
+                const hasBranding = input.formats.includes('branding');
+                const hasContentFormats = input.formats.some(f => ['markdown', 'html', 'json'].includes(f));
+
+                // Extract branding data if requested - access via type assertion since SDK types may not include it yet
+                const resultWithBranding = result as { branding?: unknown };
+                const brandingData = hasBranding && resultWithBranding.branding
+                    ? JSON.stringify(resultWithBranding.branding, null, 2)
+                    : null;
+
                 // Return the primary content format (markdown by default)
                 // or the first available format if markdown isn't available
                 const content = result.markdown ?? result.html ?? JSON.stringify(result.json, null, 2);
 
+                // Combine content and branding if both are requested
+                if (hasBranding && hasContentFormats) {
+                    // Ensure at least one format is available
+                    if (!content && !brandingData) {
+                        throw new Error('No content or branding data was extracted from the URL');
+                    }
+                    
+                    const parts: string[] = [];
+                    if (content) {
+                        parts.push(content);
+                    }
+                    if (brandingData) {
+                        // Only add separator if we have both content and branding
+                        if (content) {
+                            parts.push('\n\n=== Brand Identity ===\n');
+                            parts.push('The following brand identity information was extracted from the website:\n');
+                        }
+                        parts.push(brandingData);
+                    }
+                    return {
+                        result: parts.join('\n'),
+                        error: null,
+                    };
+                }
+
+                // Return branding only if it's the only format requested
+                if (hasBranding && !hasContentFormats) {
+                    if (!brandingData) {
+                        throw new Error('No branding data was extracted from the URL');
+                    }
+                    return {
+                        result: brandingData,
+                        error: null,
+                    };
+                }
+
+                // Return content only (existing behavior)
                 if (!content) {
                     throw new Error('No content was scraped from the URL');
                 }

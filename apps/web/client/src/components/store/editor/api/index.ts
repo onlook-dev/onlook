@@ -31,7 +31,7 @@ export class ApiManager {
 
     async scrapeUrl(input: {
         url: string;
-        formats?: ("json" | "markdown" | "html")[] | undefined;
+        formats?: ("json" | "markdown" | "html" | "branding")[] | undefined;
         onlyMainContent?: boolean | undefined;
         includeTags?: string[] | undefined;
         excludeTags?: string[] | undefined;
