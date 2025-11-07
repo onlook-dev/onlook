@@ -43,7 +43,7 @@ export const utilsRouter = createTRPCRouter({
     scrapeUrl: protectedProcedure
         .input(z.object({
             url: z.string().url(),
-            formats: z.array(z.enum(['markdown', 'html', 'json'])).default(['markdown']),
+            formats: z.array(z.enum(['markdown', 'html', 'json', 'branding'])).default(['markdown']),
             onlyMainContent: z.boolean().default(true),
             includeTags: z.array(z.string()).optional(),
             excludeTags: z.array(z.string()).optional(),
@@ -69,10 +69,46 @@ export const utilsRouter = createTRPCRouter({
                     throw new Error(`Failed to scrape URL: ${result.error || 'Unknown error'}`);
                 }
 
+                const hasBranding = input.formats.includes('branding');
+                const hasContentFormats = input.formats.some(f => ['markdown', 'html', 'json'].includes(f));
+
+                // Extract branding data if requested
+                const brandingData = hasBranding && result.branding
+                    ? JSON.stringify(result.branding, null, 2)
+                    : null;
+
                 // Return the primary content format (markdown by default)
                 // or the first available format if markdown isn't available
                 const content = result.markdown ?? result.html ?? JSON.stringify(result.json, null, 2);
 
+                // Combine content and branding if both are requested
+                if (hasBranding && hasContentFormats) {
+                    const parts: string[] = [];
+                    if (content) {
+                        parts.push(content);
+                    }
+                    if (brandingData) {
+                        parts.push('\n\n--- Brand Identity ---\n');
+                        parts.push(brandingData);
+                    }
+                    return {
+                        result: parts.join('\n'),
+                        error: null,
+                    };
+                }
+
+                // Return branding only if it's the only format requested
+                if (hasBranding && !hasContentFormats) {
+                    if (!brandingData) {
+                        throw new Error('No branding data was extracted from the URL');
+                    }
+                    return {
+                        result: brandingData,
+                        error: null,
+                    };
+                }
+
+                // Return content only (existing behavior)
                 if (!content) {
                     throw new Error('No content was scraped from the URL');
                 }

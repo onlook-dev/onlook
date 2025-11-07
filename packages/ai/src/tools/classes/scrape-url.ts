@@ -5,13 +5,13 @@ import { ClientTool } from '../models/client';
 
 export class ScrapeUrlTool extends ClientTool {
     static readonly toolName = 'scrape_url';
-    static readonly description = 'Scrape a URL and extract its content in various formats (markdown, HTML, JSON). Can extract clean, LLM-ready content from any website, handling dynamic content and anti-bot mechanisms.';
+    static readonly description = 'Scrape a URL and extract its content in various formats (markdown, HTML, JSON, branding). Can extract clean, LLM-ready content from any website, handling dynamic content and anti-bot mechanisms. The branding format extracts brand identity information including colors, fonts, typography, spacing, and UI components.';
     static readonly parameters = z.object({
         url: z.url().describe('The URL to scrape. Must be a valid HTTP or HTTPS URL.'),
         formats: z
-            .array(z.enum(['markdown', 'html', 'json']))
+            .array(z.enum(['markdown', 'html', 'json', 'branding']))
             .default(['markdown'])
-            .describe('The formats to return the scraped content in. Defaults to markdown.'),
+            .describe('The formats to return the scraped content in. Defaults to markdown. Use "branding" to extract brand identity (colors, fonts, typography, etc.).'),
         onlyMainContent: z
             .boolean()
             .default(true)
