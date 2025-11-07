@@ -47,7 +47,7 @@ export const utilsRouter = createTRPCRouter({
             onlyMainContent: z.boolean().default(true),
             includeTags: z.array(z.string()).optional(),
             excludeTags: z.array(z.string()).optional(),
-            waitFor: z.number().optional(),
+            waitFor: z.number().min(0).optional(),
         }))
         .mutation(async ({ input }): Promise<{ result: string | null, error: string | null }> => {
             try {

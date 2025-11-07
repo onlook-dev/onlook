@@ -28,6 +28,7 @@ export class ScrapeUrlTool extends ClientTool {
             .describe('Array of HTML tags to exclude from the scraped content.'),
         waitFor: z
             .number()
+            .min(0)
             .optional()
             .describe('Time in milliseconds to wait for the page to load before scraping.'),
     });
