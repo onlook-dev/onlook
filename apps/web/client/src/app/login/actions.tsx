@@ -27,6 +27,8 @@ export async function login(provider: SignInMethod.GITHUB | SignInMethod.GOOGLE)
         provider,
         options: {
             redirectTo,
+            // Request repo scope upfront for GitHub import functionality
+            scopes: provider === SignInMethod.GITHUB ? 'repo read:user user:email' : undefined,
         },
     });
 
