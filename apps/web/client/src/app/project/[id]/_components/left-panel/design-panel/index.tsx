@@ -1,10 +1,13 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { transKeys } from '@/i18n/keys';
-import { LeftPanelTabValue } from '@onlook/models';
-import { Icons } from '@onlook/ui/icons';
-import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
+
+import { LeftPanelTabValue } from '@onlook/models';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
+import { cn } from '@onlook/ui/utils';
+
+import { useEditorEngine } from '@/components/store/editor';
+import { transKeys } from '@/i18n/keys';
 import { BranchesTab } from './branches-tab';
 import { BrandTab } from './brand-tab';
 import { HelpButton } from './help-button';
@@ -16,38 +19,41 @@ import { ZoomControls } from './zoom-controls';
 const tabs: {
     value: LeftPanelTabValue;
     icon: React.ReactNode;
-    label: any,
-    disabled?: boolean
-}[] =
-    [
-        {
-            value: LeftPanelTabValue.LAYERS,
-            icon: <Icons.Layers className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.layers,
-        },
-        {
-            value: LeftPanelTabValue.BRAND,
-            icon: <Icons.Brand className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.brand,
-        },
-        {
-            value: LeftPanelTabValue.PAGES,
-            icon: <Icons.File className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.pages,
-        },
-        {
-            value: LeftPanelTabValue.IMAGES,
-            icon: <Icons.Image className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.images,
-        },
-        {
-            value: LeftPanelTabValue.BRANCHES,
-            icon: <Icons.Branch className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.branches,
-        },
-    ];
+    label: any;
+    disabled?: boolean;
+}[] = [
+    {
+        value: LeftPanelTabValue.LAYERS,
+        icon: <Icons.Layers className="h-5 w-5" />,
+        label: transKeys.editor.panels.layers.tabs.layers,
+    },
+    {
+        value: LeftPanelTabValue.BRAND,
+        icon: <Icons.Brand className="h-5 w-5" />,
+        label: transKeys.editor.panels.layers.tabs.brand,
+    },
+    {
+        value: LeftPanelTabValue.PAGES,
+        icon: <Icons.File className="h-5 w-5" />,
+        label: transKeys.editor.panels.layers.tabs.pages,
+    },
+    {
+        value: LeftPanelTabValue.IMAGES,
+        icon: <Icons.Image className="h-5 w-5" />,
+        label: transKeys.editor.panels.layers.tabs.images,
+    },
+    {
+        value: LeftPanelTabValue.BRANCHES,
+        icon: <Icons.Branch className="h-5 w-5" />,
+        label: transKeys.editor.panels.layers.tabs.branches,
+    },
+];
 
-export const DesignPanel = observer(() => {
+interface DesignPanelProps {
+    onClose?: () => void;
+}
+
+export const DesignPanel = observer(({ onClose }: DesignPanelProps) => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const isLocked = editorEngine.state.leftPanelLocked;
@@ -98,21 +104,19 @@ export const DesignPanel = observer(() => {
     };
 
     return (
-        <div
-            className="flex h-full overflow-auto"
-            onMouseLeave={handleMouseLeave}
-        >
+        <div className="flex h-full overflow-auto" onMouseLeave={handleMouseLeave}>
             {/* Left sidebar with tabs */}
-            <div className="w-20 flex flex-col items-center py-0.5 gap-2 bg-background-onlook/60 backdrop-blur-xl">
+            <div className="bg-background-onlook/60 flex w-20 flex-col items-center gap-2 py-0.5 backdrop-blur-xl">
                 {tabs.map((tab) => (
                     <button
                         key={tab.value}
                         className={cn(
-                            'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                            'flex h-16 w-16 flex-col items-center justify-center gap-1.5 rounded-xl p-2',
                             selectedTab === tab.value && isLocked
-                                ? 'bg-accent text-foreground border-[0.5px] border-foreground/20 '
+                                ? 'bg-accent text-foreground border-foreground/20 border-[0.5px]'
                                 : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
-                            tab.disabled && 'opacity-50 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground',
+                            tab.disabled &&
+                                'hover:text-muted-foreground cursor-not-allowed opacity-50 hover:bg-transparent',
                         )}
                         disabled={tab.disabled}
                         onClick={() => !tab.disabled && handleClick(tab.value)}
@@ -123,7 +127,7 @@ export const DesignPanel = observer(() => {
                     </button>
                 ))}
 
-                <div className="mt-auto flex flex-col gap-0 items-center mb-4">
+                <div className="mt-auto mb-4 flex flex-col items-center gap-0">
                     <ZoomControls />
                     <HelpButton />
                 </div>
@@ -132,8 +136,18 @@ export const DesignPanel = observer(() => {
             {/* Content panel */}
             {editorEngine.state.leftPanelTab && (
                 <>
-                    <div className="flex-1 w-[280px] bg-background/95 rounded-xl">
-                        <div className="border backdrop-blur-xl h-full shadow overflow-auto p-0 rounded-xl">
+                    <div className="bg-background/95 w-[280px] flex-1 rounded-xl">
+                        <div className="relative h-full overflow-auto rounded-xl border p-0 shadow backdrop-blur-xl">
+                            {onClose && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute top-2 right-2 z-10 h-6 w-6"
+                                    onClick={onClose}
+                                >
+                                    <Icons.CrossS className="h-4 w-4" />
+                                </Button>
+                            )}
                             {selectedTab === LeftPanelTabValue.LAYERS && <LayersTab />}
                             {selectedTab === LeftPanelTabValue.BRAND && <BrandTab />}
                             {selectedTab === LeftPanelTabValue.PAGES && <PagesTab />}
@@ -143,7 +157,7 @@ export const DesignPanel = observer(() => {
                     </div>
 
                     {/* Invisible padding area that maintains hover state */}
-                    {!isLocked && <div className="w-24 h-full" />}
+                    {!isLocked && <div className="h-full w-24" />}
                 </>
             )}
         </div>
