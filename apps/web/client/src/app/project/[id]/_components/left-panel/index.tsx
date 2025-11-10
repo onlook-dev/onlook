@@ -5,11 +5,16 @@ import { observer } from "mobx-react-lite";
 import { CodePanel } from "./code-panel";
 import { DesignPanel } from "./design-panel";
 
-export const LeftPanel = observer(() => {
+interface LeftPanelProps {
+    onClose?: () => void;
+    activeSection?: string | null;
+}
+
+export const LeftPanel = observer(({ onClose, activeSection }: LeftPanelProps) => {
     const editorEngine = useEditorEngine();
     return <>
         <div className={cn('size-full', editorEngine.state.editorMode !== EditorMode.DESIGN && editorEngine.state.editorMode !== EditorMode.PAN && 'hidden')}>
-            <DesignPanel />
+            <DesignPanel onClose={onClose} activeSection={activeSection} />
         </div>
         <div className={cn('size-full', editorEngine.state.editorMode !== EditorMode.CODE && 'hidden')}>
             <CodePanel />

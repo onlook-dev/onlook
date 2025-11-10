@@ -1,6 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
 import { LeftPanelTabValue } from '@onlook/models';
+import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
@@ -47,11 +48,16 @@ const tabs: {
         },
     ];
 
-export const DesignPanel = observer(() => {
+interface DesignPanelProps {
+    onClose?: () => void;
+    activeSection?: string | null;
+}
+
+export const DesignPanel = observer(({ onClose, activeSection }: DesignPanelProps) => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const isLocked = editorEngine.state.leftPanelLocked;
-    const selectedTab = editorEngine.state.leftPanelTab;
+    const selectedTab = (activeSection as LeftPanelTabValue) || editorEngine.state.leftPanelTab;
 
     const handleMouseEnter = (tab: LeftPanelTabValue) => {
         if (isLocked) {
@@ -102,8 +108,8 @@ export const DesignPanel = observer(() => {
             className="flex h-full overflow-auto"
             onMouseLeave={handleMouseLeave}
         >
-            {/* Left sidebar with tabs */}
-            <div className="w-20 flex flex-col items-center py-0.5 gap-2 bg-background-onlook/60 backdrop-blur-xl">
+            {/* Left sidebar with tabs - HIDDEN */}
+            {/* <div className="w-20 flex flex-col items-center py-0.5 gap-2 bg-background-onlook/60 backdrop-blur-xl">
                 {tabs.map((tab) => (
                     <button
                         key={tab.value}
@@ -127,18 +133,47 @@ export const DesignPanel = observer(() => {
                     <ZoomControls />
                     <HelpButton />
                 </div>
-            </div>
+            </div> */}
 
             {/* Content panel */}
-            {editorEngine.state.leftPanelTab && (
+            {selectedTab && (
                 <>
                     <div className="flex-1 w-[280px] bg-background/95 rounded-xl">
-                        <div className="border backdrop-blur-xl h-full shadow overflow-auto p-0 rounded-xl">
-                            {selectedTab === LeftPanelTabValue.LAYERS && <LayersTab />}
-                            {selectedTab === LeftPanelTabValue.BRAND && <BrandTab />}
-                            {selectedTab === LeftPanelTabValue.PAGES && <PagesTab />}
-                            {selectedTab === LeftPanelTabValue.IMAGES && <ImagesTab />}
-                            {selectedTab === LeftPanelTabValue.BRANCHES && <BranchesTab />}
+                        <div className="border backdrop-blur-xl h-full shadow overflow-auto p-0 rounded-xl flex flex-col">
+                            {/* Panel header with close button */}
+                            <div className="flex items-center justify-between p-3 border-b border-border/50">
+                                <div className="flex items-center gap-2">
+                                    {selectedTab === LeftPanelTabValue.LAYERS && <Icons.Layers className="w-4 h-4" />}
+                                    {selectedTab === LeftPanelTabValue.BRAND && <Icons.Brand className="w-4 h-4" />}
+                                    {selectedTab === LeftPanelTabValue.PAGES && <Icons.File className="w-4 h-4" />}
+                                    {selectedTab === LeftPanelTabValue.IMAGES && <Icons.Image className="w-4 h-4" />}
+                                    {selectedTab === LeftPanelTabValue.BRANCHES && <Icons.Branch className="w-4 h-4" />}
+                                    <span className="text-sm font-medium">
+                                        {selectedTab === LeftPanelTabValue.LAYERS && t(transKeys.editor.panels.layers.tabs.layers)}
+                                        {selectedTab === LeftPanelTabValue.BRAND && t(transKeys.editor.panels.layers.tabs.brand)}
+                                        {selectedTab === LeftPanelTabValue.PAGES && t(transKeys.editor.panels.layers.tabs.pages)}
+                                        {selectedTab === LeftPanelTabValue.IMAGES && t(transKeys.editor.panels.layers.tabs.images)}
+                                        {selectedTab === LeftPanelTabValue.BRANCHES && t(transKeys.editor.panels.layers.tabs.branches)}
+                                    </span>
+                                </div>
+                                {onClose && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6"
+                                        onClick={onClose}
+                                    >
+                                        <Icons.CrossS className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
+                            <div className="flex-1 overflow-auto">
+                                {selectedTab === LeftPanelTabValue.LAYERS && <LayersTab />}
+                                {selectedTab === LeftPanelTabValue.BRAND && <BrandTab />}
+                                {selectedTab === LeftPanelTabValue.PAGES && <PagesTab />}
+                                {selectedTab === LeftPanelTabValue.IMAGES && <ImagesTab />}
+                                {selectedTab === LeftPanelTabValue.BRANCHES && <BranchesTab />}
+                            </div>
                         </div>
                     </div>
 
