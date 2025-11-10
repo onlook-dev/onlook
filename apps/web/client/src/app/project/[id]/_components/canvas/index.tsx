@@ -2,7 +2,18 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import { EditorAttributes } from '@onlook/constants';
-import { EditorMode } from '@onlook/models';
+import { EditorMode, LeftPanelTabValue } from '@onlook/models';
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuSeparator,
+    ContextMenuSub,
+    ContextMenuSubContent,
+    ContextMenuSubTrigger,
+    ContextMenuTrigger,
+} from '@onlook/ui/context-menu';
+import { Icons } from '@onlook/ui/icons';
 import { throttle } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -23,7 +34,11 @@ const MAX_Y = 10000;
 const MIN_X = -5000;
 const MIN_Y = -5000;
 
-export const Canvas = observer(() => {
+interface CanvasProps {
+    onSidebarClick?: (tab: LeftPanelTabValue) => void;
+}
+
+export const Canvas = observer(({ onSidebarClick }: CanvasProps) => {
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
     const scale = editorEngine.canvas.scale;
@@ -272,41 +287,127 @@ export const Canvas = observer(() => {
 
     return (
         <HotkeysArea>
-            <div
-                ref={containerRef}
-                className="overflow-hidden bg-background-onlook flex flex-grow relative"
-                onMouseDown={handleCanvasMouseDown}
-                onMouseMove={handleCanvasMouseMove}
-                onMouseUp={handleCanvasMouseUp}
-                onMouseLeave={(e) => {
-                    // Only terminate drag if no mouse button is pressed
-                    // Note: The global mouseup listener will handle the actual cleanup
-                    // This is just an additional safety check for when mouse leaves without buttons pressed
-                    if (e.buttons === 0 && isDragSelecting) {
-                        setIsDragSelecting(false);
-                        setFramesInSelection(new Set());
-                        editorEngine.state.isDragSelecting = false;
-                    }
-                }}
-            >
-                <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
-                    <Frames framesInDragSelection={framesInSelection} />
-                </div>
-                <RecenterCanvasButton />
-                <DragSelectOverlay
-                    startX={dragSelectStart.x}
-                    startY={dragSelectStart.y}
-                    endX={dragSelectEnd.x}
-                    endY={dragSelectEnd.y}
-                    isSelecting={isDragSelecting}
-                />
-                <Overlay />
-                <PanOverlay
-                    clampPosition={(position: { x: number; y: number }) =>
-                        clampPosition(position, scale)
-                    }
-                />
-            </div>
+            <ContextMenu>
+                <ContextMenuTrigger asChild>
+                    <div
+                        ref={containerRef}
+                        className="overflow-hidden bg-background-onlook flex flex-grow relative"
+                        onMouseDown={handleCanvasMouseDown}
+                        onMouseMove={handleCanvasMouseMove}
+                        onMouseUp={handleCanvasMouseUp}
+                        onMouseLeave={(e) => {
+                            // Only terminate drag if no mouse button is pressed
+                            // Note: The global mouseup listener will handle the actual cleanup
+                            // This is just an additional safety check for when mouse leaves without buttons pressed
+                            if (e.buttons === 0 && isDragSelecting) {
+                                setIsDragSelecting(false);
+                                setFramesInSelection(new Set());
+                                editorEngine.state.isDragSelecting = false;
+                            }
+                        }}
+                    >
+                        <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
+                            <Frames framesInDragSelection={framesInSelection} />
+                        </div>
+                        <RecenterCanvasButton />
+                        <DragSelectOverlay
+                            startX={dragSelectStart.x}
+                            startY={dragSelectStart.y}
+                            endX={dragSelectEnd.x}
+                            endY={dragSelectEnd.y}
+                            isSelecting={isDragSelecting}
+                        />
+                        <Overlay />
+                        <PanOverlay
+                            clampPosition={(position: { x: number; y: number }) =>
+                                clampPosition(position, scale)
+                            }
+                        />
+                    </div>
+                </ContextMenuTrigger>
+                <ContextMenuContent className="w-64 bg-background/95 backdrop-blur-lg">
+                    <ContextMenuItem
+                        onClick={() => {
+                            // Add Element action
+                        }}
+                    >
+                        <Icons.Plus className="mr-2 h-4 w-4" />
+                        Add Element
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                        onClick={() => {
+                            // Add Component action
+                        }}
+                    >
+                        <Icons.ComponentInstance className="mr-2 h-4 w-4" />
+                        Add Component
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuSub>
+                        <ContextMenuSubTrigger>
+                            <Icons.ViewGrid className="mr-2 h-4 w-4" />
+                            Panels
+                        </ContextMenuSubTrigger>
+                        <ContextMenuSubContent>
+                            <ContextMenuItem
+                                onClick={() => {
+                                    onSidebarClick?.(LeftPanelTabValue.LAYERS);
+                                }}
+                            >
+                                Layers
+                            </ContextMenuItem>
+                            <ContextMenuItem
+                                onClick={() => {
+                                    onSidebarClick?.(LeftPanelTabValue.BRAND);
+                                }}
+                            >
+                                Brand
+                            </ContextMenuItem>
+                            <ContextMenuItem
+                                onClick={() => {
+                                    onSidebarClick?.(LeftPanelTabValue.PAGES);
+                                }}
+                            >
+                                Pages
+                            </ContextMenuItem>
+                            <ContextMenuItem
+                                onClick={() => {
+                                    onSidebarClick?.(LeftPanelTabValue.IMAGES);
+                                }}
+                            >
+                                Images
+                            </ContextMenuItem>
+                        </ContextMenuSubContent>
+                    </ContextMenuSub>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem
+                        onClick={() => {
+                            onSidebarClick?.(LeftPanelTabValue.BRANCHES);
+                        }}
+                    >
+                        Branches
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem
+                        onClick={() => {
+                            editorEngine.copy.copy();
+                        }}
+                    >
+                        <Icons.Clipboard className="mr-2 h-4 w-4" />
+                        Copy
+                        <span className="ml-auto text-xs text-muted-foreground">⌘ C</span>
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                        onClick={() => {
+                            editorEngine.copy.paste();
+                        }}
+                    >
+                        <Icons.ClipboardCopy className="mr-2 h-4 w-4" />
+                        Paste
+                        <span className="ml-auto text-xs text-muted-foreground">⌘ V</span>
+                    </ContextMenuItem>
+                </ContextMenuContent>
+            </ContextMenu>
         </HotkeysArea>
     );
 });
