@@ -4,6 +4,7 @@ import { SelectProjectPresentation } from '@/app/projects/_components/select-pre
 import type { Project, User } from '@onlook/models';
 import { fn } from '@storybook/test';
 import { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * ProjectsPageComposed - Full projects page combining TopBar and SelectProject.
@@ -80,7 +81,7 @@ type Story = StoryObj<typeof meta>;
 
 // Helper to create mock projects
 const createMockProject = (overrides?: Partial<Project>): Project => ({
-  id: crypto.randomUUID(),
+  id: uuidv4(),
   name: 'Project Name',
   metadata: {
     createdAt: new Date('2024-01-01'),

@@ -1,19 +1,19 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Carousel } from './carousel';
 import { AnimatePresence, motion } from 'motion/react';
 
 import type { Project } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 
-import { Templates } from './templates';
-import { TemplateModalPresentation } from './templates/template-modal-presentation';
+import { Carousel } from './carousel';
 import { HighlightText } from './select/highlight-text';
 import { MasonryLayout } from './select/masonry-layout';
 import { ProjectCardPresentation } from './select/project-card-presentation';
 import { SquareProjectCardPresentation } from './select/square-project-card-presentation';
+import { Templates } from './templates';
+import { TemplateModalPresentation } from './templates/template-modal-presentation';
 
 interface SelectProjectPresentationProps {
     /** All projects including templates */
@@ -230,11 +230,7 @@ export const SelectProjectPresentation = ({
                     Create a new project to get started
                 </div>
                 <div className="flex justify-center">
-                    <Button
-                        onClick={onCreateBlank}
-                        disabled={isCreatingProject}
-                        variant="default"
-                    >
+                    <Button onClick={onCreateBlank} disabled={isCreatingProject} variant="default">
                         {isCreatingProject ? (
                             <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
                         ) : (
@@ -308,7 +304,7 @@ export const SelectProjectPresentation = ({
                                         <button
                                             onClick={onCreateBlank}
                                             disabled={isCreatingProject}
-                                            className="border-border bg-secondary/40 hover:bg-secondary relative flex aspect-[4/2.8] w-full items-center justify-center rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="border-border bg-secondary/40 hover:bg-secondary relative flex aspect-[4/2.8] w-full items-center justify-center rounded-lg border transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                                         >
                                             <div className="text-foreground-tertiary flex flex-col items-center justify-center">
                                                 {isCreatingProject ? (
@@ -350,9 +346,16 @@ export const SelectProjectPresentation = ({
                                                 searchQuery={debouncedSearchQuery}
                                                 HighlightText={HighlightText}
                                                 onClick={onProjectClick}
+                                                onRename={onRenameProject}
+                                                onClone={onCloneProject}
+                                                onToggleTemplate={onToggleTemplate}
+                                                onDelete={onDeleteProject}
+                                                isTemplate={project.metadata.tags.includes(
+                                                    'template',
+                                                )}
                                             />
                                         </motion.div>
-                                    ))
+                                    )),
                                 ]
                             )}
                         </AnimatePresence>
@@ -518,12 +521,16 @@ export const SelectProjectPresentation = ({
                     }
                     image={getImageUrl(selectedTemplate)}
                     isNew={false}
-                    isStarred={selectedTemplate ? starredTemplateIds.has(selectedTemplate.id) : false}
+                    isStarred={
+                        selectedTemplate ? starredTemplateIds.has(selectedTemplate.id) : false
+                    }
                     onToggleStar={() => selectedTemplate && handleToggleStar(selectedTemplate.id)}
                     templateProject={selectedTemplate}
                     onUnmarkTemplate={handleUnmarkTemplate}
                     onUseTemplate={() => selectedTemplate && onUseTemplate?.(selectedTemplate.id)}
-                    onPreviewTemplate={() => selectedTemplate && onPreviewTemplate?.(selectedTemplate.id)}
+                    onPreviewTemplate={() =>
+                        selectedTemplate && onPreviewTemplate?.(selectedTemplate.id)
+                    }
                     onEditTemplate={() => selectedTemplate && onEditTemplate?.(selectedTemplate.id)}
                 />
             )}
