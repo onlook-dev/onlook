@@ -24,8 +24,9 @@ export async function captureScreenshot(): Promise<{
                 const stream = await navigator.mediaDevices.getDisplayMedia({
                     video: {
                         width: viewportWidth,
-                        height: viewportHeight
-                    } as MediaTrackConstraints
+                        height: viewportHeight,
+                        mediaSource: 'screen',
+                    } as any,
                 });
 
                 const video = document.createElement('video');
@@ -33,26 +34,34 @@ export async function captureScreenshot(): Promise<{
                 video.autoplay = true;
                 video.muted = true;
 
-                await new Promise<void>((resolve) => {
+                await new Promise<void>((resolve, reject) => {
                     video.onloadedmetadata = () => {
-                        video.play();
+                        video.play().catch(reject);
                         video.oncanplay = () => {
-                            context.drawImage(video, 0, 0, viewportWidth, viewportHeight);
-                            stream.getTracks().forEach(track => track.stop());
-                            resolve();
+                            try {
+                                context.drawImage(video, 0, 0, viewportWidth, viewportHeight);
+                                stream.getTracks().forEach((track) => track.stop());
+                                resolve();
+                            } catch (drawError) {
+                                reject(drawError);
+                            }
                         };
                     };
+                    video.onerror = reject;
                 });
 
                 // Convert canvas to base64 string with compression
                 const base64 = await compressImage(canvas);
-                console.log(`Screenshot captured - Size: ~${Math.round((base64.length * 0.75) / 1024)} KB`);
+                console.log(
+                    `Screenshot captured - Size: ~${Math.round((base64.length * 0.75) / 1024)} KB`,
+                );
                 return {
                     mimeType: 'image/jpeg',
                     data: base64,
                 };
             } catch (displayError) {
                 console.log('getDisplayMedia failed, falling back to DOM rendering:', displayError);
+                // Continue to fallback
             }
         }
 
@@ -61,7 +70,9 @@ export async function captureScreenshot(): Promise<{
 
         // Convert canvas to base64 string with compression
         const base64 = await compressImage(canvas);
-        console.log(`DOM screenshot captured - Size: ~${Math.round((base64.length * 0.75) / 1024)} KB`);
+        console.log(
+            `DOM screenshot captured - Size: ~${Math.round((base64.length * 0.75) / 1024)} KB`,
+        );
         return {
             mimeType: 'image/jpeg',
             data: base64,
@@ -143,60 +154,74 @@ async function compressImage(canvas: HTMLCanvasElement): Promise<string> {
     return canvas.toDataURL('image/jpeg', 0.1);
 }
 
-async function renderDomToCanvas(context: CanvasRenderingContext2D, width: number, height: number) {
-    // Set white background
-    context.fillStyle = '#ffffff';
-    context.fillRect(0, 0, width, height);
+function renderDomToCanvas(context: CanvasRenderingContext2D, width: number, height: number) {
+    try {
+        // Set white background
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, width, height);
 
-    // Get all visible elements in the viewport
-    const elements = document.querySelectorAll('*');
-    const visibleElements: { element: HTMLElement; rect: DOMRect; styles: CSSStyleDeclaration }[] = [];
+        // Get all visible elements in the viewport
+        const elements = document.querySelectorAll('*');
+        const visibleElements: {
+            element: HTMLElement;
+            rect: DOMRect;
+            styles: CSSStyleDeclaration;
+        }[] = [];
 
-    // Filter and collect visible elements with their computed styles
-    for (const element of elements) {
-        if (element instanceof HTMLElement) {
-            const rect = element.getBoundingClientRect();
-            const styles = window.getComputedStyle(element);
+        // Filter and collect visible elements with their computed styles
+        for (const element of elements) {
+            if (element instanceof HTMLElement) {
+                try {
+                    const rect = element.getBoundingClientRect();
+                    const styles = window.getComputedStyle(element);
 
-            // Check if element is visible and within viewport
-            if (
-                rect.width > 0 &&
-                rect.height > 0 &&
-                rect.left < width &&
-                rect.top < height &&
-                rect.right > 0 &&
-                rect.bottom > 0 &&
-                styles.visibility !== 'hidden' &&
-                styles.display !== 'none' &&
-                parseFloat(styles.opacity) > 0
-            ) {
-                visibleElements.push({ element, rect, styles });
+                    // Check if element is visible and within viewport
+                    if (
+                        rect.width > 0 &&
+                        rect.height > 0 &&
+                        rect.left < width &&
+                        rect.top < height &&
+                        rect.right > 0 &&
+                        rect.bottom > 0 &&
+                        styles.visibility !== 'hidden' &&
+                        styles.display !== 'none' &&
+                        parseFloat(styles.opacity || '1') > 0
+                    ) {
+                        visibleElements.push({ element, rect, styles });
+                    }
+                } catch (elementError) {
+                    // Skip elements that cause errors when accessing their properties
+                    console.warn('Skipping element due to error:', element, elementError);
+                }
             }
         }
-    }
 
-    // Sort elements by z-index and document order
-    visibleElements.sort((a, b) => {
-        const aZIndex = parseInt(a.styles.zIndex) || 0;
-        const bZIndex = parseInt(b.styles.zIndex) || 0;
-        return aZIndex - bZIndex;
-    });
+        // Sort elements by z-index and document order
+        visibleElements.sort((a, b) => {
+            const aZIndex = parseInt(a.styles.zIndex || '0') || 0;
+            const bZIndex = parseInt(b.styles.zIndex || '0') || 0;
+            return aZIndex - bZIndex;
+        });
 
-    // Render each visible element
-    for (const { element, rect, styles } of visibleElements) {
-        try {
-            await renderElement(context, element, rect, styles);
-        } catch (error) {
-            console.warn('Failed to render element:', element, error);
+        // Render each visible element
+        for (const { element, rect, styles } of visibleElements) {
+            try {
+                renderElement(context, element, rect, styles);
+            } catch (error) {
+                console.warn('Failed to render element:', element, error);
+            }
         }
+    } catch (error) {
+        console.error('Error in renderDomToCanvas:', error);
+        throw error;
     }
 }
 
-async function renderElement(
+function renderElement(
     context: CanvasRenderingContext2D,
     element: HTMLElement,
     rect: DOMRect,
-    styles: CSSStyleDeclaration
+    styles: CSSStyleDeclaration,
 ) {
     const { left, top, width, height } = rect;
 
@@ -207,7 +232,11 @@ async function renderElement(
 
     // Render background
     const backgroundColor = styles.backgroundColor;
-    if (backgroundColor && backgroundColor !== 'rgba(0, 0, 0, 0)' && backgroundColor !== 'transparent') {
+    if (
+        backgroundColor &&
+        backgroundColor !== 'rgba(0, 0, 0, 0)' &&
+        backgroundColor !== 'transparent'
+    ) {
         context.fillStyle = backgroundColor;
         context.fillRect(left, top, width, height);
     }
