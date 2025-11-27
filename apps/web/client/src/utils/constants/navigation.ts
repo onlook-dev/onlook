@@ -24,6 +24,11 @@ export const PRODUCT_LINKS: NavigationLink[] = [
         description: 'Rapid prototype creation',
     },
     {
+        title: 'Enterprise',
+        href: Routes.FEATURES_ENTERPRISE,
+        description: 'Framework-agnostic design',
+    },
+    {
         title: 'All Features',
         href: Routes.FEATURES,
         description: 'See everything Onlook offers',

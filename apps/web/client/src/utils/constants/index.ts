@@ -9,6 +9,7 @@ export const Routes = {
     FEATURES_AI: '/features/ai',
     FEATURES_BUILDER: '/features/builder',
     FEATURES_PROTOTYPE: '/features/prototype',
+    FEATURES_ENTERPRISE: '/features/enterprise',
 
     // Auth
     LOGIN: '/login',
