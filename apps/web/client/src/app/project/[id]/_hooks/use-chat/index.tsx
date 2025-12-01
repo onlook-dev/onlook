@@ -4,6 +4,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { api } from '@/trpc/client';
 import { useChat as useAiChat } from '@ai-sdk/react';
+import { MAX_AGENT_STEPS } from '@onlook/constants';
 import { ChatType, type ChatMessage, type GitMessageCheckpoint, type MessageContext, type QueuedMessage } from '@onlook/models';
 import { jsonClone } from '@onlook/utility';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, type FinishReason } from 'ai';
@@ -40,6 +41,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const [finishReason, setFinishReason] = useState<FinishReason | null>(null);
     const [isExecutingToolCall, setIsExecutingToolCall] = useState(false);
     const [queuedMessages, setQueuedMessages] = useState<QueuedMessage[]>([]);
+    const [hitStepLimit, setHitStepLimit] = useState(false);
     const isProcessingQueue = useRef(false);
 
     const { addToolResult, messages, error, stop, setMessages, regenerate, status } =
@@ -63,6 +65,10 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             onFinish: ({ message }) => {
                 const finishReason = message.metadata?.finishReason;
                 setFinishReason(finishReason ?? null);
+                // Detect when the step limit is reached
+                if (finishReason === 'step-limit') {
+                    setHitStepLimit(true);
+                }
             },
         });
 

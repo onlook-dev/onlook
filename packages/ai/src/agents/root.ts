@@ -1,4 +1,5 @@
 import type { ToolCall } from '@ai-sdk/provider-utils';
+import { MAX_AGENT_STEPS } from '@onlook/constants';
 import { ChatType, LLMProvider, OPENROUTER_MODELS, type ChatMessage, type ModelConfig } from '@onlook/models';
 import { NoSuchToolError, generateObject, smoothStream, stepCountIs, streamText, type ToolSet } from 'ai';
 import { convertToStreamMessages, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, getToolSetFromType, initModel } from '../index';
@@ -28,7 +29,7 @@ export const createRootAgentStream = ({
         system: systemPrompt,
         tools: toolSet,
         headers: modelConfig.headers,
-        stopWhen: stepCountIs(20),
+        stopWhen: stepCountIs(MAX_AGENT_STEPS),
         experimental_repairToolCall: repairToolCall,
         experimental_transform: smoothStream(),
         experimental_telemetry: {
