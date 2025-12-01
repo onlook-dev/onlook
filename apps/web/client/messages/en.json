@@ -260,12 +260,6 @@
                         },
                         "openInCode": {
                             "button": "Open in Code"
-                        },
-                        "stepLimit": {
-                            "title": "Task paused",
-                            "description": "The AI has completed {stepCount} steps. Would you like to continue?",
-                            "continue": "Continue",
-                            "stop": "Stop here"
                         }
                     },
                     "styles": {
