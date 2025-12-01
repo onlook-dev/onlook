@@ -35,7 +35,6 @@
     "dependencies": {
         "@mendable/firecrawl-js": "^1.29.1",
         "@openrouter/ai-sdk-provider": "^1.2.0",
-        "@onlook/constants": "*",
         "ai": "5.0.60",
         "exa-js": "^1.8.26",
         "fg": "^0.0.3",

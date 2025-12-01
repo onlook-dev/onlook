@@ -68,8 +68,3 @@ export const DefaultSettings = {
 };
 
 export const DEFAULT_COLOR_NAME = 'DEFAULT';
-
-// AI Agent limits
-// The maximum number of steps (tool calls) the AI agent can take before pausing
-// and asking the user if they want to continue. This prevents runaway costs.
-export const MAX_AGENT_STEPS = 10;

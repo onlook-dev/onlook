@@ -4,7 +4,6 @@ import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { api } from '@/trpc/client';
 import { useChat as useAiChat } from '@ai-sdk/react';
-import { MAX_AGENT_STEPS } from '@onlook/constants';
 import { ChatType, type ChatMessage, type GitMessageCheckpoint, type MessageContext, type QueuedMessage } from '@onlook/models';
 import { jsonClone } from '@onlook/utility';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, type FinishReason } from 'ai';
@@ -65,8 +64,8 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             onFinish: ({ message }) => {
                 const finishReason = message.metadata?.finishReason;
                 setFinishReason(finishReason ?? null);
-                // Detect when the step limit is reached
-                if (finishReason === 'step-limit') {
+                // Detect when the step limit is reached (stepCountIs returns 'step-limit')
+                if ((finishReason as string) === 'step-limit') {
                     setHitStepLimit(true);
                 }
             },
@@ -226,6 +225,18 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         [processMessageEdit, posthog, isStreaming, stop, editorEngine.chat.context],
     );
 
+    // Continue after hitting the step limit
+    const continueAfterStepLimit = useCallback(() => {
+        setHitStepLimit(false);
+        posthog.capture('user_continue_after_step_limit');
+        return sendMessage('Continue where you left off.', ChatType.EDIT);
+    }, [sendMessage, posthog]);
+
+    // Dismiss the step limit banner without continuing
+    const dismissStepLimit = useCallback(() => {
+        setHitStepLimit(false);
+    }, []);
+
     useEffect(() => {
         // Actions to handle when the chat is finished
         if (finishReason && finishReason !== 'tool-calls') {
@@ -327,5 +338,8 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         isStreaming,
         queuedMessages,
         removeFromQueue,
+        hitStepLimit,
+        continueAfterStepLimit,
+        dismissStepLimit,
     };
 }
