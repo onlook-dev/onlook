@@ -4,7 +4,8 @@ import { NoSuchToolError, generateObject, smoothStream, stepCountIs, streamText,
 import { convertToStreamMessages, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, getToolSetFromType, initModel } from '../index';
 
 // Max steps before pausing and asking user to continue (prevents runaway costs)
-const MAX_AGENT_STEPS = 10;
+// TODO: Change back to 10 after testing
+const MAX_AGENT_STEPS = 2;
 
 export const createRootAgentStream = ({
     chatType,
