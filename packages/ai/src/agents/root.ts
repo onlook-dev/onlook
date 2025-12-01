@@ -3,9 +3,8 @@ import { ChatType, LLMProvider, OPENROUTER_MODELS, type ChatMessage, type ModelC
 import { NoSuchToolError, generateObject, smoothStream, stepCountIs, streamText, type ToolSet } from 'ai';
 import { convertToStreamMessages, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, getToolSetFromType, initModel } from '../index';
 
-// Max steps before pausing and asking user to continue (prevents runaway costs)
-// TODO: Change back to 10 after testing
-const MAX_AGENT_STEPS = 2;
+// Max steps per single request (server-side safety limit)
+const MAX_AGENT_STEPS = 20;
 
 export const createRootAgentStream = ({
     chatType,
