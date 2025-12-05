@@ -1,7 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { Button } from '@onlook/ui/button';
 import { Heart, Plus, Trash2 } from 'lucide-react';
 
+/**
+ * Button triggers an action or event when clicked.
+ */
 const meta = {
     title: 'UI/Button',
     component: Button,
@@ -11,14 +14,21 @@ const meta = {
     tags: ['autodocs'],
     argTypes: {
         variant: {
-            control: 'select',
+            description: 'Visual style variant of the button',
+            control: { type: 'select' },
             options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'],
         },
         size: {
-            control: 'select',
+            description: 'Size of the button',
+            control: { type: 'select' },
             options: ['default', 'sm', 'lg', 'icon', 'toolbar'],
         },
         asChild: {
+            description: 'Whether to render as a child component',
+            control: 'boolean',
+        },
+        disabled: {
+            description: 'Whether the button is disabled',
             control: 'boolean',
         },
     },

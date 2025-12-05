@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { SelectProjectPresentation } from '@/app/projects/_components/select-presentation';
 import type { Project } from '@onlook/models';
 import { fn } from '@storybook/test';
