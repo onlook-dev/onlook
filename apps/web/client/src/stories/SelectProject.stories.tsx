@@ -1,14 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { fn } from '@storybook/test';
 import { SelectProjectPresentation } from '@/app/projects/_components/select-presentation';
 import type { Project } from '@onlook/models';
-import { fn } from '@storybook/test';
 
-/**
- * SelectProject displays the main project selection interface with recent projects carousel,
- * templates section, and a full projects grid/masonry layout.
- */
 const meta = {
-  title: 'Projects/SelectProject',
   component: SelectProjectPresentation,
   parameters: {
     layout: 'fullscreen',
@@ -19,17 +14,31 @@ const meta = {
   tags: ['autodocs'],
   argTypes: {
     isLoading: {
-      control: 'boolean',
       description: 'Whether projects are loading',
+      control: 'boolean',
     },
     externalSearchQuery: {
-      control: 'text',
       description: 'Search query from parent component',
+      control: 'text',
     },
     isCreatingProject: {
-      control: 'boolean',
       description: 'Whether a project is being created',
+      control: 'boolean',
     },
+  },
+  args: {
+    onCreateBlank: fn(),
+    onToggleStar: fn(),
+    onUnmarkTemplate: fn(),
+    onRefetch: fn(),
+    onProjectClick: fn(),
+    onRenameProject: fn(),
+    onCloneProject: fn(),
+    onToggleTemplate: fn(),
+    onDeleteProject: fn(),
+    onUseTemplate: fn(),
+    onPreviewTemplate: fn(),
+    onEditTemplate: fn(),
   },
 } satisfies Meta<typeof SelectProjectPresentation>;
 
@@ -194,42 +203,13 @@ const templateProjects: Project[] = [
   }),
 ];
 
-// Action callbacks
-const onCreateBlank = fn();
-const onToggleStar = fn();
-const onUnmarkTemplate = fn();
-const onRefetch = fn();
-const onProjectClick = fn();
-const onRenameProject = fn();
-const onCloneProject = fn();
-const onToggleTemplate = fn();
-const onDeleteProject = fn();
-const onUseTemplate = fn();
-const onPreviewTemplate = fn();
-const onEditTemplate = fn();
-
-/**
- * Default view with several projects
- */
 export const Default: Story = {
   args: {
     allProjects: [...mockProjects, ...templateProjects],
     isLoading: false,
     externalSearchQuery: '',
     isCreatingProject: false,
-    onCreateBlank,
     starredTemplateIds: new Set(templateProjects[0] ? [templateProjects[0].id] : []),
-    onToggleStar,
-    onUnmarkTemplate,
-    onRefetch,
-    onProjectClick,
-    onRenameProject,
-    onCloneProject,
-    onToggleTemplate,
-    onDeleteProject,
-    onUseTemplate,
-    onPreviewTemplate,
-    onEditTemplate,
     user: {
       id: 'user-123',
       email: 'user@example.com',
@@ -237,149 +217,59 @@ export const Default: Story = {
   },
 };
 
-/**
- * Loading state
- */
 export const Loading: Story = {
   args: {
+    ...Default.args,
     allProjects: [],
     isLoading: true,
-    externalSearchQuery: '',
-    isCreatingProject: false,
-    onCreateBlank,
   },
 };
 
-/**
- * Empty state (no projects)
- */
 export const Empty: Story = {
   args: {
+    ...Default.args,
     allProjects: [],
-    isLoading: false,
-    externalSearchQuery: '',
-    isCreatingProject: false,
-    onCreateBlank,
     starredTemplateIds: new Set(),
-    onToggleStar,
-    onUnmarkTemplate,
-    onRefetch,
-    onProjectClick,
-    onRenameProject,
-    onCloneProject,
-    onToggleTemplate,
-    onDeleteProject,
-    onUseTemplate,
-    onPreviewTemplate,
-    onEditTemplate,
   },
 };
 
-/**
- * Creating a new project
- */
 export const CreatingProject: Story = {
   args: {
+    ...Default.args,
     allProjects: mockProjects,
-    isLoading: false,
-    externalSearchQuery: '',
     isCreatingProject: true,
-    onCreateBlank,
     starredTemplateIds: new Set(),
-    onToggleStar,
-    onUnmarkTemplate,
-    onRefetch,
-    onProjectClick,
-    onRenameProject,
-    onCloneProject,
-    onToggleTemplate,
-    onDeleteProject,
-    onUseTemplate,
-    onPreviewTemplate,
-    onEditTemplate,
   },
 };
 
-/**
- * With search results
- */
 export const WithSearch: Story = {
   args: {
-    allProjects: [...mockProjects, ...templateProjects],
-    isLoading: false,
+    ...Default.args,
     externalSearchQuery: 'dashboard',
-    isCreatingProject: false,
-    onCreateBlank,
     starredTemplateIds: new Set(),
-    onToggleStar,
-    onUnmarkTemplate,
-    onRefetch,
-    onProjectClick,
-    onRenameProject,
-    onCloneProject,
-    onToggleTemplate,
-    onDeleteProject,
-    onUseTemplate,
-    onPreviewTemplate,
-    onEditTemplate,
   },
 };
 
-/**
- * Search with no results
- */
 export const NoSearchResults: Story = {
   args: {
+    ...Default.args,
     allProjects: mockProjects,
-    isLoading: false,
     externalSearchQuery: 'nonexistent project name xyz',
-    isCreatingProject: false,
-    onCreateBlank,
     starredTemplateIds: new Set(),
-    onToggleStar,
-    onUnmarkTemplate,
-    onRefetch,
-    onProjectClick,
-    onRenameProject,
-    onCloneProject,
-    onToggleTemplate,
-    onDeleteProject,
-    onUseTemplate,
-    onPreviewTemplate,
-    onEditTemplate,
   },
 };
 
-/**
- * Few projects (2-3)
- */
 export const FewProjects: Story = {
   args: {
+    ...Default.args,
     allProjects: mockProjects.slice(0, 3),
-    isLoading: false,
-    externalSearchQuery: '',
-    isCreatingProject: false,
-    onCreateBlank,
     starredTemplateIds: new Set(),
-    onToggleStar,
-    onUnmarkTemplate,
-    onRefetch,
-    onProjectClick,
-    onRenameProject,
-    onCloneProject,
-    onToggleTemplate,
-    onDeleteProject,
-    onUseTemplate,
-    onPreviewTemplate,
-    onEditTemplate,
   },
 };
 
-/**
- * Many projects
- */
 export const ManyProjects: Story = {
   args: {
+    ...Default.args,
     allProjects: [
       ...mockProjects,
       ...Array.from({ length: 20 }, (_, i) =>
@@ -400,55 +290,20 @@ export const ManyProjects: Story = {
       ),
       ...templateProjects,
     ],
-    isLoading: false,
-    externalSearchQuery: '',
-    isCreatingProject: false,
-    onCreateBlank,
     starredTemplateIds: new Set([templateProjects[0]?.id, templateProjects[1]?.id].filter(Boolean) as string[]),
-    onToggleStar,
-    onUnmarkTemplate,
-    onRefetch,
-    onProjectClick,
-    onRenameProject,
-    onCloneProject,
-    onToggleTemplate,
-    onDeleteProject,
-    onUseTemplate,
-    onPreviewTemplate,
-    onEditTemplate,
   },
 };
 
-/**
- * With templates but no regular projects
- */
 export const OnlyTemplates: Story = {
   args: {
+    ...Default.args,
     allProjects: templateProjects,
-    isLoading: false,
-    externalSearchQuery: '',
-    isCreatingProject: false,
-    onCreateBlank,
-    starredTemplateIds: new Set(templateProjects[0] ? [templateProjects[0].id] : []),
-    onToggleStar,
-    onUnmarkTemplate,
-    onRefetch,
-    onProjectClick,
-    onRenameProject,
-    onCloneProject,
-    onToggleTemplate,
-    onDeleteProject,
-    onUseTemplate,
-    onPreviewTemplate,
-    onEditTemplate,
   },
 };
 
-/**
- * Projects without images
- */
 export const NoImages: Story = {
   args: {
+    ...Default.args,
     allProjects: mockProjects.map((p) => ({
       ...p,
       metadata: {
@@ -456,50 +311,12 @@ export const NoImages: Story = {
         previewImg: null,
       },
     })),
-    isLoading: false,
-    externalSearchQuery: '',
-    isCreatingProject: false,
-    onCreateBlank,
     starredTemplateIds: new Set(),
-    onToggleStar,
-    onUnmarkTemplate,
-    onRefetch,
-    onProjectClick,
-    onRenameProject,
-    onCloneProject,
-    onToggleTemplate,
-    onDeleteProject,
-    onUseTemplate,
-    onPreviewTemplate,
-    onEditTemplate,
   },
 };
 
-/**
- * Interactive playground
- */
 export const Playground: Story = {
   args: {
-    allProjects: [...mockProjects, ...templateProjects],
-    isLoading: false,
-    externalSearchQuery: '',
-    isCreatingProject: false,
-    onCreateBlank,
-    starredTemplateIds: new Set(templateProjects[0] ? [templateProjects[0].id] : []),
-    onToggleStar,
-    onUnmarkTemplate,
-    onRefetch,
-    onProjectClick,
-    onRenameProject,
-    onCloneProject,
-    onToggleTemplate,
-    onDeleteProject,
-    onUseTemplate,
-    onPreviewTemplate,
-    onEditTemplate,
-    user: {
-      id: 'user-123',
-      email: 'user@example.com',
-    },
+    ...Default.args,
   },
 };

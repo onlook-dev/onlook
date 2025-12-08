@@ -1,14 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { fn } from '@storybook/test';
 import { TopBarPresentation } from '@/app/projects/_components/top-bar-presentation';
 import { SelectProjectPresentation } from '@/app/projects/_components/select-presentation';
 import type { Project, User } from '@onlook/models';
-import { fn } from '@storybook/test';
 import { useState } from 'react';
 
-/**
- * ProjectsPageComposed - Full projects page combining TopBar and SelectProject.
- * This demonstrates the complete page layout and interactions.
- */
 const ProjectsPageComposed = ({
   user,
   projects,
@@ -60,11 +56,7 @@ const ProjectsPageComposed = ({
   );
 };
 
-/**
- * ProjectsPage - Full page view demonstrating the complete projects interface.
- */
 const meta = {
-  title: 'Pages/ProjectsPage',
   component: ProjectsPageComposed,
   parameters: {
     layout: 'fullscreen',
@@ -73,6 +65,16 @@ const meta = {
     },
   },
   tags: ['autodocs'],
+  argTypes: {
+    isLoading: {
+      description: 'Whether projects are loading',
+      control: 'boolean',
+    },
+    isCreatingProject: {
+      description: 'Whether a project is being created',
+      control: 'boolean',
+    },
+  },
 } satisfies Meta<typeof ProjectsPageComposed>;
 
 export default meta;
@@ -250,9 +252,6 @@ const templateProjects: Project[] = [
   }),
 ];
 
-/**
- * Default projects page with user logged in
- */
 export const Default: Story = {
   args: {
     user: mockUser,
@@ -262,72 +261,47 @@ export const Default: Story = {
   },
 };
 
-/**
- * Loading state
- */
 export const Loading: Story = {
   args: {
-    user: mockUser,
+    ...Default.args,
     projects: [],
     isLoading: true,
-    isCreatingProject: false,
   },
 };
 
-/**
- * Empty state - no projects yet
- */
 export const Empty: Story = {
   args: {
-    user: mockUser,
+    ...Default.args,
     projects: [],
-    isLoading: false,
-    isCreatingProject: false,
   },
 };
 
-/**
- * Creating a new project
- */
 export const CreatingProject: Story = {
   args: {
-    user: mockUser,
+    ...Default.args,
     projects: mockProjects,
-    isLoading: false,
     isCreatingProject: true,
   },
 };
 
-/**
- * Logged out user
- */
 export const LoggedOut: Story = {
   args: {
+    ...Default.args,
     user: null,
     projects: mockProjects,
-    isLoading: false,
-    isCreatingProject: false,
   },
 };
 
-/**
- * Just a few projects
- */
 export const FewProjects: Story = {
   args: {
-    user: mockUser,
+    ...Default.args,
     projects: mockProjects.slice(0, 3),
-    isLoading: false,
-    isCreatingProject: false,
   },
 };
 
-/**
- * Many projects for testing scrolling and layout
- */
 export const ManyProjects: Story = {
   args: {
-    user: mockUser,
+    ...Default.args,
     projects: [
       ...mockProjects,
       ...templateProjects,
@@ -348,17 +322,12 @@ export const ManyProjects: Story = {
         }),
       ),
     ],
-    isLoading: false,
-    isCreatingProject: false,
   },
 };
 
-/**
- * Projects without preview images
- */
 export const NoImages: Story = {
   args: {
-    user: mockUser,
+    ...Default.args,
     projects: mockProjects.map((p) => ({
       ...p,
       metadata: {
@@ -366,28 +335,19 @@ export const NoImages: Story = {
         previewImg: null,
       },
     })),
-    isLoading: false,
-    isCreatingProject: false,
   },
 };
 
-/**
- * Only templates, no regular projects
- */
 export const OnlyTemplates: Story = {
   args: {
-    user: mockUser,
+    ...Default.args,
     projects: templateProjects,
-    isLoading: false,
-    isCreatingProject: false,
   },
 };
 
-/**
- * New user with minimal profile
- */
 export const MinimalUser: Story = {
   args: {
+    ...Default.args,
     user: {
       id: 'user-456',
       firstName: null,
@@ -401,19 +361,11 @@ export const MinimalUser: Story = {
       githubInstallationId: null,
     },
     projects: mockProjects.slice(0, 2),
-    isLoading: false,
-    isCreatingProject: false,
   },
 };
 
-/**
- * Interactive playground to test all combinations
- */
 export const Playground: Story = {
   args: {
-    user: mockUser,
-    projects: [...mockProjects, ...templateProjects],
-    isLoading: false,
-    isCreatingProject: false,
+    ...Default.args,
   },
 };
