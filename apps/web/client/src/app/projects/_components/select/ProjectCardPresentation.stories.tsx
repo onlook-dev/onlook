@@ -7,8 +7,6 @@ import type { Project } from '@onlook/models';
 const mockProject: Project = {
   id: 'project-1',
   name: 'Dashboard App',
-  sandboxId: 'sandbox-1',
-  sandboxUrl: 'https://example.codesandbox.io',
   metadata: {
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
