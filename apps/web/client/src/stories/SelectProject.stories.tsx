@@ -1,14 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { SelectProjectPresentation } from '@/app/projects/_components/select-presentation';
 import type { Project } from '@onlook/models';
 import { fn } from '@storybook/test';
 
-/**
- * SelectProject displays the main project selection interface with recent projects carousel,
- * templates section, and a full projects grid/masonry layout.
- */
 const meta = {
-  title: 'Projects/SelectProject',
   component: SelectProjectPresentation,
   parameters: {
     layout: 'fullscreen',
