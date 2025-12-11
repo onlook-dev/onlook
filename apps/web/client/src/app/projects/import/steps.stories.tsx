@@ -24,6 +24,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
+  args: {
+    children: null,
+  },
   render: () => (
     <>
       <StepHeader>
@@ -44,6 +47,9 @@ export const Default: Story = {
 };
 
 export const HeaderOnly: Story = {
+  args: {
+    children: null,
+  },
   render: () => (
     <StepHeader>
       <h2 className="text-lg font-semibold">Import Project</h2>
@@ -53,6 +59,9 @@ export const HeaderOnly: Story = {
 };
 
 export const ContentOnly: Story = {
+  args: {
+    children: null,
+  },
   render: () => (
     <StepContent>
       <div className="flex flex-col items-center gap-4 py-8">
@@ -66,6 +75,9 @@ export const ContentOnly: Story = {
 };
 
 export const FooterOnly: Story = {
+  args: {
+    children: null,
+  },
   render: () => (
     <StepFooter>
       <Button variant="outline">Cancel</Button>
@@ -75,6 +87,9 @@ export const FooterOnly: Story = {
 };
 
 export const ImportFromGitHub: Story = {
+  args: {
+    children: null,
+  },
   render: () => (
     <>
       <StepHeader>
@@ -97,6 +112,9 @@ export const ImportFromGitHub: Story = {
 };
 
 export const SelectFolder: Story = {
+  args: {
+    children: null,
+  },
   render: () => (
     <>
       <StepHeader>
@@ -119,6 +137,9 @@ export const SelectFolder: Story = {
 };
 
 export const Finalizing: Story = {
+  args: {
+    children: null,
+  },
   render: () => (
     <>
       <StepHeader>
@@ -140,6 +161,9 @@ export const Finalizing: Story = {
 };
 
 export const AllSteps: Story = {
+  args: {
+    children: null,
+  },
   decorators: [
     (Story) => (
       <div className="w-[600px]">

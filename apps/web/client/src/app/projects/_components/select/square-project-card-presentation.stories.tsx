@@ -128,6 +128,12 @@ export const WithoutClickHandler: Story = {
 };
 
 export const AllVariants: Story = {
+  args: {
+    project: createMockProject(),
+    imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80',
+    searchQuery: '',
+    HighlightText,
+  },
   decorators: [
     (Story) => (
       <div className="w-[700px]">

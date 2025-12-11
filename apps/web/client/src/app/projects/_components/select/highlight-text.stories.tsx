@@ -79,6 +79,10 @@ export const SpecialCharacters: Story = {
 };
 
 export const AllVariants: Story = {
+  args: {
+    text: 'E-commerce Dashboard',
+    searchQuery: '',
+  },
   render: () => (
     <div className="flex flex-col gap-4 text-foreground">
       <div>

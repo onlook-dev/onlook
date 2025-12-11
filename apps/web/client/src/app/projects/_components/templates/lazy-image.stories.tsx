@@ -125,6 +125,12 @@ export const LargeSize: Story = {
 };
 
 export const AllVariants: Story = {
+  args: {
+    src: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80',
+    alt: 'Dashboard preview',
+    className: 'w-full h-full',
+    cardStyle: false,
+  },
   decorators: [
     (Story) => (
       <div className="w-[900px]">
