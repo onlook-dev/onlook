@@ -1,9 +1,8 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { Button } from '@onlook/ui/button';
 import { Heart, Plus, Trash2 } from 'lucide-react';
 
 const meta = {
-    title: 'UI/Button',
     component: Button,
     parameters: {
         layout: 'centered',
