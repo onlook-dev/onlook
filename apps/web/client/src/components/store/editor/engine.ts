@@ -29,6 +29,7 @@ import { StateManager } from './state';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
+import { SaveStateManager } from './save-state';
 
 export class EditorEngine {
     readonly projectId: string;
@@ -71,6 +72,7 @@ export class EditorEngine {
     readonly snap: SnapManager = new SnapManager(this);
     readonly api: ApiManager = new ApiManager(this);
     readonly ide: IdeManager = new IdeManager(this);
+    readonly saveState: SaveStateManager = new SaveStateManager(this);
 
     constructor(projectId: string, posthog: PostHog) {
         this.projectId = projectId;
@@ -114,6 +116,7 @@ export class EditorEngine {
         this.frameEvent.clear();
         this.screenshot.clear();
         this.snap.hideSnapLines();
+        this.saveState.clear();
     }
 
     clearUI() {
