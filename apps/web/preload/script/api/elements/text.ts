@@ -89,9 +89,20 @@ function removeEditingAttributes(el: HTMLElement) {
 }
 
 function updateTextContent(el: HTMLElement, content: string): void {
-    // Convert newlines to <br> tags in the DOM
-    const htmlContent = content.replace(/\n/g, '<br>');
-    el.innerHTML = htmlContent;
+    // SECURITY INVARIANT: Only escaped text nodes and explicit <br> elements are allowed.
+    // 1. Normalize line endings (CRLF/CR -> LF)
+    // 2. Split on newlines to get text segments
+    // 3. Build DOM with text nodes (auto-escaped) interleaved with <br> elements
+    const normalized = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const lines = normalized.split('\n');
+
+    el.innerHTML = '';
+    lines.forEach((line, index) => {
+        el.appendChild(document.createTextNode(line));
+        if (index < lines.length - 1) {
+            el.appendChild(document.createElement('br'));
+        }
+    });
 }
 
 function extractTextContent(el: HTMLElement): string {
