@@ -1,6 +1,12 @@
 import { eq } from "drizzle-orm";
 import { type Frame, projects, userProjects, type DrizzleDb } from "@onlook/db";
 
+/**
+ * Extracts the CodeSandbox preview port from an array of frames.
+ *
+ * @param frames - Array of frames to search for a CodeSandbox preview URL
+ * @returns The extracted port number if a matching CodeSandbox preview URL is found, `null` otherwise
+ */
 export function extractCsbPort(frames: Frame[]): number | null {
     if (!frames || frames.length === 0) return null;
 
@@ -20,8 +26,12 @@ export function extractCsbPort(frames: Frame[]): number | null {
 }
 
 /**
- * Verifies that a user has access to a project by checking the userProjects table.
- * @throws Error if the user does not have access to the project
+ * Ensure the specified user has access to the specified project.
+ *
+ * @param userId - ID of the user to check
+ * @param projectId - ID of the project to check
+ * @throws Error with message 'Project not found' if no project exists with `projectId`
+ * @throws Error with message 'Unauthorized: You do not have access to this project' if the user has no access to the project
  */
 export async function verifyProjectAccess(
     db: DrizzleDb,
