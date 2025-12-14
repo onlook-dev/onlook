@@ -79,6 +79,10 @@ export const SpecialCharacters: Story = {
 };
 
 export const InContext: Story = {
+  args: {
+    text: 'E-commerce Dashboard',
+    searchQuery: 'dash',
+  },
   render: () => (
     <div className="space-y-2 text-muted-foreground">
       <p>
