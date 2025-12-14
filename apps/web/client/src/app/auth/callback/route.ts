@@ -34,14 +34,8 @@ export async function GET(request: Request) {
                 }
             });
 
-            const forwardedHost = request.headers.get('x-forwarded-host');
-            // Redirect to the redirect page which will handle the return URL
-            if (forwardedHost) {
-                const forwardedProto = request.headers.get('x-forwarded-proto') || 'https';
-                return NextResponse.redirect(`${forwardedProto}://${forwardedHost}${Routes.AUTH_REDIRECT}`);
-            } else {
-                return NextResponse.redirect(`${origin}${Routes.AUTH_REDIRECT}`);
-            }
+            // Always use the request origin to prevent open redirect via X-Forwarded-Host header manipulation
+            return NextResponse.redirect(`${origin}${Routes.AUTH_REDIRECT}`);
         }
         console.error(`Error exchanging code for session: ${error}`);
     }
