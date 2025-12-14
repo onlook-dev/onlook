@@ -88,9 +88,16 @@ function removeEditingAttributes(el: HTMLElement) {
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_EDITING_TEXT);
 }
 
+function escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 function updateTextContent(el: HTMLElement, content: string): void {
-    // Convert newlines to <br> tags in the DOM
-    const htmlContent = content.replace(/\n/g, '<br>');
+    // Escape HTML entities first to prevent XSS, then convert newlines to <br> tags
+    const escapedContent = escapeHtml(content);
+    const htmlContent = escapedContent.replace(/\n/g, '<br>');
     el.innerHTML = htmlContent;
 }
 
