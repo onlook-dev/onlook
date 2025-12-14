@@ -21,7 +21,11 @@ export function extractCsbPort(frames: Frame[]): number | null {
 
 /**
  * Verifies that a user has access to a project by checking the userProjects table.
- * @throws Error if the user does not have access to the project
+ * @throws Error if the user does not have access to the project or if it doesn't exist
+ *
+ * Note: This function intentionally returns the same error message whether the project
+ * doesn't exist or the user lacks access to prevent information disclosure about
+ * project existence.
  */
 export async function verifyProjectAccess(
     db: DrizzleDb,
@@ -37,11 +41,7 @@ export async function verifyProjectAccess(
         },
     });
 
-    if (!project) {
-        throw new Error('Project not found');
-    }
-
-    if (project.userProjects.length === 0) {
-        throw new Error('Unauthorized: You do not have access to this project');
+    if (!project || project.userProjects.length === 0) {
+        throw new Error('Unauthorized or not found');
     }
 }

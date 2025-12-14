@@ -58,6 +58,7 @@ export const projectRouter = createTRPCRouter({
     captureScreenshot: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .mutation(async ({ ctx, input }) => {
+            await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
             try {
                 if (!env.FIRECRAWL_API_KEY) {
                     throw new Error('FIRECRAWL_API_KEY is not configured');
