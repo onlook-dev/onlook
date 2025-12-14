@@ -37,7 +37,7 @@ import { and, eq, ne } from 'drizzle-orm';
 import { z } from 'zod';
 import { projectCreateRequestRouter } from './createRequest';
 import { fork } from './fork';
-import { extractCsbPort } from './helper';
+import { extractCsbPort, verifyProjectAccess } from './helper';
 
 export const projectRouter = createTRPCRouter({
     hasAccess: protectedProcedure
@@ -348,6 +348,7 @@ export const projectRouter = createTRPCRouter({
     delete: protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ ctx, input }) => {
+            await verifyProjectAccess(ctx.db, ctx.user.id, input.id);
             await ctx.db.transaction(async (tx) => {
                 await tx.delete(projects).where(eq(projects.id, input.id));
                 await tx.delete(userProjects).where(eq(userProjects.projectId, input.id));
@@ -365,6 +366,7 @@ export const projectRouter = createTRPCRouter({
             return projects.map((project) => fromDbProject(project.project));
         }),
     update: protectedProcedure.input(projectUpdateSchema).mutation(async ({ ctx, input }) => {
+        await verifyProjectAccess(ctx.db, ctx.user.id, input.id);
         const [updatedProject] = await ctx.db.update(projects).set({
             ...input,
             updatedAt: new Date(),
@@ -380,6 +382,7 @@ export const projectRouter = createTRPCRouter({
         projectId: z.string(),
         tag: z.string(),
     })).mutation(async ({ ctx, input }) => {
+        await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
         const project = await ctx.db.query.projects.findFirst({
             where: eq(projects.id, input.projectId),
         });
@@ -404,6 +407,7 @@ export const projectRouter = createTRPCRouter({
         projectId: z.string(),
         tag: z.string(),
     })).mutation(async ({ ctx, input }) => {
+        await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
         const project = await ctx.db.query.projects.findFirst({
             where: eq(projects.id, input.projectId),
         });
