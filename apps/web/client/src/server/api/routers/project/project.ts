@@ -58,8 +58,8 @@ export const projectRouter = createTRPCRouter({
     captureScreenshot: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .mutation(async ({ ctx, input }) => {
-            await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
             try {
+                await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
                 if (!env.FIRECRAWL_API_KEY) {
                     throw new Error('FIRECRAWL_API_KEY is not configured');
                 }
@@ -349,10 +349,10 @@ export const projectRouter = createTRPCRouter({
     delete: protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ ctx, input }) => {
-            await verifyProjectAccess(ctx.db, ctx.user.id, input.id);
             await ctx.db.transaction(async (tx) => {
-                await tx.delete(projects).where(eq(projects.id, input.id));
+                await verifyProjectAccess(tx, ctx.user.id, input.id);
                 await tx.delete(userProjects).where(eq(userProjects.projectId, input.id));
+                await tx.delete(projects).where(eq(projects.id, input.id));
             });
         }),
     getPreviewProjects: protectedProcedure

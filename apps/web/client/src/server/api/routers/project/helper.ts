@@ -1,6 +1,9 @@
 import { eq } from "drizzle-orm";
 import { type Frame, projects, userProjects, type DrizzleDb } from "@onlook/db";
 
+/** Type representing a db instance or transaction that has query capabilities */
+type DbOrTx = Pick<DrizzleDb, 'query'>;
+
 export function extractCsbPort(frames: Frame[]): number | null {
     if (!frames || frames.length === 0) return null;
 
@@ -26,9 +29,11 @@ export function extractCsbPort(frames: Frame[]): number | null {
  * Note: This function intentionally returns the same error message whether the project
  * doesn't exist or the user lacks access to prevent information disclosure about
  * project existence.
+ *
+ * Accepts either a db instance or a transaction to support atomic authorization checks.
  */
 export async function verifyProjectAccess(
-    db: DrizzleDb,
+    db: DbOrTx,
     userId: string,
     projectId: string,
 ): Promise<void> {
