@@ -1,13 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { fn } from '@storybook/test';
 import { TopBarPresentation } from '@/app/projects/_components/top-bar-presentation';
 import type { User } from '@onlook/models';
-import { fn } from '@storybook/test';
 
-/**
- * TopBar displays the main navigation bar with logo, search, create dropdown, and user avatar.
- */
 const meta = {
-  title: 'Projects/TopBar',
   component: TopBarPresentation,
   parameters: {
     layout: 'fullscreen',

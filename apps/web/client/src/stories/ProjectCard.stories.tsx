@@ -1,14 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { fn } from '@storybook/test';
 import { ProjectCard } from '@/app/projects/_components/select/project-card';
 import { HighlightText } from '@/app/projects/_components/select/highlight-text';
 import type { Project } from '@onlook/models';
 
-/**
- * ProjectCard displays individual project information with hover effects,
- * preview images, and interactive elements like edit and settings buttons.
- */
 const meta = {
-  title: 'Projects/ProjectCard',
   component: ProjectCard,
   parameters: {
     layout: 'padded',
@@ -59,9 +55,7 @@ const createMockProject = (overrides?: Partial<Project>): Project => ({
 });
 
 // Mock refetch function
-const mockRefetch = () => {
-  console.log('Refetch triggered');
-};
+const mockRefetch = fn();
 
 /**
  * Default project card with image preview
