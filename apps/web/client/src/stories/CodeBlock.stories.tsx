@@ -130,14 +130,22 @@ export const Streaming: Story = {
 };
 
 export const WithCopyButton: Story = {
-  render: () => (
-    <CodeBlock code={sampleJavaScript} language="javascript">
+  args: {
+    code: sampleJavaScript,
+    language: 'javascript',
+  },
+  render: (args) => (
+    <CodeBlock {...args}>
       <CodeBlockCopyButton onCopy={fn()} />
     </CodeBlock>
   ),
 };
 
 export const Languages: Story = {
+  args: {
+    code: sampleJavaScript,
+    language: 'javascript',
+  },
   render: () => (
     <div className="flex flex-col gap-4 w-[600px]">
       <div>
