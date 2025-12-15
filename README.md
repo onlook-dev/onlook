@@ -98,6 +98,7 @@ builders.
   - [ ] Leave comments
 - [ ] Advanced AI capabilities
   - [x] Queue multiple messages at once
+  - [x] Cynthia Design Auditor - AI-powered UDEC scoring across 13 design axes
   - [ ] Use Images as references and as assets in a project
   - [ ] Setup and use MCPs in projects
   - [ ] Allow Onlook to use itself as a toolcall for branch creation and iteration
