@@ -4,10 +4,11 @@ import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { audits, auditInsertSchema } from '@onlook/db/src/schema';
 import { eq, desc } from 'drizzle-orm';
 import { AuditStatus } from '@onlook/models';
+import { startAuditProcessing } from './processor';
 
 export const auditRouter = createTRPCRouter({
     /**
-     * Create a new audit
+     * Create a new audit and start processing
      */
     create: protectedProcedure
         .input(
@@ -44,6 +45,9 @@ export const auditRouter = createTRPCRouter({
                     status: AuditStatus.PENDING,
                 })
                 .returning();
+
+            // Start processing in the background
+            await startAuditProcessing(audit.id);
 
             return audit;
         }),
