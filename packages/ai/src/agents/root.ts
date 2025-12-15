@@ -1,7 +1,7 @@
 import type { ToolCall } from '@ai-sdk/provider-utils';
 import { ChatType, LLMProvider, OPENROUTER_MODELS, type ChatMessage, type ModelConfig } from '@onlook/models';
 import { NoSuchToolError, generateObject, smoothStream, stepCountIs, streamText, type ToolSet } from 'ai';
-import { convertToStreamMessages, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, getToolSetFromType, initModel } from '../index';
+import { convertToStreamMessages, getAskModeSystemPrompt, getCreatePageSystemPrompt, getCynthiaSystemPrompt, getSystemPrompt, getToolSetFromType, initModel } from '../index';
 
 export const createRootAgentStream = ({
     chatType,
@@ -52,6 +52,8 @@ const getSystemPromptFromType = (chatType: ChatType): string => {
             return getCreatePageSystemPrompt();
         case ChatType.ASK:
             return getAskModeSystemPrompt();
+        case ChatType.AUDIT:
+            return getCynthiaSystemPrompt();
         case ChatType.EDIT:
         default:
             return getSystemPrompt();
