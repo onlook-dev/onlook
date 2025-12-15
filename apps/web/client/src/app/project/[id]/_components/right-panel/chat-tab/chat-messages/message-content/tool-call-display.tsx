@@ -13,12 +13,14 @@ const ToolCallDisplayComponent = ({
     messageId,
     toolPart,
     isStream,
-    applied
+    applied,
+    isLatest = false,
 }: {
     messageId: string,
     toolPart: ToolUIPart,
     isStream: boolean,
-    applied: boolean
+    applied: boolean,
+    isLatest?: boolean,
 }) => {
     const toolName = toolPart.type.split('-')[1];
 
@@ -91,6 +93,7 @@ const ToolCallDisplayComponent = ({
                 applied={applied}
                 isStream={isStream}
                 branchId={branchId}
+                defaultOpen={isLatest}
             />
         );
     }
@@ -116,6 +119,7 @@ const ToolCallDisplayComponent = ({
                 applied={applied}
                 isStream={isStream}
                 branchId={branchId}
+                defaultOpen={isLatest}
             />
         );
     }
@@ -141,6 +145,7 @@ const ToolCallDisplayComponent = ({
                 applied={applied}
                 isStream={isStream}
                 branchId={branchId}
+                defaultOpen={isLatest}
             />
         );
     }
@@ -166,6 +171,7 @@ const ToolCallDisplayComponent = ({
                 applied={applied}
                 isStream={isStream}
                 branchId={branchId}
+                defaultOpen={isLatest}
             />
         );
     }

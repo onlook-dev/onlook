@@ -58,7 +58,7 @@ export const LoginButton = ({
                 ) : (
                     icon
                 )}
-{t(transKeys.welcome.login[translationKey])}
+                {t(transKeys.welcome.login[translationKey])}
             </Button>
             {isLastSignInMethod && (
                 <p className="text-teal-500 text-small mt-1">{t(transKeys.welcome.login.lastUsed)}</p>
@@ -79,11 +79,22 @@ export const DevLoginButton = ({
     const { handleDevLogin, signingInMethod } = useAuthContext();
     const isSigningIn = signingInMethod === SignInMethod.DEV;
 
+    const handleClick = async () => {
+        try {
+            await handleDevLogin(returnUrl);
+        } catch (error) {
+            console.error('Error with dev login:', error);
+            toast.error('Dev login failed', {
+                description: error instanceof Error ? error.message : 'Please try again.',
+            });
+        }
+    };
+
     return (
         <Button
             variant="outline"
             className="w-full text-active text-small"
-            onClick={() => handleDevLogin(returnUrl)}
+            onClick={handleClick}
             disabled={!!signingInMethod}
         >
             {isSigningIn ? (
