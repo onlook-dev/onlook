@@ -17,6 +17,8 @@ const MessageContentComponent = ({
     isStream: boolean;
 }) => {
     let lastIncompleteToolIndex = -1;
+    let lastToolIndex = -1;
+
     if (isStream) {
         for (let i = parts.length - 1; i >= 0; i--) {
             const part = parts[i];
@@ -27,6 +29,15 @@ const MessageContentComponent = ({
                     break;
                 }
             }
+        }
+    }
+
+    // Find the last tool call (for auto-expand)
+    for (let i = parts.length - 1; i >= 0; i--) {
+        const part = parts[i];
+        if (part?.type.startsWith('tool-')) {
+            lastToolIndex = i;
+            break;
         }
     }
 
@@ -41,6 +52,7 @@ const MessageContentComponent = ({
         } else if (part?.type.startsWith('tool-')) {
             const toolPart = part as ToolUIPart;// Only show loading animation for the last incomplete tool call
             const isLoadingThisTool = isStream && idx === lastIncompleteToolIndex;
+            const isLatestTool = idx === lastToolIndex;
             return (
                 <ToolCallDisplay
                     messageId={messageId}
@@ -48,6 +60,7 @@ const MessageContentComponent = ({
                     key={toolPart.toolCallId}
                     isStream={isLoadingThisTool}
                     applied={applied}
+                    isLatest={isLatestTool}
                 />
             );
         } else if (part?.type === 'reasoning') {

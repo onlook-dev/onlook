@@ -16,11 +16,13 @@ import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 import { AssistantMessage } from './assistant-message';
 import { ErrorMessage } from './error-message';
+import { ExamplePrompts } from './example-prompts';
 import { UserMessage } from './user-message';
 
 interface ChatMessagesProps {
     messages: ChatMessage[];
     onEditMessage: EditMessage;
+    onSendMessage: (content: string, type: import('@onlook/models').ChatType) => void;
     isStreaming: boolean;
     error?: Error;
 }
@@ -28,6 +30,7 @@ interface ChatMessagesProps {
 export const ChatMessages = observer(({
     messages,
     onEditMessage,
+    onSendMessage,
     isStreaming,
     error,
 }: ChatMessagesProps) => {
@@ -64,12 +67,7 @@ export const ChatMessages = observer(({
     if (!messages || messages.length === 0) {
         return (
             !editorEngine.elements.selected.length && (
-                <div className="flex-1 flex flex-col items-center justify-center text-foreground-tertiary/80 h-full">
-                    <Icons.EmptyState className="size-32" />
-                    <p className="text-center text-regularPlus text-balance max-w-[300px]">
-                        {t(transKeys.editor.panels.edit.tabs.chat.emptyState)}
-                    </p>
-                </div>
+                <ExamplePrompts onSelectPrompt={onSendMessage} />
             )
         );
     }
