@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { fn } from '@storybook/test';
 import { TopBarPresentation } from '@/app/projects/_components/top-bar-presentation';
 import { SelectProjectPresentation } from '@/app/projects/_components/select-presentation';
 import type { Project, User } from '@onlook/models';
-import { fn } from '@storybook/test';
 import { useState } from 'react';
 
 /**
@@ -60,11 +60,7 @@ const ProjectsPageComposed = ({
   );
 };
 
-/**
- * ProjectsPage - Full page view demonstrating the complete projects interface.
- */
 const meta = {
-  title: 'Pages/ProjectsPage',
   component: ProjectsPageComposed,
   parameters: {
     layout: 'fullscreen',

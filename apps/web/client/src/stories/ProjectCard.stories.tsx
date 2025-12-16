@@ -1,14 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { fn } from '@storybook/test';
 import { ProjectCard } from '@/app/projects/_components/select/project-card';
 import { HighlightText } from '@/app/projects/_components/select/highlight-text';
 import type { Project } from '@onlook/models';
 
-/**
- * ProjectCard displays individual project information with hover effects,
- * preview images, and interactive elements like edit and settings buttons.
- */
 const meta = {
-  title: 'Projects/ProjectCard',
   component: ProjectCard,
   parameters: {
     layout: 'padded',
@@ -26,14 +22,17 @@ const meta = {
   ],
   argTypes: {
     aspectRatio: {
-      control: 'select',
-      options: ['aspect-[4/2.6]', 'aspect-[4/2.8]', 'aspect-square', 'aspect-video'],
       description: 'The aspect ratio of the card',
+      control: { type: 'select' },
+      options: ['aspect-[4/2.6]', 'aspect-[4/2.8]', 'aspect-square', 'aspect-video'],
     },
     searchQuery: {
-      control: 'text',
       description: 'Search query to highlight in project name and description',
+      control: 'text',
     },
+  },
+  args: {
+    refetch: fn(),
   },
 } satisfies Meta<typeof ProjectCard>;
 
@@ -58,18 +57,9 @@ const createMockProject = (overrides?: Partial<Project>): Project => ({
   ...overrides,
 });
 
-// Mock refetch function
-const mockRefetch = () => {
-  console.log('Refetch triggered');
-};
-
-/**
- * Default project card with image preview
- */
 export const Default: Story = {
   args: {
     project: createMockProject(),
-    refetch: mockRefetch,
     aspectRatio: 'aspect-[4/2.6]',
     searchQuery: '',
     HighlightText,
@@ -91,7 +81,6 @@ export const NoImage: Story = {
         tags: ['blank'],
       },
     }),
-    refetch: mockRefetch,
     aspectRatio: 'aspect-[4/2.6]',
     HighlightText,
   },
@@ -116,7 +105,6 @@ export const RecentlyUpdated: Story = {
         tags: ['portfolio', 'personal'],
       },
     }),
-    refetch: mockRefetch,
     HighlightText,
   },
 };
@@ -140,7 +128,6 @@ export const OldProject: Story = {
         tags: ['legacy', 'admin'],
       },
     }),
-    refetch: mockRefetch,
     HighlightText,
   },
 };
@@ -164,7 +151,6 @@ export const LongName: Story = {
         tags: ['test'],
       },
     }),
-    refetch: mockRefetch,
     HighlightText,
   },
 };
@@ -188,7 +174,6 @@ export const WithSearchHighlight: Story = {
         tags: ['analytics', 'dashboard'],
       },
     }),
-    refetch: mockRefetch,
     searchQuery: 'dash',
     HighlightText,
   },
@@ -213,7 +198,6 @@ export const SquareAspect: Story = {
         tags: ['mobile', 'design-system'],
       },
     }),
-    refetch: mockRefetch,
     aspectRatio: 'aspect-square',
     HighlightText,
   },
@@ -238,7 +222,6 @@ export const WideAspect: Story = {
         tags: ['marketing', 'landing'],
       },
     }),
-    refetch: mockRefetch,
     aspectRatio: 'aspect-video',
     HighlightText,
   },
@@ -259,7 +242,6 @@ export const Minimal: Story = {
         tags: [],
       },
     }),
-    refetch: mockRefetch,
     HighlightText,
   },
 };
@@ -283,7 +265,6 @@ export const AlternativeImage: Story = {
         tags: ['design', 'components'],
       },
     }),
-    refetch: mockRefetch,
     HighlightText,
   },
 };

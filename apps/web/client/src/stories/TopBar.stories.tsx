@@ -1,13 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { fn } from '@storybook/test';
 import { TopBarPresentation } from '@/app/projects/_components/top-bar-presentation';
 import type { User } from '@onlook/models';
-import { fn } from '@storybook/test';
 
-/**
- * TopBar displays the main navigation bar with logo, search, create dropdown, and user avatar.
- */
 const meta = {
-  title: 'Projects/TopBar',
   component: TopBarPresentation,
   parameters: {
     layout: 'fullscreen',
@@ -17,21 +13,19 @@ const meta = {
   },
   tags: ['autodocs'],
   argTypes: {
-    user: {
-      description: 'Current user data',
-    },
     searchQuery: {
-      control: 'text',
       description: 'Current search query',
+      control: 'text',
     },
     isCreatingProject: {
-      control: 'boolean',
       description: 'Whether a project is being created',
+      control: 'boolean',
     },
-    recentSearches: {
-      control: 'object',
-      description: 'Array of recent search queries',
-    },
+  },
+  args: {
+    onCreateBlank: fn(),
+    onImport: fn(),
+    onSearchChange: fn(),
   },
 } satisfies Meta<typeof TopBarPresentation>;
 

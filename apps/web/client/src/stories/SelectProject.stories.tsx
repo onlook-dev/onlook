@@ -1,14 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { fn } from '@storybook/test';
 import { SelectProjectPresentation } from '@/app/projects/_components/select-presentation';
 import type { Project } from '@onlook/models';
-import { fn } from '@storybook/test';
 
-/**
- * SelectProject displays the main project selection interface with recent projects carousel,
- * templates section, and a full projects grid/masonry layout.
- */
 const meta = {
-  title: 'Projects/SelectProject',
   component: SelectProjectPresentation,
   parameters: {
     layout: 'fullscreen',
@@ -19,17 +14,31 @@ const meta = {
   tags: ['autodocs'],
   argTypes: {
     isLoading: {
-      control: 'boolean',
       description: 'Whether projects are loading',
+      control: 'boolean',
     },
     externalSearchQuery: {
-      control: 'text',
       description: 'Search query from parent component',
+      control: 'text',
     },
     isCreatingProject: {
-      control: 'boolean',
       description: 'Whether a project is being created',
+      control: 'boolean',
     },
+  },
+  args: {
+    onCreateBlank: fn(),
+    onToggleStar: fn(),
+    onUnmarkTemplate: fn(),
+    onRefetch: fn(),
+    onProjectClick: fn(),
+    onRenameProject: fn(),
+    onCloneProject: fn(),
+    onToggleTemplate: fn(),
+    onDeleteProject: fn(),
+    onUseTemplate: fn(),
+    onPreviewTemplate: fn(),
+    onEditTemplate: fn(),
   },
 } satisfies Meta<typeof SelectProjectPresentation>;
 
