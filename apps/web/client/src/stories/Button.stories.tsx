@@ -1,9 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { fn } from '@storybook/test';
 import { Button } from '@onlook/ui/button';
 import { Heart, Plus, Trash2 } from 'lucide-react';
 
 const meta = {
-    title: 'UI/Button',
     component: Button,
     parameters: {
         layout: 'centered',
@@ -11,16 +11,22 @@ const meta = {
     tags: ['autodocs'],
     argTypes: {
         variant: {
-            control: 'select',
+            description: 'Visual style variant of the button',
+            control: { type: 'select' },
             options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'],
         },
         size: {
-            control: 'select',
+            description: 'Size of the button',
+            control: { type: 'select' },
             options: ['default', 'sm', 'lg', 'icon', 'toolbar'],
         },
-        asChild: {
+        disabled: {
+            description: 'Whether the button is disabled',
             control: 'boolean',
         },
+    },
+    args: {
+        onClick: fn(),
     },
 } satisfies Meta<typeof Button>;
 

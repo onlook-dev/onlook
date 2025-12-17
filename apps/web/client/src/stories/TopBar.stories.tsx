@@ -1,13 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { fn } from '@storybook/test';
 import { TopBarPresentation } from '@/app/projects/_components/top-bar-presentation';
 import type { User } from '@onlook/models';
-import { fn } from '@storybook/test';
 
-/**
- * TopBar displays the main navigation bar with logo, search, create dropdown, and user avatar.
- */
 const meta = {
-  title: 'Projects/TopBar',
   component: TopBarPresentation,
   parameters: {
     layout: 'fullscreen',
@@ -17,21 +13,23 @@ const meta = {
   },
   tags: ['autodocs'],
   argTypes: {
-    user: {
-      description: 'Current user data',
-    },
     searchQuery: {
-      control: 'text',
       description: 'Current search query',
+      control: 'text',
     },
     isCreatingProject: {
-      control: 'boolean',
       description: 'Whether a project is being created',
+      control: 'boolean',
     },
     recentSearches: {
-      control: 'object',
       description: 'Array of recent search queries',
+      control: 'object',
     },
+  },
+  args: {
+    onSearchChange: fn(),
+    onCreateBlank: fn(),
+    onImport: fn(),
   },
 } satisfies Meta<typeof TopBarPresentation>;
 
@@ -52,10 +50,6 @@ const mockUser: User = {
   githubInstallationId: null,
 };
 
-// Action callbacks
-const onCreateBlank = fn();
-const onImport = fn();
-const onSearchChange = fn();
 
 /**
  * Default top bar with logged-in user
@@ -64,63 +58,39 @@ export const Default: Story = {
   args: {
     user: mockUser,
     searchQuery: '',
-    onSearchChange,
     recentSearches: [],
     isCreatingProject: false,
-    onCreateBlank,
-    onImport,
     homeRoute: '/',
   },
 };
 
-/**
- * Top bar with active search query
- */
 export const WithSearch: Story = {
   args: {
     user: mockUser,
     searchQuery: 'dashboard',
-    onSearchChange,
     recentSearches: ['dashboard', 'landing', 'admin', 'portfolio'],
     isCreatingProject: false,
-    onCreateBlank,
-    onImport,
   },
 };
 
-/**
- * Top bar while creating a project
- */
 export const CreatingProject: Story = {
   args: {
     user: mockUser,
     searchQuery: '',
-    onSearchChange,
     recentSearches: [],
     isCreatingProject: true,
-    onCreateBlank,
-    onImport,
   },
 };
 
-/**
- * Top bar for logged-out user
- */
 export const LoggedOut: Story = {
   args: {
     user: null,
     searchQuery: '',
-    onSearchChange,
     recentSearches: [],
     isCreatingProject: false,
-    onCreateBlank,
-    onImport,
   },
 };
 
-/**
- * Top bar with minimal user data
- */
 export const MinimalUser: Story = {
   args: {
     user: {
@@ -136,22 +106,15 @@ export const MinimalUser: Story = {
       githubInstallationId: null,
     },
     searchQuery: '',
-    onSearchChange,
     recentSearches: [],
     isCreatingProject: false,
-    onCreateBlank,
-    onImport,
   },
 };
 
-/**
- * Top bar with many recent searches
- */
 export const WithManyRecentSearches: Story = {
   args: {
     user: mockUser,
     searchQuery: 'd',
-    onSearchChange,
     recentSearches: [
       'dashboard',
       'design system',
@@ -161,29 +124,18 @@ export const WithManyRecentSearches: Story = {
       'deployment',
     ],
     isCreatingProject: false,
-    onCreateBlank,
-    onImport,
   },
 };
 
-/**
- * Top bar with long search query
- */
 export const LongSearchQuery: Story = {
   args: {
     user: mockUser,
     searchQuery: 'this is a very long search query that users might type',
-    onSearchChange,
     recentSearches: [],
     isCreatingProject: false,
-    onCreateBlank,
-    onImport,
   },
 };
 
-/**
- * Top bar without search functionality
- */
 export const NoSearch: Story = {
   args: {
     user: mockUser,
@@ -191,14 +143,9 @@ export const NoSearch: Story = {
     onSearchChange: undefined,
     recentSearches: [],
     isCreatingProject: false,
-    onCreateBlank,
-    onImport,
   },
 };
 
-/**
- * Top bar with user with avatar
- */
 export const WithAvatar: Story = {
   args: {
     user: {
@@ -207,26 +154,17 @@ export const WithAvatar: Story = {
       avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80',
     },
     searchQuery: '',
-    onSearchChange,
     recentSearches: [],
     isCreatingProject: false,
-    onCreateBlank,
-    onImport,
   },
 };
 
-/**
- * Interactive playground to test all states
- */
 export const Playground: Story = {
   args: {
     user: mockUser,
     searchQuery: '',
-    onSearchChange,
     recentSearches: ['dashboard', 'admin', 'landing'],
     isCreatingProject: false,
-    onCreateBlank,
-    onImport,
     homeRoute: '/',
   },
 };
