@@ -72,6 +72,10 @@ export const PartialMatch: Story = {
 };
 
 export const Examples: Story = {
+  args: {
+    text: 'Example text',
+    searchQuery: 'example',
+  },
   render: () => (
     <div className="flex flex-col gap-2 text-foreground">
       <div>
