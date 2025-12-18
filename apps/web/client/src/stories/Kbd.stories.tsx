@@ -37,6 +37,9 @@ export const Escape: Story = {
 };
 
 export const CommandK: Story = {
+  args: {
+    children: '⌘K',
+  },
   render: () => (
     <div className="flex items-center gap-1">
       <Kbd>⌘</Kbd>
@@ -46,6 +49,9 @@ export const CommandK: Story = {
 };
 
 export const CtrlShiftP: Story = {
+  args: {
+    children: 'Ctrl+Shift+P',
+  },
   render: () => (
     <div className="flex items-center gap-1">
       <Kbd>Ctrl</Kbd>
@@ -56,6 +62,9 @@ export const CtrlShiftP: Story = {
 };
 
 export const CommonShortcuts: Story = {
+  args: {
+    children: 'Shortcuts',
+  },
   render: () => (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between w-[200px]">
@@ -91,6 +100,9 @@ export const CommonShortcuts: Story = {
 };
 
 export const ArrowKeys: Story = {
+  args: {
+    children: '↑↓←→',
+  },
   render: () => (
     <div className="flex flex-col items-center gap-1">
       <Kbd>↑</Kbd>
