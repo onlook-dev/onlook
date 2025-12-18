@@ -3,6 +3,7 @@ import { useChat } from '../../../../_hooks/use-chat';
 import { ChatInput } from '../chat-input';
 import { ChatMessages } from '../chat-messages';
 import { ErrorSection } from '../error';
+import { StepLimitBanner } from '../step-limit-banner';
 
 interface ChatTabContentProps {
     conversationId: string;
@@ -15,7 +16,19 @@ export const ChatTabContent = ({
     projectId,
     initialMessages,
 }: ChatTabContentProps) => {
-    const { isStreaming, sendMessage, editMessage, messages, error, stop, queuedMessages, removeFromQueue } = useChat({
+    const {
+        isStreaming,
+        sendMessage,
+        editMessage,
+        messages,
+        error,
+        stop,
+        queuedMessages,
+        removeFromQueue,
+        hitStepLimit,
+        continueAfterStepLimit,
+        dismissStepLimit,
+    } = useChat({
         conversationId,
         projectId,
         initialMessages,
@@ -30,6 +43,11 @@ export const ChatTabContent = ({
                 onEditMessage={editMessage}
             />
             <ErrorSection isStreaming={isStreaming} onSendMessage={sendMessage} />
+            <StepLimitBanner
+                show={hitStepLimit}
+                onContinue={() => void continueAfterStepLimit()}
+                onDismiss={dismissStepLimit}
+            />
             <ChatInput
                 messages={messages}
                 isStreaming={isStreaming}
