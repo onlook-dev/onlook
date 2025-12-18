@@ -1,4 +1,4 @@
-import { BashEditTool, BashReadTool, CheckErrorsTool, FuzzyEditFileTool, GlobTool, GrepTool, ListBranchesTool, ListFilesTool, OnlookInstructionsTool, ReadFileTool, ReadStyleGuideTool, SandboxTool, ScrapeUrlTool, SearchReplaceEditTool, SearchReplaceMultiEditFileTool, TerminalCommandTool, TypecheckTool, WebSearchTool, WriteFileTool } from "../tools";
+import { ArrangeBranchesTool, BashEditTool, BashReadTool, CheckErrorsTool, FuzzyEditFileTool, GlobTool, GrepTool, ListBranchesTool, ListFilesTool, OnlookInstructionsTool, ReadFileTool, ReadStyleGuideTool, SandboxTool, ScrapeUrlTool, SearchReplaceEditTool, SearchReplaceMultiEditFileTool, TerminalCommandTool, TypecheckTool, WebSearchTool, WriteFileTool } from "../tools";
 
 export const allTools = [
     ListFilesTool,
@@ -7,6 +7,7 @@ export const allTools = [
     OnlookInstructionsTool,
     ReadStyleGuideTool,
     ListBranchesTool,
+    ArrangeBranchesTool,
     ScrapeUrlTool,
     WebSearchTool,
     GlobTool,
@@ -37,6 +38,7 @@ export const readOnlyRootTools = [
     CheckErrorsTool,
 ]
 const editOnlyRootTools = [
+    ArrangeBranchesTool,
     SearchReplaceEditTool,
     SearchReplaceMultiEditFileTool,
     FuzzyEditFileTool,

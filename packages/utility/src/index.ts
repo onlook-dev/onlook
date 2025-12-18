@@ -16,6 +16,8 @@ export * from './math';
 export * from './name';
 export * from './null';
 export * from './path';
+// Note: position.ts exports are not re-exported here to avoid conflict with frame.ts
+// Import directly from './position' if you need the generic version
 export * from './screenshot';
 export * from './string';
 export * from './tailwind';
