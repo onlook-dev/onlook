@@ -4,6 +4,7 @@ import {
     BashEditTool,
     BashReadTool,
     CheckErrorsTool,
+    CreateMultipleBranchesTool,
     FuzzyEditFileTool,
     GlobTool,
     GrepTool,
@@ -55,6 +56,7 @@ const editOnlyToolClasses = [
     SandboxTool,
     TerminalCommandTool,
     UploadImageTool,
+    CreateMultipleBranchesTool,
 ];
 const allToolClasses = [...readOnlyToolClasses, ...editOnlyToolClasses];
 
