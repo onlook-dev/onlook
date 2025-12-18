@@ -34,7 +34,7 @@
         "typescript": "^5.5.4"
     },
     "dependencies": {
-        "globby": "^14.1.0",
+        "globby": "^15.0.0",
         "isomorphic-git": "^1.29.0"
     }
 }
