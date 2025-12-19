@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -12,8 +13,30 @@ export default function PreviewPage() {
     const params = useParams();
     const router = useRouter();
     const slug = params.slug as string;
+    const [isPolling, setIsPolling] = useState(true);
 
-    const { data, isLoading, error } = api.preview.getBySlug.useQuery({ slug });
+    // First, resolve the slug to a build session
+    const { data: previewData, isLoading: previewLoading, error: previewError } =
+        api.preview.getBySlug.useQuery({ slug });
+
+    // Then get the teaser data (with polling while audit runs)
+    const { data: teaserData, isLoading: teaserLoading, refetch } =
+        api.buildSession.getTeaser.useQuery(
+            { previewSlug: slug },
+            {
+                enabled: !!previewData,
+                refetchInterval: isPolling ? 3000 : false, // Poll every 3s while audit runs
+            }
+        );
+
+    // Stop polling when audit completes
+    useEffect(() => {
+        if (teaserData?.auditStatus === 'completed' || teaserData?.auditStatus === 'failed') {
+            setIsPolling(false);
+        }
+    }, [teaserData?.auditStatus]);
+
+    const unlockMutation = api.audit.unlock.useMutation();
 
     const handleShare = async () => {
         const url = window.location.href;
@@ -25,15 +48,24 @@ export default function PreviewPage() {
         }
     };
 
-    const handleUnlock = () => {
-        // Phase 2: Redirect to auth/paywall
-        // Phase 3+: Full implementation
-        toast.info('Unlock feature coming soon', {
-            description: 'Sign up to access full report and fixes',
+    const handleUnlock = async () => {
+        if (!teaserData?.id) return;
+
+        const result = await unlockMutation.mutateAsync({
+            buildSessionId: teaserData.id
         });
+
+        if (result.allowed) {
+            // Redirect to full report
+            router.push(`/audit/${teaserData.id}`);
+        } else {
+            toast.info(result.message, {
+                description: 'Upgrade to unlock full report and fixes',
+            });
+        }
     };
 
-    if (isLoading) {
+    if (previewLoading || teaserLoading) {
         return (
             <WebsiteLayout showFooter={false}>
                 <div className="min-h-screen flex items-center justify-center">
@@ -46,7 +78,7 @@ export default function PreviewPage() {
         );
     }
 
-    if (error || !data) {
+    if (previewError || !previewData || !teaserData) {
         return (
             <WebsiteLayout showFooter={false}>
                 <div className="min-h-screen flex items-center justify-center">
@@ -54,7 +86,7 @@ export default function PreviewPage() {
                         <Icons.AlertTriangle className="h-12 w-12 text-destructive" />
                         <h1 className="text-2xl font-bold">Preview Not Found</h1>
                         <p className="text-foreground-secondary">
-                            {error?.message || 'This preview link is invalid or has expired.'}
+                            {previewError?.message || 'This preview link is invalid or has expired.'}
                         </p>
                         <Button onClick={() => router.push('/')}>
                             <Icons.ArrowLeft className="h-4 w-4 mr-2" />
@@ -66,8 +98,71 @@ export default function PreviewPage() {
         );
     }
 
-    const { buildSession } = data;
-    const teaserSummary = buildSession.teaserSummary as {
+    // Show progress if audit is still running
+    if (teaserData.auditStatus !== 'completed') {
+        const statusText = teaserData.auditStatus === 'pending'
+            ? 'Starting audit...'
+            : teaserData.auditStatus === 'running'
+            ? 'Analyzing your UI...'
+            : 'Processing...';
+
+        const progress = teaserData.progress || 0;
+
+        return (
+            <WebsiteLayout showFooter={false}>
+                <div className="min-h-screen py-12 px-4">
+                    <div className="max-w-4xl mx-auto">
+                        <motion.div
+                            className="flex flex-col items-center justify-center min-h-[60vh] gap-6"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                        >
+                            <Icons.Spinner className="h-16 w-16 animate-spin text-foreground-secondary" />
+                            <div className="text-center">
+                                <h1 className="text-3xl font-bold mb-2">Running Cynthia Audit</h1>
+                                <p className="text-foreground-secondary mb-4">{statusText}</p>
+                                <div className="w-64 h-2 bg-background-secondary rounded-full overflow-hidden">
+                                    <motion.div
+                                        className="h-full bg-foreground-primary"
+                                        initial={{ width: '0%' }}
+                                        animate={{ width: `${progress}%` }}
+                                        transition={{ duration: 0.5 }}
+                                    />
+                                </div>
+                            </div>
+                            <p className="text-sm text-foreground-secondary max-w-md text-center">
+                                We're analyzing {teaserData.inputType === 'url' ? 'your URL' : 'your idea'} using the UDEC framework. This usually takes 30-60 seconds.
+                            </p>
+                        </motion.div>
+                    </div>
+                </div>
+            </WebsiteLayout>
+        );
+    }
+
+    // Show failed state
+    if (teaserData.auditStatus === 'failed') {
+        return (
+            <WebsiteLayout showFooter={false}>
+                <div className="min-h-screen flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-4 text-center max-w-md">
+                        <Icons.AlertTriangle className="h-12 w-12 text-destructive" />
+                        <h1 className="text-2xl font-bold">Audit Failed</h1>
+                        <p className="text-foreground-secondary">
+                            We encountered an error while analyzing your UI. Please try again.
+                        </p>
+                        <Button onClick={() => router.push('/')}>
+                            <Icons.ArrowLeft className="h-4 w-4 mr-2" />
+                            Back to Home
+                        </Button>
+                    </div>
+                </div>
+            </WebsiteLayout>
+        );
+    }
+
+    // Audit completed - show teaser
+    const teaserSummary = teaserData.teaserSummary as {
         issuesFound: number;
         teaserIssues: Array<{
             severity: string;
@@ -105,8 +200,8 @@ export default function PreviewPage() {
                         <div>
                             <h1 className="text-3xl font-bold">Your Cynthia Score</h1>
                             <p className="text-foreground-secondary mt-1">
-                                {buildSession.inputType === 'url' ? 'URL' : 'Idea'}:{' '}
-                                {buildSession.inputValue}
+                                {teaserData.inputType === 'url' ? 'URL' : 'Idea'}:{' '}
+                                {teaserData.inputValue}
                             </p>
                         </div>
                         <Button onClick={handleShare} variant="outline" size="sm">
@@ -128,7 +223,7 @@ export default function PreviewPage() {
                                     Overall Score
                                 </p>
                                 <p className="text-6xl font-bold">
-                                    {buildSession.teaserScore}
+                                    {teaserData.teaserScore}
                                     <span className="text-2xl text-foreground-secondary">/100</span>
                                 </p>
                             </div>
@@ -213,9 +308,22 @@ export default function PreviewPage() {
                                     Get all {teaserSummary.issuesFound} issues, fix packs, design
                                     tokens, and GitHub deployment.
                                 </p>
-                                <Button onClick={handleUnlock} size="lg">
-                                    Unlock Now
-                                    <Icons.ArrowRight className="h-4 w-4 ml-2" />
+                                <Button
+                                    onClick={handleUnlock}
+                                    size="lg"
+                                    disabled={unlockMutation.isPending}
+                                >
+                                    {unlockMutation.isPending ? (
+                                        <>
+                                            <Icons.Spinner className="h-4 w-4 mr-2 animate-spin" />
+                                            Checking...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Unlock Now
+                                            <Icons.ArrowRight className="h-4 w-4 ml-2" />
+                                        </>
+                                    )}
                                 </Button>
                                 <p className="text-xs text-foreground-secondary mt-4">
                                     No signup to start. Preview first. Upgrade when you're ready.

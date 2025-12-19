@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { createTRPCRouter, publicProcedure, protectedProcedure } from '../../trpc';
 import { buildSessions, previewLinks } from '@onlook/db/src/schema';
 import { eq } from 'drizzle-orm';
+import { startBuildSessionAudit } from './build-session-processor';
 
 /**
  * Generate a random slug for preview links
@@ -18,43 +19,6 @@ function generatePreviewSlug(): string {
     return slug;
 }
 
-/**
- * Static teaser data for Phase 2
- * In Phase 3, this will be replaced with real audit results
- */
-const STATIC_TEASER_DATA = {
-    teaserScore: 68,
-    teaserSummary: {
-        issuesFound: 36,
-        teaserIssues: [
-            {
-                severity: 'critical',
-                axis: 'ACC',
-                title: 'Insufficient color contrast on CTA button',
-                description: 'Primary CTA button has 3.2:1 contrast ratio',
-                reason: 'Fails WCAG AA (4.5:1)',
-                impact: 'Lost conversions, accessibility compliance risk',
-            },
-            {
-                severity: 'high',
-                axis: 'HIE',
-                title: 'Inconsistent heading hierarchy',
-                description: 'H1 → H3 skip detected, no H2 present',
-                reason: 'Confuses screen readers and visual scanners',
-                impact: 'Users miss key information',
-            },
-            {
-                severity: 'medium',
-                axis: 'SPA',
-                title: 'Inconsistent spacing in grid layout',
-                description: 'Card gaps vary between 12px, 16px, and 20px',
-                reason: 'No spacing system enforced',
-                impact: 'Looks unpolished, reduces trust',
-            },
-        ],
-    },
-};
-
 export const buildSessionRouter = createTRPCRouter({
     /**
      * Create a new build session (anonymous or authenticated)
@@ -69,7 +33,7 @@ export const buildSessionRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ ctx, input }) => {
-            // Create build session
+            // Create build session (Phase 3: no static data, audit will populate)
             const [buildSession] = await ctx.db
                 .insert(buildSessions)
                 .values({
@@ -78,8 +42,7 @@ export const buildSessionRouter = createTRPCRouter({
                     language: input.language,
                     userId: ctx.user?.id || null, // Null for anonymous
                     status: 'created',
-                    teaserScore: STATIC_TEASER_DATA.teaserScore,
-                    teaserSummary: STATIC_TEASER_DATA.teaserSummary,
+                    auditStatus: 'pending',
                 })
                 .returning();
 
@@ -107,6 +70,14 @@ export const buildSessionRouter = createTRPCRouter({
                 });
             }
 
+            // Start audit processing in background (non-blocking)
+            await startBuildSessionAudit({
+                buildSessionId: buildSession.id,
+                inputType: input.inputType,
+                inputValue: input.inputValue,
+                userId: ctx.user?.id || null,
+            });
+
             return {
                 buildSessionId: buildSession.id,
                 previewSlug: previewLink.slug,
@@ -115,7 +86,7 @@ export const buildSessionRouter = createTRPCRouter({
 
     /**
      * Get teaser report (free tier)
-     * Returns static data for Phase 2
+     * Phase 3: Returns real audit data or progress status
      */
     getTeaser: publicProcedure
         .input(
@@ -178,11 +149,29 @@ export const buildSessionRouter = createTRPCRouter({
                 });
             }
 
+            // Phase 3: Check audit status
+            const auditStatus = buildSession.auditStatus;
+
+            if (auditStatus !== 'completed') {
+                // Return progress status
+                return {
+                    id: buildSession.id,
+                    auditStatus,
+                    progress: auditStatus === 'pending' ? 0 : 50, // Simple progress indicator
+                    inputType: buildSession.inputType,
+                    inputValue: buildSession.inputValue,
+                    language: buildSession.language,
+                    createdAt: buildSession.createdAt,
+                };
+            }
+
+            // Audit completed - return real teaser data
             return {
                 id: buildSession.id,
+                auditStatus: 'completed',
                 teaserScore: buildSession.teaserScore,
                 teaserSummary: buildSession.teaserSummary,
-                locked: true, // Always locked in Phase 2 (paywall)
+                locked: true, // Always locked (paywall)
                 inputType: buildSession.inputType,
                 inputValue: buildSession.inputValue,
                 language: buildSession.language,
@@ -209,4 +198,45 @@ export const buildSessionRouter = createTRPCRouter({
 
         return sessions;
     }),
+
+    /**
+     * Claim anonymous session (Phase 3)
+     * Allows authenticated users to attach their user ID to an anonymous session
+     */
+    claim: protectedProcedure
+        .input(z.object({ buildSessionId: z.string().uuid() }))
+        .mutation(async ({ ctx, input }) => {
+            // Get the build session
+            const [buildSession] = await ctx.db
+                .select()
+                .from(buildSessions)
+                .where(eq(buildSessions.id, input.buildSessionId))
+                .limit(1);
+
+            if (!buildSession) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: 'Build session not found',
+                });
+            }
+
+            // Check if already claimed
+            if (buildSession.userId) {
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'Build session already claimed',
+                });
+            }
+
+            // Claim the session
+            await ctx.db
+                .update(buildSessions)
+                .set({
+                    userId: ctx.user.id,
+                    updatedAt: new Date(),
+                })
+                .where(eq(buildSessions.id, input.buildSessionId));
+
+            return { success: true, buildSessionId: input.buildSessionId };
+        }),
 });

@@ -243,4 +243,25 @@ export const auditRouter = createTRPCRouter({
 
             return audit;
         }),
+
+    /**
+     * Unlock full report (Phase 3 stub)
+     * In Phase 4, this will check subscription/payment
+     */
+    unlock: publicProcedure
+        .input(z.object({ buildSessionId: z.string().uuid() }))
+        .mutation(async ({ ctx, input }) => {
+            // Phase 3 stub: Always return false (not allowed)
+            // Phase 4 will implement:
+            // - Check user subscription tier
+            // - Check credits/usage
+            // - Process payment if needed
+            // - Return full audit access
+
+            return {
+                allowed: false,
+                message: 'Unlock requires subscription. Coming soon.',
+                upgradeUrl: '/pricing', // Placeholder
+            };
+        }),
 });
