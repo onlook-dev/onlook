@@ -3,10 +3,13 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/sonner';
 
+import { api } from '@/trpc/react';
 import { ExternalRoutes } from '@/utils/constants';
 import { CreateError } from './create-error';
 import { HighDemand } from './high-demand';
@@ -15,6 +18,7 @@ import { UnicornBackground } from './unicorn-background';
 
 export function Hero() {
     const t = useTranslations('landing.hero');
+    const router = useRouter();
     const [isShortScreen, setIsShortScreen] = useState(false);
     const [urlInput, setUrlInput] = useState('');
 
@@ -29,9 +33,42 @@ export function Hero() {
         return () => window.removeEventListener('resize', checkScreenHeight);
     }, []);
 
+    const createBuildSession = api.buildSession.create.useMutation({
+        onSuccess: (data) => {
+            // Navigate to preview page
+            router.push(`/preview/${data.previewSlug}`);
+        },
+        onError: (error) => {
+            toast.error('Failed to create build session', {
+                description: error.message,
+            });
+        },
+    });
+
+    /**
+     * Detect if input is a URL or an idea
+     */
+    const detectInputType = (input: string): 'url' | 'idea' => {
+        try {
+            new URL(input);
+            return 'url';
+        } catch {
+            return 'idea';
+        }
+    };
+
     const handleGetScore = () => {
-        // Navigate to demo or trigger audit
-        window.location.href = '#demo';
+        if (!urlInput.trim()) {
+            toast.error('Please enter a URL or describe your idea');
+            return;
+        }
+
+        const inputType = detectInputType(urlInput);
+        createBuildSession.mutate({
+            inputType,
+            inputValue: urlInput,
+            language: 'en', // TODO: Get from locale
+        });
     };
 
     return (
@@ -75,11 +112,21 @@ export function Hero() {
                             />
                             <Button
                                 onClick={handleGetScore}
+                                disabled={createBuildSession.isPending}
                                 className="bg-foreground-primary text-background-primary hover:bg-foreground-hover whitespace-nowrap px-6"
                                 size="lg"
                             >
-                                {t('primaryCta')}
-                                <Icons.ArrowRight className="h-4 w-4 ml-2" />
+                                {createBuildSession.isPending ? (
+                                    <>
+                                        <Icons.Spinner className="h-4 w-4 mr-2 animate-spin" />
+                                        Creating...
+                                    </>
+                                ) : (
+                                    <>
+                                        {t('primaryCta')}
+                                        <Icons.ArrowRight className="h-4 w-4 ml-2" />
+                                    </>
+                                )}
                             </Button>
                         </div>
                         <motion.p
