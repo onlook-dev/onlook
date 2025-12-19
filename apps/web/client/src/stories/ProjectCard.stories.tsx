@@ -1,14 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { ProjectCard } from '@/app/projects/_components/select/project-card';
 import { HighlightText } from '@/app/projects/_components/select/highlight-text';
 import type { Project } from '@onlook/models';
 
-/**
- * ProjectCard displays individual project information with hover effects,
- * preview images, and interactive elements like edit and settings buttons.
- */
 const meta = {
-  title: 'Projects/ProjectCard',
   component: ProjectCard,
   parameters: {
     layout: 'padded',
@@ -26,13 +21,13 @@ const meta = {
   ],
   argTypes: {
     aspectRatio: {
-      control: 'select',
-      options: ['aspect-[4/2.6]', 'aspect-[4/2.8]', 'aspect-square', 'aspect-video'],
       description: 'The aspect ratio of the card',
+      control: { type: 'select' },
+      options: ['aspect-[4/2.6]', 'aspect-[4/2.8]', 'aspect-square', 'aspect-video'],
     },
     searchQuery: {
-      control: 'text',
       description: 'Search query to highlight in project name and description',
+      control: 'text',
     },
   },
 } satisfies Meta<typeof ProjectCard>;
