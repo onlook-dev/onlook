@@ -19,15 +19,15 @@ import { faqSchema, organizationSchema } from './seo';
 const isProduction = env.NODE_ENV === 'production';
 
 export const metadata: Metadata = {
-    title: 'Onlook – Cursor for Designers',
-    description: 'The power of Cursor for your own website. Onlook lets you edit your React website and write your changes back to code in real-time. Iterate and experiment with AI.',
+    title: 'Synthia 3.0 – AI Design Auditor & Front-End Builder',
+    description: 'Cynthia audits your UI like a credit bureau and rebuilds it into a lovable, conversion-ready front end. Get your design score, fix issues, and ship to GitHub.',
     icons: [{ rel: 'icon', url: '/favicon.ico' }],
     openGraph: {
         url: 'https://onlook.com/',
         type: 'website',
-        siteName: 'Onlook',
-        title: 'Onlook – Cursor for Designers',
-        description: 'The power of Cursor for your own website. Onlook lets you edit your React website and write your changes back to code in real-time. Iterate and experiment with AI.',
+        siteName: 'Synthia 3.0',
+        title: 'Synthia 3.0 – Stop Shipping Ugly',
+        description: 'Cynthia audits your UI like a credit bureau—and rebuilds it into a lovable, conversion-ready front end. No signup to start.',
         images: [
             {
                 url: 'https://framerusercontent.com/images/ScnnNT7JpmUya7afqGAets8.png',
@@ -38,8 +38,8 @@ export const metadata: Metadata = {
         card: 'summary_large_image',
         site: '@onlookdev',
         creator: '@onlookdev',
-        title: 'Onlook – Cursor for Designers',
-        description: 'The power of Cursor for your own website. Onlook lets you edit your React website and write your changes back to code in real-time. Iterate and experiment with AI.',
+        title: 'Synthia 3.0 – Stop Shipping Ugly',
+        description: 'Cynthia audits your UI like a credit bureau—and rebuilds it into a lovable, conversion-ready front end. Get your design score instantly.',
         images: [
             {
                 url: 'https://framerusercontent.com/images/ScnnNT7JpmUya7afqGAets8.png',
