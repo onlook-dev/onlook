@@ -134,6 +134,10 @@ export const LongText: Story = {
  * Various examples showing different highlight scenarios
  */
 export const Examples: Story = {
+  args: {
+    text: 'E-commerce Dashboard',
+    searchQuery: 'dash',
+  },
   render: () => (
     <div className="flex flex-col gap-4 text-foreground">
       <div className="flex flex-col gap-1">

@@ -150,6 +150,19 @@ export const CustomScrollAmount: Story = {
   },
 };
 
+const CARD_COLORS = [
+  'bg-blue-600',
+  'bg-green-600',
+  'bg-purple-600',
+  'bg-orange-600',
+  'bg-pink-600',
+  'bg-teal-600',
+  'bg-red-600',
+  'bg-yellow-600',
+  'bg-indigo-600',
+  'bg-cyan-600',
+] as const;
+
 /**
  * Carousel with many items
  */
@@ -162,18 +175,7 @@ export const ManyItems: Story = {
           <SampleCard
             key={i}
             title={`Card ${i + 1}`}
-            color={[
-              'bg-blue-600',
-              'bg-green-600',
-              'bg-purple-600',
-              'bg-orange-600',
-              'bg-pink-600',
-              'bg-teal-600',
-              'bg-red-600',
-              'bg-yellow-600',
-              'bg-indigo-600',
-              'bg-cyan-600',
-            ][i % 10]}
+            color={CARD_COLORS[i % CARD_COLORS.length] ?? 'bg-blue-600'}
           />
         ))}
       </>

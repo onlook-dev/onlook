@@ -187,6 +187,12 @@ export const WithoutClickHandler: Story = {
  * Multiple project cards in a grid
  */
 export const MultipleCards: Story = {
+  args: {
+    project: createMockProject(),
+    imageUrl: null,
+    searchQuery: '',
+    HighlightText,
+  },
   decorators: [
     (Story) => (
       <div className="grid grid-cols-2 gap-4 w-[600px]">
