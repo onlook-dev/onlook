@@ -17,6 +17,12 @@ export interface SnapTarget {
     distance: number;
 }
 
+export interface ResizeSnapTarget {
+    dimension: RectDimension;
+    snapLines: SnapLine[];
+    distance: number;
+}
+
 export interface SnapLine {
     id: string;
     type: SnapLineType;
@@ -35,6 +41,8 @@ export enum SnapLineType {
     CENTER_HORIZONTAL = 'center-horizontal',
     CENTER_VERTICAL = 'center-vertical',
     SPACING = 'spacing',
+    WIDTH_MATCH = 'width-match',
+    HEIGHT_MATCH = 'height-match',
 }
 
 export interface SnapFrame {
