@@ -23,7 +23,6 @@ export class CommentService {
             status: 'open',
             createdAt: new Date(),
             updatedAt: new Date(),
-            replies: [],
             mentions: this.extractMentions(content),
         };
 
@@ -99,9 +98,6 @@ export class CommentService {
 
         // Store reply
         this.comments.set(replyId, reply);
-        
-        // Add to parent's replies
-        parentComment.replies.push(reply);
         
         // Add to thread
         const threadId = `thread-${parentComment.elementId}`;
@@ -186,7 +182,7 @@ export class CommentService {
         await this.processMentions(commentId, comment.mentions);
         
         // Save to database (simulated)
-        await this.updateComment(comment);
+        await this.persistCommentUpdate(comment);
     }
 
     /**
@@ -205,10 +201,11 @@ export class CommentService {
             thread.comments = thread.comments.filter(c => c.id !== commentId);
         }
 
-        // Remove replies
-        comment.replies.forEach((reply: any) => {
-            this.comments.delete(reply.id);
-        });
+        // Recursively remove child replies
+        const childComments = this.getChildComments(commentId);
+        for (const child of childComments) {
+            await this.deleteComment(child.id);
+        }
 
         // Remove comment
         this.comments.delete(commentId);

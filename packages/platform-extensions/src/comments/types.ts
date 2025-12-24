@@ -16,7 +16,6 @@ export interface CommentData {
     createdAt: Date;
     updatedAt: Date;
     parentId?: string;
-    replies: CommentData[];
     mentions: string[];
 }
 
