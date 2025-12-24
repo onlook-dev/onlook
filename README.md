@@ -71,15 +71,9 @@ builders.
 - [x] Create Next.js app in seconds
   - [x] Start from text or image
   - [x] Use prebuilt templates
-<<<<<<< HEAD
   - [ ] Import from Figma
   - [ ] Import from GitHub repo
   - [ ] Make a PR to a GitHub repo
-=======
-  - [X] Import from Figma
-  - [X] Import from GitHub repo
-  - [X] Make a PR to a GitHub repo
->>>>>>> 08a41a9ca19909effa8d5e6b459122bf03547e73
 - [x] Visually edit your app
   - [x] Use Figma-like UI
   - [x] Preview your app in real-time
@@ -89,11 +83,7 @@ builders.
   - [x] Manage project Images
   - [x] Detect and use Components – _Previously in
         [Onlook Desktop](https://github.com/onlook-dev/desktop)_
-<<<<<<< HEAD
   - [ ] Drag-and-drop Components Panel
-=======
-  - [x] Drag-and-drop Components Panel
->>>>>>> 08a41a9ca19909effa8d5e6b459122bf03547e73
   - [x] Use Branching to experiment with designs
 - [x] Development Tools
   - [x] Real-time code editor
@@ -103,7 +93,6 @@ builders.
 - [x] Deploy your app in seconds
   - [x] Generate sharable links
   - [x] Link your custom domain    
-<<<<<<< HEAD
 - [ ] Collaborate with your team
   - [x] Real-time editing
   - [ ] Leave comments
@@ -115,19 +104,6 @@ builders.
 - [ ] Advanced project support
   - [ ] Support non-NextJS projects
   - [ ] Support non-Tailwind projects
-=======
-- [x] Collaborate with your team
-  - [x] Real-time editing
-  - [x] Leave comments
-- [x] Advanced AI capabilities
-  - [x] Queue multiple messages at once
-  - [x] Use Images as references and as assets in a project
-  - [x] Setup and use MCPs in projects
-  - [x] Allow Onlook to use itself as a toolcall for branch creation and iteration
-- [x] Advanced project support
-  - [x] Support non-NextJS projects
-  - [x] Support non-Tailwind projects
->>>>>>> 08a41a9ca19909effa8d5e6b459122bf03547e73
 
 ![Onlook-GitHub-Example](https://github.com/user-attachments/assets/642de37a-72cc-4056-8eb7-8eb42714cdc4)
 

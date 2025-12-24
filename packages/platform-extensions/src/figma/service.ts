@@ -99,7 +99,7 @@ export class FigmaIntegrationService {
 
         try {
             const fileData = await this.apiClient.getFile(fileId);
-            return FigmaFileParser.extractDesignTokens(fileData);
+            return FigmaFileParser.extractDesignTokens(fileData.document);
         } catch (error) {
             throw new Error(`Failed to extract design tokens: ${error}`);
         }

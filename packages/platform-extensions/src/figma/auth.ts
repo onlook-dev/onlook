@@ -64,14 +64,15 @@ export class FigmaAuthService {
      * Refresh access token using refresh token
      */
     async refreshToken(refreshToken: string): Promise<FigmaAuth> {
-        const response = await fetch('https://www.figma.com/api/oauth/refresh', {
+        const credentials = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
+        const response = await fetch('https://api.figma.com/v1/oauth/token', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': `Basic ${credentials}`,
             },
             body: new URLSearchParams({
-                client_id: this.clientId,
-                client_secret: this.clientSecret,
+                grant_type: 'refresh_token',
                 refresh_token: refreshToken,
             }),
         });

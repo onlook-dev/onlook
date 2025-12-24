@@ -328,8 +328,9 @@ export class AssetManagementService {
         return 'file';
     }
 
-    private isImage(mimeType: string): boolean {
-        return mimeType.startsWith('image/');
+    private isImage(type: string): boolean {
+        if (!type) return false;
+        return type.startsWith('image/') || type === 'image';
     }
 
     private findAssetById(assetId: string): any | undefined {

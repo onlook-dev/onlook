@@ -72,7 +72,7 @@ export class CommentService {
         }
         
         // Save to database (simulated)
-        await this.updateComment(comment);
+        await this.persistCommentUpdate(comment);
     }
 
     async addReply(commentId: string, content: string, userId: string): Promise<string> {
@@ -270,7 +270,7 @@ export class CommentService {
     /**
      * Update comment in database (simulated)
      */
-    private async updateComment(comment: any): Promise<void> {
+    private async persistCommentUpdate(comment: any): Promise<void> {
         // This would update the database
         console.log(`Updating comment ${comment.id} in database`);
         

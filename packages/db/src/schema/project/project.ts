@@ -2,20 +2,19 @@ import { relations } from 'drizzle-orm';
 import { pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
 import { z } from 'zod';
-<<<<<<< HEAD
 import { assets, ASSET_PROJECT_RELATION_NAME } from '../asset';
 import { canvases } from '../canvas';
 import { conversations, PROJECT_CONVERSATION_RELATION_NAME } from '../chat';
 import { comments, COMMENT_PROJECT_RELATION_NAME } from '../comment';
-import { PREVIEW_DOMAIN_PROJECT_RELATION_NAME, previewDomains, PROJECT_CUSTOM_DOMAIN_PROJECT_RELATION_NAME, projectCustomDomains } from '../domain';
+import {
+    PREVIEW_DOMAIN_PROJECT_RELATION_NAME,
+    previewDomains,
+    PROJECT_CUSTOM_DOMAIN_PROJECT_RELATION_NAME,
+    projectCustomDomains,
+} from '../domain';
 import { figmaFiles, FIGMA_FILE_PROJECT_RELATION_NAME } from '../figma';
 import { githubRepositories, GITHUB_REPOSITORY_PROJECT_RELATION_NAME } from '../github';
 import { mcpConfigs, MCP_CONFIG_PROJECT_RELATION_NAME } from '../mcp';
-=======
-import { canvases } from '../canvas';
-import { conversations, PROJECT_CONVERSATION_RELATION_NAME } from '../chat';
-import { PREVIEW_DOMAIN_PROJECT_RELATION_NAME, previewDomains, PROJECT_CUSTOM_DOMAIN_PROJECT_RELATION_NAME, projectCustomDomains } from '../domain';
->>>>>>> 08a41a9ca19909effa8d5e6b459122bf03547e73
 import { userProjects } from '../user';
 import { branches, PROJECT_BRANCH_RELATION_NAME } from './branch';
 import { projectInvitations } from './invitation';
@@ -70,7 +69,6 @@ export const projectRelations = relations(projects, ({ one, many }) => ({
     branches: many(branches, {
         relationName: PROJECT_BRANCH_RELATION_NAME,
     }),
-<<<<<<< HEAD
     // Platform extensions relations
     figmaFiles: many(figmaFiles, {
         relationName: FIGMA_FILE_PROJECT_RELATION_NAME,
@@ -87,8 +85,6 @@ export const projectRelations = relations(projects, ({ one, many }) => ({
     mcpConfigs: many(mcpConfigs, {
         relationName: MCP_CONFIG_PROJECT_RELATION_NAME,
     }),
-=======
->>>>>>> 08a41a9ca19909effa8d5e6b459122bf03547e73
 }));
 
 export type Project = typeof projects.$inferSelect;

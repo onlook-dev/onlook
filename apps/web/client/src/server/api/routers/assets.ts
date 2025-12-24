@@ -14,9 +14,16 @@ export const assetsRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const service = new AssetManagementService();
       
-      // Convert base64 to File object (simplified)
+      // Convert base64 payload to a File-like object for the service
       const buffer = Buffer.from(input.fileData, 'base64');
-      const file = new File([buffer], input.fileName, { type: input.fileType });
+      const file = {
+        name: input.fileName,
+        type: input.fileType,
+        size: buffer.length,
+        async arrayBuffer() {
+          return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+        },
+      } as unknown as File;
       
       return service.uploadAsset(file, input.projectId);
     }),

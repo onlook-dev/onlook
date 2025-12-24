@@ -106,40 +106,17 @@ export class FigmaTokenStorage {
     }
 }
 
-/**
- * Database-backed token storage (for production use)
- */
+// TODO: Implement persistent token storage backed by the primary database once schema & infra are ready.
 export class DatabaseTokenStorage {
-    /**
-     * Store authentication in database
-     */
-    static async store(auth: FigmaAuth, userId: string, projectId?: st  }
-};
-  nted yet')me not impleagease stortabError('Dahrow new   t    te
-  abase updaement datDO: Impl// TO      {
-  id> vog): Promise<?: strin, projectIdingstrId: h, userigmaAut: Fe(authatic async upd    stat */
-e
-    in databasation authenticUpdate     *   /**
-   
+    static async store(auth: FigmaAuth, userId: string, projectId?: string): Promise<void> {
+        throw new Error('Database storage not implemented yet');
     }
 
- yet');mplementedt iorage nose sttabaw Error('Dathrow ne     oval
-    remnt databaseImpleme TODO: 
-        //e<void> {omisring): ProjectId?: string, pre(userId: stov remtic async  sta
-     */
-  atabaseion from dauthenticatove 
-     * Rem
+    static async retrieve(userId: string, projectId?: string): Promise<FigmaAuth | null> {
+        throw new Error('Database storage not implemented yet');
+    }
 
-    /**  };
-  mented yet')e not impletorag'Database s Error(  throw neweval
-      abase retrilement dat Imp    // TODO:l> {
-     nulth |e<FigmaAuing): Promis strtId?:ng, projecuserId: strie(ievretr async    static   */
- database
-  m n fronticatiorieve authe* Ret   **
-  
-
-    /et');
-    }plemented yot ime n storagDatabase new Error('       throwarlier
- e created ema wbase schee the datauld ushis wo T
-        //able tthgma_auhe fiing trage usbase stolement data Imp // TODO:   {
-    <void>  Promiseng):ri
+    static async remove(userId: string, projectId?: string): Promise<void> {
+        throw new Error('Database storage not implemented yet');
+    }
+}
