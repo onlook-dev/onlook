@@ -1,0 +1,32 @@
+{
+    "name": "@onlook/web-server",
+    "module": "index.ts",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "dev": "bun run --watch src/index.ts",
+        "build": "bun build src/index.ts --outdir dist --target bun",
+        "start": "bun dist/index.js",
+        "preview": "bun run build && bun run start",
+        "lint": "eslint . --max-warnings 0",
+        "format": "eslint --fix .",
+        "typecheck": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@onlook/eslint": "*",
+        "@onlook/typescript": "*",
+        "@types/bun": "latest",
+        "eslint": "^9.0.0",
+        "typescript": "^5.5.4"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "@fastify/websocket": "^11.0.2",
+        "@onlook/rpc": "*",
+        "@trpc/server": "^11.0.0",
+        "fastify": "^5.2.2",
+        "zod": "^4.1.3"
+    }
+}

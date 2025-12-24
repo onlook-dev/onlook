@@ -1,0 +1,40 @@
+[
+    {
+        "id": "customFont",
+        "family": "customFont",
+        "type": "local",
+        "subsets": [],
+        "weight": [
+            "400",
+            "700"
+        ],
+        "styles": [
+            "normal",
+            "italic"
+        ],
+        "variable": "--font-custom"
+    },
+    {
+        "id": "anotherFont",
+        "family": "anotherFont",
+        "type": "local",
+        "subsets": [],
+        "weight": [],
+        "styles": [],
+        "variable": "--font-another"
+    },
+    {
+        "id": "brandFont",
+        "family": "brandFont",
+        "type": "local",
+        "subsets": [],
+        "weight": [
+            "300",
+            "400"
+        ],
+        "styles": [
+            "normal"
+        ],
+        "variable": "--font-brand"
+    }
+]

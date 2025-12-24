@@ -1,0 +1,57 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/black.css';
+@import 'fumadocs-ui/css/preset.css';
+
+:root {
+    --color-sidebar-background-color: #ffffff;
+    --color-fd-background-image: radial-gradient(#c8c8c8 0.6000000000000001px, #ffffff 0.6000000000000001px);
+    --color-fd-background-size: 14px 14px;
+}
+
+.dark {
+    --color-sidebar-background-color: #000000;
+    --color-fd-background-image: radial-gradient(#2b2b2b 0.6000000000000001px, #000000 0.6000000000000001px);
+}
+
+html,
+body {
+    overscroll-behavior: none;
+    font-weight: 350;
+    min-height: 100vh;
+  
+    background-image: var(--color-fd-background-image);
+    background-size: var(--color-fd-background-size);
+}
+
+#nd-sidebar {
+    background-color: var(--color-sidebar-background-color);
+}
+
+/* Improve header link button visibility and clickability */
+[data-hash-link] {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+[data-hash-link]:hover, 
+h1:hover [data-hash-link], 
+h2:hover [data-hash-link], 
+h3:hover [data-hash-link], 
+h4:hover [data-hash-link], 
+h5:hover [data-hash-link], 
+h6:hover [data-hash-link] {
+  opacity: 1;
+  cursor: pointer;
+}
+
+/* Make prose headers not bold */
+.prose h1,
+.prose h2,
+.prose h3 {
+    font-weight: 500;
+}
+.prose h4,
+.prose h5,
+.prose h6 {
+    font-weight: 400;
+}

@@ -1,0 +1,46 @@
+---
+title: Troubleshooting
+description: Troubleshooting common issues
+---
+
+# Common Issues
+
+### Codesandbox Preview
+
+Codesandbox may ask you to confirm to proceed. You can click the button by switching to Preview mode in onlook, and click the "Yes, proceed to preview" link and switch back. The UI should render properly inside the iframe after that.
+
+![Codesandbox confirmation mode](/images/csb-proceed-to-preview.png)
+
+![Switch to Preview mode](/images/visual-switch-to-preview.png)
+
+### Authentication Issues
+
+If you encounter issues with reloading pages and being unauthenticated then check your node version, install a more recent version, re-install dependencies and restart the project.
+Minimum version `v20.16.0` or latest is recommended.
+
+Avoid version `v20.11.0` of Node as it has shown this issue in the past.
+
+```bash
+node --version
+```
+
+You may have to delete cookies to clear the authentication state.
+
+![Delete cookies](/images/delete-cookies.png)
+
+### "Column not found" error
+
+If you encounter issues such as "Column not found" error, your database may be out of sync with the schema. There are 2 things to try to get it back in sync:
+
+1. Run `bun db:push` to push the schema to the database. If there are conflicts, you can try step 2.
+2. Run `bun db:reset` to fully reset the database and re-run the migrations. WARNING: This will delete all data in the database.
+
+### Testing the Preload Script
+
+If you want to update the preload script and test it with Onlook, follow these steps:
+
+1. Run bun `bun run dev` from the root of the project.
+2. Copy the file `apps/web/client/public/onlook-preload-script.js` into to `public/onlook-preload-script.js` in the code tab in onlook or the codesandbox interface.
+3. Refresh the localhost tab. You should now be able to test the preload script.
+
+If you want to update the preload script and test any changes, you need to refresh the localhost tab.

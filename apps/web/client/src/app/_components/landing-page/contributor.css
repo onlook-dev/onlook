@@ -1,0 +1,54 @@
+
+/* Contributor Section */
+
+@keyframes spin-normal {
+  from {
+      transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+      transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse {
+  from {
+      transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+      transform: translate(-50%, -50%) rotate(-360deg);
+  }
+}
+
+@keyframes counter-spin {
+  from {
+      transform: rotate(0deg);
+  }
+  to {
+      transform: rotate(-360deg);
+  }
+}
+
+@keyframes counter-spin-reverse {
+  from {
+      transform: rotate(0deg);
+  }
+  to {
+      transform: rotate(360deg);
+  }
+}
+
+.spin-normal {
+  animation: spin-normal 280s linear infinite;
+}
+
+.spin-reverse {
+  animation: spin-reverse 290s linear infinite;
+}
+
+.counter-spin {
+  animation: counter-spin 280s linear infinite;
+}
+
+.counter-spin-reverse {
+  animation: counter-spin-reverse 290s linear infinite;
+} 

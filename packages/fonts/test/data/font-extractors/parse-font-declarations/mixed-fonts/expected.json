@@ -1,0 +1,30 @@
+[
+    {
+        "id": "inter",
+        "family": "Inter",
+        "type": "google",
+        "subsets": [
+            "latin"
+        ],
+        "weight": [
+            "400",
+            "700"
+        ],
+        "styles": [],
+        "variable": "--font-inter"
+    },
+    {
+        "id": "customFont",
+        "family": "customFont",
+        "type": "local",
+        "subsets": [],
+        "weight": [
+            "400",
+            "700"
+        ],
+        "styles": [
+            "normal"
+        ],
+        "variable": "--font-custom"
+    }
+]

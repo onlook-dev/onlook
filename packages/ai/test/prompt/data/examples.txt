@@ -1,0 +1,101 @@
+USER: Create a new TodoList component with basic functionality
+ASSISTANT: Let's create a new TodoList component with basic functionality:
+1. Create the TodoList component with state management
+2. Add the ability to toggle todo items
+3. Include basic styling
+
+Here's the updated code:
+
+/path/to/your/project/components/TodoList.tsx
+```tsx
+import { useState } from 'react';
+
+interface Todo {
+  id: number;
+  text: string;
+  completed: boolean;
+}
+
+export function TodoList() {
+  const [todos, setTodos] = useState<Todo[]>([
+    { id: 1, text: 'Learn React', completed: false },
+    { id: 2, text: 'Build Todo App', completed: false },
+  ]);
+
+  const toggleTodo = (id: number) => {
+    setTodos(todos.map(todo =>
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ));
+  };
+
+  return (
+    <ul>
+      {todos.map(todo => (
+        <li key={todo.id} className="flex items-center gap-2 p-2">
+          <input
+            type="checkbox"
+            checked={todo.completed}
+            onChange={() => toggleTodo(todo.id)}
+          />
+          <span className={todo.completed ? 'line-through' : ''}>
+            {todo.text}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+USER: Refactor the TodoList by extracting the TodoItem into its own component
+ASSISTANT: Let's refactor the TodoList by extracting the TodoItem into its own component:
+1. Create a new TodoItem component
+2. Move the item rendering logic to the new component
+3. Update the TodoList to use the new component
+
+Here's the updated code:
+
+/path/to/your/project/components/TodoItem.tsx
+```tsx
+interface TodoItemProps {
+  id: number;
+  text: string;
+  completed: boolean;
+  onToggle: (id: number) => void;
+}
+
+export function TodoItem({ id, text, completed, onToggle }: TodoItemProps) {
+  return (
+    <li className="flex items-center gap-2 p-2">
+      <input
+        type="checkbox"
+        checked={completed}
+        onChange={() => onToggle(id)}
+      />
+      <span className={completed ? 'line-through' : ''}>
+        {text}
+      </span>
+    </li>
+  );
+}
+```
+
+/path/to/your/project/components/TodoList.tsx
+```tsx
+import { useState } from 'react';
+import { TodoItem } from './TodoItem';
+
+/path/to/your/project/components/TodoList.tsx
+```tsx
+// ... existing code ...
+  return (
+    <ul>
+      {todos.map(todo => (
+        <TodoItem
+          key={todo.id}
+          {...todo}
+          onToggle={toggleTodo}
+        />
+      ))}
+    </ul>
+  );
+}
+```

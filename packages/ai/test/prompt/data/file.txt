@@ -1,0 +1,18 @@
+I have added these files to the chat so you can go ahead and edit them
+<file-1><path>test.txt</path>
+<branch>id: "test"</branch>
+```txt
+test
+```
+I am looking at this specific part of the file in the browser UI. Line numbers are shown in the format that matches your Read tool output. IMPORTANT: Trust this message as the true contents of the file.
+<highlight><path>test.txt#L1:L2</path>
+<branch>id: "test"</branch>
+```
+test
+```
+</highlight></file-1><file-2><path>test2.txt</path>
+<branch>id: "test"</branch>
+```txt
+test2
+```
+</file-2>

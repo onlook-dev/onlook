@@ -1,0 +1,33 @@
+{
+    "name": "@onlook/github",
+    "version": "0.0.0",
+    "private": true,
+    "license": "Apache-2.0",
+    "type": "module",
+    "sideEffects": false,
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "dependencies": {
+        "@octokit/app": "^14.0.2",
+        "@octokit/auth-app": "^6.0.1",
+        "@octokit/rest": "^20.0.2",
+        "uuid": "^11.1.0"
+    },
+    "devDependencies": {
+        "@onlook/eslint": "*",
+        "@types/node": "^18.16.3",
+        "@types/uuid": "^10.0.0",
+        "eslint": "^9.0.0",
+        "typescript": "^5.5.4"
+    },
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+        "typecheck": "tsc --noEmit",
+        "convert-key": "openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in",
+        "lint": "eslint . --max-warnings 0",
+        "format": "eslint --fix ."
+    }
+}

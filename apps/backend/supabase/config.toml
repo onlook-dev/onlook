@@ -1,0 +1,47 @@
+project_id = "onlook-web"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage"]
+extra_search_path = ["public"]
+max_rows = 100
+
+[auth]
+site_url = "https://onlook.com"
+additional_redirect_urls = [
+    "http://localhost:3000",
+    "http://localhost:3000/auth/callback",
+]
+jwt_expiry = 36000
+
+[db]
+port = 54322
+
+[studio]
+port = 54323
+
+[auth.external.github]
+enabled = true
+client_id = "env(GITHUB_CLIENT_ID)"
+secret = "env(GITHUB_SECRET)"
+redirect_uri = "http://127.0.0.1:54321/auth/v1/callback"
+
+[auth.external.google]
+enabled = true
+client_id = "env(GOOGLE_CLIENT_ID)"
+secret = "env(GOOGLE_SECRET)"
+redirect_uri = "http://127.0.0.1:54321/auth/v1/callback"
+
+[analytics]
+enabled = true
+port = 54327
+vector_port = 54328
+backend = "postgres"
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[storage.buckets.preview_images]
+public = true
+file_size_limit = "10MiB"

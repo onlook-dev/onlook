@@ -1,0 +1,11 @@
+{
+    "extends": "@onlook/typescript/react-library.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./src/*"]
+        }
+    },
+    "include": ["src", "tokens.ts"],
+    "exclude": ["node_modules"]
+}

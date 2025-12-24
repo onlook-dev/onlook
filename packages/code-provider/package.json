@@ -1,0 +1,42 @@
+{
+    "name": "@onlook/code-provider",
+    "description": "A library with a set of providers for code sandboxing",
+    "main": "./src/index.ts",
+    "type": "module",
+    "module": "src/index.ts",
+    "types": "src/index.ts",
+    "version": "0.0.0",
+    "private": true,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/onlook-dev/onlook.git"
+    },
+    "scripts": {
+        "clean": "rm -rf node_modules",
+        "lint": "eslint . --max-warnings 0",
+        "format": "eslint --fix .",
+        "typecheck": "tsc --noEmit"
+    },
+    "keywords": [
+        "onlook",
+        "sandbox"
+    ],
+    "author": {
+        "name": "Onlook",
+        "email": "contact@onlook.com"
+    },
+    "license": "Apache-2.0",
+    "homepage": "https://onlook.com",
+    "devDependencies": {
+        "@onlook/eslint": "*",
+        "@onlook/typescript": "*",
+        "eslint": "^9.0.0",
+        "typescript": "^5.5.4"
+    },
+    "dependencies": {
+        "@codesandbox/sdk": "^1.1.6",
+        "@onlook/models": "*",
+        "@onlook/parser": "*",
+        "@onlook/utility": "*"
+    }
+}

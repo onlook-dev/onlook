@@ -1,0 +1,17 @@
+{
+    "extends": "@onlook/typescript/base.json",
+    "compilerOptions": {
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ]
+        }
+    },
+    "include": [
+        "src",
+        "test"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

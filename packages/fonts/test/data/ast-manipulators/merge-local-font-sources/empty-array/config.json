@@ -1,0 +1,10 @@
+{
+    "fontName": "emptyFont",
+    "newSources": [
+        {
+            "path": "./fonts/empty-regular.woff2",
+            "weight": "400",
+            "style": "normal"
+        }
+    ]
+} 

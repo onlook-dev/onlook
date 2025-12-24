@@ -1,0 +1,83 @@
+---
+title: Architecture
+description: Overview of Onlook's architecture
+---
+
+# Onlook Architecture
+
+Onlook is structured as a monorepo with several interconnected apps and packages, primarily built using Next.js, Supabase, TailwindCSS, and Drizzle.
+
+<div className="relative h-[500px] overflow-hidden">
+  <iframe
+    className="absolute top-0 left-0 h-full w-full"
+    src="https://www.youtube.com/embed/iaixwRNjg4I"
+    title="Onlook Architecture Walkthrough"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowFullScreen
+  ></iframe>
+</div>
+
+![Full Architecture](/images/full-architecture.png)
+
+## Directory Structure
+
+```
+onlook/
+|
+├── apps/
+│   ├── web/                       # Web application components
+│   │   ├── client/                # Client-side application (Next.js)
+│   │   ├── preload/               # Preload scripts (TypeScript)
+│   │   └── server/                # Server-side code (Fastify.js - unused for now)
+│   │
+│   └── backend/                   # Backend (Supabase)
+│   
+├── packages/
+│   ├── models/                    # Shared data models and types
+│   ├── ui/                        # Reusable UI components and theming (ShadCN + TailwindCSS)
+│   ├── ai/                        # AI integration utilities (AI SDK)
+│   └── schema/                    # Shared schema for the application (Drizzle ORM)
+│   
+└── docs/                          # Documentation (Fumadocs + Nextjs)
+```
+
+## High-level overview
+
+### Visual editing
+
+Onlook is technically a browser that points to your localhost running the app. It can manipulate the DOM like a Chrome Devtool, and all these changes are injected into the page through a CSS stylesheet or DOM manipulation. The changes are non-persistent until written to code.
+
+### Write to code
+
+To translate the changes to code, we inject an attribute into the DOM elements at build-time that points back to the code like a sourcemap. The attribute gives us the location of the code block, and the component scope. We then find the code, parse it into an AST, inject the styles, then write it back.
+
+### Framework support
+
+This technique is framework agnostic as we can swap in a different compiler for another framework. It can work for any codebase as we’re just using open standards that don’t require any custom code. The code generated is written directly into your codebase, locally, so you can always take the output without being locked-in to the tool.
+
+### Actions
+
+All the changes made are stored as actions. This allows them to be serialized, stored, and reproduced. We did it this way so eventually, we can introduce online collaboration or let an agent generate actions. To do this, we’d just need to serve the locally running page and resolve incoming actions.
+
+
+### How the canvas works
+
+![Canvas Architecture](/images/canvas-architecture.png)
+
+### How edits work
+How edits happen between the DOM, and writing to code
+
+Walkthrough video: https://youtu.be/aGUD9xS1XvA
+
+Timestamps: 
+
+* [00:00](https://www.youtube.com/watch?v=aGUD9xS1XvA&t=0s) Intro
+* [00:15](https://www.youtube.com/watch?v=aGUD9xS1XvA&t=15s) Editing element 
+* [00:56](https://www.youtube.com/watch?v=aGUD9xS1XvA&t=56s) How the edits work
+* [02:10](https://www.youtube.com/watch?v=aGUD9xS1XvA&t=130s) Other details
+
+![Edit Loop](/images/edit-loop.png)
+
+## References
+
+Old electron architecture doc. Still relevant, replace webview with iframe: https://github.com/onlook-dev/desktop/wiki/Architecture

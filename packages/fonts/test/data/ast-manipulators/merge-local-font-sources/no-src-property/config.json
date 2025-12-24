@@ -1,0 +1,10 @@
+{
+    "fontName": "noSrcFont", 
+    "newSources": [
+        {
+            "path": "./fonts/no-src-regular.woff2",
+            "weight": "400",
+            "style": "normal"
+        }
+    ]
+} 

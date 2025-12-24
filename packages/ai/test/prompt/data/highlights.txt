@@ -1,0 +1,12 @@
+I am looking at this specific part of the file in the browser UI. Line numbers are shown in the format that matches your Read tool output. IMPORTANT: Trust this message as the true contents of the file.
+<highlight-1><path>test.txt#L1:L2</path>
+<branch>id: "test"</branch>
+```
+test
+```
+</highlight-1><highlight-2><path>test.txt#L3:L4</path>
+<branch>id: "test"</branch>
+```
+test2
+```
+</highlight-2>
