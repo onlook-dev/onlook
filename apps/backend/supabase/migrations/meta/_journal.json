@@ -141,6 +141,7 @@
       "when": 1758255985926,
       "tag": "0019_abandoned_psylocke",
       "breakpoints": true
+<<<<<<< HEAD
     },
     {
       "idx": 20,
@@ -155,6 +156,8 @@
       "when": 1766439745825,
       "tag": "0021_optimal_pyro",
       "breakpoints": true
+=======
+>>>>>>> 08a41a9ca19909effa8d5e6b459122bf03547e73
     }
   ]
 }

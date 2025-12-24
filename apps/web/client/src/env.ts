@@ -60,10 +60,13 @@ export const env = createEnv({
         GITHUB_APP_ID: z.string().optional(),
         GITHUB_APP_PRIVATE_KEY: z.string().optional(),
         GITHUB_APP_SLUG: z.string().optional(),
+<<<<<<< HEAD
 
         // Figma
         FIGMA_CLIENT_ID: z.string().optional(),
         FIGMA_CLIENT_SECRET: z.string().optional(),
+=======
+>>>>>>> 08a41a9ca19909effa8d5e6b459122bf03547e73
     },
     /**
      * Specify your client-side environment variables schema here. This way you can ensure the app
@@ -157,10 +160,13 @@ export const env = createEnv({
         GITHUB_APP_ID: process.env.GITHUB_APP_ID,
         GITHUB_APP_PRIVATE_KEY: process.env.GITHUB_APP_PRIVATE_KEY,
         GITHUB_APP_SLUG: process.env.GITHUB_APP_SLUG,
+<<<<<<< HEAD
 
         // Figma
         FIGMA_CLIENT_ID: process.env.FIGMA_CLIENT_ID,
         FIGMA_CLIENT_SECRET: process.env.FIGMA_CLIENT_SECRET,
+=======
+>>>>>>> 08a41a9ca19909effa8d5e6b459122bf03547e73
     },
     /**
      * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

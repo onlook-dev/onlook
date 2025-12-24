@@ -12,7 +12,7 @@ This implementation plan converts the platform extensions design into a series o
   - Configure environment variables for external API integrations
   - _Requirements: 1.1, 2.1, 4.2, 5.1, 6.2_
 
-- [ ]* 1.1 Write property test for database schema integrity
+- [ ]\* 1.1 Write property test for database schema integrity
   - **Property 1: Database schema consistency**
   - **Validates: Requirements 1.1, 2.1, 4.2, 5.1**
 
@@ -23,7 +23,7 @@ This implementation plan converts the platform extensions design into a series o
     - Build API client with rate limiting and error handling
     - _Requirements: 1.1_
 
-  - [ ]* 2.2 Write property test for Figma authentication
+  - [ ]\* 2.2 Write property test for Figma authentication
     - **Property 1: Figma Import Consistency**
     - **Validates: Requirements 1.1**
 
@@ -33,7 +33,7 @@ This implementation plan converts the platform extensions design into a series o
     - Convert Figma data structures to Onlook formats
     - _Requirements: 1.2, 1.4, 1.5_
 
-  - [ ]* 2.4 Write property test for Figma data conversion
+  - [ ]\* 2.4 Write property test for Figma data conversion
     - **Property 1: Figma Import Consistency**
     - **Validates: Requirements 1.2, 1.4, 1.5**
 
@@ -43,7 +43,7 @@ This implementation plan converts the platform extensions design into a series o
     - Store assets in organized project directories
     - _Requirements: 1.3_
 
-  - [ ]* 2.6 Write unit tests for Figma asset handling
+  - [ ]\* 2.6 Write unit tests for Figma asset handling
     - Test asset extraction and optimization
     - Test error handling for invalid assets
     - _Requirements: 1.3_
@@ -61,7 +61,7 @@ This implementation plan converts the platform extensions design into a series o
     - Handle branch conflicts and merging
     - _Requirements: 2.2, 2.3_
 
-  - [ ]* 3.3 Write property test for GitHub workflow
+  - [ ]\* 3.3 Write property test for GitHub workflow
     - **Property 2: GitHub Workflow Completeness**
     - **Validates: Requirements 2.1, 2.2, 2.3, 2.4, 2.5**
 
@@ -71,7 +71,7 @@ This implementation plan converts the platform extensions design into a series o
     - Link to design references and implementation notes
     - _Requirements: 2.4, 2.5_
 
-  - [ ]* 3.5 Write unit tests for GitHub integration
+  - [ ]\* 3.5 Write unit tests for GitHub integration
     - Test authentication and repository access
     - Test branch creation and PR generation
     - _Requirements: 2.1, 2.4, 2.5_
@@ -86,7 +86,7 @@ This implementation plan converts the platform extensions design into a series o
     - Handle component insertion with default props
     - _Requirements: 3.1, 3.2, 3.3_
 
-  - [ ]* 5.2 Write property test for Components Panel display
+  - [ ]\* 5.2 Write property test for Components Panel display
     - **Property 3: Components Panel Display Accuracy**
     - **Validates: Requirements 3.1, 3.4, 3.5**
 
@@ -96,7 +96,7 @@ This implementation plan converts the platform extensions design into a series o
     - Support custom component integration
     - _Requirements: 3.4, 3.5_
 
-  - [ ]* 5.4 Write property test for drag-drop functionality
+  - [ ]\* 5.4 Write property test for drag-drop functionality
     - **Property 4: Component Drag-Drop Functionality**
     - **Validates: Requirements 3.2, 3.3**
 
@@ -113,7 +113,7 @@ This implementation plan converts the platform extensions design into a series o
     - Support comment threading and replies
     - _Requirements: 4.4, 4.5_
 
-  - [ ]* 6.3 Write property test for comment system
+  - [ ]\* 6.3 Write property test for comment system
     - **Property 5: Comment System Completeness**
     - **Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.5**
 
@@ -129,11 +129,11 @@ This implementation plan converts the platform extensions design into a series o
     - Add comparison tools for design references
     - _Requirements: 5.2_
 
-  - [ ]* 7.3 Write property test for asset management
+  - [ ]\* 7.3 Write property test for asset management
     - **Property 6: Asset Management Consistency**
     - **Validates: Requirements 5.1, 5.3, 5.4, 5.5**
 
-  - [ ]* 7.4 Write property test for reference images
+  - [ ]\* 7.4 Write property test for reference images
     - **Property 7: Reference Image Display**
     - **Validates: Requirements 5.2**
 
@@ -153,7 +153,7 @@ This implementation plan converts the platform extensions design into a series o
     - Handle MCP server installation and management
     - _Requirements: 6.1, 6.2, 6.3_
 
-  - [ ]* 9.2 Write property test for MCP setup
+  - [ ] 9.2 Write property test for MCP setup
     - **Property 8: MCP Integration Setup**
     - **Validates: Requirements 6.1, 6.2, 6.3**
 
@@ -162,7 +162,7 @@ This implementation plan converts the platform extensions design into a series o
     - Handle MCP configuration changes and service restarts
     - _Requirements: 6.4, 6.5_
 
-  - [ ]* 9.4 Write property test for MCP tools
+  - [ ]\* 9.4 Write property test for MCP tools
     - **Property 9: MCP Tool Exposure**
     - **Validates: Requirements 6.4, 6.5**
 
@@ -173,7 +173,7 @@ This implementation plan converts the platform extensions design into a series o
     - Create audit trail system for recursive operations
     - _Requirements: 7.1, 7.4, 7.5_
 
-  - [ ]* 10.2 Write property test for self-reference safety
+  - [ ]\* 10.2 Write property test for self-reference safety
     - **Property 10: Self-Reference Safety**
     - **Validates: Requirements 7.1, 7.4, 7.5**
 
@@ -182,7 +182,7 @@ This implementation plan converts the platform extensions design into a series o
     - Support programmatic design iteration using visual editing
     - _Requirements: 7.2, 7.3_
 
-  - [ ]* 10.4 Write property test for recursive operations
+  - [ ]\* 10.4 Write property test for recursive operations
     - **Property 11: Recursive Operation Correctness**
     - **Validates: Requirements 7.2, 7.3**
 
@@ -199,7 +199,7 @@ This implementation plan converts the platform extensions design into a series o
     - Integrate with framework-specific build tools
     - _Requirements: 8.2, 8.4, 8.5_
 
-  - [ ]* 11.3 Write property test for framework support
+  - [ ]\* 11.3 Write property test for framework support
     - **Property 12: Framework Detection and Adaptation**
     - **Validates: Requirements 8.1, 8.2, 8.3, 8.4, 8.5**
 
@@ -215,7 +215,7 @@ This implementation plan converts the platform extensions design into a series o
     - Convert design tokens to appropriate styling format
     - _Requirements: 9.2, 9.3, 9.4_
 
-  - [ ]* 12.3 Write property test for styling support
+  - [ ]\* 12.3 Write property test for styling support
     - **Property 13: Styling System Adaptation**
     - **Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5**
 
@@ -232,7 +232,7 @@ This implementation plan converts the platform extensions design into a series o
     - Handle merge conflicts and provide resolution guidance
     - _Requirements: 10.3, 10.4, 10.5_
 
-  - [ ]* 13.3 Write property test for repository submission
+  - [ ]\* 13.3 Write property test for repository submission
     - **Property 14: Repository Submission Completeness**
     - **Validates: Requirements 10.1, 10.2, 10.3, 10.4, 10.5**
 
@@ -249,7 +249,7 @@ This implementation plan converts the platform extensions design into a series o
     - Connect Asset Manager to project workspace
     - _Requirements: 3.1, 4.1, 5.1_
 
-  - [ ]* 14.3 Write integration tests
+  - [ ]\* 14.3 Write integration tests
     - Test end-to-end workflows for each major feature
     - Test API endpoint functionality
     - _Requirements: All requirements_
