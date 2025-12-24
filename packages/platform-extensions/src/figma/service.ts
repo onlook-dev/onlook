@@ -50,7 +50,7 @@ export class FigmaIntegrationService {
             }));
             
             // Extract design tokens
-            const designTokens = FigmaFileParser.extractDesignTokens(fileData);
+            const designTokens = FigmaFileParser.extractDesignTokens(fileData.document);
             
             return {
                 fileId,
@@ -161,7 +161,7 @@ ${props}
             case 'BOOLEAN': return 'boolean';
             case 'TEXT': return 'string';
             case 'INSTANCE_SWAP': return 'React.ReactNode';
-            default: return 'any';
+            default: return 'unknown';
         }
     }
 

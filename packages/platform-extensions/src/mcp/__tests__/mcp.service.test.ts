@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach } from 'vitest';
-import { MCPIntegrationService } from '../../mcp/service';
+import { MCPIntegrationService } from '../service';
 
 const sampleConfig = [
     {
