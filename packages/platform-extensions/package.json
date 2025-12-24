@@ -42,6 +42,6 @@
     "dependencies": {
         "@onlook/db": "*",
         "@onlook/models": "*",
-        "zod": "^4.1.3"
+        "zod": "3.23.0"
     }
 }
