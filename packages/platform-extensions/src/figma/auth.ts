@@ -33,17 +33,17 @@ export class FigmaAuthService {
      * Exchange authorization code for access token
      */
     async exchangeCodeForToken(code: string): Promise<FigmaAuth> {
-        const response = await fetch('https://www.figma.com/api/oauth/token', {
+        const credentials = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
+        const response = await fetch('https://api.figma.com/v1/oauth/token', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': `Basic ${credentials}`,
             },
             body: new URLSearchParams({
-                client_id: this.clientId,
-                client_secret: this.clientSecret,
-                redirect_uri: this.redirectUri,
-                code,
                 grant_type: 'authorization_code',
+                code,
+                redirect_uri: this.redirectUri,
             }),
         });
 

@@ -19,7 +19,7 @@ export class FigmaTokenStorage {
             };
 
             // In a real implementation, encrypt the data before storing
-            const encrypted = this.encrypt(JSON.stringify(data));
+            const encrypted = this.encode(JSON.stringify(data));
             
             // Store in secure storage (database, keychain, etc.)
             // For now, we'll use a simple in-memory storage
@@ -39,7 +39,7 @@ export class FigmaTokenStorage {
                 return null;
             }
 
-            const decrypted = this.decrypt(encrypted);
+            const decrypted = this.decode(encrypted);
             const data = JSON.parse(decrypted);
 
             // Check if token is expired
@@ -88,21 +88,19 @@ export class FigmaTokenStorage {
     private static memoryStorage = new Map<string, string>();
 
     /**
-     * Simple encryption (for demo purposes)
-     * In production, use proper encryption like AES
+     * WARNING: Base64 encoding only – NOT encryption.
+     * Replace with AES-256-GCM (or similar) before production use.
      */
-    private static encrypt(data: string): string {
-        // This is a very basic encoding, not real encryption
-        // In production, use proper encryption libraries
+    private static encode(data: string): string {
+        console.warn('FigmaTokenStorage: using insecure base64 encoding. Replace with real encryption for production.');
         return Buffer.from(data).toString('base64');
     }
 
     /**
-     * Simple decryption (for demo purposes)
+     * Matching decode helper for the insecure encoding above.
      */
-    private static decrypt(encrypted: string): string {
-        // This is a very basic decoding, not real decryption
-        return Buffer.from(encrypted, 'base64').toString('utf-8');
+    private static decode(encoded: string): string {
+        return Buffer.from(encoded, 'base64').toString('utf-8');
     }
 }
 

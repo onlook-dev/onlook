@@ -5,9 +5,24 @@ export interface CommentPosition {
     pageUrl: string;
 }
 
+export interface CommentData {
+    id: string;
+    projectId: string;
+    elementId: string;
+    content: string;
+    position: CommentPosition;
+    userId: string;
+    status: 'open' | 'resolved' | 'closed';
+    createdAt: Date;
+    updatedAt: Date;
+    parentId?: string;
+    replies: CommentData[];
+    mentions: string[];
+}
+
 export interface CommentThread {
     id: string;
-    comments: Comment[];
+    comments: CommentData[];
     status: 'open' | 'resolved' | 'closed';
 }
 

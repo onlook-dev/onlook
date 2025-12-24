@@ -181,6 +181,197 @@ CREATE TABLE "mcp_servers" (
 );
 --> statement-breakpoint
 ALTER TABLE "mcp_servers" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
+
+-- Asset policies
+DROP POLICY IF EXISTS "assets_select_policy" ON assets;
+CREATE POLICY "assets_select_policy" ON assets
+FOR SELECT TO authenticated
+USING (user_has_project_access(project_id, ARRAY['owner', 'admin']));
+
+DROP POLICY IF EXISTS "assets_insert_policy" ON assets;
+CREATE POLICY "assets_insert_policy" ON assets
+FOR INSERT TO authenticated
+WITH CHECK (user_has_project_access(project_id, ARRAY['owner', 'admin']));
+
+DROP POLICY IF EXISTS "assets_update_policy" ON assets;
+CREATE POLICY "assets_update_policy" ON assets
+FOR UPDATE TO authenticated
+USING (user_has_project_access(project_id, ARRAY['owner', 'admin']))
+WITH CHECK (user_has_project_access(project_id, ARRAY['owner', 'admin']));
+
+DROP POLICY IF EXISTS "assets_delete_policy" ON assets;
+CREATE POLICY "assets_delete_policy" ON assets
+FOR DELETE TO authenticated
+USING (user_has_project_access(project_id, ARRAY['owner']));
+
+-- Asset reference policies
+DROP POLICY IF EXISTS "asset_references_select_policy" ON asset_references;
+CREATE POLICY "asset_references_select_policy" ON asset_references
+FOR SELECT TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM assets
+    WHERE assets.id = asset_references.asset_id
+    AND user_has_project_access(assets.project_id, ARRAY['owner', 'admin'])
+  )
+);
+
+DROP POLICY IF EXISTS "asset_references_mutation_policy" ON asset_references;
+CREATE POLICY "asset_references_mutation_policy" ON asset_references
+FOR ALL TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM assets
+    WHERE assets.id = asset_references.asset_id
+    AND user_has_project_access(assets.project_id, ARRAY['owner', 'admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM assets
+    WHERE assets.id = asset_references.asset_id
+    AND user_has_project_access(assets.project_id, ARRAY['owner', 'admin'])
+  )
+);
+
+-- Comment policies
+DROP POLICY IF EXISTS "comments_select_policy" ON comments;
+CREATE POLICY "comments_select_policy" ON comments
+FOR SELECT TO authenticated
+USING (user_has_project_access(project_id, ARRAY['owner', 'admin']));
+
+DROP POLICY IF EXISTS "comments_insert_policy" ON comments;
+CREATE POLICY "comments_insert_policy" ON comments
+FOR INSERT TO authenticated
+WITH CHECK (user_has_project_access(project_id, ARRAY['owner', 'admin']));
+
+DROP POLICY IF EXISTS "comments_update_policy" ON comments;
+CREATE POLICY "comments_update_policy" ON comments
+FOR UPDATE TO authenticated
+USING (user_has_project_access(project_id, ARRAY['owner', 'admin']))
+WITH CHECK (user_has_project_access(project_id, ARRAY['owner', 'admin']));
+
+DROP POLICY IF EXISTS "comments_delete_policy" ON comments;
+CREATE POLICY "comments_delete_policy" ON comments
+FOR DELETE TO authenticated
+USING (user_has_project_access(project_id, ARRAY['owner']));
+
+-- Comment mention policies
+DROP POLICY IF EXISTS "comment_mentions_policy" ON comment_mentions;
+CREATE POLICY "comment_mentions_policy" ON comment_mentions
+FOR ALL TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM comments
+    WHERE comments.id = comment_mentions.comment_id
+    AND user_has_project_access(comments.project_id, ARRAY['owner', 'admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM comments
+    WHERE comments.id = comment_mentions.comment_id
+    AND user_has_project_access(comments.project_id, ARRAY['owner', 'admin'])
+  )
+);
+
+-- Figma file policies
+DROP POLICY IF EXISTS "figma_files_policy" ON figma_files;
+CREATE POLICY "figma_files_policy" ON figma_files
+FOR ALL TO authenticated
+USING (user_has_project_access(project_id, ARRAY['owner', 'admin']))
+WITH CHECK (user_has_project_access(project_id, ARRAY['owner', 'admin']));
+
+-- Figma asset policies
+DROP POLICY IF EXISTS "figma_assets_policy" ON figma_assets;
+CREATE POLICY "figma_assets_policy" ON figma_assets
+FOR ALL TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM figma_files
+    WHERE figma_files.id = figma_assets.figma_file_id
+    AND user_has_project_access(figma_files.project_id, ARRAY['owner', 'admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM figma_files
+    WHERE figma_files.id = figma_assets.figma_file_id
+    AND user_has_project_access(figma_files.project_id, ARRAY['owner', 'admin'])
+  )
+);
+
+-- Figma component policies
+DROP POLICY IF EXISTS "figma_components_policy" ON figma_components;
+CREATE POLICY "figma_components_policy" ON figma_components
+FOR ALL TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM figma_files
+    WHERE figma_files.id = figma_components.figma_file_id
+    AND user_has_project_access(figma_files.project_id, ARRAY['owner', 'admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM figma_files
+    WHERE figma_files.id = figma_components.figma_file_id
+    AND user_has_project_access(figma_files.project_id, ARRAY['owner', 'admin'])
+  )
+);
+
+-- GitHub repository policies
+DROP POLICY IF EXISTS "github_repositories_policy" ON github_repositories;
+CREATE POLICY "github_repositories_policy" ON github_repositories
+FOR ALL TO authenticated
+USING (user_has_project_access(project_id, ARRAY['owner', 'admin']))
+WITH CHECK (user_has_project_access(project_id, ARRAY['owner', 'admin']));
+
+-- GitHub integration policies
+DROP POLICY IF EXISTS "github_integrations_policy" ON github_integrations;
+CREATE POLICY "github_integrations_policy" ON github_integrations
+FOR ALL TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM github_repositories
+    WHERE github_repositories.id = github_integrations.repository_id
+    AND user_has_project_access(github_repositories.project_id, ARRAY['owner', 'admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM github_repositories
+    WHERE github_repositories.id = github_integrations.repository_id
+    AND user_has_project_access(github_repositories.project_id, ARRAY['owner', 'admin'])
+  )
+);
+
+-- MCP config policies
+DROP POLICY IF EXISTS "mcp_configs_policy" ON mcp_configs;
+CREATE POLICY "mcp_configs_policy" ON mcp_configs
+FOR ALL TO authenticated
+USING (user_has_project_access(project_id, ARRAY['owner', 'admin']))
+WITH CHECK (user_has_project_access(project_id, ARRAY['owner', 'admin']));
+
+-- MCP server policies
+DROP POLICY IF EXISTS "mcp_servers_policy" ON mcp_servers;
+CREATE POLICY "mcp_servers_policy" ON mcp_servers
+FOR ALL TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM mcp_configs
+    WHERE mcp_configs.id = mcp_servers.config_id
+    AND user_has_project_access(mcp_configs.project_id, ARRAY['owner', 'admin'])
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM mcp_configs
+    WHERE mcp_configs.id = mcp_servers.config_id
+    AND user_has_project_access(mcp_configs.project_id, ARRAY['owner', 'admin'])
+  )
+);
+
 ALTER TABLE "deployments" DROP CONSTRAINT "deployments_requested_by_users_id_fk";
 --> statement-breakpoint
 ALTER TABLE "rate_limits" DROP CONSTRAINT "rate_limits_user_id_users_id_fk";

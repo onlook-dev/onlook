@@ -171,7 +171,7 @@ ${props}
     private generateComponentStyles(component: FigmaComponent): string {
         const className = this.sanitizeComponentName(component.name).toLowerCase();
         const styles = component.styles
-            .map(style => `  ${style.cssProperty}: ${style.cssValue};`)
+            .map(style => `  ${style.property}: ${style.value};`)
             .join('\n');
 
         return `
