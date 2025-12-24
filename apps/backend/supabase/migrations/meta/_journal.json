@@ -141,6 +141,20 @@
       "when": 1758255985926,
       "tag": "0019_abandoned_psylocke",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1766437083547,
+      "tag": "0020_volatile_peter_parker",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1766439745825,
+      "tag": "0021_optimal_pyro",
+      "breakpoints": true
     }
   ]
 }
