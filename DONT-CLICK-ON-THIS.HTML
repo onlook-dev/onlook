@@ -2,7 +2,8 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>67 MOTION</title>
+<title>67 BRAINROT</title>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Rubik+Glitch&display=swap" rel="stylesheet">
 <style>
 html,body{
 margin:0;
@@ -14,50 +15,47 @@ display:flex;
 align-items:center;
 justify-content:center
 }
-#wrap{
-position:relative;
-width:300px;
-height:300px
-}
-#char{
-width:100%;
-image-rendering:pixelated;
-transform-origin:center center;
-animation:body 0.6s ease-in-out infinite
-}
-.hand{
+#c{
 position:absolute;
-width:80px;
-top:120px;
-transform-origin:top center;
-image-rendering:pixelated
-}
-#left{
-left:-40px;
-animation:hand 0.18s linear infinite
-}
-#right{
-right:-40px;
-animation:hand 0.18s linear infinite reverse
-}
-@keyframes hand{
-0%{transform:rotate(0deg)}
-50%{transform:rotate(55deg)}
-100%{transform:rotate(0deg)}
-}
-@keyframes body{
-0%{transform:translateY(0) rotate(0deg)}
-50%{transform:translateY(-12px) rotate(-2deg)}
-100%{transform:translateY(0) rotate(0deg)}
+font-family:'Rubik Glitch','Luckiest Guy',Impact,sans-serif;
+font-size:24vw;
+color:white;
+mix-blend-mode:screen;
+filter:contrast(200%);
+will-change:transform,filter
 }
 </style>
 </head>
 <body>
-<div id="wrap">
-<img id="char" src="67.png">
-<img class="hand" id="left" src="67.png">
-<img class="hand" id="right" src="67.png">
-</div>
-<audio src="67.mp3" autoplay loop></audio>
+<div id="c">67</div>
+<script>
+const e=document.getElementById("c")
+navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{
+const a=new AudioContext()
+const m=a.createMediaStreamSource(s)
+const n=a.createAnalyser()
+n.fftSize=512
+m.connect(n)
+const d=new Uint8Array(n.frequencyBinCount)
+function f(){
+n.getByteFrequencyData(d)
+let v=d.reduce((p,c)=>p+c,0)/d.length
+let j=(Math.random()-.5)*v*1.5
+let k=(Math.random()-.5)*v*1.5
+let r=(Math.random()-.5)*v*2
+let sc=1+v/60
+e.style.transform=`translate(${j}px,${k}px) rotate(${r}deg) scale(${sc})`
+e.style.filter=`blur(${v/18}px) hue-rotate(${v*4}deg)`
+requestAnimationFrame(f)
+}
+f()
+})
+setInterval(()=>{
+e.style.letterSpacing=Math.random()*4+"vw"
+},90)
+setInterval(()=>{
+e.style.transform+=` translate(${(Math.random()-.5)*200}px,${(Math.random()-.5)*200}px)`
+},180)
+</script>
 </body>
 </html>
