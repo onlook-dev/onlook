@@ -6,12 +6,16 @@ import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-proj
 import { ExternalRoutes } from '@/utils/constants';
 import { AuthModal } from './_components/auth-modal';
 import { Hero } from './_components/hero';
-import { ContributorSection } from './_components/landing-page/contributor-section';
-import { CTASection } from './_components/landing-page/cta-section';
+import { TeaserDemoSection } from './_components/landing-page/teaser-demo-section';
+import {
+    CreditBureauSection,
+    FixPacksSection,
+    DesignSystemSection,
+    DeploySection,
+    WhiteLabelSection,
+} from './_components/landing-page/synthia-sections';
 import { FAQSection } from './_components/landing-page/faq-section';
-import { ResponsiveMockupSection } from './_components/landing-page/responsive-mockup-section';
-import { TestimonialsSection } from './_components/landing-page/testimonials-section';
-import { WhatCanOnlookDoSection } from './_components/landing-page/what-can-onlook-do-section';
+import { CTASection } from './_components/landing-page/cta-section';
 import { WebsiteLayout } from './_components/website-layout';
 
 export default function Main() {
@@ -21,18 +25,18 @@ export default function Main() {
                 <div className="w-screen h-screen flex items-center justify-center" id="hero">
                     <Hero />
                 </div>
-                <ResponsiveMockupSection />
-                {/* <CodeOneToOneSection /> */}
-                <WhatCanOnlookDoSection />
-                {/* <ObsessForHoursSection /> */}
-                <ContributorSection />
-                <TestimonialsSection />
+                <TeaserDemoSection />
+                <CreditBureauSection />
+                <FixPacksSection />
+                <DesignSystemSection />
+                <DeploySection />
+                <WhiteLabelSection />
                 <FAQSection />
                 <CTASection href={ExternalRoutes.BOOK_DEMO} />
                 <AuthModal />
                 <NonProjectSettingsModal />
                 <SubscriptionModal />
-            </WebsiteLayout >
+            </WebsiteLayout>
         </CreateManagerProvider>
     );
 }

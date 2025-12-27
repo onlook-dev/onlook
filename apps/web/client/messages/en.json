@@ -90,8 +90,51 @@
             "blankStart": "Start from a blank page"
         }
     },
+    "landing": {
+        "hero": {
+            "headline": "Stop shipping ugly.",
+            "subhead": "Cynthia audits your UI like a credit bureau—and rebuilds it into a lovable, conversion-ready front end.",
+            "inputPlaceholder": "Describe your idea… (or paste your URL)",
+            "primaryCta": "Get my Cynthia Score",
+            "secondaryCta": "See a sample report",
+            "trustLine": "No signup to start. Preview first. Upgrade when you're ready."
+        },
+        "sections": {
+            "creditBureau": {
+                "title": "A design credit report for your product",
+                "body": "We don't give vibes. We give receipts: scores, findings, exact fixes.",
+                "bullet1": "Hierarchy failures that confuse users",
+                "bullet2": "Typography that kills trust",
+                "bullet3": "Spacing debt that makes everything feel cheap",
+                "bullet4": "Accessibility issues that block real customers"
+            },
+            "fixPacks": {
+                "title": "One-click Fix Packs",
+                "description": "Apply grouped fixes instantly"
+            },
+            "designSystem": {
+                "title": "Prevent design debt from coming back",
+                "description": "Generate governance rules from your fixes"
+            },
+            "deploy": {
+                "title": "Ship to GitHub. Deploy fast.",
+                "description": "Commit fixes directly to your repo"
+            },
+            "whiteLabel": {
+                "title": "White-label ready for agencies",
+                "description": "Rebrand Cynthia for your clients"
+            }
+        },
+        "demo": {
+            "title": "See it in action",
+            "overallScore": "Overall Score",
+            "issuesFound": "{count} issues found",
+            "topIssues": "Top Issues Preview",
+            "unlockPrompt": "Unlock full report to see all {count} issues and fix packs"
+        }
+    },
     "welcome": {
-        "title": "Welcome to Onlook",
+        "title": "Welcome to Synthia",
         "titleReturn": "Welcome back to Onlook",
         "description": "A next-generation visual code editor that lets designers and product managers craft web experiences with AI.",
         "alpha": "Alpha",
@@ -362,6 +405,66 @@
             },
             "reportIssue": "Report Issue",
             "shortcuts": "Shortcuts"
+        },
+        "cynthia": {
+            "title": "Cynthia Design Audit",
+            "subtitle": "AI-powered design audit with actionable fixes",
+            "startNew": {
+                "title": "Start New Audit",
+                "description": "Enter a URL or select a component to audit",
+                "urlPlaceholder": "https://example.com",
+                "buttonRun": "Run Audit",
+                "buttonRunning": "Starting..."
+            },
+            "status": {
+                "title": "Audit Status",
+                "pending": "Pending",
+                "running": "Running",
+                "completed": "Completed",
+                "failed": "Failed",
+                "analyzing": "Analyzing your UI...",
+                "error": "Audit failed: {message}"
+            },
+            "score": {
+                "title": "Cynthia Score",
+                "issuesFound": "Found {count} {count, plural, one {issue} other {issues}}"
+            },
+            "issues": {
+                "title": "Top Issues (Teaser)",
+                "description": "Unlock full report for complete details and fix packs",
+                "whyMatters": "Why it matters:",
+                "impact": "Impact:",
+                "fix": "Fix:"
+            },
+            "unlock": {
+                "title": "Unlock Full Report",
+                "description": "Get the complete fix plan + one-click refactors",
+                "feature1": "Full UDEC breakdown with exact measurements",
+                "feature2": "One-click Fix Packs (layout, type, color, spacing, accessibility)",
+                "feature3": "Exportable patch + changelog for your repo",
+                "button": "Upgrade to Pro"
+            },
+            "severity": {
+                "critical": "Critical",
+                "major": "Major",
+                "minor": "Minor",
+                "info": "Info"
+            },
+            "axes": {
+                "CTX": "Context & Clarity",
+                "DYN": "Dynamic",
+                "LFT": "Layout & Flow",
+                "TYP": "Typography",
+                "CLR": "Color",
+                "GRD": "Grid",
+                "SPC": "Spacing",
+                "IMG": "Imagery",
+                "MOT": "Motion",
+                "ACC": "Accessibility",
+                "RSP": "Responsive",
+                "TRD": "Trends",
+                "EMO": "Emotional Impact"
+            }
         }
     }
 }

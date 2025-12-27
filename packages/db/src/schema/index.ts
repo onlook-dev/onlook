@@ -1,5 +1,6 @@
 export * from './canvas';
 export * from './chat';
+export * from './cynthia';
 export * from './domain';
 export * from './feedback';
 export * from './project';

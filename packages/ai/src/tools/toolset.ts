@@ -4,6 +4,7 @@ import {
     BashEditTool,
     BashReadTool,
     CheckErrorsTool,
+    CynthiaAuditTool,
     FuzzyEditFileTool,
     GlobTool,
     GrepTool,
@@ -45,6 +46,7 @@ const readOnlyToolClasses = [
     GrepTool,
     TypecheckTool,
     CheckErrorsTool,
+    CynthiaAuditTool,
 ];
 const editOnlyToolClasses = [
     SearchReplaceEditTool,

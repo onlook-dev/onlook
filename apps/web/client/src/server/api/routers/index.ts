@@ -1,5 +1,6 @@
 export * from './chat';
 export * from './code';
+export * from './cynthia';
 export * from './domain';
 export * from './forward';
 export * from './github';
