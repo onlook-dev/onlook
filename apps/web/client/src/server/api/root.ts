@@ -3,7 +3,9 @@ import {
     auditRouter,
     buildSessionRouter,
     chatRouter,
+    creditsRouter,
     domainRouter,
+    fixPackRouter,
     frameRouter,
     githubRouter,
     invitationRouter,
@@ -46,6 +48,8 @@ export const appRouter = createTRPCRouter({
     audit: auditRouter,
     buildSession: buildSessionRouter,
     preview: previewRouter,
+    fixPack: fixPackRouter,
+    credits: creditsRouter,
 });
 
 // export type definition of API
