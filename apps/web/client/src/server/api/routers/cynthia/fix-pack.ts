@@ -9,6 +9,7 @@ import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { audits, fixPacks } from '@onlook/db/src/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { checkCredits, consumeCredits } from '../../services/credit-service';
+import { queueApplyFixPack } from '../../services/queue-service';
 
 /**
  * Generate fix pack preview from audit data
@@ -235,5 +236,77 @@ export const fixPackRouter = createTRPCRouter({
             }
 
             return fixPack;
+        }),
+
+    /**
+     * Apply fix pack to a repository (Phase 5)
+     * Queues a job to create GitHub PR
+     */
+    apply: protectedProcedure
+        .input(
+            z.object({
+                fixPackId: z.string().uuid(),
+                repoOwner: z.string().min(1),
+                repoName: z.string().min(1),
+            })
+        )
+        .mutation(async ({ ctx, input }) => {
+            const userId = ctx.user.id;
+
+            // Get fix pack and verify ownership
+            const [fixPack] = await ctx.db
+                .select()
+                .from(fixPacks)
+                .where(eq(fixPacks.id, input.fixPackId))
+                .limit(1);
+
+            if (!fixPack) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: 'Fix pack not found',
+                });
+            }
+
+            if (fixPack.userId !== userId) {
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'Not authorized',
+                });
+            }
+
+            // Create apply run record using SECURITY DEFINER function
+            const result = await ctx.db.execute(sql`
+                SELECT * FROM create_apply_run_record(
+                    ${userId}::uuid,
+                    ${fixPack.auditId}::uuid,
+                    ${input.fixPackId}::uuid,
+                    ${input.repoOwner}::text,
+                    ${input.repoName}::text
+                )
+            `);
+
+            const applyRun = result.rows[0];
+            if (!applyRun) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Failed to create apply run',
+                });
+            }
+
+            // Queue the apply job
+            const jobId = await queueApplyFixPack({
+                applyRunId: applyRun.id,
+                userId,
+                auditId: fixPack.auditId,
+                fixPackId: input.fixPackId,
+                repoOwner: input.repoOwner,
+                repoName: input.repoName,
+            });
+
+            return {
+                applyRunId: applyRun.id,
+                jobId,
+                status: 'queued',
+            };
         }),
 });

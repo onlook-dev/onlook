@@ -1,5 +1,6 @@
 import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
 import {
+    applyRunRouter,
     auditRouter,
     buildSessionRouter,
     chatRouter,
@@ -50,6 +51,7 @@ export const appRouter = createTRPCRouter({
     preview: previewRouter,
     fixPack: fixPackRouter,
     credits: creditsRouter,
+    applyRun: applyRunRouter,
 });
 
 // export type definition of API
