@@ -7,7 +7,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { audits, fixPacks } from '@onlook/db/src/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { checkCredits, consumeCredits } from '../../services/credit-service';
 
 /**
@@ -118,21 +118,21 @@ export const fixPackRouter = createTRPCRouter({
             // Generate fix pack preview
             const preview = generateFixPackPreview(audit, input.type);
 
-            // Save fix pack to database
-            const [fixPack] = await ctx.db
-                .insert(fixPacks)
-                .values({
-                    auditId: input.auditId,
-                    userId,
-                    type: input.type,
-                    title: preview.title,
-                    description: preview.description,
-                    patchPreview: preview.patchPreview,
-                    filesAffected: preview.filesAffected,
-                    issuesFixed: preview.issuesFixed,
-                })
-                .returning();
+            // Save fix pack to database using SECURITY DEFINER function (Phase 4.1)
+            const result = await ctx.db.execute(sql`
+                SELECT * FROM create_fix_pack_record(
+                    ${userId}::uuid,
+                    ${input.auditId}::uuid,
+                    ${input.type}::fix_pack_type,
+                    ${preview.title}::text,
+                    ${preview.description}::text,
+                    ${JSON.stringify(preview.patchPreview)}::jsonb,
+                    ${JSON.stringify(preview.filesAffected)}::jsonb,
+                    ${JSON.stringify(preview.issuesFixed)}::jsonb
+                )
+            `);
 
+            const fixPack = result.rows[0];
             if (!fixPack) {
                 throw new TRPCError({
                     code: 'INTERNAL_SERVER_ERROR',
