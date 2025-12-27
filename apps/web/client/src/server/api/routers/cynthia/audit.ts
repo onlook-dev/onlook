@@ -5,6 +5,7 @@ import { audits, auditInsertSchema } from '@onlook/db/src/schema';
 import { eq, desc } from 'drizzle-orm';
 import { AuditStatus } from '@onlook/models';
 import { startAuditProcessing } from './processor';
+import { checkCredits, consumeCredits } from '../../services/credit-service';
 
 export const auditRouter = createTRPCRouter({
     /**
@@ -245,23 +246,48 @@ export const auditRouter = createTRPCRouter({
         }),
 
     /**
-     * Unlock full report (Phase 3 stub)
-     * In Phase 4, this will check subscription/payment
+     * Unlock full report (Phase 4: Real implementation)
+     * Checks credits and consumes 1 credit if available
      */
-    unlock: publicProcedure
+    unlock: protectedProcedure
         .input(z.object({ buildSessionId: z.string().uuid() }))
         .mutation(async ({ ctx, input }) => {
-            // Phase 3 stub: Always return false (not allowed)
-            // Phase 4 will implement:
-            // - Check user subscription tier
-            // - Check credits/usage
-            // - Process payment if needed
-            // - Return full audit access
+            const userId = ctx.user.id;
 
+            // Check credit balance
+            const creditCheck = await checkCredits(userId);
+
+            if (!creditCheck.hasCredits) {
+                return {
+                    allowed: false,
+                    reason: 'no_credits',
+                    message: `You've used all ${creditCheck.total} credits. Upgrade to unlock more reports.`,
+                    upgradeUrl: '/pricing',
+                    creditsUsed: creditCheck.used,
+                    creditsTotal: creditCheck.total,
+                    plan: creditCheck.plan,
+                };
+            }
+
+            // Consume 1 credit
+            const consumed = await consumeCredits(userId, 1);
+
+            if (!consumed) {
+                // Race condition: credits were consumed between check and consume
+                return {
+                    allowed: false,
+                    reason: 'no_credits',
+                    message: 'No credits remaining. Please upgrade.',
+                    upgradeUrl: '/pricing',
+                };
+            }
+
+            // Success - credit consumed, allow access
             return {
-                allowed: false,
-                message: 'Unlock requires subscription. Coming soon.',
-                upgradeUrl: '/pricing', // Placeholder
+                allowed: true,
+                creditsRemaining: creditCheck.remaining - 1,
+                creditsTotal: creditCheck.total,
+                plan: creditCheck.plan,
             };
         }),
 });
