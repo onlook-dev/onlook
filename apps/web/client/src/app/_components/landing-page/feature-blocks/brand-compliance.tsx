@@ -28,7 +28,7 @@ function ParallaxContainer({
   // Map scroll progress (0 to 1) to transform values
   // When scroll is 0 (element entering from bottom), we want positive offset (pushed down)
   // When scroll is 1 (element exiting at top), we want negative offset (pulled up)
-  // The multiplier 2000 is an approximation of the viewport height + element height range to match previous 'distanceFromCenter' logic roughly
+  // The multiplier 500 is an approximation of the viewport height + element height range to match previous 'distanceFromCenter' logic roughly
   const yRange = useTransform(
     scrollYProgress,
     [0, 1],
