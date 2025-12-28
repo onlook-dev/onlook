@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef } from "react";
-import { motion, useScroll, useSpring, useTransform } from "motion/react";
+import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 
 import { Icons } from "@onlook/ui/icons";
 
@@ -19,10 +19,7 @@ function ParallaxContainer({
   className,
 }: ParallaxContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const prefersReducedMotion =
-    typeof window !== "undefined"
-      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      : false;
+  const prefersReducedMotion = useReducedMotion();
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
