@@ -19,6 +19,10 @@ function ParallaxContainer({
   className,
 }: ParallaxContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion =
+    typeof window !== "undefined"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false;
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -28,11 +32,11 @@ function ParallaxContainer({
   // Map scroll progress (0 to 1) to transform values
   // When scroll is 0 (element entering from bottom), we want positive offset (pushed down)
   // When scroll is 1 (element exiting at top), we want negative offset (pulled up)
-  // The multiplier 500 is an approximation of the viewport height + element height range to match previous 'distanceFromCenter' logic roughly
+  // The multiplier 2000 is an approximation of the viewport height + element height range to match previous 'distanceFromCenter' logic roughly
   const yRange = useTransform(
     scrollYProgress,
     [0, 1],
-    [500 * speed, -500 * speed]
+    prefersReducedMotion ? [0, 0] : [500 * speed, -500 * speed]
   );
 
   const y = useSpring(yRange, {
@@ -69,12 +73,11 @@ export function BrandComplianceBlock() {
                   "bg-slate-300",
                   "bg-slate-400",
                   "bg-slate-500",
-                  "bg-slate-500",
                   "bg-slate-600",
                   "bg-slate-700",
                   "bg-slate-800",
                   "bg-slate-900",
-                  "bg-slate-900",
+                  "bg-slate-950",
                 ]}
               />
               <ColorSwatchGroup
@@ -86,12 +89,11 @@ export function BrandComplianceBlock() {
                   "bg-gray-300",
                   "bg-gray-400",
                   "bg-gray-500",
-                  "bg-gray-500",
                   "bg-gray-600",
                   "bg-gray-700",
                   "bg-gray-800",
                   "bg-gray-900",
-                  "bg-gray-900",
+                  "bg-gray-950",
                 ]}
               />
               <ColorSwatchGroup
@@ -103,12 +105,11 @@ export function BrandComplianceBlock() {
                   "bg-zinc-300",
                   "bg-zinc-400",
                   "bg-zinc-500",
-                  "bg-zinc-500",
                   "bg-zinc-600",
                   "bg-zinc-700",
                   "bg-zinc-800",
                   "bg-zinc-900",
-                  "bg-zinc-900",
+                  "bg-zinc-950",
                 ]}
               />
               <ColorSwatchGroup
@@ -120,12 +121,11 @@ export function BrandComplianceBlock() {
                   "bg-orange-300",
                   "bg-orange-400",
                   "bg-orange-500",
-                  "bg-orange-500",
                   "bg-orange-600",
                   "bg-orange-700",
                   "bg-orange-800",
                   "bg-orange-900",
-                  "bg-orange-900",
+                  "bg-orange-950",
                 ]}
               />
               <ColorSwatchGroup
@@ -137,12 +137,11 @@ export function BrandComplianceBlock() {
                   "bg-amber-300",
                   "bg-amber-400",
                   "bg-amber-500",
-                  "bg-amber-500",
                   "bg-amber-600",
                   "bg-amber-700",
                   "bg-amber-800",
                   "bg-amber-900",
-                  "bg-amber-900",
+                  "bg-amber-950",
                 ]}
               />
 
@@ -155,12 +154,11 @@ export function BrandComplianceBlock() {
                   "bg-lime-300",
                   "bg-lime-400",
                   "bg-lime-500",
-                  "bg-lime-500",
                   "bg-lime-600",
                   "bg-lime-700",
                   "bg-lime-800",
                   "bg-lime-900",
-                  "bg-lime-900",
+                  "bg-lime-950",
                 ]}
               />
               <ColorSwatchGroup
@@ -172,12 +170,11 @@ export function BrandComplianceBlock() {
                   "bg-green-300",
                   "bg-green-400",
                   "bg-green-500",
-                  "bg-green-500",
                   "bg-green-600",
                   "bg-green-700",
                   "bg-green-800",
                   "bg-green-900",
-                  "bg-green-900",
+                  "bg-green-950",
                 ]}
               />
             </div>
@@ -198,12 +195,11 @@ export function BrandComplianceBlock() {
                   "bg-cyan-300",
                   "bg-cyan-400",
                   "bg-cyan-500",
-                  "bg-cyan-500",
                   "bg-cyan-600",
                   "bg-cyan-700",
                   "bg-cyan-800",
                   "bg-cyan-900",
-                  "bg-cyan-900",
+                  "bg-cyan-950",
                 ]}
               />
               <ColorSwatchGroup
@@ -215,12 +211,11 @@ export function BrandComplianceBlock() {
                   "bg-blue-300",
                   "bg-blue-400",
                   "bg-blue-500",
-                  "bg-blue-500",
                   "bg-blue-600",
                   "bg-blue-700",
                   "bg-blue-800",
                   "bg-blue-900",
-                  "bg-blue-900",
+                  "bg-blue-950",
                 ]}
               />
               <ColorSwatchGroup
@@ -232,12 +227,11 @@ export function BrandComplianceBlock() {
                   "bg-indigo-300",
                   "bg-indigo-400",
                   "bg-indigo-500",
-                  "bg-indigo-500",
                   "bg-indigo-600",
                   "bg-indigo-700",
                   "bg-indigo-800",
                   "bg-indigo-900",
-                  "bg-indigo-900",
+                  "bg-indigo-950",
                 ]}
               />
               <ColorSwatchGroup
@@ -249,12 +243,11 @@ export function BrandComplianceBlock() {
                   "bg-violet-300",
                   "bg-violet-400",
                   "bg-violet-500",
-                  "bg-violet-500",
                   "bg-violet-600",
                   "bg-violet-700",
                   "bg-violet-800",
                   "bg-violet-900",
-                  "bg-violet-900",
+                  "bg-violet-950",
                 ]}
               />
               <ColorSwatchGroup
@@ -266,12 +259,11 @@ export function BrandComplianceBlock() {
                   "bg-purple-300",
                   "bg-purple-400",
                   "bg-purple-500",
-                  "bg-purple-500",
                   "bg-purple-600",
                   "bg-purple-700",
                   "bg-purple-800",
                   "bg-purple-900",
-                  "bg-purple-900",
+                  "bg-purple-950",
                 ]}
               />
               <ColorSwatchGroup
@@ -283,12 +275,11 @@ export function BrandComplianceBlock() {
                   "bg-pink-300",
                   "bg-pink-400",
                   "bg-pink-500",
-                  "bg-pink-500",
                   "bg-pink-600",
                   "bg-pink-700",
                   "bg-pink-800",
                   "bg-pink-900",
-                  "bg-pink-900",
+                  "bg-pink-950",
                 ]}
               />
               <ColorSwatchGroup
@@ -300,12 +291,11 @@ export function BrandComplianceBlock() {
                   "bg-rose-300",
                   "bg-rose-400",
                   "bg-rose-500",
-                  "bg-rose-500",
                   "bg-rose-600",
                   "bg-rose-700",
                   "bg-rose-800",
                   "bg-rose-900",
-                  "bg-rose-900",
+                  "bg-rose-950",
                 ]}
               />
             </div>
