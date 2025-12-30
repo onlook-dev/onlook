@@ -1,5 +1,6 @@
 export * from './agents';
 export * from './apply';
+export * from './audit';
 export * from './chat';
 export * from './contexts';
 export * from './prompt';

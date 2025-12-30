@@ -29,7 +29,8 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "preview-storybook": "bun --bun x serve storybook-static -p 6007",
-    "chromatic": "chromatic --exit-zero-on-changes"
+    "chromatic": "chromatic --exit-zero-on-changes",
+    "workers": "bun src/server/workers/start-workers.ts"
   },
   "dependencies": {
     "@ai-sdk/provider-utils": "^3.0.10",
@@ -73,6 +74,7 @@
     "@zenfs/dom": "1.2.5",
     "ai": "5.0.26",
     "blob-util": "^2.0.2",
+    "bullmq": "^5.28.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "culori": "^4.0.1",
@@ -80,6 +82,7 @@
     "flexsearch": "^0.8.160",
     "freestyle-sandboxes": "^0.0.78",
     "gleap": "^14.8.8",
+    "ioredis": "^5.4.2",
     "langfuse-vercel": "^3.38.4",
     "localforage": "^1.10.0",
     "lru-cache": "^11.2.1",

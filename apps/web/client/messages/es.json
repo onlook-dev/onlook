@@ -90,8 +90,51 @@
             "blankStart": "Empezar desde una página en blanco"
         }
     },
+    "landing": {
+        "hero": {
+            "headline": "Deja de publicar diseños feos.",
+            "subhead": "Cynthia audita tu UI como un buró de crédito y la reconstruye como un front-end premium y fácil de amar.",
+            "inputPlaceholder": "Describe tu idea… (o pega tu URL)",
+            "primaryCta": "Ver mi puntuación Cynthia",
+            "secondaryCta": "Ver un reporte de ejemplo",
+            "trustLine": "Empieza sin registrarte. Mira el preview. Paga solo si quieres el plan completo."
+        },
+        "sections": {
+            "creditBureau": {
+                "title": "Un reporte de crédito para tu diseño",
+                "body": "No damos 'vibras'. Damos evidencia: puntuación, hallazgos y arreglos exactos.",
+                "bullet1": "Jerarquía confusa",
+                "bullet2": "Tipografía que reduce confianza",
+                "bullet3": "Espaciado que se siente barato",
+                "bullet4": "Accesibilidad que bloquea clientes reales"
+            },
+            "fixPacks": {
+                "title": "Fix Packs con un clic",
+                "description": "Aplica arreglos agrupados al instante"
+            },
+            "designSystem": {
+                "title": "Evita que la deuda de diseño regrese",
+                "description": "Genera reglas de gobernanza desde tus arreglos"
+            },
+            "deploy": {
+                "title": "Sube a GitHub. Despliega rápido.",
+                "description": "Confirma arreglos directamente en tu repositorio"
+            },
+            "whiteLabel": {
+                "title": "Listo para agencias (marca blanca)",
+                "description": "Rebrandea Cynthia para tus clientes"
+            }
+        },
+        "demo": {
+            "title": "Míralo en acción",
+            "overallScore": "Puntuación General",
+            "issuesFound": "{count} hallazgos encontrados",
+            "topIssues": "Vista Previa de Hallazgos Principales",
+            "unlockPrompt": "Desbloquea el reporte completo para ver todos los {count} hallazgos y fix packs"
+        }
+    },
     "welcome": {
-        "title": "Bienvenido a Onlook",
+        "title": "Bienvenido a Synthia",
         "titleReturn": "Bienvenido de vuelta a Onlook",
         "description": "Un editor visual de código de última generación que permite a diseñadores y gerentes de productos crear experiencias web con IA.",
         "alpha": "Alpha",
