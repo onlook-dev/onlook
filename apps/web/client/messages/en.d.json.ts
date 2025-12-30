@@ -366,6 +366,11 @@ declare const messages: {
             "reportIssue": "Report Issue",
             "shortcuts": "Shortcuts"
         }
+    },
+    "BrandComplianceBlock": {
+        "brandColors": "Brand Colors",
+        "title": "Brand compliance",
+        "description": "Make your fonts, colors, and styles all speak the same language."
     }
 };
 export default messages;

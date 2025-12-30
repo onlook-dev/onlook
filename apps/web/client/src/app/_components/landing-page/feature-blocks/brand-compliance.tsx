@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useRef } from "react";
+import { useTranslations } from "next-intl";
+import { transKeys } from "@/i18n/keys";
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 
 import { Icons } from "@onlook/ui/icons";
@@ -52,13 +54,15 @@ function ParallaxContainer({
 }
 
 export function BrandComplianceBlock() {
+  const t = useTranslations();
+
   return (
     <div className="flex flex-col gap-4">
       <div className="bg-background-onlook/80 relative mb-6 h-100 w-full overflow-hidden rounded-lg">
         <ParallaxContainer speed={0.08} className="absolute inset-0">
           <div className="border-foreground-primary/20 absolute top-7 left-1/14 flex h-100 w-60 flex-col items-center justify-start overflow-hidden rounded-xl border-[0.5px] bg-black/85 backdrop-blur-2xl">
             <p className="text-foreground-primary text-regular border-foreground-primary/20 w-full border-b-[0.5px] px-3 py-2 text-left font-light">
-              Brand Colors
+              {t(transKeys.BrandComplianceBlock.brandColors)}
             </p>
             <div className="flex h-full w-full flex-col gap-2 overflow-y-auto px-3 py-2">
               <ColorSwatchGroup
@@ -180,7 +184,7 @@ export function BrandComplianceBlock() {
         <ParallaxContainer speed={-0.08} className="absolute inset-0">
           <div className="border-foreground-primary/20 absolute top-20 right-1/14 flex h-100 w-60 flex-col items-center justify-start overflow-hidden rounded-xl border-[0.5px] bg-black/50 backdrop-blur-2xl">
             <p className="text-foreground-primary text-regular border-foreground-primary/20 w-full border-b-[0.5px] px-3 py-2 text-left font-light">
-              Brand Colors
+              {t(transKeys.BrandComplianceBlock.brandColors)}
             </p>
             <div className="flex h-full w-full flex-col gap-2 overflow-y-auto px-3 py-2">
               <ColorSwatchGroup
@@ -306,12 +310,12 @@ export function BrandComplianceBlock() {
             <Icons.Brand className="text-foreground-primary h-6 w-6" />
           </div>
           <span className="text-foreground-primary text-largePlus font-light">
-            Brand compliance
+            {t(transKeys.BrandComplianceBlock.title)}
           </span>
         </div>
         {/* Description */}
         <p className="text-foreground-secondary text-regular w-1/2 text-balance">
-          Make your fonts, colors, and styles all speak the same language.
+          {t(transKeys.BrandComplianceBlock.description)}
         </p>
       </div>
     </div>
