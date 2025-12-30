@@ -8,6 +8,7 @@ import { applyRuns, fixPacks, audits } from '@onlook/db/src/schema';
 import { eq, sql } from 'drizzle-orm';
 import { createInstallationOctokit } from '@onlook/github';
 import type { Octokit } from '@octokit/rest';
+import { queueMonitorChecks } from './queue-service';
 
 /**
  * Log entry structure
@@ -352,6 +353,26 @@ export async function processApplyFixPack(data: {
         addLog(state, 'info', 'Apply pipeline completed successfully');
 
         // Final status: checks_running (will transition to success/failed based on CI)
+        await updateApplyRunStatus(state, 'checks_running', {
+            branch: branchName,
+            prNumber: pr.number,
+            prUrl: pr.url,
+        });
+
+        // Phase 5.1: Queue CI monitoring job to auto-update status
+        addLog(state, 'info', 'Queueing CI monitoring job...');
+        const installationId = data.githubInstallationId || process.env.GITHUB_INSTALLATION_ID;
+        await queueMonitorChecks({
+            applyRunId: data.applyRunId,
+            userId: data.userId,
+            repoOwner: data.repoOwner,
+            repoName: data.repoName,
+            prNumber: pr.number,
+            branch: branchName,
+            githubInstallationId: installationId,
+        });
+
+        addLog(state, 'info', 'CI monitoring queued - status will auto-update');
         await updateApplyRunStatus(state, 'checks_running', {
             branch: branchName,
             prNumber: pr.number,

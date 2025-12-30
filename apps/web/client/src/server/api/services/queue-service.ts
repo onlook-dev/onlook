@@ -42,6 +42,19 @@ export interface RepairJobData {
 }
 
 /**
+ * Monitor Checks Job Data (Phase 5.1)
+ */
+export interface MonitorChecksJobData {
+    applyRunId: string;
+    userId: string;
+    repoOwner: string;
+    repoName: string;
+    prNumber: number;
+    branch: string;
+    githubInstallationId?: string;
+}
+
+/**
  * Apply Queue - Handles fix pack application to GitHub
  */
 export const applyQueue = new Queue<ApplyFixPackJobData>('cynthia-apply', {
@@ -76,6 +89,23 @@ export const repairQueue = new Queue<RepairJobData>('cynthia-repair', {
         removeOnComplete: {
             age: 24 * 3600,
             count: 50,
+        },
+        removeOnFail: {
+            age: 7 * 24 * 3600,
+        },
+    },
+});
+
+/**
+ * Monitor Queue - Handles CI check monitoring (Phase 5.1)
+ */
+export const monitorQueue = new Queue<MonitorChecksJobData>('cynthia-monitor', {
+    connection: redisConnection,
+    defaultJobOptions: {
+        attempts: 1, // No retries - monitoring runs continuously internally
+        removeOnComplete: {
+            age: 24 * 3600,
+            count: 100,
         },
         removeOnFail: {
             age: 7 * 24 * 3600,
@@ -152,6 +182,40 @@ export function startRepairWorker(
 }
 
 /**
+ * Monitor Worker - Processes CI check monitoring jobs (Phase 5.1)
+ * Concurrency: 3 (can monitor multiple PRs simultaneously)
+ */
+let monitorWorker: Worker<MonitorChecksJobData> | null = null;
+
+export function startMonitorWorker(
+    processor: (job: Job<MonitorChecksJobData>) => Promise<void>
+) {
+    if (monitorWorker) {
+        return monitorWorker; // Already started
+    }
+
+    monitorWorker = new Worker<MonitorChecksJobData>(
+        'cynthia-monitor',
+        processor,
+        {
+            connection: redisConnection,
+            concurrency: 3, // Can monitor 3 PRs at once
+            lockDuration: 1200000, // 20 minutes (max monitor time)
+        }
+    );
+
+    monitorWorker.on('completed', (job) => {
+        console.log(`[Monitor Worker] Job ${job.id} completed`);
+    });
+
+    monitorWorker.on('failed', (job, err) => {
+        console.error(`[Monitor Worker] Job ${job?.id} failed:`, err);
+    });
+
+    return monitorWorker;
+}
+
+/**
  * Queue an apply fix pack job
  * Includes idempotency: deduplicates by applyRunId
  */
@@ -180,13 +244,29 @@ export async function queueRepair(data: RepairJobData): Promise<string> {
 }
 
 /**
+ * Queue a CI monitoring job (Phase 5.1)
+ * Includes idempotency: deduplicates by applyRunId
+ */
+export async function queueMonitorChecks(data: MonitorChecksJobData): Promise<string> {
+    const job = await monitorQueue.add('monitor-checks', data, {
+        jobId: `monitor-${data.applyRunId}`, // Idempotency key
+        removeOnComplete: true,
+        removeOnFail: false,
+    });
+
+    return job.id || '';
+}
+
+/**
  * Graceful shutdown
  */
 export async function closeQueues() {
     await applyWorker?.close();
     await repairWorker?.close();
+    await monitorWorker?.close();
     await applyQueue.close();
     await repairQueue.close();
+    await monitorQueue.close();
     await redisClient.quit();
 }
 
