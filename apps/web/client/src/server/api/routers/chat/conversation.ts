@@ -13,22 +13,29 @@ import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 /**
- * Schema for ChatMessage validation.
- * Validates essential fields used by generateConversationSummary (role, parts with type/text).
- * Uses z.unknown() with transform to cast to ChatMessage[] to avoid TypeScript structural typing conflicts
- * with the complex UIMessage generic type from the 'ai' package.
+ * Zod schema for ChatMessage validation in tRPC.
+ * 
+ * Based on AI SDK's UIMessage type pattern (see: https://ai-sdk.dev/docs/reference/ai-sdk-core/ui-message).
+ * Uses z.custom() to accept ChatMessage[] without creating index signature conflicts.
+ * Runtime validation ensures messages have the required structure (role, parts array).
+ * 
+ * Note: When AI SDK is upgraded to a version with validateUIMessages(), consider using it
+ * for more comprehensive runtime validation.
  */
-const ChatMessagesSchema = z.array(
-    z.object({
-        role: z.enum(['user', 'assistant', 'system']),
-        parts: z.array(
-            z.object({
-                type: z.string(),
-                text: z.string().optional(),
-            }).catchall(z.unknown()) // Allow additional fields without index signature issues
-        ),
-    }).catchall(z.unknown()) // Allow additional fields like id, metadata, etc.
-).transform((messages) => messages as unknown as ChatMessage[]);
+const ChatMessagesSchema = z.custom<ChatMessage[]>(
+    (val) => {
+        if (!Array.isArray(val)) return false;
+        return val.every((msg) =>
+            msg &&
+            typeof msg === 'object' &&
+            'role' in msg &&
+            ['user', 'assistant', 'system'].includes(msg.role as string) &&
+            'parts' in msg &&
+            Array.isArray(msg.parts)
+        );
+    },
+    { message: 'Invalid ChatMessage array: each message must have role and parts' }
+);
 
 export const conversationRouter = createTRPCRouter({
     getAll: protectedProcedure
