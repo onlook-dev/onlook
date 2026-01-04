@@ -1,6 +1,7 @@
 import { LLMProvider, OPENROUTER_MODELS, type ChatMessage, type ChatSummary } from '@onlook/models';
 import { ChatSummarySchema } from '@onlook/models';
 import { generateObject } from 'ai';
+import { v4 as uuidv4 } from 'uuid';
 import { initModel } from './providers';
 
 /**
@@ -12,10 +13,12 @@ export async function generateConversationSummary({
     messages,
     existingSummary,
     conversationId,
+    userId,
 }: {
     messages: ChatMessage[];
     existingSummary: ChatSummary | null;
     conversationId: string;
+    userId: string;
 }): Promise<ChatSummary> {
     const { model, headers } = initModel({
         provider: LLMProvider.OPENROUTER,
@@ -73,6 +76,16 @@ Generate a comprehensive summary that:
 
 Keep each field concise but informative. Focus on information that would help continue the conversation in a future session.`,
         maxOutputTokens: 500,
+        experimental_telemetry: {
+            isEnabled: true,
+            metadata: {
+                conversationId,
+                userId,
+                tags: ['conversation-summary-generation'],
+                sessionId: conversationId,
+                langfuseTraceId: uuidv4(),
+            },
+        },
     });
 
     return summary;

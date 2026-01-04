@@ -5,12 +5,30 @@ import {
     conversationUpdateSchema,
     fromDbConversation
 } from '@onlook/db';
-import { ChatSummarySchema, LLMProvider, OPENROUTER_MODELS, type ChatMessage } from '@onlook/models';
+import { LLMProvider, OPENROUTER_MODELS, type ChatMessage } from '@onlook/models';
 import { generateText } from 'ai';
 import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+
+/**
+ * Schema for ChatMessage validation.
+ * Validates essential fields used by generateConversationSummary (role, parts with type/text).
+ * Uses z.unknown() with transform to cast to ChatMessage[] to avoid TypeScript structural typing conflicts
+ * with the complex UIMessage generic type from the 'ai' package.
+ */
+const ChatMessagesSchema = z.array(
+    z.object({
+        role: z.enum(['user', 'assistant', 'system']),
+        parts: z.array(
+            z.object({
+                type: z.string(),
+                text: z.string().optional(),
+            }).catchall(z.unknown()) // Allow additional fields without index signature issues
+        ),
+    }).catchall(z.unknown()) // Allow additional fields like id, metadata, etc.
+).transform((messages) => messages as unknown as ChatMessage[]);
 
 export const conversationRouter = createTRPCRouter({
     getAll: protectedProcedure
@@ -106,7 +124,7 @@ export const conversationRouter = createTRPCRouter({
     updateSummary: protectedProcedure
         .input(z.object({
             conversationId: z.string(),
-            messages: z.array(z.any()), // ChatMessage[]
+            messages: ChatMessagesSchema,
         }))
         .mutation(async ({ ctx, input }) => {
             // Get existing conversation to access current summary
@@ -121,9 +139,10 @@ export const conversationRouter = createTRPCRouter({
             try {
                 // Generate updated summary based on messages and existing summary
                 const summary = await generateConversationSummary({
-                    messages: input.messages as ChatMessage[],
+                    messages: input.messages,
                     existingSummary: conversation.summary,
                     conversationId: input.conversationId,
+                    userId: ctx.user.id,
                 });
 
                 // Update conversation with new summary
@@ -134,6 +153,8 @@ export const conversationRouter = createTRPCRouter({
 
                 return summary;
             } catch (error) {
+                // Return null instead of throwing to allow chat to continue even if summarization fails.
+                // Summarization is a non-critical background operation.
                 console.error('Error generating conversation summary', error);
                 return null;
             }

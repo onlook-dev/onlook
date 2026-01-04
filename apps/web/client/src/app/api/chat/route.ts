@@ -123,7 +123,9 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                     // Run in background to not block the response
                     void api.chat.conversation.updateSummary({
                         conversationId,
-                        messages: finalMessages,
+                        // Cast required because tRPC infers a stricter type from Zod schema
+                        // while ChatMessage is based on UIMessage from 'ai' package
+                        messages: finalMessages as unknown as Parameters<typeof api.chat.conversation.updateSummary>[0]['messages'],
                     }).catch((error) => {
                         console.warn('Failed to update conversation summary:', error);
                     });
