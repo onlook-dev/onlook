@@ -1,4 +1,5 @@
 import type { ChatSuggestion } from '../suggestion';
+import type { ChatSummary } from '../summary';
 
 export enum AgentType {
     ROOT = "root",
@@ -13,4 +14,6 @@ export interface ChatConversation {
     createdAt: Date;
     updatedAt: Date;
     suggestions: ChatSuggestion[];
+    // Memory feature: rolling summary of conversation for context continuity
+    summary: ChatSummary | null;
 }

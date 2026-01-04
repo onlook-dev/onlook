@@ -135,6 +135,8 @@ const conversation0 = {
     displayName: 'Test Conversation',
     createdAt: new Date(),
     updatedAt: new Date(),
+    agentType: null,
+    summary: null,
     suggestions: [
         {
             title: 'Test Suggestion',

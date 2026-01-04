@@ -1,11 +1,11 @@
-import { initModel } from '@onlook/ai';
+import { generateConversationSummary, initModel } from '@onlook/ai';
 import {
     conversationInsertSchema,
     conversations,
     conversationUpdateSchema,
     fromDbConversation
 } from '@onlook/db';
-import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
+import { ChatSummarySchema, LLMProvider, OPENROUTER_MODELS, type ChatMessage } from '@onlook/models';
 import { generateText } from 'ai';
 import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
@@ -102,5 +102,40 @@ export const conversationRouter = createTRPCRouter({
 
             console.error('Error generating conversation title', result);
             return null;
+        }),
+    updateSummary: protectedProcedure
+        .input(z.object({
+            conversationId: z.string(),
+            messages: z.array(z.any()), // ChatMessage[]
+        }))
+        .mutation(async ({ ctx, input }) => {
+            // Get existing conversation to access current summary
+            const conversation = await ctx.db.query.conversations.findFirst({
+                where: eq(conversations.id, input.conversationId),
+            });
+
+            if (!conversation) {
+                throw new Error('Conversation not found');
+            }
+
+            try {
+                // Generate updated summary based on messages and existing summary
+                const summary = await generateConversationSummary({
+                    messages: input.messages as ChatMessage[],
+                    existingSummary: conversation.summary,
+                    conversationId: input.conversationId,
+                });
+
+                // Update conversation with new summary
+                await ctx.db.update(conversations).set({
+                    summary,
+                    updatedAt: new Date(),
+                }).where(eq(conversations.id, input.conversationId));
+
+                return summary;
+            } catch (error) {
+                console.error('Error generating conversation summary', error);
+                return null;
+            }
         }),
 });

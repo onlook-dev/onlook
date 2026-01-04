@@ -7,6 +7,7 @@ export const fromDbConversation = (conversation: DbConversation): ChatConversati
         title: conversation.displayName || null,
         agentType: conversation.agentType || AgentType.ROOT,
         suggestions: conversation.suggestions || [],
+        summary: conversation.summary || null,
     }
 }
 
@@ -17,5 +18,6 @@ export const toDbConversation = (conversation: ChatConversation): DbConversation
         displayName: conversation.title || null,
         agentType: conversation.agentType,
         suggestions: conversation.suggestions || [],
+        summary: conversation.summary || null,
     }
 }

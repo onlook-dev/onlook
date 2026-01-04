@@ -11,5 +11,6 @@ export const createDefaultConversation = (projectId: string): DbConversation => 
         displayName: 'New Conversation',
         suggestions: [],
         agentType: AgentType.ROOT,
+        summary: null,
     };
 };
