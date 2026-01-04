@@ -5,6 +5,68 @@ import { v4 as uuidv4 } from 'uuid';
 import { initModel } from './providers';
 
 /**
+ * Maximum number of recent messages to include in the summary context.
+ * Limited to avoid token limits while maintaining sufficient conversation context.
+ */
+export const SUMMARY_MESSAGE_LIMIT = 10;
+
+/**
+ * Extracts text content from a message's parts array.
+ * Handles text parts, tool invocations, and unknown part types.
+ */
+export function extractMessageContent(parts: ChatMessage['parts'] | undefined | null): string {
+    return (parts ?? [])
+        .map((p) => {
+            if (p.type === 'text') return p.text;
+            // Tool invocation types start with 'tool-' (e.g., 'tool-read_file')
+            if (p.type.startsWith('tool-')) {
+                const toolName = p.type.replace('tool-', '');
+                return `[Tool: ${toolName}]`;
+            }
+            return '';
+        })
+        .join(' ');
+}
+
+/**
+ * Converts a message role to a display label.
+ */
+export function getRoleLabel(role: ChatMessage['role']): string {
+    if (role === 'user') return 'User';
+    if (role === 'system') return 'System';
+    return 'Assistant';
+}
+
+/**
+ * Builds a context string from recent messages for summarization.
+ */
+export function buildMessageContext(messages: ChatMessage[], limit: number = SUMMARY_MESSAGE_LIMIT): string {
+    const recentMessages = messages.slice(-limit);
+    return recentMessages
+        .map((msg) => {
+            const role = getRoleLabel(msg.role);
+            const content = extractMessageContent(msg.parts);
+            return `${role}: ${content}`;
+        })
+        .join('\n\n');
+}
+
+/**
+ * Formats an existing summary for inclusion in the prompt context.
+ */
+export function formatExistingSummaryContext(existingSummary: ChatSummary | null): string {
+    if (!existingSummary) return '';
+    return `
+Previous Summary:
+- Files discussed: ${existingSummary.filesDiscussed.join(', ') || 'None'}
+- Project context: ${existingSummary.projectContext}
+- Implementation details: ${existingSummary.implementationDetails}
+- User preferences: ${existingSummary.userPreferences}
+- Current status: ${existingSummary.currentStatus}
+`;
+}
+
+/**
  * Generates a summary of the conversation to maintain context across turns.
  * This summary is stored in the database and injected into the system prompt
  * to help the AI remember what was discussed and done in the conversation.
@@ -25,36 +87,8 @@ export async function generateConversationSummary({
         model: OPENROUTER_MODELS.CLAUDE_3_5_HAIKU, // Use a fast, cheap model for summarization
     });
 
-    // Build context from recent messages (last 10 to avoid token limits)
-    const recentMessages = messages.slice(-10);
-    const messageContext = recentMessages
-        .map((msg) => {
-            const role = msg.role === 'user' ? 'User' : 'Assistant';
-            const content = msg.parts
-                .map((p) => {
-                    if (p.type === 'text') return p.text;
-                    // Tool invocation types start with 'tool-' (e.g., 'tool-read_file')
-                    if (p.type.startsWith('tool-')) {
-                        const toolName = p.type.replace('tool-', '');
-                        return `[Tool: ${toolName}]`;
-                    }
-                    return '';
-                })
-                .join(' ');
-            return `${role}: ${content}`;
-        })
-        .join('\n\n');
-
-    const existingSummaryContext = existingSummary
-        ? `
-Previous Summary:
-- Files discussed: ${existingSummary.filesDiscussed.join(', ') || 'None'}
-- Project context: ${existingSummary.projectContext}
-- Implementation details: ${existingSummary.implementationDetails}
-- User preferences: ${existingSummary.userPreferences}
-- Current status: ${existingSummary.currentStatus}
-`
-        : '';
+    const messageContext = buildMessageContext(messages);
+    const existingSummaryContext = formatExistingSummaryContext(existingSummary);
 
     const { object: summary } = await generateObject({
         model,
