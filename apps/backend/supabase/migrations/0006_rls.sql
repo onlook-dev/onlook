@@ -1,3 +1,36 @@
+-- Audit logging function for security events
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_type TEXT NOT NULL,
+    user_id UUID,
+    resource_type TEXT,
+    resource_id UUID,
+    action TEXT NOT NULL,
+    details JSONB,
+    ip_address INET,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID DEFAULT auth.uid()
+);
+
+-- Create index on audit_logs for efficient querying
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_event_type ON audit_logs(event_type);
+
+-- Helper function to log security events
+CREATE OR REPLACE FUNCTION log_security_event(
+    event_type TEXT,
+    action TEXT,
+    resource_type TEXT DEFAULT NULL,
+    resource_id UUID DEFAULT NULL,
+    details JSONB DEFAULT NULL
+) RETURNS VOID AS $$
+BEGIN
+  INSERT INTO audit_logs (event_type, user_id, resource_type, resource_id, action, details, created_by)
+  VALUES (event_type, auth.uid(), resource_type, resource_id, action, details, auth.uid());
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Helper function to check if user has specific roles for a project
 CREATE OR REPLACE FUNCTION user_has_project_access(
   project_id_param UUID,
@@ -77,6 +110,13 @@ CREATE POLICY "canvas_select_policy" ON canvas
 FOR SELECT
 TO authenticated
 USING (user_has_project_access(canvas.project_id, ARRAY['owner', 'admin']));
+
+DROP POLICY IF EXISTS "canvas_deny_select_policy" ON canvas;
+-- Deny SELECT access to unauthenticated users
+CREATE POLICY "canvas_deny_select_policy" ON canvas
+FOR SELECT
+TO public
+USING (false);
 
 DROP POLICY IF EXISTS "canvas_update_policy" ON canvas;
 -- 3. UPDATE: Allow users with 'owner' or 'admin' role in user_projects for the canvas's project
