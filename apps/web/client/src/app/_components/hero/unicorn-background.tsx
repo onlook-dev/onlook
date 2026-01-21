@@ -1,14 +1,41 @@
 'use client';
 
 import { motion } from 'motion/react';
+import { useEffect, useRef } from 'react';
 import UnicornScene from 'unicornstudio-react/next';
 
 export function UnicornBackground() {
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        // Handle wheel events to allow scrolling while keeping mouse interactivity
+        const handleWheel = (e: WheelEvent) => {
+            // Prevent the default to avoid double-scrolling
+            e.preventDefault();
+            // Manually trigger scroll on the window
+            window.scrollBy({
+                top: e.deltaY,
+                left: e.deltaX,
+                behavior: 'auto',
+            });
+        };
+
+        // Use passive: false so we can call preventDefault()
+        container.addEventListener('wheel', handleWheel, { passive: false });
+
+        return () => {
+            container.removeEventListener('wheel', handleWheel);
+        };
+    }, []);
+
     return (
         <motion.div
+            ref={containerRef}
             className="absolute inset-0 z-0 h-screen w-screen"
             style={{
-                pointerEvents: 'none',
                 willChange: 'opacity',
                 transform: 'translateZ(0)',
             }}

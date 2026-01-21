@@ -30,7 +30,8 @@ export function Hero() {
     return (
         <div className="relative flex h-full w-full flex-col items-center text-center text-lg">
             <UnicornBackground />
-            <div className="mb-42 flex h-full w-full flex-col items-center justify-center gap-10 pt-12">
+            {/* pointer-events-none allows mouse events to pass through to the canvas behind */}
+            <div className="pointer-events-none mb-42 flex h-full w-full flex-col items-center justify-center gap-10 pt-12">
                 <div className="relative z-20 flex flex-col items-center gap-3 pt-8 pb-2">
                     {!isShortScreen && (
                         <motion.div
@@ -43,7 +44,7 @@ export function Hero() {
                                 href="https://www.ycombinator.com/companies/onlook/jobs/e4gHv1n-founding-engineer-fullstack"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="hover:bg-foreground-secondary/20 border-foreground-secondary/20 text-foreground-secondary inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs backdrop-blur-sm transition-all duration-200 hover:scale-102"
+                                className="pointer-events-auto hover:bg-foreground-secondary/20 border-foreground-secondary/20 text-foreground-secondary inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs backdrop-blur-sm transition-all duration-200 hover:scale-102"
                             >
                                 We're hiring engineers
                                 <Icons.ArrowRight className="h-4 w-4" />
@@ -81,7 +82,7 @@ export function Hero() {
                     <HighDemand />
                     <CreateError />
                 </div>
-                <div className="relative z-20 hidden flex-row items-center gap-4 sm:flex">
+                <div className="pointer-events-auto relative z-20 hidden flex-row items-center gap-4 sm:flex">
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -102,7 +103,9 @@ export function Hero() {
                         </Button>
                     </motion.div>
                 </div>
-                <MobileEmailCapture />
+                <div className="pointer-events-auto w-full flex justify-center">
+                    <MobileEmailCapture />
+                </div>
             </div>
         </div>
     );
