@@ -13,8 +13,9 @@ export function UnicornBackground() {
 
         // Handle wheel events to allow scrolling while keeping mouse interactivity
         const handleWheel = (e: WheelEvent) => {
+            // Prevent the default to avoid double-scrolling
+            e.preventDefault();
             // Manually trigger scroll on the window
-            // This ensures scrolling works even if the canvas captures the wheel event
             window.scrollBy({
                 top: e.deltaY,
                 left: e.deltaX,
@@ -22,7 +23,8 @@ export function UnicornBackground() {
             });
         };
 
-        container.addEventListener('wheel', handleWheel, { passive: true });
+        // Use passive: false so we can call preventDefault()
+        container.addEventListener('wheel', handleWheel, { passive: false });
 
         return () => {
             container.removeEventListener('wheel', handleWheel);
