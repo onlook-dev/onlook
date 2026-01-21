@@ -4,14 +4,14 @@ import { useEditorEngine } from '@/components/store/editor';
 import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { SettingsModalWithProjects } from '@/components/ui/settings-modal/with-project';
 import { EditorAttributes } from '@onlook/constants';
-import { EditorMode } from '@onlook/models';
+import { EditorMode, LeftPanelTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { TooltipProvider } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePanelMeasurements } from '../_hooks/use-panel-measure';
 import { useStartProject } from '../_hooks/use-start-project';
 import { BottomBar } from './bottom-bar';
@@ -31,6 +31,19 @@ export const Main = observer(() => {
         leftPanelRef,
         rightPanelRef,
     );
+    const [activeSection, setActiveSection] = useState<string | null>(null);
+
+    const handleSidebarClick = (tab: LeftPanelTabValue) => {
+        editorEngine.state.leftPanelTab = tab;
+        editorEngine.state.leftPanelLocked = true;
+        setActiveSection(tab);
+    };
+
+    const handleClosePanel = () => {
+        editorEngine.state.leftPanelTab = null;
+        editorEngine.state.leftPanelLocked = false;
+        setActiveSection(null);
+    };
 
     useEffect(() => {
         function handleGlobalWheel(event: WheelEvent) {
@@ -82,7 +95,7 @@ export const Main = observer(() => {
     return (
         <TooltipProvider>
             <div className="h-screen w-screen flex flex-row select-none relative overflow-hidden">
-                <Canvas />
+                <Canvas onSidebarClick={handleSidebarClick} />
 
                 <div className="absolute top-0 w-full">
                     <TopBar />
@@ -91,9 +104,9 @@ export const Main = observer(() => {
                 {/* Left Panel */}
                 <div
                     ref={leftPanelRef}
-                    className="absolute top-10 left-0 h-[calc(100%-40px)] z-50"
+                    className="absolute top-10 left-2 h-[calc(100%-40px)] z-50"
                 >
-                    <LeftPanel />
+                    <LeftPanel onClose={handleClosePanel} activeSection={activeSection} />
                 </div>
                 {/* EditorBar anchored between panels */}
                 <div
