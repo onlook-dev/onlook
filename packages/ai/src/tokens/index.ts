@@ -3,7 +3,7 @@ import type { TextUIPart, ToolUIPart } from 'ai';
 import { encode } from 'gpt-tokenizer';
 
 export async function countTokensWithRoles(messages: ChatMessage[]): Promise<number> {
-    const perMessageExtra = 4; // ~role + metadata tokens (OpenAI chat format)
+    const perMessageExtra = 3; // ~role + metadata tokens (OpenAI chat format)
     const perReplyExtra = 2; // for assistant reply priming
     let total = 0;
     for (const m of messages) {

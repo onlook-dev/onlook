@@ -17,6 +17,10 @@ import {
     utilsRouter,
 } from './routers';
 import { branchRouter } from './routers/project/branch';
+import { figmaRouter } from './routers/figma';
+import { componentsPanelRouter } from './routers/components-panel';
+import { commentsRouter } from './routers/comments';
+import { assetsRouter } from './routers/assets';
 
 /**
  * This is the primary router for your server.
@@ -40,6 +44,10 @@ export const appRouter = createTRPCRouter({
     subscription: subscriptionRouter,
     usage: usageRouter,
     publish: publishRouter,
+    figma: figmaRouter,
+    componentsPanel: componentsPanelRouter,
+    comments: commentsRouter,
+    assets: assetsRouter,
 });
 
 // export type definition of API
