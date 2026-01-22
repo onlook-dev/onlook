@@ -3,12 +3,14 @@ import {
     type NextJsProjectValidation,
     type ProcessedFile,
 } from '@/app/projects/types';
+import { Routes } from '@/utils/constants';
 import { IGNORED_UPLOAD_DIRECTORIES, IGNORED_UPLOAD_FILES } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
 import { isBinaryFile } from '@onlook/utility';
 import { motion } from 'motion/react';
+import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useState } from 'react';
 import { StepContent, StepFooter, StepHeader } from '../../steps';
 import { useProjectCreation } from '../_context';
@@ -21,6 +23,7 @@ declare module 'react' {
 }
 
 export const NewSelectFolder = () => {
+    const router = useRouter();
     const {
         projectData,
         setProjectData,
@@ -471,7 +474,7 @@ export const NewSelectFolder = () => {
             <StepHeader>{renderHeader()}</StepHeader>
             <StepContent>{renderProjectInfo()}</StepContent>
             <StepFooter>
-                <Button type="button" onClick={prevStep} variant="outline" className="px-3 py-2">
+                <Button type="button" onClick={() => router.push(Routes.IMPORT_PROJECT)} variant="outline" className="px-3 py-2">
                     Cancel
                 </Button>
                 {projectData.folderPath ? (
