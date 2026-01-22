@@ -363,5 +363,10 @@
             "reportIssue": "오류 신고하기",
             "shortcuts": "단축키"
         }
+    },
+    "BrandComplianceBlock": {
+        "brandColors": "Brand Colors",
+        "title": "Brand compliance",
+        "description": "Make your fonts, colors, and styles all speak the same language."
     }
 }
