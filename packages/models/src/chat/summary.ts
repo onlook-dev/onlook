@@ -15,3 +15,5 @@ export const ChatSummarySchema = z.object({
         .describe('Specific preferences the user has expressed about implementation, design, etc.'),
     currentStatus: z.string().describe('Current state of the project and any pending work'),
 });
+
+export type ChatSummary = z.infer<typeof ChatSummarySchema>;

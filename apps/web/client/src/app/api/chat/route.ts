@@ -2,7 +2,7 @@ import { api } from '@/trpc/server';
 import { trackEvent } from '@/utils/analytics/server';
 import { createRootAgentStream } from '@onlook/ai';
 import { toDbMessage } from '@onlook/db';
-import { ChatType, type ChatMessage, type ChatMetadata } from '@onlook/models';
+import { ChatType, type ChatMessage, type ChatMetadata, type ChatSummary } from '@onlook/models';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { checkMessageLimit, decrementUsage, errorHandler, getSupabaseUser, incrementUsage } from './helpers';
@@ -74,6 +74,16 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         if (chatType === ChatType.EDIT) {
             usageRecord = await incrementUsage(req, traceId);
         }
+
+        // Fetch conversation summary for memory context
+        let conversationSummary: ChatSummary | null = null;
+        try {
+            const conversation = await api.chat.conversation.get({ conversationId });
+            conversationSummary = conversation.summary;
+        } catch (error) {
+            console.warn('Could not fetch conversation summary:', error);
+        }
+
         const stream = createRootAgentStream({
             chatType,
             conversationId,
@@ -81,6 +91,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
             userId,
             traceId,
             messages,
+            conversationSummary,
         });
         return stream.toUIMessageStreamResponse<ChatMessage>(
             {
@@ -106,6 +117,15 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                     await api.chat.message.replaceConversationMessages({
                         conversationId,
                         messages: messagesToStore,
+                    });
+
+                    // Generate and store conversation summary for memory
+                    // Run in background to not block the response
+                    void api.chat.conversation.updateSummary({
+                        conversationId,
+                        messages: finalMessages,
+                    }).catch((error) => {
+                        console.warn('Failed to update conversation summary:', error);
                     });
                 },
                 onError: errorHandler,

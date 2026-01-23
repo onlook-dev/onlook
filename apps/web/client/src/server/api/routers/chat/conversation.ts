@@ -1,16 +1,41 @@
-import { initModel } from '@onlook/ai';
+import { generateConversationSummary, initModel } from '@onlook/ai';
 import {
     conversationInsertSchema,
     conversations,
     conversationUpdateSchema,
     fromDbConversation
 } from '@onlook/db';
-import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
+import { LLMProvider, OPENROUTER_MODELS, type ChatMessage } from '@onlook/models';
 import { generateText } from 'ai';
 import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+
+/**
+ * Zod schema for ChatMessage validation in tRPC.
+ * 
+ * Based on AI SDK's UIMessage type pattern (see: https://ai-sdk.dev/docs/reference/ai-sdk-core/ui-message).
+ * Uses z.custom() to accept ChatMessage[] without creating index signature conflicts.
+ * Runtime validation ensures messages have the required structure (role, parts array).
+ * 
+ * Note: When AI SDK is upgraded to a version with validateUIMessages(), consider using it
+ * for more comprehensive runtime validation.
+ */
+const ChatMessagesSchema = z.custom<ChatMessage[]>(
+    (val) => {
+        if (!Array.isArray(val)) return false;
+        return val.every((msg) =>
+            msg &&
+            typeof msg === 'object' &&
+            'role' in msg &&
+            ['user', 'assistant', 'system'].includes(msg.role as string) &&
+            'parts' in msg &&
+            Array.isArray(msg.parts)
+        );
+    },
+    { message: 'Invalid ChatMessage array: each message must have role and parts' }
+);
 
 export const conversationRouter = createTRPCRouter({
     getAll: protectedProcedure
@@ -102,5 +127,43 @@ export const conversationRouter = createTRPCRouter({
 
             console.error('Error generating conversation title', result);
             return null;
+        }),
+    updateSummary: protectedProcedure
+        .input(z.object({
+            conversationId: z.string(),
+            messages: ChatMessagesSchema,
+        }))
+        .mutation(async ({ ctx, input }) => {
+            // Get existing conversation to access current summary
+            const conversation = await ctx.db.query.conversations.findFirst({
+                where: eq(conversations.id, input.conversationId),
+            });
+
+            if (!conversation) {
+                throw new Error('Conversation not found');
+            }
+
+            try {
+                // Generate updated summary based on messages and existing summary
+                const summary = await generateConversationSummary({
+                    messages: input.messages,
+                    existingSummary: conversation.summary,
+                    conversationId: input.conversationId,
+                    userId: ctx.user.id,
+                });
+
+                // Update conversation with new summary
+                await ctx.db.update(conversations).set({
+                    summary,
+                    updatedAt: new Date(),
+                }).where(eq(conversations.id, input.conversationId));
+
+                return summary;
+            } catch (error) {
+                // Return null instead of throwing to allow chat to continue even if summarization fails.
+                // Summarization is a non-critical background operation.
+                console.error('Error generating conversation summary', error);
+                return null;
+            }
         }),
 });

@@ -1,6 +1,7 @@
 import type { ToolCall } from '@ai-sdk/provider-utils';
-import { ChatType, LLMProvider, OPENROUTER_MODELS, type ChatMessage, type ModelConfig } from '@onlook/models';
+import { ChatType, LLMProvider, OPENROUTER_MODELS, type ChatMessage, type ChatSummary, type ModelConfig } from '@onlook/models';
 import { NoSuchToolError, generateObject, smoothStream, stepCountIs, streamText, type ToolSet } from 'ai';
+import { formatSummaryForPrompt } from '../chat/summarize';
 import { convertToStreamMessages, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, getToolSetFromType, initModel } from '../index';
 
 export const createRootAgentStream = ({
@@ -10,6 +11,7 @@ export const createRootAgentStream = ({
     userId,
     traceId,
     messages,
+    conversationSummary,
 }: {
     chatType: ChatType;
     conversationId: string;
@@ -17,9 +19,15 @@ export const createRootAgentStream = ({
     userId: string;
     traceId: string;
     messages: ChatMessage[];
+    conversationSummary?: ChatSummary | null;
 }) => {
     const modelConfig = getModelFromType(chatType);
-    const systemPrompt = getSystemPromptFromType(chatType);
+    const baseSystemPrompt = getSystemPromptFromType(chatType);
+    
+    // Inject conversation memory into system prompt
+    const memoryContext = formatSummaryForPrompt(conversationSummary ?? null);
+    const systemPrompt = memoryContext + baseSystemPrompt;
+    
     const toolSet = getToolSetFromType(chatType);
     return streamText({
         providerOptions: modelConfig.providerOptions,
