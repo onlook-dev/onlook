@@ -5,11 +5,31 @@ import { extractNames } from '@onlook/utility';
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { createTRPCRouter, optionalAuthProcedure, protectedProcedure } from '../../trpc';
 import { userSettingsRouter } from './user-settings';
 
 export const userRouter = createTRPCRouter({
     get: protectedProcedure.query(async ({ ctx }) => {
+        const authUser = ctx.user;
+        const user = await ctx.db.query.users.findFirst({
+            where: eq(users.id, authUser.id),
+        });
+
+        const { displayName, firstName, lastName } = getUserName(authUser);
+        const userData = user ? fromDbUser({
+            ...user,
+            firstName: user.firstName ?? firstName,
+            lastName: user.lastName ?? lastName,
+            displayName: user.displayName ?? displayName,
+            email: user.email ?? authUser.email,
+            avatarUrl: user.avatarUrl ?? authUser.user_metadata.avatarUrl,
+        }) : null;
+        return userData;
+    }),
+    getOptional: optionalAuthProcedure.query(async ({ ctx }) => {
+        if (!ctx.user) {
+            return null;
+        }
         const authUser = ctx.user;
         const user = await ctx.db.query.users.findFirst({
             where: eq(users.id, authUser.id),
