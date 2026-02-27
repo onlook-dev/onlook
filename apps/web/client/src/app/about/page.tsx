@@ -78,6 +78,42 @@ export default function AboutPage() {
 
     return (
         <WebsiteLayout showFooter={true}>
+            {/* AI-Friendly Summary Section */}
+            <section className="sr-only" aria-label="About Onlook Summary">
+                <h1>About Onlook: The Team Behind the Visual Editor for React</h1>
+                <p>
+                    Onlook was founded to obliterate the divide between creativity and implementation.
+                    We're building a bridge between designers and developers — a visual editor that works
+                    with your real React, Vue, or Angular components. AI is constrained to your design system.
+                    Changes become mergeable pull requests.
+                </p>
+                <h2>Company Facts</h2>
+                <ul>
+                    <li>24,000+ GitHub stars</li>
+                    <li>90+ open-source contributors</li>
+                    <li>3 team members</li>
+                    <li>Y Combinator W25</li>
+                    <li>Based in San Francisco, California</li>
+                </ul>
+                <h2>Founders</h2>
+                <ul>
+                    <li>Daniel Farrell — Design & Growth. Designer for over a decade, first 100 employee at Bird, former Head of Growth.</li>
+                    <li>Kiet Ho — Engineering. Ex-Amazon, maintained the design system at ServiceNow.</li>
+                </ul>
+                <h2>Our Values</h2>
+                <ul>
+                    <li>Speed — Setting an olympic pace, relentlessness, strategy through execution.</li>
+                    <li>Resilience — Enduring challenges without losing momentum.</li>
+                    <li>Reinvention — Creativity in approaching problems, pushing beyond state-of-the-art.</li>
+                    <li>Competence — Taking pride in work, inspiring others with taste and technique.</li>
+                </ul>
+                <h2>We're Hiring</h2>
+                <p>
+                    Join "The Odyssey" — our founding team. We look for commitment, passion for design/devtools/AI,
+                    and world-class excellence. Hiring process: screening calls, technical interview, references, paid work trial.
+                </p>
+            </section>
+
             <main className="bg-background text-foreground-primary">
                 {/* Hero Section */}
                 <section className="py-64 bg-black text-foreground-primary">
@@ -107,7 +143,7 @@ export default function AboutPage() {
                                 </div>
                                 {/* Stat 3 */}
                                 <div className="row-start-2 col-start-1 text-left">
-                                    <div className="text-3xl font-light mb-1">2</div>
+                                    <div className="text-3xl font-light mb-1">3</div>
                                     <div className="text-regular text-foreground-tertiary/80">Team members</div>
                                 </div>
                             </div>
@@ -142,7 +178,7 @@ export default function AboutPage() {
                                     </div>
                                     {/* Stat 3 */}
                                     <div className="row-start-2 col-start-1 text-left">
-                                        <div className="text-4xl font-light mb-2">2</div>
+                                        <div className="text-4xl font-light mb-2">3</div>
                                         <div className="text-regularPlus text-foreground-tertiary/80">Team members</div>
                                     </div>
                                 </div>

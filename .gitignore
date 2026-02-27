@@ -34,11 +34,6 @@ yarn.lock
 /playwright/.cache/
 
 # Env variables
-.env
-.env.production
-.env.development
-.env.test
-.env.local
 .env.development.local
 .env.test.local
 .env.production.local
@@ -47,3 +42,7 @@ mise.toml
 
 # Temporary files
 .tmp/
+config.bat
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat

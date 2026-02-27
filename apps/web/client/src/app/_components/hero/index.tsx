@@ -73,11 +73,9 @@ export function Hero() {
                         transition={{ duration: 0.6, delay: 0.15, ease: 'easeOut' }}
                         style={{ willChange: 'opacity, filter', transform: 'translateZ(0)' }}
                     >
-                        Onlook is a next-generation visual code editor
+                        Design with your real components.
                         <br />
-                        that lets designers and product managers craft
-                        <br />
-                        web experiences with AI
+                        Ship PRs, not prototypes.
                     </motion.p>
                     <HighDemand />
                     <CreateError />

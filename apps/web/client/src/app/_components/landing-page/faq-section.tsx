@@ -19,28 +19,36 @@ interface FAQSectionProps {
 
 const defaultFaqs = [
     {
+        question: 'What is Onlook?',
+        answer: 'Onlook is a visual design canvas that connects to your existing codebase. Designers drag real components onto an infinite canvas, make changes visually, and submit pull requests — no coding required.',
+    },
+    {
+        question: 'How is Onlook different from other design tools?',
+        answer: 'Traditional design tools create static mockups that must be rebuilt in code. Onlook works with your real components — what you design IS the code. Changes become PRs, not handoff specs.',
+    },
+    {
+        question: 'How is Onlook different from AI code generators?',
+        answer: 'AI generators create new code from scratch. Onlook constrains AI to YOUR existing components, so outputs match your design system. No translation, no drift.',
+    },
+    {
+        question: 'Do I need to know how to code?',
+        answer: 'No. Designers use a visual canvas with familiar tools. Real code runs underneath — you don\'t need to touch it unless you want to.',
+    },
+    {
+        question: 'Can my team collaborate?',
+        answer: 'Yes. Share your canvas, leave spatial comments, and work together in real-time. Changes sync to code and can be submitted as PRs for engineers to review.',
+    },
+    {
+        question: 'What tech stack does Onlook support?',
+        answer: 'React, Next.js, and any CSS approach (Tailwind, CSS modules, styled-components). Works with any component library.',
+    },
+    {
         question: 'Is there a free version of Onlook?',
-        answer: 'Yes, Onlook can be self-hosted for free on GitHub. For the hosted cloud version, please contact our team or book a demo. We are working closely with teams to set up the best internal design and code workflow, and are happy to help you get started.',
+        answer: 'Yes, Onlook can be self-hosted for free on GitHub. For the hosted cloud version, please contact our team or book a demo.',
     },
     {
-        question: 'What kinds of things can I design with Onlook?',
-        answer: 'You can prototype, ideate, and create websites from scratch with Onlook',
-    },
-    {
-        question: 'Why would I use Onlook?',
-        answer: 'When you design in Onlook you design in the real product – in other words, the source of truth. Other editors are great for ideating, but Onlook is the only one that lets you design with code using your existing design system instantly.',
-    },
-    {
-        question: 'Who owns the code that I write with Onlook?',
-        answer: "The code you make with Onlook is all yours. You can export it on your local machine, publish it to GitHub, or host it at a link",
-    },
-    {
-        question: 'What is the difference between Onlook and other design tools?',
-        answer: 'Onlook is a visual editor for code. It allows you to create and style your own creations with code as the source of truth. While it is best suited for creating web experiences, it can be used for anything visual – presentations, mockups, and more. Because Onlook uses code as the source of truth, the types of designs you can create are unconstrained by Onlook\'s interface.',
-    },
-    {
-        question: 'Why is Onlook open-source?',
-        answer: 'Developers have historically been second-rate citizens in the design process. Onlook was founded to bridge the divide between design and development, and we wanted to make developers first-class citizens alongside designers. We chose to be open-source Onlook to give developers transparency over the tool, and make it as flexible as possible for the unique ways teams set up their code.',
+        question: 'Who owns the code?',
+        answer: 'The code you make with Onlook is all yours. Export it locally, publish to GitHub, or deploy to a custom domain.',
     },
 ];
 

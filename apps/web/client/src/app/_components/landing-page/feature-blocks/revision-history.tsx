@@ -87,8 +87,8 @@ export function RevisionHistory() {
     };
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6 relative overflow-hidden">
+        <div className="flex flex-col gap-6">
+            <div className="w-full h-100 bg-background-onlook/80 rounded-lg relative overflow-hidden">
                 {/* Versions mockup */}
                 <div className="w-100 h-100 rounded-xl overflow-hidden absolute right-[-150px] top-10 flex flex-col items-center justify-start bg-black/85 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20 shadow-lg z-40">
                     <p className="text-foreground-primary text-regular font-light w-full text-left px-4 py-3 border-b-[0.5px] border-foreground-primary/20">Versions</p>
