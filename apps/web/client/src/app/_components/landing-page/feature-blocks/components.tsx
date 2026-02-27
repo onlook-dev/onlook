@@ -3,7 +3,7 @@ import React from 'react';
 
 export function ComponentsBlock() {
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-6">
             {/* Custom Components Menu + Calendar Preview */}
             <div className="flex flex-row gap-8 relative min-h-[400px] overflow-hidden bg-background-onlook/80 rounded-lg">
                 {/* Left menu container with grey background and overflow hidden */}
@@ -258,10 +258,10 @@ export function ComponentsBlock() {
                 {/* Icon + Title */}
                 <div className="flex flex-col items-start w-1/2">
                     <div className="mb-2"><Icons.Component className="w-6 h-6 text-foreground-primary" /></div>
-                    <span className="text-foreground-primary text-largePlus font-light">Components</span>
+                    <span className="text-foreground-primary text-largePlus font-light">Your Real Components</span>
                 </div>
                 {/* Description */}
-                <p className="text-foreground-secondary text-regular text-balance w-1/2">Customize reusable components that you can swap-out across websites.</p>
+                <p className="text-foreground-secondary text-regular text-balance w-1/2">Design with the buttons, cards, and layouts your engineers already built. Your actual design system.</p>
             </div>
         </div>
     );

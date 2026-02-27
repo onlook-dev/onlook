@@ -44,6 +44,27 @@ export default function AiFeaturesPage() {
     return (
         <CreateManagerProvider>
             <WebsiteLayout showFooter={true}>
+                {/* AI-Friendly Summary Section */}
+                <section className="sr-only" aria-label="AI Features Summary">
+                    <h1>Onlook AI Visual Editor: Build UIs with AI Using Your Design System</h1>
+                    <p>
+                        Onlook is an AI-powered visual editor that builds frontend UIs using your real React, Vue, or
+                        Angular components. Unlike generic AI code generators, Onlook constrains AI to your design
+                        system — your buttons, cards, and layouts. Changes become mergeable PRs, not throwaway prototypes.
+                    </p>
+                    <h2>Key AI Features</h2>
+                    <ul>
+                        <li>AI constrained to your design system — no brand drift, no off-brand results</li>
+                        <li>Visual canvas with real code running underneath</li>
+                        <li>Works with React, Next.js, Vue, Angular, Svelte</li>
+                        <li>Supports Tailwind, CSS Modules, styled-components</li>
+                        <li>Compatible with shadcn/ui, Material UI, Chakra UI, Mantine, Radix UI</li>
+                        <li>Direct GitHub PR output — changes become mergeable pull requests</li>
+                        <li>Real-time team collaboration</li>
+                        <li>No coding required for designers</li>
+                    </ul>
+                </section>
+
                 <div className="flex h-screen w-screen items-center justify-center" id="hero">
                     <AiFeaturesHero />
                 </div>

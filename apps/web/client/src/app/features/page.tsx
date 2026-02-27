@@ -16,27 +16,27 @@ import { WebsiteLayout } from '../_components/website-layout';
 const featuresFaqs = [
     {
         question: 'What is Onlook?',
-        answer: 'Onlook is an open-source, visual editor for websites. It allows anyone to create and style their own websites without any coding knowledge.',
+        answer: 'Onlook is a visual design canvas that connects to your existing codebase. Designers drag real components onto an infinite canvas, make changes visually, and submit pull requests — no coding required.',
     },
     {
-        question: 'What can I use Onlook to do?',
-        answer: 'Onlook is great for creating websites, prototypes, user interfaces, and designs. Whether you need a quick mockup or a full-fledged website, ask Onlook to craft it for you.',
+        question: 'How is Onlook different from other design tools?',
+        answer: 'Traditional design tools create static mockups that must be rebuilt in code. Onlook works with your real components — what you design IS the code. Changes become PRs, not handoff specs.',
     },
     {
-        question: 'How do I get started?',
-        answer: 'Getting started with Onlook is easy. Simply sign up for an account, create a new project, and follow our step-by-step guide to deploy your first application.',
+        question: 'How is Onlook different from AI code generators?',
+        answer: 'AI generators create new code from scratch. Onlook constrains AI to YOUR existing components, so outputs match your design system. No translation, no drift.',
     },
     {
-        question: 'Is Onlook free to use?',
-        answer: 'Onlook is free for your first prompt, but you are limited by the number of messages you can send. Please see our Pricing page for more details.',
+        question: 'Do I need to know how to code?',
+        answer: 'No. Designers use a visual canvas with familiar tools. Real code runs underneath — you don\'t need to touch it unless you want to.',
     },
     {
-        question: 'What is the difference between Onlook and other design tools?',
-        answer: 'Onlook is a visual editor for code. It allows you to create and style your own creations with code as the source of truth. While it is best suited for creating websites, it can be used for anything visual – presentations, mockups, and more. Because Onlook uses code as the source of truth, the types of designs you can create are unconstrained by Onlook\'s interface.',
+        question: 'Can my team collaborate?',
+        answer: 'Yes. Share your canvas, leave spatial comments, and work together in real-time. Changes sync to code and can be submitted as PRs for engineers to review.',
     },
     {
-        question: 'Why is Onlook open-source?',
-        answer: 'Developers have historically been second-rate citizens in the design process. Onlook was founded to bridge the divide between design and development, and we wanted to make developers first-class citizens alongside designers. We chose to be open-source to give developers transparency into how we are building Onlook and how the work created through Onlook will complement the work of developers.',
+        question: 'What tech stack does Onlook support?',
+        answer: 'React, Next.js, and any CSS approach (Tailwind, CSS modules, styled-components). Works with any component library.',
     },
 ];
 
@@ -44,6 +44,28 @@ export default function FeaturesPage() {
     return (
         <CreateManagerProvider>
             <WebsiteLayout showFooter={true}>
+                {/* AI-Friendly Summary Section */}
+                <section className="sr-only" aria-label="Features Summary">
+                    <h1>Onlook Features: Design with Your Real Components</h1>
+                    <p>
+                        Onlook is a visual design canvas that connects to your existing codebase.
+                        Design with your real components on an infinite canvas. AI is constrained to your design system —
+                        no brand drift, no throwaway code. Changes become mergeable pull requests.
+                    </p>
+                    <h2>Key Features</h2>
+                    <ul>
+                        <li>Your Real Components — design with the buttons, cards, and layouts your engineers built</li>
+                        <li>AI constrained to your design system — uses your colors, fonts, and tokens</li>
+                        <li>Built for Teams — real-time collaboration with spatial comments</li>
+                        <li>Ship PRs, Not Prototypes — changes become mergeable pull requests</li>
+                        <li>Canvas manipulation — drag, resize, arrange elements visually</li>
+                        <li>Layer management — navigate your React component tree visually</li>
+                        <li>Version history — roll back to any previous version</li>
+                        <li>Works with your codebase — connect existing React or Next.js projects</li>
+                        <li>Direct GitHub integration — push changes directly to your repository</li>
+                    </ul>
+                </section>
+
                 <div className="w-screen h-screen flex items-center justify-center" id="hero">
                     <FeaturesHero />
                 </div>
@@ -51,12 +73,12 @@ export default function FeaturesPage() {
                 <BenefitsSection />
                 <FeaturesIntroSection />
                 <FeaturesGridSection />
+                <FAQSection faqs={featuresFaqs} />
                 <CTASection
-                    ctaText={`Bring your team \nto Onlook today`}
+                    ctaText={`Ready to stop rebuilding?`}
                     buttonText="Book a Demo"
                     href={ExternalRoutes.BOOK_DEMO}
                 />
-                <FAQSection faqs={featuresFaqs} />
                 <NonProjectSettingsModal />
                 <SubscriptionModal />
             </WebsiteLayout>

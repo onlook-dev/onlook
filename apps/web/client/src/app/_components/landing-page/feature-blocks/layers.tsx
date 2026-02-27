@@ -74,8 +74,8 @@ function MockLayersTab() {
 
 export function LayersBlock() {
     return (
-        <div className="flex flex-col gap-4">
-            <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6 relative overflow-hidden">
+        <div className="flex flex-col gap-6">
+            <div className="w-full h-100 bg-background-onlook/80 rounded-lg relative overflow-hidden">
                 <div className="w-48 h-100 rounded-xl overflow-hidden absolute left-1/30 top-12 flex flex-col items-center justify-start bg-black/85 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20 z-20">
                     <p className="text-foreground-primary text-regular font-light w-full text-left px-3 py-2 border-b-[0.5px] border-foreground-primary/20">Layers</p>
                     <div className="flex flex-row items-start gap-8 w-full">
@@ -113,10 +113,10 @@ export function LayersBlock() {
                 {/* Icon + Title */}
                 <div className="flex flex-col items-start w-1/2">
                     <div className="mb-2"><Icons.Layers className="w-6 h-6 text-foreground-primary" /></div>
-                    <span className="text-foreground-primary text-largePlus font-light">Layers</span>
+                    <span className="text-foreground-primary text-largePlus font-light">Navigate Your Code</span>
                 </div>
                 {/* Description */}
-                <p className="text-foreground-secondary text-regular text-balance w-1/2">Select elements with precision and control.</p>
+                <p className="text-foreground-secondary text-regular text-balance w-1/2">See your component hierarchy. Click any layer to select it on the canvas.</p>
             </div>
         </div>
     );

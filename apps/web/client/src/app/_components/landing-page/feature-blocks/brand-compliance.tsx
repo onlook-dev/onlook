@@ -57,8 +57,8 @@ function ParallaxContainer({ children, speed = 0.1 }: { children: React.ReactNod
 
 export function BrandComplianceBlock() {
     return (
-        <div className="flex flex-col gap-4">
-            <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6 relative overflow-hidden">
+        <div className="flex flex-col gap-6">
+            <div className="w-full h-100 bg-background-onlook/80 rounded-lg relative overflow-hidden">
                 <ParallaxContainer speed={0.04}>
                     <div className="w-60 h-100 rounded-xl overflow-hidden absolute left-1/14 top-7 flex flex-col items-center justify-start bg-black/85 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20">
                         <p className="text-foreground-primary text-regular font-light w-full text-left px-3 py-2 border-b-[0.5px] border-foreground-primary/20">Brand Colors</p>
@@ -135,10 +135,10 @@ export function BrandComplianceBlock() {
                 {/* Icon + Title */}
                 <div className="flex flex-col items-start w-1/2">
                     <div className="mb-2"><Icons.Brand className="w-6 h-6 text-foreground-primary" /></div>
-                    <span className="text-foreground-primary text-largePlus font-light">Brand compliance</span>
+                    <span className="text-foreground-primary text-largePlus font-light">Design System Guardrails</span>
                 </div>
                 {/* Description */}
-                <p className="text-foreground-secondary text-regular text-balance w-1/2">Make your fonts, colors, and styles all speak the same language.</p>
+                <p className="text-foreground-secondary text-regular text-balance w-1/2">AI is constrained to your colors, fonts, and tokens. No drift. No off-brand outputs.</p>
             </div>
         </div>
     );

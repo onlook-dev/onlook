@@ -14,6 +14,11 @@ export const PRODUCT_LINKS: NavigationLink[] = [
         description: 'AI-powered design',
     },
     {
+        title: 'AI for Frontend',
+        href: Routes.FEATURES_AI_FRONTEND,
+        description: 'AI constrained to your design system',
+    },
+    {
         title: 'Visual Builder',
         href: Routes.FEATURES_BUILDER,
         description: 'Craft on a canvas',
@@ -22,6 +27,16 @@ export const PRODUCT_LINKS: NavigationLink[] = [
         title: 'Prototyping',
         href: Routes.FEATURES_PROTOTYPE,
         description: 'Rapid prototype creation',
+    },
+    {
+        title: 'Claude Code',
+        href: Routes.WORKFLOWS_CLAUDE_CODE,
+        description: 'Visual layer for Claude Code',
+    },
+    {
+        title: 'Vibe Coding',
+        href: Routes.WORKFLOWS_VIBE_CODING,
+        description: 'Team collaboration for vibe coding',
     },
     {
         title: 'All Features',

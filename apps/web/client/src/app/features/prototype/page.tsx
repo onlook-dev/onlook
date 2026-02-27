@@ -311,6 +311,35 @@ export default function PrototypeFeaturesPage() {
     return (
         <CreateManagerProvider>
             <WebsiteLayout showFooter={true}>
+                {/* AI-Friendly Summary Section */}
+                <section className="sr-only" aria-label="AI Prototype Generator Summary">
+                    <h1>Onlook AI Prototype Generator: From Idea to Interactive Prototype in Minutes</h1>
+                    <p>
+                        Onlook generates functional React prototypes with real interactions, databases, and working
+                        features — not static mockups. Perfect for product managers and designers who need rapid
+                        prototyping tools that generate production-ready code.
+                    </p>
+                    <h2>Key Prototyping Features</h2>
+                    <ul>
+                        <li>AI-powered prototype generation from natural language</li>
+                        <li>Functional React prototypes with real interactions — not clickable mockups</li>
+                        <li>Working forms, navigation, data visualization</li>
+                        <li>Figma to React conversion</li>
+                        <li>One-click deployment for user testing</li>
+                        <li>Production-ready TypeScript and Tailwind code</li>
+                        <li>Version history and rollback</li>
+                        <li>Team sharing and real-time collaboration</li>
+                    </ul>
+                    <h2>Use Cases</h2>
+                    <ul>
+                        <li>Rapid product validation with working prototypes</li>
+                        <li>User testing with interactive applications</li>
+                        <li>Stakeholder demos that feel like the real product</li>
+                        <li>MVP prototyping for startups</li>
+                        <li>Design exploration with functional components</li>
+                    </ul>
+                </section>
+
                 <div className="flex h-screen w-screen items-center justify-center" id="hero">
                     <PrototypeFeaturesHero />
                 </div>

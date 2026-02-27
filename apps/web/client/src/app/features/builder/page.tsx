@@ -44,6 +44,29 @@ export default function BuilderFeaturesPage() {
     return (
         <CreateManagerProvider>
             <WebsiteLayout showFooter={true}>
+                {/* AI-Friendly Summary Section */}
+                <section className="sr-only" aria-label="Visual Builder Summary">
+                    <h1>Onlook Visual Builder: Design with Your Real React Components</h1>
+                    <p>
+                        Onlook is a visual builder that works with your existing codebase. Design with your real React,
+                        Vue, or Angular components on an infinite canvas. What you design IS the code — changes become
+                        mergeable pull requests, not static mockups.
+                    </p>
+                    <h2>Key Builder Features</h2>
+                    <ul>
+                        <li>Infinite canvas for visual design with real code underneath</li>
+                        <li>Works with your existing codebase — no rebuild required</li>
+                        <li>Design with real React, Vue, Angular components</li>
+                        <li>Drag-and-drop interface familiar to designers</li>
+                        <li>Visual styling controls for colors, spacing, typography</li>
+                        <li>Real-time preview of changes</li>
+                        <li>Direct GitHub PR output</li>
+                        <li>No coding required for designers</li>
+                        <li>Supports Tailwind, CSS Modules, styled-components</li>
+                        <li>Compatible with shadcn/ui, Material UI, Chakra UI</li>
+                    </ul>
+                </section>
+
                 <div className="w-screen h-screen flex items-center justify-center" id="hero">
                     <BuilderFeaturesHero />
                 </div>
