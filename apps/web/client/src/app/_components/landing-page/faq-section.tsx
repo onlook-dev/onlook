@@ -40,7 +40,7 @@ const defaultFaqs = [
     },
     {
         question: 'What tech stack does Onlook support?',
-        answer: 'React, Next.js, Vue, and any CSS approach (Tailwind, CSS modules, styled-components). Works with any component library that supports Storybook.',
+        answer: 'React, Next.js, and any CSS approach (Tailwind, CSS modules, styled-components). Works with any component library.',
     },
     {
         question: 'Is there a free version of Onlook?',

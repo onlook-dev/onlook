@@ -3,7 +3,7 @@ import React from 'react';
 
 export function ComponentsBlock() {
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-6">
             {/* Custom Components Menu + Calendar Preview */}
             <div className="flex flex-row gap-8 relative min-h-[400px] overflow-hidden bg-background-onlook/80 rounded-lg">
                 {/* Left menu container with grey background and overflow hidden */}

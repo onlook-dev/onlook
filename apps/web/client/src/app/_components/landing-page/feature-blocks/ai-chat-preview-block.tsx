@@ -4,7 +4,7 @@ import { AiChatInteractive } from '../../shared/mockups/ai-chat-interactive';
 
 export function AiChatPreviewBlock() {
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-6 w-full">
       <AiChatInteractive />
       <div className="flex flex-row items-start gap-8 w-full">
         <div className="flex flex-col items-start w-1/2">

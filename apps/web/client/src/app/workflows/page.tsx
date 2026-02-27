@@ -133,7 +133,7 @@ export default function WorkflowsPage() {
                                             ) : workflow.icon ? (
                                                 <workflow.icon className="text-foreground-secondary group-hover:text-foreground-primary h-10 w-10 transition-colors" />
                                             ) : null}
-                                            <h3 className="text-xl font-medium">{workflow.title}</h3>
+                                            <h3 className="text-lg font-medium">{workflow.title}</h3>
                                             <p className="text-foreground-secondary text-balance">{workflow.description}</p>
                                             <div className="mt-auto flex items-center gap-2 pt-4 text-sm">
                                                 <span className="text-foreground-primary">Learn more</span>
@@ -141,14 +141,14 @@ export default function WorkflowsPage() {
                                             </div>
                                         </Link>
                                     ) : (
-                                        <div className="border-foreground-primary/10 flex h-full flex-col gap-4 rounded-lg border bg-black p-8 opacity-60">
+                                        <div className="border-foreground-primary/10 flex h-full flex-col gap-4 rounded-lg border bg-black p-8">
                                             {workflow.logo ? (
                                                 <img src={workflow.logo} alt={workflow.title} className="h-10 w-10 opacity-50" />
                                             ) : workflow.icon ? (
-                                                <workflow.icon className="text-foreground-tertiary h-10 w-10" />
+                                                <workflow.icon className="text-foreground-tertiary h-10 w-10 opacity-50" />
                                             ) : null}
-                                            <h3 className="text-xl font-medium">{workflow.title}</h3>
-                                            <p className="text-foreground-secondary text-balance">{workflow.description}</p>
+                                            <h3 className="text-xl font-medium opacity-50">{workflow.title}</h3>
+                                            <p className="text-foreground-secondary text-balance opacity-50">{workflow.description}</p>
                                             <div className="mt-auto pt-4">
                                                 <span className="text-foreground-tertiary rounded-full border border-current px-3 py-1 text-xs">
                                                     Coming Soon
