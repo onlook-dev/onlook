@@ -9,15 +9,15 @@ export function Footer() {
     return (
         <footer className="w-full text-foreground-primary border-t border-foreground-primary/10 mt-24 pb-24">
             <div className="max-w-6xl mx-auto px-8 pt-16 pb-24 flex flex-col md:flex-row md:items-start gap-24">
-                {/* Left: Slogan */}
+                {/* Left: Logo */}
                 <div
-                    className="flex-1 flex flex-col gap-8 min-w-[250px] cursor-pointer"
+                    className="flex flex-col gap-8 cursor-pointer"
                     onClick={() => router.push('/')}
                 >
                     <Icons.OnlookTextLogo className="w-24 h-5 text-foreground-primary" />
                 </div>
                 {/* Center: Links */}
-                <div className="flex-1 flex flex-col md:flex-row gap-12 md:gap-24 justify-center">
+                <div className="flex-1 flex flex-col md:flex-row gap-12 md:gap-12 justify-center">
                     <div>
                         <h3 className="text-regularPlus mb-4 text-foreground-primary">Company</h3>
                         <ul className="flex flex-col gap-4 text-regular text-foreground-secondary">
@@ -25,20 +25,27 @@ export function Footer() {
                             <li><a href={ExternalRoutes.DOCS} target="_blank" className="hover:underline" title="View Onlook documentation">Docs</a></li>
                             <li><a href={Routes.FAQ} className="hover:underline" title="Frequently Asked Questions">FAQ</a></li>
                             <li><a href={ExternalRoutes.BLOG} target="_blank" className="hover:underline" title="Read the Onlook blog">Blog</a></li>
-                            {/* <li><a href="#" className="hover:underline">Careers</a></li> */}
                             <li><a href="mailto:contact@onlook.com" className="hover:underline" title="Contact Onlook support">Contact</a></li>
                         </ul>
                     </div>
-                    <div className="min-w-[200px]">
+                    <div>
                         <h3 className="text-regularPlus mb-4 text-foreground-primary">Product</h3>
                         <ul className="flex flex-col gap-4 text-regular text-foreground-secondary">
                             <li><a href={Routes.PROJECTS} className="hover:underline" title="View your projects">My Projects</a></li>
                             <li><a href={ExternalRoutes.GITHUB} target="_blank" className="hover:underline" title="View Onlook on GitHub">GitHub Repo</a></li>
                             <li><a href="/features" className="hover:underline" title="View Onlook features">Features</a></li>
                             <li><a href={Routes.FEATURES_AI} className="hover:underline" title="AI-powered development tools">AI</a></li>
+                            <li><a href={Routes.FEATURES_AI_FRONTEND} className="hover:underline" title="AI constrained to your design system">AI for Frontend</a></li>
                             <li><a href={Routes.FEATURES_PROTOTYPE} className="hover:underline" title="Rapid prototyping features">Prototyping</a></li>
                             <li><a href={Routes.FEATURES_BUILDER} className="hover:underline" title="Visual builder tools">Visual Builder</a></li>
                             <li><a href="/pricing" className="hover:underline" title="View Onlook pricing">Pricing</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 className="text-regularPlus mb-4 text-foreground-primary">Workflows</h3>
+                        <ul className="flex flex-col gap-4 text-regular text-foreground-secondary">
+                            <li><a href={Routes.WORKFLOWS_CLAUDE_CODE} className="hover:underline" title="Use Onlook with Claude Code">Claude Code</a></li>
+                            <li><a href={Routes.WORKFLOWS_VIBE_CODING} className="hover:underline" title="Vibe coding for teams">Vibe Coding</a></li>
                         </ul>
                     </div>
                     <div>
@@ -73,7 +80,7 @@ export function Footer() {
                     <div className="flex gap-8 text-foreground-tertiary text-small justify-center w-full md:w-auto mb-4 md:mb-0">
                         <a href="/terms-of-service" className="hover:underline" title="Read our Terms of Service">Terms of Service</a>
                         <a href="/privacy-policy" className="hover:underline" title="Read our Privacy Policy">Privacy Policy</a>
-                        <a href="/sitemap.xml" className="hover:underline" title="View the sitemap">Sitemap</a>
+                        <a href="/site-map" className="hover:underline" title="View the sitemap">Sitemap</a>
                     </div>
                     {/* Right: Copyright */}
                     <div className="text-foreground-tertiary text-small w-full md:w-auto flex justify-center md:justify-end">© {new Date().getFullYear()} On Off, Inc.</div>

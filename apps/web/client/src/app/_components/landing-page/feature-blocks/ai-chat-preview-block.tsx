@@ -9,9 +9,9 @@ export function AiChatPreviewBlock() {
       <div className="flex flex-row items-start gap-8 w-full">
         <div className="flex flex-col items-start w-1/2">
           <div className="mb-2"><Icons.Sparkles className="w-6 h-6 text-foreground-primary" /></div>
-          <span className="text-foreground-primary text-largePlus font-light">AI Chat</span>
+          <span className="text-foreground-primary text-largePlus font-light">AI That Understands Context</span>
         </div>
-        <p className="text-foreground-secondary text-regular text-balance w-1/2">Get instant design help and feedback from AI, right in your workflow.</p>
+        <p className="text-foreground-secondary text-regular text-balance w-1/2">Reference images, designs, and docs in chat. AI sees what you see — no more explaining from scratch.</p>
       </div>
     </div>
   );

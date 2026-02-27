@@ -258,10 +258,10 @@ export function ComponentsBlock() {
                 {/* Icon + Title */}
                 <div className="flex flex-col items-start w-1/2">
                     <div className="mb-2"><Icons.Component className="w-6 h-6 text-foreground-primary" /></div>
-                    <span className="text-foreground-primary text-largePlus font-light">Components</span>
+                    <span className="text-foreground-primary text-largePlus font-light">Your Real Components</span>
                 </div>
                 {/* Description */}
-                <p className="text-foreground-secondary text-regular text-balance w-1/2">Customize reusable components that you can swap-out across websites.</p>
+                <p className="text-foreground-secondary text-regular text-balance w-1/2">Design with the buttons, cards, and layouts your engineers already built. Your actual design system.</p>
             </div>
         </div>
     );

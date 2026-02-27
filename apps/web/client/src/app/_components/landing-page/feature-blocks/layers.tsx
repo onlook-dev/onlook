@@ -113,10 +113,10 @@ export function LayersBlock() {
                 {/* Icon + Title */}
                 <div className="flex flex-col items-start w-1/2">
                     <div className="mb-2"><Icons.Layers className="w-6 h-6 text-foreground-primary" /></div>
-                    <span className="text-foreground-primary text-largePlus font-light">Layers</span>
+                    <span className="text-foreground-primary text-largePlus font-light">Navigate Your Code</span>
                 </div>
                 {/* Description */}
-                <p className="text-foreground-secondary text-regular text-balance w-1/2">Select elements with precision and control.</p>
+                <p className="text-foreground-secondary text-regular text-balance w-1/2">See your component hierarchy. Click any layer to select it on the canvas.</p>
             </div>
         </div>
     );

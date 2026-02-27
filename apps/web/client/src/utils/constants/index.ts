@@ -5,10 +5,17 @@ export const Routes = {
     FAQ: '/faq',
     ABOUT: '/about',
     CAREERS: '/careers',
+    SITEMAP: '/site-map',
     FEATURES: '/features',
     FEATURES_AI: '/features/ai',
+    FEATURES_AI_FRONTEND: '/features/ai-for-frontend',
     FEATURES_BUILDER: '/features/builder',
     FEATURES_PROTOTYPE: '/features/prototype',
+
+    // Workflows
+    WORKFLOWS: '/workflows',
+    WORKFLOWS_CLAUDE_CODE: '/workflows/claude-code',
+    WORKFLOWS_VIBE_CODING: '/workflows/vibe-coding',
 
     // Auth
     LOGIN: '/login',

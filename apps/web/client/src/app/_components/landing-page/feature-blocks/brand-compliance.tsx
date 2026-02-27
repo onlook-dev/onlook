@@ -135,10 +135,10 @@ export function BrandComplianceBlock() {
                 {/* Icon + Title */}
                 <div className="flex flex-col items-start w-1/2">
                     <div className="mb-2"><Icons.Brand className="w-6 h-6 text-foreground-primary" /></div>
-                    <span className="text-foreground-primary text-largePlus font-light">Brand compliance</span>
+                    <span className="text-foreground-primary text-largePlus font-light">Design System Guardrails</span>
                 </div>
                 {/* Description */}
-                <p className="text-foreground-secondary text-regular text-balance w-1/2">Make your fonts, colors, and styles all speak the same language.</p>
+                <p className="text-foreground-secondary text-regular text-balance w-1/2">AI is constrained to your colors, fonts, and tokens. No drift. No off-brand outputs.</p>
             </div>
         </div>
     );
