@@ -239,12 +239,24 @@ export default function VibeCodingWorkflowPage() {
                         </motion.p>
                     </div>
 
-                    {/* Editor Mockup */}
+                    {/* Editor Mockup - Desktop */}
                     <motion.div
                         className="hidden md:block w-screen h-[44rem] items-center justify-center mb-24"
                         {...getBlurAnimationProps(0.2)}
                     >
                         <OnlookInterfaceMockup />
+                    </motion.div>
+
+                    {/* Editor Mockup - Mobile */}
+                    <motion.div
+                        className="md:hidden w-screen relative overflow-hidden mb-16"
+                        {...getBlurAnimationProps(0.2)}
+                    >
+                        <div className="relative h-[400px] w-full">
+                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-[600px] w-[900px]">
+                                <OnlookInterfaceMockup />
+                            </div>
+                        </div>
                     </motion.div>
 
                     <div className="mx-auto max-w-6xl px-8">
