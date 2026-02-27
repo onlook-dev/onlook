@@ -174,7 +174,7 @@ export default function ClaudeCodeWorkflowPage() {
 
                     {/* Editor Mockup - Mobile */}
                     <motion.div
-                        className="md:hidden w-screen relative overflow-hidden h-[800px] mb-16"
+                        className="md:hidden w-screen relative overflow-hidden h-[860px] mb-8"
                         {...getBlurAnimationProps(0.2)}
                     >
                         <div className="absolute top-1/2 right-10 transform -translate-y-1/2 h-[800px] w-[1000px]">
