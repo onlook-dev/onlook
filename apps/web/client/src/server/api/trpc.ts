@@ -30,13 +30,14 @@ import { ZodError } from 'zod';
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
     const supabase = await createClient();
-    const {
-        data: { user },
-        error,
-    } = await supabase.auth.getUser();
 
-    if (error) {
-        throw new TRPCError({ code: 'UNAUTHORIZED', message: error.message });
+    // Attempt to get the user, but don't throw on auth errors.
+    // Unauthenticated visitors (e.g., marketing pages) should still get a valid
+    // context with user set to null. Protected procedures validate auth separately.
+    let user: User | null = null;
+    const { data, error } = await supabase.auth.getUser();
+    if (!error && data.user) {
+        user = data.user;
     }
 
     return {
@@ -144,6 +145,25 @@ export const protectedProcedure = t.procedure.use(timingMiddleware).use(({ ctx, 
         ctx: {
             // infers the `session` as non-nullable
             user: ctx.user as SetRequiredDeep<User, 'email'>,
+            db: ctx.db,
+        },
+    });
+});
+
+/**
+ * Optional auth procedure
+ *
+ * Use this for endpoints where authentication is optional. The user context is
+ * passed through as-is (may be null for unauthenticated visitors). Components
+ * like telemetry providers, pricing tables, and auth buttons on marketing pages
+ * should use this instead of protectedProcedure.
+ *
+ * @see https://trpc.io/docs/procedures
+ */
+export const optionalAuthProcedure = t.procedure.use(timingMiddleware).use(({ ctx, next }) => {
+    return next({
+        ctx: {
+            user: ctx.user ?? null,
             db: ctx.db,
         },
     });
