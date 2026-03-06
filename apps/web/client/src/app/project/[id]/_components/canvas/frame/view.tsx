@@ -4,6 +4,7 @@ import type { IframeHTMLAttributes } from 'react';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { connect, WindowMessenger } from 'penpal';
+import { PreloadScriptState } from '@/components/store/editor/sandbox';
 
 import type { Frame } from '@onlook/models';
 import type {
@@ -86,6 +87,12 @@ export const FrameComponent = observer(
 
             const setupPenpalConnection = () => {
                 try {
+                    const sandbox = editorEngine.activeSandbox;
+                    if (sandbox?.preloadScriptState === PreloadScriptState.LOADING) {
+                        console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Preload script still loading, will retry on next load`);
+                        return;
+                    }
+
                     if (!iframeRef.current?.contentWindow) {
                         console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - No iframe found`);
                         onConnectionFailed();

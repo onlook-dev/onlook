@@ -110,9 +110,13 @@ export class SandboxManager {
             this.preloadScriptState = PreloadScriptState.INJECTED
         } catch (error) {
             console.error('[SandboxManager] Failed to ensure preload script exists:', error);
-            // Mark as injected to prevent blocking frames indefinitely
-            // Frames will handle the missing preload script gracefully
-            this.preloadScriptState = PreloadScriptState.NOT_INJECTED
+            this.preloadScriptState = PreloadScriptState.NOT_INJECTED;
+            setTimeout(() => {
+                if (this.preloadScriptState === PreloadScriptState.NOT_INJECTED) {
+                    console.log('[SandboxManager] Retrying preload script injection...');
+                    void this.ensurePreloadScriptExists();
+                }
+            }, 3000);
         }
     }
 
