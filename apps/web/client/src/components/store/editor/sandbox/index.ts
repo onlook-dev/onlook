@@ -22,6 +22,7 @@ export class SandboxManager {
     readonly gitManager: GitManager;
     private providerReactionDisposer?: () => void;
     private sync: CodeProviderSync | null = null;
+    private preloadRetryTimeoutId?: ReturnType<typeof setTimeout>;
     preloadScriptState: PreloadScriptState = PreloadScriptState.NOT_INJECTED
     routerConfig: RouterConfig | null = null;
 
@@ -111,7 +112,7 @@ export class SandboxManager {
         } catch (error) {
             console.error('[SandboxManager] Failed to ensure preload script exists:', error);
             this.preloadScriptState = PreloadScriptState.NOT_INJECTED;
-            setTimeout(() => {
+            this.preloadRetryTimeoutId = setTimeout(() => {
                 if (this.preloadScriptState === PreloadScriptState.NOT_INJECTED) {
                     console.log('[SandboxManager] Retrying preload script injection...');
                     void this.ensurePreloadScriptExists();
@@ -218,11 +219,14 @@ export class SandboxManager {
     }
 
     clear() {
-        this.providerReactionDisposer?.();
-        this.providerReactionDisposer = undefined;
-        this.sync?.release();
-        this.sync = null;
-        this.preloadScriptState = PreloadScriptState.NOT_INJECTED
-        this.session.clear();
+    if (this.preloadRetryTimeoutId) {
+        clearTimeout(this.preloadRetryTimeoutId);
+        this.preloadRetryTimeoutId = undefined;
+    }
+    this.providerReactionDisposer = undefined;
+    this.sync?.release();
+    this.sync = null;
+    this.preloadScriptState = PreloadScriptState.NOT_INJECTED
+    this.session.clear();
     }
 }
