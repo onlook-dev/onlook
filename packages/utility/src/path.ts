@@ -84,7 +84,15 @@ export const isTargetFile = (
     }
 
     const dirName = normalize(path.dirname(targetFile));
-    return potentialPaths.some((p) => normalize(p) === dirName);
+    return potentialPaths.some((p) => {
+        const normalizedP = normalize(p);
+        if (normalizedP === dirName) return true;
+        // Support Next.js route groups: match files inside (group) subdirectories
+        // e.g., app/(marketing)/layout.tsx should match potentialPath 'app'
+        const parentDir = normalize(path.dirname(dirName));
+        const groupDir = path.basename(dirName);
+        return parentDir === normalizedP && /^\([^)]+\)$/.test(groupDir);
+    });
 };
 
 export const isRootLayoutFile = (

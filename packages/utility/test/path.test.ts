@@ -190,4 +190,24 @@ describe('isTargetFile', () => {
         const targetFile = 'src/components/layout.tsx';
         expect(isRootLayoutFile(targetFile)).toBe(false);
     });
+
+    test('returns true for layout in a Next.js route group under app/', () => {
+        expect(isRootLayoutFile('app/(marketing)/layout.tsx')).toBe(true);
+    });
+
+    test('returns true for layout in a Next.js route group under src/app/', () => {
+        expect(isRootLayoutFile('src/app/(dashboard)/layout.tsx')).toBe(true);
+    });
+
+    test('returns true for layout in route group with jsx extension', () => {
+        expect(isRootLayoutFile('app/(app)/layout.jsx')).toBe(true);
+    });
+
+    test('returns false for layout nested deeper than one route group level', () => {
+        expect(isRootLayoutFile('app/(app)/nested/layout.tsx')).toBe(false);
+    });
+
+    test('returns false for layout in directory that looks like route group but is not', () => {
+        expect(isRootLayoutFile('app/marketing/layout.tsx')).toBe(false);
+    });
 });
