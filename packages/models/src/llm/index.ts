@@ -2,6 +2,7 @@ import type { LanguageModel } from 'ai';
 
 export enum LLMProvider {
     OPENROUTER = 'openrouter',
+    MINIMAX = 'minimax',
 }
 
 export enum OPENROUTER_MODELS {
@@ -13,8 +14,14 @@ export enum OPENROUTER_MODELS {
     OPEN_AI_GPT_5_NANO = 'openai/gpt-5-nano',
 }
 
+export enum MINIMAX_MODELS {
+    MINIMAX_M2_5 = 'MiniMax-M2.5',
+    MINIMAX_M2_5_HIGHSPEED = 'MiniMax-M2.5-highspeed',
+}
+
 interface ModelMapping {
     [LLMProvider.OPENROUTER]: OPENROUTER_MODELS;
+    [LLMProvider.MINIMAX]: MINIMAX_MODELS;
 }
 
 export type InitialModelPayload = {
@@ -37,4 +44,6 @@ export const MODEL_MAX_TOKENS = {
     [OPENROUTER_MODELS.OPEN_AI_GPT_5_NANO]: 400000,
     [OPENROUTER_MODELS.OPEN_AI_GPT_5_MINI]: 400000,
     [OPENROUTER_MODELS.OPEN_AI_GPT_5]: 400000,
+    [MINIMAX_MODELS.MINIMAX_M2_5]: 204000,
+    [MINIMAX_MODELS.MINIMAX_M2_5_HIGHSPEED]: 204000,
 } as const;
