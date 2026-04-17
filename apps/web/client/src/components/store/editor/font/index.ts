@@ -6,6 +6,7 @@ import { generate } from '@onlook/parser';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { addFontToConfig, ensureFontConfigFileExists, getFontConfigPath, readFontConfigFile, removeFontFromConfig, scanExistingFonts, scanFontConfig } from './font-config';
+import { addFontToGlobalCss, removeFontFromGlobalCss } from './css-theme';
 import { FontSearchManager } from './font-search-manager';
 import { uploadFonts } from './font-upload-manager';
 import { addFontVariableToRootLayout, clearDefaultFontFromRootLayout, getCurrentDefaultFont, removeFontVariableFromRootLayout, updateDefaultFontInRootLayout, } from './layout-manager';
@@ -101,8 +102,15 @@ export class FontManager {
                 console.error('No font config path found');
                 return false;
             }
+            await this.ensureConfigFilesExist();
             const success = await addFontToConfig(font, fontConfigPath, this.editorEngine);
             if (success) {
+                await Promise.all([
+                    addFontToTailwindConfig(font, this.editorEngine.activeSandbox),
+                    addFontVariableToRootLayout(font.id, this.editorEngine),
+                    addFontToGlobalCss(font, this.editorEngine),
+                ]);
+
                 // Update the fonts array
                 this._fonts.push(font);
 
@@ -152,6 +160,7 @@ export class FontManager {
 
                 // Remove font from Tailwind config
                 await removeFontFromTailwindConfig(font, this.editorEngine.activeSandbox);
+                await removeFontFromGlobalCss(font.id, this.editorEngine);
 
                 return result;
             }
@@ -247,6 +256,7 @@ export class FontManager {
                     fontConfigPath,
                     code,
                 );
+                await this.syncFontsWithConfigs();
             }
 
             return result.success;
@@ -355,6 +365,7 @@ export class FontManager {
                 for (const font of addedFonts) {
                     await addFontToTailwindConfig(font, sandbox);
                     await addFontVariableToRootLayout(font.id, this.editorEngine);
+                    await addFontToGlobalCss(font, this.editorEngine);
                 }
             }
 

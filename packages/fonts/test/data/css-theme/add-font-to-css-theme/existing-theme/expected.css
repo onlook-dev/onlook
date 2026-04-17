@@ -1,0 +1,6 @@
+@import 'tailwindcss';
+
+@theme {
+    --color-background: #ffffff;
+    --font-inter: var(--font-inter);
+}
