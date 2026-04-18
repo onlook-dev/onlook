@@ -1,0 +1,11 @@
+{
+    "font": {
+        "id": "inter",
+        "family": "Inter",
+        "variable": "--font-inter",
+        "subsets": ["latin"],
+        "weight": ["400"],
+        "styles": ["normal"],
+        "type": "google"
+    }
+}

@@ -1,0 +1,11 @@
+{
+    "font": {
+        "id": "font.test",
+        "family": "Font Test",
+        "variable": "--font-font-test",
+        "subsets": ["latin"],
+        "weight": ["400"],
+        "styles": ["normal"],
+        "type": "google"
+    }
+}

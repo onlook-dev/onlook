@@ -2,7 +2,7 @@ import type { Font } from '@onlook/models';
 
 const THEME_BLOCK_REGEX = /@theme(?:\s+inline)?\s*\{/g;
 
-function findThemeBlock(content: string): { start: number; bodyStart: number; end: number } | null {
+function findThemeBlock(content: string): { bodyStart: number; bodyEnd: number } | null {
     const match = THEME_BLOCK_REGEX.exec(content);
     THEME_BLOCK_REGEX.lastIndex = 0;
 
@@ -21,15 +21,18 @@ function findThemeBlock(content: string): { start: number; bodyStart: number; en
             depth--;
             if (depth === 0) {
                 return {
-                    start: match.index,
                     bodyStart,
-                    end: index,
+                    bodyEnd: index,
                 };
             }
         }
     }
 
     return null;
+}
+
+function escapeRegExp(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function getThemeFontVariableName(fontId: string): string {
@@ -43,14 +46,12 @@ function getFontThemeDeclaration(font: Font): string {
     return `${themeVariable}: var(${fontVariable});`;
 }
 
+/**
+ * Adds or updates a Tailwind CSS `@theme` font token for an Onlook-managed font.
+ */
 export function addFontToCssTheme(font: Font, content: string): string {
     const declaration = getFontThemeDeclaration(font);
     const themeVariable = getThemeFontVariableName(font.id);
-    const existingDeclarationRegex = new RegExp(`(^\\s*)${themeVariable}\\s*:[^;]+;`, 'm');
-
-    if (existingDeclarationRegex.test(content)) {
-        return content.replace(existingDeclarationRegex, `$1${declaration}`);
-    }
 
     const block = findThemeBlock(content);
     if (!block) {
@@ -58,15 +59,35 @@ export function addFontToCssTheme(font: Font, content: string): string {
         return `${content}${separator}@theme inline {\n    ${declaration}\n}\n`;
     }
 
-    const beforeClose = content.slice(0, block.end).replace(/\s*$/, '');
-    const afterClose = content.slice(block.end);
+    const beforeBody = content.slice(0, block.bodyStart);
+    const body = content.slice(block.bodyStart, block.bodyEnd);
+    const afterBody = content.slice(block.bodyEnd);
+    const escapedThemeVariable = escapeRegExp(themeVariable);
+    const existingDeclarationRegex = new RegExp(`(^\\s*)${escapedThemeVariable}\\s*:[^;]+;`, 'm');
 
-    return `${beforeClose}\n    ${declaration}\n${afterClose}`;
+    if (existingDeclarationRegex.test(body)) {
+        return `${beforeBody}${body.replace(existingDeclarationRegex, `$1${declaration}`)}${afterBody}`;
+    }
+
+    const trimmedBody = body.replace(/\s*$/, '');
+    return `${beforeBody}${trimmedBody}\n    ${declaration}\n${afterBody}`;
 }
 
+/**
+ * Removes a Tailwind CSS `@theme` font token for an Onlook-managed font.
+ */
 export function removeFontFromCssTheme(fontId: string, content: string): string {
-    const themeVariable = getThemeFontVariableName(fontId);
-    const declarationRegex = new RegExp(`\\n?\\s*${themeVariable}\\s*:[^;]+;`, 'g');
+    const block = findThemeBlock(content);
+    if (!block) {
+        return content;
+    }
 
-    return content.replace(declarationRegex, '');
+    const themeVariable = getThemeFontVariableName(fontId);
+    const escapedThemeVariable = escapeRegExp(themeVariable);
+    const declarationRegex = new RegExp(`\\n?\\s*${escapedThemeVariable}\\s*:[^;]+;`, 'g');
+    const beforeBody = content.slice(0, block.bodyStart);
+    const body = content.slice(block.bodyStart, block.bodyEnd);
+    const afterBody = content.slice(block.bodyEnd);
+
+    return `${beforeBody}${body.replace(declarationRegex, '')}${afterBody}`;
 }

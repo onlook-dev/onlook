@@ -109,7 +109,7 @@ export const removeFontVariableFromRootLayout = async (
             await editorEngine.activeSandbox.writeFile(layoutPath, newContent);
             return true;
         }
-        return false;
+        return true;
     } catch (error) {
         console.error(`Error removing font variable`, error);
         return false;
