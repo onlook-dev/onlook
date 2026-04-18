@@ -25,4 +25,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD bun -e "fetch('http://localhost:3000').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"
 
 # Start the Next.js server
-CMD ["bun", "apps/web/client/server.js"]
+CMD ["bun", "apps/web/client/.next/standalone/apps/web/client/server.js"]
