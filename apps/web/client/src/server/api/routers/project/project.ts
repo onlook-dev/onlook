@@ -30,7 +30,7 @@ import {
     type UserCanvas
 } from '@onlook/db';
 import { compressImageServer } from '@onlook/image-server';
-import { LLMProvider, OPENROUTER_MODELS, ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
+import { LLMProvider, OPENROUTER_MODELS, ProjectCreateRequestStatus, ProjectEnvironment, ProjectRole } from '@onlook/models';
 import { getScreenshotPath } from '@onlook/utility';
 import { generateText } from 'ai';
 import { and, eq, ne } from 'drizzle-orm';
@@ -76,7 +76,7 @@ export const projectRouter = createTRPCRouter({
                 }
 
                 if (!branch.sandboxId) {
-                    throw new Error('No sandbox found for branch');
+                    throw new Error('No sandbox found for branch. Screenshots are only available for sandbox projects.');
                 }
 
                 // Extract port from existing frame URL or fall back to 3000
@@ -173,6 +173,29 @@ export const projectRouter = createTRPCRouter({
                 return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
             }
         }),
+    findByLocalPath: protectedProcedure
+        .input(z.object({ localPath: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const branch = await ctx.db.query.branches.findFirst({
+                where: and(
+                    eq(branches.localPath, input.localPath),
+                    eq(branches.environment, 'local_vscode'),
+                ),
+                with: {
+                    project: {
+                        with: {
+                            userProjects: {
+                                where: eq(userProjects.userId, ctx.user.id),
+                            },
+                        },
+                    },
+                },
+            });
+            if (!branch || branch.project.userProjects.length === 0) {
+                return null;
+            }
+            return { projectId: branch.projectId, branchId: branch.id };
+        }),
     list: protectedProcedure
         .input(z.object({
             limit: z.number().optional(),
@@ -185,11 +208,26 @@ export const projectRouter = createTRPCRouter({
                     ne(userProjects.projectId, input.excludeProjectId),
                 ) : eq(userProjects.userId, ctx.user.id),
                 with: {
-                    project: true,
+                    project: {
+                        with: {
+                            branches: {
+                                where: eq(branches.isDefault, true),
+                                limit: 1,
+                            },
+                        },
+                    },
                 },
                 limit: input?.limit,
             });
-            return fetchedUserProjects.map((userProject) => fromDbProject(userProject.project)).sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
+            return fetchedUserProjects.map((userProject) => {
+                const project = fromDbProject(userProject.project);
+                // 附加默认分支的运行环境信息
+                const defaultBranch = userProject.project.branches?.[0];
+                if (defaultBranch) {
+                    project.environment = defaultBranch.environment as ProjectEnvironment;
+                }
+                return project;
+            }).sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
         }),
     get: protectedProcedure
         .input(z.object({ projectId: z.string() }))
@@ -236,8 +274,20 @@ export const projectRouter = createTRPCRouter({
         .input(z.object({
             project: projectInsertSchema,
             userId: z.string(),
-            sandboxId: z.string(),
-            sandboxUrl: z.string(),
+            /** 沙箱 ID，本地环境可不传 */
+            sandboxId: z.string().optional(),
+            /** 沙箱预览 URL，本地环境可不传 */
+            sandboxUrl: z.string().optional(),
+            /** 项目运行环境，默认 sandbox */
+            environment: z.enum(['sandbox', 'local_vscode']).default('sandbox'),
+            /** 本地项目路径，仅 local_vscode 环境有值 */
+            localPath: z.string().optional(),
+            /** 本地项目运行配置，仅 local_vscode 环境有值 */
+            localConfig: z.object({
+                devCommand: z.string(),
+                buildCommand: z.string(),
+                port: z.number(),
+            }).optional(),
             creationData: projectCreateRequestInsertSchema
                 .omit({
                     projectId: true,
@@ -252,10 +302,15 @@ export const projectRouter = createTRPCRouter({
                     throw new Error('Failed to create project in database');
                 }
 
-                // 2. Create the default branch
+                // 2. Create the default branch（根据环境类型决定是否需要 sandboxId）
                 const newBranch = createDefaultBranch({
                     projectId: newProject.id,
-                    sandboxId: input.sandboxId,
+                    sandboxId: input.sandboxId ?? null,
+                    overrides: {
+                        environment: input.environment,
+                        localPath: input.localPath ?? null,
+                        localConfig: input.localConfig ?? null,
+                    },
                 });
                 await tx.insert(branches).values(newBranch);
 
@@ -278,10 +333,13 @@ export const projectRouter = createTRPCRouter({
                 await tx.insert(userCanvases).values(newUserCanvas);
 
                 // 5. Create the default frame
+                // 本地环境使用 localConfig.port 构造 URL
+                const localPort = input.localConfig?.port ?? 3001;
+                const frameUrl = input.sandboxUrl ?? (input.environment === 'local_vscode' ? `http://localhost:${localPort}` : 'http://localhost:3000');
                 const desktopFrame = createDefaultFrame({
                     canvasId: newCanvas.id,
                     branchId: newBranch.id,
-                    url: input.sandboxUrl,
+                    url: frameUrl,
                     type: DefaultFrameType.DESKTOP,
                 });
                 await tx.insert(frames).values(desktopFrame);

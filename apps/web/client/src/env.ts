@@ -34,6 +34,12 @@ export const env = createEnv({
 
         // Model providers
         OPENROUTER_API_KEY: z.string(),
+        /** Override API base (e.g. OpenRouter-compatible gateway). Default: https://openrouter.ai/api/v1 */
+        OPENROUTER_BASE_URL: z.string().url().optional(),
+        /** Use `compatible` for third-party OpenAI/OpenRouter-compatible proxies; `strict` for official OpenRouter. */
+        OPENROUTER_COMPATIBILITY: z.enum(['strict', 'compatible']).optional(),
+        /** When set, all chat requests use this model id against the upstream (e.g. `gpt-4.1` for OpenAI-style gateways). */
+        OPENROUTER_UPSTREAM_MODEL: z.string().optional(),
         ANTHROPIC_API_KEY: z.string().optional(),
         GOOGLE_AI_STUDIO_API_KEY: z.string().optional(),
         OPENAI_API_KEY: z.string().optional(),
@@ -130,6 +136,9 @@ export const env = createEnv({
         GOOGLE_AI_STUDIO_API_KEY: process.env.GOOGLE_AI_STUDIO_API_KEY,
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,
         OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
+        OPENROUTER_BASE_URL: process.env.OPENROUTER_BASE_URL,
+        OPENROUTER_COMPATIBILITY: process.env.OPENROUTER_COMPATIBILITY,
+        OPENROUTER_UPSTREAM_MODEL: process.env.OPENROUTER_UPSTREAM_MODEL,
 
         // n8n
         N8N_WEBHOOK_URL: process.env.N8N_WEBHOOK_URL,

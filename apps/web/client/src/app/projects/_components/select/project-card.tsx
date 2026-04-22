@@ -3,11 +3,27 @@
 import { getFileUrlFromStorage } from '@/utils/supabase/client';
 import { STORAGE_BUCKETS } from '@onlook/constants';
 import type { Project } from '@onlook/models';
+import { ProjectEnvironment } from '@onlook/models';
 import { timeAgo } from '@onlook/utility';
+import { Icons } from '@onlook/ui/icons';
 import { motion } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
 import { EditAppButton } from '../edit-app';
 import { SettingsDropdown } from '../settings';
+
+/** 环境类型标签样式配置 */
+const ENVIRONMENT_BADGE: Record<string, { label: string; icon: React.ReactNode; className: string }> = {
+    [ProjectEnvironment.LOCAL_VSCODE]: {
+        label: 'Local',
+        icon: <Icons.Laptop className="w-3 h-3" />,
+        className: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+    },
+    [ProjectEnvironment.SANDBOX]: {
+        label: 'Cloud',
+        icon: <Icons.Globe className="w-3 h-3" />,
+        className: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+    },
+};
 
 export function ProjectCard({
     project,
@@ -45,6 +61,10 @@ export function ProjectCard({
 
     const lastUpdated = useMemo(() => timeAgo(project.metadata.updatedAt), [project.metadata.updatedAt]);
 
+    // 获取环境标识配置
+    const environment = project.environment ?? ProjectEnvironment.SANDBOX;
+    const badge = ENVIRONMENT_BADGE[environment] ?? ENVIRONMENT_BADGE[ProjectEnvironment.SANDBOX]!;
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -65,7 +85,13 @@ export function ProjectCard({
 
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+                {/* 环境类型标识 */}
+                <div className="absolute top-3 left-3 z-30">
+                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${badge.className}`}>
+                        {badge.icon}
+                        {badge.label}
+                    </span>
+                </div>
 
                 <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30">
                     <SettingsDropdown project={project} refetch={refetch} />

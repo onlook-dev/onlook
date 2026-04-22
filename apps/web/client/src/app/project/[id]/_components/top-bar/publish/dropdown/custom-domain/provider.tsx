@@ -29,10 +29,16 @@ const useCustomDomain = () => {
             return;
         }
         setIsLoading(true);
+        const sandboxId = editorEngine.branches.activeBranch.sandbox?.id;
+        if (!sandboxId) {
+            console.error('No sandbox found for this project');
+            setIsLoading(false);
+            return;
+        }
         try {
             await runPublish({
                 projectId: editorEngine.projectId,
-                sandboxId: editorEngine.branches.activeBranch.sandbox.id
+                sandboxId,
             });
         } catch (error) {
             console.error(error);

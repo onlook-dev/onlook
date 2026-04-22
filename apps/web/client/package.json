@@ -16,7 +16,7 @@
   },
   "type": "module",
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "next dev --webpack",
     "lint": "eslint . --max-warnings 0",
     "format": "eslint --fix .",
     "typecheck": "tsc --noEmit",
@@ -86,7 +86,7 @@
     "lucide-react": "^0.486.0",
     "mobx-react-lite": "^4.1.0",
     "motion": "^12.23.19",
-    "next": "16.0.7",
+    "next": "16.2.4",
     "next-intl": "^4.0.2",
     "next-themes": "^0.4.6",
     "octokit": "^5.0.3",

@@ -1,0 +1,12 @@
+# 排除所有文件
+**
+
+# 仅包含扩展运行所需文件
+!dist/**
+!package.json
+!README.md
+
+# 排除源代码（只保留编译后的 dist）
+src/**
+tsconfig.json
+.vscode/**

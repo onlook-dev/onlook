@@ -2,6 +2,7 @@ export * from './branch';
 export * from './canvas';
 export * from './command';
 export * from './create';
+export * from './environment';
 export * from './frame';
 export * from './project';
 export * from './rect';

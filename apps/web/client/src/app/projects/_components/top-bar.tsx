@@ -5,12 +5,16 @@ import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
 import { LocalForageKeys, Routes } from '@/utils/constants';
+import { detectLocalAgent, type LocalAgentStatus } from '@/utils/local-agent';
 import { SandboxTemplates, Templates } from '@onlook/constants';
+import { LocalProjectModal } from './local-project-modal';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuLabel,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
@@ -39,6 +43,8 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
     const [recentSearches, setRecentSearches] = useState<string[]>([]);
     const [recentColors, setRecentColors] = useState<string[]>([]);
     const [isCreatingProject, setIsCreatingProject] = useState(false);
+    const [localAgentStatus, setLocalAgentStatus] = useState<LocalAgentStatus>({ available: false });
+    const [isLocalModalOpen, setIsLocalModalOpen] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const searchContainerRef = useRef<HTMLDivElement>(null);
 
@@ -164,7 +170,24 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
         }
     };
 
+    // 检测本地扩展状态（打开下拉菜单时触发）
+    const checkLocalAgent = async () => {
+        const status = await detectLocalAgent();
+        setLocalAgentStatus(status);
+    };
+
+    // 创建本地 VSCode 项目 — 打开配置弹窗
+    const handleStartLocalProject = async () => {
+        if (!user?.id) {
+            await localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
+            setIsAuthModalOpen(true);
+            return;
+        }
+        setIsLocalModalOpen(true);
+    };
+
     return (
+        <>
         <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 text-small text-foreground-secondary gap-6">
             <Link href={Routes.HOME} className="flex items-center justify-start mt-0 py-3">
                 <Icons.OnlookTextLogo className="w-24" viewBox="0 0 139 17" />
@@ -207,7 +230,7 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
             )}
 
             <div className="flex justify-end gap-3 mt-0 items-center">
-                <DropdownMenu>
+                <DropdownMenu onOpenChange={(open) => { if (open) checkLocalAgent(); }}>
                     <DropdownMenuTrigger asChild>
                         <Button
                             className="text-sm focus:outline-none cursor-pointer py-[0.4rem] h-8"
@@ -226,6 +249,7 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent sideOffset={8} className="translate-x-[-12px]">
+                        <DropdownMenuLabel className="text-xs text-foreground-tertiary">Sandbox (Cloud)</DropdownMenuLabel>
                         <DropdownMenuItem
                             className={cn(
                                 'focus:bg-blue-100 focus:text-blue-900',
@@ -244,6 +268,30 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                             )}
                             {t(transKeys.projects.actions.blankProject)}
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel className="text-xs text-foreground-tertiary flex items-center gap-1.5">
+                            Local VSCode
+                            {localAgentStatus.available ? (
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500" title="扩展在线" />
+                            ) : (
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-foreground-tertiary" title="扩展离线" />
+                            )}
+                        </DropdownMenuLabel>
+                        <DropdownMenuItem
+                            className={cn(
+                                'focus:bg-purple-100 focus:text-purple-900',
+                                'hover:bg-purple-100 hover:text-purple-900',
+                                'dark:focus:bg-purple-900 dark:focus:text-purple-100',
+                                'dark:hover:bg-purple-900 dark:hover:text-purple-100',
+                                'cursor-pointer select-none group',
+                            )}
+                            onSelect={handleStartLocalProject}
+                            disabled={isCreatingProject}
+                        >
+                            <Icons.Laptop className="w-4 h-4 mr-1 text-foreground-secondary group-hover:text-purple-100" />
+                            Blank Local Project
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                             className={cn(
                                 'focus:bg-teal-100 focus:text-teal-900',
@@ -264,5 +312,13 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                 <CurrentUserAvatar className="w-8 h-8" />
             </div>
         </div>
+        {user?.id && (
+            <LocalProjectModal
+                isOpen={isLocalModalOpen}
+                onClose={() => setIsLocalModalOpen(false)}
+                userId={user.id}
+            />
+        )}
+    </>
     );
 };

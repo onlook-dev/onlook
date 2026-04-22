@@ -34,8 +34,14 @@ export async function GET(request: Request) {
                 }
             });
 
+            // 构建重定向 URL，携带 accessToken（用于 IDE 浏览器场景）
+            const redirectUrl = new URL(`${origin}${Routes.AUTH_REDIRECT}`);
+            if (data.session?.access_token) {
+                redirectUrl.searchParams.set('accessToken', data.session.access_token);
+            }
+
             // Always use the request origin to prevent open redirect via X-Forwarded-Host header manipulation
-            return NextResponse.redirect(`${origin}${Routes.AUTH_REDIRECT}`);
+            return NextResponse.redirect(redirectUrl.toString());
         }
         console.error(`Error exchanging code for session: ${error}`);
     }

@@ -1,0 +1,100 @@
+{
+  "name": "onlook-local",
+  "displayName": "Onlook",
+  "description": "Onlook - AI-powered visual editor for Next.js, integrated with your local VSCode/Cursor",
+  "version": "0.1.0",
+  "publisher": "onlook",
+  "license": "Apache-2.0",
+  "engines": {
+    "vscode": "^1.93.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "onlook",
+    "visual editor",
+    "nextjs",
+    "ai"
+  ],
+  "activationEvents": [
+    "onUri:onlook.onlook-local",
+    "onCommand:onlook.createProject",
+    "onCommand:onlook.openProject"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "onlook.createProject",
+        "title": "Onlook: Create Local Project"
+      },
+      {
+        "command": "onlook.openProject",
+        "title": "Onlook: Open in IDE Browser"
+      },
+      {
+        "command": "onlook.showStatus",
+        "title": "Onlook: Show Connection Status"
+      }
+    ],
+    "configuration": {
+      "title": "Onlook",
+      "properties": {
+        "onlook.agentPort": {
+          "type": "number",
+          "default": 9527,
+          "description": "WebSocket 服务器端口"
+        },
+        "onlook.allowedOrigins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": ["localhost", "127.0.0.1", "*.onlook.com"],
+          "description": "允许的 Web 来源域名白名单（支持通配符）"
+        },
+        "onlook.webUrl": {
+          "type": "string",
+          "default": "http://localhost:3000",
+          "description": "Onlook Web URL（用于 IDE 打开 Onlook）"
+        },
+        "onlook.useIntegratedBrowser": {
+          "type": "boolean",
+          "default": true,
+          "description": "优先在 IDE 内置浏览器中打开 Onlook。关闭则使用外部浏览器。"
+        },
+        "onlook.defaultDevCommand": {
+          "type": "string",
+          "default": "npm run dev",
+          "description": "默认开发命令（如 npm run dev、npx next dev、yarn dev）"
+        },
+        "onlook.defaultPort": {
+          "type": "number",
+          "default": 3001,
+          "description": "默认开发服务器端口"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package",
+    "pack": "bash scripts/package.sh",
+    "pack:install": "bash scripts/package.sh --install",
+    "pack:install-vscode": "bash scripts/package.sh --install-vscode"
+  },
+  "dependencies": {
+    "ws": "^8.18.0",
+    "chokidar": "^4.0.3",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.93.0",
+    "@types/ws": "^8.5.14",
+    "@types/uuid": "^10.0.0",
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,6 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
 import type { PageNode } from '@onlook/models';
+import { ProjectEnvironment } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
@@ -12,6 +13,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import DomainTab from './domain';
 import { SettingsTabValue, type SettingTab } from './helpers';
+import { LocalDevTab } from './local-dev';
 import { PreferencesTab } from './preferences-tab';
 import { ProjectTab } from './project';
 import { SiteTab } from './site';
@@ -98,6 +100,15 @@ export const SettingsModalWithProjects = observer(() => {
             component: <VersionsTab />,
         },
     ];
+
+    // 条件添加 Local Dev Server tab（仅对本地 VSCode 环境显示）
+    if (editorEngine.branches.activeBranch?.environment === ProjectEnvironment.LOCAL_VSCODE) {
+        projectTabs.push({
+            label: SettingsTabValue.LOCAL_DEV,
+            icon: <Icons.Laptop className="mr-2 h-4 w-4" />,
+            component: <LocalDevTab />,
+        });
+    }
 
     const pagesTabs: SettingTab[] = flattenPages
         .filter((page) => page.path !== '/')

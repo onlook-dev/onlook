@@ -59,7 +59,7 @@ export const ProjectBreadcrumb = observer(() => {
             return;
         }
 
-        const sandboxId = editorEngine.branches.activeBranch.sandbox.id
+        const sandboxId = editorEngine.branches.activeBranch.sandbox?.id
         if (!sandboxId) {
             console.error('No sandbox ID found');
             return;

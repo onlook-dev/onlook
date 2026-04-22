@@ -1,8 +1,10 @@
 import { CodeProvider } from './providers';
 import { CodesandboxProvider, type CodesandboxProviderOptions } from './providers/codesandbox';
+import { LocalProvider, type LocalProviderOptions, type DevServerStatusEvent } from './providers/local';
 import { NodeFsProvider, type NodeFsProviderOptions } from './providers/nodefs';
 export * from './providers';
 export { CodesandboxProvider } from './providers/codesandbox';
+export { LocalProvider, type DevServerStatusEvent, type LocalConfig } from './providers/local';
 export { NodeFsProvider } from './providers/nodefs';
 export * from './types';
 
@@ -25,7 +27,7 @@ export async function createCodeProviderClient(
 
 export async function getStaticCodeProvider(
     codeProvider: CodeProvider,
-): Promise<typeof CodesandboxProvider | typeof NodeFsProvider> {
+): Promise<typeof CodesandboxProvider | typeof NodeFsProvider | typeof LocalProvider> {
     if (codeProvider === CodeProvider.CodeSandbox) {
         return CodesandboxProvider;
     }
@@ -33,12 +35,17 @@ export async function getStaticCodeProvider(
     if (codeProvider === CodeProvider.NodeFs) {
         return NodeFsProvider;
     }
+
+    if (codeProvider === CodeProvider.Local) {
+        return LocalProvider;
+    }
     throw new Error(`Unimplemented code provider: ${codeProvider}`);
 }
 
 export interface ProviderInstanceOptions {
     codesandbox?: CodesandboxProviderOptions;
     nodefs?: NodeFsProviderOptions;
+    local?: LocalProviderOptions;
 }
 
 function newProviderInstance(codeProvider: CodeProvider, providerOptions: ProviderInstanceOptions) {
@@ -54,6 +61,13 @@ function newProviderInstance(codeProvider: CodeProvider, providerOptions: Provid
             throw new Error('NodeFs provider options are required.');
         }
         return new NodeFsProvider(providerOptions.nodefs);
+    }
+
+    if (codeProvider === CodeProvider.Local) {
+        if (!providerOptions.local) {
+            throw new Error('Local provider options are required.');
+        }
+        return new LocalProvider(providerOptions.local);
     }
 
     throw new Error(`Unimplemented code provider: ${codeProvider}`);

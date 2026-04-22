@@ -1,3 +1,5 @@
+import type { ProjectEnvironment } from './environment';
+
 export interface Project {
     id: string;
     name: string;
@@ -8,6 +10,8 @@ export interface Project {
         description: string | null;
         tags: string[];
     };
+    /** 默认分支的运行环境 */
+    environment?: ProjectEnvironment;
 }
 
 export interface PreviewImg {

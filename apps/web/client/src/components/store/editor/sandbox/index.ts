@@ -1,10 +1,12 @@
 import { CodeProviderSync } from '@/services/sync-engine/sync-engine';
+import { api } from '@/trpc/client';
 import type { Provider } from '@onlook/code-provider';
 import { EXCLUDED_SYNC_PATHS } from '@onlook/constants';
 import type { CodeFileSystem } from '@onlook/file-system';
 import { type FileEntry } from '@onlook/file-system';
 import type { Branch, RouterConfig } from '@onlook/models';
-import { makeAutoObservable, reaction } from 'mobx';
+import { ProjectEnvironment } from '@onlook/models';
+import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { ErrorManager } from '../error';
 import { GitManager } from '../git';
@@ -24,6 +26,12 @@ export class SandboxManager {
     private sync: CodeProviderSync | null = null;
     preloadScriptState: PreloadScriptState = PreloadScriptState.NOT_INJECTED
     routerConfig: RouterConfig | null = null;
+    /** beforeunload 清理回调（本地环境用） */
+    private beforeUnloadHandler?: () => void;
+    /** 本地 Agent 连接信息（用于 sendBeacon 清理） */
+    private agentPort?: number;
+    private agentToken?: string;
+    private projectPath?: string;
 
     constructor(
         private branch: Branch,
@@ -36,7 +44,124 @@ export class SandboxManager {
         makeAutoObservable(this);
     }
 
+    /** 当前分支的运行环境 */
+    get environment(): ProjectEnvironment {
+        return this.branch.environment ?? ProjectEnvironment.SANDBOX;
+    }
+
+    /** 是否为本地 VSCode 环境 */
+    get isLocal(): boolean {
+        return this.environment === ProjectEnvironment.LOCAL_VSCODE;
+    }
+
     async init() {
+        // 根据环境类型选择不同的初始化方式
+        if (this.isLocal) {
+            await this.initLocal();
+        } else {
+            await this.initSandbox();
+        }
+    }
+
+    /** 初始化本地 VSCode 环境（通过 WebSocket 连接扩展） */
+    private async initLocal() {
+        console.info('[SandboxManager] 本地环境模式，连接 VSCode 扩展...');
+
+        // 从 URL 参数读取连接信息，用于 sendBeacon 清理
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const localAgent = params.get('localAgent');
+            const token = params.get('token');
+            const workspacePath = params.get('workspacePath');
+
+            if (localAgent) {
+                this.agentPort = parseInt(localAgent, 10);
+            }
+            if (token) {
+                this.agentToken = token;
+            }
+            if (workspacePath) {
+                this.projectPath = workspacePath;
+            }
+        }
+
+        // 注册 beforeunload：浏览器关闭时使用 sendBeacon 通知扩展停止 Dev Server
+        this.beforeUnloadHandler = () => {
+            if (this.agentPort && this.agentToken && this.projectPath) {
+                const stopUrl = `http://localhost:${this.agentPort}/stop?projectPath=${encodeURIComponent(this.projectPath)}&token=${encodeURIComponent(this.agentToken)}`;
+                // sendBeacon 是唯一能在页面卸载时可靠发送的 API
+                navigator.sendBeacon(stopUrl);
+                console.info('[SandboxManager] 已发送停止 Dev Server 请求');
+            }
+        };
+        if (typeof window !== 'undefined') {
+            window.addEventListener('beforeunload', this.beforeUnloadHandler);
+        }
+
+        // 启动 LocalProvider 连接（从 URL 参数读取 wsUrl 和 token）
+        if (!this.session.provider) {
+            this.session.start().catch(err => {
+                console.error('[SandboxManager] 本地扩展连接失败:', err);
+            });
+        }
+
+        // 监听 Provider 可用性（当 LocalProvider WebSocket 连接成功后触发）
+        this.providerReactionDisposer = reaction(
+            () => this.session.provider,
+            async (provider) => {
+                if (provider) {
+                    await this.initializeSyncEngine(provider);
+                    await this.gitManager.init();
+                    // 本地环境：自动启动 dev server
+                    await this.startLocalDevServer();
+                } else if (this.sync) {
+                    this.sync.release();
+                    this.sync = null;
+                }
+            },
+            { fireImmediately: true },
+        );
+    }
+
+    /**
+     * 自动启动本地 dev server 并监听端口
+     * 先注册 onOutput 再调用 run()，避免早期 stdout 丢失
+     */
+    private async startLocalDevServer(): Promise<void> {
+        const provider = this.session.provider;
+        if (!provider) return;
+
+        try {
+            const { task } = await provider.getTask({ args: { id: 'dev' } });
+            if (task) {
+                // 先注册 onOutput，再调用 run()，确保不丢失早期输出
+                const taskSession = [...this.session.terminalSessions.values()]
+                    .find(s => s.type === 'task');
+                if (taskSession && 'xterm' in taskSession && taskSession.xterm) {
+                    task.onOutput((data: string) => {
+                        taskSession.xterm?.write(data);
+                    });
+                }
+                await task.run();
+                console.info('[SandboxManager] Dev Server 启动请求已发送');
+            }
+        } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : String(error);
+            console.warn('[SandboxManager] Dev Server 启动失败（可能已在运行）:', errorMsg);
+            // 写入 session.devServerStatus，供 LocalDevTab 等 UI 订阅显示
+            runInAction(() => {
+                this.session.devServerStatus = { status: 'error', error: errorMsg };
+            });
+        }
+    }
+
+    /** 初始化远程沙箱环境（通过 CodeSandbox） */
+    private async initSandbox() {
+        if (!this.branch.sandbox?.id) {
+            console.error('[SandboxManager] 沙箱环境但无 sandboxId');
+            return;
+        }
+
         // Start connection asynchronously (don't wait)
         if (!this.session.provider) {
             this.session.start(this.branch.sandbox.id).catch(err => {
@@ -79,7 +204,10 @@ export class SandboxManager {
             this.sync = null;
         }
 
-        this.sync = CodeProviderSync.getInstance(provider, this.fs, this.branch.sandbox.id, {
+        // 使用 sandboxId 或本地路径作为同步标识
+        const syncId = this.branch.sandbox?.id ?? this.branch.localPath ?? 'local';
+
+        this.sync = CodeProviderSync.getInstance(provider, this.fs, syncId, {
             exclude: EXCLUDED_SYNC_PATHS,
         });
 
@@ -216,6 +344,11 @@ export class SandboxManager {
     clear() {
         this.providerReactionDisposer?.();
         this.providerReactionDisposer = undefined;
+        // 移除 beforeunload 监听
+        if (this.beforeUnloadHandler && typeof window !== 'undefined') {
+            window.removeEventListener('beforeunload', this.beforeUnloadHandler);
+            this.beforeUnloadHandler = undefined;
+        }
         this.sync?.release();
         this.sync = null;
         this.preloadScriptState = PreloadScriptState.NOT_INJECTED

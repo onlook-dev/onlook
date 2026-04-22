@@ -51,6 +51,7 @@ function validateSourceProject(sourceProject: SourceProjectWithRelations | undef
 
 /**
  * Forks all branches and creates sandbox projects for each
+ * 仅 fork 有 sandboxId 的分支（本地环境的分支跳过）
  */
 async function forkAllBranches(
     sourceBranches: Branch[],
@@ -60,8 +61,10 @@ async function forkAllBranches(
     const branchMapping = new Map<string, ForkedBranch>();
 
     for (const sourceBranch of sourceBranches) {
+        // 本地环境分支没有 sandboxId，跳过 fork
         if (!sourceBranch.sandboxId) {
-            throw new Error(`Branch ${sourceBranch.name} has no sandbox ID`);
+            console.warn(`Branch ${sourceBranch.name} has no sandbox ID, skipping fork`);
+            continue;
         }
 
         const newSandbox = await CodesandboxProvider.createProject({
@@ -278,7 +281,8 @@ export const fork = protectedProcedure
 
             // Track the fork event
             const allSandboxIds = Array.from(branchMapping.values())
-                .map(({ newBranch }) => newBranch.sandboxId);
+                .map(({ newBranch }) => newBranch.sandboxId)
+                .filter((id): id is string => !!id);
 
             trackEvent({
                 distinctId: ctx.user.id,

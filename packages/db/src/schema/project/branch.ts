@@ -1,5 +1,5 @@
 import { relations, sql } from 'drizzle-orm';
-import { boolean, index, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
+import { boolean, index, jsonb, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { frames } from '../canvas/frame';
@@ -25,8 +25,20 @@ export const branches = pgTable('branches', {
     gitCommitSha: varchar('git_commit_sha'),
     gitRepoUrl: varchar('git_repo_url'),
 
-    // sandbox 
-    sandboxId: varchar('sandbox_id').notNull(),
+    // sandbox - 本地环境下可为空
+    sandboxId: varchar('sandbox_id'),
+
+    // 运行环境
+    environment: varchar('environment').notNull().default('sandbox'),
+
+    // 本地环境专属字段
+    localPath: varchar('local_path'),
+    /** 本地项目运行配置（devCommand, buildCommand, port），仅 LOCAL_VSCODE 环境有值 */
+    localConfig: jsonb('local_config').$type<{
+        devCommand: string;
+        buildCommand: string;
+        port: number;
+    }>(),
 }, (table) => [
     index('branches_project_id_idx').on(table.projectId),
     uniqueIndex('branches_name_per_project_ux').on(table.projectId, table.name),

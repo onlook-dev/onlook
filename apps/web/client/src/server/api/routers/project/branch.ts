@@ -105,6 +105,14 @@ export const branchRouter = createTRPCRouter({
                     });
                 }
 
+                // 本地环境的分支不支持沙箱 fork
+                if (!sourceBranch.sandboxId) {
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: 'Cannot fork a local branch without sandbox ID',
+                    });
+                }
+
                 // Get existing branch names for unique name generation
                 const existingBranches = await ctx.db.query.branches.findMany({
                     where: eq(branches.projectId, sourceBranch.projectId),
@@ -136,6 +144,9 @@ export const branchRouter = createTRPCRouter({
                     description: null,
                     projectId: sourceBranch.projectId,
                     sandboxId,
+                    environment: sourceBranch.environment,
+                    localPath: null,
+                    localConfig: null,
                     isDefault: false,
                     gitBranch: null,
                     gitCommitSha: null,
@@ -280,6 +291,9 @@ export const branchRouter = createTRPCRouter({
                         description: null,
                         projectId: input.projectId,
                         sandboxId,
+                        environment: 'sandbox' as const,
+                        localPath: null,
+                        localConfig: null,
                         isDefault: false,
                         gitBranch: null,
                         gitCommitSha: null,

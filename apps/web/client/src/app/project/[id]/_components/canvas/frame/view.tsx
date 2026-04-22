@@ -6,6 +6,7 @@ import { observer } from 'mobx-react-lite';
 import { connect, WindowMessenger } from 'penpal';
 
 import type { Frame } from '@onlook/models';
+import { ProjectEnvironment } from '@onlook/models';
 import type {
     PenpalChildMethods,
     PenpalParentMethods,
@@ -16,6 +17,29 @@ import { WebPreview, WebPreviewBody } from '@onlook/ui/ai-elements';
 import { cn } from '@onlook/ui/utils';
 
 import { useEditorEngine } from '@/components/store/editor';
+
+/**
+ * 根据 branch 环境动态计算 Frame URL
+ * - Sandbox 环境：使用 frame.url（CodeSandbox 预览地址）
+ * - Local VSCode 环境：使用 http://localhost:{localConfig.port}
+ */
+function resolveFrameUrl(frame: Frame, branchData: { branch: { environment?: string; localConfig?: { port: number } | null } } | null): string {
+    const environment = branchData?.branch.environment as ProjectEnvironment | undefined;
+
+    if (environment === ProjectEnvironment.LOCAL_VSCODE) {
+        const port = branchData?.branch.localConfig?.port ?? 3001;
+        // 保留 URL 中的路径部分
+        try {
+            const urlObj = new URL(frame.url);
+            return `http://localhost:${port}${urlObj.pathname}`;
+        } catch {
+            return `http://localhost:${port}`;
+        }
+    }
+
+    // Sandbox 环境：直接使用存储的 URL
+    return frame.url;
+}
 
 export type IFrameView = HTMLIFrameElement & {
     setZoomLevel: (level: number) => void;
@@ -83,6 +107,10 @@ export const FrameComponent = observer(
             const [penpalChild, setPenpalChild] = useState<PenpalChildMethods | null>(null);
             const isSelected = editorEngine.frames.isSelected(frame.id);
             const isActiveBranch = editorEngine.branches.activeBranch.id === frame.branchId;
+
+            // 根据 branch 环境动态计算 Frame URL
+            const branchData = editorEngine.branches.getBranchDataById(frame.branchId);
+            const resolvedUrl = useMemo(() => resolveFrameUrl(frame, branchData), [frame, branchData?.branch.environment, branchData?.branch.localConfig?.port]);
 
             const setupPenpalConnection = () => {
                 try {
@@ -317,7 +345,7 @@ export const FrameComponent = observer(
                             isActiveBranch && !isSelected && 'outline-dashed',
                             !isActiveBranch && isInDragSelection && 'outline-teal-500',
                         )}
-                        src={frame.url}
+                        src={resolvedUrl}
                         sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
                         allow="geolocation; microphone; camera; midi; encrypted-media"
                         style={{ width: frame.dimension.width, height: frame.dimension.height }}

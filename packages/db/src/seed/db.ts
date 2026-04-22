@@ -83,6 +83,9 @@ const branch1 = {
     gitCommitSha: null,
     gitRepoUrl: null,
     sandboxId: '123456',
+    environment: 'sandbox',
+    localPath: null,
+    localConfig: null,
 } satisfies Branch;
 
 const branch2 = {
@@ -97,6 +100,9 @@ const branch2 = {
     gitCommitSha: null,
     gitRepoUrl: null,
     sandboxId: '123456',
+    environment: 'sandbox',
+    localPath: null,
+    localConfig: null,
 } satisfies Branch;
 
 const branch3 = {
@@ -111,6 +117,9 @@ const branch3 = {
     gitCommitSha: null,
     gitRepoUrl: null,
     sandboxId: '123456',
+    environment: 'sandbox',
+    localPath: null,
+    localConfig: null,
 } satisfies Branch;
 
 const canvas0 = createDefaultCanvas(project0.id);
