@@ -66,22 +66,35 @@ export const ensureToolCallResults = (parts: ChatMessage['parts']): ChatMessage[
         }
     });
 
-    // Second pass: update parts that need stub results
+    // Second pass: update parts that need stub results and sanitize null fields
     return parts.map((part) => {
         if (part.type?.startsWith('tool-')) {
             const toolPart = part as ToolUIPart;
+
+            // Sanitize providerExecuted: DB JSONB can store JSON null, but the AI SDK's
+            // Zod schema uses z.boolean().optional() which accepts undefined but rejects null,
+            // causing standardizePrompt to throw "The messages must be a ModelMessage[]".
+            const rawProviderExecuted = (toolPart as { providerExecuted?: boolean | null })
+                .providerExecuted;
+            const sanitizedPart =
+                rawProviderExecuted === null
+                    ? ({ ...toolPart, providerExecuted: undefined } as ToolUIPart)
+                    : toolPart;
+
             if (
-                toolPart.toolCallId &&
-                (toolPart.state === 'input-available' || toolPart.state === 'input-streaming') &&
-                !toolResultIds.has(toolPart.toolCallId)
+                sanitizedPart.toolCallId &&
+                (sanitizedPart.state === 'input-available' ||
+                    sanitizedPart.state === 'input-streaming') &&
+                !toolResultIds.has(sanitizedPart.toolCallId)
             ) {
                 // Update existing part to have stub result
                 return {
-                    ...toolPart,
+                    ...sanitizedPart,
                     state: 'output-available',
                     output: 'No tool result returned',
                 };
             }
+            return sanitizedPart;
         }
         return part;
     });
