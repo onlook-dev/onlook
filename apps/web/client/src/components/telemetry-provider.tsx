@@ -16,13 +16,23 @@ import { useEffect } from "react";
 
 let gleapSingleton: any | null = null;
 
+/**
+ * Returns true only when the key looks like a real PostHog project API key.
+ * Placeholder values copied from .env.example (e.g. "<Your PostHog API key …>")
+ * are truthy strings but must not be passed to posthog.init — doing so triggers
+ * 401 / CORS errors that flood the console during local development.
+ */
+function isValidPostHogKey(key: string | undefined): key is string {
+    return !!key && !key.startsWith('<') && !key.includes('Your PostHog');
+}
+
 export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     const { data: user } = api.user.get.useQuery();
     const pathname = usePathname();
 
     // Initialize SDKs once
     useEffect(() => {
-        if (env.NEXT_PUBLIC_POSTHOG_KEY) {
+        if (isValidPostHogKey(env.NEXT_PUBLIC_POSTHOG_KEY)) {
             try {
                 posthog.init(env.NEXT_PUBLIC_POSTHOG_KEY, {
                     api_host: env.NEXT_PUBLIC_POSTHOG_HOST,
@@ -34,7 +44,9 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
                 console.warn("PostHog init failed", e);
             }
         } else {
-            console.warn("PostHog key is not set, skipping initialization");
+            if (env.NEXT_PUBLIC_POSTHOG_KEY) {
+                console.warn("PostHog key appears to be a placeholder, skipping initialization");
+            }
         }
 
         if (env.NEXT_PUBLIC_GLEAP_API_KEY) {
