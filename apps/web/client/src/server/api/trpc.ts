@@ -150,6 +150,19 @@ export const protectedProcedure = t.procedure.use(timingMiddleware).use(({ ctx, 
 });
 
 /**
+ * Optional auth procedure
+ *
+ * Use this for procedures that should work for both authenticated and unauthenticated users.
+ * Unlike `protectedProcedure`, this does NOT throw when the user is not logged in — it passes
+ * `ctx.user` through as-is (null for anonymous visitors). The resolver is responsible for
+ * handling the nullable user.
+ *
+ * Suitable for components that appear on both marketing pages and the authenticated app,
+ * such as the telemetry provider, the top-bar auth button, and the pricing table.
+ */
+export const optionalAuthProcedure = t.procedure.use(timingMiddleware);
+
+/**
  * Admin procedure with service role access
  *
  * This procedure provides access to Supabase admin operations using the service role key.

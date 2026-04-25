@@ -7,7 +7,7 @@ import { Button } from '@onlook/ui/button';
 import Link from 'next/link';
 
 export const AuthButton = () => {
-    const { data: user } = api.user.get.useQuery();
+    const { data: user } = api.user.getOptional.useQuery();
     return (
         <div className="flex items-center gap-3 mt-0">
             {user ? (
