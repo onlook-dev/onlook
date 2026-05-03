@@ -17,7 +17,7 @@ import { useEffect } from "react";
 let gleapSingleton: any | null = null;
 
 export function TelemetryProvider({ children }: { children: React.ReactNode }) {
-    const { data: user } = api.user.get.useQuery();
+    const { data: user } = api.user.getOptional.useQuery();
     const pathname = usePathname();
 
     // Initialize SDKs once
