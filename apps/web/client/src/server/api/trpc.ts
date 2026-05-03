@@ -150,6 +150,22 @@ export const protectedProcedure = t.procedure.use(timingMiddleware).use(({ ctx, 
 });
 
 /**
+ * Optional auth procedure
+ *
+ * Use this for endpoints that are accessible by both authenticated and unauthenticated users.
+ * Unlike protectedProcedure, this does NOT throw UNAUTHORIZED when ctx.user is null.
+ * The ctx.user will be null for unauthenticated requests.
+ *
+ * Prefer this over protectedProcedure for components that render on marketing pages
+ * or other surfaces where auth is optional (e.g. top-bar auth button, telemetry provider,
+ * pricing table). Using protectedProcedure in those contexts floods the console with
+ * UNAUTHORIZED errors for every unauthenticated visitor.
+ *
+ * @see https://github.com/onlook-dev/onlook/issues/3051
+ */
+export const optionalAuthProcedure = t.procedure.use(timingMiddleware);
+
+/**
  * Admin procedure with service role access
  *
  * This procedure provides access to Supabase admin operations using the service role key.

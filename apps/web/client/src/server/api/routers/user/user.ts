@@ -5,10 +5,38 @@ import { extractNames } from '@onlook/utility';
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { createTRPCRouter, optionalAuthProcedure, protectedProcedure } from '../../trpc';
 import { userSettingsRouter } from './user-settings';
 
 export const userRouter = createTRPCRouter({
+    /**
+     * Returns the current user, or null if not authenticated.
+     * Use this from components that render for both signed-in and signed-out visitors
+     * (e.g. marketing top-bar, telemetry provider, pricing table) so that unauthenticated
+     * requests don't produce UNAUTHORIZED console errors.
+     *
+     * @see https://github.com/onlook-dev/onlook/issues/3051
+     */
+    getOptional: optionalAuthProcedure.query(async ({ ctx }) => {
+        if (!ctx.user) {
+            return null;
+        }
+        const authUser = ctx.user;
+        const user = await ctx.db.query.users.findFirst({
+            where: eq(users.id, authUser.id),
+        });
+
+        const { displayName, firstName, lastName } = getUserName(authUser);
+        const userData = user ? fromDbUser({
+            ...user,
+            firstName: user.firstName ?? firstName,
+            lastName: user.lastName ?? lastName,
+            displayName: user.displayName ?? displayName,
+            email: user.email ?? authUser.email,
+            avatarUrl: user.avatarUrl ?? authUser.user_metadata.avatarUrl,
+        }) : null;
+        return userData;
+    }),
     get: protectedProcedure.query(async ({ ctx }) => {
         const authUser = ctx.user;
         const user = await ctx.db.query.users.findFirst({
