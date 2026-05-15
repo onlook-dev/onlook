@@ -5,7 +5,7 @@ import { extractNames } from '@onlook/utility';
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { createTRPCRouter, optionalAuthProcedure, protectedProcedure } from '../../trpc';
 import { userSettingsRouter } from './user-settings';
 
 export const userRouter = createTRPCRouter({
@@ -25,6 +25,26 @@ export const userRouter = createTRPCRouter({
             avatarUrl: user.avatarUrl ?? authUser.user_metadata.avatarUrl,
         }) : null;
         return userData;
+    }),
+    // Same shape as `get`, but returns `null` instead of throwing UNAUTHORIZED
+    // for anonymous callers. Use on auth-optional surfaces (marketing pages,
+    // top bar, pricing) where the component already branches on user presence.
+    getOptional: optionalAuthProcedure.query(async ({ ctx }) => {
+        if (!ctx.user) return null;
+        const authUser = ctx.user;
+        const user = await ctx.db.query.users.findFirst({
+            where: eq(users.id, authUser.id),
+        });
+
+        const { displayName, firstName, lastName } = getUserName(authUser);
+        return user ? fromDbUser({
+            ...user,
+            firstName: user.firstName ?? firstName,
+            lastName: user.lastName ?? lastName,
+            displayName: user.displayName ?? displayName,
+            email: user.email ?? authUser.email ?? null,
+            avatarUrl: user.avatarUrl ?? authUser.user_metadata.avatarUrl,
+        }) : null;
     }),
     getById: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
         const user = await ctx.db.query.users.findFirst({

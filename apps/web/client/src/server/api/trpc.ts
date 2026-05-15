@@ -35,14 +35,18 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
         error,
     } = await supabase.auth.getUser();
 
-    if (error) {
+    // A missing session is a valid anonymous request, not an error. Treat it as
+    // `ctx.user = null` and let each procedure decide how to handle it
+    // (`protectedProcedure` still throws UNAUTHORIZED downstream).
+    // Other errors (e.g. malformed JWT, network issues) are surfaced.
+    if (error && error.name !== 'AuthSessionMissingError') {
         throw new TRPCError({ code: 'UNAUTHORIZED', message: error.message });
     }
 
     return {
         db,
         supabase,
-        user,
+        user: user ?? null,
         ...opts,
     };
 };
@@ -119,6 +123,15 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
+
+/**
+ * Optional auth procedure
+ *
+ * Use this for endpoints that surface on both authenticated and anonymous pages
+ * (e.g. marketing, pricing). `ctx.user` is `User | null` — endpoints must handle
+ * both cases and typically return `null` for anonymous callers instead of throwing.
+ */
+export const optionalAuthProcedure = t.procedure.use(timingMiddleware);
 
 /**
  * Protected (authenticated) procedure

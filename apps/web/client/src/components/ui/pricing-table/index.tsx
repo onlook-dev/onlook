@@ -10,7 +10,7 @@ import { ProCard } from '../pricing-modal/pro-card';
 
 export const PricingTable = () => {
     const t = useTranslations();
-    const { data: user } = api.user.get.useQuery();
+    const { data: user } = api.user.getOptional.useQuery();
     const { setIsAuthModalOpen } = useAuthContext();
 
     return (
