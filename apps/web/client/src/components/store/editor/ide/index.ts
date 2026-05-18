@@ -1,6 +1,8 @@
 import { EditorMode, type CodeNavigationTarget } from "@onlook/models";
 import { makeAutoObservable } from "mobx";
 import type { EditorEngine } from "../engine";
+import { detectSupportedIDE } from './ide-detection';
+import { toast } from "@onlook/ui/sonner";
 
 export class IdeManager {
     private _codeNavigationOverride: CodeNavigationTarget | null = null;
@@ -15,6 +17,14 @@ export class IdeManager {
 
     async openCodeBlock(oid: string) {
         try {
+            // Check if a supported IDE is installed
+            const ideDetection = await detectSupportedIDE();
+            if (!ideDetection.anyInstalled) {
+                toast.warning(ideDetection.message || 'No supported IDE found. Please install VS Code or Cursor.');
+                console.warn('[IdeManager] No supported IDE found');
+                // Continue anyway - the code panel will still work
+            }
+
             // Get the current branch data
             const activeBranchId = this.editorEngine.branches.activeBranch?.id;
             if (!activeBranchId) {
