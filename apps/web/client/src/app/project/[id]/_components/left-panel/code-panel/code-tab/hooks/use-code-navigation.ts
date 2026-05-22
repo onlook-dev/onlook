@@ -5,6 +5,7 @@ import type { CodeNavigationTarget } from '@onlook/models';
 import { pathsEqual } from '@onlook/utility';
 import { reaction } from 'mobx';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const isNavigationTargetEqual = (navigationTarget1: CodeNavigationTarget | null, navigationTarget2: CodeNavigationTarget | null) => {
     if (!navigationTarget1 || !navigationTarget2) {
@@ -19,10 +20,15 @@ const isNavigationTargetEqual = (navigationTarget1: CodeNavigationTarget | null,
 
 export function useCodeNavigation() {
     const editorEngine = useEditorEngine();
+    const t = useTranslations();
     const savedNavigationTarget = useRef<CodeNavigationTarget | null>(null);
     const [navigationTarget, setNavigationTarget] = useState<CodeNavigationTarget | null>(null);
     const lastSelected = useRef(editorEngine.elements.selected);
     const lastOverride = useRef(editorEngine.ide.codeNavigationOverride);
+
+    // Inject translation function into IdeManager
+    const { setIdeTranslation } = await import('@/components/store/editor/ide');
+    setIdeTranslation(t);
 
     useEffect(() => {
         const disposer = reaction(

@@ -4,6 +4,16 @@ import type { EditorEngine } from "../engine";
 import { detectSupportedIDE } from './ide-detection';
 import { toast } from "@onlook/ui/sonner";
 
+let tFn: ((key: string) => string) | null = null;
+
+export function setIdeTranslation(fn: (key: string) => string): void {
+    tFn = fn;
+}
+
+export function getIdeTranslation(): (((key: string) => string) | null) {
+    return tFn;
+}
+
 export class IdeManager {
     private _codeNavigationOverride: CodeNavigationTarget | null = null;
 
@@ -20,7 +30,8 @@ export class IdeManager {
             // Check if a supported IDE is installed
             const ideDetection = await detectSupportedIDE();
             if (!ideDetection.anyInstalled) {
-                toast.warning(ideDetection.message || 'No supported IDE found. Please install VS Code or Cursor.');
+                const msg = tFn ? tFn(ideDetection.messageKey || 'ide.noSupportedIDE') : 'No supported IDE found. Please install VS Code or Cursor.';
+                toast.warning(msg || 'No supported IDE found.');
                 console.warn('[IdeManager] No supported IDE found');
                 // Continue anyway - the code panel will still work
             }
@@ -78,3 +89,5 @@ export class IdeManager {
         return this._codeNavigationOverride !== null;
     }
 }
+
+export { setIdeTranslation, getIdeTranslation };

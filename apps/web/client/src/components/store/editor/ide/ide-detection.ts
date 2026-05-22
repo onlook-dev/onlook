@@ -50,21 +50,21 @@ export async function detectSupportedIDE(): Promise<{
     vsCodeInstalled: boolean;
     cursorInstalled: boolean;
     anyInstalled: boolean;
-    message: string | null;
+    messageKey: string | null;
 }> {
     const vsCodeInstalled = await isVSCodeInstalled();
     const cursorInstalled = await isCursorInstalled();
     const anyInstalled = vsCodeInstalled || cursorInstalled;
 
-    let message = null;
+    let messageKey = null;
     if (!anyInstalled) {
-        message = 'No supported IDE found. Please install VS Code or Cursor to use "Open in Code" feature.';
+        messageKey = 'ide.noSupportedIDE';
     }
 
     return {
         vsCodeInstalled,
         cursorInstalled,
         anyInstalled,
-        message,
+        messageKey,
     };
 }
