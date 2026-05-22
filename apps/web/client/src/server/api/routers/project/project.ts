@@ -84,15 +84,16 @@ export const projectRouter = createTRPCRouter({
                 const url = getSandboxPreviewUrl(branch.sandboxId, port);
                 const app = new FirecrawlApp({ apiKey: env.FIRECRAWL_API_KEY });
 
-                // Optional: Add actions to click the button for CSB free tier
-                // const _csbFreeActions = [{
-                //     type: 'click',
-                //     selector: '#btn-answer-yes',
-                // }];
+                // CSB free tier: auto-accept trust interstitial
+                const csbFreeActions = [{
+                    type: 'click' as const,
+                    selector: '#btn-answer-yes',
+                }];
                 const result = await app.scrapeUrl(url, {
                     formats: ['screenshot'],
                     onlyMainContent: true,
                     timeout: 10000,
+                    actions: csbFreeActions,
                 });
 
                 if (!result.success) {
