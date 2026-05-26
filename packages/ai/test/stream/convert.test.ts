@@ -341,7 +341,7 @@ describe('ensureToolCallResults', () => {
             {
                 type: 'tool-divide',
                 toolCallId: 'call_1',
-                state: 'error',
+                state: 'output-error',
                 input: { a: 10, b: 0 },
                 errorText: 'Division by zero',
             } as any,
@@ -361,7 +361,7 @@ describe('ensureToolCallResults', () => {
         expect(result[0]).toEqual({
             type: 'tool-divide',
             toolCallId: 'call_1',
-            state: 'error',
+            state: 'output-error',
             input: { a: 10, b: 0 },
             errorText: 'Division by zero',
         });
