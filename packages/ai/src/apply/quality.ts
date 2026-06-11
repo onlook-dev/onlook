@@ -98,9 +98,15 @@ export function assessCodeChange(
     const missingOriginalSymbols = appliedCode
         ? findMissingOriginalSymbols(originalCode, appliedCode)
         : [];
-    const placeholders = findPlaceholders(codeToAssess);
-    const riskyPatterns = findRiskyPatterns(codeToAssess);
-    const syntaxBalanceScore = scoreSyntaxBalance(codeToAssess);
+    const placeholders = newlyIntroduced(
+        findPlaceholders(originalCode),
+        findPlaceholders(codeToAssess),
+    );
+    const riskyPatterns = newlyIntroduced(
+        findRiskyPatterns(originalCode),
+        findRiskyPatterns(codeToAssess),
+    );
+    const syntaxBalanceScore = scoreSyntaxBalanceRelative(originalCode, codeToAssess);
 
     const signals: ApplyCodeChangeSignal[] = [
         {
@@ -205,6 +211,9 @@ export function shouldBlockApply(
     if (gate.blockHighRisk && assessment.risk === ApplyCodeChangeRisk.HIGH) {
         return true;
     }
+    if (gate.blockHighRisk && assessment.blockingConcerns.length > 0) {
+        return true;
+    }
     if (gate.blockOnMissingSymbols && assessment.stats.missingOriginalSymbols.length > 0) {
         return true;
     }
@@ -267,18 +276,33 @@ function findMissingOriginalSymbols(originalCode: string, appliedCode: string): 
 function extractDeclaredSymbols(code: string): Set<string> {
     const symbols = new Set<string>();
     const patterns = [
-        /\bexport\s+(?:default\s+)?(?:async\s+)?(?:function|class|interface|type|enum|const|let|var)\s+([A-Za-z_$][\w$]*)/g,
-        /\b(?:function|class|interface|type|enum)\s+([A-Za-z_$][\w$]*)/g,
-        /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=/g,
+        /^export\s+(?:default\s+)?(?:async\s+)?(?:function|class|interface|type|enum|const|let|var)\s+([A-Za-z_$][\w$]*)/gm,
+        /^export\s*\{\s*([^}]+)\s*\}/gm,
     ];
     for (const pattern of patterns) {
         for (const match of code.matchAll(pattern)) {
-            if (match[1]) {
+            if (!match[1]) continue;
+            if (pattern.source.includes('\\{')) {
+                for (const exportName of match[1].split(',')) {
+                    const [localName, aliasName] = exportName
+                        .split(/\s+as\s+/i)
+                        .map((part) => part.trim());
+                    const symbolName = aliasName ?? localName;
+                    if (symbolName) {
+                        symbols.add(symbolName);
+                    }
+                }
+            } else {
                 symbols.add(match[1]);
             }
         }
     }
     return symbols;
+}
+
+function newlyIntroduced(before: string[], after: string[]): string[] {
+    const beforeSet = new Set(before);
+    return after.filter((item) => !beforeSet.has(item));
 }
 
 function findPlaceholders(code: string): string[] {
@@ -322,6 +346,15 @@ function scoreSyntaxBalance(code: string): number {
     }
 
     return clampScore(100 - (stack.length + mismatches) * 18);
+}
+
+function scoreSyntaxBalanceRelative(originalCode: string, assessedCode: string): number {
+    const originalScore = scoreSyntaxBalance(originalCode);
+    const assessedScore = scoreSyntaxBalance(assessedCode);
+    if (assessedScore >= originalScore) {
+        return 100;
+    }
+    return assessedScore;
 }
 
 function stripStringsAndComments(code: string): string {

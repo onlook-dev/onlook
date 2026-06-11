@@ -128,6 +128,8 @@ export async function applyCodeChange(
         },
     ];
 
+    let lastError: unknown = null;
+
     // Run provider attempts in order of preference
     for (const { provider, applyFn } of providerAttempts) {
         try {
@@ -142,10 +144,12 @@ export async function applyCodeChange(
             if (result) return result;
         } catch (error) {
             console.warn(`Code application failed with provider ${provider}:`, error);
-            throw error;
+            lastError = error;
         }
     }
 
+    if (lastError instanceof Error) throw lastError;
+    if (lastError) throw new Error('Code application failed with a non-error value.');
     return null;
 }
 

@@ -88,6 +88,51 @@ export async function fetchUserData(userId: string): Promise<User> {
         expect(shouldBlockApply(assessment)).toBe(true);
     });
 
+    it('ignores local symbols when checking exported API preservation', () => {
+        const codeWithLocal = `export function renderUser(id: string) {
+  const temporaryLabel = id.toUpperCase();
+  return temporaryLabel;
+}`;
+        const appliedCode = `export function renderUser(id: string) {
+  return id.toLowerCase();
+}`;
+
+        const assessment = assessCodeChange(
+            codeWithLocal,
+            'Simplify the label formatting',
+            'Simplify renderUser',
+            appliedCode,
+        );
+
+        expect(assessment.stats.missingOriginalSymbols).toEqual([]);
+        expect(assessment.blockingConcerns).not.toContain(
+            'Possible dropped original symbol: temporaryLabel',
+        );
+    });
+
+    it('only reports placeholders newly introduced by the applied code', () => {
+        const codeWithExistingTodo = `export function renderUser(id: string) {
+  // TODO: preserve legacy fallback
+  return id;
+}`;
+        const appliedCode = `export function renderUser(id: string) {
+  // TODO: preserve legacy fallback
+  return id.toLowerCase();
+}`;
+
+        const assessment = assessCodeChange(
+            codeWithExistingTodo,
+            'Lowercase the rendered user id',
+            'Lowercase renderUser output',
+            appliedCode,
+        );
+
+        expect(assessment.stats.placeholders).toEqual([]);
+        expect(assessment.blockingConcerns.some((concern) => concern.includes('Placeholder'))).toBe(
+            false,
+        );
+    });
+
     it('lets callers use a softer review gate for exploratory edits', () => {
         const preflight = assessCodeChange(
             originalCode,
