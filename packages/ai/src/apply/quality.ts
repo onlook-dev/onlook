@@ -205,13 +205,18 @@ export function shouldBlockApply(
     options: ApplyCodeChangeGateOptions = {},
 ): boolean {
     const gate = { ...DEFAULT_GATE_OPTIONS, ...options };
+    const blockingConcerns = gate.blockOnMissingSymbols
+        ? assessment.blockingConcerns
+        : assessment.blockingConcerns.filter(
+              (concern) => !concern.startsWith('Possible dropped original symbol:'),
+          );
     if (assessment.score < gate.minimumScore) {
         return true;
     }
     if (gate.blockHighRisk && assessment.risk === ApplyCodeChangeRisk.HIGH) {
-        return true;
+        return assessment.score < 60 || blockingConcerns.length > 0;
     }
-    if (gate.blockHighRisk && assessment.blockingConcerns.length > 0) {
+    if (gate.blockHighRisk && blockingConcerns.length > 0) {
         return true;
     }
     if (gate.blockOnMissingSymbols && assessment.stats.missingOriginalSymbols.length > 0) {
@@ -275,8 +280,11 @@ function findMissingOriginalSymbols(originalCode: string, appliedCode: string): 
 
 function extractDeclaredSymbols(code: string): Set<string> {
     const symbols = new Set<string>();
+    if (/^export\s+default\b/gm.test(code)) {
+        symbols.add('default');
+    }
     const patterns = [
-        /^export\s+(?:default\s+)?(?:async\s+)?(?:function|class|interface|type|enum|const|let|var)\s+([A-Za-z_$][\w$]*)/gm,
+        /^export\s+(?!default\b)(?:async\s+)?(?:function|class|interface|type|enum|const|let|var)\s+([A-Za-z_$][\w$]*)/gm,
         /^export\s*\{\s*([^}]+)\s*\}/gm,
     ];
     for (const pattern of patterns) {

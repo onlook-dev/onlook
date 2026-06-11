@@ -88,6 +88,50 @@ export async function fetchUserData(userId: string): Promise<User> {
         expect(shouldBlockApply(assessment)).toBe(true);
     });
 
+    it('does not treat default export internal names as stable exported symbols', () => {
+        const originalDefaultExport = `export default function UserCard() {
+  return null;
+}`;
+        const appliedDefaultExport = `export default function ProfileCard() {
+  return null;
+}`;
+
+        const assessment = assessCodeChange(
+            originalDefaultExport,
+            'Rename the default component implementation.',
+            'Rename the component used by the default export',
+            appliedDefaultExport,
+        );
+
+        expect(assessment.stats.missingOriginalSymbols).toEqual([]);
+        expect(assessment.blockingConcerns).not.toContain(
+            'Possible dropped original symbol: UserCard',
+        );
+    });
+
+    it('respects disabled missing-symbol blocking when filtering concerns', () => {
+        const appliedCode = `export interface User {
+  id: string;
+  name: string;
+}`;
+
+        const assessment = assessCodeChange(
+            originalCode,
+            'Keep only the User interface.',
+            'Remove fetchUserData for an exploratory edit',
+            appliedCode,
+        );
+
+        expect(assessment.stats.missingOriginalSymbols).toContain('fetchUserData');
+        expect(
+            shouldBlockApply(assessment, {
+                minimumScore: 0,
+                blockHighRisk: true,
+                blockOnMissingSymbols: false,
+            }),
+        ).toBe(false);
+    });
+
     it('ignores local symbols when checking exported API preservation', () => {
         const codeWithLocal = `export function renderUser(id: string) {
   const temporaryLabel = id.toUpperCase();
