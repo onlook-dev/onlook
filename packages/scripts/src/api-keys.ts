@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import fs from 'node:fs';
+import path from 'node:path';
 import prompts from 'prompts';
 
 interface ApiKeyConfig {
@@ -157,8 +158,8 @@ const extractKeyName = (variableLine: string): string | undefined => {
  * @param filePath - Full path to the file
  */
 const ensureDirectoryExists = (filePath: string): void => {
-    const dir = filePath.substring(0, filePath.lastIndexOf('/'));
-    if (!fs.existsSync(dir)) {
+    const dir = path.dirname(filePath);
+    if (dir && !fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
 };
