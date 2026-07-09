@@ -658,7 +658,7 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
             const content = 'TEST_KEY=test_value';
 
             // Simulate ensureDirectoryExists logic
-            const dir = nestedPath.substring(0, nestedPath.lastIndexOf('/'));
+            const dir = path.dirname(nestedPath);
             if (!fs.existsSync(dir)) {
                 fs.mkdirSync(dir, { recursive: true });
             }
