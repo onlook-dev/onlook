@@ -4,7 +4,7 @@ import { createBillingPortalSession, createCheckoutSession, createCustomer, isTi
 import { and, eq, isNull } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { createTRPCRouter, optionalAuthProcedure, protectedProcedure } from '../../trpc';
 
 export const subscriptionRouter = createTRPCRouter({
     getLegacySubscriptions: protectedProcedure.query(async ({ ctx }) => {
@@ -36,6 +36,33 @@ export const subscriptionRouter = createTRPCRouter({
         }
 
         // If there is a scheduled price, we need to fetch it from the database.
+        let scheduledPrice = null;
+        if (subscription.scheduledPriceId) {
+            scheduledPrice = await ctx.db.query.prices.findFirst({
+                where: eq(prices.id, subscription.scheduledPriceId),
+            }) ?? null;
+        }
+
+        return fromDbSubscription(subscription, scheduledPrice);
+    }),
+    // Same shape as `get`, but returns `null` instead of throwing UNAUTHORIZED
+    // for anonymous callers. Use on auth-optional surfaces (pricing table, etc.).
+    getOptional: optionalAuthProcedure.query(async ({ ctx }) => {
+        if (!ctx.user) return null;
+        const user = ctx.user;
+        const subscription = await ctx.db.query.subscriptions.findFirst({
+            where: and(
+                eq(subscriptions.userId, user.id),
+                eq(subscriptions.status, SubscriptionStatus.ACTIVE),
+            ),
+            with: {
+                product: true,
+                price: true,
+            },
+        });
+
+        if (!subscription) return null;
+
         let scheduledPrice = null;
         if (subscription.scheduledPriceId) {
             scheduledPrice = await ctx.db.query.prices.findFirst({

@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 export const useSubscription = () => {
     const state = useStateManager();
-    const { data: subscription, refetch: refetchSubscription } = api.subscription.get.useQuery(undefined, {
+    const { data: subscription, refetch: refetchSubscription } = api.subscription.getOptional.useQuery(undefined, {
         refetchInterval: state.isSubscriptionModalOpen ? 3000 : false,
     });
     const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
