@@ -14,6 +14,11 @@ import { useEffect } from "react";
 // - Clears identities on user sign-out (see utils/telemetry/resetTelemetry).
 // - Keeps PostHog React context so existing `usePostHog()` calls continue to work.
 
+// Reject empty values and `.env.example` placeholders (e.g. `<Your PostHog API key from ...>`),
+// which would otherwise cause 401/CORS console floods on init.
+const isConfigured = (value: string | undefined): value is string =>
+    !!value && !value.startsWith("<");
+
 let gleapSingleton: any | null = null;
 
 export function TelemetryProvider({ children }: { children: React.ReactNode }) {
@@ -22,7 +27,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
 
     // Initialize SDKs once
     useEffect(() => {
-        if (env.NEXT_PUBLIC_POSTHOG_KEY) {
+        if (isConfigured(env.NEXT_PUBLIC_POSTHOG_KEY)) {
             try {
                 posthog.init(env.NEXT_PUBLIC_POSTHOG_KEY, {
                     api_host: env.NEXT_PUBLIC_POSTHOG_HOST,
@@ -33,11 +38,9 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
             } catch (e) {
                 console.warn("PostHog init failed", e);
             }
-        } else {
-            console.warn("PostHog key is not set, skipping initialization");
         }
 
-        if (env.NEXT_PUBLIC_GLEAP_API_KEY) {
+        if (isConfigured(env.NEXT_PUBLIC_GLEAP_API_KEY)) {
             (async () => {
                 try {
                     // Dynamic import to avoid hard dependency when not installed
@@ -82,7 +85,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
             console.error("PostHog identify/reset error:", e);
         }
 
-        if (!env.NEXT_PUBLIC_GLEAP_API_KEY) return;
+        if (!isConfigured(env.NEXT_PUBLIC_GLEAP_API_KEY)) return;
         (async () => {
             try {
                 const Gleap = gleapSingleton ?? (await import("gleap")).default;
@@ -111,7 +114,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
 
     // Soft re-initialize Gleap on path changes to guard against soft reloads/HMR
     useEffect(() => {
-        if (!env.NEXT_PUBLIC_GLEAP_API_KEY) return;
+        if (!isConfigured(env.NEXT_PUBLIC_GLEAP_API_KEY)) return;
         (async () => {
             try {
                 const Gleap = gleapSingleton ?? (await import("gleap")).default;

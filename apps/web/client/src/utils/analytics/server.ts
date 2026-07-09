@@ -1,13 +1,16 @@
 import { env } from "@/env";
 import { PostHog, type EventMessage } from "posthog-node";
 
+// Reject empty values and `.env.example` placeholders (e.g. `<Your PostHog API key from ...>`).
+const isConfigured = (value: string | undefined): value is string =>
+    !!value && !value.startsWith("<");
+
 class PostHogSingleton {
     private static instance: PostHog | null = null;
     private constructor() { }
 
     public static getInstance(): PostHog | null {
-        if (!env.NEXT_PUBLIC_POSTHOG_KEY) {
-            console.warn('PostHog key not found');
+        if (!isConfigured(env.NEXT_PUBLIC_POSTHOG_KEY)) {
             return null;
         }
         if (!PostHogSingleton.instance) {
