@@ -9,6 +9,7 @@ import { MessageCheckpointType } from '@onlook/models';
 import { asc, eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { verifyConversationAccess, verifyMessagesAccess } from '../project/helper';
 
 export const messageRouter = createTRPCRouter({
     getAll: protectedProcedure
@@ -16,6 +17,7 @@ export const messageRouter = createTRPCRouter({
             conversationId: z.string(),
         }))
         .query(async ({ ctx, input }) => {
+            await verifyConversationAccess(ctx.db, ctx.user.id, input.conversationId);
             const result = await ctx.db.query.messages.findMany({
                 where: eq(messages.conversationId, input.conversationId),
                 orderBy: [asc(messages.createdAt)],
@@ -29,12 +31,7 @@ export const messageRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             const conversationId = input.message.conversationId;
             if (conversationId) {
-                const conversation = await ctx.db.query.conversations.findFirst({
-                    where: eq(conversations.id, conversationId),
-                });
-                if (!conversation) {
-                    throw new Error(`Conversation not found`);
-                }
+                await verifyConversationAccess(ctx.db, ctx.user.id, conversationId);
             }
             const normalizedMessage = normalizeMessage(input.message);
             return await ctx.db
@@ -52,6 +49,12 @@ export const messageRouter = createTRPCRouter({
             messages: messageInsertSchema.array(),
         }))
         .mutation(async ({ ctx, input }) => {
+            const conversationIds = new Set(
+                input.messages.map((m) => m.conversationId).filter((id): id is string => !!id),
+            );
+            for (const conversationId of conversationIds) {
+                await verifyConversationAccess(ctx.db, ctx.user.id, conversationId);
+            }
             const normalizedMessages = input.messages.map(normalizeMessage);
             await ctx.db.insert(messages).values(normalizedMessages);
         }),
@@ -61,6 +64,7 @@ export const messageRouter = createTRPCRouter({
             message: messageUpdateSchema
         }))
         .mutation(async ({ ctx, input }) => {
+            await verifyMessagesAccess(ctx.db, ctx.user.id, [input.messageId]);
             await ctx.db.update(messages).set({
                 ...input.message,
             }).where(eq(messages.id, input.messageId));
@@ -76,6 +80,7 @@ export const messageRouter = createTRPCRouter({
             })),
         }))
         .mutation(async ({ ctx, input }) => {
+            await verifyMessagesAccess(ctx.db, ctx.user.id, [input.messageId]);
             await ctx.db.update(messages).set({
                 checkpoints: input.checkpoints,
             }).where(eq(messages.id, input.messageId));
@@ -85,6 +90,7 @@ export const messageRouter = createTRPCRouter({
             messageIds: z.array(z.string()),
         }))
         .mutation(async ({ ctx, input }) => {
+            await verifyMessagesAccess(ctx.db, ctx.user.id, input.messageIds);
             await ctx.db.delete(messages).where(inArray(messages.id, input.messageIds));
         }),
 
@@ -99,11 +105,18 @@ export const messageRouter = createTRPCRouter({
             messages: messageInsertSchema.array(),
         }))
         .mutation(async ({ ctx, input }) => {
+            await verifyConversationAccess(ctx.db, ctx.user.id, input.conversationId);
             await ctx.db.transaction(async (tx) => {
                 await tx.delete(messages).where(eq(messages.conversationId, input.conversationId));
 
                 if (input.messages.length > 0) {
-                    const normalizedMessages = input.messages.map(normalizeMessage);
+                    // Force each inserted message onto the authorized conversation,
+                    // ignoring any conversationId embedded in the client payload --
+                    // otherwise a caller authorized for input.conversationId could
+                    // smuggle messages into a different conversation via the array.
+                    const normalizedMessages = input.messages.map((m) =>
+                        normalizeMessage({ ...m, conversationId: input.conversationId }),
+                    );
                     await tx.insert(messages).values(normalizedMessages);
                 }
 
