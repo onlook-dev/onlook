@@ -194,6 +194,7 @@ export const projectRouter = createTRPCRouter({
     get: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .query(async ({ ctx, input }) => {
+            await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
             const project = await ctx.db.query.projects.findFirst({
                 where: eq(projects.id, input.projectId),
             });
@@ -206,6 +207,7 @@ export const projectRouter = createTRPCRouter({
     getProjectWithCanvas: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .query(async ({ ctx, input }) => {
+            await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
             const project = await ctx.db.query.projects.findFirst({
                 where: eq(projects.id, input.projectId),
                 with: {
@@ -358,6 +360,12 @@ export const projectRouter = createTRPCRouter({
     getPreviewProjects: protectedProcedure
         .input(z.object({ userId: z.string() }))
         .query(async ({ ctx, input }) => {
+            // A user may only list their own preview projects — the userId is
+            // part of the input schema for backwards-compat client shape, but
+            // is not trusted; the session's own id is the authorization source.
+            if (input.userId !== ctx.user.id) {
+                throw new Error('Unauthorized');
+            }
             const projects = await ctx.db.query.userProjects.findMany({
                 where: eq(userProjects.userId, input.userId),
                 with: {

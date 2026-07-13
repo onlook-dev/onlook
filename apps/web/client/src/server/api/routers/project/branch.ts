@@ -8,7 +8,7 @@ import { and, eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
-import { extractCsbPort } from './helper';
+import { extractCsbPort, verifyBranchAccess, verifyProjectAccess } from './helper';
 
 // Helper function to get existing frames in a canvas
 async function getExistingFrames(tx: any, canvasId: string): Promise<Frame[]> {
@@ -27,6 +27,7 @@ export const branchRouter = createTRPCRouter({
             }),
         )
         .query(async ({ ctx, input }) => {
+            await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
             const dbBranches = await ctx.db.query.branches.findMany({
                 where: input.onlyDefault ?
                     and(eq(branches.isDefault, true), eq(branches.projectId, input.projectId)) :
@@ -46,6 +47,7 @@ export const branchRouter = createTRPCRouter({
         .input(branchInsertSchema)
         .mutation(async ({ ctx, input }) => {
             try {
+                await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
                 await ctx.db.insert(branches).values(input);
                 return true;
             } catch (error) {
@@ -55,6 +57,7 @@ export const branchRouter = createTRPCRouter({
         }),
     update: protectedProcedure.input(branchUpdateSchema).mutation(async ({ ctx, input }) => {
         try {
+            await verifyBranchAccess(ctx.db, ctx.user.id, input.id);
             await ctx.db
                 .update(branches)
                 .set({ ...input, updatedAt: new Date() })
@@ -75,6 +78,7 @@ export const branchRouter = createTRPCRouter({
         )
         .mutation(async ({ ctx, input }) => {
             try {
+                await verifyBranchAccess(ctx.db, ctx.user.id, input.branchId);
                 await ctx.db.delete(branches).where(eq(branches.id, input.branchId));
                 return true;
             } catch (error) {
@@ -90,6 +94,7 @@ export const branchRouter = createTRPCRouter({
         )
         .mutation(async ({ ctx, input }) => {
             try {
+                await verifyBranchAccess(ctx.db, ctx.user.id, input.branchId);
                 // Get source branch with its frames to extract port
                 const sourceBranch = await ctx.db.query.branches.findFirst({
                     where: eq(branches.id, input.branchId),
@@ -238,6 +243,7 @@ export const branchRouter = createTRPCRouter({
         )
         .mutation(async ({ ctx, input }) => {
             try {
+                await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
                 return await ctx.db.transaction(async (tx) => {
                     // Get existing branches with frames for unique name generation and port extraction
                     const existingBranches = await tx.query.branches.findMany({

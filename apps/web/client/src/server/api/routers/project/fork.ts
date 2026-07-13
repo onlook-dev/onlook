@@ -22,6 +22,7 @@ import { ProjectRole } from '@onlook/models';
 import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
+import { verifyProjectAccess } from './helper';
 
 type ForkedBranch = {
     newBranch: Branch;
@@ -163,6 +164,11 @@ export const fork = protectedProcedure
         name: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
+        // Forking clones the full private contents of the source project
+        // (canvas, branches, live sandboxes) into a new project the caller
+        // owns -- there is no public/template concept on `projects`, so this
+        // must be gated the same as any other read of a project's contents.
+        await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
         // 1. Get the source project with canvas, frames, and branches
         const sourceProject = await ctx.db.query.projects.findFirst({
             where: eq(projects.id, input.projectId),

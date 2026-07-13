@@ -7,6 +7,7 @@ import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { verifyProjectAccess } from './helper';
 
 export const settingsRouter = createTRPCRouter({
     get: protectedProcedure
@@ -16,6 +17,7 @@ export const settingsRouter = createTRPCRouter({
             }),
         )
         .query(async ({ ctx, input }) => {
+            await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
             const setting = await ctx.db.query.projectSettings.findFirst({
                 where: eq(projectSettings.projectId, input.projectId),
             });
@@ -32,6 +34,7 @@ export const settingsRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ ctx, input }) => {
+            await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
             const [updatedSettings] = await ctx.db
                 .insert(projectSettings)
                 .values(input)
@@ -55,6 +58,7 @@ export const settingsRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ ctx, input }) => {
+            await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
             await ctx.db
                 .delete(projectSettings)
                 .where(eq(projectSettings.projectId, input.projectId));
