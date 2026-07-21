@@ -18,11 +18,14 @@ export const userSettingsRouter = createTRPCRouter({
         });
 
         if (!existingSettings) {
-            const newSettings = { ...createDefaultUserSettings(user.id), ...input };
+            // Force the row's userId to the session user — `input` comes from
+            // `userSettingsUpdateSchema`, which includes `userId`, so a supplied
+            // value must not be able to create settings for another user.
+            const newSettings = { ...createDefaultUserSettings(user.id), ...input, userId: user.id };
             const [insertedSettings] = await ctx.db.insert(userSettings).values(newSettings).returning();
             return fromDbUserSettings(insertedSettings ?? newSettings);
         }
-        const [updatedSettings] = await ctx.db.update(userSettings).set(input).where(eq(userSettings.userId, user.id)).returning();
+        const [updatedSettings] = await ctx.db.update(userSettings).set({ ...input, userId: user.id }).where(eq(userSettings.userId, user.id)).returning();
 
         if (!updatedSettings) {
             throw new Error('Failed to update user settings');

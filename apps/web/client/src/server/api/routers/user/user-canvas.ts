@@ -11,6 +11,7 @@ import {
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { verifyProjectAccess } from '../project/helper';
 
 export const userCanvasRouter = createTRPCRouter({
     get: protectedProcedure
@@ -42,6 +43,7 @@ export const userCanvasRouter = createTRPCRouter({
             }),
         )
         .query(async ({ ctx, input }) => {
+            await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
             const dbCanvas = await ctx.db.query.canvases.findFirst({
                 where: eq(canvases.projectId, input.projectId),
                 with: {
@@ -66,6 +68,7 @@ export const userCanvasRouter = createTRPCRouter({
             canvasId: z.string(),
             canvas: userCanvasUpdateSchema,
         })).mutation(async ({ ctx, input }) => {
+            await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
             try {
                 await ctx.db
                     .update(userCanvases)

@@ -3,6 +3,7 @@ import {
 } from '@onlook/models';
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
+import { verifyProjectAccess } from '../project/helper';
 import { deploymentRouter } from './deployment';
 import { createDeployment, getProjectUrls, unpublish } from './helpers/index.ts';
 
@@ -14,6 +15,7 @@ export const publishRouter = createTRPCRouter({
     })).mutation(async ({ ctx, input }) => {
         const { projectId, type } = input;
         const userId = ctx.user.id;
+        await verifyProjectAccess(ctx.db, userId, projectId);
         const deployment = await createDeployment({
             db: ctx.db,
             projectId,

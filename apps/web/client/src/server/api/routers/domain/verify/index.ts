@@ -5,12 +5,14 @@ import { TRPCError } from '@trpc/server';
 import { and, eq, or } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../../trpc';
+import { verifyDomainVerificationAccess, verifyProjectAccess } from '../../project/helper';
 import { createDomainVerification, ensureUserOwnsDomain, getCustomDomain, getFailureReason, getVerification, verifyFreestyleDomain, verifyFreestyleDomainWithCustomDomain } from './helpers';
 
 export const verificationRouter = createTRPCRouter({
     getActive: protectedProcedure.input(z.object({
         projectId: z.string(),
     })).query(async ({ ctx, input }): Promise<CustomDomainVerification | null> => {
+        await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
         const verification = await ctx.db.query.customDomainVerification.findFirst({
             where: and(
                 eq(customDomainVerification.projectId, input.projectId),
@@ -29,6 +31,7 @@ export const verificationRouter = createTRPCRouter({
         domain: z.string(),
         projectId: z.string(),
     })).mutation(async ({ ctx, input }): Promise<CustomDomainVerification> => {
+        await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
         const { customDomain, subdomain } = await getCustomDomain(ctx.db, input.domain);
         const existingVerification = await getVerification(ctx.db, input.projectId, customDomain.id);
         if (existingVerification) {
@@ -40,6 +43,7 @@ export const verificationRouter = createTRPCRouter({
     remove: protectedProcedure.input(z.object({
         verificationId: z.string(),
     })).mutation(async ({ ctx, input }) => {
+        await verifyDomainVerificationAccess(ctx.db, ctx.user.id, input.verificationId);
         await ctx.db.update(customDomainVerification).set({
             status: VerificationRequestStatus.CANCELLED,
             updatedAt: new Date(),
@@ -51,6 +55,7 @@ export const verificationRouter = createTRPCRouter({
         success: boolean;
         failureReason: string | null;
     }> => {
+        await verifyDomainVerificationAccess(ctx.db, ctx.user.id, input.verificationId);
         const verification = await ctx.db.query.customDomainVerification.findFirst({
             where: and(
                 eq(customDomainVerification.id, input.verificationId),
@@ -118,6 +123,10 @@ export const verificationRouter = createTRPCRouter({
                 message: 'Unauthorized',
             });
         }
+        // Owning the domain is not enough — the caller must also be a member of
+        // the project the domain is about to be attached to, or they could bind
+        // a domain they own onto someone else's project.
+        await verifyProjectAccess(ctx.db, user.id, input.projectId);
         const ownsDomain = await ensureUserOwnsDomain(ctx.db, user.id, input.fullDomain);
         if (!ownsDomain) {
             return {

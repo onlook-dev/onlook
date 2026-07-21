@@ -131,6 +131,9 @@ export const subscriptionRouter = createTRPCRouter({
         const { stripeSubscriptionId, stripeSubscriptionItemId, stripePriceId } = input;
         const subscription = await ctx.db.query.subscriptions.findFirst({
             where: and(
+                // Scope to the caller — otherwise anyone with another customer's
+                // stripe ids could upgrade/downgrade their plan and trigger charges.
+                eq(subscriptions.userId, ctx.user.id),
                 eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId),
                 eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId),
             ),
@@ -181,13 +184,28 @@ export const subscriptionRouter = createTRPCRouter({
                 scheduledChangeAt,
                 scheduledPriceId: newPrice.id,
                 stripeSubscriptionScheduleId: schedule.id,
-            }).where(eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId)).returning();
+            }).where(and(
+                eq(subscriptions.userId, ctx.user.id),
+                eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId),
+            )).returning();
         }
     }),
 
     releaseSubscriptionSchedule: protectedProcedure.input(z.object({
         subscriptionScheduleId: z.string(),
     })).mutation(async ({ input, ctx }) => {
+        // The caller must own the subscription that carries this schedule — else
+        // anyone could release another customer's scheduled plan change and force
+        // their subscription back to ACTIVE.
+        const ownedSubscription = await ctx.db.query.subscriptions.findFirst({
+            where: and(
+                eq(subscriptions.userId, ctx.user.id),
+                eq(subscriptions.stripeSubscriptionScheduleId, input.subscriptionScheduleId),
+            ),
+        });
+        if (!ownedSubscription) {
+            throw new Error('Subscription not found');
+        }
         try {
             await releaseSubscriptionSchedule({ subscriptionScheduleId: input.subscriptionScheduleId });
         } catch (error: any) {
@@ -204,7 +222,10 @@ export const subscriptionRouter = createTRPCRouter({
             scheduledPriceId: null,
             stripeSubscriptionScheduleId: null,
             scheduledChangeAt: null,
-        }).where(eq(subscriptions.stripeSubscriptionScheduleId, input.subscriptionScheduleId)).returning();
+        }).where(and(
+            eq(subscriptions.userId, ctx.user.id),
+            eq(subscriptions.stripeSubscriptionScheduleId, input.subscriptionScheduleId),
+        )).returning();
 
         if (!updatedSubscription) {
             throw new Error('Subscription not found');

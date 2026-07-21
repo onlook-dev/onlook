@@ -11,11 +11,13 @@ import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { verifyConversationAccess, verifyProjectAccess } from '../project/helper';
 
 export const conversationRouter = createTRPCRouter({
     getAll: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .query(async ({ ctx, input }) => {
+            await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
             const dbConversations = await ctx.db.query.conversations.findMany({
                 where: eq(conversations.projectId, input.projectId),
                 orderBy: (conversations, { desc }) => [desc(conversations.updatedAt)],
@@ -25,6 +27,7 @@ export const conversationRouter = createTRPCRouter({
     get: protectedProcedure
         .input(z.object({ conversationId: z.string() }))
         .query(async ({ ctx, input }) => {
+            await verifyConversationAccess(ctx.db, ctx.user.id, input.conversationId);
             const conversation = await ctx.db.query.conversations.findFirst({
                 where: eq(conversations.id, input.conversationId),
             });
@@ -36,6 +39,7 @@ export const conversationRouter = createTRPCRouter({
     upsert: protectedProcedure
         .input(conversationInsertSchema)
         .mutation(async ({ ctx, input }) => {
+            await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
             const [conversation] = await ctx.db.insert(conversations).values(input).returning();
             if (!conversation) {
                 throw new Error('Conversation not created');
@@ -45,6 +49,10 @@ export const conversationRouter = createTRPCRouter({
     update: protectedProcedure
         .input(conversationUpdateSchema)
         .mutation(async ({ ctx, input }) => {
+            if (!input.id) {
+                throw new Error('Conversation id is required');
+            }
+            await verifyConversationAccess(ctx.db, ctx.user.id, input.id);
             const [conversation] = await ctx.db.update({
                 ...conversations,
                 updatedAt: new Date(),
@@ -60,6 +68,7 @@ export const conversationRouter = createTRPCRouter({
             conversationId: z.string()
         }))
         .mutation(async ({ ctx, input }) => {
+            await verifyConversationAccess(ctx.db, ctx.user.id, input.conversationId);
             await ctx.db.delete(conversations).where(eq(conversations.id, input.conversationId));
         }),
     generateTitle: protectedProcedure
@@ -68,6 +77,7 @@ export const conversationRouter = createTRPCRouter({
             content: z.string(),
         }))
         .mutation(async ({ ctx, input }) => {
+            await verifyConversationAccess(ctx.db, ctx.user.id, input.conversationId);
             const { model, providerOptions, headers } = initModel({
                 provider: LLMProvider.OPENROUTER,
                 model: OPENROUTER_MODELS.CLAUDE_3_5_HAIKU,

@@ -10,6 +10,7 @@ import { getSandboxPreviewUrl, SandboxTemplates, Templates } from '@onlook/const
 import { shortenUuid } from '@onlook/utility/src/id';
 
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { listAccessibleSandboxIds, verifySandboxAccess } from './helper';
 
 function getProvider({
     sandboxId,
@@ -45,7 +46,7 @@ export const sandboxRouter = createTRPCRouter({
                 title: z.string().optional(),
             }),
         )
-        .mutation(async ({ input, ctx }) => {
+        .mutation(async ({ input }) => {
             // Create a new sandbox using the static provider
             const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
 
@@ -74,6 +75,7 @@ export const sandboxRouter = createTRPCRouter({
         )
         .mutation(async ({ input, ctx }) => {
             const userId = ctx.user.id;
+            await verifySandboxAccess(ctx.db, userId, input.sandboxId);
             const provider = await getProvider({
                 sandboxId: input.sandboxId,
                 userId,
@@ -92,7 +94,8 @@ export const sandboxRouter = createTRPCRouter({
                 sandboxId: z.string(),
             }),
         )
-        .mutation(async ({ input }) => {
+        .mutation(async ({ input, ctx }) => {
+            await verifySandboxAccess(ctx.db, ctx.user.id, input.sandboxId);
             const provider = await getProvider({ sandboxId: input.sandboxId });
             try {
                 await provider.pauseProject({});
@@ -100,12 +103,18 @@ export const sandboxRouter = createTRPCRouter({
                 await provider.destroy().catch(() => {});
             }
         }),
-    list: protectedProcedure.input(z.object({ sandboxId: z.string() })).query(async ({ input }) => {
+    list: protectedProcedure.input(z.object({ sandboxId: z.string() })).query(async ({ input, ctx }) => {
+        await verifySandboxAccess(ctx.db, ctx.user.id, input.sandboxId);
         const provider = await getProvider({ sandboxId: input.sandboxId });
         const res = await provider.listProjects({});
         // TODO future iteration of code provider abstraction will need this code to be refactored
         if ('projects' in res) {
-            return res.projects;
+            // `listProjects` returns the entire account's sandboxes. Scope the
+            // result to the caller's own so this can't enumerate other tenants'
+            // sandboxes (the input id doesn't constrain the provider output).
+            const accessible = await listAccessibleSandboxIds(ctx.db, ctx.user.id);
+            const projectList = res.projects as Array<{ id: string }>;
+            return projectList.filter((project) => accessible.has(project.id));
         }
         return [];
     }),
@@ -124,7 +133,11 @@ export const sandboxRouter = createTRPCRouter({
                     .optional(),
             }),
         )
-        .mutation(async ({ input }) => {
+        .mutation(async ({ input, ctx }) => {
+            // Forking a sandbox tied to another user's project would clone their
+            // source tree. Templates / fresh sandboxes resolve to no project and
+            // are allowed (blank-project + local-import flows fork a template).
+            await verifySandboxAccess(ctx.db, ctx.user.id, input.sandbox.id);
             const MAX_RETRY_ATTEMPTS = 3;
             let lastError: Error | null = null;
 
@@ -171,7 +184,8 @@ export const sandboxRouter = createTRPCRouter({
                 sandboxId: z.string(),
             }),
         )
-        .mutation(async ({ input }) => {
+        .mutation(async ({ input, ctx }) => {
+            await verifySandboxAccess(ctx.db, ctx.user.id, input.sandboxId);
             const provider = await getProvider({ sandboxId: input.sandboxId });
             try {
                 await provider.stopProject({});

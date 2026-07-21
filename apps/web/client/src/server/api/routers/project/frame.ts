@@ -2,6 +2,7 @@ import { frameInsertSchema, frames, frameUpdateSchema, fromDbFrame } from '@onlo
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { verifyCanvasAccess, verifyFrameAccess } from './helper';
 
 export const frameRouter = createTRPCRouter({
     get: protectedProcedure
@@ -11,6 +12,7 @@ export const frameRouter = createTRPCRouter({
             }),
         )
         .query(async ({ ctx, input }) => {
+            await verifyFrameAccess(ctx.db, ctx.user.id, input.frameId);
             const dbFrame = await ctx.db.query.frames.findFirst({
                 where: eq(frames.id, input.frameId),
             });
@@ -26,6 +28,7 @@ export const frameRouter = createTRPCRouter({
             }),
         )
         .query(async ({ ctx, input }) => {
+            await verifyCanvasAccess(ctx.db, ctx.user.id, input.canvasId);
             const dbFrames = await ctx.db.query.frames.findMany({
                 where: eq(frames.canvasId, input.canvasId),
                 orderBy: (frames, { asc }) => [asc(frames.x), asc(frames.y)],
@@ -35,6 +38,7 @@ export const frameRouter = createTRPCRouter({
     create: protectedProcedure
         .input(frameInsertSchema)
         .mutation(async ({ ctx, input }) => {
+            await verifyCanvasAccess(ctx.db, ctx.user.id, input.canvasId);
             try {
                 await ctx.db.insert(frames).values(input);
                 return true;
@@ -46,6 +50,7 @@ export const frameRouter = createTRPCRouter({
     update: protectedProcedure
         .input(frameUpdateSchema)
         .mutation(async ({ ctx, input }) => {
+            await verifyFrameAccess(ctx.db, ctx.user.id, input.id);
             try {
                 await ctx.db
                     .update(frames)
@@ -66,6 +71,7 @@ export const frameRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ ctx, input }) => {
+            await verifyFrameAccess(ctx.db, ctx.user.id, input.frameId);
             try {
                 await ctx.db.delete(frames).where(eq(frames.id, input.frameId));
                 return true;

@@ -7,6 +7,7 @@ import { convertToModelMessages, generateObject } from 'ai';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { verifyConversationAccess } from '../project/helper';
 
 export const suggestionsRouter = createTRPCRouter({
     generate: protectedProcedure
@@ -18,6 +19,7 @@ export const suggestionsRouter = createTRPCRouter({
             })),
         }))
         .mutation(async ({ ctx, input }) => {
+            await verifyConversationAccess(ctx.db, ctx.user.id, input.conversationId);
             const { model, headers } = initModel({
                 provider: LLMProvider.OPENROUTER,
                 model: OPENROUTER_MODELS.OPEN_AI_GPT_5_NANO,

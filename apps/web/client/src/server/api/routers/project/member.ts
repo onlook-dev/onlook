@@ -2,6 +2,7 @@ import { fromDbUser, userProjects } from '@onlook/db';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { verifyProjectAccess } from './helper';
 
 export const memberRouter = createTRPCRouter({
     list: protectedProcedure
@@ -11,6 +12,7 @@ export const memberRouter = createTRPCRouter({
             }),
         )
         .query(async ({ ctx, input }) => {
+            await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
             const members = await ctx.db.query.userProjects.findMany({
                 where: eq(userProjects.projectId, input.projectId),
                 with: {
@@ -44,6 +46,13 @@ export const memberRouter = createTRPCRouter({
     remove: protectedProcedure
         .input(z.object({ userId: z.string(), projectId: z.string() }))
         .mutation(async ({ ctx, input }) => {
+            // Removing yourself (leaving a project) or removing another member
+            // both require the caller to already be a project member. This
+            // does not yet distinguish by role (e.g. only owners removing
+            // others) -- ProjectRole exists as data but no role-gated
+            // authorization exists anywhere else in this router either, so
+            // that's a separate product decision left to a follow-up.
+            await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
             await ctx.db
                 .delete(userProjects)
                 .where(

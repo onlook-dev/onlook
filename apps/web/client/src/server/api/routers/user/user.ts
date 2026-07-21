@@ -27,6 +27,12 @@ export const userRouter = createTRPCRouter({
         return userData;
     }),
     getById: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
+        // A user may only look themselves up by id (this returns PII + the full
+        // project list). `get` is the normal self path; guarding here closes the
+        // cross-user read while keeping the endpoint's self-lookup behavior.
+        if (input !== ctx.user.id) {
+            throw new Error('Unauthorized or not found');
+        }
         const user = await ctx.db.query.users.findFirst({
             where: eq(users.id, input),
             with: {
@@ -44,14 +50,16 @@ export const userRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }): Promise<User | null> => {
             const authUser = ctx.user;
 
+            // Pin the row to the session user — the client-supplied `input.id`
+            // must never be able to create or overwrite another user's account.
             const existingUser = await ctx.db.query.users.findFirst({
-                where: eq(users.id, input.id),
+                where: eq(users.id, authUser.id),
             });
 
             const { firstName, lastName, displayName } = getUserName(authUser);
 
             const userData = {
-                id: input.id,
+                id: authUser.id,
                 firstName: input.firstName ?? firstName,
                 lastName: input.lastName ?? lastName,
                 displayName: input.displayName ?? displayName,

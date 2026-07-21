@@ -18,6 +18,7 @@ import { and, eq, ilike, isNull } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { verifyInvitationAccess, verifyProjectAccess } from './helper';
 
 export const invitationRouter = createTRPCRouter({
     get: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
@@ -84,6 +85,7 @@ export const invitationRouter = createTRPCRouter({
             }),
         )
         .query(async ({ ctx, input }) => {
+            await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
             const invitations = await ctx.db.query.projectInvitations.findMany({
                 where: eq(projectInvitations.projectId, input.projectId),
             });
@@ -105,6 +107,7 @@ export const invitationRouter = createTRPCRouter({
                     message: 'You must be logged in to invite a user',
                 });
             }
+            await verifyProjectAccess(ctx.db, ctx.user.id, input.projectId);
             const inviter = await ctx.db.query.users.findFirst({
                 where: eq(users.id, ctx.user.id),
             });
@@ -185,6 +188,7 @@ export const invitationRouter = createTRPCRouter({
     delete: protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ ctx, input }) => {
+            await verifyInvitationAccess(ctx.db, ctx.user.id, input.id);
             await ctx.db.delete(projectInvitations).where(eq(projectInvitations.id, input.id));
 
             return true;

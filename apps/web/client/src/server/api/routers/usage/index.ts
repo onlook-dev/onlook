@@ -93,11 +93,15 @@ export const usageRouter = createTRPCRouter({
                     left: sql`${rateLimits.left} + 1`,
                 }).where(and(
                     eq(rateLimits.id, input.rateLimitId),
+                    eq(rateLimits.userId, ctx.user.id),
                 ));
             }
 
             if (input.usageRecordId) {
-                await tx.delete(usageRecords).where(and(eq(usageRecords.id, input.usageRecordId)));
+                await tx.delete(usageRecords).where(and(
+                    eq(usageRecords.id, input.usageRecordId),
+                    eq(usageRecords.userId, ctx.user.id),
+                ));
             }
 
             return { rateLimitId: input.rateLimitId, usageRecordId: input.usageRecordId };
