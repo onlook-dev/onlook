@@ -1,0 +1,536 @@
+---
+title: Unified Onlook Implementation Plan
+description: Merge-safe execution plan to restore Onlook branding and deliver 300+ UI-visible product features without changing core architecture.
+---
+
+# Unified Onlook Implementation Plan
+
+## 1) Plan intent
+
+This is a single, unified, merge-safe implementation plan for Onlook that:
+
+1. Restores Onlook branding from Pixelraft without breaking existing behavior.
+2. Delivers **306 concrete, UI-visible product features** across defined product streams.
+3. Preserves current architecture and dependency strategy (Bun workspaces, Next.js App Router, tRPC, MobX, TailwindCSS).
+4. Uses phased PR sequencing with strict quality gates, rollback controls, and explicit acceptance criteria.
+
+## 2) Constraints and architecture guardrails
+
+- Keep the existing Bun/Next App Router/tRPC/MobX/Tailwind architecture.
+- No package manager or dependency strategy replacement.
+- All migrations follow expand → migrate → contract.
+- Every feature must have:
+  - backend behavior,
+  - a clean UI entrypoint,
+  - a testability note (unit/integration/e2e/visual as applicable).
+- Every PR must be reversible and feature-flagged for controlled rollout.
+
+## 3) Program governance model
+
+### 3.1 Single backlog artifact policy
+
+- This document is the single source of truth for sequencing, risk, and completion tracking.
+- Any defer/replace decision must update this doc with rationale and replacement feature mapping.
+
+### 3.2 Execution templates (used per PR)
+
+- **PR title:** `[M#][Epic-ID] <short action>`
+- **PR description must include:**
+  - scope,
+  - flags introduced/changed,
+  - migration impact,
+  - rollback steps,
+  - tests added/updated,
+  - observability signals.
+- **Rollback section (required):**
+  - feature flag off path,
+  - data rollback/migration fallback,
+  - user impact note,
+  - validation checklist.
+
+## 4) Milestones and phased PR sequencing
+
+### M0 (PR 1–2): Baseline + guardrails
+
+- Add this unified plan artifact, feature inventory conventions, and discoverability matrix format.
+- Add mandatory PR checklist template for UI entrypoint + testability.
+- Exit criteria:
+  - baseline quality gates active,
+  - risk register initialized,
+  - rollout/rollback template established.
+
+### M1 (PR 3–7): Rebrand rollback-safe stream
+
+- Implement dual-read/dual-write compatibility for `.pixelraft` and `.onlook`.
+- Update user-visible branding copy and naming templates with compatibility fallbacks.
+- Exit criteria:
+  - no user-visible Pixelraft branding on active surfaces,
+  - legacy project compatibility preserved.
+
+### M2 (PR 8–20): Import/sync streams
+
+- Deliver Figma import MVP→maturity and GitHub import/PR hardening.
+- Fill missing Figma import route and complete sync workflows.
+- Exit criteria:
+  - Figma import functional end-to-end,
+  - GitHub import/PR reliability baseline met.
+
+### M3 (PR 21–36): Core editor productivity
+
+- Ship components panel discoverability, insertion, search, and performance features.
+- Expand branch iteration workflows and visual history foundations.
+- Exit criteria:
+  - component insertion and branch workflows validated in e2e smoke.
+
+### M4 (PR 37–52): Collaboration + AI asset streams
+
+- Expand comments/threads/review and image reference/asset workflows.
+- Add MCP usability and guardrails for tool execution.
+- Exit criteria:
+  - collaboration lifecycle and AI asset paths visible and testable.
+
+### M5 (PR 53–68): Compatibility + design system streams
+
+- Add cross-framework compatibility modes and design token studio capabilities.
+- Expand responsive tooling and audits.
+- Exit criteria:
+  - compatibility matrix surfaced,
+  - token + responsive workflows available.
+
+### M6 (PR 69–82): QA intelligence + refactor safety
+
+- Deliver design QA/a11y checks and component intelligence/extraction.
+- Introduce safe AI refactor controls and rollback.
+- Exit criteria:
+  - QA gating available in PR flow,
+  - AI refactor path guarded by approvals.
+
+### M7 (PR 83–96): Plugin/integration + reliability/observability
+
+- Ship plugin manager, integration surfaces, eventing, and policy controls.
+- Expand reliability diagnostics and operational controls.
+- Exit criteria:
+  - plugin lifecycle + reliability panels production-ready behind flags.
+
+### M8 (PR 97–110): Bloat/perf/security audits + release readiness
+
+- Execute final performance, dead code, security hardening, and release scorecard.
+- Exit criteria:
+  - release readiness scorecard passes,
+  - legacy fallback removal decision approved.
+
+## 5) Required quality gates (every PR)
+
+- `bun run lint`
+- `bun run typecheck`
+- Targeted `bun test` for changed surfaces
+- UI entrypoint present for each shipped feature
+- e2e smoke for new user flows
+- No unflagged breaking migrations
+- Bundle budget non-regression
+- Security checks pass (validation, command policy, secrets checks)
+- Observability hooks included (logs/metrics/traces)
+
+## 6) Rollout and rollback strategy
+
+- Dual-read compatibility for `.pixelraft` + `.onlook` maintained through M8 sign-off.
+- Feature flags for each epic entrypoint with admin kill switches.
+- Canary rollout by cohort before full enablement.
+- One-command rollback guidance required per milestone.
+- Contract-phase cleanup only after compatibility SLOs remain green for agreed window.
+
+## 7) Risk matrix and controls
+
+| Risk | Severity | Control |
+| --- | --- | --- |
+| Brand migration data loss | High | Dual-write, preview migration, backup and dry-run |
+| PR automation breakage | High | Dry-run mode, existing PR detection, branch-prefix compatibility |
+| Editor performance regressions | Med/High | Profiling, virtualization, performance budgets |
+| Import/MCP security regressions | High | SSRF/path traversal/command guardrails, regression suite |
+| Cross-framework instability | Medium | Capability matrix + progressive support levels |
+| Discoverability debt | Medium | UI entrypoint checklist + screenshot acceptance |
+
+## 8) Final acceptance criteria
+
+- 306 planned features implemented and accepted, or formally deferred with approved replacements while keeping delivered total at **>=300**.
+- Every shipped feature is UI-visible and includes test coverage notes.
+- Pixelraft naming removed from user-visible surfaces while preserving backward compatibility for existing projects.
+- No dependency strategy replacement.
+- Reliability/performance/security release scorecard passes.
+
+---
+
+## 9) Complete feature catalog (306 features)
+
+### Rebrand and compatibility (RBR)
+
+1. **[RBR-01] Dual-read workspace metadata (`/.onlook` + `/.pixelraft`)** — **UI entrypoint:** Settings -> Workspace Storage card — **Testability:** integration migration test.
+2. **[RBR-02] Dual-write config for staged cutover** — UI entrypoint: Settings -> Migration toggle panel — Testability: config contract test.
+3. **[RBR-03] One-click metadata migration job** — UI entrypoint: Settings -> Migrate to Onlook paths button — Testability: e2e sandbox migration.
+4. **[RBR-04] Asset path alias (`/onlook-assets` + `/pixelraft-assets`)** — UI entrypoint: Assets panel path badge — Testability: asset URL regression test.
+5. **[RBR-05] Branch naming template rename (`onlook/...`) with legacy accept** — UI entrypoint: PR modal branch preview — Testability: PR branch creation test.
+6. **[RBR-06] Commit message template rename with legacy parser** — UI entrypoint: PR modal commit preview — Testability: snapshot parser test.
+7. **[RBR-07] UI copy replacement across import flows** — UI entrypoint: Projects -> Import cards — Testability: visual diff + i18n key test.
+8. **[RBR-08] Brand logo/theme token swap** — UI entrypoint: App shell/top bar — Testability: visual baseline.
+9. **[RBR-09] Email/domain template branding update** — UI entrypoint: Admin -> Email Preview — Testability: template render test.
+10. **[RBR-10] Telemetry event namespace aliasing** — UI entrypoint: Settings -> Diagnostics events table — Testability: analytics schema test.
+11. **[RBR-11] User/project display name cleanup migration** — UI entrypoint: Project Settings -> General — Testability: DB migration test.
+12. **[RBR-12] Backward-compatible routing aliases** — UI entrypoint: Legacy links landing banner — Testability: route e2e test.
+13. **[RBR-13] Deprecation warning for legacy path writes** — UI entrypoint: Settings -> Migration warnings — Testability: warning unit test.
+14. **[RBR-14] Admin brand health dashboard** — UI entrypoint: Admin -> Branding Health page — Testability: dashboard query test.
+15. **[RBR-15] CLI/runtime branding constants centralization** — UI entrypoint: Help/About modal — Testability: constant usage lint rule test.
+16. **[RBR-16] Docs + help links rebrand sync** — UI entrypoint: Help menu link set — Testability: link checker CI.
+17. **[RBR-17] Legacy fallback kill-switch flag** — UI entrypoint: Admin -> Feature Flags — Testability: flag integration test.
+18. **[RBR-18] Final cleanup script (post-stabilization)** — UI entrypoint: Settings -> Cleanup section — Testability: dry-run + rollback test.
+
+### Figma import and sync (FIG)
+
+19. **[FIG-01] Figma URL validator + ID extraction** — UI entrypoint: Import -> Figma URL field — Testability: Zod validation test.
+20. **[FIG-02] OAuth token connection flow** — UI entrypoint: Import -> Figma Connect button — Testability: auth callback e2e.
+21. **[FIG-03] File permissions preflight** — UI entrypoint: Import -> Preflight checklist — Testability: permissions API mock test.
+22. **[FIG-04] Node tree fetch with paging** — UI entrypoint: Import -> Layer browser — Testability: pagination integration test.
+23. **[FIG-05] Frame selection UI** — UI entrypoint: Import -> Frame picker modal — Testability: keyboard navigation test.
+24. **[FIG-06] Deterministic frame-to-route mapper** — UI entrypoint: Import -> Route preview panel — Testability: snapshot mapping test.
+25. **[FIG-07] Component-to-local-library mapper** — UI entrypoint: Import -> Component mapping table — Testability: mapping correctness test.
+26. **[FIG-08] Text style extraction to tokens** — UI entrypoint: Import -> Typography summary — Testability: token generation test.
+27. **[FIG-09] Color style extraction to tokens** — UI entrypoint: Import -> Color summary — Testability: color normalization test.
+28. **[FIG-10] Auto-layout to flex/grid translation** — UI entrypoint: Import -> Layout preview diff — Testability: AST/output diff test.
+29. **[FIG-11] Image asset ingestion pipeline** — UI entrypoint: Import -> Asset queue panel — Testability: upload integrity test.
+30. **[FIG-12] Vector/SVG conversion handling** — UI entrypoint: Import -> SVG conversion status — Testability: renderer golden test.
+31. **[FIG-13] Incremental resync by node hash** — UI entrypoint: Project -> Figma Sync tab — Testability: changed-node sync test.
+32. **[FIG-14] Conflict resolver (code vs Figma)** — UI entrypoint: Sync -> Conflict modal — Testability: merge decision e2e.
+33. **[FIG-15] Sync as PR generation** — UI entrypoint: Sync -> Create PR action — Testability: PR metadata test.
+34. **[FIG-16] Sync history log UI** — UI entrypoint: Project -> Figma Sync timeline — Testability: timeline query test.
+35. **[FIG-17] Figma import health score** — UI entrypoint: Import -> Quality score badge — Testability: scoring algorithm test.
+36. **[FIG-18] Figma import template presets** — UI entrypoint: Import -> Preset selector — Testability: preset application test.
+
+### GitHub import and PR hardening (GHP)
+
+37. **[GHP-01] Repo URL/owner/repo validator hardening** — UI entrypoint: Import -> GitHub setup step — Testability: validator unit test.
+38. **[GHP-02] Installation status diagnostics** — UI entrypoint: Import -> GitHub diagnostics panel — Testability: installation API test.
+39. **[GHP-03] Repository search + filter** — UI entrypoint: Import -> Repo list toolbar — Testability: search e2e test.
+40. **[GHP-04] Branch picker with default detection** — UI entrypoint: Import -> Branch dropdown — Testability: branch fetch test.
+41. **[GHP-05] Private repo permission explanation UI** — UI entrypoint: Import -> Permissions card — Testability: copy + state test.
+42. **[GHP-06] Sparse checkout options for large repos** — UI entrypoint: Import -> Advanced options — Testability: checkout integration test.
+43. **[GHP-07] Import progress streaming UI** — UI entrypoint: Import -> Progress timeline — Testability: stream/event test.
+44. **[GHP-08] Retry + resume failed import** — UI entrypoint: Import -> Retry action — Testability: resume state test.
+45. **[GHP-09] Changed file classifier for PRs** — UI entrypoint: PR modal -> file groups — Testability: classifier unit test.
+46. **[GHP-10] PR title/body templates by branch intent** — UI entrypoint: PR modal template dropdown — Testability: template test.
+47. **[GHP-11] Draft PR option + ready conversion** — UI entrypoint: PR modal actions — Testability: PR state transition test.
+48. **[GHP-12] Existing PR detection UI** — UI entrypoint: PR modal existing PR banner — Testability: duplicate PR test.
+49. **[GHP-13] Commit batching strategy for large diffs** — UI entrypoint: PR modal batching summary — Testability: batching integration test.
+50. **[GHP-14] Binary file handling warnings** — UI entrypoint: PR modal warnings tab — Testability: binary detection test.
+51. **[GHP-15] Repo rule pre-check (protected branches)** — UI entrypoint: PR modal policy check — Testability: policy API mock test.
+52. **[GHP-16] CI status back-link in Onlook** — UI entrypoint: PR detail panel status chips — Testability: status polling test.
+53. **[GHP-17] Import/PR analytics dashboard** — UI entrypoint: Project -> GitHub Insights tab — Testability: funnel metrics test.
+54. **[GHP-18] PR rollback helper flow** — UI entrypoint: PR detail -> Revert assistant — Testability: revert workflow e2e.
+
+### Components panel and insertion UX (CMP)
+
+55. **[CMP-01] Components panel foundation tab** — UI entrypoint: Left sidebar -> Components — Testability: render smoke test.
+56. **[CMP-02] Component catalog indexing job** — UI entrypoint: Components tab index status — Testability: indexing integration test.
+57. **[CMP-03] Drag component to canvas insert** — UI entrypoint: Components tab drag handle — Testability: DnD e2e test.
+58. **[CMP-04] Drop target affordance overlays** — UI entrypoint: Canvas drop highlight — Testability: visual regression test.
+59. **[CMP-05] Keyboard insert (Enter/Space)** — UI entrypoint: Components tab focused item — Testability: keyboard e2e test.
+60. **[CMP-06] Typeahead search** — UI entrypoint: Components tab search box — Testability: search relevance test.
+61. **[CMP-07] Fuzzy matching + aliases** — UI entrypoint: Components search settings — Testability: fuzzy unit test.
+62. **[CMP-08] Category filters (layout/forms/nav)** — UI entrypoint: Components filter chips — Testability: filter logic test.
+63. **[CMP-09] Recent components section** — UI entrypoint: Components tab recent group — Testability: recency ordering test.
+64. **[CMP-10] Favorite/pin components** — UI entrypoint: Components item star icon — Testability: persistence test.
+65. **[CMP-11] Preview thumbnails** — UI entrypoint: Components card grid mode — Testability: thumbnail generation test.
+66. **[CMP-12] Prop quick-config before insert** — UI entrypoint: Insert popover — Testability: prop schema test.
+67. **[CMP-13] Empty-state suggestions** — UI entrypoint: Components empty search state — Testability: suggestion generation test.
+68. **[CMP-14] Multi-select insert batch** — UI entrypoint: Components bulk select mode — Testability: batch insert e2e.
+69. **[CMP-15] Accessibility labels in panel controls** — UI entrypoint: Components tab controls — Testability: axe test.
+70. **[CMP-16] Telemetry for panel actions** — UI entrypoint: Components Insights mini-panel — Testability: event contract test.
+71. **[CMP-17] Performance virtualization for long lists** — UI entrypoint: Components list — Testability: frame-time test.
+72. **[CMP-18] Contextual docs links per component** — UI entrypoint: Components detail drawer — Testability: link target test.
+
+### Collaboration and review workflow (COL)
+
+73. **[COL-01] Comment pins on canvas** — UI entrypoint: Canvas toolbar -> Comment mode — Testability: pin placement e2e.
+74. **[COL-02] Threaded replies** — UI entrypoint: Right panel -> Thread view — Testability: thread model test.
+75. **[COL-03] @mention user resolver** — UI entrypoint: Comment composer mention menu — Testability: mention lookup test.
+76. **[COL-04] Mention notifications feed** — UI entrypoint: Top bar -> Inbox — Testability: notification delivery test.
+77. **[COL-05] Resolve/unresolve thread states** — UI entrypoint: Thread actions menu — Testability: state transition test.
+78. **[COL-06] Approval request in thread** — UI entrypoint: Thread -> Request approval — Testability: approval workflow test.
+79. **[COL-07] Approve/request-changes actions** — UI entrypoint: Review panel — Testability: decision persistence test.
+80. **[COL-08] Thread assignment to teammate** — UI entrypoint: Thread assignee dropdown — Testability: assignment test.
+81. **[COL-09] Comment filters (open/resolved/me)** — UI entrypoint: Comments panel filter bar — Testability: filter test.
+82. **[COL-10] Jump-to-canvas target from thread** — UI entrypoint: Thread item click — Testability: viewport jump e2e.
+83. **[COL-11] Comment attachments (images/links)** — UI entrypoint: Composer attachment button — Testability: upload test.
+84. **[COL-12] Thread activity timeline** — UI entrypoint: Comments panel timeline tab — Testability: ordering test.
+85. **[COL-13] Bulk resolve by selection** — UI entrypoint: Comments bulk actions — Testability: bulk update test.
+86. **[COL-14] Export comments to markdown** — UI entrypoint: Comments panel export action — Testability: file export test.
+87. **[COL-15] Inline moderation controls** — UI entrypoint: Team settings -> Comment policy — Testability: permission test.
+88. **[COL-16] Read receipts in threads** — UI entrypoint: Thread footer receipts — Testability: sync test.
+89. **[COL-17] Slack/email notification connectors** — UI entrypoint: Notifications settings — Testability: webhook/email test.
+90. **[COL-18] Comment analytics (cycle time)** — UI entrypoint: Collaboration Insights tab — Testability: metric test.
+
+### AI image and assets workflow (IMG)
+
+91. **[IMG-01] AI image reference gallery per project** — UI entrypoint: Assets -> AI References tab — Testability: CRUD test.
+92. **[IMG-02] Drag image reference into prompt composer** — UI entrypoint: Chat panel attachment lane — Testability: DnD test.
+93. **[IMG-03] Multi-image prompt context ordering** — UI entrypoint: Chat composer reference list — Testability: ordering test.
+94. **[IMG-04] Image metadata editor (intent/tag)** — UI entrypoint: Reference detail drawer — Testability: metadata test.
+95. **[IMG-05] Safe file-type scanner for uploads** — UI entrypoint: Upload dialog warning strip — Testability: MIME test.
+96. **[IMG-06] EXIF stripping toggle** — UI entrypoint: Upload advanced options — Testability: EXIF removal test.
+97. **[IMG-07] Asset deduplication by hash** — UI entrypoint: Assets panel duplicate badge — Testability: dedupe test.
+98. **[IMG-08] Smart crop presets** — UI entrypoint: Asset editor crop tool — Testability: crop output test.
+99. **[IMG-09] Background removal action** — UI entrypoint: Asset detail actions — Testability: processing test.
+100. **[IMG-10] Prompt-to-asset provenance view** — UI entrypoint: Asset detail provenance tab — Testability: trace test.
+101. **[IMG-11] Save to project assets from chat output** — UI entrypoint: Chat message action menu — Testability: save e2e.
+102. **[IMG-12] Replace-in-canvas from asset context** — UI entrypoint: Asset context menu -> Replace element — Testability: replacement test.
+103. **[IMG-13] Reference collections/folders** — UI entrypoint: AI References folder sidebar — Testability: folder CRUD test.
+104. **[IMG-14] Expiring share links for assets** — UI entrypoint: Asset share modal — Testability: expiry test.
+105. **[IMG-15] Content safety flagging flow** — UI entrypoint: Upload result moderation badge — Testability: moderation rule test.
+106. **[IMG-16] Batch rename + alt-text suggestion** — UI entrypoint: Assets bulk actions — Testability: batch operation test.
+107. **[IMG-17] Image usage map across pages** — UI entrypoint: Assets detail usage graph — Testability: usage index test.
+108. **[IMG-18] Asset cache controls + purge** — UI entrypoint: Settings -> Asset cache panel — Testability: cache purge test.
+
+### MCP tooling and controls (MCP)
+
+109. **[MCP-01] MCP config UI editor (name/command/args/env)** — UI entrypoint: Project Settings -> MCP tab — Testability: form validation test.
+110. **[MCP-02] MCP connection test button** — UI entrypoint: MCP tab -> Test connection — Testability: command execution mock test.
+111. **[MCP-03] Command template library** — UI entrypoint: MCP tab presets dropdown — Testability: preset load test.
+112. **[MCP-04] Secrets placeholder support (`${VAR}`)** — UI entrypoint: MCP env table helper — Testability: substitution test.
+113. **[MCP-05] Scoped permissions for MCP tools** — UI entrypoint: MCP permissions matrix — Testability: authz test.
+114. **[MCP-06] MCP run history log** — UI entrypoint: MCP tab run history — Testability: audit persistence test.
+115. **[MCP-07] Live output console in UI** — UI entrypoint: MCP tab output panel — Testability: stream rendering test.
+116. **[MCP-08] MCP timeout + retry controls** — UI entrypoint: MCP run options drawer — Testability: timeout/retry test.
+117. **[MCP-09] Per-branch MCP profiles** — UI entrypoint: Branch settings -> MCP profile selector — Testability: profile switch test.
+118. **[MCP-10] Safe command allowlist enforcement** — UI entrypoint: MCP tab policy banner — Testability: allowlist test.
+119. **[MCP-11] MCP health badge on top bar** — UI entrypoint: Project top bar status chip — Testability: heartbeat test.
+120. **[MCP-12] MCP onboarding checklist** — UI entrypoint: MCP tab onboarding wizard — Testability: step completion test.
+121. **[MCP-13] Tool invocation metrics dashboard** — UI entrypoint: MCP insights tab — Testability: metrics test.
+122. **[MCP-14] MCP config import/export JSON** — UI entrypoint: MCP tab import/export actions — Testability: schema test.
+123. **[MCP-15] Workspace default MCP templates** — UI entrypoint: Org settings -> MCP defaults — Testability: inheritance test.
+124. **[MCP-16] MCP error categorization UX** — UI entrypoint: Output panel error cards — Testability: classifier test.
+125. **[MCP-17] MCP usage in AI toolchain toggle** — UI entrypoint: Chat settings -> Enable MCP tools — Testability: tool routing test.
+126. **[MCP-18] MCP approval gate for risky tools** — UI entrypoint: MCP run confirm modal — Testability: approval gating test.
+
+### Branching and iteration workflow (BRN)
+
+127. **[BRN-01] Branch intent labels (experiment/fix/refactor)** — UI entrypoint: Branch switcher label chips — Testability: metadata test.
+128. **[BRN-02] Branch create wizard with template goals** — UI entrypoint: Branch modal wizard — Testability: create flow e2e.
+129. **[BRN-03] Branch compare summary cards** — UI entrypoint: Branch panel compare tab — Testability: diff query test.
+130. **[BRN-04] Iteration checkpoint bookmarks** — UI entrypoint: Branch timeline bookmarks — Testability: checkpoint restore test.
+131. **[BRN-05] Auto-branch from AI task prompt** — UI entrypoint: Chat action Create iteration branch — Testability: auto-branch test.
+132. **[BRN-06] Branch naming policy hints** — UI entrypoint: Branch create field helper — Testability: validator test.
+133. **[BRN-07] Branch stale warning + archive** — UI entrypoint: Branch list stale badge — Testability: archive test.
+134. **[BRN-08] Rebase/sync base branch assistant** — UI entrypoint: Branch actions menu — Testability: sync workflow test.
+135. **[BRN-09] Merge readiness checklist UI** — UI entrypoint: Branch detail checklist — Testability: checklist rule test.
+136. **[BRN-10] Branch-level environment variables** — UI entrypoint: Branch settings env table — Testability: scoped env test.
+137. **[BRN-11] Branch ownership + reviewer assignment** — UI entrypoint: Branch detail owner controls — Testability: permission test.
+138. **[BRN-12] Conflict preview before PR** — UI entrypoint: PR prep modal conflict panel — Testability: conflict detector test.
+139. **[BRN-13] Branch timeline comments** — UI entrypoint: Branch timeline thread lane — Testability: timeline comment test.
+140. **[BRN-14] Branch health score (tests/lint/diff size)** — UI entrypoint: Branch card health badge — Testability: scoring test.
+141. **[BRN-15] One-click branch duplicate** — UI entrypoint: Branch actions duplicate — Testability: clone test.
+142. **[BRN-16] Branch lock during critical release** — UI entrypoint: Branch settings lock toggle — Testability: lock enforcement test.
+143. **[BRN-17] Branch metrics export** — UI entrypoint: Branch insights export action — Testability: export test.
+144. **[BRN-18] Branch rollback to checkpoint** — UI entrypoint: Branch actions rollback modal — Testability: rollback integrity test.
+
+### Cross-framework compatibility (XFW)
+
+145. **[XFW-01] Framework detector (Next/Remix/Vite/Astro)** — UI entrypoint: Import diagnostics panel — Testability: detector test.
+146. **[XFW-02] Styling detector (Tailwind/CSS modules/styled-components)** — UI entrypoint: Import diagnostics panel — Testability: style detector test.
+147. **[XFW-03] Capability matrix UI by project type** — UI entrypoint: Project Settings -> Compatibility tab — Testability: matrix render test.
+148. **[XFW-04] Non-Next route mapping adapter** — UI entrypoint: Page navigator route map — Testability: adapter integration test.
+149. **[XFW-05] CSS selector edit fallback mode** — UI entrypoint: Style panel fallback badge — Testability: selector write test.
+150. **[XFW-06] Theme variable extraction for plain CSS** — UI entrypoint: Theme panel import action — Testability: variable extraction test.
+151. **[XFW-07] Component locator fallback (no instrumentation)** — UI entrypoint: Inspect tool fallback mode — Testability: locator test.
+152. **[XFW-08] Build command profile templates** — UI entrypoint: Project setup advanced profile — Testability: command profile test.
+153. **[XFW-09] Runtime preview adapter abstraction** — UI entrypoint: Preview settings adapter picker — Testability: adapter contract test.
+154. **[XFW-10] Non-Tailwind class helper suggestions** — UI entrypoint: Style panel suggestion cards — Testability: suggestion test.
+155. **[XFW-11] JSX/TSX parser mode auto-switch** — UI entrypoint: Editor status bar parser badge — Testability: parser test.
+156. **[XFW-12] HTML-only import path** — UI entrypoint: Import wizard HTML mode — Testability: import e2e.
+157. **[XFW-13] Asset path resolver for non-public roots** — UI entrypoint: Assets settings resolver UI — Testability: resolver test.
+158. **[XFW-14] Compatibility warnings with fixes** — UI entrypoint: Compatibility tab warning list — Testability: fix action test.
+159. **[XFW-15] Plugin bridge for framework-specific transforms** — UI entrypoint: Compatibility tab plugin slots — Testability: bridge test.
+160. **[XFW-16] Project profile snapshots** — UI entrypoint: Compatibility tab save profile — Testability: profile replay test.
+161. **[XFW-17] Cross-framework smoke tests in CI UI report** — UI entrypoint: CI report view in app — Testability: smoke matrix test.
+162. **[XFW-18] Guided migration to supported mode** — UI entrypoint: Compatibility tab migration wizard — Testability: wizard e2e.
+
+### Token studio and design system (TOK)
+
+163. **[TOK-01] Token Studio entry tab** — UI entrypoint: Left sidebar -> Tokens — Testability: render test.
+164. **[TOK-02] Color token CRUD with aliases** — UI entrypoint: Tokens -> Colors table — Testability: CRUD test.
+165. **[TOK-03] Typography token CRUD** — UI entrypoint: Tokens -> Typography table — Testability: schema test.
+166. **[TOK-04] Spacing/radius/shadow token sets** — UI entrypoint: Tokens -> Foundations tabs — Testability: serialization test.
+167. **[TOK-05] Token usage heatmap across UI** — UI entrypoint: Tokens -> Usage heatmap — Testability: usage query test.
+168. **[TOK-06] Token rename with codemod preview** — UI entrypoint: Tokens rename modal — Testability: codemod preview test.
+169. **[TOK-07] Token import from JSON/style-dictionary** — UI entrypoint: Tokens import flow — Testability: import validator test.
+170. **[TOK-08] Token export formats** — UI entrypoint: Tokens export dropdown — Testability: output format test.
+171. **[TOK-09] Token diff between branches** — UI entrypoint: Tokens diff tab — Testability: diff engine test.
+172. **[TOK-10] Token fallback chain editor** — UI entrypoint: Token detail fallback graph — Testability: resolution test.
+173. **[TOK-11] Live token apply to selected element** — UI entrypoint: Canvas + token picker popover — Testability: live apply e2e.
+174. **[TOK-12] Token lint warnings (duplicates/unreachable)** — UI entrypoint: Tokens lint panel — Testability: lint rule test.
+175. **[TOK-13] Semantic token sets (brand/success/warn)** — UI entrypoint: Tokens semantic tab — Testability: semantic mapping test.
+176. **[TOK-14] Dark/light token modes** — UI entrypoint: Tokens mode switcher — Testability: mode swap visual test.
+177. **[TOK-15] Token approvals for design leads** — UI entrypoint: Tokens approval bar — Testability: approval test.
+178. **[TOK-16] Token history timeline** — UI entrypoint: Tokens history tab — Testability: timeline persistence test.
+179. **[TOK-17] Token lock for release branches** — UI entrypoint: Tokens lock toggle — Testability: lock policy test.
+180. **[TOK-18] Token analytics dashboard** — UI entrypoint: Tokens insights tab — Testability: adoption metric test.
+
+### Responsive design tooling (RSP)
+
+181. **[RSP-01] Breakpoint manager (xs->2xl/custom)** — UI entrypoint: Top bar responsive dropdown — Testability: breakpoint CRUD test.
+182. **[RSP-02] Multi-breakpoint canvas preview grid** — UI entrypoint: Canvas split preview mode — Testability: render test.
+183. **[RSP-03] Per-breakpoint style badges** — UI entrypoint: Style panel property rows — Testability: badge logic test.
+184. **[RSP-04] Breakpoint copy/paste styles** — UI entrypoint: Style panel actions — Testability: transform test.
+185. **[RSP-05] Responsive constraint handles** — UI entrypoint: Canvas element controls — Testability: handle behavior test.
+186. **[RSP-06] Overflow detector per breakpoint** — UI entrypoint: QA panel responsive warnings — Testability: detector test.
+187. **[RSP-07] Device preset library** — UI entrypoint: Responsive dropdown presets — Testability: preset test.
+188. **[RSP-08] Orientation toggle (portrait/landscape)** — UI entrypoint: Preview controls — Testability: orientation test.
+189. **[RSP-09] Layout shift diff tool** — UI entrypoint: Responsive diff tab — Testability: diff accuracy test.
+190. **[RSP-10] Text wrap/truncation warnings** — UI entrypoint: QA panel typography warnings — Testability: heuristic test.
+191. **[RSP-11] Responsive image source helper** — UI entrypoint: Image settings responsive sources — Testability: source test.
+192. **[RSP-12] Breakpoint-specific visibility controls** — UI entrypoint: Layer panel visibility chips — Testability: toggle test.
+193. **[RSP-13] Bulk responsive audit report** — UI entrypoint: QA export report — Testability: report content test.
+194. **[RSP-14] Responsive keyboard shortcuts** — UI entrypoint: Canvas quick switch shortcuts — Testability: shortcut test.
+195. **[RSP-15] Sticky/fixed behavior preview** — UI entrypoint: Responsive behavior sandbox — Testability: behavior test.
+196. **[RSP-16] Container query inspector** — UI entrypoint: Inspector container query tab — Testability: parser test.
+197. **[RSP-17] Responsive token suggestions** — UI entrypoint: Style panel suggestion rail — Testability: recommendation test.
+198. **[RSP-18] Responsive regression snapshots** — UI entrypoint: QA snapshots tab — Testability: visual baseline test.
+
+### Design QA and accessibility (DQA)
+
+199. **[DQA-01] Global accessibility audit runner** — UI entrypoint: QA panel -> A11y run button — Testability: axe integration test.
+200. **[DQA-02] Per-element a11y hints in inspector** — UI entrypoint: Inspector a11y subpanel — Testability: rule test.
+201. **[DQA-03] Contrast checker with fix suggestions** — UI entrypoint: QA contrast card — Testability: contrast calculation test.
+202. **[DQA-04] Keyboard nav map overlay** — UI entrypoint: Canvas overlay toggle — Testability: tab-order test.
+203. **[DQA-05] ARIA role validator** — UI entrypoint: Inspector role field warnings — Testability: validator test.
+204. **[DQA-06] Form label association checker** — UI entrypoint: QA forms check — Testability: association test.
+205. **[DQA-07] Heading hierarchy checker** — UI entrypoint: QA structure check — Testability: hierarchy test.
+206. **[DQA-08] Landmark coverage checker** — UI entrypoint: QA structure check — Testability: landmark test.
+207. **[DQA-09] Motion reduction compliance check** — UI entrypoint: QA animation check — Testability: reduced-motion test.
+208. **[DQA-10] Focus-visible style checker** — UI entrypoint: QA interaction check — Testability: focus style test.
+209. **[DQA-11] Alt text quality checker** — UI entrypoint: Assets + QA warning list — Testability: NLP rule test.
+210. **[DQA-12] Design consistency lint (spacing/typography)** — UI entrypoint: QA design lint tab — Testability: lint test.
+211. **[DQA-13] Fix all safe issues action** — UI entrypoint: QA panel quick-fix button — Testability: batch fix test.
+212. **[DQA-14] Issue ownership + SLA tracking** — UI entrypoint: QA issue list owner fields — Testability: workflow test.
+213. **[DQA-15] QA baseline snapshots by branch** — UI entrypoint: QA baseline manager — Testability: baseline compare test.
+214. **[DQA-16] QA status gates before PR** — UI entrypoint: PR modal QA gate section — Testability: gate test.
+215. **[DQA-17] QA report export (PDF/JSON)** — UI entrypoint: QA export menu — Testability: export test.
+216. **[DQA-18] Continuous QA monitor badge** — UI entrypoint: Top bar QA status chip — Testability: background monitor test.
+
+### Visual git timeline (VGT)
+
+217. **[VGT-01] Visual git timeline tab** — UI entrypoint: Right panel -> Timeline — Testability: render test.
+218. **[VGT-02] Commit nodes with screenshot thumbnails** — UI entrypoint: Timeline node cards — Testability: thumbnail test.
+219. **[VGT-03] File-change clustering in timeline** — UI entrypoint: Timeline filter chips — Testability: clustering test.
+220. **[VGT-04] Before/after canvas diff per commit** — UI entrypoint: Timeline compare drawer — Testability: visual diff test.
+221. **[VGT-05] Author/activity overlays** — UI entrypoint: Timeline legend — Testability: author mapping test.
+222. **[VGT-06] Branch merge markers** — UI entrypoint: Timeline lane markers — Testability: merge event test.
+223. **[VGT-07] Comment/approval events on timeline** — UI entrypoint: Timeline event chips — Testability: event sync test.
+224. **[VGT-08] Jump to file from timeline node** — UI entrypoint: Node actions — Testability: navigation test.
+225. **[VGT-09] Restore checkpoint from timeline** — UI entrypoint: Node action Restore — Testability: restore e2e.
+226. **[VGT-10] Semantic change labels (layout/content/style)** — UI entrypoint: Timeline legend — Testability: classifier test.
+227. **[VGT-11] Timeline search by message/file** — UI entrypoint: Timeline search bar — Testability: query test.
+228. **[VGT-12] Timeline range compare** — UI entrypoint: Timeline range selector — Testability: range diff test.
+229. **[VGT-13] Release tag markers** — UI entrypoint: Timeline tag chips — Testability: tag fetch test.
+230. **[VGT-14] Timeline performance optimization** — UI entrypoint: Timeline virtualization — Testability: performance test.
+231. **[VGT-15] Timeline export share link** — UI entrypoint: Timeline share action — Testability: share URL test.
+232. **[VGT-16] What changed visually AI summary** — UI entrypoint: Timeline summary panel — Testability: summary generation test.
+233. **[VGT-17] Timeline conflict warnings** — UI entrypoint: Timeline warning badges — Testability: conflict detection test.
+234. **[VGT-18] Timeline onboarding walkthrough** — UI entrypoint: Timeline first-run coachmarks — Testability: walkthrough test.
+
+### Component intelligence and extraction (CIX)
+
+235. **[CIX-01] Component boundary detector improvements** — UI entrypoint: Components Intelligence tab — Testability: detector test.
+236. **[CIX-02] Duplicate component candidate finder** — UI entrypoint: Intelligence candidates list — Testability: dedupe test.
+237. **[CIX-03] Extract-to-component wizard** — UI entrypoint: Inspector -> Extract component — Testability: AST transform test.
+238. **[CIX-04] Prop inference preview** — UI entrypoint: Extract wizard prop table — Testability: inference test.
+239. **[CIX-05] Naming suggestion engine** — UI entrypoint: Extract wizard name suggestions — Testability: naming model test.
+240. **[CIX-06] Local/global component scope chooser** — UI entrypoint: Extract wizard scope toggle — Testability: scope test.
+241. **[CIX-07] Safe extraction diff preview** — UI entrypoint: Extract wizard diff panel — Testability: diff integrity test.
+242. **[CIX-08] Auto-replace repeated JSX with new component** — UI entrypoint: Extract wizard apply mode — Testability: replacement test.
+243. **[CIX-09] Component dependency impact graph** — UI entrypoint: Intelligence graph view — Testability: graph build test.
+244. **[CIX-10] Component docs auto-generation** — UI entrypoint: Component detail docs tab — Testability: doc generation test.
+245. **[CIX-11] Prop controls playground** — UI entrypoint: Component preview playground — Testability: control binding test.
+246. **[CIX-12] Dead component detector** — UI entrypoint: Intelligence lint tab — Testability: dead-code test.
+247. **[CIX-13] Component complexity score** — UI entrypoint: Component cards score badge — Testability: scoring test.
+248. **[CIX-14] Component extraction approvals** — UI entrypoint: Extract wizard approval step — Testability: approval workflow test.
+249. **[CIX-15] Component version history** — UI entrypoint: Component detail history tab — Testability: history test.
+250. **[CIX-16] Cross-branch component compare** — UI entrypoint: Component compare panel — Testability: compare test.
+251. **[CIX-17] Suggested refactor queue** — UI entrypoint: Intelligence queue tab — Testability: queue ordering test.
+252. **[CIX-18] Component intelligence metrics** — UI entrypoint: Intelligence insights tab — Testability: metrics test.
+
+### AI refactor safety (AIR)
+
+253. **[AIR-01] Refactor goal templates (safe presets)** — UI entrypoint: AI panel -> Refactor templates — Testability: template test.
+254. **[AIR-02] Scope-limited refactor selection** — UI entrypoint: AI panel scope picker — Testability: scope enforcement test.
+255. **[AIR-03] Pre-refactor impact estimate** — UI entrypoint: AI plan preview card — Testability: estimate test.
+256. **[AIR-04] Guarded file allowlist for AI edits** — UI entrypoint: AI settings allowlist table — Testability: enforcement test.
+257. **[AIR-05] Refactor dry-run with patch preview** — UI entrypoint: AI run modal dry-run tab — Testability: patch test.
+258. **[AIR-06] Risk scoring before apply** — UI entrypoint: AI apply modal risk badge — Testability: scorer test.
+259. **[AIR-07] Required human approval over threshold** — UI entrypoint: AI apply modal approval gate — Testability: gate test.
+260. **[AIR-08] Multi-step refactor plan execution** — UI entrypoint: AI execution timeline — Testability: orchestration test.
+261. **[AIR-09] Auto-create branch for refactor** — UI entrypoint: AI action Run on new branch — Testability: branch creation test.
+262. **[AIR-10] Regression test trigger before merge** — UI entrypoint: AI completion panel test summary — Testability: test trigger integration.
+263. **[AIR-11] Semantic commit generation** — UI entrypoint: AI PR prep commit section — Testability: commit template test.
+264. **[AIR-12] Refactor rollback button** — UI entrypoint: AI run history rollback action — Testability: rollback test.
+265. **[AIR-13] Refactor explanation graph** — UI entrypoint: AI run detail rationale tab — Testability: explanation test.
+266. **[AIR-14] Protected path denylist (`auth`, billing, infra)** — UI entrypoint: AI settings denylist — Testability: denylist test.
+267. **[AIR-15] Prompt injection defense hints UI** — UI entrypoint: AI composer security hints — Testability: prompt-policy test.
+268. **[AIR-16] Refactor session audit trail** — UI entrypoint: AI history audit tab — Testability: audit persistence test.
+269. **[AIR-17] Refactor quality scorecard** — UI entrypoint: AI result scorecard panel — Testability: scoring test.
+270. **[AIR-18] Refactor-to-PR one-click flow** — UI entrypoint: AI result -> Create PR — Testability: end-to-end PR test.
+
+### Plugin and integration ecosystem (PLG)
+
+271. **[PLG-01] Plugin manager surface** — UI entrypoint: Settings -> Integrations/Plugins — Testability: registry load test.
+272. **[PLG-02] Plugin manifest validator** — UI entrypoint: Plugin install modal — Testability: schema validation test.
+273. **[PLG-03] Permission grant screen per plugin** — UI entrypoint: Plugin install permissions step — Testability: permission test.
+274. **[PLG-04] Plugin sandbox runtime isolation** — UI entrypoint: Plugin detail status panel — Testability: isolation test.
+275. **[PLG-05] Plugin lifecycle hooks (init/destroy)** — UI entrypoint: Plugin dev panel hook logs — Testability: hook test.
+276. **[PLG-06] UI extension points (panel/tab/action)** — UI entrypoint: Plugin manager extension map — Testability: extension rendering test.
+277. **[PLG-07] Webhook integration builder** — UI entrypoint: Integrations -> Webhooks tab — Testability: webhook test.
+278. **[PLG-08] OAuth connector templates (Jira/Linear/Slack)** — UI entrypoint: Integrations gallery — Testability: OAuth e2e test.
+279. **[PLG-09] Event bus for plugin subscriptions** — UI entrypoint: Integrations dev console events — Testability: contract test.
+280. **[PLG-10] Plugin error boundaries + recovery UI** — UI entrypoint: Plugin status error cards — Testability: boundary test.
+281. **[PLG-11] Plugin version pinning/updates** — UI entrypoint: Plugin detail version controls — Testability: update test.
+282. **[PLG-12] Plugin usage analytics** — UI entrypoint: Integrations insights tab — Testability: event test.
+283. **[PLG-13] Integration secrets vault UI** — UI entrypoint: Integrations secrets panel — Testability: vault test.
+284. **[PLG-14] Org-level plugin policies** — UI entrypoint: Admin -> Plugin policies — Testability: policy enforcement test.
+285. **[PLG-15] Plugin marketplace search/filter** — UI entrypoint: Integrations marketplace — Testability: search test.
+286. **[PLG-16] Plugin QA certification badge** — UI entrypoint: Plugin cards badge — Testability: certification rule test.
+287. **[PLG-17] Integration action shortcuts in editor** — UI entrypoint: Command palette integration actions — Testability: action test.
+288. **[PLG-18] Plugin uninstall with residue cleanup** — UI entrypoint: Plugin detail uninstall flow — Testability: cleanup test.
+
+### Reliability, security, and release readiness (RLS)
+
+289. **[RLS-01] Reliability SLO dashboard (latency/error rate)** — UI entrypoint: Settings -> Reliability tab — Testability: SLO aggregation test.
+290. **[RLS-02] End-to-end trace IDs surfaced in UI** — UI entrypoint: Diagnostics panel trace viewer — Testability: trace propagation test.
+291. **[RLS-03] API/router error taxonomy standardization** — UI entrypoint: Diagnostics errors tab — Testability: error mapping test.
+292. **[RLS-04] Client retry/backoff policy controls** — UI entrypoint: Settings -> Network policy panel — Testability: retry policy test.
+293. **[RLS-05] Background job monitor** — UI entrypoint: Admin -> Jobs dashboard — Testability: job heartbeat test.
+294. **[RLS-06] Bundle size audit report with budgets** — UI entrypoint: Diagnostics -> Bundle report — Testability: budget CI test.
+295. **[RLS-07] Dead code detection + removal queue** — UI entrypoint: Diagnostics -> Dead code tab — Testability: dead-code scan test.
+296. **[RLS-08] Render-path profiler (hot components)** — UI entrypoint: Diagnostics -> Render profiler — Testability: profiler test.
+297. **[RLS-09] AuthN/AuthZ hardening checklist + enforcement** — UI entrypoint: Security tab auth controls — Testability: auth integration test.
+298. **[RLS-10] Input validation/sanitization central middleware** — UI entrypoint: Security tab validation status — Testability: payload fuzz test.
+299. **[RLS-11] External import threat checks (SSRF/path traversal)** — UI entrypoint: Import security banner — Testability: attack simulation test.
+300. **[RLS-12] Command injection guardrails for runCommand/MCP** — UI entrypoint: MCP security panel — Testability: command policy test.
+301. **[RLS-13] Secrets handling policy scanner** — UI entrypoint: Security tab secrets scan — Testability: secret detection test.
+302. **[RLS-14] Rate limiting + abuse controls dashboard** — UI entrypoint: Security tab rate limits — Testability: abuse load test.
+303. **[RLS-15] Audit log viewer (who/what/when)** — UI entrypoint: Admin -> Audit Logs — Testability: immutability test.
+304. **[RLS-16] Security regression suite (API + UI)** — UI entrypoint: Security tab regression status — Testability: regression CI test.
+305. **[RLS-17] Incident rollback runbook UI + kill switches** — UI entrypoint: Admin -> Incident Controls — Testability: kill-switch test.
+306. **[RLS-18] Release readiness scorecard (perf+sec+reliability)** — UI entrypoint: Release panel scorecard — Testability: gate threshold test.
+
+---
+
+## 10) Tracking checklist for milestone sign-off
+
+Use this block for each milestone completion decision:
+
+- Milestone: `M#`
+- PR range delivered:
+- Features completed in range:
+- Deferred features (with approved replacements):
+- Flags enabled for canary cohort:
+- Rollback drill completed: Yes/No
+- Quality gates pass evidence links:
+- Release manager sign-off:
+

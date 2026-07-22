@@ -38,10 +38,15 @@ export const useRepositoryImport = () => {
                 project: {
                     name: selectedRepo.name ?? 'New project',
                     description: selectedRepo.description || 'Imported from GitHub',
+                    tags: ['github-import'],
                 },
                 userId: user.id,
                 sandboxId,
                 sandboxUrl: previewUrl,
+                git: {
+                    repoUrl: selectedRepo.clone_url,
+                    baseBranch: selectedRepo.default_branch,
+                },
             });
 
             if (!project) {

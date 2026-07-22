@@ -9,4 +9,5 @@ export * from './publish';
 export * from './subscription';
 export * from './usage';
 export * from './user';
+export * from './workspace';
 

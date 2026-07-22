@@ -10,14 +10,16 @@ export const ImagePill = React.forwardRef<
     {
         context: ImageMessageContext;
         onRemove: () => void;
+        onSave?: () => void;
     }
->(({ context, onRemove }, ref) => {
+>(({ context, onRemove, onSave }, ref) => {
     if (context.type !== MessageContextType.IMAGE) {
         console.warn('ImagePill received non-image context');
         return null;
     }
 
     const isVideo = isVideoFile(context.mimeType);
+    const canSave = context.source === 'external' && !!onSave;
 
     return (
         <motion.span
@@ -36,7 +38,6 @@ export const ImagePill = React.forwardRef<
             key={context.displayName}
             ref={ref}
         >
-            {/* Left side: Image/Video thumbnail */}
             <div className="w-7 h-7 flex items-center justify-center overflow-hidden relative">
                 {isVideo ? (
                     <video
@@ -55,12 +56,23 @@ export const ImagePill = React.forwardRef<
                 <div className="absolute inset-0 border-l-[1px] border-y-[1px] rounded-l-md border-white/10 pointer-events-none" />
             </div>
 
-            {/* Right side: Filename */}
             <span className="text-xs overflow-hidden whitespace-nowrap text-ellipsis max-w-[100px] pr-1">
                 {getTruncatedName(context)}
             </span>
 
-            {/* Hover X button */}
+            {canSave && (
+                <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onSave();
+                    }}
+                    className="absolute -top-1.5 -left-1.5 w-6 h-6 p-1 rounded-full bg-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                >
+                    <Icons.Download className="w-2.5 h-2.5 text-primary-foreground" />
+                </button>
+            )}
+
             <button
                 onClick={(e) => {
                     e.preventDefault();

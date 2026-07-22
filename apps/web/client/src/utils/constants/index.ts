@@ -29,6 +29,7 @@ export const Routes = {
     PROJECT: '/project',
     IMPORT_PROJECT: '/projects/import',
     IMPORT_GITHUB: '/projects/import/github',
+    IMPORT_FIGMA: '/projects/import/figma',
 
     // Callback
     CALLBACK_STRIPE_SUCCESS: '/callback/stripe/success',

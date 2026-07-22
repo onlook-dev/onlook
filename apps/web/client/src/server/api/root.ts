@@ -15,6 +15,7 @@ import {
     userCanvasRouter,
     userRouter,
     utilsRouter,
+    workspaceRouter,
 } from './routers';
 import { branchRouter } from './routers/project/branch';
 
@@ -37,6 +38,7 @@ export const appRouter = createTRPCRouter({
     member: memberRouter,
     domain: domainRouter,
     github: githubRouter,
+    workspace: workspaceRouter,
     subscription: subscriptionRouter,
     usage: usageRouter,
     publish: publishRouter,
