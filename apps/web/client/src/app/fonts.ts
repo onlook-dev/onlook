@@ -4,4 +4,4 @@ export const vujahdayScript = Vujahday_Script({
   weight: '400',
   subsets: ['latin'],
   display: 'swap',
-}); 
+});
