@@ -40,13 +40,29 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const [finishReason, setFinishReason] = useState<FinishReason | null>(null);
     const [isExecutingToolCall, setIsExecutingToolCall] = useState(false);
     const [queuedMessages, setQueuedMessages] = useState<QueuedMessage[]>([]);
+    const [hitStepLimit, setHitStepLimit] = useState(false);
+    const [toolCallCount, setToolCallCount] = useState(0);
     const isProcessingQueue = useRef(false);
+
+    // Max tool calls before pausing and asking user to continue
+    // TODO: Change back to 10 after testing
+    const MAX_TOOL_CALLS = 2;
+
+    // Track tool call count in a ref to avoid stale closures
+    const toolCallCountRef = useRef(toolCallCount);
+    toolCallCountRef.current = toolCallCount;
 
     const { addToolResult, messages, error, stop, setMessages, regenerate, status } =
         useAiChat<ChatMessage>({
             id: 'user-chat',
             messages: initialMessages,
-            sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+            // Only auto-send if we haven't hit the tool call limit
+            sendAutomaticallyWhen: (messages) => {
+                if (toolCallCountRef.current >= MAX_TOOL_CALLS) {
+                    return false;
+                }
+                return lastAssistantMessageIsCompleteWithToolCalls(messages);
+            },
             transport: new DefaultChatTransport({
                 api: '/api/chat',
                 body: {
@@ -56,6 +72,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             }),
             onToolCall: async (toolCall) => {
                 setIsExecutingToolCall(true);
+                setToolCallCount(prev => prev + 1);
                 void handleToolCall(toolCall.toolCall, editorEngine, addToolResult).then(() => {
                     setIsExecutingToolCall(false);
                 });
@@ -63,6 +80,10 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             onFinish: ({ message }) => {
                 const finishReason = message.metadata?.finishReason;
                 setFinishReason(finishReason ?? null);
+                // Check if we've hit the tool call limit
+                if (toolCallCountRef.current >= MAX_TOOL_CALLS) {
+                    setHitStepLimit(true);
+                }
             },
         });
 
@@ -79,7 +100,11 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     }, [messages]);
 
     const processMessage = useCallback(
-        async (content: string, type: ChatType, context?: MessageContext[]) => {
+        async (content: string, type: ChatType, context?: MessageContext[], resetToolCount = true) => {
+            // Reset tool call count for new user messages
+            if (resetToolCount) {
+                setToolCallCount(0);
+            }
             const messageContext = context || await editorEngine.chat.context.getContextByChatType(type);
             const newMessage = getUserChatMessageFromString(content, messageContext, conversationId);
             setMessages(jsonClone([...messagesRef.current, newMessage]));
@@ -220,6 +245,18 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         [processMessageEdit, posthog, isStreaming, stop, editorEngine.chat.context],
     );
 
+    // Continue after hitting the step limit
+    const continueAfterStepLimit = useCallback(() => {
+        setHitStepLimit(false);
+        posthog.capture('user_continue_after_step_limit');
+        return sendMessage('Continue where you left off.', ChatType.EDIT);
+    }, [sendMessage, posthog]);
+
+    // Dismiss the step limit banner without continuing
+    const dismissStepLimit = useCallback(() => {
+        setHitStepLimit(false);
+    }, []);
+
     useEffect(() => {
         // Actions to handle when the chat is finished
         if (finishReason && finishReason !== 'tool-calls') {
@@ -321,5 +358,8 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
         isStreaming,
         queuedMessages,
         removeFromQueue,
+        hitStepLimit,
+        continueAfterStepLimit,
+        dismissStepLimit,
     };
 }
