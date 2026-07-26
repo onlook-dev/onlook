@@ -1,9 +1,11 @@
 import { ChatType } from '@onlook/models';
 import { type InferUITools, type ToolSet } from 'ai';
 import {
+    ArrangeBranchesTool,
     BashEditTool,
     BashReadTool,
     CheckErrorsTool,
+    CreateMultipleBranchesTool,
     FuzzyEditFileTool,
     GlobTool,
     GrepTool,
@@ -47,6 +49,7 @@ const readOnlyToolClasses = [
     CheckErrorsTool,
 ];
 const editOnlyToolClasses = [
+    ArrangeBranchesTool,
     SearchReplaceEditTool,
     SearchReplaceMultiEditFileTool,
     FuzzyEditFileTool,
@@ -55,6 +58,7 @@ const editOnlyToolClasses = [
     SandboxTool,
     TerminalCommandTool,
     UploadImageTool,
+    CreateMultipleBranchesTool,
 ];
 const allToolClasses = [...readOnlyToolClasses, ...editOnlyToolClasses];
 
