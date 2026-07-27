@@ -45,10 +45,28 @@ export function initModel({
     };
 }
 
+/**
+ * Returns the base URL for the OpenRouter provider.
+ *
+ * The lookup order is:
+ *   1. `OPENROUTER_BASE_URL` environment variable (explicit override)
+ *   2. The default OpenRouter API endpoint
+ *
+ * This allows self-hosted deployments and proxy setups to point Onlook at a
+ * custom endpoint without modifying source code.
+ */
+function getOpenRouterBaseUrl(): string | undefined {
+    return process.env.OPENROUTER_BASE_URL || undefined;
+}
+
 function getOpenRouterProvider(model: OPENROUTER_MODELS): LanguageModel {
     if (!process.env.OPENROUTER_API_KEY) {
         throw new Error('OPENROUTER_API_KEY must be set');
     }
-    const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
+    const baseURL = getOpenRouterBaseUrl();
+    const openrouter = createOpenRouter({
+        apiKey: process.env.OPENROUTER_API_KEY,
+        ...(baseURL && { baseURL }),
+    });
     return openrouter(model);
 }
