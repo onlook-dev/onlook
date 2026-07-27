@@ -1,11 +1,13 @@
 import {
     LLMProvider,
+    MINIMAX_MODELS,
     MODEL_MAX_TOKENS,
     OPENROUTER_MODELS,
     type InitialModelPayload,
     type ModelConfig
 } from '@onlook/models';
 import { assertNever } from '@onlook/utility';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import type { LanguageModel } from 'ai';
 
@@ -33,6 +35,9 @@ export function initModel({
                 ? { ...providerOptions, anthropic: { cacheControl: { type: 'ephemeral' } } }
                 : providerOptions;
             break;
+        case LLMProvider.MINIMAX:
+            model = getMinimaxProvider(requestedModel);
+            break;
         default:
             assertNever(requestedProvider);
     }
@@ -51,4 +56,16 @@ function getOpenRouterProvider(model: OPENROUTER_MODELS): LanguageModel {
     }
     const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
     return openrouter(model);
+}
+
+function getMinimaxProvider(model: MINIMAX_MODELS): LanguageModel {
+    if (!process.env.MINIMAX_API_KEY) {
+        throw new Error('MINIMAX_API_KEY must be set');
+    }
+    const minimax = createOpenAICompatible({
+        name: 'minimax',
+        baseURL: 'https://api.minimax.io/v1',
+        apiKey: process.env.MINIMAX_API_KEY,
+    });
+    return minimax(model);
 }
