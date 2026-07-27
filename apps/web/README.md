@@ -7,4 +7,4 @@ Structure
   app
 - Shared - All the shared packages for the web project
 - Preload - The script that gets injected into Template app. This allows
-  communnicating directly with the app DOM through iframe
+  communicating directly with the app DOM through iframe
