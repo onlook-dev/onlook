@@ -106,7 +106,7 @@
         "react-day-picker": "8.10.1",
         "react-hook-form": "^7.56.1",
         "react-merge-refs": "^2.1.1",
-        "react-resizable-panels": "^2.1.9",
+        "react-resizable-panels": "^3.0.6",
         "react-syntax-highlighter": "^15.6.6",
         "recharts": "^2.15.3",
         "sonner": "^2.0.4",
