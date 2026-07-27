@@ -1,0 +1,8 @@
+:root {
+    --font-inter: system-ui;
+}
+
+@theme inline {
+    --color-background: #ffffff;
+    --font-inter: var(--font-inter);
+}

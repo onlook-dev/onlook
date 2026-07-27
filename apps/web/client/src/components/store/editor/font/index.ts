@@ -4,6 +4,7 @@ import { type CodeDiff, type FontUploadFile } from '@onlook/models';
 import type { Font } from '@onlook/models/assets';
 import { generate } from '@onlook/parser';
 import { makeAutoObservable } from 'mobx';
+import { addFontToGlobalCss, removeFontFromGlobalCss } from '@/components/store/editor/font/css-theme';
 import type { EditorEngine } from '../engine';
 import { addFontToConfig, ensureFontConfigFileExists, getFontConfigPath, readFontConfigFile, removeFontFromConfig, scanExistingFonts, scanFontConfig } from './font-config';
 import { FontSearchManager } from './font-search-manager';
@@ -101,8 +102,20 @@ export class FontManager {
                 console.error('No font config path found');
                 return false;
             }
+            await this.ensureConfigFilesExist();
             const success = await addFontToConfig(font, fontConfigPath, this.editorEngine);
             if (success) {
+                const [tailwindUpdated, layoutUpdated, globalCssUpdated] = await Promise.all([
+                    addFontToTailwindConfig(font, this.editorEngine.activeSandbox),
+                    addFontVariableToRootLayout(font.id, this.editorEngine),
+                    addFontToGlobalCss(font, this.editorEngine),
+                ]);
+
+                if (!tailwindUpdated || !layoutUpdated || !globalCssUpdated) {
+                    console.error('Failed to apply font to one or more project config files');
+                    return false;
+                }
+
                 // Update the fonts array
                 this._fonts.push(font);
 
@@ -137,6 +150,17 @@ export class FontManager {
             const result = await removeFontFromConfig(font, fontConfigPath, this.editorEngine);
 
             if (result) {
+                const [layoutUpdated, tailwindUpdated, globalCssUpdated] = await Promise.all([
+                    removeFontVariableFromRootLayout(font.id, this.editorEngine),
+                    removeFontFromTailwindConfig(font, this.editorEngine.activeSandbox),
+                    removeFontFromGlobalCss(font.id, this.editorEngine),
+                ]);
+
+                if (!layoutUpdated || !tailwindUpdated || !globalCssUpdated) {
+                    console.error('Failed to remove font from one or more project config files');
+                    return false;
+                }
+
                 // Remove from fonts array
                 this._fonts = this._fonts.filter((f) => f.id !== font.id);
 
@@ -146,12 +170,6 @@ export class FontManager {
                 if (font.id === this._defaultFont) {
                     this._defaultFont = null;
                 }
-
-                // Remove font variable and font class from layout file
-                await removeFontVariableFromRootLayout(font.id, this.editorEngine);
-
-                // Remove font from Tailwind config
-                await removeFontFromTailwindConfig(font, this.editorEngine.activeSandbox);
 
                 return result;
             }
@@ -247,6 +265,7 @@ export class FontManager {
                     fontConfigPath,
                     code,
                 );
+                await this.syncFontsWithConfigs();
             }
 
             return result.success;
@@ -348,6 +367,7 @@ export class FontManager {
                 for (const font of removedFonts) {
                     await removeFontFromTailwindConfig(font, sandbox);
                     await removeFontVariableFromRootLayout(font.id, this.editorEngine);
+                    await removeFontFromGlobalCss(font.id, this.editorEngine);
                 }
             }
 
@@ -355,6 +375,7 @@ export class FontManager {
                 for (const font of addedFonts) {
                     await addFontToTailwindConfig(font, sandbox);
                     await addFontVariableToRootLayout(font.id, this.editorEngine);
+                    await addFontToGlobalCss(font, this.editorEngine);
                 }
             }
 

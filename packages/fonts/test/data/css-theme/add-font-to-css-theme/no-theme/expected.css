@@ -1,0 +1,9 @@
+@import 'tailwindcss';
+
+body {
+    margin: 0;
+}
+
+@theme inline {
+    --font-open-sans: var(--font-open-sans);
+}

@@ -1,0 +1,4 @@
+@theme inline {
+    --font-font-test: var(--font-old);
+    --font-font.test: var(--font-font-test);
+}
