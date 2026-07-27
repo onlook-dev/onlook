@@ -14,6 +14,7 @@ additional_redirect_urls = [
     "http://localhost:3000/auth/callback",
 ]
 jwt_expiry = 36000
+enable_manual_linking = true
 
 [db]
 port = 54322
