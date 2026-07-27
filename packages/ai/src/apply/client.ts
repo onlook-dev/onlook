@@ -1,9 +1,29 @@
 import OpenAI from 'openai';
 
+import type { ApplyCodeChangeAssessment, ApplyCodeChangeGateOptions } from './quality';
+import { assessCodeChange, shouldBlockApply } from './quality';
+
 export interface ApplyCodeChangeMetadata {
     userId?: string;
     projectId?: string;
     conversationId?: string;
+}
+
+export interface ApplyCodeChangeQualityOptions {
+    gate?: ApplyCodeChangeGateOptions;
+    blockBeforeProvider?: boolean;
+}
+
+export interface ApplyCodeChangeWithQualityResult {
+    code: string | null;
+    preflightAssessment: ApplyCodeChangeAssessment;
+    resultAssessment?: ApplyCodeChangeAssessment;
+    blocked: boolean;
+    blockReason?: string;
+}
+
+interface RelaceApplyResponse {
+    mergedCode?: string | null;
 }
 
 const createPrompt = (originalCode: string, updateSnippet: string, instruction: string) =>
@@ -37,7 +57,7 @@ export async function applyCodeChangeWithMorph(
             },
         ],
     });
-    return response.choices[0]?.message.content || null;
+    return response.choices[0]?.message.content ?? null;
 }
 
 export async function applyCodeChangeWithRelace(
@@ -77,8 +97,8 @@ export async function applyCodeChangeWithRelace(
     if (!response.ok) {
         throw new Error(`Failed to apply code change: ${response.status}`);
     }
-    const result = await response.json();
-    return result.mergedCode;
+    const result = (await response.json()) as RelaceApplyResponse;
+    return result.mergedCode ?? null;
 }
 
 export async function applyCodeChange(
@@ -108,6 +128,8 @@ export async function applyCodeChange(
         },
     ];
 
+    let lastError: unknown = null;
+
     // Run provider attempts in order of preference
     for (const { provider, applyFn } of providerAttempts) {
         try {
@@ -118,18 +140,52 @@ export async function applyCodeChange(
                           updateSnippet,
                           instruction,
                       )
-                    : await (applyFn as typeof applyCodeChangeWithRelace)(
-                          originalCode,
-                          updateSnippet,
-                          instruction,
-                          metadata,
-                      );
+                    : await applyFn(originalCode, updateSnippet, instruction, metadata);
             if (result) return result;
         } catch (error) {
             console.warn(`Code application failed with provider ${provider}:`, error);
-            throw error;
+            lastError = error;
         }
     }
 
+    if (lastError instanceof Error) throw lastError;
+    if (lastError) throw new Error('Code application failed with a non-error value.');
     return null;
+}
+
+export async function applyCodeChangeWithQuality(
+    originalCode: string,
+    updateSnippet: string,
+    instruction: string,
+    metadata?: ApplyCodeChangeMetadata,
+    preferredProvider: FastApplyProvider = FastApplyProvider.MORPH,
+    options: ApplyCodeChangeQualityOptions = {},
+): Promise<ApplyCodeChangeWithQualityResult> {
+    const preflightAssessment = assessCodeChange(originalCode, updateSnippet, instruction);
+    if (options.blockBeforeProvider && shouldBlockApply(preflightAssessment, options.gate)) {
+        return {
+            code: null,
+            preflightAssessment,
+            blocked: true,
+            blockReason:
+                preflightAssessment.blockingConcerns[0] ??
+                `Preflight score ${preflightAssessment.score} is below the configured gate.`,
+        };
+    }
+
+    const code = await applyCodeChange(
+        originalCode,
+        updateSnippet,
+        instruction,
+        metadata,
+        preferredProvider,
+    );
+    return {
+        code,
+        preflightAssessment,
+        resultAssessment: code
+            ? assessCodeChange(originalCode, updateSnippet, instruction, code)
+            : undefined,
+        blocked: false,
+    };
 }
