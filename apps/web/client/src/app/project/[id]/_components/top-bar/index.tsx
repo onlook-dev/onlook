@@ -19,6 +19,7 @@ import { BranchDisplay } from './branch';
 import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
 import { PublishButton } from './publish';
+import { SaveIndicator } from './save-indicator';
 
 export const TopBar = observer(() => {
     const stateManager = useStateManager();
@@ -50,6 +51,7 @@ export const TopBar = observer(() => {
             </div>
             <ModeToggle />
             <div className="flex flex-grow basis-0 justify-end items-center gap-1.5 mr-2">
+                <SaveIndicator />
                 <div className="flex items-center group">
                     <div className={`transition-all duration-200 ${isMembersPopoverOpen ? 'mr-2' : '-mr-2 group-hover:mr-2'}`}>
                         <Members onPopoverOpenChange={setIsMembersPopoverOpen} />

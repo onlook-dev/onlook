@@ -58,6 +58,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             await devLogin();
         } catch (error) {
             console.error('Error signing in with password:', error);
+            // Re-throw so calling code can handle it
+            throw error;
         } finally {
             setSigningInMethod(null);
         }
