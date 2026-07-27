@@ -1,4 +1,5 @@
 import { EditorMode, type CodeNavigationTarget } from "@onlook/models";
+import { toast } from "@onlook/ui/sonner";
 import { makeAutoObservable } from "mobx";
 import type { EditorEngine } from "../engine";
 
@@ -19,12 +20,14 @@ export class IdeManager {
             const activeBranchId = this.editorEngine.branches.activeBranch?.id;
             if (!activeBranchId) {
                 console.warn('[IdeManager] No active branch found');
+                toast.error('Cannot open code view — no active branch is loaded yet.');
                 return;
             }
 
             const branchData = this.editorEngine.branches.getBranchDataById(activeBranchId);
             if (!branchData) {
                 console.warn(`[IdeManager] No branch data found for branchId: ${activeBranchId}`);
+                toast.error('Cannot open code view — branch data is unavailable.');
                 return;
             }
 
@@ -32,6 +35,7 @@ export class IdeManager {
             const metadata = await branchData.codeEditor.getJsxElementMetadata(oid);
             if (!metadata) {
                 console.warn(`[IdeManager] No metadata found for OID: ${oid}`);
+                toast.error('Cannot open code view — element metadata not found. The project may still be indexing; try again in a moment.');
                 return;
             }
 
