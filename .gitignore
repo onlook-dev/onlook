@@ -47,3 +47,4 @@ mise.toml
 
 # Temporary files
 .tmp/
+.claude/

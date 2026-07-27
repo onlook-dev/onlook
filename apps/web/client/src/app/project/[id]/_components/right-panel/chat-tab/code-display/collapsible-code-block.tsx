@@ -15,6 +15,7 @@ interface CollapsibleCodeBlockProps {
     applied: boolean;
     isStream?: boolean;
     branchId?: string;
+    defaultOpen?: boolean;
 }
 
 const CollapsibleCodeBlockComponent = ({
@@ -22,9 +23,10 @@ const CollapsibleCodeBlockComponent = ({
     content,
     isStream,
     branchId,
+    defaultOpen = false,
 }: CollapsibleCodeBlockProps) => {
     const editorEngine = useEditorEngine();
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(defaultOpen);
     const [copied, setCopied] = useState(false);
 
     const copyToClipboard = () => {

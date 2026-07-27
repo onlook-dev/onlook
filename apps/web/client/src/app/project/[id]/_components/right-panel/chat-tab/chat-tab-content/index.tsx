@@ -28,6 +28,7 @@ export const ChatTabContent = ({
                 isStreaming={isStreaming}
                 error={error}
                 onEditMessage={editMessage}
+                onSendMessage={sendMessage}
             />
             <ErrorSection isStreaming={isStreaming} onSendMessage={sendMessage} />
             <ChatInput

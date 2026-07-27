@@ -24,6 +24,7 @@ export class CodeManager {
     }
 
     async write(action: Action) {
+        this.editorEngine.saveState.startSaving();
         try {
             // TODO: This is a hack to write code, we should refactor this
             if (action.type === 'write-code' && action.diffs[0]) {
@@ -36,12 +37,14 @@ export class CodeManager {
                 const requests = await this.collectRequests(action);
                 await this.writeRequest(requests);
             }
+            this.editorEngine.saveState.debouncedCompleteSave();
         } catch (error) {
             console.error('Error writing requests:', error);
             toast.error('Error writing requests', {
                 description: error instanceof Error ? error.message : 'Unknown error',
             });
             this.editorEngine.branches.activeError.addCodeApplicationError(error instanceof Error ? error.message : 'Unknown error', action);
+            this.editorEngine.saveState.markUnsaved();
         }
     }
 
