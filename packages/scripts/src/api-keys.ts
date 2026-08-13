@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import fs from 'node:fs';
+import path from 'node:path';
 import prompts from 'prompts';
 
 interface ApiKeyConfig {
@@ -157,7 +158,9 @@ const extractKeyName = (variableLine: string): string | undefined => {
  * @param filePath - Full path to the file
  */
 const ensureDirectoryExists = (filePath: string): void => {
-    const dir = filePath.substring(0, filePath.lastIndexOf('/'));
+    // Use cross-platform path handling — on Windows, paths use '\' so
+    // lastIndexOf('/') returned -1 and mkdirSync('') threw ENOENT (#3119)
+    const dir = path.dirname(filePath);
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
