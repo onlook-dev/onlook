@@ -1,10 +1,10 @@
-delete from storage.objects where bucket_id = 'file_transfer';
-delete from storage.buckets where id = 'file_transfer';
-
+-- Direct deletes from storage tables are rejected by newer Supabase storage
+-- versions (SQLSTATE 42501); upsert instead — identical result on a fresh DB.
 insert into storage.buckets
   (id, name, public)
 values
-  ('file_transfer', 'file_transfer', false);
+  ('file_transfer', 'file_transfer', false)
+on conflict (id) do update set public = excluded.public;
 
 -- Allow authenticated users to select only their own files from file_transfer
 drop policy if exists "file_transfer_select_policy" on storage.objects;
