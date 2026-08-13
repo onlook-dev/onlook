@@ -190,7 +190,7 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
         const content = 'NESTED_KEY=nested_value\n';
 
         // Simulate creating directory structure
-        const dir = nestedEnvPath.substring(0, nestedEnvPath.lastIndexOf('/'));
+        const dir = path.dirname(nestedEnvPath);
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
         }
