@@ -2,6 +2,7 @@ import type { LanguageModel } from 'ai';
 
 export enum LLMProvider {
     OPENROUTER = 'openrouter',
+    TRUSTEDROUTER = 'trustedrouter',
 }
 
 export enum OPENROUTER_MODELS {
@@ -13,8 +14,19 @@ export enum OPENROUTER_MODELS {
     OPEN_AI_GPT_5_NANO = 'openai/gpt-5-nano',
 }
 
+// TrustedRouter model ids are namespaced; a bare id is rejected. Ids under
+// `trustedrouter/` are routing policies rather than single models: each picks an
+// upstream per request and fails over.
+export enum TRUSTEDROUTER_MODELS {
+    AUTO = 'trustedrouter/auto',
+    ZDR = 'trustedrouter/zdr',
+    CLAUDE_4_6_SONNET = 'anthropic/claude-sonnet-4-6',
+    OPEN_AI_GPT_5_4_MINI = 'openai/gpt-5.4-mini',
+}
+
 interface ModelMapping {
     [LLMProvider.OPENROUTER]: OPENROUTER_MODELS;
+    [LLMProvider.TRUSTEDROUTER]: TRUSTEDROUTER_MODELS;
 }
 
 export type InitialModelPayload = {
@@ -37,4 +49,8 @@ export const MODEL_MAX_TOKENS = {
     [OPENROUTER_MODELS.OPEN_AI_GPT_5_NANO]: 400000,
     [OPENROUTER_MODELS.OPEN_AI_GPT_5_MINI]: 400000,
     [OPENROUTER_MODELS.OPEN_AI_GPT_5]: 400000,
+    [TRUSTEDROUTER_MODELS.AUTO]: 200000,
+    [TRUSTEDROUTER_MODELS.ZDR]: 200000,
+    [TRUSTEDROUTER_MODELS.CLAUDE_4_6_SONNET]: 1000000,
+    [TRUSTEDROUTER_MODELS.OPEN_AI_GPT_5_4_MINI]: 400000,
 } as const;
