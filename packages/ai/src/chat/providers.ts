@@ -2,9 +2,11 @@ import {
     LLMProvider,
     MODEL_MAX_TOKENS,
     OPENROUTER_MODELS,
+    TRUSTEDROUTER_MODELS,
     type InitialModelPayload,
     type ModelConfig
 } from '@onlook/models';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { assertNever } from '@onlook/utility';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import type { LanguageModel } from 'ai';
@@ -33,6 +35,9 @@ export function initModel({
                 ? { ...providerOptions, anthropic: { cacheControl: { type: 'ephemeral' } } }
                 : providerOptions;
             break;
+        case LLMProvider.TRUSTEDROUTER:
+            model = getTrustedRouterProvider(requestedModel);
+            break;
         default:
             assertNever(requestedProvider);
     }
@@ -43,6 +48,18 @@ export function initModel({
         headers,
         maxOutputTokens,
     };
+}
+
+function getTrustedRouterProvider(model: TRUSTEDROUTER_MODELS): LanguageModel {
+    if (!process.env.TRUSTEDROUTER_API_KEY) {
+        throw new Error('TRUSTEDROUTER_API_KEY must be set');
+    }
+    const trustedrouter = createOpenAICompatible({
+        name: 'trustedrouter',
+        apiKey: process.env.TRUSTEDROUTER_API_KEY,
+        baseURL: 'https://api.trustedrouter.com/v1',
+    });
+    return trustedrouter(model);
 }
 
 function getOpenRouterProvider(model: OPENROUTER_MODELS): LanguageModel {
