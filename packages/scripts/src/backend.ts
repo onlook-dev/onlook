@@ -1,9 +1,9 @@
 import chalk from 'chalk';
 import { spawn } from 'node:child_process';
+import type { EventEmitter } from 'node:events';
 import fs from 'node:fs';
 import path from 'node:path';
-import ora, { type Ora } from 'ora';
-import { z } from 'zod';
+import ora, { type Ora } from 'ora';import { z } from 'zod';
 import { writeEnvFile } from './helpers';
 
 /**
@@ -332,38 +332,114 @@ const createProcessHandlers = (
     return { onData, onClose, onError };
 };
 
+const BACKEND_START_INACTIVITY_TIMEOUT_MS = 300_000;
+const OUTPUT_TAIL_LIMIT = 2_000;
+const PROGRESS_LINE_LIMIT = 100;
+
+export interface MonitoredProcess {
+    stdout: EventEmitter | null;
+    stderr: EventEmitter | null;
+    on(event: 'close', listener: (code: number | null) => void): unknown;
+    on(event: 'error', listener: (err: Error) => void): unknown;
+    kill(): unknown;
+}
+
+export interface BackendStartOptions {
+    inactivityTimeoutMs: number;
+    onOutput?: (chunk: string) => void;
+}
+
+const lastNonEmptyLine = (chunk: string): string | undefined =>
+    chunk
+        .split(/[\r\n]+/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .pop();
+
+export const waitForBackendStart = (
+    proc: MonitoredProcess,
+    { inactivityTimeoutMs, onOutput }: BackendStartOptions,
+): Promise<void> =>
+    new Promise<void>((resolve, reject) => {
+        let settled = false;
+        let timeout: NodeJS.Timeout | undefined;
+
+        const settle = (finish: () => void) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timeout);
+            finish();
+        };
+
+        const armTimeout = () => {
+            timeout = setTimeout(() => {
+                settle(() => {
+                    proc.kill();
+                    reject(
+                        new Error(
+                            `Supabase produced no output for ${Math.round(inactivityTimeoutMs / 1000)}s while starting.`,
+                        ),
+                    );
+                });
+            }, inactivityTimeoutMs);
+        };
+
+        const onData = (chunk: Buffer | string) => {
+            if (settled) return;
+            clearTimeout(timeout);
+            armTimeout();
+            onOutput?.(chunk.toString());
+        };
+
+        proc.stdout?.on('data', onData);
+        proc.stderr?.on('data', onData);
+
+        proc.on('close', (code) =>
+            settle(() => {
+                if (code === 0) {
+                    resolve();
+                } else {
+                    reject(new Error(`Supabase start failed with exit code ${code ?? 'unknown'}.`));
+                }
+            }),
+        );
+
+        proc.on('error', (err) => settle(() => reject(err)));
+
+        armTimeout();
+    });
+
 const startBackendAndExtractKeys = async (): Promise<BackendKeys> => {
     console.log(chalk.yellow('🚀 Starting Supabase backend...'));
     const spinner = ora('Waiting for Supabase to initialize...').start();
 
-    const startProc = spawn('bun run', ['backend:start'], { cwd: rootDir, shell: true });
-
-    await new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => {
-            startProc.kill();
-            spinner.fail('Timed out waiting for Supabase keys.');
-            reject(new Error('Supabase start timeout'));
-        }, 120_000);
-
-        startProc.on('close', (code) => {
-            clearTimeout(timeout);
-            if (code === 0) {
-                resolve();
-            } else {
-                spinner.fail('Failed to start Supabase backend.');
-                reject(new Error('Supabase start failed'));
-            }
-        });
-
-        startProc.on('error', (err) => {
-            clearTimeout(timeout);
-            spinner.fail(`Backend error: ${err.message}`);
-            reject(err);
-        });
+    const startProc = spawn('bun', ['run', 'backend:start'], {
+        cwd: rootDir,
+        stdio: ['ignore', 'pipe', 'pipe'],
     });
 
-    spinner.succeed('Supabase backend started.');
+    let outputTail = '';
 
+    try {
+        await waitForBackendStart(startProc, {
+            inactivityTimeoutMs: BACKEND_START_INACTIVITY_TIMEOUT_MS,
+            onOutput: (chunk) => {
+                outputTail = (outputTail + chunk).slice(-OUTPUT_TAIL_LIMIT);
+                const progress = lastNonEmptyLine(chunk);
+                if (progress) {
+                    spinner.text = `Waiting for Supabase to initialize... ${progress.slice(0, PROGRESS_LINE_LIMIT)}`;
+                }
+            },
+        });
+    } catch (error) {
+        spinner.fail((error as Error).message);
+        if (outputTail.trim()) {
+            console.error(chalk.gray(outputTail.trim()));
+        }
+        throw error;
+    }
+
+    spinner.succeed('Supabase backend started.');
     // Now get all keys from status
     const keysSpinner = ora('Extracting Supabase keys...').start();
     const backendDir = path.join(rootDir, 'apps', 'backend');
