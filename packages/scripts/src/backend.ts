@@ -3,7 +3,8 @@ import { spawn } from 'node:child_process';
 import type { EventEmitter } from 'node:events';
 import fs from 'node:fs';
 import path from 'node:path';
-import ora, { type Ora } from 'ora';import { z } from 'zod';
+import ora, { type Ora } from 'ora';
+import { z } from 'zod';
 import { writeEnvFile } from './helpers';
 
 /**
@@ -349,6 +350,28 @@ export interface BackendStartOptions {
     onOutput?: (chunk: string) => void;
 }
 
+const REDACTED = '[redacted]';
+
+const SENSITIVE_LABEL_PATTERN =
+    /\b((?:jwt|anon|service[_ ]role|publishable|secret|access|s3)[a-z_ ]*(?:key|secret|token|password)[a-z_ ]*)(\s*[:=]\s*)(\S+)/gi;
+
+const SENSITIVE_TOKEN_PATTERNS: RegExp[] = [
+    /\beyJ[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}/g,
+    /\bsb_[a-z]+_[A-Za-z0-9_-]{8,}/g,
+];
+
+const redactSensitiveOutput = (text: string): string => {
+    const withoutLabelledValues = text.replace(
+        SENSITIVE_LABEL_PATTERN,
+        (_match, label: string, separator: string) => `${label}${separator}${REDACTED}`,
+    );
+
+    return SENSITIVE_TOKEN_PATTERNS.reduce(
+        (redacted, pattern) => redacted.replace(pattern, REDACTED),
+        withoutLabelledValues,
+    );
+};
+
 const lastNonEmptyLine = (chunk: string): string | undefined =>
     chunk
         .split(/[\r\n]+/)
@@ -425,7 +448,7 @@ const startBackendAndExtractKeys = async (): Promise<BackendKeys> => {
             inactivityTimeoutMs: BACKEND_START_INACTIVITY_TIMEOUT_MS,
             onOutput: (chunk) => {
                 outputTail = (outputTail + chunk).slice(-OUTPUT_TAIL_LIMIT);
-                const progress = lastNonEmptyLine(chunk);
+                const progress = lastNonEmptyLine(redactSensitiveOutput(chunk));
                 if (progress) {
                     spinner.text = `Waiting for Supabase to initialize... ${progress.slice(0, PROGRESS_LINE_LIMIT)}`;
                 }
@@ -433,8 +456,9 @@ const startBackendAndExtractKeys = async (): Promise<BackendKeys> => {
         });
     } catch (error) {
         spinner.fail((error as Error).message);
-        if (outputTail.trim()) {
-            console.error(chalk.gray(outputTail.trim()));
+        const redactedTail = redactSensitiveOutput(outputTail).trim();
+        if (redactedTail) {
+            console.error(chalk.gray(redactedTail));
         }
         throw error;
     }
