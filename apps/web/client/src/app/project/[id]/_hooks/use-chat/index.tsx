@@ -45,8 +45,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const isProcessingQueue = useRef(false);
 
     // Max tool calls before pausing and asking user to continue
-    // TODO: Change back to 10 after testing
-    const MAX_TOOL_CALLS = 2;
+    const MAX_TOOL_CALLS = 10;
 
     // Track tool call count in a ref to avoid stale closures
     const toolCallCountRef = useRef(toolCallCount);
@@ -85,6 +84,10 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
                     setHitStepLimit(true);
                 }
             },
+            onError: () => {
+                setToolCallCount(0);
+                setHitStepLimit(false);
+            },
         });
 
     const isStreaming = status === 'streaming' || status === 'submitted' || isExecutingToolCall;
@@ -101,6 +104,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
 
     const processMessage = useCallback(
         async (content: string, type: ChatType, context?: MessageContext[], resetToolCount = true) => {
+            setHitStepLimit(false);
             // Reset tool call count for new user messages
             if (resetToolCount) {
                 setToolCallCount(0);
@@ -166,6 +170,9 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             if (messageIndex === -1 || !message || message.role !== 'user') {
                 throw new Error('Message not found.');
             }
+
+            setHitStepLimit(false);
+            setToolCallCount(0);
 
             const updatedMessages = messagesRef.current.slice(0, messageIndex);
 
