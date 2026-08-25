@@ -3,7 +3,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 // Import actual functions to test
-import { getDbEnvContent, generateBackendEnvContent, CLIENT_BACKEND_KEYS } from '../src/backend';
+import {
+    getDbEnvContent,
+    generateBackendEnvContent,
+    CLIENT_BACKEND_KEYS,
+    createProgressReporter,
+    createStreamProgressReporter,
+} from '../src/backend';
 import { parseEnvContent, buildEnvFileContent, writeEnvFile } from '../src/helpers';
 
 describe('comprehensive functionality tests', () => {
@@ -394,6 +400,44 @@ Supabase local development setup completed.
             expect(isValidJWT('ey')).toBe(false); // Too short
             expect(isValidJWT('')).toBe(false);
             expect(isValidJWT('eyJ contains spaces')).toBe(false);
+        });
+    });
+
+    describe('Startup progress redaction', () => {
+        it('should redact a labeled secret split across chunks', () => {
+            const reportProgress = createProgressReporter();
+
+            expect(reportProgress('SERVICE_ROLE_KEY=')).toBeUndefined();
+            expect(reportProgress('super-secret-value\n')).toBe('SERVICE_ROLE_KEY=[redacted]');
+        });
+
+        it('should redact a JWT split across chunks', () => {
+            const reportProgress = createProgressReporter();
+
+            expect(reportProgress('starting...\neyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJz')).toBe(
+                'starting...',
+            );
+            expect(reportProgress('dWIiOiIxMjM0NTY3ODkwIn0.signature\n')).toBe('[redacted]');
+        });
+
+        it('should report plain progress lines unchanged', () => {
+            const reportProgress = createProgressReporter();
+
+            expect(reportProgress('Starting containers...\n')).toBe('Starting containers...');
+            expect(reportProgress('Seeding data')).toBeUndefined();
+            expect(reportProgress('...done\r')).toBe('Seeding data...done');
+        });
+
+        it('should keep stdout and stderr carry buffers separate', () => {
+            const reportProgress = createStreamProgressReporter();
+
+            expect(reportProgress('SERVICE_ROLE_KEY=', 'stdout')).toBeUndefined();
+            expect(reportProgress('warning: docker is slow\n', 'stderr')).toBe(
+                'warning: docker is slow',
+            );
+            expect(reportProgress('super-secret-value\n', 'stdout')).toBe(
+                'SERVICE_ROLE_KEY=[redacted]',
+            );
         });
     });
 

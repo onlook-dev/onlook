@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import { spawn } from 'node:child_process';
+import type { EventEmitter } from 'node:events';
 import fs from 'node:fs';
 import path from 'node:path';
 import ora, { type Ora } from 'ora';
@@ -332,38 +333,176 @@ const createProcessHandlers = (
     return { onData, onClose, onError };
 };
 
+const BACKEND_START_INACTIVITY_TIMEOUT_MS = 300_000;
+const OUTPUT_TAIL_LIMIT = 2_000;
+const PROGRESS_LINE_LIMIT = 100;
+const PROGRESS_CARRY_LIMIT = 4_000;
+
+export interface MonitoredProcess {
+    stdout: EventEmitter | null;
+    stderr: EventEmitter | null;
+    on(event: 'close', listener: (code: number | null) => void): unknown;
+    on(event: 'error', listener: (err: Error) => void): unknown;
+    kill(): unknown;
+}
+
+export type OutputStream = 'stdout' | 'stderr';
+
+export interface BackendStartOptions {
+    inactivityTimeoutMs: number;
+    onOutput?: (chunk: string, stream: OutputStream) => void;
+}
+
+const REDACTED = '[redacted]';
+
+const SENSITIVE_LABEL_PATTERN =
+    /\b((?:jwt|anon|service[_ ]role|publishable|secret|access|s3)[a-z_ ]*(?:key|secret|token|password)[a-z_ ]*)(\s*[:=]\s*)(\S+)/gi;
+
+const SENSITIVE_TOKEN_PATTERNS: RegExp[] = [
+    /\beyJ[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}/g,
+    /\bsb_[a-z]+_[A-Za-z0-9_-]{8,}/g,
+];
+
+const redactSensitiveOutput = (text: string): string => {
+    const withoutLabelledValues = text.replace(
+        SENSITIVE_LABEL_PATTERN,
+        (_match, label: string, separator: string) => `${label}${separator}${REDACTED}`,
+    );
+
+    return SENSITIVE_TOKEN_PATTERNS.reduce(
+        (redacted, pattern) => redacted.replace(pattern, REDACTED),
+        withoutLabelledValues,
+    );
+};
+
+const lastNonEmptyLine = (chunk: string): string | undefined =>
+    chunk
+        .split(/[\r\n]+/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .pop();
+
+/**
+ * Builds a reporter that keeps incomplete lines in a carry buffer so redaction
+ * always runs on whole lines
+ * @returns Function returning the redacted progress line for a chunk, if any
+ */
+export const createProgressReporter = (): ((chunk: string) => string | undefined) => {
+    let carry = '';
+
+    return (chunk: string): string | undefined => {
+        const combined = carry + chunk;
+        const lastBreak = Math.max(combined.lastIndexOf('\n'), combined.lastIndexOf('\r'));
+
+        if (lastBreak === -1) {
+            carry = combined.slice(0, PROGRESS_CARRY_LIMIT);
+            return undefined;
+        }
+
+        carry = combined.slice(lastBreak + 1, lastBreak + 1 + PROGRESS_CARRY_LIMIT);
+        const progress = lastNonEmptyLine(redactSensitiveOutput(combined.slice(0, lastBreak)));
+        return progress?.slice(0, PROGRESS_LINE_LIMIT);
+    };
+};
+
+export const createStreamProgressReporter = (): ((
+    chunk: string,
+    stream: OutputStream,
+) => string | undefined) => {
+    const reporters: Record<OutputStream, (chunk: string) => string | undefined> = {
+        stdout: createProgressReporter(),
+        stderr: createProgressReporter(),
+    };
+
+    return (chunk: string, stream: OutputStream): string | undefined => reporters[stream](chunk);
+};
+
+export const waitForBackendStart = (
+    proc: MonitoredProcess,
+    { inactivityTimeoutMs, onOutput }: BackendStartOptions,
+): Promise<void> =>
+    new Promise<void>((resolve, reject) => {
+        let settled = false;
+        let timeout: NodeJS.Timeout | undefined;
+
+        const settle = (finish: () => void) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timeout);
+            finish();
+        };
+
+        const armTimeout = () => {
+            timeout = setTimeout(() => {
+                settle(() => {
+                    proc.kill();
+                    reject(
+                        new Error(
+                            `Supabase produced no output for ${Math.round(inactivityTimeoutMs / 1000)}s while starting.`,
+                        ),
+                    );
+                });
+            }, inactivityTimeoutMs);
+        };
+
+        const onData = (stream: OutputStream) => (chunk: Buffer | string) => {
+            if (settled) return;
+            clearTimeout(timeout);
+            armTimeout();
+            onOutput?.(chunk.toString(), stream);
+        };
+
+        proc.stdout?.on('data', onData('stdout'));
+        proc.stderr?.on('data', onData('stderr'));
+
+        proc.on('close', (code) =>
+            settle(() => {
+                if (code === 0) {
+                    resolve();
+                } else {
+                    reject(new Error(`Supabase start failed with exit code ${code ?? 'unknown'}.`));
+                }
+            }),
+        );
+
+        proc.on('error', (err) => settle(() => reject(err)));
+
+        armTimeout();
+    });
+
 const startBackendAndExtractKeys = async (): Promise<BackendKeys> => {
     console.log(chalk.yellow('🚀 Starting Supabase backend...'));
     const spinner = ora('Waiting for Supabase to initialize...').start();
 
-    const startProc = spawn('bun run', ['backend:start'], { cwd: rootDir, shell: true });
-
-    await new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => {
-            startProc.kill();
-            spinner.fail('Timed out waiting for Supabase keys.');
-            reject(new Error('Supabase start timeout'));
-        }, 120_000);
-
-        startProc.on('close', (code) => {
-            clearTimeout(timeout);
-            if (code === 0) {
-                resolve();
-            } else {
-                spinner.fail('Failed to start Supabase backend.');
-                reject(new Error('Supabase start failed'));
-            }
-        });
-
-        startProc.on('error', (err) => {
-            clearTimeout(timeout);
-            spinner.fail(`Backend error: ${err.message}`);
-            reject(err);
-        });
+    const startProc = spawn('bun', ['run', 'backend:start'], {
+        cwd: rootDir,
+        stdio: ['ignore', 'pipe', 'pipe'],
     });
 
-    spinner.succeed('Supabase backend started.');
+    let outputTail = '';
+    const reportProgress = createStreamProgressReporter();
 
+    try {
+        await waitForBackendStart(startProc, {
+            inactivityTimeoutMs: BACKEND_START_INACTIVITY_TIMEOUT_MS,
+            onOutput: (chunk, stream) => {
+                outputTail = (outputTail + chunk).slice(-OUTPUT_TAIL_LIMIT);
+                const progress = reportProgress(chunk, stream);
+                if (progress) {
+                    spinner.text = `Waiting for Supabase to initialize... ${progress}`;
+                }
+            },
+        });
+    } catch (error) {
+        spinner.fail((error as Error).message);
+        const redactedTail = redactSensitiveOutput(outputTail).trim();
+        if (redactedTail) {
+            console.error(chalk.gray(redactedTail));
+        }
+        throw error;
+    }
+
+    spinner.succeed('Supabase backend started.');
     // Now get all keys from status
     const keysSpinner = ora('Extracting Supabase keys...').start();
     const backendDir = path.join(rootDir, 'apps', 'backend');
