@@ -256,8 +256,8 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
     const continueAfterStepLimit = useCallback(() => {
         setHitStepLimit(false);
         posthog.capture('user_continue_after_step_limit');
-        return sendMessage('Continue where you left off.', ChatType.EDIT);
-    }, [sendMessage, posthog]);
+        return processMessage('Continue where you left off.', ChatType.EDIT);
+    }, [processMessage, posthog]);
 
     // Dismiss the step limit banner without continuing
     const dismissStepLimit = useCallback(() => {

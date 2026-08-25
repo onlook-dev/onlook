@@ -3,7 +3,7 @@ import { useChat } from '../../../../_hooks/use-chat';
 import { ChatInput } from '../chat-input';
 import { ChatMessages } from '../chat-messages';
 import { ErrorSection } from '../error';
-import { StepLimitBanner } from '../step-limit-banner';
+import { StepLimitBanner } from '@/app/project/[id]/_components/right-panel/chat-tab/step-limit-banner';
 
 interface ChatTabContentProps {
     conversationId: string;

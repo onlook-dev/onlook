@@ -8,6 +8,10 @@ interface StepLimitBannerProps {
     onDismiss: () => void;
 }
 
+/**
+ * Banner displayed when the AI agent reaches the step execution limit,
+ * prompting the user to either continue the task or stop here.
+ */
 export const StepLimitBanner = ({ show, onContinue, onDismiss }: StepLimitBannerProps) => {
     return (
         <AnimatePresence>
