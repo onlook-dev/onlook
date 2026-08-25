@@ -8,6 +8,7 @@ import {
     generateBackendEnvContent,
     CLIENT_BACKEND_KEYS,
     createProgressReporter,
+    createStreamProgressReporter,
 } from '../src/backend';
 import { parseEnvContent, buildEnvFileContent, writeEnvFile } from '../src/helpers';
 
@@ -425,6 +426,18 @@ Supabase local development setup completed.
             expect(reportProgress('Starting containers...\n')).toBe('Starting containers...');
             expect(reportProgress('Seeding data')).toBeUndefined();
             expect(reportProgress('...done\r')).toBe('Seeding data...done');
+        });
+
+        it('should keep stdout and stderr carry buffers separate', () => {
+            const reportProgress = createStreamProgressReporter();
+
+            expect(reportProgress('SERVICE_ROLE_KEY=', 'stdout')).toBeUndefined();
+            expect(reportProgress('warning: docker is slow\n', 'stderr')).toBe(
+                'warning: docker is slow',
+            );
+            expect(reportProgress('super-secret-value\n', 'stdout')).toBe(
+                'SERVICE_ROLE_KEY=[redacted]',
+            );
         });
     });
 

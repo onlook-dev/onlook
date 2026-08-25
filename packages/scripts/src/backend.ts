@@ -346,9 +346,11 @@ export interface MonitoredProcess {
     kill(): unknown;
 }
 
+export type OutputStream = 'stdout' | 'stderr';
+
 export interface BackendStartOptions {
     inactivityTimeoutMs: number;
-    onOutput?: (chunk: string) => void;
+    onOutput?: (chunk: string, stream: OutputStream) => void;
 }
 
 const REDACTED = '[redacted]';
@@ -403,6 +405,18 @@ export const createProgressReporter = (): ((chunk: string) => string | undefined
     };
 };
 
+export const createStreamProgressReporter = (): ((
+    chunk: string,
+    stream: OutputStream,
+) => string | undefined) => {
+    const reporters: Record<OutputStream, (chunk: string) => string | undefined> = {
+        stdout: createProgressReporter(),
+        stderr: createProgressReporter(),
+    };
+
+    return (chunk: string, stream: OutputStream): string | undefined => reporters[stream](chunk);
+};
+
 export const waitForBackendStart = (
     proc: MonitoredProcess,
     { inactivityTimeoutMs, onOutput }: BackendStartOptions,
@@ -431,15 +445,15 @@ export const waitForBackendStart = (
             }, inactivityTimeoutMs);
         };
 
-        const onData = (chunk: Buffer | string) => {
+        const onData = (stream: OutputStream) => (chunk: Buffer | string) => {
             if (settled) return;
             clearTimeout(timeout);
             armTimeout();
-            onOutput?.(chunk.toString());
+            onOutput?.(chunk.toString(), stream);
         };
 
-        proc.stdout?.on('data', onData);
-        proc.stderr?.on('data', onData);
+        proc.stdout?.on('data', onData('stdout'));
+        proc.stderr?.on('data', onData('stderr'));
 
         proc.on('close', (code) =>
             settle(() => {
@@ -466,14 +480,14 @@ const startBackendAndExtractKeys = async (): Promise<BackendKeys> => {
     });
 
     let outputTail = '';
-    const reportProgress = createProgressReporter();
+    const reportProgress = createStreamProgressReporter();
 
     try {
         await waitForBackendStart(startProc, {
             inactivityTimeoutMs: BACKEND_START_INACTIVITY_TIMEOUT_MS,
-            onOutput: (chunk) => {
+            onOutput: (chunk, stream) => {
                 outputTail = (outputTail + chunk).slice(-OUTPUT_TAIL_LIMIT);
-                const progress = reportProgress(chunk);
+                const progress = reportProgress(chunk, stream);
                 if (progress) {
                     spinner.text = `Waiting for Supabase to initialize... ${progress}`;
                 }
