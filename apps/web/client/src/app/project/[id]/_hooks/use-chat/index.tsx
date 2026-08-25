@@ -137,6 +137,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
 
     const sendMessage: SendMessage = useCallback(
         async (content: string, type: ChatType) => {
+            const wasHitStepLimit = hitStepLimit;
             setHitStepLimit(false);
             posthog.capture('user_send_message', { type });
 
@@ -153,17 +154,17 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             if (isStreaming) {
                 // AI is running - add to bottom of queue (normal queueing)
                 setQueuedMessages(prev => [...prev, newMessage]);
-            } else if (queuedMessages.length > 0) {
+            } else if (queuedMessages.length > 0 && !wasHitStepLimit) {
                 // AI is stopped but there are queued messages - add to top of queue (priority)
                 setQueuedMessages(prev => [newMessage, ...prev]);
             } else {
-                // No queue and not streaming - send immediately
+                // No queue or was limit-paused and not streaming - send immediately
                 return processMessage(content, type);
             }
 
             return getUserChatMessageFromString(content, [], conversationId);
         },
-        [processMessage, posthog, editorEngine.chat.context, isStreaming, queuedMessages.length, conversationId],
+        [processMessage, posthog, editorEngine.chat.context, isStreaming, queuedMessages.length, conversationId, hitStepLimit],
     );
 
     const processMessageEdit = useCallback(
