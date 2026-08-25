@@ -336,6 +336,7 @@ const createProcessHandlers = (
 const BACKEND_START_INACTIVITY_TIMEOUT_MS = 300_000;
 const OUTPUT_TAIL_LIMIT = 2_000;
 const PROGRESS_LINE_LIMIT = 100;
+const PROGRESS_CARRY_LIMIT = 4_000;
 
 export interface MonitoredProcess {
     stdout: EventEmitter | null;
@@ -378,6 +379,29 @@ const lastNonEmptyLine = (chunk: string): string | undefined =>
         .map((line) => line.trim())
         .filter((line) => line.length > 0)
         .pop();
+
+/**
+ * Builds a reporter that keeps incomplete lines in a carry buffer so redaction
+ * always runs on whole lines
+ * @returns Function returning the redacted progress line for a chunk, if any
+ */
+export const createProgressReporter = (): ((chunk: string) => string | undefined) => {
+    let carry = '';
+
+    return (chunk: string): string | undefined => {
+        const combined = carry + chunk;
+        const lastBreak = Math.max(combined.lastIndexOf('\n'), combined.lastIndexOf('\r'));
+
+        if (lastBreak === -1) {
+            carry = combined.slice(0, PROGRESS_CARRY_LIMIT);
+            return undefined;
+        }
+
+        carry = combined.slice(lastBreak + 1, lastBreak + 1 + PROGRESS_CARRY_LIMIT);
+        const progress = lastNonEmptyLine(redactSensitiveOutput(combined.slice(0, lastBreak)));
+        return progress?.slice(0, PROGRESS_LINE_LIMIT);
+    };
+};
 
 export const waitForBackendStart = (
     proc: MonitoredProcess,
@@ -442,15 +466,16 @@ const startBackendAndExtractKeys = async (): Promise<BackendKeys> => {
     });
 
     let outputTail = '';
+    const reportProgress = createProgressReporter();
 
     try {
         await waitForBackendStart(startProc, {
             inactivityTimeoutMs: BACKEND_START_INACTIVITY_TIMEOUT_MS,
             onOutput: (chunk) => {
                 outputTail = (outputTail + chunk).slice(-OUTPUT_TAIL_LIMIT);
-                const progress = lastNonEmptyLine(redactSensitiveOutput(chunk));
+                const progress = reportProgress(chunk);
                 if (progress) {
-                    spinner.text = `Waiting for Supabase to initialize... ${progress.slice(0, PROGRESS_LINE_LIMIT)}`;
+                    spinner.text = `Waiting for Supabase to initialize... ${progress}`;
                 }
             },
         });
