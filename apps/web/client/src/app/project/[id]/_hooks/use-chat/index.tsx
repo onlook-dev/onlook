@@ -71,7 +71,8 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             }),
             onToolCall: async (toolCall) => {
                 setIsExecutingToolCall(true);
-                setToolCallCount(prev => prev + 1);
+                toolCallCountRef.current += 1;
+                setToolCallCount(toolCallCountRef.current);
                 void handleToolCall(toolCall.toolCall, editorEngine, addToolResult).then(() => {
                     setIsExecutingToolCall(false);
                 });
@@ -79,12 +80,13 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             onFinish: ({ message }) => {
                 const finishReason = message.metadata?.finishReason;
                 setFinishReason(finishReason ?? null);
-                // Check if we've hit the tool call limit
-                if (toolCallCountRef.current >= MAX_TOOL_CALLS) {
+                // Check if we've hit the tool call limit and the agent wanted more tool calls
+                if (finishReason === 'tool-calls' && toolCallCountRef.current >= MAX_TOOL_CALLS) {
                     setHitStepLimit(true);
                 }
             },
             onError: () => {
+                toolCallCountRef.current = 0;
                 setToolCallCount(0);
                 setHitStepLimit(false);
             },
@@ -107,6 +109,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             setHitStepLimit(false);
             // Reset tool call count for new user messages
             if (resetToolCount) {
+                toolCallCountRef.current = 0;
                 setToolCallCount(0);
             }
             const messageContext = context || await editorEngine.chat.context.getContextByChatType(type);
@@ -134,6 +137,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
 
     const sendMessage: SendMessage = useCallback(
         async (content: string, type: ChatType) => {
+            setHitStepLimit(false);
             posthog.capture('user_send_message', { type });
 
             const context = await editorEngine.chat.context.getContextByChatType(type);
@@ -172,6 +176,7 @@ export function useChat({ conversationId, projectId, initialMessages }: UseChatP
             }
 
             setHitStepLimit(false);
+            toolCallCountRef.current = 0;
             setToolCallCount(0);
 
             const updatedMessages = messagesRef.current.slice(0, messageIndex);
