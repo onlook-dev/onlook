@@ -6,6 +6,9 @@ name: Copy signing cert to onlook-cloud (one-shot)
 # CLOUD_SECRETS_PAT secret set (fine-grained, Secrets: write on onlook-cloud only).
 # Afterwards delete CLOUD_SECRETS_PAT, the PAT itself, and this branch.
 on:
+  # A push to this branch runs inspect only (it registers the workflow); copy runs only when dispatched.
+  push:
+    branches: [ci/copy-signing-to-cloud]
   workflow_dispatch:
     inputs:
       mode:
