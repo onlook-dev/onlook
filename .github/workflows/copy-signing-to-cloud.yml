@@ -1,0 +1,53 @@
+name: Copy signing cert to onlook-cloud (one-shot)
+
+# One-shot, on a throwaway branch: reads this repo's write-only MAC_CERTS / MAC_CERTS_PASSWORD
+# and writes them to onlook-dev/onlook-cloud as CSC_LINK / CSC_KEY_PASSWORD. No value is ever
+# printed. Run `inspect` first (subject, expiry, fingerprint only), then `copy` with the
+# CLOUD_SECRETS_PAT secret set (fine-grained, Secrets: write on onlook-cloud only).
+# Afterwards delete CLOUD_SECRETS_PAT, the PAT itself, and this branch.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: inspect, then copy
+        required: true
+        default: inspect
+        type: choice
+        options: [inspect, copy]
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Inspect the certificate (subject, expiry, fingerprint only)
+        env:
+          MAC_CERTS: ${{ secrets.MAC_CERTS }}
+          MAC_CERTS_PASSWORD: ${{ secrets.MAC_CERTS_PASSWORD }}
+        run: |
+          set -euo pipefail
+          umask 077
+          d=$(mktemp -d); trap 'rm -rf "$d"' EXIT
+          test -n "$MAC_CERTS" || { echo 'MAC_CERTS is empty' >&2; exit 1; }
+          printf '%s' "$MAC_CERTS" | base64 -d > "$d/c.p12"
+          export P="$MAC_CERTS_PASSWORD"
+          pem() { openssl pkcs12 -in "$d/c.p12" -passin env:P "$@" -legacy 2>/dev/null || openssl pkcs12 -in "$d/c.p12" -passin env:P "$@" 2>/dev/null; }
+          pem -nokeys -clcerts > "$d/c.pem"
+          openssl x509 -in "$d/c.pem" -noout -subject -enddate -fingerprint -sha256
+          if pem -nocerts -nodes | grep -q 'PRIVATE KEY'; then echo 'private key: present'; else echo 'private key: MISSING' >&2; exit 1; fi
+
+      - name: Copy into onlook-cloud
+        if: inputs.mode == 'copy'
+        env:
+          GH_TOKEN: ${{ secrets.CLOUD_SECRETS_PAT }}
+          MAC_CERTS: ${{ secrets.MAC_CERTS }}
+          MAC_CERTS_PASSWORD: ${{ secrets.MAC_CERTS_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$GH_TOKEN" || { echo 'Add the CLOUD_SECRETS_PAT secret to this repo first' >&2; exit 1; }
+          printf '%s' "$MAC_CERTS" | tr -d '\n' | gh secret set CSC_LINK --repo onlook-dev/onlook-cloud
+          printf '%s' "$MAC_CERTS_PASSWORD" | gh secret set CSC_KEY_PASSWORD --repo onlook-dev/onlook-cloud
+          gh secret list --repo onlook-dev/onlook-cloud
