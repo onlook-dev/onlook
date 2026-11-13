@@ -17,6 +17,10 @@ export async function updateImageReferences(
 
     const oldFileName = path.basename(oldImagePath);
     const newFileName = path.basename(newImagePath);
+    // When the caller passes a bare filename, the "full path" is identical to
+    // the filename, so it must go through boundary-checked replacement to
+    // avoid corrupting names that merely end with it (e.g. 'dark-logo.png').
+    const oldIsBareFilename = oldImagePath === oldFileName;
 
     let hasChanges = false;
 
@@ -34,12 +38,15 @@ export async function updateImageReferences(
                 // Update src attribute
                 if (attrName === 'src' && t.isStringLiteral(attr.value)) {
                     const srcValue = attr.value.value;
-                    if (srcValue.includes(oldImagePath)) {
+                    if (!oldIsBareFilename && srcValue.includes(oldImagePath)) {
                         attr.value.value = srcValue.replace(oldImagePath, newImagePath);
                         hasChanges = true;
                     } else if (srcValue.includes(oldFileName)) {
-                        attr.value.value = srcValue.replace(oldFileName, newFileName);
-                        hasChanges = true;
+                        const updated = replaceFilenameAtBoundary(srcValue, oldFileName, newFileName);
+                        if (updated !== srcValue) {
+                            attr.value.value = updated;
+                            hasChanges = true;
+                        }
                     }
                 }
 
@@ -62,14 +69,17 @@ export async function updateImageReferences(
                     if (t.isTemplateLiteral(expression)) {
                         for (const quasi of expression.quasis) {
                             const rawValue = quasi.value.raw;
-                            if (rawValue.includes(oldImagePath)) {
+                            if (!oldIsBareFilename && rawValue.includes(oldImagePath)) {
                                 quasi.value.raw = rawValue.replace(oldImagePath, newImagePath);
                                 quasi.value.cooked = quasi.value.raw;
                                 hasChanges = true;
                             } else if (rawValue.includes(oldFileName)) {
-                                quasi.value.raw = rawValue.replace(oldFileName, newFileName);
-                                quasi.value.cooked = quasi.value.raw;
-                                hasChanges = true;
+                                const updated = replaceFilenameAtBoundary(rawValue, oldFileName, newFileName);
+                                if (updated !== rawValue) {
+                                    quasi.value.raw = updated;
+                                    quasi.value.cooked = updated;
+                                    hasChanges = true;
+                                }
                             }
                         }
                     }
@@ -87,12 +97,15 @@ export async function updateImageReferences(
                                 t.isStringLiteral(prop.value)
                             ) {
                                 const bgValue = prop.value.value;
-                                if (bgValue.includes(oldImagePath)) {
+                                if (!oldIsBareFilename && bgValue.includes(oldImagePath)) {
                                     prop.value.value = bgValue.replace(oldImagePath, newImagePath);
                                     hasChanges = true;
                                 } else if (bgValue.includes(oldFileName)) {
-                                    prop.value.value = bgValue.replace(oldFileName, newFileName);
-                                    hasChanges = true;
+                                    const updated = replaceFilenameAtBoundary(bgValue, oldFileName, newFileName);
+                                    if (updated !== bgValue) {
+                                        prop.value.value = updated;
+                                        hasChanges = true;
+                                    }
                                 }
                             }
                         }
@@ -122,15 +135,29 @@ function replaceImageInString(
 ): string {
     let result = str;
 
-    // Replace full path first if it exists
-    if (result.includes(oldPath)) {
+    // Replace full path first if it exists. A bare filename (oldPath ===
+    // oldFilename) skips this branch so it is only matched at a path-segment
+    // boundary instead of as a raw substring.
+    if (oldPath !== oldFilename && result.includes(oldPath)) {
         result = result.replace(new RegExp(escapeRegExp(oldPath), 'g'), newPath);
     } else if (result.includes(oldFilename)) {
         // Only replace filename if full path wasn't found (to avoid double replacement)
-        result = result.replace(new RegExp(escapeRegExp(oldFilename), 'g'), newFilename);
+        result = replaceFilenameAtBoundary(result, oldFilename, newFilename);
     }
 
     return result;
+}
+
+/**
+ * Replace filename occurrences only when they are preceded by a path-segment
+ * boundary (start of string, '/', quote, whitespace, or '('). This prevents
+ * renaming 'logo.png' from also corrupting 'dark-logo.png' or 'xlogo.png',
+ * while still matching legitimate references like 'logo.png', './logo.png',
+ * or url(logo.png).
+ */
+function replaceFilenameAtBoundary(str: string, oldFilename: string, newFilename: string): string {
+    const pattern = new RegExp(`(^|[\\s/'"\`(])${escapeRegExp(oldFilename)}`, 'g');
+    return str.replace(pattern, (_match, boundary: string) => boundary + newFilename);
 }
 
 /**

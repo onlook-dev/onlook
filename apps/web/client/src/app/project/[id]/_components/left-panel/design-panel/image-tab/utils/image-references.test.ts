@@ -351,6 +351,50 @@ export function Component() {
         expect(result).not.toContain('"/images/logo.png"');
     });
 
+    it('should not replace filenames that merely end with the old filename', async () => {
+        const content = `
+export function Component() {
+    return (
+        <div>
+            <img src="/images/dark-logo.png" />
+            <img src="xlogo.png" />
+            <img src="/images/logo.png" />
+        </div>
+    );
+}
+`;
+        const result = await updateImageReferences(
+            content,
+            '/images/logo.png',
+            '/images/new-logo.png'
+        );
+        expect(result).toContain('src="/images/new-logo.png"');
+        expect(result).toContain('src="/images/dark-logo.png"');
+        expect(result).toContain('src="xlogo.png"');
+        expect(result).not.toContain('dark-new-logo.png');
+        expect(result).not.toContain('xnew-logo.png');
+    });
+
+    it('should not corrupt suffix-overlapping filenames in className and style', async () => {
+        const content = `
+export function Component() {
+    return (
+        <div
+            className={\`container /images/dark-logo.png wrapper\`}
+            style={{ backgroundImage: "url('/images/dark-logo.png')" }}
+        />
+    );
+}
+`;
+        const result = await updateImageReferences(
+            content,
+            'logo.png',
+            'new-logo.png'
+        );
+        expect(result).toContain('/images/dark-logo.png');
+        expect(result).not.toContain('new-logo.png');
+    });
+
     it('should handle mixed quotes in same file', async () => {
         const content = `
 export function Component() {
