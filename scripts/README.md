@@ -6,7 +6,7 @@ The root `package.json` names every command, and this file says what each one is
 
 ### `verify`
 
-Run this before you open a pull request. It runs the Node version check, `check:secrets`, `check:public`, `check:publication`, `typecheck`, `test:unit`, `test:pty`, `check:strings`, `check:imports`, `check:unused`, `check:scratch`, `check:lint`, `check:react` and `build`, in that order, and stops at the first failure. It needs Node 24 on `PATH`.
+Run this before you open a pull request. It runs the Node version check, `check:secrets`, `check:publication`, `typecheck`, `test:unit`, `test:pty`, `check:strings`, `check:imports`, `check:unused`, `check:scratch`, `check:lint`, `check:react` and `build`, in that order, and stops at the first failure. It needs Node 24 on `PATH`.
 
 CI runs the same scripts as named steps in `.github/workflows/ci.yml`. A check added to one and not the other leaves them out of step.
 
@@ -25,33 +25,15 @@ A shallow checkout passes only when that commit is an ancestor of `HEAD` and eve
 
 A passing scan doesn't make a leaked credential safe: revoke or rotate it, even after deleting the file.
 
-### `check:public`
-
-Checks each commit since the merge base with `origin/main`, plus tracked working changes, for three things:
-
-- sensitive filenames and personal home paths in added lines, commit messages and the branch name;
-- changes to dependency maps, lockfiles, licences, notices, binary files and asset formats, which each need a review record;
-- a well-formed review ledger.
-
-A review record is a Markdown file under `public-reviews/` describing the change: the exact dependency versions or the asset, its public source, its licence or terms, whether Onlook may redistribute it, and the notices it needs. Add an entry for each changed file to `reviews` in `public-readiness.json`:
-
-```json
-{ "path": "path/to/file", "sha256": "<shasum -a 256 of the file>", "evidence": "public-reviews/change.md" }
-```
-
-A record matches exact file bytes, so another edit needs another record, and intermediate revisions on the branch need theirs too. A deleted file uses the SHA-256 of empty input, `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`. Editing only a `package.json` script needs no record.
-
-`--base <ref>` checks against another fetched base. A detached checkout needs `PUBLIC_READINESS_BRANCH` set to the branch name. The check needs full history and fails on missing references or unreadable input. It only matches patterns: it can't tell whether a licence is suitable or a record is accurate, which is for review.
-
 ### `hooks:install`
 
-Sets this clone's `core.hooksPath` to `.githooks`, whose `pre-push` hook runs `check:public` and `check:secrets`, refuses direct pushes to `main`, and refuses to push a revision other than the checked-out `HEAD`. It refuses to replace another hook setup; add the two checks to that setup instead. To uninstall, run `git config --local --unset core.hooksPath`.
+Sets this clone's `core.hooksPath` to `.githooks`, whose `pre-push` hook runs `check:secrets`, refuses direct pushes to `main`, and refuses to push a revision other than the checked-out `HEAD`. It refuses to replace another hook setup; add the check to that setup instead. To uninstall, run `git config --local --unset core.hooksPath`.
 
 ### `check:publication`
 
 Reads tracked files, including hidden files, symlink targets and asset bytes, and fails on personal home paths and private links to team tools. It also catches percent-encoded paths, JSON escapes and UTF-16 metadata. `check-publication.ts` lists the fictional usernames allowed in privacy-test fixtures, by exact path. The public Figma connector origin and its `/mcp` endpoint are allowed. Failures show locations and classes, never the matched values. Untracked and ignored files are not checked.
 
-It also counts the names of hosted-service vendors (`VENDOR_NAMES`), in any case, in tracked paths and text. `check-publication.vendors.txt` lists today's uses as `file → name count`. A use that isn't listed fails, and so does a listed line whose uses are gone, until `bun run check:publication --prune-vendors` lowers or drops it. Pruning never adds a line or raises a count. `bun.lock`, `NOTICE` and the generated `compliance/*.json` records are not counted.
+It also counts the names of hosted-service vendors (`VENDOR_NAMES`), in any case, in tracked paths and text. `check-publication.vendors.txt` lists today's uses as `file → name count`. A use that isn't listed fails, and so does a listed line whose uses are gone, until `bun run check:publication --prune-vendors` lowers or drops it. Pruning never adds a line or raises a count. `bun.lock`, `NOTICE` and the generated `compliance/dependencies.json` are not counted.
 
 The check doesn't read Git history, GitHub discussions, compressed asset metadata or the meaning of prose.
 

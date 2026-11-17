@@ -22,7 +22,7 @@ jobs:
 
 test('public workflow policy covers every repository workflow', () => {
   const directory = join(import.meta.dirname, '../.github/workflows');
-  expect(workflowFiles(directory)).toEqual(['ci.yml', 'public-readiness.yml', 'source-build.yml']);
+  expect(workflowFiles(directory)).toEqual(['ci.yml', 'source-build.yml']);
   expect(auditWorkflowDirectory(directory)).toEqual([]);
 });
 

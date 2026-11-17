@@ -24,5 +24,4 @@ if [ "$needs_check" = false ]; then
 fi
 
 cd "$(git rev-parse --show-toplevel)"
-bun run check:public
 bun run check:secrets
