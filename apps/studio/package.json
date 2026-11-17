@@ -1,7 +1,7 @@
 {
   "name": "@studio/app",
   "productName": "Onlook",
-  "version": "0.1.1",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "description": "Onlook: a desktop app for designing on your own codebase with an AI agent.",
