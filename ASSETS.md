@@ -1,6 +1,6 @@
 # Assets and third-party rights
 
-The repository's open-source license ([LICENSE.md](LICENSE.md)) covers Onlook's
+The repository's open-source license ([LICENSE](LICENSE)) covers Onlook's
 source code. It does not cover every file in this repository. Some assets are
 licensed to Onlook by third parties, and some are Onlook brand assets we don't
 license for reuse. This page lists them and tells you what to do if you fork.
@@ -12,10 +12,11 @@ Third-party software notices are in [NOTICE](NOTICE).
 
 | Asset | Where it lives | Rights holder | Covered by the open-source license? | If you fork |
 |---|---|---|---|---|
-| Central Icons | `@central-icons-react/round-outlined-radius-1-stroke-1.5` and the glyphs in `apps/studio/src/renderer/src/icons/` | Iconists (David & Storm GbR) | No | Get your own [Iconists license](https://iconists.co/license) or swap in an openly licensed set |
-| Onlook name, logo, and wordmark | `apps/studio/src/renderer/src/icons/OnlookMark.tsx`, `OnlookWordmark.tsx`, `assets/` | Onlook | No | Remove them and use your own name and brand |
+| Central Icons | `@central-icons-react/round-outlined-radius-1-stroke-1.5` and the glyphs in `apps/studio/src/renderer/src/icons/` and `apps/studio/src/renderer/src/tour/centralIcons.ts` | Iconists (David & Storm GbR) | No | Get your own [Iconists license](https://iconists.co/license) or swap in an openly licensed set |
+| Onlook name, logo, and wordmark | `apps/studio/src/renderer/src/icons/OnlookMark.tsx`, `OnlookWordmark.tsx`, `apps/studio/resources/brand/`, `apps/studio/build/icon.png`, `assets/` | Onlook | No | Remove them and use your own name and brand |
 | DMG background art | macOS release packaging | Onlook | No | Replace with your own art |
 | Sounds | App sound effects | Onlook | No | Replace with your own sounds |
+| Idea card images | `apps/studio/src/renderer/src/canvas/ideas/` | Onlook | No | Replace with your own images |
 
 ## Licensed icon system: not ours to pass on
 
@@ -41,7 +42,7 @@ for their work, and we strongly encourage you to buy a license to support them.
 - [ ] Replace the Central icons with your own licensed copy or an openly
       licensed icon set (for example, Lucide or Phosphor).
 - [ ] Remove the Onlook name, logo, and wordmark, and use your own branding.
-- [ ] Replace the DMG background art and sounds.
+- [ ] Replace the DMG background art, sounds, and idea card images.
 - [ ] Keep the notices in [NOTICE](NOTICE) for any third-party code you ship.
 
 Questions about these assets: [contact@onlook.com](mailto:contact@onlook.com).

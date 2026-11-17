@@ -1,0 +1,38 @@
+/* Unlayered: inside a layer these would lose to the library's own rules. */
+/* Colour and style with the width: the reset's `solid currentColor` otherwise paints a white rule. */
+.astryx-dialog .astryx-layout-header[data-divider] {
+  border-bottom: 0.5px solid var(--color-border) !important;
+}
+.astryx-dialog .astryx-layout-footer {
+  border-top: 0.5px solid var(--color-border) !important;
+}
+.astryx-dialog hr {
+  border: none;
+  border-top: 0.5px solid var(--color-border) !important;
+}
+/* The library collapses this to 0 above a divider-less footer; the footer always divides here. */
+.astryx-dialog .astryx-layout-content {
+  padding-block-end: 16px;
+}
+/* A Selector's list paints `--color-background-popover`, which a dialog re-points to its OWN ground: identical
+   fills, so the open list vanishes into the modal behind it. Its own ground, ring and shadow lift it (ONL-3069). */
+.astryx-dialog [role='listbox'] {
+  background-color: var(--color-background-muted);
+  border-radius: var(--radius-container);
+  box-shadow:
+    inset 0 0 0 var(--border-width) var(--color-border),
+    var(--shadow-med);
+}
+
+/* Dialogs open in place: the library slides one in from wherever its trigger sat, which reads as
+   arriving from a corner when the trigger is a panel menu (ONL-2593). */
+dialog.astryx-dialog {
+  --dialog-dir-x: 0px !important;
+  --dialog-dir-y: 0px !important;
+}
+
+/* A dialog's sentence reads as one block set a step under its title, not spaced body copy (ONL-2744). */
+.astryx-alert-dialog h2 + .astryx-text {
+  line-height: 1.4;
+  margin-block-start: var(--spacing-1);
+}

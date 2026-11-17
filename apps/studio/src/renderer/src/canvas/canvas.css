@@ -1,0 +1,138 @@
+@layer app {
+  .canvas-section-name:hover { color: var(--color-text-primary); }
+
+  /* The frame nav bar's icon hover. The state lives on the BUTTON and the glyph
+     wears `color="inherit"` — Astryx's Icon has no hover vocabulary of its own,
+     and a fixed `color="secondary"` would paint over any button state. */
+  .frame-nav-control {
+    color: var(--color-icon-secondary);
+  }
+
+  .frame-nav-control:hover {
+    color: var(--color-icon-primary);
+  }
+
+  .inline-morph[data-side='below'] {
+    transform-origin: 50% 16px;
+  }
+
+  .inline-morph-shape {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline-start: 50%;
+    width: 32px;
+    height: 32px;
+    translate: -50% 0;
+    box-sizing: border-box;
+    border: 0.5px solid var(--color-border);
+    border-radius: 16px;
+    background-color: var(--color-background-card);
+    pointer-events: none;
+  }
+
+  .inline-morph[data-state='open'] .inline-morph-shape {
+    corner-shape: superellipse(1.5);
+  }
+
+  /* The bubble's corner curve at the toolbar's own radii: smoother, no rounder. */
+  .canvas-toolbar,
+  .canvas-toolbar * {
+    corner-shape: superellipse(1.5);
+  }
+
+  .inline-morph[data-side='below'] .inline-morph-shape {
+    inset-block-start: 0;
+    inset-block-end: auto;
+  }
+
+  /* 6px + the row's 1px centring puts send 7px from the bottom, as from the right. The radius is half the one-row
+     card, held as it grows; `useOrbMorph` reads it. */
+  .inline-morph-content {
+    --inline-bubble-block: 6px;
+    --inline-bubble-radius: calc((22px + 8px) / 2 + var(--inline-bubble-block));
+    position: relative;
+    opacity: var(--morph-content);
+    translate: 0 calc((1 - var(--morph-content)) * var(--_toward) * 0.66);
+  }
+
+  /* ⌥ held to measure: faded, not hidden — `visibility` would drop the draft's focus — and through to the page. After the open rule, which it has to beat. */
+  /* The way out is near-instant; the return keeps the base fade. */
+  .inline-morph[data-measuring='true'] {
+    opacity: 0;
+    transition:
+      transform var(--duration-fast) cubic-bezier(0.34, 1.3, 0.64, 1),
+      opacity 50ms linear;
+  }
+
+  /* The shift-added chips scroll sideways rather than growing the card; InlineChipRow fades the overflowing edges. */
+  .inline-element-bubble-chips {
+    --_chips-fade: 24px;
+    width: 100%;
+    min-width: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .inline-element-bubble-chips > * {
+    flex: none;
+  }
+
+  /* The drawer's own wrapper sizes to its content, so the row inside it was as
+     wide as every chip together and the drawer clipped it: nothing to scroll.
+     Held to the drawer's width, the row is the one that overflows. */
+  .astryx-chat-composer-drawer :has(> .inline-element-bubble-chips) {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .inline-element-bubble-chips[data-fade-start='true'] {
+    mask-image: linear-gradient(to right, transparent, #000 var(--_chips-fade));
+  }
+
+  .inline-element-bubble-chips[data-fade-end='true'] {
+    mask-image: linear-gradient(to left, transparent, #000 var(--_chips-fade));
+  }
+
+  .inline-element-bubble-chips[data-fade-start='true'][data-fade-end='true'] {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 var(--_chips-fade),
+      #000 calc(100% - var(--_chips-fade)),
+      transparent
+    );
+  }
+
+  .inline-bubble-motion[data-side='below'] {
+    --_toward: -6px;
+    transform-origin: 50% 0%;
+  }
+
+  /* THE ADDRESS BAR IS A GRAB HANDLE AT REST — it spans the
+     frame's chrome and every other control in that bar opts out of dragging, so
+     this is the surface the frame is moved by. Here and not inline so the two
+     rules below can win. */
+  .frame-address,
+  /* The rest of the chrome too: it already dragged, it just
+     showed the arrow. Controls in the bar set their own cursor and win by
+     specificity. */
+  .frame-chrome {
+    cursor: grab;
+  }
+}
+
+@keyframes empty-enter { from { opacity: 0; transform: translateY(4px) } }
+@keyframes empty-quiet { from { opacity: 0 } }
+
+@keyframes empty-reveal { 0%, 25% { transform: translateY(var(--empty-reveal-from)); animation-timing-function: cubic-bezier(.45,0,.35,1) } 59%, 100% { transform: translateY(0) } }
+@keyframes empty-reveal-back { 0%, 25% { transform: translateY(calc(-1 * var(--empty-reveal-from))); animation-timing-function: cubic-bezier(.45,0,.35,1) } 59%, 100% { transform: translateY(0) } }
+@keyframes empty-fill { 0%, 90% { opacity: 1 } 100% { opacity: 0 } }
+
+.empty-copy-lit span { background: transparent !important; border-color: var(--studio-illo-lit) !important; box-shadow: inset 0 0 0 0.5px var(--studio-illo-lit), 0 0 6px var(--studio-illo-scan-glow); }
+@media (prefers-reduced-motion: reduce) {
+  [data-empty-motion] [data-empty-card], [data-empty-motion] [data-empty-layer] { transition-property: opacity !important }
+  [data-empty-motion] [data-empty-layer] { transform: none !important; filter: none !important }
+}

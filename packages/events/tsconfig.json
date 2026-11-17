@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    // `bun` is here for `models.test.ts` and nothing else. This WIDENS THE TYPE
+    // SURFACE, NOT THE RUNTIME — the package's hard constraint (DOM-safe and
+    // Node-safe, no `node:*`, no runtime dependencies) is unchanged: the only
+    // `bun:test` import lives in a test file no shipped module imports.
+    // Same rationale as `apps/studio/tsconfig.node.json`.
+    "types": ["bun"]
+  },
+  "include": ["src"]
+}

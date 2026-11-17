@@ -1,0 +1,1 @@
+apps/studio/src/renderer/src/canvas/artifact/ArtifactTitle.tsx → apps/studio/src/renderer/src/canvas/artifact/gallery.css

@@ -1,0 +1,12 @@
+{
+  "telemetry.title": "帮助改进 Onlook",
+  "telemetry.subtitle": "分享使用数据，帮助我们决定接下来改进什么。",
+  "telemetry.details": "Onlook 会将使用事件和基本设备信息发送到 PostHog。从源码构建的版本不会发送会话录制、诊断日志、错误报告、代码、文件路径或对话内容。",
+  "telemetry.choice": "在你做出选择前，不会发送任何数据。之后可以在“设置 → 全局 → 隐私”中更改。",
+  "telemetry.accept": "分享使用数据",
+  "telemetry.decline": "不分享",
+  "telemetry.settings.section": "隐私",
+  "telemetry.settings.label": "分享使用数据",
+  "telemetry.settings.description": "将使用事件和基本设备信息发送到 PostHog，帮助改进 Onlook。不包含会话录制、日志、错误报告、代码、文件路径或对话内容。",
+  "telemetry.settings.removed": "此版本已移除遥测功能，不会发送任何使用数据。"
+}

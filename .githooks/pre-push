@@ -1,0 +1,27 @@
+#!/bin/sh
+set -eu
+
+head=$(git rev-parse HEAD)
+needs_check=false
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$local_sha" in
+    *[!0]*) ;;
+    *) continue ;;
+  esac
+  needs_check=true
+  if [ "$remote_ref" = refs/heads/main ]; then
+    echo 'Direct pushes to main are blocked by the local hook. Open a pull request.' >&2
+    exit 1
+  fi
+  if [ "$local_sha" != "$head" ]; then
+    echo 'To check this push, check out the branch being pushed and push it separately.' >&2
+    exit 1
+  fi
+done
+
+if [ "$needs_check" = false ]; then
+  exit 0
+fi
+
+cd "$(git rev-parse --show-toplevel)"
+bun run check:secrets

@@ -1,0 +1,19 @@
+{
+  "notifications.event.finished": "{name} が完了しました",
+  "notifications.event.failed": "{name} が失敗しました",
+  "notifications.event.question": "{name} から質問があります",
+  "notifications.event.approval": "{name} の承認が必要です",
+  "notifications.open": "開く",
+  "notifications.title": "通知",
+  "notifications.description": "別のプロジェクトが完了したときや対応が必要なときに、サイレント通知でお知らせします。",
+  "notifications.unconfirmed": "通知を受け取るには、macOS のシステム設定で Onlook を許可してください。",
+  "notifications.failed": "通知を配信できませんでした。解決するには、macOS のシステム設定で Onlook を許可してください。",
+  "notifications.systemSettings": "システム設定を開く",
+  "notifications.invitation.title": "エージェントの対応が必要なときにお知らせ",
+  "notifications.invitation.body": "Onlook がバックグラウンドにあるときに、作業の完了や失敗、回答が必要になった際にサイレント通知を受け取れます。",
+  "notifications.enable": "通知を有効にする",
+  "notifications.snooze": "7 日後に再通知",
+  "notifications.dismiss": "今はしない",
+  "notifications.dismissed": "バックグラウンド通知は設定で変更できます。",
+  "notifications.saveFailed": "通知設定を保存できませんでした。もう一度お試しください。"
+}

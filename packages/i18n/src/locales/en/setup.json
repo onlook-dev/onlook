@@ -1,0 +1,4 @@
+{
+  "setup.failed.install": "Packages didn’t install",
+  "setup.failed.start": "Your app didn’t start"
+}

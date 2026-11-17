@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    // `bun` alongside `vite/client` for the same reason `tsconfig.node.json`
+    // carries it: a renderer module can have a unit test that runs under Bun
+    // rather than in a browser (`chat/eventBuffer.test.ts` — pure log
+    // bookkeeping; `chat/usePromptRecall.test.tsx` — a hook on a real root,
+    // with the DOM `src/renderer/src/testing/` registers). This widens the
+    // type surface, not the runtime; Vite still builds the renderer for
+    // Chromium and a test file is never bundled into it.
+    "types": ["vite/client", "bun"],
+    "paths": {
+      "@renderer/*": ["./src/renderer/src/*"]
+    }
+  },
+  "include": ["src/renderer/**/*", "src/main/agent-host/tool-names.ts", "src/main/agent-host/turn-tool-kinds.ts", "src/instructions/recovery.ts", "src/preload/index.d.ts", "src/preload/chrome.d.ts", "src/preload/task-manager.d.ts"]
+}

@@ -1,0 +1,6 @@
+{
+  "quit.unsaved.message": "保存されていないコードがあります。",
+  "quit.unsaved.detail": "今終了すると、変更内容は破棄されます。",
+  "quit.unsaved.quit": "終了する",
+  "quit.unsaved.stay": "キャンセル"
+}

@@ -1,0 +1,4 @@
+{
+  "errorBoundary.body": "このパネルでエラーが発生したため、停止しました。",
+  "errorBoundary.retry": "パネルを再読み込み"
+}

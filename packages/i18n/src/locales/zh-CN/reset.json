@@ -1,0 +1,9 @@
+{
+  "reset.confirm.message": "要重置 Onlook 吗？",
+  "reset.confirm.detail": "重置后需要重新完成初始配置，项目会保留。Onlook 将重新启动。",
+  "reset.confirm.confirm": "重置",
+  "reset.confirm.cancel": "取消",
+  "reset.failed.message": "无法重置 Onlook。",
+  "reset.failed.detail": "无法清除配置：\n\n{failure}\n\nOnlook 将重新启动。",
+  "reset.failed.dismiss": "好"
+}

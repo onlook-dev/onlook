@@ -1,0 +1,6 @@
+{
+  "update.move.message": "要将 Onlook 移到“应用程序”文件夹吗？",
+  "update.move.detail": "Onlook 正从磁盘映像或“下载”文件夹中运行，在这里无法自动更新。移动后，项目和设置都会保留。",
+  "update.move.move": "移到“应用程序”",
+  "update.move.notNow": "以后再说"
+}

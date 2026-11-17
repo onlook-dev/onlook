@@ -1,0 +1,27 @@
+@layer app {
+  /* 2. Electron window chrome. `-webkit-app-region` tells macOS which pixels
+   *    drag the window — a window-manager concern, not a design-system one. Any
+   *    control inside a drag surface opts back out or it stops being clickable.
+   *    Drag only: the traffic-light inset is geometry and lives in
+   *    `chrome/TopBar.tsx`. */
+  .region-drag {
+    -webkit-app-region: drag;
+  }
+
+  .region-no-drag {
+    -webkit-app-region: no-drag;
+  }
+}
+
+/* Checking is quiet: outline on a soft gray, band-tone shimmer; hover lifts it to the white pill. */
+.update-pill:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.update-pill-quiet:hover {
+  --update-shimmer-base: color-mix(in srgb, var(--studio-update-ink) 45%, transparent);
+  --update-shimmer-crest: var(--studio-update-ink);
+  background: var(--studio-update-fill) !important;
+  box-shadow: inset 0 0 0 0.5px transparent;
+}

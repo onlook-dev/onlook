@@ -1,0 +1,19 @@
+{
+  "notifications.event.finished": "{name} 已完成",
+  "notifications.event.failed": "{name} 失败",
+  "notifications.event.question": "{name} 有个问题",
+  "notifications.event.approval": "{name} 等待批准",
+  "notifications.open": "打开",
+  "notifications.title": "通知",
+  "notifications.description": "其他项目完成或需要你处理时，发送静默通知提醒你。",
+  "notifications.unconfirmed": "要接收通知，请在 macOS “系统设置”中允许 Onlook。",
+  "notifications.failed": "通知未能送达。请在 macOS “系统设置”中允许 Onlook。",
+  "notifications.systemSettings": "打开系统设置",
+  "notifications.invitation.title": "智能体需要你时及时知道",
+  "notifications.invitation.body": "Onlook 在后台运行时，任务完成、失败或需要回复，都会收到静默通知。",
+  "notifications.enable": "开启通知",
+  "notifications.snooze": "7 天后提醒我",
+  "notifications.dismiss": "以后再说",
+  "notifications.dismissed": "可以随时在“设置”中更改后台通知。",
+  "notifications.saveFailed": "无法保存通知设置，请重试。"
+}

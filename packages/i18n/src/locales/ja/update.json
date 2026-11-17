@@ -1,0 +1,6 @@
+{
+  "update.move.message": "Onlook を「アプリケーション」フォルダーに移動しますか？",
+  "update.move.detail": "Onlook はディスクイメージか「ダウンロード」フォルダーから実行されているため、自動でアップデートできません。移動しても、プロジェクトと設定はそのまま使えます。",
+  "update.move.move": "アプリケーションに移動",
+  "update.move.notNow": "今はしない"
+}

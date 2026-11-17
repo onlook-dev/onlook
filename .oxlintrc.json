@@ -1,0 +1,42 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["import", "unicorn", "typescript", "oxc", "jsx-a11y"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "import/no-cycle": "error",
+
+    // OFF: its autofix breaks loops that snapshot a collection they mutate.
+    "unicorn/no-useless-spread": "off",
+    // OFF: every hit matches a control character on purpose (ANSI escapes, unsafe file-name characters).
+    "eslint/no-control-regex": "off",
+    // OFF: the only hit is `new Array(n).fill(0)` — the trailing `.fill()`
+    // already answers the length-or-element ambiguity the rule exists to flag.
+    "unicorn/no-new-array": "off",
+
+    // WARN, not error: fixing them is design work (ONL-2144).
+    "jsx-a11y/no-autofocus": "warn",
+    "jsx-a11y/prefer-tag-over-role": "warn",
+    "jsx-a11y/interactive-supports-focus": "warn"
+  },
+  "overrides": [
+    {
+      // Playwright reaches `testInfo` only past a fixture pattern, so the empty
+      // one is required to get at the second parameter.
+      "files": ["tests/e2e/**"],
+      "rules": {
+        "eslint/no-empty-pattern": "off"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    // A package cache that some automated checkouts keep inside the tree.
+    "**/tmp/bun-cache/**",
+    "**/out/**",
+    "**/dist/**",
+    "apps/studio/src/renderer/src/theme/studio.js",
+    "apps/studio/src/renderer/src/theme/studio.d.ts",
+    "apps/studio/src/renderer/src/theme/studio.variants.d.ts"
+  ]
+}

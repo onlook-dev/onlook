@@ -1,0 +1,16 @@
+{
+  "rail.label": "侧边栏",
+  "rail.views.label": "左侧面板视图",
+  "rail.mark": "Onlook",
+  "rail.logoMenu.label": "Onlook 菜单",
+  "rail.logoMenu.tooltip": "主菜单",
+  "rail.files": "文件",
+  "rail.artifacts": "工件",
+  "rail.artifacts.caption": "工件",
+  "rail.code": "代码",
+  "rail.help": "帮助",
+  "rail.help.reportIssue": "报告问题",
+  "rail.help.requestFeature": "建议新功能",
+  "rail.help.shortcuts": "键盘快捷键",
+  "rail.help.tour": "功能介绍"
+}

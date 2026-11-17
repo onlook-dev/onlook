@@ -1,0 +1,43 @@
+@layer app {
+  /* ⚠️ STANDARD scrollbar properties only. Never restyle this with `::-webkit-scrollbar`: custom-styling that pseudo switches Chromium's native overlay scrollbar off, and with it the show-only-while-scrolling behaviour, which then has to be rebuilt by hand. */
+  .designs-scroller {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-background-gray) transparent;
+  }
+
+  /* The sidebar's design rows: same ink model as the composer menu. The SELECTED
+     pair stays inline in `DesignsList.tsx`, and inline beats these rules, so a
+     selected row holds its ink under hover. */
+  /* `--studio-row-ink-rest` SHADOWS `color` at every state, because a keyframe
+     cannot say "whatever this element already inherits" — `currentColor` inside
+     an animation that sets `color` is circular. The working row's pulse rests
+     on this and crests on the accent, so every state that moves the row's ink
+     has to move this with it or the pulse falls back to the wrong floor. */
+  .design-row {
+    color: var(--color-icon-secondary);
+    --studio-row-ink-rest: var(--color-icon-secondary);
+    /* The working glyph's pulse pair, ACHROMATIC while the row is not the
+       active one — grey to white, and `ShimmerText`'s own defaults verbatim, so
+       an unselected working row's glyph and label travel the same two values.
+       The accent pair is inline in `Sidebar.tsx`, on selection only. */
+    --studio-row-pulse-floor: var(--studio-row-ink-rest);
+    --studio-row-pulse-crest: var(--color-text-primary);
+  }
+
+  /* `data-hovered` is the SHARED hover — set when the pointer is on the frame
+     this row names, so the pair light together. */
+  .design-row:hover,
+  .design-row[data-hovered='true'],
+  .design-row:focus-visible {
+    color: var(--color-text-primary);
+    --studio-row-ink-rest: var(--color-text-primary);
+    /* `--color-overlay-pressed`, not `-hover`: the panel's ground is nearly
+       black, and the hover overlay's 0E alpha lands close enough to it that
+       the lit row read as unlit. The pressed step is the
+       same white at 1C, which is what the sidebar's other chips already use. */
+    background-color: var(--color-overlay-pressed);
+  }
+}
+
+/* The empty Designs caption shows only while the pointer is over the left panel (ONL-2744). */
+.sidebar-designs-empty { opacity: 0; }

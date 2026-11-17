@@ -1,0 +1,40 @@
+@layer app {
+  .agent-status-row {
+    appearance: none;
+    border: 0;
+    margin: 0;
+    background: none;
+    font: inherit;
+    text-align: inherit;
+    cursor: pointer;
+    border-radius: var(--radius-element);
+  }
+
+  .agent-status-count {
+    display: flex;
+    align-items: center;
+    color: var(--color-text-secondary);
+  }
+
+  .agent-status-count:hover {
+    color: var(--color-text-primary);
+  }
+
+  .agent-status-words {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  /* Opaque only while rows move, so a row covers the one it slides over; at rest the Left Rail's blur shows through (ONL-2960). */
+  .agent-status-list[data-moving='true'] .agent-status-ground {
+    background: linear-gradient(var(--color-background-surface), var(--color-background-surface)), var(--studio-band);
+  }
+
+  /* An alpha mask, so the fade holds on any ground (ONL-2973). */
+  .agent-status-row[data-overflows='true'] .agent-status-words {
+    mask-image: linear-gradient(to right, black calc(100% - 32px), transparent);
+  }
+}

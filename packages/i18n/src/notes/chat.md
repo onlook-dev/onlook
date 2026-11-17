@@ -1,0 +1,37 @@
+# chat
+
+- From `chat.header.newBusy`: The refusal points at the Stop button already in the chat box; a tooltip can only hold text, not a button.
+- From `chat.newChat.confirm.title`: Says what is lost and what is kept, and promises nothing about getting the old chat back.
+- From `chat.composer.effort.default`: The chat box's control row. `default` is not a level: it clears Onlook's choice so the user's own settings apply again.
+- From `chat.composer.effort.ultra`: A reasoning level only some ChatGPT models offer. A level with no label here shows its raw value.
+- From `chat.composer.menu.heading`: The two menus' visible headings. They are separate from the `*.menu.label` pair above, which are read by screen readers only.
+- From `chat.composer.mode.menu.heading`: The heading a sighted user reads and the name a screen reader hears, as with the model menu's pair above.
+- From `chat.usage.label`: The chat box's context and plan usage meter. The ring shows how full the context window is. The plan's usage limits are not reported yet, so those rows don't appear in the app.
+- From `chat.usage.consequence.warn`: One instruction for both states, framed as what the user gets. Starting a new chat is the only way to give the model more room; never promise the history is kept.
+- From `chat.attach.pickerTitle`: Image attachments. Each failure sentence names the file: when several files are picked, each one that fails is named while the others still attach.
+- From `chat.skills.noMatch`: The popover says which of four things is true instead of looking empty.
+- From `chat.frame.remove`: The frame chips in the chat box. The chip's label is the frame's own name; a frame with no name uses `sidebar.frame.untitled`.
+- From `chat.element.staleHint`: Shown both when the element is gone and when similar elements make a match unsafe, so it claims neither.
+- From `chat.refusal.countCap`: Shown when selecting more elements is refused, in the bubble's band or the chat box's. Each must fit one line of the 280px bubble's band.
+- From `chat.composer.disconnected`: Says "agent", not "Claude": these also show for a ChatGPT session.
+- From `chat.error.reason.apiError`: What a failed turn says instead of "Something went wrong". Both agents can produce these, so the service errors name the agent, not a company.
+- From `chat.failureLine.overloaded`: The notice on a running turn. It gives no count or limit; the turn timer beside it shows how long it has waited.
+- From `chat.delivery.waiting`: The chip on a message sent while the agent is still working. A delivered message shows no chip, so there is no "delivered" key.
+- From `chat.pen.working`: Separate from the delivery chip above; both can be on screen at once.
+- From `chat.tool.verb.read.running`: The tool verbs, both halves of every pair: two keys per verb rather than one template with a tense flag, because a language whose progressive is not a suffix cannot be served by the flag. `{target}` is what the verb acts on (a file name, a command's description, "2 commands"), drawn in a dimmer ink; place it where the sentence needs it. When a call has no target the slot is dropped with the space beside it.
+- From `chat.tool.row.failed`: The em dash is part of the string — the row appends it with no separator of its own.
+- From `chat.tool.line.searchCode.running`: One line per tool in plain words, both halves of every pair. `{target}` works as in the verbs above. Every row is one line in a narrow panel, cut off with an ellipsis past its edge, so shorter wording keeps a whole row readable.
+- From `chat.setup.running`: The setup prompt's row in Project Chat. `{repo}` is the folder's name, drawn as a chip.
+- From `chat.turn.waitingSkip`: `{skip}` is the link `chat.turn.skip`, already translated; place it where the sentence needs it.
+- From `chat.composer.modelEffort`: The composer's model button: the model's name and the reasoning level chosen for it, one of the `chat.composer.effort.*` words, which Japanese renders as single characters such as 低, 中 and 高. Side by side, 「Opus 5.5 中」 reads as "inside Opus 5.5" or "Opus 5.5 in progress", so the Japanese cannot keep the English shape: it marks the level as the model's setting, as in {model}（{effort}）.
+- From `chat.codex.notRunning`: The row above already shows the `discarded` chip, so this one gives only the cause.
+- From `chat.codex.cannotContinue`: Sits under the restored messages, which stay on screen: it marks where ChatGPT's memory of them ends.
+- From `chat.codex.cannotContinueAfterPrompt`: The same loss, with a prompt sent during startup already above the row: that one opens the new conversation.
+- From `chat.frameLink.gone`: A link to a frame that isn't on this canvas. Said plainly, because a click that does nothing reads as a broken app. It covers every cause, which look the same to the reader.
+- From `chat.workingRow.doneGeneric`: The working row: one glance shows that a turn is running and where to look when it's done. `working`/`done` name exactly one frame; the `Many` pair covers more than one.
+- From `chat.tool.row.commandsRan.running`: The row for several commands the agent ran in a row. `{target}` holds `chat.tool.row.commandCount` ("2 commands"), words in this language, so space it as those words, not as a name.
+- From `chat.tipsPill.label`: Opens the Tips guide (`tips.*`); it uses the same word for tips as that guide does.
+- From `chat.connectors.handoff`: The line under a connector row whose tool lives in the person's Claude account, shown while the browser sign-in is open. `{connector}` holds the name that row shows, a Latin product name ("Mobbin" on a featured row, "claude.ai Linear" under Other tools), so space it as a name. The row's status beside it already says where the sign-in is, so this line says the two things it can't: where the tool is managed, and that coming back is enough, because Onlook checks the connector again on return, with no restart.
+- From `chat.connectors.menu.heading`: The heading of the connectors menu in the chat panel. `{agent}` holds the agent's product name as the model menu shows it, "Claude" or "ChatGPT", in Latin script; the list below it is that agent's own connectors.
+- From `chat.connectors.menu.otherMore`: Follows the first three tool names in the "Other tools" row's hint and counts the rest. `{count}` is a number.
+- From `chat.connectors.state.awaitingSignIn`: A connector row's status while its sign-in waits in the browser. It shares a narrow row with the tool's name, which keeps its room: a status too long for its share wraps to a second line and makes the row taller. A few characters, in the style of the states beside it, not an instruction.

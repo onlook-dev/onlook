@@ -1,0 +1,4 @@
+{
+  "setup.failed.install": "依赖包未能安装",
+  "setup.failed.start": "应用未能启动"
+}

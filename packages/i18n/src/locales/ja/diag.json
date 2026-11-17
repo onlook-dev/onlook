@@ -1,0 +1,8 @@
+{
+  "diag.title": "ランタイム",
+  "diag.pty.idle": "ターミナルはまだ確認されていません",
+  "diag.pty.checking": "ターミナルを確認中…",
+  "diag.pty.ok": "ターミナル OK — pty が {output} を返しました",
+  "diag.pty.failed": "ターミナルでエラーが発生しました — {error}",
+  "diag.pty.action": "ターミナルを確認"
+}

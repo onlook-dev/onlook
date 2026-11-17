@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    // The guest preload is the one module that is BOTH: it runs in a preload
+    // (Electron's `ipcRenderer`) and it drives the user's page (DOM). Neither
+    // existing project fits — `tsconfig.node.json` has no DOM on purpose, so
+    // main cannot reach for `document`, and `tsconfig.web.json` is the
+    // renderer's world. Its own project keeps both of those true.
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node", "bun"],
+    "module": "ESNext",
+    "moduleResolution": "bundler"
+  },
+  "include": ["src/preload/guest.ts", "src/preload/guest.test.ts", "src/preload/guest-evidence.ts", "src/preload/guest-evidence.test.ts", "src/preload/guest-mutations.ts", "src/preload/guest-mutations.test.ts", "src/preload/guest-scroll.ts", "src/preload/guest-scroll.test.ts", "src/preload/spacing.ts", "src/preload/spacing.test.ts"]
+}

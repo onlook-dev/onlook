@@ -1,0 +1,6 @@
+{
+  "update.move.message": "Move Onlook to your Applications folder?",
+  "update.move.detail": "Onlook is running from the disk image or Downloads, where it can't update itself. Your projects and settings come with it.",
+  "update.move.move": "Move to Applications",
+  "update.move.notNow": "Not Now"
+}

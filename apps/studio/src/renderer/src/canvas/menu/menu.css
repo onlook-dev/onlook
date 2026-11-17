@@ -1,0 +1,3 @@
+@layer app {
+  .canvas-pane-context > [data-testid='canvas-pane-menu'] { height: 100%; }
+}

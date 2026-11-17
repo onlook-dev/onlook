@@ -1,0 +1,24 @@
+.chat-connectors-notice-action {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: 10px 34px 10px 12px;
+  border-radius: var(--radius-container);
+  border: 0.5px solid var(--color-border);
+  background-color: var(--color-background-surface);
+  text-align: start;
+  cursor: pointer;
+  font: inherit;
+}
+.chat-connectors-notice-action:hover {
+  background-image: linear-gradient(var(--color-overlay-hover), var(--color-overlay-hover));
+}
+.chat-connectors-notice-action:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.chat-connectors-fading[data-overflows='true'] { mask-image: linear-gradient(to right, black calc(100% - 32px), transparent); }
+/* No transition: a fade here would read as the hover lag just removed (ONL-3181). */
+.chat-connector-row[data-recent='true'] { background-color: var(--color-background-green); }

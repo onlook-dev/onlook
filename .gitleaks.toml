@@ -1,0 +1,59 @@
+title = "Onlook secret scan"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "Inert sequential tokens used to test artifact privacy rejection"
+condition = "AND"
+paths = ['''^apps/studio/src/main/artifacts/(privacy|access)\.test\.ts$''']
+regexTarget = "secret"
+regexes = ['''^(sk-123456789012345678901234|ghp_12345678901234567890)$''']
+
+[[rules.allowlists]]
+description = "Keyboard accelerators, not API keys"
+condition = "AND"
+paths = ['''^packages/events/src/menu-accelerators\.ts$''']
+regexTarget = "secret"
+regexes = ['''^Shift\+CmdOrCtrl\+(/|Z)$''']
+
+[[rules.allowlists]]
+description = "Public WebSocket handshake nonce from RFC 6455, not an authentication credential"
+condition = "AND"
+paths = ['''^apps/studio/src/main/starter/runner\.pty\.ts$''']
+regexTarget = "secret"
+regexes = ['''^dGhlIHNhbXBsZSBub25jZQ==$''']
+
+[[rules.allowlists]]
+description = "PostHog project ingest keys accept events but cannot read data or administer the project"
+condition = "AND"
+paths = ['''^apps/studio/src/main/telemetry/index\.ts$''']
+regexTarget = "secret"
+regexes = ['''^phc_[A-Za-z0-9]{44}$''']
+
+[[rules.allowlists]]
+description = "Anthropic message ids the Agent SDK sends as api_message_id in recorded turns, not credentials"
+condition = "AND"
+paths = ['''^tests/live/recordings/(claude|codex)/[a-z-]+\.jsonl$''']
+regexTarget = "match"
+regexes = ['''^api_message_id":"msg_[A-Za-z0-9]{20,40}"$''']
+
+[[rules.allowlists]]
+description = "MD5 checksums of English source strings in the translation lockfile"
+condition = "AND"
+paths = ['''^packages/i18n/src/i18n\.lock$''', '''^apps/studio/src/renderer/src/i18n/i18n\.lock$''']
+regexTarget = "secret"
+regexes = ['''^[0-9a-f]{32}$''']
+
+[[rules]]
+id = "facebook-secret"
+
+[[rules.allowlists]]
+description = "MD5 checksums of English source strings in the translation lockfile"
+condition = "AND"
+paths = ['''^packages/i18n/src/i18n\.lock$''', '''^apps/studio/src/renderer/src/i18n/i18n\.lock$''']
+regexTarget = "secret"
+regexes = ['''^[0-9a-f]{32}$''']

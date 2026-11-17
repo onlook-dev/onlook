@@ -1,0 +1,15 @@
+{
+  "//": "Root-level sources that belong to no workspace package: the e2e apparatus and the live suites under tests/, the scripts, and their config. Package tsconfigs extend tsconfig.base.json.",
+  "//exclude": "tests/apparatus IS a workspace package (@studio/fixtures, ONL-1875) and owns its own compile via its own tsconfig — which is stricter than this one, having no DOM lib. Without the carve-out this project would claim its files too, typechecking them a second time under looser settings; consumers reach it by package name through node_modules, never by path.",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@onlook/cloud-provider": ["./apps/studio/src/main/cloud/local.ts"]
+    },
+    "lib": ["ES2023", "DOM"],
+    "types": ["node", "bun"],
+    "allowImportingTsExtensions": true
+  },
+  "include": ["tests/**/*", "scripts/**/*", "playwright.config.ts"],
+  "exclude": ["tests/apparatus"]
+}

@@ -1,0 +1,16 @@
+{
+  "agentStatus.label": "Agent status",
+  "agentStatus.change": "{verb} {subject} {what}",
+  "agentStatus.created": "{verb} {subject}",
+  "agentStatus.created.browser": "{verb} the {subject} frame",
+  "agentStatus.created.artifact": "{verb} the {subject} artifact",
+  "agentStatus.created.image": "{verb} the {subject} image",
+  "agentStatus.created.section": "{verb} the {subject} section",
+  "agentStatus.created.text": "{verb} the text “{subject}”",
+  "agentStatus.possessive": "{name}’s",
+  "agentStatus.more": "and {count} more",
+  "agentStatus.waiting": "Waiting on {subject}",
+  "agentStatus.waiting.answer": "your answer",
+  "agentStatus.waiting.answersTo": "Waiting on your answers to {subject}",
+  "agentStatus.waiting.approval": "your OK"
+}

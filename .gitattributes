@@ -1,0 +1,9 @@
+# Generated or recorded files: collapsed in GitHub diffs and left out of language statistics.
+NOTICE linguist-generated
+bun.lock linguist-generated
+compliance/*.json linguist-generated
+packages/i18n/src/i18n.lock linguist-generated
+apps/studio/src/main/agent-host/appserver/protocol/*.protocol.json linguist-generated
+**/__snapshots__/** linguist-generated
+tests/apparatus/recordings/** linguist-generated
+tests/live/recordings/** linguist-generated

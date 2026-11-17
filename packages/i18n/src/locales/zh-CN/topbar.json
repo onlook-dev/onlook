@@ -1,0 +1,14 @@
+{
+  "topbar.folder": "打开其他项目",
+  "topbar.rail.left.hide": "隐藏侧边栏",
+  "topbar.rail.left.show": "显示侧边栏",
+  "topbar.rail.right.hide": "隐藏对话面板",
+  "topbar.rail.right.show": "显示对话面板",
+  "topbar.update.checking": "正在检查更新",
+  "topbar.update.available": "发现更新",
+  "topbar.update.downloading": "正在下载更新 {percent}%",
+  "topbar.update.ready": "重新启动以更新",
+  "topbar.update.upToDate": "已是最新版本",
+  "topbar.update.failed": "更新失败",
+  "topbar.update.diskFull": "磁盘已满。释放空间后再更新。"
+}

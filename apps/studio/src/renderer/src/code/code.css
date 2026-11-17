@@ -1,0 +1,14 @@
+.code-save-bar { animation: code-save-bar-in 160ms ease-out }
+.code-save-bar.is-leaving { animation: code-save-bar-out 200ms ease-in forwards }
+@keyframes code-save-bar-in { from { transform: translateY(100%) } }
+@keyframes code-save-bar-out { from { transform: translateY(0); opacity: 1 } to { transform: translateY(100%); opacity: 0 } }
+@media (prefers-reduced-motion: reduce) { .code-save-bar, .code-save-bar.is-leaving { animation: none } }
+
+.code-image-stage { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: var(--spacing-4); }
+.code-image-content { max-width: 100%; max-height: 100%; object-fit: contain; background-color: var(--color-background-muted); background-image: conic-gradient(var(--color-overlay-hover) 25%, transparent 0 50%, var(--color-overlay-hover) 0 75%, transparent 0); background-size: 16px 16px; }
+
+/* The path reveals continuously from the fixed repository name. */
+[data-path-appearing] > [data-path-tail] { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  [data-path-appearing] > [data-path-tail] { opacity: 1; }
+}

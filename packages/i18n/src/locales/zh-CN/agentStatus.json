@@ -1,0 +1,16 @@
+{
+  "agentStatus.label": "智能体状态",
+  "agentStatus.change": "{verb} {subject}{what}",
+  "agentStatus.created": "{verb} {subject}",
+  "agentStatus.created.browser": "{verb} {subject} 画框",
+  "agentStatus.created.artifact": "{verb} {subject} 工件",
+  "agentStatus.created.image": "{verb} {subject} 图片",
+  "agentStatus.created.section": "{verb} {subject} 区块",
+  "agentStatus.created.text": "{verb}文本“{subject}”",
+  "agentStatus.possessive": "{name} 的",
+  "agentStatus.more": "及另外 {count} 个",
+  "agentStatus.waiting": "等待{subject}",
+  "agentStatus.waiting.answer": "你的回复",
+  "agentStatus.waiting.answersTo": "等待你回复 {subject}",
+  "agentStatus.waiting.approval": "你的批准"
+}

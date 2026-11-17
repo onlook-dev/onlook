@@ -1,0 +1,36 @@
+@layer app {
+  /* The project card's composed thumbnail (ONL-2471). Keyed on `data-loaded`, not on mount:
+     the image is lazy, so the bytes arrive after the card has painted. */
+  .project-card-thumbnail {
+    opacity: 0;
+  }
+
+  .project-card-thumbnail[data-loaded='true'] {
+    animation: project-card-thumbnail-in var(--duration-fast-max) cubic-bezier(0.24, 1, 0.4, 1) forwards;
+  }
+
+  @keyframes project-card-thumbnail-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Both selectors, or the attribute rule above outranks the escape and the fade still runs. */
+  @media (prefers-reduced-motion: reduce) {
+    .project-card-thumbnail,
+    .project-card-thumbnail[data-loaded='true'] {
+      animation: none;
+      opacity: 1;
+    }
+  }
+}
+
+@keyframes wpc-open { from { opacity: 0; transform: translateX(-4px) scale(0.98) } }
+
+[data-testid='discovered-worktree-row']:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}

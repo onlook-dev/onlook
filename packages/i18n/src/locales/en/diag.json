@@ -1,0 +1,8 @@
+{
+  "diag.title": "Runtime",
+  "diag.pty.idle": "Terminal not checked yet",
+  "diag.pty.checking": "Checking terminal…",
+  "diag.pty.ok": "Terminal OK — pty echoed {output}",
+  "diag.pty.failed": "Terminal failed — {error}",
+  "diag.pty.action": "Check terminal"
+}

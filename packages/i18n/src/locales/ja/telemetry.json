@@ -1,0 +1,12 @@
+{
+  "telemetry.title": "Onlook の改善にご協力ください",
+  "telemetry.subtitle": "使用状況データを共有して、改善すべき点の判断にご協力ください。",
+  "telemetry.details": "Onlook は使用状況イベントと基本的なデバイス情報を PostHog に送信します。ソースビルドでは、セッションの録画、診断ログ、エラーレポート、コード、ファイルパス、チャットメッセージは一切送信されません。",
+  "telemetry.choice": "選択するまでは何も送信されません。選択内容は 設定 → グローバル → プライバシー でいつでも変更できます。",
+  "telemetry.accept": "使用状況データを共有する",
+  "telemetry.decline": "共有しない",
+  "telemetry.settings.section": "プライバシー",
+  "telemetry.settings.label": "使用状況データを共有",
+  "telemetry.settings.description": "使用状況イベントと基本的なデバイス情報を PostHog に送信して、Onlook の改善にご協力ください。セッションの録画、ログ、エラーレポート、コード、ファイルパス、チャットメッセージは送信されません。",
+  "telemetry.settings.removed": "このビルドではテレメトリーが削除されています。使用状況データは送信されません。"
+}

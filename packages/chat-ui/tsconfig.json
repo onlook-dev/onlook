@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    // Declared, not inherited: TS 7 stops unioning @types across the
+    // node_modules walk-up, so an unset `types` no longer picks up the root's
+    // hoisted @types/bun that this package's test files need.
+    "types": ["bun"]
+  },
+  "include": ["src"]
+}

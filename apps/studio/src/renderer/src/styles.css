@@ -1,0 +1,1693 @@
+/*
+ * The app's global sheet: the document root, the fonts, the layer order, third-party surfaces that render their own DOM, and rules several folders share. A rule one folder owns lives in a sheet beside it (`report/report.css`).
+ * Layer order matters: reset < astryx-base < theme < app. A sheet beside a component wraps its layered rules in `@layer app` and loads after this one.
+ */
+@layer reset, astryx-base, astryx-theme, app;
+
+/*
+ * The product typeface (ONL-1822), self-hosted and bundled. Astryx sets only the `--font-family-*` tokens, so these imports are the other half of `src/theme/studioTheme.ts`: delete one without the other and the app silently falls back.
+ * Self-hosted because the CSP is `font-src 'self' data:`. Both halves of that directive are load-bearing: Vite inlines any asset under its 4 KB `assetsInlineLimit` as a `data:` URI, and a JetBrains Mono subset is under it.
+ * No `layer()` wrapper: `@font-face` does not participate in the cascade.
+ * The families are 'Inter Variable' and 'JetBrains Mono Variable'. The theme must match exactly; a mismatch falls through to the next stack entry silently (`apps/studio/src/theme/REGISTER.md` §8.1).
+ */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+@import '@astryxdesign/core/reset.css' layer(reset);
+@import '@astryxdesign/core/astryx.css' layer(astryx-base);
+/*
+ * Ours, generated from `src/theme/studioTheme.ts` by `bun astryx theme build` —
+ * edit the theme source, never the .css. No `layer()` wrapper: the generated
+ * file declares its own `@layer` blocks, and wrapping it nests them and breaks
+ * the cascade order declared above.
+ */
+@import './theme/studio.css';
+@import '@xyflow/react/dist/style.css' layer(app);
+
+@layer app {
+  .react-flow__node-section { pointer-events: none !important; }
+  .canvas-section-name:focus-visible { outline: 1px solid var(--color-accent); outline-offset: 2px; border-radius: var(--radius-element); }
+
+  /*
+   * 0. The window's ground (ONL-1814). One value, because this stylesheet and the renderer's inline styles both read it.
+   * Not a theme token: at Astryx 0.1.9 `defineTheme`'s `tokens` is a closed union (`apps/studio/src/theme/REGISTER.md` §3).
+   * ⚠️ WHEN THIS DOES BECOME A THEME TOKEN, DELETE THIS BLOCK IN THE SAME COMMIT. `@layer app` is declared last, so it outranks `astryx-theme`: this rule would keep winning and the theme change would do nothing at all.
+   */
+  :root {
+    --studio-ground: #262626;
+    /* The band's fill: the rails' translucent surface resolved over the canvas ground, as one opaque value. The band lives in a transparent view, where a translucent fill smears (ONL-2236). */
+    --studio-band: #060606;
+    /* The stacking levels, mirrored from `overlay/layers.ts`, which names each one. */
+    --studio-layer-behind: -1;
+    --studio-layer-base: 0;
+    --studio-layer-raised: 1;
+    --studio-layer-over: 2;
+    --studio-layer-top: 3;
+    --studio-layer-card: 10;
+    --studio-layer-seat: 30;
+    --studio-layer-viewer: 100;
+    --studio-layer-floating: 1000;
+    --studio-layer-canvas-overlay: 2000;
+    /* The canvas illustrations' palette (empty state, toolbar previews): one
+       flat grey family over the canvas ground, app-local for the closed-union
+       reason above. */
+    --studio-illo-card: #262626;
+    --studio-illo-surface: #2a2a2a;
+    --studio-illo-surface-sunken: #232323;
+    --studio-illo-photo: linear-gradient(180deg, #4a4a4a 0%, #343434 55%, #2a2a2a 100%);
+    --studio-illo-photo-raised: linear-gradient(180deg, #5a5a5a 0%, #3c3c3c 55%, #2c2c2c 100%);
+    --studio-illo-highlight: rgba(255, 255, 255, 0.05);
+    --studio-illo-hairline: rgba(255, 255, 255, 0.08);
+    --studio-illo-ink-soft: rgba(255, 255, 255, 0.11);
+    --studio-illo-ink: rgba(255, 255, 255, 0.15);
+    --studio-illo-ink-label: rgba(255, 255, 255, 0.6);
+    --studio-illo-shadow: rgba(0, 0, 0, 0.6);
+    --studio-illo-ground: var(--studio-ground);
+    --studio-illo-dash: rgba(255, 255, 255, 0.32);
+    --studio-illo-fill: rgba(255, 255, 255, 0.24);
+    --studio-illo-fill-ink: rgba(255, 255, 255, 0.28);
+    --studio-illo-scan: rgba(255, 255, 255, 0.55);
+    --studio-illo-scan-glow: rgba(255, 255, 255, 0.18);
+    --studio-illo-scan-halo: rgba(255, 255, 255, 0.25);
+    --studio-illo-lit: rgba(255, 255, 255, 0.6);
+    --studio-illo-frost-top: rgba(255, 255, 255, 0.14);
+    --studio-illo-frost-bottom: rgba(255, 255, 255, 0.03);
+    --studio-illo-frost-edge: rgba(255, 255, 255, 0.22);
+    --studio-illo-frost-shadow: rgba(0, 0, 0, 0.35);
+    /* Component geometry from the approved attachment-pill sketches, app-local
+       for the same closed-union reason as `--studio-ground` above. */
+    --studio-attachment-pill-height: 22px;
+    --studio-attachment-leading-size: 16px;
+    --studio-submitted-attachment-width: 232px;
+    --studio-submitted-attachment-marker-size: 11px;
+    /* The design's leading (1.4 at 13px), for the settings pane alone; theme-wide it is open (REGISTER.md §7.1). */
+    --studio-settings-leading: 1.4;
+    /* The Default AI control's seat in the design's row (159). Fixed so picking
+       the other agent cannot resize the trigger and jump the row. */
+    --studio-settings-agent-width: 159px;
+    /* The readiness verdict's seat — sized to the longest of them ("Not signed
+       in") so switching agents never re-lays the line out. */
+    --studio-settings-readiness-width: 84px;
+    /* The status line's height — the Set up button's, held whether or not the
+       button is rendered, so a ready agent and an unready one lay out alike. */
+    --studio-settings-status-height: 28px;
+    /*
+     * The teal ramp: the canvas's selection hue and the categorical teal, never the chrome's accent. `--studio-` because Astryx has no `--color-on-accent-muted` slot.
+     * The P3 branch renormalises these hexes; p3.test.ts checks they match.
+     */
+    --studio-teal-hue: #00deba;
+    --studio-teal-fill: #002a23;
+    --studio-teal-ink: #cbfff6;
+    --studio-teal-fill-dim: #00211c;
+    --studio-teal-ink-dim: #00c1a2;
+
+    /* The accent is white: its roles are neutral here, and teal only where `.react-flow` and `[data-accent='canvas']` re-point them. */
+    --studio-on-accent-muted: var(--color-on-dark);
+    --studio-accent-dim: var(--color-background-muted);
+    --studio-on-accent-dim: var(--color-text-secondary);
+    /* The blue ramp: the palette's second hue, one family for git download and the artifact accent. */
+    --studio-blue-hue: #53b8ff;
+    --studio-blue-fill: var(--color-background-blue);
+    --studio-blue-ink: #d6ecff;
+    --studio-blue-fill-dim: #00213a;
+    --studio-blue-ink-dim: #1f93e6;
+
+    --studio-syntax-keyword: var(--color-text-teal);
+    --studio-syntax-type: var(--color-text-blue);
+    --studio-syntax-string: var(--color-text-orange);
+    --studio-syntax-number: var(--color-text-purple);
+    --studio-syntax-call: var(--color-text-yellow);
+    --studio-syntax-comment: var(--color-text-secondary);
+    --studio-syntax-plain: var(--color-text-primary);
+    --studio-syntax-tint: var(--studio-teal-fill);
+
+    /* The artifact accent: re-points only, so it follows the blue ramp. */
+    --studio-artifact-accent: var(--studio-blue-hue);
+    --studio-artifact-accent-muted: var(--studio-blue-fill);
+    --studio-artifact-on-accent-muted: var(--studio-blue-ink);
+    --studio-artifact-accent-dim: var(--studio-blue-fill-dim);
+    --studio-artifact-on-accent-dim: var(--studio-blue-ink-dim);
+    /*
+     * Git status (ONL-2172). Hue is border, text and glyph; tint is fill (REGISTER.md §18).
+     * Not the theme's status slots: those are neutral on purpose, and painting them would repaint every Badge, Banner and StatusDot.
+     */
+    --studio-git-pill-height: 26px;
+    --studio-git-card-label-size: 11px;
+    --studio-git-divider-gap: 10px;
+    --studio-git-skeleton-width: 56px;
+    --studio-git-error-hue: #ff8ba7;
+    --studio-git-error-tint: #3e000f;
+    --studio-git-ready-hue: #00c441;
+    --studio-git-ready-tint: #00240c;
+    /* Upload is the teal ramp's dim pair, re-pointed so the two cannot drift. */
+    --studio-git-upload-hue: var(--studio-teal-ink-dim);
+    --studio-git-upload-tint: var(--studio-teal-fill-dim);
+    /* The ramp's `hue` IS this value — re-pointed, not repainted, so the pill
+       and the artifact accent cannot become two blues. */
+    --studio-git-download-hue: var(--studio-blue-hue);
+    --studio-git-download-tint: #001b2e;
+    --studio-git-merged-hue: #c174ff;
+    --studio-git-merged-tint: #29004b;
+    --studio-git-primary-ink: #000000;
+    --studio-git-primary-border: #929292;
+    --studio-git-primary-fill: #ffffff;
+    --studio-git-neutral-hue: #929292;
+    --studio-git-neutral-tint: #1a1a1a;
+    --studio-git-menu-fill: #1a1a1a;
+    --studio-git-menu-border: #494949;
+    --studio-git-menu-min-width: 160px;
+    /* The Update Now pill's zone: white fill, black label (ONL-2238). Bare hexes
+       in the design matching no theme variable, so app-local for the same
+       closed-union reason as the git chip's pair above. */
+    --studio-update-fill: #ffffff;
+    --studio-update-ink: #000000;
+  }
+
+  /* Same coordinates as the sRGB hex, read in the wider space, except the blue family, which is pushed wider; p3.test.ts holds both. */
+  @supports (color: color(display-p3 1 1 1)) {
+    @media (color-gamut: p3) {
+      :root {
+        --studio-blue-hue: color(display-p3 0.27 0.64 1);
+        --studio-blue-ink: color(display-p3 0.8392 0.9255 1);
+        --studio-blue-ink-dim: color(display-p3 0.12 0.5 0.95);
+        --studio-blue-fill-dim: color(display-p3 0.03 0.13 0.27);
+        --color-background-blue: color(display-p3 0.04 0.17 0.34);
+        --studio-teal-hue: color(display-p3 0 0.8706 0.7294);
+        --studio-teal-ink: color(display-p3 0.7961 1 0.9647);
+        --studio-teal-ink-dim: color(display-p3 0 0.7569 0.6353);
+        --color-text-teal: var(--studio-teal-hue);
+        --color-border-teal: var(--studio-teal-hue);
+        --color-icon-teal: var(--studio-teal-hue);
+        --studio-git-ready-hue: color(display-p3 0 0.7686 0.2549);
+        --studio-git-merged-hue: color(display-p3 0.7569 0.4549 1);
+        --studio-git-error-hue: color(display-p3 1 0.5451 0.6549);
+        --color-error: color(display-p3 1 0.4 0.4);
+        --color-text-blue: color(display-p3 0.45 0.72 1);
+        --color-border-blue: color(display-p3 0.45 0.72 1);
+        --color-icon-blue: color(display-p3 0.45 0.72 1);
+      }
+    }
+  }
+
+  /* The canvas keeps the teal selection the app's chrome gave up; an artifact
+     inside it re-points again, nearer, to blue. */
+  .react-flow,
+  [data-accent='canvas'] {
+    --color-accent: var(--studio-teal-hue);
+    --color-text-accent: var(--studio-teal-hue);
+    --color-icon-accent: var(--studio-teal-hue);
+    --color-accent-muted: var(--studio-teal-fill);
+    --studio-on-accent-muted: var(--studio-teal-ink);
+    --studio-accent-dim: var(--studio-teal-fill-dim);
+    --studio-on-accent-dim: var(--studio-teal-ink-dim);
+  }
+
+  /* An artifact: re-points the accent family, never restates a colour. */
+  [data-accent='artifact'] {
+    --color-accent: var(--studio-artifact-accent);
+    --color-text-accent: var(--studio-artifact-accent);
+    --color-icon-accent: var(--studio-artifact-accent);
+    --color-accent-muted: var(--studio-artifact-accent-muted);
+    --studio-on-accent-muted: var(--studio-artifact-on-accent-muted);
+    --studio-accent-dim: var(--studio-artifact-accent-dim);
+    --studio-on-accent-dim: var(--studio-artifact-on-accent-dim);
+    /* Light enough that black ink on it still reads — the teal's own call, and
+       the same token, so this is a re-point too and not a second ruling. */
+    --color-on-accent: var(--color-on-light);
+  }
+
+  /* Astryx 0.1.9 wraps composer slots without exposing layout props, so these three pinned-version bridge rules are the only way to make the app-owned two-row footer fill the composer. */
+  .astryx-chat-composer *:has(> .chat-composer-stack) {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .astryx-chat-composer *:has(> .chat-composer-stack) + :empty {
+    display: none;
+  }
+
+  .astryx-chat-composer > div:has(.chat-composer-stack) {
+    gap: var(--spacing-3);
+    box-shadow: none;
+  }
+
+  /* Each notice in the slot decides for itself whether it shows (ONL-3118). */
+  .chat-above-composer:has(> :empty) {
+    display: none;
+  }
+
+  /* 1. Document root — outside any component's reach. */
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  #root {
+    overflow: clip;
+  }
+
+  /*
+   * `--studio-ground`, not `--color-background-body`: the translucent panels (`--color-background-surface`, #000000D9) resolve to the design's #060606 over this #262626, and to #000000 over black.
+   * ⚠️ Tied to the same fate as the `:root` block above.
+   */
+  body {
+    background: var(--studio-ground);
+    color: var(--color-text-primary);
+    font-family: var(--font-family-body);
+  }
+
+  :root:lang(ja) {
+    word-break: auto-phrase;
+  }
+
+  /*
+   * The chrome view's ground (ONL-2206). The view grows to hold a popover, so everything below the band is see-through; the band paints its own fill in `chrome/TopBar.tsx`.
+   * ⚠️ `no-drag` is load-bearing: the grown ground is where a click-outside lands, and a draggable one would move the window instead of dismissing the popover. The band's own `.region-drag` is on a descendant and still wins for the band itself.
+   */
+  html[data-surface='chrome'],
+  html[data-surface='chrome'] body {
+    background: transparent;
+    -webkit-app-region: no-drag;
+  }
+
+  /*
+   * The app is chrome, not copy: UI text is unselectable, set once at the root rather than per surface.
+   * ⚠️ The opt-outs below are the whole reason this is safe. Anything the user has a real reason to copy (what they typed, what the agent said, an error to paste elsewhere) must stay selectable, so a new surface carrying real text belongs in that list.
+   */
+  body {
+    user-select: none;
+  }
+
+  input,
+  textarea,
+  [contenteditable='true'],
+  [data-testid='chat-message'],
+  .studio-selectable {
+    user-select: text;
+  }
+
+  /* The account trigger is a bare button, so Astryx's own ring does not come
+   * with it. 1px, not the Button token's 3px: the rail's avatar has 10px of
+   * gutter beside it (ONL-2701). */
+  .account-trigger:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+  }
+
+  /* The email mark's ink, weighted to hold its own beside the two solid provider
+   * marks (ONL-2821). The family hardcodes `stroke-width` on each path, which no
+   * prop of its component reaches — a rule on the path is the only thing that
+   * outranks a presentation attribute. Selected by what each path is, not by its
+   * position: the envelope is drawn as a fill, so a stroke ADDS to its 1.5, while
+   * the flap is already stroked and takes the whole width. */
+  .account-mark-mail path[fill] {
+    stroke: currentColor;
+    stroke-width: 1.1;
+    stroke-linejoin: round;
+  }
+
+  .account-mark-mail path[stroke] {
+    stroke-width: 2.6;
+  }
+
+  /* 3. React Flow's own surface, re-pointed from the library's light default. `--studio-ground`, not `--color-background-body`: the canvas shows the top bar's value, with the sidebar and chat darker on it. */
+  .react-flow {
+    height: 100%;
+    background: var(--studio-ground);
+    /* The rubber-band selection box draws solid, not the library's dotted default. The library reads this var for both the drag rect and the selected-group rect. */
+    --xy-selection-border: 1px solid var(--color-accent);
+  }
+
+  /*
+   * 4. ONL-1815: temporary, delete when the upstream scroll guard is fixed. A new message shrinks the transcript's flexible spacer and leaves scrollHeight unchanged, so scroll anchoring decrements scrollTop, which auto-follow reads as "the user scrolled up".
+   * Scoped to this scroller alone: `overflow-anchor` does not inherit.
+   */
+  .chat-transcript-scroller {
+    overflow-anchor: none;
+  }
+
+  /*
+   * ONL-1851. Only when empty (`ChatPanel`'s `data-transcript-empty`): the resting state takes the transcript's own 16px inset, and a real conversation keeps the library's 24px `padding-block-end`.
+   * `> :first-child` is positional, because that element carries no theme class and no stable hook. A library version that reorders those children silently stops applying this, and the gap returns.
+   */
+  .chat-transcript-scroller[data-transcript-empty='true'] > :first-child {
+    padding-block-end: 0;
+  }
+
+  /* The live transcript's tail room is zero: block-end padding here is scrollable empty space once the transcript overflows. Same positional reach and same fragility as the rule above. */
+  .chat-transcript-scroller:not([data-transcript-empty='true']) > :first-child {
+    padding-block-end: 0;
+  }
+
+  /*
+   * ONL-1855. `ChatLayout` keeps its dock inside the scroll root as a sticky sibling, so the scroller is always taller than its box. `packages/chat-ui` renders the composer below the scroller instead; the dock stays rendered but empty, because the scroll button lives in it.
+   * Taking every dock child out of flow makes the sticky strip measure zero. The two hidden children are defects, not tidiness: the frosted layer would blur the transcript's bottom, and the emptied well swallows clicks on the last message.
+   * Positional: no theme class, no stable hook, so the dock is the scroller's last child and the two are its last two, in that order. A reorder breaks this silently, as returning frost or scroll at rest. Delete the block when `ChatLayout` takes a prop for it.
+   */
+  .chat-transcript-scroller > :last-child > * {
+    position: absolute;
+    inset-inline: 0;
+    bottom: var(--spacing-3);
+  }
+
+  .chat-transcript-scroller > :last-child > :nth-last-child(2),
+  .chat-transcript-scroller > :last-child > :last-child {
+    display: none;
+  }
+
+  /*
+   * The reload glyph's one turn (ONL-1915), driven by the reload being issued, not by the frame's `loading` health: a localhost reload completes in a few milliseconds, and a health-derived cue paints for less than a frame.
+   * The buttons' `transition: none` does not reach a keyframe animation on the glyph.
+   */
+  @keyframes frame-reload-turn {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .frame-reload-turn {
+    animation: frame-reload-turn 500ms ease-in-out 1;
+  }
+
+  /* Reduced motion still needs to be TOLD the reload happened — silence hands
+     this ticket's bug back to the people least able to catch a fast repaint. */
+  @media (prefers-reduced-motion: reduce) {
+    .frame-reload-turn {
+      animation: frame-reload-dim 500ms ease-in-out 1;
+    }
+  }
+
+  .frame-scale-in {
+    animation: frame-scale-in 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  @keyframes frame-scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+  }
+
+  @keyframes frame-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  .breath-rest {
+    box-shadow: inset 0 0 0 var(--breath-edge) rgb(255 255 255 / 0.05);
+  }
+
+  .breath-peak {
+    box-shadow: inset 0 0 0 var(--breath-edge) rgb(225 230 240 / 0.45), inset 0 0 var(--breath-glow) rgb(225 230 240 / 0.1);
+    opacity: 0;
+    animation: breath-peak var(--breath-period) ease-in-out infinite;
+  }
+
+  .breath-band {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 300%;
+    height: 100%;
+    mask-image: linear-gradient(100deg, transparent 44%, #000 50%, transparent 56%);
+    animation: breath-sweep var(--breath-period) linear infinite;
+  }
+
+  .breath-lit {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(100% / 3);
+    height: 100%;
+    animation: breath-hold var(--breath-period) linear infinite;
+  }
+
+  .breath-dim {
+    color: rgb(255 255 255 / 0.4);
+  }
+
+  .breath-bright {
+    color: rgb(255 255 255 / 0.95);
+  }
+
+  .breath-still-words {
+    color: var(--color-text-secondary);
+  }
+
+  @keyframes breath-peak {
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes breath-sweep {
+    from {
+      transform: translateX(calc(-200% / 3));
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes breath-hold {
+    from {
+      transform: translateX(200%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  .setup-step-spin {
+    display: inline-flex;
+    animation: frame-reload-turn 900ms linear infinite;
+  }
+
+  .frame-quote-out {
+    animation: frame-quote-out 200ms ease-out forwards;
+    pointer-events: none;
+  }
+
+  @keyframes frame-quote-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .frame-scale-in {
+      animation: frame-fade-in 200ms ease-out;
+    }
+
+    .breath-band {
+      display: none;
+    }
+
+    .breath-peak {
+      animation: none;
+    }
+
+    .breath-dim {
+      color: var(--color-text-secondary);
+    }
+
+    .setup-step-spin {
+      animation: none;
+    }
+  }
+
+  @keyframes frame-reload-dim {
+    50% {
+      opacity: 0.25;
+    }
+  }
+
+  .chat-message-body {
+    position: relative;
+    min-width: 0;
+  }
+
+  /* The prompt's own lengths, in one place because the chips row below is sized from them. */
+  .chat-message-body {
+    --studio-prompt-actions-size: var(--spacing-6);
+    --studio-prompt-actions-gap: var(--spacing-1);
+    --studio-submitted-attachments-fade: var(--color-neutral);
+    --studio-prompt-actions-fade: var(--spacing-4);
+    --studio-prompt-actions-lead: calc(var(--studio-prompt-actions-fade) + var(--spacing-2));
+  }
+
+  /* The seat the chips row keeps free at its own end. The seat is the row's real width, so a third control has to be counted here too. */
+  .chat-message-body:has(.chat-message-shelf + .chat-message-actions) {
+    --studio-submitted-attachments-reserve: calc(var(--studio-prompt-actions-lead) + 2 * var(--studio-prompt-actions-size) + var(--studio-prompt-actions-gap));
+  }
+
+  /* One full-width scrolling row of chips (ONL-2593) that the actions ride over. In flow, so the bubble is as wide as its chips need, up to its cap. */
+  .chat-message-shelf {
+    height: var(--studio-attachment-pill-height);
+    margin-block-end: var(--spacing-2);
+  }
+
+  /* The prompt's top-right row, lit on hover (ONL-2504 decision 1). Out of
+     flow, so the bubble hugs its text at rest; lit, it fades out the words or
+     chips it covers. */
+  .chat-message-actions {
+    /* The code block's control is the box to match: 24px around a 16px glyph.
+       The library has no 24px step; a custom property resolves by proximity. */
+    --size-element-sm: var(--studio-prompt-actions-size);
+    gap: var(--studio-prompt-actions-gap);
+    /* The bubble dims inherited ink to grey, which on a filled control is 4:1. */
+    --color-text-primary: var(--color-on-dark);
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    z-index: var(--studio-layer-raised);
+    padding-inline-start: var(--studio-prompt-actions-lead);
+    background: linear-gradient(to right, transparent, var(--color-neutral) var(--studio-prompt-actions-fade));
+    /* Centred on the first line (ONL-2744). */
+    margin-block-start: calc((1lh - var(--studio-prompt-actions-size)) / 2);
+    opacity: 0;
+    /* A faded control is still a hit target, and the words run beside it; the
+       reveal hands it back. */
+    pointer-events: none;
+  }
+
+  .chat-message-shelf + .chat-message-actions {
+    margin-block-start: calc((var(--studio-attachment-pill-height) - var(--studio-prompt-actions-size)) / 2);
+  }
+
+  .chat-action-message:hover .chat-message-actions,
+  .chat-action-message:focus-within .chat-message-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .chat-suggestion-pin {
+    height: 0;
+  }
+
+  .chat-suggestion-pin-body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    width: 100%;
+  }
+
+  .chat-suggestion-pin:not([data-stuck]) .chat-suggestion-pin-body {
+    visibility: hidden;
+  }
+
+  /*
+   * The delivery row's negative margins would lift this control off the Retry icon's baseline; the group owns its own spacing.
+   * Both controls are filled here, so the glyph takes the ink that fill carries, not the delivery row's disabled grey.
+   */
+  .chat-message-actions .chat-response-copy {
+    opacity: 1;
+    margin: 0;
+    color: var(--color-icon-primary);
+  }
+
+  /* The row ends flush with the prompt's own right edge, and the clamp around
+     it clips: at the library's offset the ring's right side is cut off, so here
+     it hugs the control instead. */
+  .chat-message-actions :focus-visible {
+    outline-offset: -1px;
+  }
+
+  /* The library dims a disabled control with its own 0.5, which the rule above
+     holds at 1 — so while a turn ran this glyph stayed lit beside a dimmed
+     Retry. Tooltipped buttons carry `aria-disabled`, not `disabled`. */
+  .chat-message-actions .chat-response-copy[aria-disabled='true'],
+  .chat-message-actions .chat-response-copy:disabled {
+    opacity: 0.5;
+  }
+
+  /* The response's own gate (a `fieldset`), stripped of the element's UA frame. */
+  .chat-response-body {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .chat-response-body:disabled button {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  /* The response row's copy control. The class ships from chat-ui with no rule
+     of its own; this is the host-side half. */
+  .chat-response-copy {
+    color: var(--color-icon-disabled);
+    /* `opacity`, not `display`, so the row's geometry never shifts and the
+       control stays keyboard-reachable — the focus case below is what keeps it
+       visible for tab users. */
+    opacity: 0;
+    /* The sm IconButton is a 28px box around a 16px glyph; the negative margins
+       pull that box back in so the VISUAL gaps read even, and collapse the row
+       to the ~18px meta line's height without shrinking the hit target. */
+    margin-inline: -2px -6px;
+    margin-block: -5px;
+  }
+
+  /* The reply's own row, and only it: this strips the fill the prompt's row
+     now wants, and `@layer app` outranks every rule the variant has. */
+  [data-role='assistant'] .chat-response-copy:hover {
+    color: var(--color-icon-primary);
+    /* No hover wash — the ink lift and tooltip are the whole affordance.
+       `background-image`, because that is what the ghost variant's wash is. */
+    background-image: none;
+    background-color: transparent;
+  }
+
+  [data-role='assistant']:hover .chat-response-copy,
+  [data-role='assistant']:hover + [data-chat-pin='next-task'] + [data-testid='chat-next-task-footer'] .chat-response-copy,
+  [data-chat-pin='next-task']:not([data-stuck]):hover + [data-testid='chat-next-task-footer'] .chat-response-copy,
+  .chat-response-copy:focus-visible {
+    opacity: 1;
+  }
+
+  /* No copy-button reveals while a drag-selection sweeps the transcript.
+     `:active` holds on the scroll container for the whole press-drag; the
+     `:not(:hover)` carve-out keeps a press ON the button itself visible so its
+     own click doesn't blink. The reply's row only: in the prompt's row this
+     took Copy away from a still-lit Retry. */
+  .astryx-chat-layout:active [data-role='assistant'] .chat-response-copy:not(:hover) {
+    opacity: 0;
+  }
+
+  /*
+   * The composer's menus get their surface back: the theme re-points `--color-background-popover` to transparent inside `chat-composer`, and a menu opened from it inherits that.
+   * ⚠️ The re-point must land on the popover wrapper, the parent of the `[role='menu']` element, hence `:has(> menu)`: on the menu itself it reaches only the submenu, which nests inside the first menu's DOM.
+   * Popover and card share #1f1f1f here, so the card token is a tracking restore, not a literal. `max-content` stops the wrapper stretching to its anchor's row.
+   */
+  .astryx-chat-composer :has(> [role='menu']) {
+    --color-background-popover: var(--color-background-card);
+    width: max-content;
+    padding-block: var(--spacing-1);
+  }
+
+  /* Same restore, for the usage meter's panel — a Popover, so its wrapper holds
+     a `dialog`, not a `menu`, and the rule above never reached it. Without this
+     the panel renders as floating text over the transcript. */
+  .astryx-chat-composer :has(> [role='dialog']) {
+    --color-background-popover: var(--color-background-card);
+    background-color: var(--color-background-card);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-container);
+    box-shadow: var(--shadow-high);
+    width: max-content;
+    /* Astryx pads the wrapper for menu rows that bleed to its edge. This panel
+       pads itself, so the wrapper's own padding is doubled spacing. */
+    padding: 0;
+  }
+
+  /* The popover ELEMENT carries its own 12px on top of the wrapper's — the rule
+     above only reaches the wrapper, and the panel read loose because of it. */
+  .astryx-chat-composer .astryx-popover {
+    padding: 0;
+  }
+
+
+  /* A menu-like popover carrying neither role opts in with `menu-surface`; the Add codebase popover adds it in ONL-3182. Reasoning in theme/REGISTER.md §27 (ONL-3181). */
+  /* Only the `app` layer outranks the library's StyleX `cursor` on an `Item` row. */
+  :is([role='menu'], [role='listbox'], .astryx-dropdown-menu, .menu-surface) {
+    user-select: none;
+    cursor: default;
+  }
+
+  :is([role='menu'], [role='listbox'], .astryx-dropdown-menu, .menu-surface) :not(input, textarea, [contenteditable='true'], [contenteditable='true'] *) {
+    user-select: none;
+  }
+
+  :is([role='menu'], [role='listbox'], .astryx-dropdown-menu, .menu-surface) :not(input, textarea, [contenteditable='true'], [contenteditable='true'] *, button, button *, a[href], a[href] *, [role='button'], [role='button'] *, [role='link'], [role='link'] *) {
+    cursor: inherit;
+  }
+
+  :is([role='menu'], [role='listbox'], .astryx-dropdown-menu, .menu-surface) :is(input, textarea, [contenteditable='true']) {
+    user-select: text;
+    cursor: text;
+  }
+
+  /* A line inside a menu that is read off rather than pressed, such as the signed-in email (ONL-3181). */
+  :is([role='menu'], [role='listbox'], .astryx-dropdown-menu, .menu-surface) :is(.menu-selectable, .menu-selectable *) {
+    user-select: text;
+    cursor: text;
+  }
+
+  /* The composer menu's row states: resting ink GREY, hover/selected lift to
+     primary, selected fill NEUTRAL — never the accent. `Item`'s own
+     `isSelected` is deliberately unused (the theme paints it with the sidebar's
+     selected pair); the selection travels as `data-selected`, and these rules are
+     the single source of the states. */
+  /* The row's fill answers the pointer with no transition of any kind: a fade in
+     or out reads as lag on a menu (ONL-3181). */
+  .composer-menu-item,
+  .composer-menu-item * {
+    transition: none;
+  }
+
+  .composer-menu-item {
+    --color-text-primary: var(--color-text-secondary);
+    color: var(--color-text-secondary);
+    padding-block: 6px;
+    padding-inline: var(--spacing-2);
+    border-radius: var(--radius-element);
+  }
+
+  .composer-menu-item:hover,
+  .composer-menu-item:focus-visible,
+  .composer-menu-item[data-selected='true'] {
+    --color-text-primary: var(--color-on-dark);
+    --menu-detail-color: var(--color-on-dark);
+    color: var(--color-on-dark);
+    background-color: var(--color-overlay-hover);
+  }
+
+  /* Tool-call groups carry their own `margin-block-start` from the library,
+     which stacks on the transcript's message gap. The list gap alone is the
+     spacing. */
+  .astryx-chat-tool-calls {
+    margin-block-start: 0;
+  }
+
+  /* The composer shell loses its rounding and starts directly below the
+     transcript hairline. Here and not in the theme because the geometry var is
+     unreachable from one at 0.1.9 — `--_*` keys hard-error in `astryx theme
+     build`. Zeroing the radius keeps the shell's own padding math consistent.
+     The inline element bubble opts out: it floats over the canvas and keeps the
+     library's `--radius-chat` (ONL-2455). */
+  .astryx-chat-composer:not(.inline-element-bubble-composer) {
+    --_chat-composer-radius: 0px;
+  }
+
+  /*
+   * The inline element chat (ONL-2455): one surface in two states, the orb a pick shows and the input it opens into (REGISTER.md §22).
+   * The surface is always the card's size, so the popover never re-anchors, and the box itself takes no press. The shape is the one element whose size moves (`useOrbMorph`); it carries the ground, the hairline and the radius.
+   */
+  .inline-morph {
+    --morph-content: 1;
+    --morph-orb: 0;
+    --morph-turn: 0deg;
+    position: relative;
+    transform-origin: 50% calc(100% - 16px);
+    transition:
+      transform var(--duration-fast) cubic-bezier(0.34, 1.3, 0.64, 1),
+      opacity var(--duration-fast) ease-out;
+  }
+
+  /* The orb answers the pointer: a lift on hover, a give under the press. Only
+     while it is the orb; the open card is a field, not a button. */
+  .inline-morph[data-state='orb']:has(> .inline-element-ball:hover) {
+    transform: scale(1.06);
+  }
+
+  .inline-morph[data-state='orb']:has(> .inline-element-ball:active) {
+    transform: scale(0.92);
+    transition-duration: 60ms;
+  }
+
+  /* Typed, so `getComputedStyle` hands `useOrbMorph` a resolved length, not the calc text. */
+  @property --inline-bubble-radius {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+  }
+
+  .inline-morph[data-state='open'] .inline-morph-content {
+    pointer-events: auto;
+  }
+
+  .inline-morph[data-measuring='true'] .inline-morph-content,
+  .inline-morph[data-measuring='true'] .inline-element-ball {
+    pointer-events: none;
+  }
+
+  /* The card is see-through here: the shape under it is the ground. The theme
+     empties the composer's fill for the panel; the bubble keeps it empty, and
+     takes its radius so the chip drawer's corners agree with the shape's. */
+  .astryx-chat-composer.inline-element-bubble-composer {
+    --color-background-popover: transparent;
+    --_chat-composer-radius: var(--inline-bubble-radius, var(--radius-page));
+    background-color: transparent;
+  }
+
+  /* One row, the way Onbook's bubble sits: the input takes the width and the
+     send control rides at its end. Once the draft wraps, the input takes the
+     full width and send drops to the lower right. The stale-anchor header
+     takes a row of its own above. */
+  .inline-element-bubble-composer > :has(.astryx-chat-composer-input) {
+    --_chat-composer-padding: var(--spacing-1);
+    padding-block: var(--inline-bubble-block);
+    padding-inline-end: 7px;
+    flex-flow: row wrap;
+    align-items: center;
+    column-gap: var(--spacing-1);
+    row-gap: 0;
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  .inline-element-bubble-composer > :has(.astryx-chat-composer-input) > :has(.astryx-chat-composer-input) {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 28px;
+    justify-content: center;
+  }
+
+  .inline-element-bubble[data-multiline='true']
+    .inline-element-bubble-composer
+    > :has(.astryx-chat-composer-input)
+    > :has(.astryx-chat-composer-input) {
+    flex-basis: 100%;
+  }
+
+  .inline-element-bubble[data-multiline='true']
+    .inline-element-bubble-composer
+    > :has(.astryx-chat-composer-input)
+    > :last-child {
+    margin-inline-start: auto;
+  }
+
+  .inline-element-bubble-composer
+    > :has(.astryx-chat-composer-input)
+    > :first-child:not(:has(.astryx-chat-composer-input)):not(:last-child) {
+    flex-basis: 100%;
+  }
+
+  /* One line tall, not the library's 32px: the button then sits the same in
+     either layout, and the one-row card matches `--inline-bubble-radius`. */
+  .inline-element-bubble-composer > :has(.astryx-chat-composer-input) > :last-child {
+    flex: none;
+    min-height: calc(22px + 8px);
+  }
+
+  /* Two roles, one band: an error renders as alert, every other type as status. No tuck —
+     the bubble has no card over it — and the shape rides here: the root paints no radius (ONL-2485). */
+  .inline-element-bubble-composer > [role='status'],
+  .inline-element-bubble-composer > [role='alert'] {
+    margin-block-start: 0;
+    padding: var(--spacing-2) var(--spacing-3);
+    line-height: 20px;
+    corner-shape: superellipse(1.5);
+  }
+
+  .inline-element-bubble-composer .astryx-chat-composer-input > [contenteditable] {
+    padding-inline: var(--spacing-2);
+    scrollbar-width: none;
+  }
+
+  .inline-element-bubble-input[data-scrolling='true'] .astryx-chat-composer-input > [contenteditable] {
+    scrollbar-width: thin;
+  }
+
+  /* The bubble's own placeholder (the library's takes only a string, so it
+     cannot shimmer). It sits over the empty editable exactly where the library
+     draws its placeholder: inset 0, the editable's padding, and its type.
+     It holds one line and ellipsizes, since a wrapped placeholder spills past the
+     one-line input. */
+  .inline-element-bubble-input {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .inline-element-bubble-placeholder {
+    position: absolute;
+    inset: 0;
+    padding: 4px var(--spacing-2);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    pointer-events: none;
+  }
+
+  .inline-element-bubble-placeholder,
+  .inline-element-bubble-placeholder * {
+    font-family: var(--font-family-body);
+    font-size: var(--text-body-size);
+    font-weight: 400;
+    line-height: 22px;
+  }
+
+  /* The orb: a press target over the circle the shape gathers into. It draws no
+     ground of its own; the shape is the orb. */
+  .inline-element-ball {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline-start: 50%;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    margin-inline-start: -16px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--color-icon-secondary);
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
+  .inline-morph[data-side='below'] .inline-element-ball {
+    inset-block-start: 0;
+    inset-block-end: auto;
+  }
+
+  .inline-morph[data-state='open'] .inline-element-ball {
+    pointer-events: none;
+  }
+
+  .inline-element-ball:hover {
+    color: var(--color-icon-primary);
+  }
+
+  .inline-element-ball:focus-visible {
+    outline: 2px solid var(--color-border-emphasized);
+    outline-offset: 2px;
+  }
+
+  /* The sparkles follow the geometry: they fade and twist away as the orb opens. */
+  .inline-element-ball-glyph {
+    display: grid;
+    place-items: center;
+    opacity: var(--morph-orb);
+    rotate: var(--morph-turn);
+    scale: calc(0.6 + 0.4 * var(--morph-orb));
+  }
+
+  /* An unsent draft waits inside: a small dot, top right, where the eye checks a badge. */
+  .inline-element-ball[data-draft='true']::after,
+  .inline-element-ball-count {
+    opacity: var(--morph-orb);
+  }
+
+  .inline-element-ball[data-draft='true']::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 1px;
+    inset-inline-end: 1px;
+    width: 7px;
+    height: 7px;
+    border: 1.5px solid var(--color-background-card);
+    border-radius: var(--radius-full);
+    background-color: var(--color-icon-primary);
+  }
+
+  .inline-element-ball-count {
+    position: absolute;
+    inset-block-end: -4px;
+    inset-inline-end: -6px;
+    min-width: 16px;
+    height: 16px;
+    padding-inline: 4px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-background-inverted);
+    color: var(--color-background-body);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 16px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
+   * Entry and exit, on the wrapper around the surface. `--_toward` points at the element.
+   * The lift is a drop-shadow, which follows the shape's outline through every frame of a morph; a box-shadow on the card could not. It is `--shadow-high`'s offset, blur and ink.
+   */
+  .inline-bubble-motion {
+    --_toward: 6px;
+    filter: drop-shadow(0 8px 10px #00000080);
+    transform-origin: 50% 100%;
+    animation:
+      inline-bubble-in 220ms cubic-bezier(0.34, 1.3, 0.64, 1) backwards,
+      inline-bubble-fade-in 110ms cubic-bezier(0.24, 1, 0.4, 1) backwards;
+  }
+
+  .inline-bubble-motion[data-enter='ball'] {
+    animation:
+      inline-ball-in 240ms cubic-bezier(0.34, 1.45, 0.64, 1) backwards,
+      inline-bubble-fade-in 90ms cubic-bezier(0.24, 1, 0.4, 1) backwards;
+  }
+
+  .inline-bubble-motion[data-enter='ball'] .inline-element-ball-glyph > svg {
+    animation: inline-ball-twinkle 320ms cubic-bezier(0.34, 1.45, 0.64, 1) 70ms backwards;
+  }
+
+  .inline-bubble-motion[data-exit='dismissed'] {
+    animation: inline-bubble-sink var(--inline-bubble-exit) cubic-bezier(0.4, 0, 1, 1) forwards;
+  }
+
+  .inline-bubble-motion[data-exit='sent'] {
+    animation: inline-bubble-lift var(--inline-bubble-exit) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes inline-bubble-in {
+    from {
+      transform: translateY(var(--_toward)) scale(0.96, 0.9);
+    }
+  }
+
+  @keyframes inline-ball-in {
+    from {
+      transform: translateY(calc(var(--_toward) * 0.5)) scale(0.5);
+    }
+  }
+
+  @keyframes inline-ball-twinkle {
+    from {
+      opacity: 0;
+      transform: rotate(-35deg) scale(0.5);
+    }
+  }
+
+  @keyframes inline-bubble-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes inline-bubble-sink {
+    to {
+      opacity: 0;
+      transform: translateY(calc(var(--_toward) * 0.5)) scale(0.97);
+    }
+  }
+
+  @keyframes inline-bubble-lift {
+    25% {
+      opacity: 1;
+      transform: translateY(calc(var(--_toward) * 0.2)) scale(0.99);
+    }
+
+    to {
+      opacity: 0;
+      transform: translateY(calc(var(--_toward) * -1.5));
+    }
+  }
+
+  @keyframes inline-bubble-fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  /* Reduced motion still marks the open and the close, just without the travel.
+     The morph itself snaps (`useOrbMorph`). */
+  @media (prefers-reduced-motion: reduce) {
+    .inline-bubble-motion,
+    .inline-bubble-motion[data-enter='ball'] {
+      animation: inline-bubble-fade-in 100ms linear backwards;
+    }
+
+    .inline-bubble-motion[data-enter='ball'] .inline-element-ball-glyph > svg {
+      animation: none;
+    }
+
+    .inline-morph,
+    .inline-morph[data-state='orb']:has(> .inline-element-ball:hover),
+    .inline-morph[data-state='orb']:has(> .inline-element-ball:active) {
+      transform: none;
+      transition: none;
+    }
+
+    .inline-bubble-motion[data-exit] {
+      animation: inline-bubble-fade-out var(--inline-bubble-exit) linear forwards;
+    }
+  }
+
+  /* The input caret is primary white, not the accent the library ships. On the
+     layout root so every editable in the panel agrees; `caret-color` inherits. */
+  :root {
+    caret-color: var(--color-text-primary);
+  }
+
+  .astryx-chat-composer-input * {
+    /* The library sets the accent caret ON the editable itself, which beats
+       inheritance — this puts the override at the same altitude. */
+    caret-color: var(--color-text-primary);
+  }
+
+  .astryx-chat-composer-input {
+    caret-color: var(--color-text-primary);
+  }
+
+  /* An empty editable has no line box, so its scrolling box clipped the caret to a dash (ONL-2960). */
+  .astryx-chat-composer-input > [contenteditable] {
+    min-height: calc(1lh + 8px);
+    flex-shrink: 0;
+  }
+
+  /* The placeholder is a positioned `aria-hidden` div inside the input, not a
+     `::placeholder`, and the input renders it as its first child only while
+     empty — which is what this selector leans on. */
+  .astryx-chat-composer-input > div[aria-hidden='true'] {
+    color: var(--color-text-disabled);
+  }
+
+  /* Editing turns it back into a text field. The pill also carries `nodrag` while editing, so the caret gets its own mousedown. */
+  .frame-address.editing {
+    cursor: text;
+  }
+
+  .react-flow__node.dragging .frame-address,
+  .react-flow__node.dragging .frame-chrome {
+    cursor: grabbing;
+  }
+
+  /* Tool-call rows: no hover wash, and the expand chevron shows only while the
+     pointer is on its row, INSTANTLY. `[role='button']` is the library's own
+     mark for an expandable row — plain rows don't carry it, so their last span
+     (duration/stats) stays untouched. The chevron is the expandable row's last
+     child; an open row keeps it visible so the thing to close doesn't vanish. */
+  .astryx-chat-tool-calls [role='button']:hover {
+    background-color: transparent;
+  }
+
+  .astryx-chat-tool-calls [role='button'] > span:last-child {
+    opacity: 0;
+    transition: none;
+  }
+
+  .astryx-chat-tool-calls [role='button']:hover > span:last-child,
+  .astryx-chat-tool-calls [role='button']:focus-visible > span:last-child,
+  .astryx-chat-tool-calls [role='button'][aria-expanded='true'] > span:last-child {
+    opacity: 1;
+  }
+
+  .agent-status-row:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+  }
+
+  /* Keyboard only: a pointer on the caret lights its whole row through `data-hovered` (ONL-2661). */
+  .design-row-caret:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+    border-radius: var(--radius-element);
+  }
+
+  /* The chat panel's transcript scrollbar (ONL-1953). Standard scrollbar properties only, never `::-webkit-scrollbar`: see the warning in `sidebar/sidebar.css`. */
+  .astryx-chat-layout {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-background-gray) transparent;
+  }
+
+  /* The library pads its metadata slot to match a FILLED bubble's inline
+     padding, but the theme strips the assistant ghost bubble to a flush column,
+     so that 16px read as a random indent under flush text. The padded wrapper
+     div ships without a class of its own, hence the `:has` reach. */
+  [data-role='assistant'] div:has(> .astryx-chat-message-metadata) {
+    padding-inline: 0;
+    /* A little air under the last line of prose. */
+    margin-block-start: 4px;
+  }
+
+  /* The arrow stays an arrow over frames — React Flow ships `pointer` on
+     selectable nodes and `grab` on draggable ones, and an editor's objects are
+     not links. An active drag still shows `grabbing` (the library's `.dragging`
+     rule is untouched) and the pan tool's pane-level `grab` survives: those are
+     gestures in progress, not resting states. */
+  .react-flow__node.selectable,
+  .react-flow__node.draggable {
+    cursor: default;
+  }
+
+  /* Same for the empty canvas: with `selectionOnDrag` the library stamps the
+     pane `.selection` and paints `cursor: pointer` on it. */
+  .react-flow__pane.selection {
+    cursor: default;
+  }
+
+  /* The group box over a selection answers no event, so it kept the pointer from
+     the nodes under it; it keeps its border and not the pointer (ONL-2502). */
+  .react-flow__nodesselection-rect {
+    pointer-events: none;
+  }
+
+  [data-tool='frame'] .react-flow__pane,
+  [data-tool='artifact'] .react-flow__pane,
+  [data-tool='section'] .react-flow__pane {
+    cursor: crosshair;
+  }
+
+  /* Names the same classes as the space-pan rules below, which is what out-specifies
+     the two rules above; the caret shows over the shield too (ONL-2486). */
+  [data-tool='text'] .react-flow__pane,
+  [data-tool='text'] .react-flow__pane.selection,
+  [data-tool='text'] .react-flow__node.selectable,
+  [data-tool='text'] .react-flow__node.draggable,
+  [data-tool='text'] [data-testid='frame-shield'],
+  [data-tool='text'] [data-testid='canvas-artifact-shield'] {
+    cursor: text;
+  }
+
+  /*
+   * A held space shows the hand everywhere the pan will land: React Flow pans a space-drag in either tool.
+   * ⚠️ THESE HAVE TO OUT-SPECIFY THE TWO RULES ABOVE, which is why they name the same `.selectable`/`.draggable` classes instead of just the node: the attribute alone loses to `.react-flow__node.selectable`, and the frame would keep its arrow while the empty canvas changed.
+   * The shield is listed because it is the only host-DOM surface in front of a frame's `<webview>`; a native guest paints its own cursor (`isGuestShielded`).
+   */
+  [data-space-panning='true'] .react-flow__pane,
+  [data-space-panning='true'] .react-flow__pane.selection,
+  [data-space-panning='true'] .react-flow__node.selectable,
+  [data-space-panning='true'] .react-flow__node.draggable,
+  [data-space-panning='true'] [data-testid='frame-shield'],
+  [data-space-panning='true'] [data-testid='canvas-artifact-shield'] {
+    cursor: grab;
+  }
+
+  /* Closed hand for the duration of the drag. `:active` on the container is
+     what the library's own `.dragging` rule cannot cover here, because a
+     space-pan never sets `.dragging` on a node — nothing is being dragged but
+     the camera. */
+  [data-space-panning='true']:active .react-flow__pane,
+  [data-space-panning='true']:active .react-flow__pane.selection,
+  [data-space-panning='true']:active .react-flow__node.selectable,
+  [data-space-panning='true']:active .react-flow__node.draggable,
+  [data-space-panning='true']:active [data-testid='frame-shield'],
+  [data-space-panning='true']:active [data-testid='canvas-artifact-shield'] {
+    cursor: grabbing;
+  }
+
+  /* The edge-resize grab area, widened from the library's 1px. The strip is
+     invisible either way (`FrameNode` passes `borderColor: transparent`);
+     `translate(-50%)` keeps it centred on the edge, so it gains reach on both
+     sides of the line. */
+  .react-flow__resize-control.line.left,
+  .react-flow__resize-control.line.right {
+    width: 8px;
+  }
+
+  .frame-scrollbar-thumb-hit:focus-visible .frame-scrollbar-pill {
+    outline: 1px solid var(--color-on-dark);
+    outline-offset: 2px;
+  }
+
+  .react-flow__resize-control.line.top,
+  .react-flow__resize-control.line.bottom {
+    height: 8px;
+  }
+
+  /* ONL-1953 — side-panel resizing is the PANEL EDGE, not a floating grip.
+     Astryx still owns the pointer drag state and its 16px hit area; App.tsx
+     replaces only the pill child. Transparent at rest because both panels
+     already draw their 0.5px edge hairline, so hover/drag lifts that same seam
+     rather than adding a second piece of chrome. */
+  /* Runs the rail's full height, from the band's rule to the bottom: the rails are square and flush against the band (ONL-2236). */
+  .panel-resize-edge {
+    position: absolute;
+    inset-block-start: 0;
+    inset-block-end: 0;
+    left: 50%;
+    width: 2px;
+    pointer-events: none;
+    background-color: transparent;
+    transform: translateX(-50%);
+  }
+
+  .code-files-search-toolbar {
+    flex-shrink: 0;
+    margin: var(--spacing-2) var(--spacing-2) var(--spacing-1);
+    padding: 2px;
+    border-radius: calc(var(--radius-element) + 2px);
+    /* A light wash, not the muted ground: over the panel's near-black the muted fill read as a hole (ONL-2593). */
+    background: color-mix(in srgb, var(--color-text-primary) 7%, transparent);
+  }
+
+  .code-files-search-toolbar:has(.code-files-search-field:focus-within) {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text-primary) 40%, transparent);
+  }
+
+
+  .code-files-search-field {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 28px;
+    padding-inline: calc(var(--spacing-3) - 2px);
+  }
+
+  .code-files-shortcut:focus-visible,
+  .code-files-suggested-toggle:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
+  }
+
+  .code-files-search-field input::placeholder {
+    color: transparent;
+  }
+
+  .left-panel-project-name {
+    position: absolute;
+    top: 12px;
+    left: 0;
+    max-width: calc(100% - 36px);
+    transform: translateX(18px);
+    transition: transform 220ms cubic-bezier(0.2, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: var(--studio-layer-raised);
+  }
+
+  .has-shared-project-name:has([data-testid='sidebar-project-title-input']) > .left-panel-project-name {
+    visibility: hidden;
+  }
+
+  /* A resize drag passing over cards and buttons lights none of them (ONL-2593). */
+  .left-panel-width:has(.panel-resize-handle[data-resizing]) [data-testid='left-panel-content'] {
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .left-panel-project-name,
+    .code-files-scope button {
+      transition: none;
+    }
+  }
+
+  .panel-resize-handle:hover .panel-resize-edge,
+  .panel-resize-handle[data-resizing] .panel-resize-edge {
+    background-color: color-mix(in srgb, var(--color-icon-primary) 30%, transparent);
+  }
+
+  /*
+   * A pointer never leaves a ring behind. Document-wide, and not expressible in `studioTheme.ts`: `parseStyleKey` has no pseudo-class form, so ":focus but not :focus-visible" cannot be written there.
+   * This cannot remove a keyboard ring: `:focus-visible` is excluded. It catches the core components that ring on bare `:focus` (`Selector`, `MultiSelector`), which fires on a mouse click.
+   * ⚠️ The Escape-dismissal ring is not this rule's to take: a DropdownMenu restores focus to its trigger and Chromium promotes that to `:focus-visible` because the last input was a key. That ring is correct, and suppressing it here would take real keyboard rings with it. A mouse-only path that still rings is fixed by blurring in the trigger's own code.
+   */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* THE ESC RING, which the rule above cannot catch: click a button, hit Escape,
+     and Chromium re-promotes the still-focused control because the LAST event
+     was a key. The app publishes its own modality instead — `inputModality.ts`
+     stamps `data-input` on <html>, and only navigation keys count as keyboard —
+     so a pointer user gets no ring and a keyboard user's first Tab brings every
+     ring back. */
+  :root[data-input='pointer'] :focus-visible {
+    outline: none;
+  }
+
+  /* A `Selector` given a `placement` opens flush against its trigger, and its
+     layer carries no theme class; both block margins, since the layer flips
+     above when there is no room below. */
+  [popover]:has(> div > [role='listbox']) {
+    margin-block: var(--spacing-1);
+  }
+
+  /* Set by `tooltipWarmth.ts` when a neighbour's tooltip is open or just closed. */
+  .astryx-tooltip[data-tooltip-warm] {
+    animation: none;
+  }
+
+  /* A tooltip carrying a title and a description (`data-tooltip-rich`) is a
+     card, not a label. `Tooltip` takes no class or style, and its padding sits
+     on an unclassed inner box that reads these two scale steps. */
+  .astryx-tooltip:has([data-tooltip-rich]) {
+    max-width: 360px;
+    --radius-container: var(--radius-page);
+    --spacing-1: var(--spacing-2);
+    --spacing-2: var(--spacing-3);
+  }
+
+  /* `ChatComposer` fades its focus border on an unclassed body; state changes are instant. */
+  .astryx-chat-composer > div {
+    transition: none;
+  }
+
+}
+
+.update-pill-quiet {
+  --update-shimmer-base: var(--color-text-gray);
+  --update-shimmer-crest: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-background-gray) 78%, var(--color-background-body)) !important;
+  box-shadow: inset 0 0 0 0.5px var(--color-border-emphasized);
+}
+
+/* A preview is a still: the pill mounts with every hover, and its entrance motion read as a fade. */
+.tab-preview-pill,
+.tab-preview-pill * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* The dock, not the button: the library isolates it at z-index 0, under user rows at 2. */
+.astryx-chat-layout *:has(> .chat-scroll-button) {
+  z-index: var(--studio-layer-top) !important;
+}
+/* `z-index: -1` keeps the backing behind the pill but inside the dock's stacking context, above the transcript (ONL-2553). */
+.astryx-chat-layout *:has(> .chat-scroll-button[data-visible='true'])::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: calc(var(--spacing-3) * -2);
+  /* Solid to about the pill's middle, then the pinned row's eased ramp up into the transcript (ONL-2593). */
+  height: calc(var(--spacing-12) + var(--spacing-3));
+  z-index: var(--studio-layer-behind);
+  pointer-events: none;
+  background: linear-gradient(to top, var(--color-background-body) 0, color-mix(in srgb, var(--color-background-body) 100%, transparent) calc(calc(var(--spacing-3) * 2) + (100% - calc(var(--spacing-3) * 2)) * 0.0), color-mix(in srgb, var(--color-background-body) 94%, transparent) calc(calc(var(--spacing-3) * 2) + (100% - calc(var(--spacing-3) * 2)) * 0.22), color-mix(in srgb, var(--color-background-body) 82%, transparent) calc(calc(var(--spacing-3) * 2) + (100% - calc(var(--spacing-3) * 2)) * 0.38), color-mix(in srgb, var(--color-background-body) 64%, transparent) calc(calc(var(--spacing-3) * 2) + (100% - calc(var(--spacing-3) * 2)) * 0.52), color-mix(in srgb, var(--color-background-body) 45%, transparent) calc(calc(var(--spacing-3) * 2) + (100% - calc(var(--spacing-3) * 2)) * 0.65), color-mix(in srgb, var(--color-background-body) 28%, transparent) calc(calc(var(--spacing-3) * 2) + (100% - calc(var(--spacing-3) * 2)) * 0.76), color-mix(in srgb, var(--color-background-body) 14%, transparent) calc(calc(var(--spacing-3) * 2) + (100% - calc(var(--spacing-3) * 2)) * 0.86), color-mix(in srgb, var(--color-background-body) 5%, transparent) calc(calc(var(--spacing-3) * 2) + (100% - calc(var(--spacing-3) * 2)) * 0.94), color-mix(in srgb, var(--color-background-body) 0%, transparent) calc(calc(var(--spacing-3) * 2) + (100% - calc(var(--spacing-3) * 2)) * 1.0));
+}
+/* White so it reads as news: the pill is the inner container, the ink is the button's. */
+.chat-scroll-button > div {
+  background-color: var(--color-background-inverted) !important;
+  pointer-events: auto;
+  contain: layout style;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-med);
+  height: 32px;
+  max-width: 32px;
+  transition: opacity var(--duration-fast-max) var(--ease-standard), max-width var(--duration-fast-max) var(--ease-standard);
+}
+.chat-scroll-button {
+  display: flex;
+  justify-content: center;
+  padding-block-end: var(--spacing-3);
+}
+.chat-scroll-button[data-expanded='true'] > div {
+  max-width: 200px;
+}
+.chat-scroll-button[data-visible='false'] > div {
+  opacity: 0;
+  pointer-events: none;
+  max-width: 32px;
+}
+/* The button only, never its descendants: a Central icon's mask is drawn in white, and black ink there erases the glyph. */
+.chat-scroll-button button {
+  color: var(--color-on-light) !important;
+  --radius-element: var(--radius-full);
+  white-space: nowrap;
+}
+/* Collapsed, the button is icon-only and Astryx zeroes its padding to hold the square. */
+.chat-scroll-button[data-expanded='true'] button {
+  padding-inline: var(--spacing-2) var(--spacing-3);
+}
+:root[data-input='keyboard'] .chat-scroll-button button:focus-visible {
+  outline: 2px solid var(--color-on-light);
+  outline-offset: -3px;
+}
+.chat-scroll-dots {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--spacing-4);
+  height: var(--spacing-4);
+  gap: 2px;
+}
+.chat-scroll-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+  animation: chat-scroll-dot 1.4s ease-in-out infinite;
+}
+.chat-scroll-dot:nth-child(2) { animation-delay: 140ms; }
+.chat-scroll-dot:nth-child(3) { animation-delay: 280ms; }
+@keyframes chat-scroll-dot {
+  0%, 40%, 100% { transform: translateY(0); }
+  20% { transform: translateY(-2px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-scroll-dot { animation: none; }
+  .chat-scroll-button > div { transition: none; }
+}
+
+@property --ftp-w { syntax: '<integer>'; inherits: true; initial-value: 0 }
+@property --ftp-h { syntax: '<integer>'; inherits: true; initial-value: 0 }
+.account-startup {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-6);
+  background: var(--studio-ground);
+  color: var(--color-text-primary);
+}
+.account-startup-progress {
+  width: 120px;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-track);
+}
+.account-startup-progress > div {
+  width: 40%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-text-secondary);
+  animation: account-startup-progress 1.4s ease-in-out infinite;
+}
+@keyframes account-startup-progress {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(350%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .account-startup-progress > div { animation: none; margin-inline: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) { [data-empty-motion] * { animation: none !important } }
+@keyframes empty-scan-read { 0%, 2% { transform: translateY(var(--empty-scan-from)); animation-timing-function: cubic-bezier(.45,0,.35,1) } 36%, 100% { transform: translateY(var(--empty-scan-to)) } }
+@keyframes empty-scan-read-back { 0%, 2% { transform: translateY(calc(-1 * var(--empty-scan-from))); animation-timing-function: cubic-bezier(.45,0,.35,1) } 36%, 100% { transform: translateY(calc(-1 * var(--empty-scan-to))) } }
+@keyframes empty-glow-read { 0%, 2% { opacity: 0 } 10.9%, 23.2% { opacity: 1 } 36%, 100% { opacity: 0 } }
+@keyframes empty-scan-make { 0%, 25% { transform: translateY(var(--empty-scan-from)); animation-timing-function: cubic-bezier(.45,0,.35,1) } 59%, 100% { transform: translateY(var(--empty-scan-to)) } }
+@keyframes empty-scan-make-back { 0%, 25% { transform: translateY(calc(-1 * var(--empty-scan-from))); animation-timing-function: cubic-bezier(.45,0,.35,1) } 59%, 100% { transform: translateY(calc(-1 * var(--empty-scan-to))) } }
+@keyframes empty-glow-make { 0%, 25% { opacity: 0 } 33.9%, 46.2% { opacity: 1 } 59%, 100% { opacity: 0 } }
+[data-empty-leaving] * { animation-play-state: paused !important }
+[data-ftp-badge]::after { counter-reset: w var(--ftp-w) h var(--ftp-h); content: counter(w) ' × ' counter(h) }
+
+/* Search excerpts use the editor's syntax palette without an editor instance per row. */
+.code-search-file { margin: 8px; border: 0.5px solid var(--color-border); border-radius: var(--radius-element); overflow: hidden; }
+.code-search-file-heading { padding: 8px; background: var(--color-background-muted); border-bottom: 0.5px solid var(--color-border); }
+.code-search-count { padding: 2px 6px; border-radius: var(--radius-element); background: var(--color-background-gray); }
+.code-search-line { display: flex; align-items: baseline; gap: 12px; width: 100%; min-height: 28px; padding: 4px 8px; border: 0; background: transparent; color: var(--studio-syntax-plain); text-align: start; font: inherit; cursor: pointer; }
+.code-search-line:hover { background: var(--color-overlay-hover); }
+.code-search-line:focus-visible { outline: 1px solid var(--color-border-blue); outline-offset: -1px; }
+.code-search-line-number { flex: 0 0 4ch; text-align: end; font: var(--text-supporting-size)/20px var(--font-family-code); color: var(--color-text-secondary); font-variant-numeric: tabular-nums; }
+
+/* React's previous hoisted field stylesheet is unlayered and survives live updates. */
+.code-files-search-toolbar .code-files-search-field:focus-within { outline: none; }
+
+/* The discover card's ✕ shows on hover, and on keyboard focus so it stays reachable (ONL-2593). */
+[data-testid='projects-discover-dismiss'] {
+  opacity: 0;
+}
+[data-testid='projects-discover']:hover [data-testid='projects-discover-dismiss'],
+[data-testid='projects-discover']:focus-within [data-testid='projects-discover-dismiss'] {
+  opacity: 1;
+}
+
+/* A row's Import shows on hover, and on keyboard focus so it stays reachable (ONL-2593). */
+[data-testid='discovered-worktree-import'] {
+  opacity: 0;
+}
+[data-testid='discovered-worktree-row']:hover [data-testid='discovered-worktree-import'],
+[data-testid='discovered-worktree-row']:focus-within [data-testid='discovered-worktree-import'] {
+  opacity: 1;
+}
+
+/* The white buttons dim on hover so they read as clickable (ONL-2593). */
+[data-testid='new-project']:hover:not(:disabled),
+button[data-testid='new-project-menu']:hover:not(:disabled),
+[data-testid='new-project-menu'] button:hover:not(:disabled),
+[data-testid='discovered-worktrees-import-all']:hover:not(:disabled),
+[data-testid^='account-continue-']:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.hosted-email-sign-in:hover,
+.hosted-email-sign-in:focus-visible {
+  color: var(--color-text-primary) !important;
+}
+
+.hosted-email-sign-in:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 3px;
+  border-radius: var(--radius-element);
+}
+
+/* The import card's chevron rests dim and brightens while its header is hovered (ONL-2593). */
+[data-discovered-chevron] {
+  opacity: 0.45;
+}
+[data-testid='discovered-worktrees-toggle']:hover [data-discovered-chevron],
+[data-testid='discovered-worktrees-toggle']:focus-visible [data-discovered-chevron] {
+  opacity: 1;
+}
+
+/* The artifact search shows the input's own placeholder, dim, in place of the shared shimmer (ONL-2593). */
+.code-files-search-field input[data-testid='artifact-sidebar-search']::placeholder {
+  color: var(--color-text-disabled);
+}
+
+/* The project card's ⋯ chip shares the artifact actions' squircle corners (ONL-2593). */
+[data-testid='project-card-menu'] {
+  corner-shape: superellipse(1.5);
+}
+
+/* A search field's clear: the glyph alone, flush with the field's end padding, centred on its line (ONL-2593). */
+.search-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  /* The field's full height and its end padding: a 28px square flush to the field's corner. */
+  align-self: stretch;
+  width: 28px;
+  height: auto;
+  margin-inline-end: calc((var(--spacing-3) - 2px) * -1);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-element);
+  corner-shape: superellipse(1.5);
+}
+.search-clear:hover { color: var(--color-text-primary); background: rgba(255, 255, 255, 0.12); }
+.search-clear:active { background: rgba(255, 255, 255, 0.18); }
+.search-clear:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+
+
+[data-testid="sidebar"]:hover .sidebar-designs-empty { opacity: 1; }
+
+/* The empty-canvas placeholder shimmers; the library draws it as the input's first, aria-hidden child (ONL-2744). */
+@keyframes chat-composer-placeholder-sweep {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+.chat-composer-shimmer .astryx-chat-composer-input > div[aria-hidden='true']:first-child {
+  color: transparent;
+  background-image: linear-gradient(90deg, var(--color-text-disabled) 35%, var(--color-text-secondary) 50%, var(--color-text-disabled) 65%);
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: chat-composer-placeholder-sweep 2.4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-composer-shimmer .astryx-chat-composer-input > div[aria-hidden='true']:first-child {
+    animation: none;
+    color: var(--color-text-disabled);
+    background: none;
+  }
+}
+/* Opens the way the "+" menu does: up from its trigger, at the "+" menu's own timing and curve (ONL-3193). */
+@keyframes chat-connectors-menu-in { from { opacity: 0; transform: translateY(var(--spacing-2)) scale(0.95); } }
+@media (prefers-reduced-motion: no-preference) {
+  .chat-connectors-menu { transform-origin: bottom left; animation: chat-connectors-menu-in 165ms var(--ease-standard); }
+  [popover]:has(.chat-connectors-menu) {
+    transform-origin: bottom left;
+    transition: opacity var(--connectors-exit) var(--ease-standard), transform var(--connectors-exit) var(--ease-standard), overlay var(--connectors-exit) allow-discrete, display var(--connectors-exit) allow-discrete;
+  }
+  [popover]:has(.chat-connectors-menu):not(:popover-open) { opacity: 0; transform: translateY(var(--spacing-2)) scale(0.95); pointer-events: none; }
+}
+/* Rows the growing list slid under a still pointer stay unlit until it moves; keyboard focus still lights them. */
+.chat-connectors-menu[data-shifted='true'] .composer-menu-item:hover:not(:focus-visible, [data-selected='true']) {
+  --color-text-primary: var(--color-text-secondary);
+  --menu-detail-color: initial;
+  color: var(--color-text-secondary);
+}
+.chat-connectors-menu[data-shifted='true'] .composer-menu-item:hover:not(:focus-visible, [data-selected='true'], [data-recent='true']) { background-color: transparent; }
+
+[data-testid='onboarding-agent-row'],
+[data-testid='onboarding-agent-row'] *,
+[data-tile] * {
+  corner-shape: superellipse(1.5);
+}
+
+
+/* The button sizes its icons to 20px; the spinner standing in for Sign in reads at 14px. */
+[data-tile] .astryx-button svg {
+  width: 14px;
+  height: 14px;
+}

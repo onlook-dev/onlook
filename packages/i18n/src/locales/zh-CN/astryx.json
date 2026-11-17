@@ -1,0 +1,21 @@
+{
+  "astryx.dialog.close": "关闭",
+  "astryx.banner.dismiss": "关闭",
+  "astryx.toast.dismiss": "关闭通知",
+  "astryx.toast.viewport": "通知",
+  "astryx.codeBlock.copyCode": "拷贝代码",
+  "astryx.codeBlock.copied": "已拷贝",
+  "astryx.codeBlock.code": "代码",
+  "astryx.chatSendButton.send": "发送",
+  "astryx.chatSendButton.stop": "停止",
+  "astryx.chat.composerInput.label": "输入消息",
+  "astryx.chat.composerDrawer.label": "附加内容",
+  "astryx.chat.pastedText.expand": "展开",
+  "astryx.chatMessage.messageFrom.user": "你的消息",
+  "astryx.chatMessage.messageFrom.assistant": "智能体的消息",
+  "astryx.contextMenu.label": "右键菜单",
+  "astryx.link.newTab": "（在新标签页中打开）",
+  "astryx.markdown.table": "表格",
+  "astryx.markdown.taskList": "任务列表",
+  "astryx.resizable.handle.label": "调整大小"
+}

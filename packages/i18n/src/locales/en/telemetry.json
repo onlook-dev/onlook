@@ -1,0 +1,12 @@
+{
+  "telemetry.title": "Help improve Onlook",
+  "telemetry.subtitle": "Share usage data to help us decide what to improve.",
+  "telemetry.details": "Onlook sends usage events and basic device information to PostHog. Source builds never send session recordings, diagnostic logs, error reports, code, file paths, or chat messages.",
+  "telemetry.choice": "Nothing is sent until you choose. You can change your choice in Settings → Global → Privacy.",
+  "telemetry.accept": "Yes, share usage data",
+  "telemetry.decline": "Don’t share",
+  "telemetry.settings.section": "Privacy",
+  "telemetry.settings.label": "Share usage data",
+  "telemetry.settings.description": "Help improve Onlook by sending usage events and basic device information to PostHog. No session recordings, logs, error reports, code, file paths, or chat messages.",
+  "telemetry.settings.removed": "Telemetry was removed from this build. No usage data is sent."
+}

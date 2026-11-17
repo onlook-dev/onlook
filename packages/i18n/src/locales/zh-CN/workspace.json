@@ -1,0 +1,15 @@
+{
+  "workspace.refused.alreadyCopied.title": "这个文件夹已作为 {projectName} 添加到 Onlook",
+  "workspace.refused.alreadyCopied.body": "打开 {projectName}，或选择其他文件夹。",
+  "workspace.refused.noBaseRef.title": "Onlook 无法确定哪个是主分支",
+  "workspace.refused.noBaseRef.body": "设置远程仓库的主分支；如果没有远程仓库，先在本地创建 main 分支，再试一次。",
+  "workspace.refused.nameUnavailable.title": "Onlook 无法为新副本命名",
+  "workspace.refused.nameUnavailable.body": "要为副本空出名称，删除一个不再使用的 Onlook 分支后再试一次。",
+  "workspace.refused.dismiss": "关闭",
+  "workspace.startFresh.title": "这个文件夹中没有项目文件",
+  "workspace.startFresh.body": "新建空白项目，而不是拷贝 {folderName}。",
+  "workspace.startFresh.startBlank": "新建空白项目",
+  "workspace.created.copy": "已将 {repo} 拷贝为新项目 {project}",
+  "workspace.created.branch": "同时基于代码库的 {base} 分支创建了分支 {branch}",
+  "workspace.created.copiedNote": "这个文件夹还没有用 Git 跟踪。Onlook 会在副本上完成配置，你的文件夹保持原样。"
+}

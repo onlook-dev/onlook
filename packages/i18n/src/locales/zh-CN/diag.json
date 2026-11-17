@@ -1,0 +1,8 @@
+{
+  "diag.title": "运行时",
+  "diag.pty.idle": "尚未检查终端",
+  "diag.pty.checking": "正在检查终端…",
+  "diag.pty.ok": "终端正常 — pty 回显了 {output}",
+  "diag.pty.failed": "终端检查失败 — {error}",
+  "diag.pty.action": "检查终端"
+}

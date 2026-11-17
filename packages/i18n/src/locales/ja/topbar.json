@@ -1,0 +1,14 @@
+{
+  "topbar.folder": "別のプロジェクトを開く",
+  "topbar.rail.left.hide": "サイドバーを非表示",
+  "topbar.rail.left.show": "サイドバーを表示",
+  "topbar.rail.right.hide": "チャットパネルを非表示",
+  "topbar.rail.right.show": "チャットパネルを表示",
+  "topbar.update.checking": "アップデートを確認中",
+  "topbar.update.available": "アップデートあり",
+  "topbar.update.downloading": "アップデートをダウンロード中 {percent}%",
+  "topbar.update.ready": "再起動してアップデート",
+  "topbar.update.upToDate": "最新の状態です",
+  "topbar.update.failed": "アップデートに失敗しました",
+  "topbar.update.diskFull": "ディスクの空き容量が不足しています。アップデートするには空き容量を確保してください。"
+}

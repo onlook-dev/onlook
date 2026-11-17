@@ -1,0 +1,32 @@
+diff --git a/dist/Tooltip/useTooltip.js b/dist/Tooltip/useTooltip.js
+index 6988fb7fe7a3fe79dda44eff75dc57f548036b77..c6b24a42f53edae6babd98039124d6e1caf5f93e 100644
+--- a/dist/Tooltip/useTooltip.js
++++ b/dist/Tooltip/useTooltip.js
+@@ -145,9 +145,10 @@ export function useTooltip(options = {}) {
+       return;
+     }
+     clearTimeouts();
++    // Studio patch (root package.json patchedDependencies): a warm neighbour opens at once.
+     showTimeoutRef.current = setTimeout(() => {
+       layer.show();
+-    }, delay);
++    }, globalThis.__astryxTooltipIsWarm?.() === true ? 0 : delay);
+   }, [isEnabled, isOpen, clearTimeouts, layer, delay]);
+ 
+   // Schedule hide with delay (suppressed when isOpen is true).
+diff --git a/src/Tooltip/useTooltip.tsx b/src/Tooltip/useTooltip.tsx
+index 68d0d2ac5a28589148dfed00caa3980253431127..62a6189147e4dc2b61472766d5abebd24434bef2 100644
+--- a/src/Tooltip/useTooltip.tsx
++++ b/src/Tooltip/useTooltip.tsx
+@@ -300,9 +300,10 @@ export function useTooltip(options: TooltipOptions = {}): TooltipReturn {
+       return;
+     }
+     clearTimeouts();
++    // Studio patch (root package.json patchedDependencies): a warm neighbour opens at once.
+     showTimeoutRef.current = setTimeout(() => {
+       layer.show();
+-    }, delay);
++    }, (globalThis as {__astryxTooltipIsWarm?: () => boolean}).__astryxTooltipIsWarm?.() === true ? 0 : delay);
+   }, [isEnabled, isOpen, clearTimeouts, layer, delay]);
+ 
+   // Schedule hide with delay (suppressed when isOpen is true).

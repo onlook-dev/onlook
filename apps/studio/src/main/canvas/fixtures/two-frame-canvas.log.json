@@ -1,0 +1,127 @@
+[
+  {
+    "revision": 1,
+    "author": "system",
+    "at": "2026-08-12T17:57:00Z",
+    "op": {
+      "type": "create-page",
+      "page": {
+        "id": "page-doc_7q1xk4",
+        "name": "Page 1",
+        "order": 0
+      }
+    },
+    "prior": {
+      "kind": "none"
+    }
+  },
+  {
+    "revision": 2,
+    "author": "user",
+    "at": "2026-08-12T17:58:00Z",
+    "batchId": "batch_initial_frames",
+    "op": {
+      "type": "create",
+      "node": {
+        "id": "fr_a1",
+        "pageId": "page-doc_7q1xk4",
+        "kind": "browser",
+        "name": "storefront",
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 800,
+        "order": 0,
+        "content": {
+          "homeUrl": "http://localhost:3000"
+        }
+      }
+    },
+    "prior": {
+      "kind": "none"
+    }
+  },
+  {
+    "revision": 3,
+    "author": "user",
+    "at": "2026-08-12T18:04:00Z",
+    "batchId": "batch_initial_frames",
+    "op": {
+      "type": "duplicate",
+      "node": {
+        "id": "fr_b2",
+        "pageId": "page-doc_7q1xk4",
+        "kind": "browser",
+        "name": "design-system",
+        "x": 1360,
+        "y": 0,
+        "width": 1280,
+        "height": 800,
+        "order": 1,
+        "provenance": {
+          "from": "fr_a1",
+          "at": "2026-08-12T18:04:00Z"
+        },
+        "content": {
+          "homeUrl": "http://localhost:3000/design-system"
+        }
+      }
+    },
+    "prior": {
+      "kind": "none"
+    }
+  },
+  {
+    "revision": 4,
+    "author": "user",
+    "at": "2026-08-12T18:11:20Z",
+    "op": {
+      "type": "move",
+      "id": "fr_a1",
+      "x": 1420,
+      "y": 900
+    },
+    "prior": {
+      "kind": "fields",
+      "id": "fr_a1",
+      "fields": {
+        "x": 0,
+        "y": 0
+      }
+    }
+  },
+  {
+    "revision": 5,
+    "author": "agent",
+    "at": "2026-08-12T18:12:05Z",
+    "op": {
+      "type": "rename",
+      "id": "fr_a1",
+      "name": "checkout"
+    },
+    "prior": {
+      "kind": "fields",
+      "id": "fr_a1",
+      "fields": {
+        "name": "storefront"
+      }
+    }
+  },
+  {
+    "revision": 6,
+    "author": "system",
+    "at": "2026-08-12T19:40:41Z",
+    "op": {
+      "type": "set-home-url",
+      "id": "fr_a1",
+      "homeUrl": "http://localhost:3001"
+    },
+    "prior": {
+      "kind": "fields",
+      "id": "fr_a1",
+      "fields": {
+        "homeUrl": "http://localhost:3000"
+      }
+    }
+  }
+]

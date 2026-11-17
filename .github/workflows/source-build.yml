@@ -1,0 +1,35 @@
+name: Build Onlook Source
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: source-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-build:
+    runs-on: ubuntu-24.04 # ubuntu-latest moved to 26.04 (2026-10-19), where node-pty's install script fails
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      STUDIO_CLOUD_BUILD: '0'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version: 1.4.2
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Build source app
+        run: bun run build

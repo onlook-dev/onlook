@@ -1,0 +1,16 @@
+{
+  "agentStatus.label": "エージェントのステータス",
+  "agentStatus.change": "{subject} {what} を {verb}",
+  "agentStatus.created": "{subject} を {verb}",
+  "agentStatus.created.browser": "{subject} フレームを {verb}",
+  "agentStatus.created.artifact": "{subject} アーティファクトを {verb}",
+  "agentStatus.created.image": "{subject} 画像を {verb}",
+  "agentStatus.created.section": "{subject} セクションを {verb}",
+  "agentStatus.created.text": "テキスト「{subject}」を {verb}",
+  "agentStatus.possessive": "{name} の",
+  "agentStatus.more": "ほか {count} 件",
+  "agentStatus.waiting": "{subject} を待っています",
+  "agentStatus.waiting.answer": "回答",
+  "agentStatus.waiting.answersTo": "{subject} への回答待ち",
+  "agentStatus.waiting.approval": "承認"
+}

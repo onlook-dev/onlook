@@ -1,0 +1,22 @@
+<!doctype html>
+<!--
+  `data-theme="dark"` is load-bearing, exactly as in the app's `index.html`: it
+  sets `color-scheme`, and without it every `light-dark()` token in the theme
+  resolves to its LIGHT value. The lab then paints colours the app never shows —
+  `--color-warning` came out olive instead of yellow (2026-09-14).
+-->
+<html lang="en" data-astryx-theme="studio" data-astryx-media="dark" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- No CSP, unlike the app's `index.html`: that tag states the Electron
+         window's no-remote-code contract, and this is a browser-only harness
+         with nothing to protect. Copying it makes the harness fail differently
+         from the app. -->
+    <title>Onlook — lab</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>

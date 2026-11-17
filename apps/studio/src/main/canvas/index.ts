@@ -1,0 +1,63 @@
+/** The canvas's surface for the rest of main: the host and its one instance, the IPC handlers, and the agent's facade. */
+
+export {
+  type CanvasHostDeps,
+  type CanvasAuthorResult,
+  type CanvasHistoryResult,
+  type CanvasHost,
+  createCanvasHost,
+  openCanvasForProject,
+  closeCanvas,
+  deactivateCanvas,
+  flushCanvas,
+  canvasImageIds,
+  applyCanvasOps,
+  frameShowsPage,
+  frameShownOver,
+  framePagesLive,
+  canvasSnapshot,
+  canvasSnapshotFor,
+  setFrameQuoteSource,
+  noteFrameGuestLoaded,
+  snapshotForView,
+  applyStartingFrame,
+  removeStartingFrame,
+  canvasPagedSnapshotFor,
+  setCanvasCurrentPage,
+  canvasPresentationFor,
+  captureThumbnailOnLeave,
+} from './host.js';
+export { registerCanvasHandlers } from './ipc.js';
+export {
+  undoAgentCanvas,
+  redoAgentCanvas,
+  applyAgentFrameUrl,
+  applyAgentCreateFrame,
+  applyAgentCreateArtifact,
+  applyAgentMoveFrame,
+  applyAgentCreateText,
+  applyAgentSetText,
+  regularFileSize,
+  applyAgentCreateImage,
+  applyAgentRenameFrame,
+  applyAgentReorderFrame,
+  applyAgentRemoveFrame,
+  applyAgentMoveFrames,
+  applyAgentDuplicateFrames,
+  applyAgentRemoveFrames,
+  listAgentPages,
+  applyAgentCreatePage,
+  applyAgentRenamePage,
+  applyAgentReorderPage,
+  applyAgentDeletePage,
+  applyAgentMoveNodesToPage,
+  listAgentFrames,
+  evaluateInAgentFrame,
+  captureAgentFrame,
+  readAgentFrame,
+  clipAgentFramePictures,
+} from './agent.js';
+
+export { CANVAS_UNDO_MAX_ENTRIES } from './log.js';
+/** The dirty door, for the sources that mark one. The leave door is reached through `captureThumbnailOnLeave` (ONL-2471). */
+export { markProjectDirty } from './thumbnail/index.js';

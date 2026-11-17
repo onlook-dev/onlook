@@ -1,2 +1,46 @@
+# Supply-chain cooldown, narrowed — NOT disabled.
+#
+# The machine-level config sets `minimumReleaseAge` (2 days: short enough to
+# track a daily-publishing dependency, long enough to refuse same-day
+# releases): refuse any package published more recently than that. It is
+# a good default and it stays on here for every package we do not name below.
+#
+# WHY AN EXCLUDE EXISTS AT ALL: `bun add` re-resolves and re-validates the WHOLE
+# dependency tree, not just the package being added. So adding an eight-month-old
+# package fails because a DIFFERENT package — one already pinned, already in the
+# lockfile, already installed and running — happens to have shipped a release
+# inside the cooldown window. The guardrail is meant to stop us pulling in
+# freshly-published code we have not vetted; it is not meant to block edits to a
+# tree whose contents we already chose deliberately.
+#
+# Astryx is exactly that case. It is our design system, pinned to an exact
+# version, and it ships often. Without this, every dependency change in the repo is gated on
+# whenever Astryx last published — which is a cadence that has nothing to do
+# with our supply-chain risk.
+#
+# THE PROTECTION THIS KEEPS: any NEW package name, from any other publisher,
+# still has to clear the full cooldown. That is where the actual risk lives —
+# typosquats and freshly-compromised releases arrive under names we have not
+# vetted before. Naming a specific scope here is a deliberate, reviewable
+# exemption for code we already run, not a blanket opt-out.
+#
+# Adding a name to this list is an owner call. Do not widen it to unblock an
+# install; if a package you are adding is genuinely too new, that is the
+# guardrail working.
+#
+# The rule guides version CHOICE, it does not get to stall the team. When
+# pinning a NEW package, pin the newest release already past the window
+# (`npm view <pkg> time --json`) so the error never fires. When a younger
+# version is wanted deliberately — reviewed, owner-aware — the exclusion below
+# is the sanctioned unblock, not a workaround.
 [install]
-linker = "hoisted"
+minimumReleaseAgeExcludes = ["@astryxdesign/core", "@astryxdesign/cli"]
+
+# The electron mock's ONE registration (see the preload's docblock for the
+# full why). Bun runs this before any test file, which is the only ordering
+# the runner guarantees — removing it reintroduces the first-registration
+# race that flaked CI run 31554285711. The canary at
+# apps/studio/src/main/electron-mock.test.ts goes red if this line stops
+# doing its job.
+[test]
+preload = ["./tests/apparatus/src/preload.ts"]

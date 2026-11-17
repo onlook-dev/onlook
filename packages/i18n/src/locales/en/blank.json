@@ -1,0 +1,10 @@
+{
+  "blank.create.stage.settingUp": "Setting up",
+  "blank.create.stage.installing": "Installing",
+  "blank.create.stage.starting": "Starting",
+  "blank.create.busy": "Creating…",
+  "blank.create.failed.title": "Onlook could not create the project",
+  "blank.create.failed.stage": "It stopped during “{stage}”. Nothing was left behind.",
+  "blank.create.failed.detailLabel": "Details",
+  "blank.create.retry": "Try again"
+}

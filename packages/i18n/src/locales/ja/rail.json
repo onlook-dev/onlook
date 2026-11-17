@@ -1,0 +1,16 @@
+{
+  "rail.label": "パネルサイドバー",
+  "rail.views.label": "左パネルの表示",
+  "rail.mark": "Onlook",
+  "rail.logoMenu.label": "Onlook メニュー",
+  "rail.logoMenu.tooltip": "メインメニュー",
+  "rail.files": "ファイル",
+  "rail.artifacts": "アーティファクト",
+  "rail.artifacts.caption": "アーティ\nファクト",
+  "rail.code": "コード",
+  "rail.help": "ヘルプ",
+  "rail.help.reportIssue": "問題を報告",
+  "rail.help.requestFeature": "機能をリクエスト",
+  "rail.help.shortcuts": "キーボードショートカット",
+  "rail.help.tour": "はじめに"
+}

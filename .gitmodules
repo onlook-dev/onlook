@@ -1,3 +1,0 @@
-[submodule "apps/admin"]
-	path = apps/admin
-	url = https://github.com/onlook-dev/admin.git

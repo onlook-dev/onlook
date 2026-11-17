@@ -1,0 +1,65 @@
+{
+  "$schema": "https://unpkg.com/knip@6.45.1/schema.json",
+  // Unused files, exports, types and dependencies (`bun run check:unused`, in `verify` and CI).
+  // A test file is an entry: an export only its own suite calls counts as used.
+  "workspaces": {
+    ".": {
+      // tests/bridge.ts is read by path (tests/e2e/bridge-types.test.ts). Recorders outside the repository drive the app through
+      // tests/e2e/launch.ts and contract.ts, so what those two export is not checked here.
+      "entry": ["scripts/*.ts", "tests/**/*.{e2e,live,test}.ts", "tests/bridge.ts", "tests/e2e/{launch,contract}.ts"],
+      "project": ["scripts/**/*.ts", "tests/**/*.ts", "!tests/apparatus/**"],
+      // Declared by apps/studio only; root scripts and suites reach them through the shared install.
+      "ignoreDependencies": ["semver", "electron-builder", "yaml", "electron"]
+    },
+    "apps/studio": {
+      "entry": [
+        "src/main/**/*.pty.ts",
+        // Run by hand: `bun run apps/studio/src/main/agent-host/probe.ts <mode>`.
+        "src/main/agent-host/probe.ts",
+        // What a provider built in another repository imports from main.
+        "src/main/cloud/{provider-api,client,account-actions,capabilities}.ts",
+        "src/main/flags/index.ts",
+        "src/main/identity/store.ts",
+        // Swapped in by electron.vite.config.ts when telemetry, replay or the cloud is off.
+        "src/main/log/export-disabled.ts",
+        "src/main/telemetry/disabled.ts",
+        "src/renderer/src/replay/disabled.ts",
+        "src/preload/{index,chrome,task-manager,guest}.ts",
+        "src/renderer/lab/{main,chromeMain}.tsx",
+        // Input to `astryx theme build`.
+        "src/theme/**/*.ts",
+        "src/**/*.test.{ts,tsx}",
+        // electron-builder hooks (electron-builder.yml).
+        "build/*.mjs"
+      ],
+      "project": ["src/**/*.{ts,tsx}", "*.ts", "build/*.mjs"],
+      // Written by `astryx theme build`.
+      "ignore": ["src/renderer/src/theme/studio.d.ts"],
+      // Imported by styles.css, which knip does not read.
+      "ignoreDependencies": ["@fontsource-variable/jetbrains-mono"]
+    },
+    "packages/i18n": {
+      // edition/source.ts replaces edition/cloud.ts in the source edition (electron.vite.config.ts).
+      "entry": ["src/**/*.test.{ts,tsx}", "src/edition/source.ts"],
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "packages/*": {
+      "entry": ["src/**/*.test.{ts,tsx}"],
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "tests/apparatus": {
+      "entry": ["*.ts", "src/**/*.test.ts"],
+      "project": ["**/*.ts"]
+    }
+  },
+  // The tab host is being rewritten; its unused exports are reported once that lands.
+  "ignore": ["apps/studio/src/main/tabs/**"],
+  // Root devDependencies the e2e harness resolves through the graph (package.json, //devDependencies), and the `astryx` command line.
+  "ignoreDependencies": ["@studio/git-ui", "@studio/onboarding-ui", "@astryxdesign/cli"],
+  // Kept-but-uncalled code carries `@parked ONL-xxxx` (CODING.md); anything else unused comes out.
+  "tags": ["-parked"],
+  // On the machine, not in a package.
+  "ignoreBinaries": ["ffmpeg", "perl"],
+  // One value under two names on purpose (packages/chat-ui/src/tool-rows/ink.tsx).
+  "exclude": ["duplicates"]
+}

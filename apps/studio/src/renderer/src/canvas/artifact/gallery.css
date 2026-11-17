@@ -1,0 +1,152 @@
+.artifact-page-card {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-container);
+  corner-shape: superellipse(1.5);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.artifact-page-image {
+  width: 100%;
+  aspect-ratio: 8 / 5;
+  overflow: hidden;
+  border-radius: var(--radius-container);
+  corner-shape: superellipse(1.5);
+  background: var(--color-background-muted);
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+/* The edge lightens what is under it rather than painting a grey line (ONL-2593). */
+.artifact-page-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  corner-shape: superellipse(1.5);
+  border: 0.5px solid rgba(255, 255, 255, 0.14);
+  mix-blend-mode: plus-lighter;
+  pointer-events: none;
+}
+/* The whole record, title included, so the edge stays lit wherever the pointer is on it (ONL-2593). */
+[data-testid='artifact-library-record']:hover .artifact-page-image::after {
+  border-color: rgba(255, 255, 255, 0.26);
+}
+.artifact-page-card:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}
+.artifact-page-shell { position: relative; }
+.artifact-preview-retry { position: absolute; top: var(--spacing-2); left: var(--spacing-2); z-index: var(--studio-layer-over); }
+.artifact-page-actions {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: var(--studio-layer-over);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+/* One row along the bottom: Add to canvas fills it, the ⋯ sits at its end (ONL-2593). */
+.artifact-page-row { left: 8px; justify-content: flex-end; }
+/* With nothing to add to (the Projects page), the ⋯ alone sits in the upper-right corner (ONL-2593). */
+.artifact-page-corner { top: 8px; bottom: auto; }
+.artifact-page-actions > [data-testid='artifact-export-menu'] { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; flex: 0 0 28px; vertical-align: middle; }
+.artifact-page-actions > button,
+.artifact-page-actions > [data-testid='artifact-export-menu'] > button { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; min-width: 28px; min-height: 28px; padding: 0; line-height: 1; box-sizing: border-box; cursor: pointer; color: #fff; background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: none; border-radius: var(--radius-element); corner-shape: superellipse(1.5); box-shadow: none; }
+.artifact-page-actions > button svg,
+.artifact-page-actions > [data-testid='artifact-export-menu'] > button svg { width: 16px; height: 16px; }
+.artifact-page-actions > button:hover:not(:disabled, [aria-disabled='true']),
+.artifact-page-actions > [data-testid='artifact-export-menu'] > button:hover:not(:disabled, [aria-disabled='true']),
+.artifact-page-actions > [data-testid='artifact-export-menu'] > button[aria-expanded='true'] { background: rgba(72, 72, 72, 0.82); }
+.artifact-page-actions > button:active:not(:disabled, [aria-disabled='true']),
+.artifact-page-actions > [data-testid='artifact-export-menu'] > button:active:not(:disabled, [aria-disabled='true']) { background: rgba(96, 96, 96, 0.88); }
+.artifact-page-actions > button:is(:disabled, [aria-disabled='true']),
+.artifact-page-actions > [data-testid='artifact-export-menu'] > button:is(:disabled, [aria-disabled='true']) { opacity: 0.5; cursor: default; }
+.artifact-title { display: block; min-width: 0; }
+.artifact-title button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: var(--radius-element); corner-shape: superellipse(1.5); }
+.artifact-page-shell:hover .artifact-page-actions,
+.artifact-page-shell:has(:focus-visible) .artifact-page-actions,
+.artifact-page-shell:has([data-menu-open='true']) .artifact-page-actions { opacity: 1; pointer-events: auto; }
+.artifact-page-actions > button:focus-visible,
+.artifact-page-actions > [data-testid='artifact-export-menu'] > button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+@media (hover: none) {
+  .artifact-page-actions { opacity: 1; pointer-events: auto; }
+  .artifact-page-actions > [data-testid='artifact-export-menu'] { width: 44px; height: 44px; flex-basis: 44px; }
+  .artifact-page-actions > button,
+  .artifact-page-actions > [data-testid='artifact-export-menu'] > button { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) { .artifact-page-actions { transition: none; } }
+
+/* Add to canvas carries its label: wider than the icon-only actions (ONL-2593). */
+.artifact-page-actions > button.artifact-page-add { flex: 1 1 auto; min-width: 0; width: auto; justify-content: center; padding-inline: 8px 10px; gap: 4px; font-size: 13px; font-weight: 500; white-space: nowrap; }
+@media (hover: none) { .artifact-page-actions > button.artifact-page-add { flex: 1 1 auto; min-width: 0; width: auto; justify-content: center; } }
+
+
+/* The one destructive entry turns red under the pointer (ONL-2593). */
+.artifact-menu-delete:hover:not([aria-disabled='true']),
+.artifact-menu-delete:focus-visible { color: var(--color-text-red); }
+.artifact-menu-delete:hover:not([aria-disabled='true']) *,
+.artifact-menu-delete:focus-visible * { color: var(--color-text-red); }
+/* A draggable card offers the hand before the drag; during it the system draws the cursor (ONL-2593). */
+[data-testid='artifact-library-record'][draggable='true'] .artifact-page-card { cursor: grab; }
+[data-testid='artifact-library-record'][draggable='true'] .artifact-page-card:active { cursor: grabbing; }
+/* Astryx's ghost button draws its own edge (a pseudo-element and an inset shadow); these actions wear none (ONL-2593). */
+.artifact-page-actions > button,
+.artifact-page-actions > [data-testid='artifact-export-menu'] > button {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none;
+  backdrop-filter: blur(20px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.4) !important;
+}
+.artifact-page-actions > button::before,
+.artifact-page-actions > button::after,
+.artifact-page-actions > [data-testid='artifact-export-menu'] > button::before,
+.artifact-page-actions > [data-testid='artifact-export-menu'] > button::after { display: none !important; }
+
+
+/* A preview still rendering shows a moving sheen, not a sentence (ONL-2593). */
+.artifact-page-loading {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.06) 50%, transparent 70%) 0 0 / 250% 100%;
+  animation: artifact-page-sheen 1.6s ease-in-out infinite;
+}
+@keyframes artifact-page-sheen {
+  from { background-position: 100% 0; }
+  to { background-position: -150% 0; }
+}
+@media (prefers-reduced-motion: reduce) { .artifact-page-loading { animation: none; } }
+/* Centred in the list's column; static, since it remounts as the query changes (ONL-2593). */
+.artifact-search-empty {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding-block: 24px 96px;
+  box-sizing: border-box;
+}
+/* Thin, so it stays inside a narrow panel, at the default bar's brightness; standard properties only, which keeps the overlay bar (ONL-2593). */
+.artifact-scroller {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+}
+.artifact-export-format { flex: 1 1 auto; min-width: 0; }
+.artifact-export-format > *, .artifact-export-format button { width: 100%; justify-content: space-between; }
+.preview-fan-card.artifact-export-placeholder {
+  box-shadow: none;
+  animation: none;
+  border: var(--border-width) solid var(--color-border);
+  background: transparent;
+}
+.preview-fan-card.artifact-export-placeholder::after { content: none; }
