@@ -1,0 +1,33 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "stream",
+  // Runtime switches, not build inputs: strict env mode strips them from a root `bun dev` (GH-3, ONL-1801).
+  "globalPassThroughEnv": ["STUDIO_*", "AGENT_HEADLESS", "AGENT_CDP_PORT"],
+  // `.env` bakes into the main bundle; every package's tsconfig extends the base (ONL-2260).
+  "globalDependencies": [".env", ".env.*", "tsconfig.base.json"],
+  // Without it a linked worktree reads and writes the main checkout's cache (ONL-2260).
+  "cacheDir": ".turbo/cache",
+  "tasks": {
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "outputs": []
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "env": ["STUDIO_CLOUD_BUILD", "STUDIO_FLAG_DEFAULTS", "STUDIO_TELEMETRY"],
+      "outputs": ["dist/**", "out/**"]
+    },
+    // Never cached: it writes release/ outside the package and signs. The cut is `bun run build:dmg`
+    // (scripts/cut-dmg.ts); this raw step never receives notary credentials.
+    "build:dmg": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "outputs": [],
+      "env": ["CSC_LINK", "CSC_KEY_PASSWORD", "CSC_IDENTITY_AUTO_DISCOVERY"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}

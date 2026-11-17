@@ -1,0 +1,37 @@
+// CLI instruments also have an INSTRUMENTS entry in scripts/showroom.ts (ONL-2563).
+import type { Gallery } from './Showroom.js';
+import { MACHINE_GALLERY } from './machine.js';
+import { APP_RUN_GALLERY } from './app-run.js';
+import { BLANK_CREATE_GALLERY } from './blank-create.js';
+import { REFUSALS_GALLERY } from './refusals.js';
+import { GITHUB_IMPORT_GALLERY } from './github-import.js';
+import { accountGallery } from './account.js';
+import { accountAccessGallery } from './account-access.js';
+import { CLOUD_UPDATE_GALLERY } from './cloud-update.js';
+import { TEAMS_GALLERY } from './teams.js';
+import { CHAT_CONTROLS_GALLERY } from './chat-controls.js';
+import { CONNECTORS_GALLERY } from './connectors.js';
+import { CANVAS_GALLERY } from './canvas.js';
+import { ARTIFACTS_GALLERY } from './artifacts.js';
+import { CHAT_GALLERY } from './chat.js';
+import { CODE_GALLERY } from './code.js';
+import { DISCOVER_GALLERY } from './discover.js';
+import { COLOR_GALLERY } from './color.js';
+import { GIT_GALLERY } from './git.js';
+import { ONBOARDING_UI_GALLERY } from './onboarding-ui.js';
+import { RAIL_GALLERY } from './rail.js';
+import { REPORT_GALLERY } from './report.js';
+import { SETTINGS_GALLERY } from './settings.js';
+import { SIDEBAR_GALLERY } from './sidebar.js';
+import { TABS_GALLERY } from './tabs.js';
+import { TASK_MANAGER_GALLERY } from './task-manager.js';
+import { THEME_GALLERY } from './theme.js';
+import { TIPS_GALLERY } from './tips.js';
+import { USAGE_GALLERY } from './usage.js';
+import { LIMITS_GALLERY } from './limits.js';
+import { NOTIFICATIONS_GALLERY } from './notifications.js';
+import { TOPBAR_GALLERY } from './topbar.js';
+import { PROJECT_SETUP_GALLERY } from './project-setup.js';
+import { TELEMETRY_GALLERY } from './telemetry.js';
+
+export const GALLERIES: readonly Gallery[] = [REFUSALS_GALLERY, MACHINE_GALLERY, GITHUB_IMPORT_GALLERY, CONNECTORS_GALLERY, APP_RUN_GALLERY, CLOUD_UPDATE_GALLERY, ...(import.meta.env.RENDERER_VITE_ONLOOK_CLOUD === 'true' ? [accountGallery(), accountAccessGallery(), TEAMS_GALLERY] : []), GIT_GALLERY, TABS_GALLERY, TASK_MANAGER_GALLERY, TOPBAR_GALLERY, CANVAS_GALLERY, PROJECT_SETUP_GALLERY, BLANK_CREATE_GALLERY, TELEMETRY_GALLERY, ARTIFACTS_GALLERY, RAIL_GALLERY, CODE_GALLERY, DISCOVER_GALLERY, SIDEBAR_GALLERY, CHAT_GALLERY, CHAT_CONTROLS_GALLERY, THEME_GALLERY, COLOR_GALLERY, ONBOARDING_UI_GALLERY, SETTINGS_GALLERY, USAGE_GALLERY, LIMITS_GALLERY, REPORT_GALLERY, TIPS_GALLERY, NOTIFICATIONS_GALLERY];

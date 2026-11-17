@@ -1,0 +1,13 @@
+@layer app {
+  /* ONL-1872. `ChatComposer` wraps each footer slot in a flex item it does not
+     expose, and that wrapper keeps `min-width: auto` — so its floor is the model
+     name's full nowrap width, the row grew past the panel instead of the label
+     ellipsising, and the send button left the window.
+
+     Selected through `:has()` on OUR OWN class rather than by child position, so
+     it survives a slot reorder. Delete it the day `ChatComposer` takes a prop
+     for the footer's flex. */
+  .astryx-chat-composer *:has(> .chat-composer-controls) {
+    min-width: 0;
+  }
+}

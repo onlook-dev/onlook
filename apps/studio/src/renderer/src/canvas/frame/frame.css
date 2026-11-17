@@ -1,0 +1,142 @@
+@layer app {
+  .breath {
+    --breath-period: 3s;
+  }
+
+  .breath-edge {
+    box-shadow: inset 0 0 0 var(--breath-edge) rgb(225 230 240 / 0.9);
+  }
+
+  /* A frame whose page failed to load. The inner box is counter-scaled to
+     screen pixels, so these queries read how big the frame looks, not how big
+     it is: detail goes first, then the action, then the title. */
+  .frame-failure {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-4);
+    box-sizing: border-box;
+    container-type: size;
+    transform-origin: 0 0;
+    background-color: var(--color-background-card);
+  }
+
+  .frame-failure-card {
+    max-width: 280px;
+    min-width: 0;
+  }
+
+  .frame-failure-glyph {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-element);
+    corner-shape: superellipse(1.5);
+    color: var(--color-icon-secondary);
+  }
+
+  .frame-loading-glyph {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    color: var(--color-icon-secondary);
+  }
+
+  .frame-loading-glyph svg {
+    animation: frame-reload-turn 900ms linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .frame-loading-glyph svg { animation: none; }
+  }
+
+  .frame-failure-title {
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .frame-failure-detail {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+
+  .frame-failure-action {
+    max-width: 100%;
+  }
+
+  .frame-failure-action button {
+    max-width: 100%;
+    corner-shape: superellipse(1.5);
+  }
+
+  .frame-failure-action button * {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  @container (max-width: 260px) or (max-height: 220px) {
+    .frame-failure-detail {
+      display: none;
+    }
+  }
+
+  @container (max-width: 180px) or (max-height: 140px) {
+    .frame-failure-action {
+      display: none;
+    }
+  }
+
+  @container (max-width: 110px) or (max-height: 84px) {
+    .frame-failure-title {
+      display: none;
+    }
+  }
+
+  .frame-scrollbar {
+    width: 16px;
+    z-index: var(--studio-layer-base);
+    cursor: default;
+    touch-action: none;
+  }
+
+  .frame-scrollbar-thumb-hit {
+    --thumb-width: 3px;
+    position: absolute;
+    left: 0;
+    width: calc(var(--thumb-width) + 8px);
+    cursor: ns-resize;
+    outline: none;
+  }
+
+  .frame-scrollbar-thumb-hit:hover,
+  .frame-scrollbar-thumb-hit:focus-visible,
+  .frame-scrollbar-thumb-hit[data-dragging='true'] {
+    --thumb-width: 8px;
+  }
+
+  .frame-scrollbar-pill {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: var(--thumb-width);
+    border-radius: 999px;
+    background: var(--studio-teal-hue);
+    pointer-events: none;
+  }
+}
+
+.frame-idle-thumbnail { transition: opacity 120ms ease-out; }
+
+@media (prefers-reduced-motion: reduce) { .frame-idle-thumbnail { transition: none; } }

@@ -1,9 +1,0 @@
-{
-  "redirects": [
-    {
-      "source": "/features/visual-editor",
-      "destination": "/features/builder",
-      "permanent": true
-    }
-  ]
-}

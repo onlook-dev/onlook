@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "docId": "doc_every_op",
+  "revision": 21,
+  "pages": {
+    "page-doc_every_op": {
+      "id": "page-doc_every_op",
+      "name": "Page 1",
+      "order": 0
+    },
+    "pg_notes": {
+      "id": "pg_notes",
+      "name": "References",
+      "order": 0.5
+    }
+  },
+  "nodes": {
+    "fr_c1": {
+      "id": "fr_c1",
+      "pageId": "page-doc_every_op",
+      "kind": "browser",
+      "name": "landing",
+      "x": 40,
+      "y": 60,
+      "width": 1280,
+      "height": 800,
+      "order": 1.5,
+      "content": {
+        "homeUrl": "http://localhost:5174"
+      }
+    },
+    "fr_d2": {
+      "id": "fr_d2",
+      "pageId": "page-doc_every_op",
+      "kind": "browser",
+      "name": "mobile",
+      "x": 1300,
+      "y": -20,
+      "width": 390,
+      "height": 844,
+      "order": 1,
+      "provenance": {
+        "from": "fr_c1",
+        "at": "2026-09-24T09:01:00Z"
+      },
+      "content": {
+        "homeUrl": "http://localhost:5173"
+      }
+    },
+    "tx_f4": {
+      "id": "tx_f4",
+      "pageId": "page-doc_every_op",
+      "kind": "text",
+      "name": "",
+      "x": 40,
+      "y": -140,
+      "width": 480,
+      "height": 76,
+      "order": 3,
+      "content": {
+        "text": "Checkout, rebuilt\nwith the address step first",
+        "size": "medium"
+      }
+    },
+    "im_g5": {
+      "id": "im_g5",
+      "pageId": "pg_notes",
+      "kind": "image",
+      "name": "reference.png",
+      "x": 1300,
+      "y": 900,
+      "width": 640,
+      "height": 400,
+      "order": 4,
+      "content": {
+        "imageId": "img_4b7e",
+        "name": "reference.png",
+        "originalWidth": 1280,
+        "originalHeight": 800,
+        "alt": "the reference shot, cropped"
+      }
+    }
+  }
+}

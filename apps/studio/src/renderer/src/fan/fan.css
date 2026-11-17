@@ -1,0 +1,83 @@
+.preview-fan {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 8 / 5;
+}
+.preview-fan-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  --fan-x: 0%;
+  --fan-rotate: 0deg;
+  --fan-width: 100%;
+  width: var(--fan-width);
+  aspect-ratio: 8 / 5;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-container);
+  corner-shape: superellipse(1.5);
+  background: var(--color-background-muted);
+  box-shadow: 0 18px 40px -12px var(--studio-illo-shadow);
+  /* `--fan-y` is a share of the card's own height (ONL-2593). */
+  translate: calc(-50% + var(--fan-x)) calc(-50% + var(--fan-y, 0%));
+  rotate: var(--fan-rotate);
+  transition: translate 620ms cubic-bezier(.32, .72, 0, 1), rotate 620ms cubic-bezier(.32, .72, 0, 1), width 620ms cubic-bezier(.32, .72, 0, 1);
+  animation: preview-fan-in 420ms cubic-bezier(.32, .72, 0, 1) both;
+}
+@keyframes preview-fan-in {
+  from { opacity: 0; scale: 0.92; }
+}
+.preview-fan-card[data-leaving] {
+  animation: preview-fan-out 220ms cubic-bezier(.32, .72, 0, 1) both;
+  pointer-events: none;
+}
+@keyframes preview-fan-out {
+  to { opacity: 0; scale: 0.9; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .preview-fan-card { transition: none; animation: none; }
+  /* Not `none`: its end is what removes the card (ONL-2593). */
+  .preview-fan-card[data-leaving] { animation-duration: 1ms; }
+  .preview-fan-remove { transition: none; }
+}
+/* A hairline that lightens whatever it sits on, so a dark page and a light one both get an edge (ONL-2744). */
+.preview-fan-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  corner-shape: inherit;
+  border: var(--border-width) solid rgba(255, 255, 255, 0.24);
+  mix-blend-mode: plus-lighter;
+  pointer-events: none;
+}
+.preview-fan-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.preview-fan-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: var(--studio-layer-over);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.preview-fan-card:hover .preview-fan-remove,
+.preview-fan-card:has(:focus-visible) .preview-fan-remove {
+  opacity: 1;
+  pointer-events: auto;
+}
+/* A scrim, not a surface: the control sits on the viewer's own picture (ONL-2644). */
+.preview-fan-remove > button {
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(20px) saturate(1.4);
+}
+.preview-fan-remove > button:hover:not(:disabled) { background: rgba(72, 72, 72, 0.82); }
+.preview-fan-remove > button:active:not(:disabled) { background: rgba(96, 96, 96, 0.88); }
+.preview-fan-remove > button:disabled { opacity: 0.5; cursor: default; }

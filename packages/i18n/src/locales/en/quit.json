@@ -1,0 +1,6 @@
+{
+  "quit.unsaved.message": "You have unsaved code.",
+  "quit.unsaved.detail": "Quitting now discards it.",
+  "quit.unsaved.quit": "Quit anyway",
+  "quit.unsaved.stay": "Cancel"
+}

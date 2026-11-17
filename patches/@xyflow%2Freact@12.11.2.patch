@@ -1,0 +1,92 @@
+diff --git a/dist/esm/index.js b/dist/esm/index.js
+--- a/dist/esm/index.js
++++ b/dist/esm/index.js
+@@ -2130,26 +2130,39 @@
+ function useResizeObserver() {
+     const updateNodeInternals = useStore(selector$b);
++    const pendingUpdates = useRef(new Map());
++    const animationFrame = useRef(null);
+     const [resizeObserver] = useState(() => {
+         if (typeof ResizeObserver === 'undefined') {
+             return null;
+         }
+         return new ResizeObserver((entries) => {
+-            const updates = new Map();
+             entries.forEach((entry) => {
+                 const id = entry.target.getAttribute('data-id');
+-                updates.set(id, {
++                pendingUpdates.current.set(id, {
+                     id,
+                     nodeElement: entry.target,
+                     force: true,
+                 });
+             });
+-            updateNodeInternals(updates);
++            if (animationFrame.current === null) {
++                animationFrame.current = requestAnimationFrame(() => {
++                    animationFrame.current = null;
++                    const updates = pendingUpdates.current;
++                    pendingUpdates.current = new Map();
++                    updateNodeInternals(updates);
++                });
++            }
+         });
+     });
+     useEffect(() => {
+         return () => {
+             resizeObserver?.disconnect();
++            if (animationFrame.current !== null) {
++                cancelAnimationFrame(animationFrame.current);
++            }
++            animationFrame.current = null;
++            pendingUpdates.current.clear();
+         };
+     }, [resizeObserver]);
+     return resizeObserver;
+ }
+diff --git a/dist/esm/index.mjs b/dist/esm/index.mjs
+--- a/dist/esm/index.mjs
++++ b/dist/esm/index.mjs
+@@ -2130,26 +2130,39 @@
+ function useResizeObserver() {
+     const updateNodeInternals = useStore(selector$b);
++    const pendingUpdates = useRef(new Map());
++    const animationFrame = useRef(null);
+     const [resizeObserver] = useState(() => {
+         if (typeof ResizeObserver === 'undefined') {
+             return null;
+         }
+         return new ResizeObserver((entries) => {
+-            const updates = new Map();
+             entries.forEach((entry) => {
+                 const id = entry.target.getAttribute('data-id');
+-                updates.set(id, {
++                pendingUpdates.current.set(id, {
+                     id,
+                     nodeElement: entry.target,
+                     force: true,
+                 });
+             });
+-            updateNodeInternals(updates);
++            if (animationFrame.current === null) {
++                animationFrame.current = requestAnimationFrame(() => {
++                    animationFrame.current = null;
++                    const updates = pendingUpdates.current;
++                    pendingUpdates.current = new Map();
++                    updateNodeInternals(updates);
++                });
++            }
+         });
+     });
+     useEffect(() => {
+         return () => {
+             resizeObserver?.disconnect();
++            if (animationFrame.current !== null) {
++                cancelAnimationFrame(animationFrame.current);
++            }
++            animationFrame.current = null;
++            pendingUpdates.current.clear();
+         };
+     }, [resizeObserver]);
+     return resizeObserver;
+ }

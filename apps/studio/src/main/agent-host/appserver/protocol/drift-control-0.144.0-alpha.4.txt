@@ -1,0 +1,81 @@
+codex protocol drift: codex-cli 0.144.0-alpha.4 -> codex-cli 0.147.0
+
+DEFINITIONS — the actual changes:
+  definitions          +17 / -1 / ~38
+      + AppToolSummary
+      + BrowserUseRequirements
+      + ConnectorMetadata
+      + DesktopOnboardingEntrypoint
+      + ExternalAgentConfigImportHistoryRecordSuccessParams
+      + ExternalAgentConfigImportHistoryRecordTypeResultParams
+      + ExternalAgentDetectedConnectorCandidate
+      + ExternalAgentDetectedConnectorSource
+      + ExternalAgentImportedConnectorCandidate
+      + ExternalAgentImportedConnectorSource
+      + FeedbackRequirements
+      + InstalledApp
+      + PluginDisabledReason
+      + ScheduledTaskSchedule
+      + ScheduledTaskSummary
+      + ScheduledTaskWeekday
+      + ThreadSection
+      - AmazonBedrockCredentialSource   REMOVED
+      ~ Account
+      ~ AppMetadata
+      ~ CommandAction
+      ~ ConfigRequirements
+      ~ ConfiguredHookHandler
+      ~ ContentItem
+      ~ DynamicToolCallOutputContentItem
+      ~ ExternalAgentConfigImportHistory
+      ~ ExternalAgentConfigImportItemTypeFailure
+      ~ ExternalAgentConfigImportItemTypeSuccess
+      ~ ExternalAgentConfigMigrationItemType
+      ~ FileSystemSpecialPath
+      ~ FunctionCallOutputContentItem
+      ~ HookEventName
+      ~ HookMetadata
+      ~ InitializeCapabilities
+      ~ InputModality
+      ~ ManagedHooksRequirements
+      ~ McpAuthStatus
+      ~ McpToolCallAppContext
+      ~ MigrationDetails
+      ~ Model
+      ~ PlanType
+      ~ PluginDetail
+      ~ PluginShareContext
+      ~ PluginShareUpdateDiscoverability
+      ~ PluginSummary
+      ~ RateLimitSnapshot
+      ~ RealtimeConversationVersion
+      ~ ResponseItem
+      ~ ReviewDecision
+      ~ SkillInterface
+      ~ Thread
+      ~ ThreadItem
+      ~ ThreadSortKey
+      ~ TokenUsageBreakdown
+      ~ TurnEnvironmentParams
+      ~ UserInput
+
+METHODS — what can be sent and received:
+  ClientRequest        +8 / -0 / ~0
+      + app/installed
+      + app/read
+      + externalAgentConfig/import/recordHistory
+      + thread/section/move
+      + threadSection/create
+      + threadSection/delete
+      + threadSection/list
+      + threadSection/update
+  ServerRequest        +0 / -0 / ~0
+  ServerNotification   +2 / -0 / ~0
+      + thread/environment/connected
+      + thread/environment/disconnected
+  ClientNotification   +0 / -0 / ~0
+
+MESSAGE SCHEMAS — carriers to re-check (names omitted; see definitions):
+  types                +18 / -0 / ~63
+
+drift found — read it before bumping the pin.

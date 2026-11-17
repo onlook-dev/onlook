@@ -1,0 +1,21 @@
+{
+  "astryx.dialog.close": "閉じる",
+  "astryx.banner.dismiss": "閉じる",
+  "astryx.toast.dismiss": "通知を閉じる",
+  "astryx.toast.viewport": "通知",
+  "astryx.codeBlock.copyCode": "コードをコピー",
+  "astryx.codeBlock.copied": "コピーしました",
+  "astryx.codeBlock.code": "コード",
+  "astryx.chatSendButton.send": "送信",
+  "astryx.chatSendButton.stop": "停止",
+  "astryx.chat.composerInput.label": "メッセージ入力欄",
+  "astryx.chat.composerDrawer.label": "添付項目",
+  "astryx.chat.pastedText.expand": "全文を表示",
+  "astryx.chatMessage.messageFrom.user": "ユーザーのメッセージ",
+  "astryx.chatMessage.messageFrom.assistant": "エージェントのメッセージ",
+  "astryx.contextMenu.label": "コンテキストメニュー",
+  "astryx.link.newTab": "（新しいタブで開きます）",
+  "astryx.markdown.table": "表",
+  "astryx.markdown.taskList": "タスクリスト",
+  "astryx.resizable.handle.label": "サイズ変更ハンドル"
+}

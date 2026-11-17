@@ -1,0 +1,11 @@
+diff --git a/dist/chunks/lib-q6ns0vZr.js b/dist/chunks/lib-q6ns0vZr.js
+--- a/dist/chunks/lib-q6ns0vZr.js
++++ b/dist/chunks/lib-q6ns0vZr.js
+@@ -1101,6 +1101,7 @@ function writeLine(output) {
+     }
+ }
+ function clearLine(move = 0) {
++    if (!process.stdout.isTTY) return;
+     if (move < 0) {
+         process.stdout.moveCursor(0, move);
+     }

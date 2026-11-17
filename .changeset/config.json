@@ -1,0 +1,19 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.4/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [],
+  "linked": [],
+  "access": "restricted",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "privatePackages": { "version": true, "tag": true },
+  "ignore": [
+    "@studio/chat-ui",
+    "@studio/events",
+    "@studio/fixtures",
+    "@studio/git-ui",
+    "@studio/i18n",
+    "@studio/onboarding-ui"
+  ]
+}

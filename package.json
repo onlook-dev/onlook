@@ -1,56 +1,99 @@
 {
-    "name": "@onlook/repo",
-    "version": "0.0.0",
-    "description": "Onlook Monorepo",
-    "homepage": "https://onlook.com",
-    "license": "Apache-2.0",
-    "private": true,
-    "type": "module",
-    "author": {
-        "name": "Onlook",
-        "email": "contact@onlook.com"
-    },
-    "workspaces": [
-        "packages/*",
-        "apps/*",
-        "tooling/*",
-        "apps/web/*",
-        "docs"
-    ],
-    "scripts": {
-        "build": "bun --filter @onlook/web build:client",
-        "start": "bun --filter @onlook/web start:client",
-        "dev": "bun --filter @onlook/web dev",
-        "test": "bun --filter '*' test",
-        "docs": "bun --filter @onlook/docs dev",
-        "dev:admin": "bun --filter @onlook/admin dev",
-        "backend:start": "bun --filter @onlook/backend start",
-        "db:gen": "bun --filter @onlook/db db:gen",
-        "db:push": "cd packages/db && bun db:push",
-        "db:seed": "cd packages/db && bun db:seed",
-        "db:migrate": "cd packages/db && bun db:migrate",
-        "db:reset": "cd apps/backend && bun run reset",
-        "format": "bun --filter '*' format",
-        "lint": "bun --filter '*' lint",
-        "typecheck": "bun --filter @onlook/web-client typecheck",
-        "clean": "git clean -xdf node_modules",
-        "clean:workspaces": "bun --filter '*' clean",
-        "setup:env": "cd packages/scripts && bun run start",
-        "docker:build": "docker compose build",
-        "docker:up": "docker compose up -d",
-        "docker:down": "docker compose down",
-        "docker:logs": "docker compose logs -f",
-        "docker:restart": "docker compose down && docker compose up -d --build"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/onlook-dev/onlook.git"
-    },
-    "bugs": {
-        "url": "https://github.com/onlook-dev/onlook/issues"
-    },
-    "devDependencies": {
-        "@onlook/eslint": "*"
-    },
-    "packageManager": "bun@1.3.1"
+  "name": "onlook",
+  "description": "Onlook: a desktop app for designing on your own codebase with an AI agent.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/onlook-dev/onlook.git"
+  },
+  "homepage": "https://onlook.com",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "bun@1.4.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "tests/apparatus"
+  ],
+  "trustedDependencies": [
+    "electron",
+    "node-pty"
+  ],
+  "scripts": {
+    "changeset": "changeset",
+    "dev": "turbo run dev --filter=@studio/app",
+    "showroom": "bun scripts/showroom.ts",
+    "scenario": "bun scripts/scenario.ts",
+    "dev:lab": "bun run --cwd apps/studio dev:lab",
+    "build": "turbo run build",
+    "//build:dmg": "Builds macOS installers: decides the signing tier, maps the namespaced notary credentials into the builder child alone, verifies the artifact with spctl, and says which tier it produced.",
+    "build:dmg": "bun scripts/cut-dmg.ts",
+    "build:windows": "bun scripts/cut-windows.ts",
+    "//build:dmg:dir": "Packages the .app without an installer. Fast loop for main-process work that only shows up when packaged.",
+    "build:dmg:dir": "bun scripts/cut-dmg.ts --dir",
+    "typecheck": "turbo run typecheck && tsc --noEmit -p tsconfig.json",
+    "reset:identity": "bun scripts/reset-identity.ts",
+    "verify": "node scripts/check-node.mjs && bun run check:secrets && bun run check:public && bun run check:publication && bun run typecheck && bun run test:unit && bun run test:pty && bun run check:strings && bun run check:imports && bun run check:unused && bun run check:scratch && bun run check:lint && bun run check:react && bun run build",
+    "check:public": "bun scripts/public-readiness.ts",
+    "hooks:install": "bun scripts/install-public-hook.ts",
+    "check:publication": "bun scripts/check-publication.ts",
+    "check:secrets": "bun scripts/secrets.ts",
+    "check:strings": "bun scripts/check-strings.ts",
+    "translate": "bun scripts/translate-strings.ts",
+    "codex:schema": "bun apps/studio/src/main/agent-host/appserver/protocol/snapshot.ts",
+    "codex:drift": "bun apps/studio/src/main/agent-host/appserver/protocol/drift.ts",
+    "check:lint": "oxlint",
+    "check:imports": "bun scripts/check-imports.ts",
+    "check:unused": "knip --no-progress",
+    "check:scratch": "bun scripts/check-scratch.ts",
+    "check:react": "CI=1 react-doctor --no-telemetry -y .",
+    "test": "bun run test:unit && bun run test:pty",
+    "test:unit": "GIT_CONFIG_GLOBAL=/dev/null bun scripts/test-unit.ts",
+    "test:report": "bun run test:unit --junit \"${JUNIT_REPORT_PATH:-.test-results/unit.xml}\"",
+    "test:focused": "bun run test:unit",
+    "test:windows": "node --import ./tests/apparatus/node-test-preload.ts --test --test-timeout=30000 apps/studio/src/main/server/windows.pty.ts",
+    "test:pty": "node scripts/check-node.mjs && GIT_CONFIG_GLOBAL=/dev/null node --import ./tests/apparatus/node-test-preload.ts --test --test-timeout=30000 'apps/studio/src/main/**/*.pty.ts'",
+    "test:wide": "bun scripts/test-wide.ts",
+    "test:sdk": "node --import ./tests/apparatus/node-live-preload.ts --test 'tests/live/**/*.live.ts'",
+    "test:e2e": "bun run --cwd apps/studio build && playwright test",
+    "test:e2e:only": "playwright test",
+    "test:e2e:packaged": "STUDIO_TARGET=packaged playwright test"
+  },
+  "//devDependencies": "The workspace packages here are what the e2e harness — which lives in tests/ and belongs to no workspace package — resolves through the dependency graph rather than by relative path: declaring one is what puts it in node_modules, since a workspace package is linked where it is depended upon and nowhere else. Both are workspace packages and therefore never in any app's runtime `dependencies`.",
+  "overrides": {
+    "@codemirror/legacy-modes": "6.5.4",
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "body-parser": "2.4.0",
+    "fast-uri": "3.1.9",
+    "js-yaml": "4.3.2",
+    "proxy-addr": "2.0.8",
+    "hono": "4.13.13",
+    "ip-address": "10.7.4",
+    "qs": "6.16.1",
+    "dompurify": "3.4.17"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "0.115.0",
+    "@astryxdesign/cli": "0.1.9",
+    "@changesets/cli": "2.31.0",
+    "@playwright/test": "1.62.0",
+    "@studio/events": "workspace:*",
+    "@studio/fixtures": "workspace:*",
+    "@studio/git-ui": "workspace:*",
+    "@studio/onboarding-ui": "workspace:*",
+    "@types/bun": "^1.3.14",
+    "@types/node": "^24.13.3",
+    "knip": "6.45.1",
+    "oxlint": "1.79.0",
+    "playwright": "1.62.0",
+    "react-doctor": "0.9.12",
+    "turbo": "^2.10.7",
+    "typescript": "^7.0.2"
+  },
+  "patchedDependencies": {
+    "@xyflow/react@12.11.2": "patches/@xyflow%2Freact@12.11.2.patch",
+    "@astryxdesign/core@0.1.9": "patches/@astryxdesign%2Fcore@0.1.9.patch",
+    "electron-vite@5.0.0": "patches/electron-vite@5.0.0.patch"
+  }
 }

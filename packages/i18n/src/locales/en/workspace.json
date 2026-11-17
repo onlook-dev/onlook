@@ -1,0 +1,15 @@
+{
+  "workspace.refused.alreadyCopied.title": "This folder is already in Onlook as {projectName}",
+  "workspace.refused.alreadyCopied.body": "Open {projectName}, or choose a different folder.",
+  "workspace.refused.noBaseRef.title": "Onlook could not tell which branch is your main one",
+  "workspace.refused.noBaseRef.body": "Set your remote’s main branch, or create a local main branch if there is no remote, then try again.",
+  "workspace.refused.nameUnavailable.title": "Onlook could not name a new copy",
+  "workspace.refused.nameUnavailable.body": "To free a name for the copy, remove an unused Onlook branch and try again.",
+  "workspace.refused.dismiss": "Close",
+  "workspace.startFresh.title": "This folder has no project files",
+  "workspace.startFresh.body": "Start a blank project instead of copying {folderName}.",
+  "workspace.startFresh.startBlank": "Start blank project",
+  "workspace.created.copy": "We made a new copy of {repo} named {project}",
+  "workspace.created.branch": "Also a branch named {branch} was made based off of the {base} branch of your codebase",
+  "workspace.created.copiedNote": "This folder is not tracked by git yet. Onlook sets that up on its copy. Your folder stays as it is."
+}

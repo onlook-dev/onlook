@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Build-time input to `astryx theme build`, not app code: no DOM, no Node,
+    // no ambient env. Neither existing project can claim it without implying
+    // this ships in main or in the renderer bundle.
+    "lib": ["ES2023"],
+    "types": [],
+    "module": "ESNext",
+    "moduleResolution": "bundler"
+  },
+  "include": ["src/theme/**/*"]
+}

@@ -1,0 +1,30 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "lib": ["ES2023"],
+    // `bun` widens the type surface for tests that run under Bun, not the runtime.
+    "types": ["node", "electron-vite/node", "bun"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@onlook/cloud-provider": ["./src/main/cloud/local.ts"]
+    }
+  },
+  // Renderer files listed here are pure (no DOM, no React) and also in `tsconfig.web.json` (ONL-1844).
+  "include": [
+    "electron.vite.config.ts",
+    "../../scripts/version.ts",
+    "../../scripts/release-channel.ts",
+    "../../scripts/release-targets.ts",
+    "../../packages/events/src/flags.ts",
+    "../../packages/events/src/identity.ts",
+    "src/main/**/*",
+    "src/preload/**/*",
+    "src/renderer/src/chat/blankWelcome.ts",
+    "src/renderer/src/canvas/ideas/ideas.ts",
+    "src/instructions/**/*"
+  ],
+  // The guest preload needs DOM types, so it has its own project, `tsconfig.guest.json`.
+  "exclude": ["src/preload/guest.ts", "src/preload/guest-evidence.ts", "src/preload/guest-evidence.test.ts", "src/preload/guest-mutations.ts", "src/preload/guest-mutations.test.ts", "src/preload/guest-scroll.ts", "src/preload/guest-scroll.test.ts"]
+}

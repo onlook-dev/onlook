@@ -1,9 +1,0 @@
-{
-    "font": {
-        "id": "customFont",
-        "family": "customFont",
-        "subsets": ["latin"],
-        "variable": "--font-custom",
-        "type": "local"
-    }
-}

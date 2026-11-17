@@ -1,0 +1,8 @@
+{
+  "appRun.start-waiting": "应用尚未启动。如果智能体没有响应，请点按“停止”取消，然后再试一次。",
+  "appRun.start-failed": "应用需要一些帮助才能启动。",
+  "appRun.repair-unavailable": "智能体暂时不可用，请再试一次。",
+  "appRun.stop-waiting": "停止应用所需的时间比预期长。Onlook 等待期间，你可以继续工作。",
+  "appRun.stop-failed": "应用仍在运行。点按“停止”再试一次。",
+  "appRun.dismiss": "关闭"
+}

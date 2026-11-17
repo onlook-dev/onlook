@@ -1,0 +1,11 @@
+/* Unlayered: inside a layer these would lose to the library's own rules. */
+/* The popover layer around a dropdown paints its own opaque fill and shadow; the menu inside wears the shared surface instead. */
+:has(> .astryx-dropdown-menu) {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* A menu divider's air matches the menu's 4px edge: the list's 2px gap plus this. */
+:is(.astryx-context-menu, .astryx-dropdown-menu, [role='menu']) .astryx-divider {
+  margin-block: 2px;
+}

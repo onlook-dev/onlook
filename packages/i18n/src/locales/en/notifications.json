@@ -1,0 +1,19 @@
+{
+  "notifications.event.finished": "{name} finished",
+  "notifications.event.failed": "{name} failed",
+  "notifications.event.question": "{name} has a question",
+  "notifications.event.approval": "{name} needs approval",
+  "notifications.open": "Open",
+  "notifications.title": "Notifications",
+  "notifications.description": "To know when another project finishes or needs you, get a silent notification.",
+  "notifications.unconfirmed": "To get notifications, allow Onlook in macOS System Settings.",
+  "notifications.failed": "Notifications couldn’t be delivered. To fix this, allow Onlook in macOS System Settings.",
+  "notifications.systemSettings": "Open System Settings",
+  "notifications.invitation.title": "Know when your agent needs you",
+  "notifications.invitation.body": "Get silent notifications when work finishes, fails, or needs an answer while Onlook is in the background.",
+  "notifications.enable": "Enable notifications",
+  "notifications.snooze": "Remind me in 7 days",
+  "notifications.dismiss": "Not now",
+  "notifications.dismissed": "You can change background notifications in Settings.",
+  "notifications.saveFailed": "Could not save notification settings. Try again."
+}

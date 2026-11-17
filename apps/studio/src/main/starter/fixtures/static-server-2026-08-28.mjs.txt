@@ -1,0 +1,148 @@
+import { createServer } from 'node:http';
+import { createReadStream, existsSync, realpathSync, statSync, watch } from 'node:fs';
+import { extname, isAbsolute, relative, resolve, sep } from 'node:path';
+
+const ROOT = process.cwd();
+const REAL_ROOT = realpathSync(ROOT);
+const PORT = Number(process.env.PORT);
+if (!Number.isInteger(PORT) || PORT <= 0) {
+  console.error('PORT must be set to the port to listen on');
+  process.exit(2);
+}
+
+const TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+  '.txt': 'text/plain; charset=utf-8',
+};
+
+// Only files inside ROOT, and never a dotfile: env files are copied into
+// this folder and must not be served.
+function fileFor(url) {
+  let pathname;
+  try {
+    pathname = decodeURIComponent(new URL(url, 'http://127.0.0.1').pathname);
+  } catch {
+    return undefined;
+  }
+  if (pathname.includes('\0')) return undefined;
+  if (pathname.endsWith('/')) pathname += 'index.html';
+  const target = resolve(ROOT, '.' + pathname);
+  const step = relative(ROOT, target);
+  if (step === '' || step.startsWith('..') || isAbsolute(step)) return undefined;
+  if (step.split(sep).some(denied)) return undefined;
+  if (!existsSync(target) || !statSync(target).isFile()) return undefined;
+  // A symlink inside ROOT can point anywhere; the lexical check above cannot see that.
+  let real;
+  try {
+    real = realpathSync(target);
+  } catch {
+    return undefined;
+  }
+  if (!real.startsWith(REAL_ROOT + sep)) return undefined;
+  if (relative(REAL_ROOT, real).split(sep).some(denied)) return undefined;
+  return target;
+}
+
+function denied(segment) {
+  return segment.startsWith('.') || segment === 'node_modules';
+}
+
+const LOCAL_HOSTS = new Set(['127.0.0.1', 'localhost', '[::1]']);
+function isLocalHost(host) {
+  if (typeof host !== 'string') return false;
+  return LOCAL_HOSTS.has(host.replace(/:\d+$/, '').toLowerCase());
+}
+
+const clients = new Set();
+
+const server = createServer((req, res) => {
+  // DNS rebinding: a page on another origin can resolve its own name to 127.0.0.1.
+  if (!isLocalHost(req.headers.host)) {
+    res.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' });
+    res.end('Forbidden');
+    return;
+  }
+  if (req.url === '/__reload') {
+    res.writeHead(200, {
+      'content-type': 'text/event-stream',
+      'cache-control': 'no-store',
+      connection: 'keep-alive',
+    });
+    res.write(': connected\n\n');
+    clients.add(res);
+    req.on('close', () => clients.delete(res));
+    res.on('error', () => clients.delete(res));
+    return;
+  }
+  const file = fileFor(req.url ?? '/');
+  if (!file) {
+    res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+    res.end('Not found');
+    return;
+  }
+  res.writeHead(200, {
+    'content-type': TYPES[extname(file)] ?? 'application/octet-stream',
+    'cache-control': 'no-store',
+  });
+  createReadStream(file).pipe(res);
+});
+
+server.on('error', (error) => {
+  console.error('starter could not listen on ' + PORT + ': ' + (error.code ?? error.message));
+  process.exit(1);
+});
+
+server.listen(PORT, '127.0.0.1', () => {
+  console.log('starter ready http://127.0.0.1:' + PORT);
+});
+
+let pending;
+function changed(name) {
+  if (name && String(name).split(sep).some((segment) => segment.startsWith('.') || segment === 'node_modules')) return;
+  clearTimeout(pending);
+  pending = setTimeout(() => {
+    for (const res of clients) {
+      try {
+        res.write('data: reload\n\n');
+      } catch {
+        clients.delete(res);
+      }
+    }
+  }, 50);
+}
+try {
+  watch(ROOT, { recursive: true }, (_event, name) => changed(name));
+} catch {
+  watch(ROOT, (_event, name) => changed(name));
+}
+
+const parentPort =
+  process.parentPort ??
+  (typeof process.send === 'function'
+    ? { on: (_event, listener) => process.on('message', (data) => listener({ data })) }
+    : undefined);
+if (parentPort) {
+  let deadline;
+  const arm = (windowMs) => {
+    clearTimeout(deadline);
+    deadline = setTimeout(() => process.exit(3), windowMs);
+  };
+  arm(15000);
+  parentPort.on('message', (event) => {
+    const message = event.data;
+    if (message && message.type === 'heartbeat' && Number.isFinite(message.windowMs)) {
+      arm(message.windowMs);
+    }
+  });
+}

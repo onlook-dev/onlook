@@ -1,0 +1,6 @@
+/* Registered so the artifact title's left fade can animate with its scroll (ONL-2593). */
+@property --marquee-left {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}

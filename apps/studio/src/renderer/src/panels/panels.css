@@ -1,0 +1,16 @@
+@layer app {
+  /* One visual name survives the content swap. The original title keeps its
+     accessible label and rename target; only its ink uses this shared layer. */
+  .has-shared-project-name [data-panel-project-name] {
+    opacity: 0;
+  }
+
+  /* Artifacts carries no project header (ONL-2593). */
+  [data-view='artifacts'] > .left-panel-project-name {
+    display: none;
+  }
+
+  [data-view='code'] > .left-panel-project-name {
+    max-width: calc(100% - 64px);
+  }
+}

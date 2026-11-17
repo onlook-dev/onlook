@@ -1,0 +1,10 @@
+{
+  "blank.create.stage.settingUp": "セットアップ中",
+  "blank.create.stage.installing": "インストール中",
+  "blank.create.stage.starting": "起動中",
+  "blank.create.busy": "作成中…",
+  "blank.create.failed.title": "Onlook でプロジェクトを作成できませんでした",
+  "blank.create.failed.stage": "「{stage}」の途中で停止しました。作成途中のものは何も残っていません。",
+  "blank.create.failed.detailLabel": "詳細",
+  "blank.create.retry": "再試行"
+}

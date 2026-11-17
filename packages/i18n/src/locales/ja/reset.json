@@ -1,0 +1,9 @@
+{
+  "reset.confirm.message": "Onlook をリセットしますか？",
+  "reset.confirm.detail": "セットアップをもう一度やり直します。プロジェクトは保持されます。Onlook は再起動します。",
+  "reset.confirm.confirm": "リセット",
+  "reset.confirm.cancel": "キャンセル",
+  "reset.failed.message": "Onlook をリセットできませんでした。",
+  "reset.failed.detail": "セットアップをクリアできませんでした:\n\n{failure}\n\nOnlook は再起動します。",
+  "reset.failed.dismiss": "OK"
+}

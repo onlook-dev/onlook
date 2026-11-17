@@ -1,0 +1,15 @@
+{
+  "workspace.refused.alreadyCopied.title": "このフォルダーは {projectName} として Onlook に追加済みです",
+  "workspace.refused.alreadyCopied.body": "{projectName} を開くか、別のフォルダーを選んでください。",
+  "workspace.refused.noBaseRef.title": "Onlook はどのブランチがメインかを判別できませんでした",
+  "workspace.refused.noBaseRef.body": "リモートのメインブランチを設定するか、リモートがない場合はローカルに main ブランチを作成してから、もう一度お試しください。",
+  "workspace.refused.nameUnavailable.title": "Onlook は新しいコピーに名前を付けられませんでした",
+  "workspace.refused.nameUnavailable.body": "コピーの名前を空けるには、使っていない Onlook ブランチを削除してから、もう一度お試しください。",
+  "workspace.refused.dismiss": "閉じる",
+  "workspace.startFresh.title": "このフォルダーにはプロジェクトのファイルがありません",
+  "workspace.startFresh.body": "{folderName} をコピーする代わりに、空のプロジェクトを開始してください。",
+  "workspace.startFresh.startBlank": "空のプロジェクトを開始",
+  "workspace.created.copy": "{repo} の新しいコピーを {project} という名前で作成しました",
+  "workspace.created.branch": "また、コードベースの {base} ブランチをもとに、{branch} というブランチも作成しました",
+  "workspace.created.copiedNote": "このフォルダーはまだ Git で管理されていません。Onlook がコピー側で設定します。お使いのフォルダーはそのまま残ります。"
+}

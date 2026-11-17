@@ -1,0 +1,16 @@
+{
+  "rail.label": "Panel rail",
+  "rail.views.label": "Left panel view",
+  "rail.mark": "Onlook",
+  "rail.logoMenu.label": "Onlook menu",
+  "rail.logoMenu.tooltip": "Main Menu",
+  "rail.files": "Files",
+  "rail.artifacts": "Artifacts",
+  "rail.artifacts.caption": "Artifacts",
+  "rail.code": "Code",
+  "rail.help": "Help",
+  "rail.help.reportIssue": "Report an issue",
+  "rail.help.requestFeature": "Request a feature",
+  "rail.help.shortcuts": "Keyboard shortcuts",
+  "rail.help.tour": "Introduction"
+}

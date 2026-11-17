@@ -1,0 +1,39 @@
+name: Public readiness
+
+on: [pull_request, push]
+
+permissions: {}
+
+jobs:
+  public-readiness:
+    name: Public readiness (advisory)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version: 1.4.2
+      # Advisory (ONL-2772): findings show in the log and job summary but do not fail the job.
+      - name: Public-readiness check
+        continue-on-error: true
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE_BRANCH: ${{ github.event.repository.default_branch }}
+          PUBLIC_READINESS_BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = push ] && [ "$PUBLIC_READINESS_BRANCH" != "$BASE_BRANCH" ]; then
+            bun run check:public
+          elif [ -z "$BASE_SHA" ] || ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            bun run check:public
+          else
+            bun run check:public --base "$BASE_SHA"
+          fi
+      - name: Secret scan
+        run: bun run check:secrets

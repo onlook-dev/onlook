@@ -1,0 +1,21 @@
+{
+  "astryx.dialog.close": "Close",
+  "astryx.banner.dismiss": "Dismiss",
+  "astryx.toast.dismiss": "Dismiss notification",
+  "astryx.toast.viewport": "Notifications",
+  "astryx.codeBlock.copyCode": "Copy code",
+  "astryx.codeBlock.copied": "Copied",
+  "astryx.codeBlock.code": "Code",
+  "astryx.chatSendButton.send": "Send",
+  "astryx.chatSendButton.stop": "Stop",
+  "astryx.chat.composerInput.label": "Message input",
+  "astryx.chat.composerDrawer.label": "Items",
+  "astryx.chat.pastedText.expand": "Expand",
+  "astryx.chatMessage.messageFrom.user": "Message from user",
+  "astryx.chatMessage.messageFrom.assistant": "Message from assistant",
+  "astryx.contextMenu.label": "Context menu",
+  "astryx.link.newTab": "(opens in new tab)",
+  "astryx.markdown.table": "Table",
+  "astryx.markdown.taskList": "Task list",
+  "astryx.resizable.handle.label": "Resize handle"
+}

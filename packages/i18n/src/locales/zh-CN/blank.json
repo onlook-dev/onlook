@@ -1,0 +1,10 @@
+{
+  "blank.create.stage.settingUp": "准备项目",
+  "blank.create.stage.installing": "安装依赖",
+  "blank.create.stage.starting": "启动应用",
+  "blank.create.busy": "正在创建…",
+  "blank.create.failed.title": "Onlook 未能创建项目",
+  "blank.create.failed.stage": "在“{stage}”阶段中断，未留下任何文件。",
+  "blank.create.failed.detailLabel": "详细信息",
+  "blank.create.retry": "重试"
+}

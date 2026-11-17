@@ -1,0 +1,12 @@
+extends: ./electron-builder.yml
+appId: com.onlook.studio
+productName: Onlook
+protocols:
+  - name: Onlook attribution
+    schemes: [onlook]
+publish:
+  provider: generic
+  url: https://pub-9ae0145bf4194910900ac1b79bf65df3.r2.dev/
+  channel: latest
+  useMultipleRangeRequest: false
+generateUpdatesFilesForAllChannels: true

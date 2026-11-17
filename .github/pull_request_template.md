@@ -1,29 +1,20 @@
-## Description
+## What changed
 
-<!-- Provide a clear and concise description of your changes -->
+<!-- One or two sentences on the problem and the change. Link a related issue if there is one. -->
 
-## Related Issues
+## How you checked it
 
-<!-- Link any related issues using GitHub keywords (e.g., "closes #123", "fixes #456", "related to #789") -->
+- [ ] `bun run verify`
+- [ ] `bun run test:e2e`, if this changes a flow in the app
+- [ ] `bun run test:e2e:packaged` against an app from `bun run build:dmg`, if this touches the main process, a native module or `dependencies`
 
-## Type of Change
+## Checklist
 
-<!-- Put an `x` in the boxes that apply -->
+- [ ] A new changeset (`bun run changeset`, or `bun run changeset --empty`)
+- [ ] Every new or changed English string is written in every language under `packages/i18n/src/locales/`
+- [ ] Nothing new in `apps/studio` `dependencies`, unless it can't be bundled; if so, `asarUnpack` in `electron-builder.yml` is checked
+- [ ] No secrets or credentials in code, logs or committed env files
 
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Documentation
-- [ ] Refactor
-- [ ] Other (please describe):
+## Notes for the reviewer
 
-## Testing
-
-<!-- Describe the tests you ran or the steps to verify your changes -->
-
-## Screenshots (if applicable)
-
-<!-- Add screenshots to help explain your changes -->
-
-## Additional Notes
-
-<!-- Add any other context about the PR here -->
+<!-- Anything you decided that someone might reasonably have decided differently. -->

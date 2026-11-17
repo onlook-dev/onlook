@@ -1,0 +1,106 @@
+import { randomUUID } from 'node:crypto';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { createServer } from 'node:net';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import type { GithubCloneFailure } from '@studio/events';
+import type { CliResult } from '../env/cli.js';
+import { runGit, untrustedCloneGitConfig } from '../env/git.js';
+import { userEnv } from '../env/shell-env.js';
+import type { GithubCredential } from './backend.js';
+import { isWindows, nullDevice } from '../env/platform.js';
+
+type Credential = Extract<GithubCredential, { status: 'ready' }>;
+
+export function cloneFailure(result: Pick<CliResult, 'err'>, cancelled = false): GithubCloneFailure {
+  if (cancelled) return 'cancelled';
+  if (/no space left|disk full|ENOSPC/i.test(result.err)) return 'disk';
+  if (/authentication failed|not found|access denied|403|401|could not read Username/i.test(result.err)) return 'access';
+  if (/empty repository|remote branch .* not found/i.test(result.err)) return 'empty';
+  if (/resolve host|connect|timed out|early EOF|RPC failed|SSL|TLS/i.test(result.err)) return 'network';
+  return 'unknown';
+}
+
+export function cloneProgress(previous: number, chunk: string): number {
+  let next = previous;
+  for (const match of chunk.matchAll(/(Receiving objects|Resolving deltas|Updating files):\s+(\d+)%/g)) {
+    const percent = Math.min(100, Number(match[2]));
+    const weighted = match[1] === 'Receiving objects' ? percent * 0.8
+      : match[1] === 'Resolving deltas' ? 80 + percent * 0.15 : 95 + percent * 0.04;
+    next = Math.max(next, Math.floor(weighted));
+  }
+  return next;
+}
+
+export function validCredential(credential: Credential, repository: string, now = Date.now()): boolean {
+  return /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repository)
+    && repository.split('/').every((part) => part !== '.' && part !== '..')
+    && credential.remoteUrl === `https://github.com/${repository}.git`
+    && credential.username === 'x-access-token'
+    && typeof credential.password === 'string' && credential.password.length > 0
+    && !/[\r\n\0]/.test(credential.password)
+    && Number.isFinite(credential.expiresAt) && credential.expiresAt > now + 30_000
+    && credential.expiresAt <= now + 8 * 60 * 60 * 1000;
+}
+
+export async function withGitCredential<Result>(credential: Credential, work: (run: (args: string[], options?: {
+  signal?: AbortSignal; onStderr?: (chunk: string) => void;
+  stdin?: string; timeoutMs?: number;
+}) => Promise<CliResult>) => Promise<Result>): Promise<Result> {
+  const directory = await mkdtemp(join(tmpdir(), 'onlook-github-'));
+  const nonce = randomUUID();
+  const socketPath = isWindows() ? `\\\\.\\pipe\\onlook-github-${nonce}` : join(directory, 'credential.sock');
+  const helper = join(directory, 'helper.cjs');
+  const remote = new URL(credential.remoteUrl);
+  const server = createServer((socket) => {
+    socket.setTimeout(2000, () => socket.destroy());
+    let input = '';
+    socket.on('data', (chunk: Buffer) => {
+      input += chunk.toString();
+      if (input.length > 8192) { socket.destroy(); return; }
+      if (!input.endsWith('\n\n')) return;
+      const fields = Object.fromEntries(input.trimEnd().split('\n').map((line) => {
+        const separator = line.indexOf('=');
+        return [line.slice(0, separator), line.slice(separator + 1)];
+      }));
+      const allowed = fields['nonce'] === nonce && fields['protocol'] === 'https'
+        && fields['host'] === remote.host && fields['path'] === remote.pathname.slice(1)
+        && Date.now() < credential.expiresAt;
+      socket.end(allowed ? `username=${credential.username}\npassword=${credential.password}\n\n` : '\n');
+    });
+    socket.on('error', () => {});
+  });
+  try {
+    await writeFile(helper, `const net = require('node:net');
+if (process.argv[2] !== 'get') process.exit(0);
+let input = '';
+process.stdin.setEncoding('utf8');
+process.stdin.on('data', chunk => { input += chunk; if (input.length > 8192) process.exit(1); });
+process.stdin.on('end', () => {
+  const socket = net.connect(${JSON.stringify(socketPath)});
+  socket.setTimeout(2000, () => process.exit(1));
+  socket.on('connect', () => socket.write('nonce=${nonce}\\n' + input.trimEnd() + '\\n\\n'));
+  socket.on('data', chunk => process.stdout.write(chunk));
+  socket.on('error', () => process.exit(1));
+});
+`, { mode: 0o600 });
+    await new Promise<void>((resolve, reject) => { server.once('error', reject); server.listen(socketPath, resolve); });
+    const inherited = await userEnv();
+    const noFile = nullDevice();
+    const unset = Object.keys(inherited).filter((key) => /^(GIT_|SSH_|NODE_OPTIONS$|NODE_PATH$|ELECTRON_)/i.test(key));
+    const env = {
+      GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: noFile, GIT_TERMINAL_PROMPT: '0',
+      GIT_ASKPASS: '', SSH_ASKPASS: '', GIT_LFS_SKIP_SMUDGE: '1', ELECTRON_RUN_AS_NODE: '1',
+    };
+    const quote = (value: string): string => `'${value.replaceAll("'", "'\\''")}'`;
+    const helperCommand = `!${quote(process.execPath)} ${quote(helper)}`;
+    const safety = untrustedCloneGitConfig(helperCommand);
+    return await work((args, options = {}) => runGit(directory, args, {
+      config: safety, timeoutMs: 15 * 60 * 1000, maxBuffer: 1024 * 1024, ...options,
+      unset: unset.filter((key) => !(key in env)), env,
+    }));
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+    await rm(directory, { recursive: true, force: true });
+  }
+}

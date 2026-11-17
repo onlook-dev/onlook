@@ -1,0 +1,3 @@
+apps/studio/src/main/telemetry/index.ts → apps/studio/src/main/identity/store.ts
+apps/studio/src/main/telemetry/index.ts → apps/studio/src/main/settings/state.ts
+apps/studio/src/main/telemetry/index.ts → apps/studio/src/main/workspace/store.ts

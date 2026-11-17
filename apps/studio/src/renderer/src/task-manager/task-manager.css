@@ -1,0 +1,22 @@
+@layer app {
+  /* The arrow goes before the label, so the label's end meets the values' end whether an arrow shows or not. */
+  [data-testid='task-manager'] th[data-align='end'] button {
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+  }
+
+  [data-testid='task-manager'] th:not([aria-sort]) button > span:nth-child(2) {
+    visibility: hidden;
+  }
+
+  [data-testid='task-manager'] th:not([aria-sort]):hover button > span:nth-child(2),
+  [data-testid='task-manager'] th:not([aria-sort]) button:focus-visible > span:nth-child(2) {
+    visibility: visible;
+  }
+
+  /* The library's ghost button clears its outline with four-id specificity, so this matches it. */
+  [data-testid='task-manager-refresh']:focus-visible:not(#\#):not(#\#):not(#\#):not(#\#) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}

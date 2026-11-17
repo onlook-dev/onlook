@@ -1,0 +1,13 @@
+{
+  "$schema": "https://react.doctor/schema/config.json",
+  // Scan only the React surfaces. main/preload are Node/Electron code the
+  // React rule set misreads; scanning apps/studio whole would lint them.
+  "projects": ["apps/studio/src/renderer", "packages/chat-ui", "packages/git-ui"],
+  // The gauntlet must run offline and touch nothing outside the repo:
+  // no score API, no share URLs, no Socket.dev supply-chain calls
+  // (the repo has its own cooldown rail; network in `verify` is flake).
+  "noScore": true,
+  "share": false,
+  "supplyChain": { "enabled": false },
+  "blocking": "error"
+}

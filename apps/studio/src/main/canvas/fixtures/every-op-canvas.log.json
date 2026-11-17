@@ -1,0 +1,430 @@
+[
+  {
+    "revision": 1,
+    "author": "system",
+    "at": "2026-09-24T08:59:00Z",
+    "op": {
+      "type": "create-page",
+      "page": {
+        "id": "page-doc_every_op",
+        "name": "Page 1",
+        "order": 0
+      }
+    },
+    "prior": {
+      "kind": "none"
+    }
+  },
+  {
+    "revision": 2,
+    "author": "user",
+    "at": "2026-09-24T09:00:00Z",
+    "op": {
+      "type": "create",
+      "node": {
+        "id": "fr_c1",
+        "pageId": "page-doc_every_op",
+        "kind": "browser",
+        "name": "landing",
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 800,
+        "order": 0,
+        "content": {
+          "homeUrl": "http://localhost:5173"
+        }
+      }
+    },
+    "prior": {
+      "kind": "none"
+    }
+  },
+  {
+    "revision": 3,
+    "author": "user",
+    "at": "2026-09-24T09:01:00Z",
+    "op": {
+      "type": "duplicate",
+      "node": {
+        "id": "fr_d2",
+        "pageId": "page-doc_every_op",
+        "kind": "browser",
+        "name": "landing",
+        "x": 1360,
+        "y": 0,
+        "width": 1280,
+        "height": 800,
+        "order": 1,
+        "provenance": {
+          "from": "fr_c1",
+          "at": "2026-09-24T09:01:00Z"
+        },
+        "content": {
+          "homeUrl": "http://localhost:5173"
+        }
+      }
+    },
+    "prior": {
+      "kind": "none"
+    }
+  },
+  {
+    "revision": 4,
+    "author": "agent",
+    "at": "2026-09-24T09:02:00Z",
+    "op": {
+      "type": "create",
+      "node": {
+        "id": "fr_e3",
+        "pageId": "page-doc_every_op",
+        "kind": "browser",
+        "name": "scratch",
+        "x": 0,
+        "y": 900,
+        "width": 1280,
+        "height": 800,
+        "order": 2,
+        "content": {
+          "homeUrl": "http://localhost:5173/scratch"
+        }
+      }
+    },
+    "prior": {
+      "kind": "none"
+    }
+  },
+  {
+    "revision": 5,
+    "author": "user",
+    "at": "2026-09-24T09:03:00Z",
+    "op": {
+      "type": "move",
+      "id": "fr_c1",
+      "x": 40,
+      "y": 60
+    },
+    "prior": {
+      "kind": "fields",
+      "id": "fr_c1",
+      "fields": {
+        "x": 0,
+        "y": 0
+      }
+    }
+  },
+  {
+    "revision": 6,
+    "author": "user",
+    "at": "2026-09-24T09:04:00Z",
+    "op": {
+      "type": "resize",
+      "id": "fr_d2",
+      "x": 1300,
+      "y": -20,
+      "width": 390,
+      "height": 844
+    },
+    "prior": {
+      "kind": "fields",
+      "id": "fr_d2",
+      "fields": {
+        "x": 1360,
+        "y": 0,
+        "width": 1280,
+        "height": 800
+      }
+    }
+  },
+  {
+    "revision": 7,
+    "author": "agent",
+    "at": "2026-09-24T09:05:00Z",
+    "op": {
+      "type": "rename",
+      "id": "fr_d2",
+      "name": "mobile"
+    },
+    "prior": {
+      "kind": "fields",
+      "id": "fr_d2",
+      "fields": {
+        "name": "landing"
+      }
+    }
+  },
+  {
+    "revision": 8,
+    "author": "system",
+    "at": "2026-09-24T09:06:00Z",
+    "op": {
+      "type": "set-home-url",
+      "id": "fr_c1",
+      "homeUrl": "http://localhost:5174"
+    },
+    "prior": {
+      "kind": "fields",
+      "id": "fr_c1",
+      "fields": {
+        "homeUrl": "http://localhost:5173"
+      }
+    }
+  },
+  {
+    "revision": 9,
+    "author": "agent",
+    "at": "2026-09-24T09:07:00Z",
+    "op": {
+      "type": "remove",
+      "id": "fr_e3"
+    },
+    "prior": {
+      "kind": "node",
+      "node": {
+        "id": "fr_e3",
+        "pageId": "page-doc_every_op",
+        "kind": "browser",
+        "name": "scratch",
+        "x": 0,
+        "y": 900,
+        "width": 1280,
+        "height": 800,
+        "order": 2,
+        "content": {
+          "homeUrl": "http://localhost:5173/scratch"
+        }
+      }
+    }
+  },
+  {
+    "revision": 10,
+    "author": "user",
+    "at": "2026-09-24T09:08:00Z",
+    "op": {
+      "type": "reorder",
+      "id": "fr_c1",
+      "order": 1.5
+    },
+    "prior": {
+      "kind": "fields",
+      "id": "fr_c1",
+      "fields": {
+        "order": 0
+      }
+    }
+  },
+  {
+    "revision": 11,
+    "author": "user",
+    "at": "2026-09-24T09:09:00Z",
+    "op": {
+      "type": "create",
+      "node": {
+        "id": "tx_f4",
+        "pageId": "page-doc_every_op",
+        "kind": "text",
+        "name": "",
+        "x": 40,
+        "y": -140,
+        "width": 480,
+        "height": 65,
+        "order": 3,
+        "content": {
+          "text": "Checkout, rebuilt",
+          "size": "large"
+        }
+      }
+    },
+    "prior": {
+      "kind": "none"
+    }
+  },
+  {
+    "revision": 12,
+    "author": "user",
+    "at": "2026-09-24T09:10:00Z",
+    "op": {
+      "type": "create",
+      "node": {
+        "id": "im_g5",
+        "pageId": "page-doc_every_op",
+        "kind": "image",
+        "name": "reference.png",
+        "x": 1300,
+        "y": 900,
+        "width": 640,
+        "height": 400,
+        "order": 4,
+        "content": {
+          "imageId": "img_4b7e",
+          "name": "reference.png",
+          "originalWidth": 1280,
+          "originalHeight": 800,
+          "alt": "the reference shot"
+        }
+      }
+    },
+    "prior": {
+      "kind": "none"
+    }
+  },
+  {
+    "revision": 13,
+    "author": "user",
+    "at": "2026-09-24T09:11:00Z",
+    "op": {
+      "type": "set-text",
+      "id": "tx_f4",
+      "text": "Checkout, rebuilt\nwith the address step first",
+      "width": 480,
+      "height": 130
+    },
+    "prior": {
+      "kind": "fields",
+      "id": "tx_f4",
+      "fields": {
+        "text": "Checkout, rebuilt",
+        "width": 480,
+        "height": 65
+      }
+    }
+  },
+  {
+    "revision": 14,
+    "author": "user",
+    "at": "2026-09-24T09:12:00Z",
+    "op": {
+      "type": "set-text-size",
+      "id": "tx_f4",
+      "size": "medium",
+      "width": 480,
+      "height": 76
+    },
+    "prior": {
+      "kind": "fields",
+      "id": "tx_f4",
+      "fields": {
+        "size": "large",
+        "width": 480,
+        "height": 130
+      }
+    }
+  },
+  {
+    "revision": 15,
+    "author": "agent",
+    "at": "2026-09-24T09:13:00Z",
+    "op": {
+      "type": "set-image-alt",
+      "id": "im_g5",
+      "alt": "the reference shot, cropped"
+    },
+    "prior": {
+      "kind": "fields",
+      "id": "im_g5",
+      "fields": {
+        "alt": "the reference shot"
+      }
+    }
+  },
+  {
+    "revision": 16,
+    "author": "user",
+    "at": "2026-09-24T09:14:00Z",
+    "op": {
+      "type": "create-page",
+      "page": {
+        "id": "pg_notes",
+        "name": "Notes",
+        "order": 1
+      }
+    },
+    "prior": {
+      "kind": "none"
+    }
+  },
+  {
+    "revision": 17,
+    "author": "user",
+    "at": "2026-09-24T09:15:00Z",
+    "op": {
+      "type": "rename-page",
+      "pageId": "pg_notes",
+      "name": "References"
+    },
+    "prior": {
+      "kind": "page-fields",
+      "pageId": "pg_notes",
+      "fields": {
+        "name": "Notes"
+      }
+    }
+  },
+  {
+    "revision": 18,
+    "author": "user",
+    "at": "2026-09-24T09:16:00Z",
+    "op": {
+      "type": "reorder-page",
+      "pageId": "pg_notes",
+      "order": 0.5
+    },
+    "prior": {
+      "kind": "page-fields",
+      "pageId": "pg_notes",
+      "fields": {
+        "order": 1
+      }
+    }
+  },
+  {
+    "revision": 19,
+    "author": "user",
+    "at": "2026-09-24T09:17:00Z",
+    "op": {
+      "type": "set-node-page",
+      "id": "im_g5",
+      "pageId": "pg_notes"
+    },
+    "prior": {
+      "kind": "fields",
+      "id": "im_g5",
+      "fields": {
+        "pageId": "page-doc_every_op"
+      }
+    }
+  },
+  {
+    "revision": 20,
+    "author": "agent",
+    "at": "2026-09-24T09:18:00Z",
+    "op": {
+      "type": "create-page",
+      "page": {
+        "id": "pg_gone",
+        "name": "Scratch",
+        "order": 2
+      }
+    },
+    "prior": {
+      "kind": "none"
+    }
+  },
+  {
+    "revision": 21,
+    "author": "agent",
+    "at": "2026-09-24T09:19:00Z",
+    "op": {
+      "type": "remove-page",
+      "pageId": "pg_gone"
+    },
+    "prior": {
+      "kind": "page",
+      "page": {
+        "id": "pg_gone",
+        "name": "Scratch",
+        "order": 2
+      }
+    }
+  }
+]

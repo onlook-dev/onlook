@@ -1,0 +1,543 @@
+{
+  "assets": [
+    {
+      "path": "apps/studio/build/icon.png",
+      "sha256": "ebb98201d5a61f832f74acef6458b04095d64aa391ef5d006e5611237b36aaf3",
+      "source": "git:a3083ab4e819f4cdc3fa3f5e84bb93b93a5882dd:apps/studio/build/icon.png",
+      "license": "LicenseRef-Onlook",
+      "evidence": "Made by Onlook (ONL-3303). Not covered by the open-source license; see ASSETS.md."
+    },
+    {
+      "path": "apps/studio/resources/brand/app-icon-tile-120.png",
+      "sha256": "ff9fc4bb2cb77bff6d05af1634a0e4083d2d8cd3bd5e749daaa94af392a4136f",
+      "source": "git:d086daa94d1e16f39b0c70151d3921246f90c24f:apps/studio/resources/brand/app-icon-tile-120.png",
+      "license": "LicenseRef-Onlook",
+      "evidence": "Made by Onlook (ONL-3303). Not covered by the open-source license; see ASSETS.md."
+    },
+    {
+      "path": "apps/studio/resources/brand/dmg-background.jpg",
+      "sha256": "653e877d8add6d404aede978e0a48649c0f413f0adbd668da1891e8f08c26381",
+      "source": "git:1bc6b35b8323d7276012cbe77c82d6bf8348b02e:apps/studio/resources/brand/dmg-background.jpg",
+      "license": "LicenseRef-Onlook",
+      "evidence": "Made by Onlook (ONL-3303). Not covered by the open-source license; see ASSETS.md."
+    },
+    {
+      "path": "apps/studio/resources/brand/dmg-background@2x.jpg",
+      "sha256": "5fc39f978da7eae1b4f4990ff2c1a1852bd5ad9404f0c83e5910253254360db1",
+      "source": "git:1bc6b35b8323d7276012cbe77c82d6bf8348b02e:apps/studio/resources/brand/dmg-background@2x.jpg",
+      "license": "LicenseRef-Onlook",
+      "evidence": "Made by Onlook (ONL-3303). Not covered by the open-source license; see ASSETS.md."
+    },
+    {
+      "path": "apps/studio/resources/brand/lockup-black.svg",
+      "sha256": "063a32c7f214a28035d18ea76e00d2a56ebab1d0ed6f4cee4e1a1830dd1b57b6",
+      "source": "git:d086daa94d1e16f39b0c70151d3921246f90c24f:apps/studio/resources/brand/lockup-black.svg",
+      "license": "LicenseRef-Onlook",
+      "evidence": "Made by Onlook (ONL-3303). Not covered by the open-source license; see ASSETS.md."
+    },
+    {
+      "path": "apps/studio/resources/brand/lockup-white.svg",
+      "sha256": "0904e0e43d9952e3d5e4ae96a1a6da9b3e9740510d5108d67a0c4c149fcbf85a",
+      "source": "git:d086daa94d1e16f39b0c70151d3921246f90c24f:apps/studio/resources/brand/lockup-white.svg",
+      "license": "LicenseRef-Onlook",
+      "evidence": "Made by Onlook (ONL-3303). Not covered by the open-source license; see ASSETS.md."
+    },
+    {
+      "path": "apps/studio/resources/brand/logomark-black.svg",
+      "sha256": "4014b40291401f11966500c06debba56cdf57b19cbbdd5f0aaadddf2a8756e03",
+      "source": "git:d086daa94d1e16f39b0c70151d3921246f90c24f:apps/studio/resources/brand/logomark-black.svg",
+      "license": "LicenseRef-Onlook",
+      "evidence": "Made by Onlook (ONL-3303). Not covered by the open-source license; see ASSETS.md."
+    },
+    {
+      "path": "apps/studio/resources/brand/logomark-white.svg",
+      "sha256": "8f622870bed20894770b49f9ba5274a63eeefae54d39a85a75f94b5802a44cff",
+      "source": "git:d086daa94d1e16f39b0c70151d3921246f90c24f:apps/studio/resources/brand/logomark-white.svg",
+      "license": "LicenseRef-Onlook",
+      "evidence": "Made by Onlook (ONL-3303). Not covered by the open-source license; see ASSETS.md."
+    },
+    {
+      "path": "apps/studio/resources/brand/wordmark-black.svg",
+      "sha256": "61596663d258aa764f4526815d86e25fc82379a524b270ff4e46f2903ea14466",
+      "source": "git:d086daa94d1e16f39b0c70151d3921246f90c24f:apps/studio/resources/brand/wordmark-black.svg",
+      "license": "LicenseRef-Onlook",
+      "evidence": "Made by Onlook (ONL-3303). Not covered by the open-source license; see ASSETS.md."
+    },
+    {
+      "path": "apps/studio/resources/brand/wordmark-white.svg",
+      "sha256": "d5693d879d59bd3f8d1d4d167ee0d93e6d3177045b3811e6038aaf3e5a9c8755",
+      "source": "git:d086daa94d1e16f39b0c70151d3921246f90c24f:apps/studio/resources/brand/wordmark-white.svg",
+      "license": "LicenseRef-Onlook",
+      "evidence": "Made by Onlook (ONL-3303). Not covered by the open-source license; see ASSETS.md."
+    },
+    {
+      "path": "apps/studio/src/renderer/src/assets/chirp.wav",
+      "sha256": "79f9bf8471f62da20259413dc4485ef5634337fb2a8da89fce011000ce77a136",
+      "source": "git:054aaf3ba227ca1426443b5c8324e19bada0951b:apps/studio/src/renderer/src/assets/chirp.wav",
+      "license": "LicenseRef-Onlook",
+      "evidence": "Made by Onlook (ONL-3303). Not covered by the open-source license; see ASSETS.md."
+    },
+    {
+      "path": "apps/studio/src/renderer/src/assets/two-tone.wav",
+      "sha256": "33a4059d9fd3ed2043d495fbc63668f5dc73baff115727e73397aa9c53224b39",
+      "source": "git:3e2b539ebba0624bec7143d4f27cc429347a94a3:apps/studio/src/renderer/src/assets/two-tone.wav",
+      "license": "LicenseRef-Onlook",
+      "evidence": "Made by Onlook (ONL-3303). Not covered by the open-source license; see ASSETS.md."
+    },
+    {
+      "path": "apps/studio/src/renderer/src/canvas/ideas/arc.webp",
+      "sha256": "09128554b3a9ce337574def045254ae073c9c7d5189a36dca36f9b94729f5d04",
+      "source": "git:f6331ca55ec77cacf36ef50997da9d733c615fa0:apps/studio/src/renderer/src/canvas/ideas/arc.webp",
+      "license": "LicenseRef-Onlook",
+      "evidence": "Made by Onlook (ONL-3303). Not covered by the open-source license; see ASSETS.md."
+    },
+    {
+      "path": "apps/studio/src/renderer/src/canvas/ideas/wave.webp",
+      "sha256": "90871a5e3b0a37669c0f4dd19b46fffc1bc5455b083ae4f7e934b7a8d3cebaeb",
+      "source": "git:98dda1150fb1b19fa6bc2e5f6691bd84dd6cde7e:apps/studio/src/renderer/src/canvas/ideas/wave.webp",
+      "license": "LicenseRef-Onlook",
+      "evidence": "Made by Onlook (ONL-3303). Not covered by the open-source license; see ASSETS.md."
+    },
+    {
+      "path": "assets/web-preview.png",
+      "sha256": "e5a4da675b4c99ffd3a0c7c0f58c7cfd8a7bd768094fc33f6ad7cba344ac0659",
+      "source": "git:588c17c8db2e4e5b41ee7b9bc70388b06648e69a:assets/web-preview.png",
+      "license": "LicenseRef-Onlook",
+      "evidence": "Made by Onlook (ONL-3303). Not covered by the open-source license; see ASSETS.md."
+    }
+  ],
+  "fonts": [
+    {
+      "path": "@fontsource-variable/inter/files/inter-greek-opsz-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "94fd1ce2533a7db49fac13877633836edee820d2af40a0f1929d30c06e9dcacb",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-greek-opsz-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "93c5ac80e25cda1cf289206c724027eeb187c9d398106f0079a912cbe80616ce",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-latin-standard-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "c58f9d530baa7e96355f444502eca739d5eefa0f328f3d635b73648373214629",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-greek-ext-standard-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "e0f32d9ee75a83f4031e1a7bc8926f962278e282d3535be7d8dbeb3bd62914b5",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-latin-standard-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "2c295d99e26dcf357d4d01bcf270fd6924b600c9a13dd8c363ef114f4c6976fa",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-greek-ext-standard-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "f21ed36275ab20b74f0301ca70abf63cc3ab7addd294665486f946a09465e243",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-cyrillic-standard-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "cd3d9beabd6f8b1fe8726281516753faf2b6abbc1b0c22e68d148f81a597d9eb",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-cyrillic-standard-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "e1dea13a93c69f52837e370541ffe132508352666e9288ab910f2c422f4b9b50",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-latin-ext-wght-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "71254244ccb1ec21e14db3480fef6f6826d1136dc4aca1c7d3ca7ce31294fcce",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "34b9c504cab7a73e37b746343a449132e56cf7b5481af2cb81dc74dcff25c956",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "3100e775e8616cd2611beecfa23a4263d7037586789b43f035236a2e6fbd4c62",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-cyrillic-opsz-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "e1dea13a93c69f52837e370541ffe132508352666e9288ab910f2c422f4b9b50",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-greek-ext-opsz-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "f21ed36275ab20b74f0301ca70abf63cc3ab7addd294665486f946a09465e243",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-vietnamese-wght-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "5c66f9e07e90c6d4ac4922cc68d60de26c17b1858e677fb5e603fce3952b3ff2",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-cyrillic-opsz-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "cd3d9beabd6f8b1fe8726281516753faf2b6abbc1b0c22e68d148f81a597d9eb",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-latin-wght-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "7291b5970da2237441273c03b424a504b70b18f09791473fab99687dcc314720",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-greek-ext-opsz-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "e0f32d9ee75a83f4031e1a7bc8926f962278e282d3535be7d8dbeb3bd62914b5",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-vietnamese-wght-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "1991ed5832eb07f7523f22a843ca9a8aa83c51c8e87062ce77794855d2f5dee8",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-cyrillic-ext-wght-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "39689184132e9fba8fb1066f429125d14445352a566f47f4edcae7c3c90e486d",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-cyrillic-ext-wght-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "ca157063339ac4ad418f214f3abfed119b0798ab4d377386ce5c9e5a7a435ebd",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-greek-standard-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "93c5ac80e25cda1cf289206c724027eeb187c9d398106f0079a912cbe80616ce",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-greek-standard-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "94fd1ce2533a7db49fac13877633836edee820d2af40a0f1929d30c06e9dcacb",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-cyrillic-ext-standard-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "4ee1c3b9f5a9e1e6d0de25553e221995286c4f414d966ff88b044edbd2e2b44d",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-latin-ext-standard-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "cd92c8740f77f482bcd39e831fa7b1445589e9203cc9edb39fd49435d8976257",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-cyrillic-ext-standard-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "e3a8d2d7497a325b85c2e0c9d931ba1741415d23d1f828ebc5ce8c116dab44e8",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-latin-ext-standard-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "5e6d4fe9d9f4bff8b2a2469d25ab19576bb85331e22c6ed51398e16f95d56a9c",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-greek-wght-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "1be3448e292fbf05ffe176fe1e43f135013d50b1e7d324ad1a558f623d3bb6f6",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-greek-wght-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "29e273a42cac8240f37fbdd94c684f8a255e61c8076942d9b8f18a0e2c014991",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-cyrillic-ext-opsz-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "e3a8d2d7497a325b85c2e0c9d931ba1741415d23d1f828ebc5ce8c116dab44e8",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-cyrillic-ext-opsz-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "4ee1c3b9f5a9e1e6d0de25553e221995286c4f414d966ff88b044edbd2e2b44d",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-vietnamese-opsz-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "d102ea2c86a59e30a0c647a30791e251bf6701492a50549d1cdcf8a643fbbc98",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-latin-opsz-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "c58f9d530baa7e96355f444502eca739d5eefa0f328f3d635b73648373214629",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-cyrillic-wght-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "47d42151dff6d13f1c2b9a1f278290f625593c1f01c89612ee4ae7f063167f7a",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-greek-ext-wght-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "6e9e020a25f9b56d418f2c085b1d3c09725a4da23fe693a5b463064606732190",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-vietnamese-opsz-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "935ab355938e6cd9b5fa39f2c3250ee16f3b08807c65dc4162356b50dbc8c7a2",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-cyrillic-wght-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "71d5ee93cc1e9f1d520a3a8b66456de18c7879d8df09d57fcd2eaff75fef0075",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-latin-opsz-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "2c295d99e26dcf357d4d01bcf270fd6924b600c9a13dd8c363ef114f4c6976fa",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-greek-ext-wght-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "787fc783f35c913334445a7c4502bb272f94a8328426578776eac5e4ebd03ba1",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-vietnamese-standard-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "935ab355938e6cd9b5fa39f2c3250ee16f3b08807c65dc4162356b50dbc8c7a2",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-latin-ext-opsz-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "5e6d4fe9d9f4bff8b2a2469d25ab19576bb85331e22c6ed51398e16f95d56a9c",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-vietnamese-standard-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "d102ea2c86a59e30a0c647a30791e251bf6701492a50549d1cdcf8a643fbbc98",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/inter/files/inter-latin-ext-opsz-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "cd92c8740f77f482bcd39e831fa7b1445589e9203cc9edb39fd49435d8976257",
+      "source": "https://registry.npmjs.org/@fontsource-variable/inter/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "a8afa085e9ca5e53434e2ee918ba6b65c7dd4dda56509976b36591478c99d62e",
+      "source": "https://registry.npmjs.org/@fontsource-variable/jetbrains-mono/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "18be452724bfdc236c074ca94a249a7f41a86752c7d04ab258ce9ed5651f6a7e",
+      "source": "https://registry.npmjs.org/@fontsource-variable/jetbrains-mono/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-cyrillic-wght-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "d274604c40757f98f07df623a8b8fb5194508a6fa4f5413a7a107f09e3b7452a",
+      "source": "https://registry.npmjs.org/@fontsource-variable/jetbrains-mono/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-cyrillic-wght-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "8df3ca627bd8e1cb0e5414f7429fe7a2cf82732b0fc43f2d05bc2c471b64fcfc",
+      "source": "https://registry.npmjs.org/@fontsource-variable/jetbrains-mono/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-cyrillic-ext-wght-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "593ccd6fe36e299e151aeae4521be9bfe83ac487d96d7cdb44f50be4a04041c7",
+      "source": "https://registry.npmjs.org/@fontsource-variable/jetbrains-mono/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-cyrillic-ext-wght-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "1b53536573e8f2e886848fee9a53c278a8f92b02ac794a83437ad9277120df47",
+      "source": "https://registry.npmjs.org/@fontsource-variable/jetbrains-mono/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-vietnamese-wght-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "2288795da89dd97e648954b96e22b4501bd85dfc453264460b252f888b582ca2",
+      "source": "https://registry.npmjs.org/@fontsource-variable/jetbrains-mono/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-vietnamese-wght-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "b156cfa6a1ae7f2a55d324d859f6e6054fcf4655282f0478fcca56cc404324e5",
+      "source": "https://registry.npmjs.org/@fontsource-variable/jetbrains-mono/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-greek-wght-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "9e1c1dd086c8aac0cdaee04d370711ad062750250fbf249b8b4b83ede5bb839a",
+      "source": "https://registry.npmjs.org/@fontsource-variable/jetbrains-mono/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-greek-wght-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "ee863198077f3093ffa81c072581cc4bd608a04e60a8a9c0b846396ce4f14109",
+      "source": "https://registry.npmjs.org/@fontsource-variable/jetbrains-mono/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-ext-wght-normal.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "79bfdab9ba467e26eea4122e6f2567e188dd8a09a8c730d501fc487c4ab99c6e",
+      "source": "https://registry.npmjs.org/@fontsource-variable/jetbrains-mono/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    },
+    {
+      "path": "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-ext-wght-italic.woff2",
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "sha256": "60652c78382d7e5021ce4c3ed8985fc41d8f3d1b1a3bedcec2a44ed8979fe5eb",
+      "source": "https://registry.npmjs.org/@fontsource-variable/jetbrains-mono/5.3.0",
+      "evidence": "Exact package license text preserved in NOTICE. Conservative inventory of all supplied font variants."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "name": "@studio/i18n",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./astryx": "./src/astryx.ts",
+    "./lines": "./src/lines.ts",
+    "./locale": "./src/locale.ts",
+    "./machine": "./src/machine.ts",
+    "./notifications": "./src/notifications.ts",
+    "./placeholders": "./src/placeholders.ts",
+    "./strings": "./src/strings.ts",
+    "./update": "./src/update.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@studio/events": "workspace:*",
+    "@types/bun": "^1.3.14",
+    "typescript": "^7.0.2"
+  }
+}

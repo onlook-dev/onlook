@@ -1,0 +1,6 @@
+{
+  "quit.unsaved.message": "有未保存的代码。",
+  "quit.unsaved.detail": "现在退出将丢弃这些更改。",
+  "quit.unsaved.quit": "仍然退出",
+  "quit.unsaved.stay": "取消"
+}

@@ -1,0 +1,8 @@
+{
+  "appRun.start-waiting": "The app hasn’t started yet. If the agent isn’t responding, press Stop to cancel and try again.",
+  "appRun.start-failed": "Your app needs a hand to start.",
+  "appRun.repair-unavailable": "The agent isn’t available yet. Try again.",
+  "appRun.stop-waiting": "Stopping the app is taking longer than expected. You can keep working while Onlook waits.",
+  "appRun.stop-failed": "The app is still running. Press Stop to try again.",
+  "appRun.dismiss": "Dismiss"
+}

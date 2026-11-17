@@ -1,0 +1,8 @@
+{
+  "appRun.start-waiting": "アプリはまだ起動していません。エージェントが応答しない場合は、「停止」を押してキャンセルし、もう一度お試しください。",
+  "appRun.start-failed": "アプリの起動には手助けが必要です。",
+  "appRun.repair-unavailable": "エージェントはまだ利用できません。もう一度お試しください。",
+  "appRun.stop-waiting": "アプリの停止に予想より時間がかかっています。Onlook が待っている間も、作業を続けられます。",
+  "appRun.stop-failed": "アプリはまだ実行中です。もう一度「停止」を押してください。",
+  "appRun.dismiss": "閉じる"
+}

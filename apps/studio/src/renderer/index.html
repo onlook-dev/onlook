@@ -1,0 +1,43 @@
+<!doctype html>
+<!--
+  `data-theme` is NOT an Astryx-namespaced attribute and is not decoration
+  (ONL-2093). `useTheme()` reads `document.documentElement` for a literal
+  `data-theme` when no `<Theme>` provider is above it — and this app has none,
+  by design. Without it the hook falls through to `prefers-color-scheme`, so
+  every JS-side mode decision in the library tracked the USER'S OS rather than
+  the one theme we ship. `Toast` picks its content media mode from it and
+  rendered white-on-white on a light-preference machine.
+-->
+<html lang="en" data-astryx-theme="studio" data-astryx-media="dark" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Electron CSP: no remote code, no eval in production. The dev server needs
+      inline styles and websockets, which electron-vite serves from localhost.
+
+      Session replay (plan 2026-08-04 U7) added exactly two things, and
+      script-src 'self' — the no-remote-code contract — survived both:
+       - TWO PostHog hosts in connect-src: the ingest host (recordings ride
+         /s/ POSTs) AND us-assets.i.posthog.com, where the SDK fetches its
+         remote config (/array/<token>/config). Blocking the second is not a
+         degraded mode — recording NEVER STARTS without the config answer
+         (measured in the U8 walk, both directions: without the host, zero
+         /s/ traffic; with it, recordings arrive). The recorder itself still
+         ships INSIDE the bundle via the no-external import — no script host;
+       - worker-src 'self' blob: data: for the recorder's compression worker.
+         Without it worker-src falls back to script-src 'self' and recording
+         silently produces nothing (PostHog's own strict-CSP guidance).
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: studio-thumb: https://avatars.githubusercontent.com; font-src 'self' data:; connect-src 'self' ws://localhost:* http://localhost:* https://us.i.posthog.com https://us-assets.i.posthog.com; worker-src 'self' blob: data:"
+    />
+    <title>Onlook</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- `src/boot.ts` loads ahead of the bundle below, injected by `electron.vite.config.ts`: declared here it would be folded into the bundle's own chunk (ONL-3153). -->
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

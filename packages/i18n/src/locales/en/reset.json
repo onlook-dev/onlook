@@ -1,0 +1,9 @@
+{
+  "reset.confirm.message": "Reset Onlook?",
+  "reset.confirm.detail": "This takes you through setup again. Your projects are kept. Onlook will restart.",
+  "reset.confirm.confirm": "Reset",
+  "reset.confirm.cancel": "Cancel",
+  "reset.failed.message": "Onlook could not be reset.",
+  "reset.failed.detail": "Setup could not be cleared:\n\n{failure}\n\nOnlook will restart.",
+  "reset.failed.dismiss": "OK"
+}

@@ -75,7 +75,7 @@ open-source alternative to Figma, V0, Replit Agent, Base 44, Webflow, etc.
 * Windows – Coming soon. Join the [Windows waitlist here](https://www.onlook.com/waitlist?os=windows) and be emailed when we have updates.
 * Linux – No Linux artifact is published and we're still gauging demand for Linux. Join the [Linux waitlist here](https://www.onlook.com/waitlist?os=linux) and be emailed when we have updates. 
 
-🧑‍💻 Run locally – Visit [docs.onlook.com/developers](https://docs.onlook.com/developers) for details.
+🧑‍💻 Build from source – [SOURCE_BUILD.md](SOURCE_BUILD.md) covers building and running Onlook on a Mac. No Onlook account or cloud keys needed.
 
 ## How it works
 
@@ -106,7 +106,7 @@ Because Onlook runs your project with its own tooling, it works with all web fra
 |---|---|
 | Desktop | [Electron](https://www.electronjs.org/) · [React 19](https://react.dev/) · [Astryx](https://astryx.atmeta.com/) (Design system)· [React Flow](https://reactflow.dev/) · [Zustand](https://zustand.docs.pmnd.rs/) · [CodeMirror](https://codemirror.net/) |
 | Your project | [Git](https://git-scm.com/) for working directly on your repo · [node-pty](https://github.com/microsoft/node-pty) for running your dev server and shells |
-| Tooling | [Bun](https://bun.sh/) · [Turborepo](https://turbo.build/) · [PostHog](https://posthog.com/) (opt-in analytics) |
+| Tooling | [Bun](https://bun.sh/) · [Turborepo](https://turbo.build/) · usage analytics (see [Usage data](#usage-data)) |
 | Export | HTML · PNG & JPEG ([Electron capturePage](https://www.electronjs.org/docs/latest/api/web-contents#contentscapturepagerect-opts)) · PDF ([Electron printToPDF](https://www.electronjs.org/docs/latest/api/web-contents#contentsprinttopdfoptions)) & [pdf-lib](https://pdf-lib.js.org/) |
 
 
@@ -116,6 +116,8 @@ If you have a suggestion that would make this better, please fork the repo and
 create a pull request. You can also browse [open issues](https://github.com/onlook-dev/onlook/issues).
 
 See the [CONTRIBUTING.md](CONTRIBUTING.md) for instructions and code of conduct.
+
+To report a security issue, follow [SECURITY.md](SECURITY.md) instead of opening a public issue.
 
 #### Contributors
 
@@ -137,10 +139,14 @@ See the [CONTRIBUTING.md](CONTRIBUTING.md) for instructions and code of conduct.
 - **Onlook Desktop (Electron, original):** the first desktop version is at
   [onlook-dev/desktop](https://github.com/onlook-dev/desktop).
 
+## Usage data
+
+Onlook collects product usage analytics to help us improve the app. In the official download they are on by default; a build from source asks first. You can turn them off in Settings, or set `STUDIO_TELEMETRY=0` to run or build without them. See the [privacy policy](https://www.onlook.com/privacy-policy) for details.
+
 ## License
 
 Onlook's source code is distributed under the Apache 2.0 License. See
-[LICENSE.md](LICENSE.md) for details.
+[LICENSE](LICENSE) for details.
 
 The license covers source code, not every asset in this repository. Onlook's
 icons come from [Central Icons](https://iconists.co/central) by Iconists. They

@@ -1,0 +1,66 @@
+/* The dialog title's own outer box, which the library sizes to hold an element
+   beside it: the count takes the same height, so crossing the threshold moves
+   nothing below the header. */
+.report-counter {
+  display: flex;
+  align-items: center;
+  height: calc(var(--size-element-md) - var(--spacing-2) * 2);
+}
+
+/* The field is sized by `rows`; a drag handle offers a size the dialog does not keep. */
+.report-message-field textarea {
+  resize: none;
+}
+
+/* One height for every state: an error line or the image pill takes rows from the message box, never height from the dialog. */
+.report-content {
+  height: 216px;
+}
+.report-content > [data-testid='report-form'] {
+  height: 100%;
+}
+.report-content .report-message-field {
+  flex: 1 1 0;
+  min-height: 56px;
+}
+.report-content .report-message-field > div,
+.report-content .report-message-field .astryx-textarea {
+  flex: 1 1 0;
+  min-height: 0;
+}
+.report-content .report-message-field textarea {
+  height: 100%;
+}
+/* Even padding on all four sides, and no hover ring or border change: the box stays still under the pointer. */
+.report-message-field {
+  padding: var(--spacing-2) !important;
+}
+.report-message-field:hover:not(:focus-within) {
+  border-color: var(--color-border-emphasized) !important;
+  box-shadow: none !important;
+}
+.report-message-group,
+.report-message-box {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.report-message-box {
+  position: relative;
+}
+.report-message-box > .astryx-field,
+.report-message-box > .astryx-field > div {
+  flex: 1 1 0;
+  min-height: 0;
+}
+/* The pill sits in the box's own padding, on the text's left edge; the text starts under it. The half pixel is the box's border. */
+.report-message-pill {
+  position: absolute;
+  top: calc(var(--spacing-2) + 0.5px);
+  left: calc(var(--spacing-2) + 0.5px);
+  z-index: var(--studio-layer-raised);
+}
+.report-message-box[data-has-image='true'] textarea {
+  padding-top: calc(var(--studio-attachment-pill-height) + var(--spacing-2));
+}

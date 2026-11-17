@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@onlook/cloud-provider": ["./src/main/cloud/local.ts"]
+    }
+  },
+  "files": [],
+  "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.web.json" }]
+}

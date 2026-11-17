@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    // `bun` is here for the test files and nothing else: it widens the type surface, not the runtime.
+    // Same rationale as `packages/events/tsconfig.json`.
+    "types": ["bun"]
+  },
+  "include": ["src"]
+}

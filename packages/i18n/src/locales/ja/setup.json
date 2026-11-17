@@ -1,0 +1,4 @@
+{
+  "setup.failed.install": "パッケージをインストールできませんでした",
+  "setup.failed.start": "アプリを起動できませんでした"
+}

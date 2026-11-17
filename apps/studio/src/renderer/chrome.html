@@ -1,0 +1,26 @@
+<!doctype html>
+<!--
+  The CHROME VIEW's page (ONL-2206) — the window's 38pt band, in its own
+  renderer process. `data-theme` is pinned for the reason `index.html` states.
+-->
+<html lang="en" data-surface="chrome" data-astryx-theme="studio" data-astryx-media="dark" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Narrower than `index.html`'s deliberately: the chrome view never records a
+      session, so it needs neither PostHog host nor the recorder's worker-src.
+      It also talks to no dev server, so `connect-src` keeps only what the
+      electron-vite dev server itself needs.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: studio-thumb:; font-src 'self' data:; connect-src 'self' ws://localhost:* http://localhost:*"
+    />
+    <title>Onlook</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/chrome/entry.tsx"></script>
+  </body>
+</html>

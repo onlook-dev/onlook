@@ -1,0 +1,2 @@
+[test]
+preload = ["../../tests/apparatus/src/preload.ts"]

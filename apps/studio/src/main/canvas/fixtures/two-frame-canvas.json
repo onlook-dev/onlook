@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "docId": "doc_7q1xk4",
+  "revision": 6,
+  "pages": {
+    "page-doc_7q1xk4": {
+      "id": "page-doc_7q1xk4",
+      "name": "Page 1",
+      "order": 0
+    }
+  },
+  "nodes": {
+    "fr_a1": {
+      "id": "fr_a1",
+      "pageId": "page-doc_7q1xk4",
+      "kind": "browser",
+      "name": "checkout",
+      "x": 1420,
+      "y": 900,
+      "width": 1280,
+      "height": 800,
+      "order": 0,
+      "content": {
+        "homeUrl": "http://localhost:3001"
+      }
+    },
+    "fr_b2": {
+      "id": "fr_b2",
+      "pageId": "page-doc_7q1xk4",
+      "kind": "browser",
+      "name": "design-system",
+      "x": 1360,
+      "y": 0,
+      "width": 1280,
+      "height": 800,
+      "order": 1,
+      "provenance": {
+        "from": "fr_a1",
+        "at": "2026-08-12T18:04:00Z"
+      },
+      "content": {
+        "homeUrl": "http://localhost:3000/design-system"
+      }
+    }
+  }
+}

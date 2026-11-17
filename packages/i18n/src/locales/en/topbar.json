@@ -1,0 +1,14 @@
+{
+  "topbar.folder": "Open a different project",
+  "topbar.rail.left.hide": "Hide the sidebar",
+  "topbar.rail.left.show": "Show the sidebar",
+  "topbar.rail.right.hide": "Hide the chat panel",
+  "topbar.rail.right.show": "Show the chat panel",
+  "topbar.update.checking": "Checking for updates",
+  "topbar.update.available": "Update found",
+  "topbar.update.downloading": "Downloading update {percent}%",
+  "topbar.update.ready": "Restart to update",
+  "topbar.update.upToDate": "Up to date",
+  "topbar.update.failed": "Update failed",
+  "topbar.update.diskFull": "Disk full. Free up space to update."
+}
