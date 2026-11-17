@@ -17,7 +17,7 @@ For a larger change, open an issue to discuss it first. Keep a pull request to o
 Before you open it:
 
 - Run `bun run verify`. CI runs the same checks.
-- If you add or update a dependency or an asset, add a review record as [scripts/README.md](scripts/README.md#checkpublic) describes. Only add material whose license allows it.
+- If you add or update a dependency, regenerate the inventory and `NOTICE` as [compliance/README.md](compliance/README.md) describes. Only add material whose license allows it.
 - Add a changeset with `bun run changeset`, choosing `@studio/app`: patch for a fix, minor for a feature, written in plain words for the people who use Onlook. For a change they won't see, run `bun run changeset --empty`. Every pull request needs a new changeset.
 
 The code and writing conventions are in [CODING.md](CODING.md) and [WRITING.md](WRITING.md).

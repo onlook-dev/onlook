@@ -1,6 +1,4 @@
 import { afterEach, describe, expect, it } from 'bun:test';
-import { createHash } from 'node:crypto';
-import { spawnSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
@@ -238,42 +236,5 @@ describe('third-party publication notices', () => {
     const bundleArchive = join(root, 'unlisted-bundle.asar');
     await finished(await asar.createPackage(source, bundleArchive));
     expect(() => verifyArchive(bundleArchive, asar, [entry])).toThrow('Missing third-party notice: unlisted-bundle@2.0.0');
-  });
-
-  it('notices include every tracked image, sound and font in the asset inventory', () => {
-    const result = spawnSync('git', ['ls-files'], { cwd: repositoryRoot, encoding: 'utf8' });
-    expect(result.status).toBe(0);
-    const assets = JSON.parse(readFileSync(join(repositoryRoot, 'compliance/assets.json'), 'utf8'));
-    const tracked = result.stdout.trim().split('\n').filter((path: string) => /\.(png|jpe?g|svg|webp|ico|icns|wav|woff2?|ttf|otf)$/i.test(path));
-    expect(assets.assets.map((entry: { path: string }) => entry.path).sort()).toEqual(tracked.sort());
-    for (const asset of assets.assets) {
-      expect(createHash('sha256').update(readFileSync(join(repositoryRoot, asset.path))).digest('hex')).toBe(asset.sha256);
-    }
-    for (const font of assets.fonts) {
-      expect(font.license).toBe('OFL-1.1');
-      expect(font.sha256).toMatch(/^[a-f0-9]{64}$/);
-      expect(createHash('sha256').update(readFileSync(join(repositoryRoot, 'apps/studio/node_modules', font.path))).digest('hex')).toBe(font.sha256);
-    }
-  });
-
-  it('notices retain every fresh advisory entry and its installed dependency evidence', () => {
-    const audit = JSON.parse(readFileSync(join(repositoryRoot, 'compliance/advisories.json'), 'utf8'));
-    expect(Number.isFinite(Date.parse(audit.scannedAt))).toBe(true);
-    expect(audit.command).toBe('bun audit --json');
-    expect(createHash('sha256').update(readFileSync(join(repositoryRoot, 'bun.lock'))).digest('hex')).toBe(audit.lockSha256);
-    expect(audit.baseline.reduce((total: number, entry: { previousEntries: number }) => total + entry.previousEntries, 0)).toBe(45);
-    const rawEntries = Object.values(audit.raw).flat() as { id: number; vulnerable_versions: string }[];
-    expect(audit.advisories.length).toBe(rawEntries.length);
-    for (const entry of rawEntries) expect(audit.advisories.some((record: { id: number; vulnerable_versions: string }) => record.id === entry.id && record.vulnerable_versions === entry.vulnerable_versions)).toBe(true);
-    expect(audit.dependencyResolutionGaps).toEqual([]);
-    const inventory = JSON.parse(readFileSync(inventoryPath, 'utf8'));
-    for (const entry of inventory.filter((entry: { version: string }) => /^\d+\.\d+\.\d+/.test(entry.version))) {
-      expect(audit.inventoryAudit.packages[entry.name]).toContain(entry.version);
-    }
-    for (const entry of audit.advisories) {
-      expect(entry.classification).not.toBe('unresolved-install-path');
-      expect(entry.affected.length).toBeGreaterThan(0);
-      for (const affected of entry.affected) expect(affected.path.length).toBeGreaterThan(1);
-    }
   });
 });

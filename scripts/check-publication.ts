@@ -64,7 +64,7 @@ export const VENDOR_ALLOWANCE = 'scripts/check-publication.vendors.txt';
 const ALLOWANCE_ARROW = ' → ';
 
 /** Written by tools from the dependency set, which `package.json` already answers for. */
-const GENERATED_RECORDS: readonly string[] = ['bun.lock', 'NOTICE', 'compliance/dependencies.json', 'compliance/advisories.json'];
+const GENERATED_RECORDS: readonly string[] = ['bun.lock', 'NOTICE', 'compliance/dependencies.json'];
 
 interface Violation {
   file: string;

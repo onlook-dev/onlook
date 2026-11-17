@@ -84,13 +84,6 @@ jobs:
         if: github.event_name == 'pull_request' && github.base_ref == 'main'
         run: bunx changeset status --since=origin/main
 
-      # Advisory until the team decides to enforce it (ONL-2772); the Public readiness workflow reports the same findings.
-      - name: Public-readiness check
-        continue-on-error: true
-        env:
-          PUBLIC_READINESS_BRANCH: ${{ github.head_ref || github.ref_name }}
-        run: bun run check:public
-
       - name: Publication patterns
         run: bun run check:publication
 

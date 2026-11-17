@@ -96,8 +96,6 @@ apps/studio/src/renderer/src/replay/request-transport.test.ts → posthog 5
 apps/studio/src/renderer/src/replay/sdk-identity.test.ts → posthog 14
 apps/studio/src/renderer/src/replay/start.test.ts → posthog 1
 apps/studio/src/renderer/src/telemetry/Consent.test.tsx → posthog 1
-audits/publication-pass-five.md → posthog 1
-audits/publication-pass-five.md → workos 3
 CODING.md → posthog 2
 packages/events/src/flags.ts → workos 1
 packages/events/src/scrub.test.ts → posthog 1
@@ -106,7 +104,6 @@ packages/i18n/src/locales/en/telemetry.json → posthog 2
 packages/i18n/src/locales/ja/telemetry.json → posthog 2
 packages/i18n/src/locales/zh-CN/telemetry.json → posthog 2
 packages/i18n/src/translate/shared.md → posthog 1
-public-reviews/remove-unused-terminal-and-visual.md → workos 1
 scripts/reset-identity.ts → workos 4
 scripts/secrets.test.ts → posthog 1
 scripts/security-dependencies.test.ts → posthog 3
