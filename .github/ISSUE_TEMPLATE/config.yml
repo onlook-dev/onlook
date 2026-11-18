@@ -1,0 +1,4 @@
+contact_links:
+  - name: Report a security problem
+    url: https://github.com/onlook-dev/onlook/security/advisories/new
+    about: Report a vulnerability privately instead of opening an issue.
