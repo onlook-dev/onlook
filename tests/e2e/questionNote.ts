@@ -5,7 +5,7 @@ export const LONG_QUESTION_NOTE = Array.from({ length: 20 }, () => 'wide').join(
 export type QuestionNoteEdit = 'typing' | 'command' | 'option' | 'backspace';
 
 export function questionNote(page: Page): Locator {
-  return page.getByTestId('question-sheet-one').getByTestId('question-note').locator('input');
+  return page.getByTestId('question-sheet-one').getByTestId('question-note');
 }
 
 export async function overflowQuestionNote(page: Page): Promise<void> {
