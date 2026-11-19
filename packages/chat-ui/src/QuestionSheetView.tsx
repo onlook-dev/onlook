@@ -134,15 +134,11 @@ export function QuestionSheet({
   const press = (): void => {
     if (!key.isLit || isLocked) return;
     if (key.action === 'send') send();
-    else {
-      setFadeAt('none');
-      setState((current) => next(current, questions));
-    }
+    else setState((current) => next(current, questions));
   };
 
   const jump = (at: number): void => {
     if (isLocked) return;
-    setFadeAt('none');
     isFocusOwed.current = true;
     setState((current) => goTo(current, questions, at));
   };
