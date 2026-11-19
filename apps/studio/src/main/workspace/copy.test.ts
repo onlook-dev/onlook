@@ -1,6 +1,6 @@
 import { chmodSync, existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, symlinkSync } from 'node:fs';
 import { basename, join } from 'node:path';
-import { afterAll, describe, expect, it, setDefaultTimeout } from 'bun:test';
+import { afterAll, describe, expect, it, setDefaultTimeout, spyOn } from 'bun:test';
 import type { ProjectCreateState, WorkspaceCreated } from '@studio/events';
 import {
   bucketsIn,
@@ -16,6 +16,7 @@ import {
   restoreWorkspaceRoot,
 } from '@studio/fixtures';
 import { resetCanvasRegistryCache } from '../canvas/registry.js';
+import { withGlobalGitConfig } from '../env/hostile-git-config.js';
 import { resetServerBookCache } from '../server/book.js';
 import { STUDIO_SYSTEM_AUTHOR } from '../starter/retire.js';
 import { BLANK_MARKER_FILE, BLANK_SOURCE_DIR, sweepBlankBuckets } from './blank.js';
@@ -30,6 +31,7 @@ import {
 } from './copy.js';
 import { createProject, type ProjectCreateDeps, type ProjectCreateRequest } from './create-project.js';
 import { STUDIO_EXCLUDE_RULES, studioExcludePathspecs } from './env-files.js';
+import * as workspaceGit from './git.js';
 import { fabricateFromPlan, planWorkspace, rollbackFromPlan, type ReadyWorkspacePlan } from './index.js';
 import { COPIED_DIR_PREFIX, repoIdentityDirName } from './naming.js';
 import { knownProject, listWorkspaces, rememberProject, resetWorkspaceCache } from './store.js';
@@ -344,6 +346,45 @@ describe('the copy — the user folder untouched, the secrets out of history', (
     expect(sh(source, ['ls-files', '-s', folder.symlink.path]).startsWith('120000')).toBe(true);
     expect(sh(source, ['ls-files', '-s', 'src/index.js']).startsWith('100755')).toBe(true);
   });
+
+  it('keeps a private directory private even when its ignored secret file is readable by everyone', async () => {
+    const root = useOwnWorkspaceRoot('private-directory');
+    const folder = makeDirWithFiles({
+      name: 'private-directory',
+      files: {
+        'src/index.js': 'export const ready = true;\n',
+        'private/notes.txt': 'project notes\n',
+        'private/credentials.json': FIXTURE_SECRET_LINE,
+      },
+    });
+    const privateDir = join(folder, 'private');
+    chmodSync(privateDir, 0o700);
+    chmodSync(join(privateDir, 'credentials.json'), 0o644);
+    const before = hashTree(folder);
+    const plan = await planCopy(folder);
+    const bucket = copiedBucket(plan);
+
+    try {
+      expect(await initCopiedSource(plan)).toEqual({ ok: true });
+
+      const copiedPrivateDir = join(bucket.source, 'private');
+      const mode = lstatSync(copiedPrivateDir).mode;
+      expect(mode & 0o077).toBe(0);
+      expect(mode & 0o700).toBe(0o700);
+      expect(lstatSync(join(copiedPrivateDir, 'credentials.json')).mode & 0o777).toBe(0o644);
+      expect(readFileSync(join(copiedPrivateDir, 'credentials.json'), 'utf8')).toBe(FIXTURE_SECRET_LINE);
+      expect(committed(bucket.source)).toEqual(['private/notes.txt', 'src/index.js']);
+      expect(sh(bucket.source, ['status', '--porcelain', '--ignored']).split('\n')).toContain('!! private/credentials.json');
+      expect(hashTree(folder)).toBe(before);
+    } finally {
+      await rollbackCopied(plan);
+    }
+
+    expect(existsSync(bucket.identityDir)).toBe(false);
+    expect(bucketsIn(root)).toEqual([]);
+    expect(hashTree(folder)).toBe(before);
+    expect(existsSync(join(folder, '.git'))).toBe(false);
+  });
 });
 
 describe('registration — the card, the group name and the re-pick', () => {
@@ -550,6 +591,125 @@ describe('rollback and the boot sweep', () => {
     expect(created.detail).not.toContain(COPY_INIT_COMMIT_MESSAGE);
     expect(created).toMatchObject({ copyFailure: { step: 'git_commit', cause: 'ignored_files' } });
     expect(bucketsIn(root)).toEqual([]);
+  });
+
+  it('a global ignore that hides every file reports ignored files and removes only the copy', async () => {
+    const root = useOwnWorkspaceRoot('globally-ignored');
+    const folder = makeDirWithFiles({ name: 'globally-ignored', files: { 'index.html': 'x' } });
+    const ignoreFolder = makeDirWithFiles({ name: 'global-ignore', files: { ignore: '*\n' } });
+    const before = hashTree(folder);
+    const ignoreBefore = hashTree(ignoreFolder);
+
+    await withGlobalGitConfig(`[core]\n\texcludesFile = ${JSON.stringify(join(ignoreFolder, 'ignore'))}\n`, async () => {
+      const plan = await planCopy(folder);
+
+      const created = await fabricateFromPlan(plan);
+
+      expect(created.ok).toBe(false);
+      if (created.ok) return;
+      expect(created.reason).toBe('create-failed');
+      expect(created).toMatchObject({ copyFailure: { step: 'git_commit', cause: 'ignored_files' } });
+      expect(existsSync(copiedBucket(plan).identityDir)).toBe(false);
+      expect(bucketsIn(root)).toEqual([]);
+      expect(hashTree(folder)).toBe(before);
+      expect(existsSync(join(folder, '.git'))).toBe(false);
+      expect(hashTree(ignoreFolder)).toBe(ignoreBefore);
+    });
+  });
+
+  it('a commit failure with files to commit keeps the git error instead of reporting ignored files', async () => {
+    const root = useOwnWorkspaceRoot('commit-failure');
+    const folder = makeDirWithFiles({ name: 'commit-failure', files: { 'index.html': 'x' } });
+    const before = hashTree(folder);
+
+    await withGlobalGitConfig('[commit]\n\tcleanup = invalid-mode\n', async () => {
+      const plan = await planCopy(folder);
+
+      const created = await fabricateFromPlan(plan);
+
+      expect(created.ok).toBe(false);
+      if (created.ok) return;
+      expect(created.reason).toBe('create-failed');
+      expect(created).toMatchObject({ copyFailure: { step: 'git_commit', cause: 'git_failed' } });
+      expect(created.copyFailure?.cause).not.toBe('ignored_files');
+      expect(created.detail).toContain('Invalid cleanup mode');
+      expect(created.detail).toContain('invalid-mode');
+      expect(created.detail).not.toContain(COPY_INIT_COMMIT_MESSAGE);
+      expect(existsSync(copiedBucket(plan).identityDir)).toBe(false);
+      expect(bucketsIn(root)).toEqual([]);
+      expect(hashTree(folder)).toBe(before);
+      expect(existsSync(join(folder, '.git'))).toBe(false);
+    });
+  });
+
+  it('a timed-out commit stays timed out without probing whether the index is empty', async () => {
+    const root = useOwnWorkspaceRoot('commit-timeout');
+    const folder = makeDirWithFiles({ name: 'commit-timeout', files: { 'index.html': 'x' } });
+    const before = hashTree(folder);
+    const plan = await planCopy(folder);
+    const bucket = copiedBucket(plan);
+    const commitFailure: workspaceGit.GitResult = {
+      ok: false, out: '', err: 'nothing to commit, working tree clean', timedOut: true, missing: false, exitCode: null,
+    };
+    const originalGit = workspaceGit.git;
+    const run = spyOn(workspaceGit, 'git').mockImplementation((cwd, args, options) => {
+      if (args.includes('commit')) return Promise.resolve(commitFailure);
+      return originalGit(cwd, args, options);
+    });
+
+    try {
+      const initialized = await initCopiedSource(plan);
+
+      expect(initialized).toMatchObject({
+        ok: false, claimed: true, copyFailure: { step: 'git_commit', cause: 'git_timed_out' },
+      });
+      expect(sh(bucket.source, ['diff', '--cached', '--name-only'])).toBe('index.html');
+      expect(run.mock.calls.some(([, args]) => args[0] === 'diff' && args.includes('--cached'))).toBe(false);
+    } finally {
+      run.mockRestore();
+      await rollbackCopied(plan);
+    }
+
+    expect(bucketsIn(root)).toEqual([]);
+    expect(hashTree(folder)).toBe(before);
+  });
+
+  it('a failed cached-index probe preserves the commit permission failure', async () => {
+    const root = useOwnWorkspaceRoot('commit-permission');
+    const folder = makeDirWithFiles({ name: 'commit-permission', files: { 'index.html': 'x' } });
+    const before = hashTree(folder);
+    const plan = await planCopy(folder);
+    const bucket = copiedBucket(plan);
+    const commitFailure: workspaceGit.GitResult = {
+      ok: false, out: '', err: 'fatal: Unable to write index: Permission denied', timedOut: false, missing: false, exitCode: 128,
+    };
+    const probeFailure: workspaceGit.GitResult = {
+      ok: false, out: '', err: 'fatal: unable to read index', timedOut: false, missing: false, exitCode: 128,
+    };
+    const originalGit = workspaceGit.git;
+    const run = spyOn(workspaceGit, 'git').mockImplementation((cwd, args, options) => {
+      if (args.includes('commit')) return Promise.resolve(commitFailure);
+      if (args[0] === 'diff' && args.includes('--cached')) return Promise.resolve(probeFailure);
+      return originalGit(cwd, args, options);
+    });
+
+    try {
+      const initialized = await initCopiedSource(plan);
+
+      expect(initialized).toMatchObject({
+        ok: false, claimed: true, detail: commitFailure.err, copyFailure: { step: 'git_commit', cause: 'permission_denied' },
+      });
+      expect(sh(bucket.source, ['diff', '--cached', '--name-only'])).toBe('index.html');
+      expect(run).toHaveBeenCalledWith(bucket.source, [
+        'diff', '--cached', '--quiet', '--no-ext-diff', '--no-textconv', '--ignore-submodules=none',
+      ]);
+    } finally {
+      run.mockRestore();
+      await rollbackCopied(plan);
+    }
+
+    expect(bucketsIn(root)).toEqual([]);
+    expect(hashTree(folder)).toBe(before);
   });
 
   it('a claim that loses to a bucket already there removes nothing of it', async () => {

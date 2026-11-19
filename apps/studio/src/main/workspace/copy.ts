@@ -157,7 +157,7 @@ async function copyTree(from: string, to: string): Promise<void> {
       // Stored as its target string, never followed: a link out of the folder dangles in the copy, as git records it.
       await symlink(await readlink(src), dest);
     } else if (entry.isDirectory()) {
-      await mkdir(dest);
+      await mkdir(dest, { mode: ((await lstat(src)).mode & 0o777) | 0o700 });
       await copyTree(src, dest);
     } else if (entry.isFile()) {
       await copyFile(src, dest);

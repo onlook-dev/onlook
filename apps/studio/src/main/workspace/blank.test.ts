@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
-import { afterAll, describe, expect, it } from 'bun:test';
+import { afterAll, describe, expect, it, spyOn } from 'bun:test';
 import type { WorkspaceCreated } from '@studio/events';
 import {
   bucketsIn,
@@ -22,12 +22,15 @@ import { readComposerDraft, resetComposerDraftsCache, writeComposerDraft } from 
 import { resetGitStatusCache } from '../git-status/store.js';
 import { resetSidebarLayoutCache } from '../sidebar-layout/state.js';
 import { flushAllDomains } from '../state/store.js';
+import * as stateFiles from '../state/file.js';
 import { createServerEntry, resetServerBookCache, serverBookEntries } from '../server/book.js';
 import { STUDIO_SYSTEM_AUTHOR } from '../starter/retire.js';
 import { STATIC_ADAPTER, STATIC_FILES } from '../starter/adapters/static.js';
 import { withGlobalGitConfig, withHostileGlobalGitConfig } from '../env/hostile-git-config.js';
 import {
   BLANK_MARKER_FILE,
+  blankBucketPaths,
+  claimBucket,
   claimBlankBucket,
   clearBlankMarker,
   constructBlankPlan,
@@ -192,6 +195,65 @@ describe('claim + init + cut — the happy path up to registration', () => {
     expect(second).toEqual({ ok: false, reason: 'bucket-exists' });
     expect(bucketsIn(root)).toEqual([basename(first.claim.bucket.identityDir)]);
     expect(readdirSync(first.claim.bucket.identityDir).sort()).toEqual([BLANK_MARKER_FILE, 'source']);
+  });
+
+  it.each(['marker', 'source'] as const)('removes only its new bucket after a %s failure and allows a retry', (step) => {
+    const root = useOwnWorkspaceRoot(`claim-failure-${step}`);
+    const existing = claimOnDisk();
+    const existingMarker = readFileSync(existing.bucket.marker, 'utf8');
+    const sentinel = join(existing.bucket.source, 'keep.txt');
+    writeFileSync(sentinel, 'keep');
+    const claim = { repoIdentity: `blank-claim-failure-${step}`, workspaceName: 'teal-skylark', branchName: 'onlook/teal-skylark' };
+    const bucket = blankBucketPaths(claim.repoIdentity, claim.workspaceName);
+    const failure = Object.assign(new Error('marker failed'), { code: 'ENOSPC' });
+    const originalWrite = stateFiles.writeStateFile;
+    const write = spyOn(stateFiles, 'writeStateFile').mockImplementation((path, ...args) => {
+      if (step === 'marker' && path === bucket.marker) throw failure;
+      const written = originalWrite(path, ...args);
+      if (step === 'source' && path === bucket.marker && written) {
+        expect(existsSync(bucket.marker)).toBe(true);
+        writeFileSync(bucket.source, 'source directory collision');
+      }
+      return written;
+    });
+    try {
+      let caught: unknown;
+      try {
+        claimBucket(claim);
+      } catch (error) {
+        caught = error;
+      }
+      if (step === 'marker') expect(caught).toBe(failure);
+      else expect(caught).toMatchObject({ code: 'EEXIST', path: bucket.source });
+      expect(existsSync(bucket.identityDir)).toBe(false);
+      expect(bucketsIn(root)).toEqual([basename(existing.bucket.identityDir)]);
+      expect(readFileSync(existing.bucket.marker, 'utf8')).toBe(existingMarker);
+      expect(readFileSync(sentinel, 'utf8')).toBe('keep');
+    } finally {
+      write.mockRestore();
+    }
+    expect(claimBucket(claim)).toEqual({ ok: true, bucket });
+    expect(existsSync(bucket.marker)).toBe(true);
+    expect(existsSync(bucket.source)).toBe(true);
+  });
+
+  it('leaves a future marker untouched when writing the claim is refused', () => {
+    useOwnWorkspaceRoot('claim-future-marker');
+    const claim = { repoIdentity: 'blank-claim-future-marker', workspaceName: 'teal-skylark', branchName: 'onlook/teal-skylark' };
+    const bucket = blankBucketPaths(claim.repoIdentity, claim.workspaceName);
+    const bytes = JSON.stringify({ version: 99, data: { workspacePath: bucket.worktree } });
+    const originalWrite = stateFiles.writeStateFile;
+    const write = spyOn(stateFiles, 'writeStateFile').mockImplementation((path, ...args) => {
+      if (path === bucket.marker) writeFileSync(path, bytes);
+      return originalWrite(path, ...args);
+    });
+    try {
+      expect(claimBucket(claim)).toEqual({ ok: false, reason: 'bucket-exists' });
+      expect(readFileSync(bucket.marker, 'utf8')).toBe(bytes);
+      expect(existsSync(bucket.source)).toBe(false);
+    } finally {
+      write.mockRestore();
+    }
   });
 
   it('makes the init commit under a global config that demands a signature git cannot produce', async () => {
