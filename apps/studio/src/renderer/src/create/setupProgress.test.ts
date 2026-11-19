@@ -23,13 +23,13 @@ const failedStart: ProjectSetupSnapshot = {
 const noFrames = { liveFramePorts: [] };
 const liveOf = (workspace: WorkspaceCreated): ProjectCreateState => ({ kind: 'live', workspace });
 
-describe('a blank draft never shows setup progress', () => {
+describe('a blank draft hides only its initial starter progress', () => {
   it('shows nothing though the tab still holds an earlier import that went live', () => {
     expect(projectSetupProgress(draft, { create: liveOf(imported), snapshot: null, canvas: noFrames })).toBeNull();
   });
 
   it('shows nothing for the draft\'s own server starting, running or failing', () => {
-    for (const snapshot of [machine('starting'), machine('installing'), failedStart]) {
+    for (const snapshot of [machine('starting'), machine('installing'), failedStart].map((snapshot) => ({ ...snapshot, saved: null }))) {
       expect(projectSetupProgress(draft, { create: null, snapshot, canvas: noFrames })).toBeNull();
       expect(projectSetupProgress(heldDraft, { create: null, snapshot, canvas: noFrames })).toBeNull();
     }
@@ -37,7 +37,17 @@ describe('a blank draft never shows setup progress', () => {
 
   it('shows nothing for a setup turn running in the draft', () => {
     const turn = { steps: [{ id: 'find' as const, status: 'done' as const }, { id: 'install' as const, status: 'done' as const }, { id: 'start' as const, status: 'done' as const }, { id: 'canvas' as const, status: 'running' as const }], outcome: 'running' as const };
-    expect(projectSetupProgress(draft, { create: null, turn, snapshot: machine('running'), canvas: noFrames })).toBeNull();
+    expect(projectSetupProgress(draft, { create: null, turn, snapshot: { ...machine('running'), saved: null }, canvas: noFrames })).toBeNull();
+  });
+
+  it('shows saved setup reruns and failures for blank and held blank projects', () => {
+    for (const workspace of [draft, heldDraft]) {
+      expect(projectSetupProgress(workspace, { create: null, snapshot: machine('installing'), canvas: noFrames })).toEqual({ state: 'running', at: 2 });
+      expect(projectSetupProgress(workspace, { create: null, snapshot: machine('starting'), canvas: noFrames })).toEqual({ state: 'running', at: 3 });
+      expect(projectSetupProgress(workspace, { create: null, snapshot: failedStart, canvas: noFrames })).toMatchObject({ state: 'failed', at: 3, failure: { stage: 'start' } });
+      expect(projectSetupProgress(workspace, { create: null, snapshot: machine('running'), canvas: noFrames })).toBeNull();
+      expect(projectSetupProgress(workspace, { create: null, snapshot: machine('idle'), canvas: noFrames })).toBeNull();
+    }
   });
 });
 

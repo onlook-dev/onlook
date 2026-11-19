@@ -17,6 +17,7 @@ import { containedPath, setupState, snapshotOf, validatePaths, versionDefinition
 import { setupShell } from './shell.js';
 import { isWindows } from '../env/platform.js';
 import { envWithout, leadsOwnGroup, signalGroup, startChild } from '../env/child.js';
+import { restoreRetiredStarterServerFile } from '../starter/retire.js';
 
 type Server = VersionedProjectSetup['definition']['servers'][number];
 interface RuntimeEndpoint {
@@ -288,6 +289,8 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
       env = await untilAborted<NodeJS.ProcessEnv>((deps.env ?? userEnv)(), controller.signal);
       check();
       validatePaths(cwd, version.definition);
+      await untilAborted(restoreRetiredStarterServerFile(cwd, { signal: controller.signal }), controller.signal);
+      check();
       const shellPath = (deps.shell ?? setupShell)(cwd, env);
       if (shellPath === undefined) throw new Error(t('projectSetup.failure.shellMissing'));
       let requested = version.definition.servers.filter((server) => ids === undefined || ids.includes(server.id));

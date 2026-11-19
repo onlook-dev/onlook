@@ -169,7 +169,7 @@ function Collapse({
       aria-hidden={isHidden || undefined}
       style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', overflow: 'hidden', flexShrink: 0 }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-1)', flexShrink: 0 }}>{children}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-1)', width: 'max-content', flexShrink: 0 }}>{children}</div>
     </div>
   );
 }

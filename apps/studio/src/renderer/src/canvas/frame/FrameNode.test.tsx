@@ -16,6 +16,10 @@ import { registerChatSubmit } from '../../chat/submitRegistry.js';
 import { seedFlags } from '../../flags/store.js';
 import { useProjectCreateStore } from '../../create/projectCreate.js';
 import { publishSetupTurn } from '../../create/setupProgress.js';
+import { selectProjectSetupSnapshot, useProjectSetupStore } from '../../project-setup/store.js';
+import { runFeedback, useRunFeedbackStore } from '../../server/runFeedbackStore.js';
+import { reportRunIntent } from '../../project-setup/runControl.js';
+import { FrameRunIntentContext } from './runIntent.js';
 
 mock.module('../menu/CanvasNodeMenu.jsx', () => ({ CanvasNodeMenu: ({ children }: { children: ReactNode }) => children }));
 let resizeScale: number | undefined;
@@ -36,6 +40,7 @@ const FRAME_ID = 'frame-a';
 const URL_A = 'http://localhost:3000/a';
 const URL_B = 'http://localhost:3000/b';
 const originalBridge = window.studio;
+const originalSetup = useProjectSetupStore.getState();
 let root: Root | undefined;
 let flowStore: ReturnType<typeof useStoreApi>;
 let container: HTMLElement;
@@ -109,6 +114,8 @@ afterEach(async () => {
   unregisterChat = undefined;
   useAgentStore.setState({ hasSession: false, connection: { status: 'unknown' } });
   useServerStore.setState({ entries: [], pending: false });
+  runFeedback.reset();
+  useProjectSetupStore.setState(originalSetup, true);
   resetCanvasStoreForTests();
   useTabFrames.setState({ discarded: false, epoch: 0 });
   expect(takeComplaints()).toEqual([]);
@@ -119,13 +126,29 @@ function Surface({ width = 640, height = 480 }: { width?: number; height?: numbe
   const frame = useCanvasStore((state) => state.nodes.find((node) => node.id === FRAME_ID));
   if (!frame) return null;
   if (frame?.type !== 'frame') throw new Error('missing Frame');
-  return <FrameNode id={FRAME_ID} type="frame" data={frame.data} selected={frame.selected ?? false} dragging={false} zIndex={0} isConnectable={false} selectable draggable deletable width={width} height={height} positionAbsoluteX={0} positionAbsoluteY={0} />;
+  return <FrameRunIntentContext value={(intent) => reportRunIntent(intent, selectProjectSetupSnapshot(useProjectSetupStore.getState())?.saved != null, useServerStore.getState().entries, [URL_A])}>
+    <FrameNode id={FRAME_ID} type="frame" data={frame.data} selected={frame.selected ?? false} dragging={false} zIndex={0} isConnectable={false} selectable draggable deletable width={width} height={height} positionAbsoluteX={0} positionAbsoluteY={0} />
+  </FrameRunIntentContext>;
 }
 
-async function mount() {
-  root = createRoot(container);
+async function mount(onCanvasClick?: () => void) {
+  const surface = document.createElement('div');
+  container.appendChild(surface);
+  root = createRoot(surface);
+  if (onCanvasClick) container.addEventListener('click', onCanvasClick);
   await act(async () => { root!.render(<ReactFlowProvider><Surface /></ReactFlowProvider>); });
   return guests.at(-1)!;
+}
+
+async function pressRecoveryAction(button: HTMLButtonElement) {
+  expect(button.closest('.nodrag.nopan')).not.toBeNull();
+  expect((button.closest('.nodrag.nopan') as HTMLElement).style.pointerEvents).toBe('auto');
+  await act(async () => {
+    for (const type of ['pointerdown', 'mousedown', 'pointerup', 'mouseup']) {
+      button.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, button: 0, buttons: type.endsWith('down') ? 1 : 0 }));
+    }
+    button.click();
+  });
 }
 
 it('does not rerender a live unselected Frame on every zoom tick', async () => {
@@ -787,7 +810,8 @@ it('uses a moved server origin after rehoming a previously discarded Frame', asy
 });
 
 it('puts working recovery controls above the Design shield when the measured server dies', async () => {
-  await loaded(await mount());
+  let canvasClicks = 0;
+  await loaded(await mount(() => { canvasClicks += 1; }));
   const entries = useCanvasStore.getState().serverEntries.map((entry) => ({ ...entry, status: 'stopped' as const, ports: entry.ports.map((port) => ({ ...port, measured: 'dead' as const })) }));
   const intents: unknown[] = [];
   window.studio = { ...window.studio, telemetryEvent: () => {}, serverIntent: (intent) => { intents.push(intent); } };
@@ -797,8 +821,11 @@ it('puts working recovery controls above the Design shield when the measured ser
   const recovery = container.querySelector('[data-testid="frame-recovery"]')!;
   expect(recovery.textContent).toContain('Ask the agent to fix it');
   const restart = [...recovery.querySelectorAll('button')].find((button) => button.textContent === 'Restart')!;
-  await act(async () => restart.click());
+  expect(useCanvasStore.getState().selectedNodeIds).toEqual([]);
+  await pressRecoveryAction(restart);
   expect(intents).toEqual([{ press: 'start', entryIds: ['server'] }]);
+  expect(canvasClicks).toBe(0);
+  expect(useCanvasStore.getState().selectedNodeIds).toEqual([]);
   await act(async () => {
     useServerStore.setState({ entries: [], pending: false });
   });
@@ -807,7 +834,8 @@ it('puts working recovery controls above the Design shield when the measured ser
 it('with frame covers on, a stopped server’s cover restarts it and names the press', async () => {
   seedFlags({ 'frame-covers': true });
   try {
-    await loaded(await mount());
+    let canvasClicks = 0;
+    await loaded(await mount(() => { canvasClicks += 1; }));
     const entries = useCanvasStore.getState().serverEntries.map((entry) => ({ ...entry, status: 'stopped' as const, ports: entry.ports.map((port) => ({ ...port, measured: 'dead' as const })) }));
     const intents: unknown[] = [];
     const pressed: unknown[] = [];
@@ -818,14 +846,46 @@ it('with frame covers on, a stopped server’s cover restarts it and names the p
     expect(container.querySelector('[data-testid="frame-recovery"]')).toBeNull();
     const cover = container.querySelector('[data-testid="frame-cover"]')!;
     expect(cover.getAttribute('data-cover')).toBe('stopped');
-    await act(async () => cover.querySelector<HTMLButtonElement>('[data-action="restart"]')!.click());
+    expect(useCanvasStore.getState().selectedNodeIds).toEqual([]);
+    await pressRecoveryAction(cover.querySelector<HTMLButtonElement>('[data-action="restart"]')!);
     expect(intents).toEqual([{ press: 'start', entryIds: ['server'] }]);
+    expect(canvasClicks).toBe(0);
+    expect(useCanvasStore.getState().selectedNodeIds).toEqual([]);
     expect(pressed).toEqual([{ event: 'preview_recovery_pressed', properties: { action: 'restart' } }]);
   } finally {
     await act(async () => {
       seedFlags();
       useServerStore.setState({ entries: [], pending: false });
     });
+  }
+});
+
+it('keeps a saved setup pending cover present from minimum to maximum canvas zoom', async () => {
+  seedFlags({ 'frame-covers': true });
+  publishSetupTurn(undefined);
+  try {
+    await loaded(await mount());
+    const entries = useCanvasStore.getState().serverEntries.map((entry) => ({ ...entry, status: 'stopped' as const, ports: entry.ports.map((port) => ({ ...port, measured: 'dead' as const })) }));
+    useServerStore.setState({ entries, pending: false });
+    await act(async () => useCanvasStore.getState().applyServerBook(entries));
+    for (const state of ['preparing', 'installing', 'starting'] as const) {
+      await act(async () => {
+        useProjectSetupStore.setState({ read: { kind: 'ready', snapshot: {
+          saved: { revision: 'r1', definition: { prepare: '', install: { script: '', inputs: [], outputs: [] }, servers: [{ id: 'web', cwd: '.', start: 'npm run dev', port: 3000 }] } },
+          verified: null, state, failure: null,
+        } } });
+      });
+      for (const zoom of [0.05, 0.1, 0.25, 0.5, 1, 2, 4]) {
+        await act(async () => { flowStore.setState({ transform: [0, 0, zoom] }); });
+        const cover = container.querySelector('[data-testid="frame-cover"]')!;
+        expect(cover.getAttribute('data-cover')).toBe('studio-starting');
+        expect(cover.querySelector('[data-action]')).toBeNull();
+        const band = cover.getAttribute('data-band');
+        expect(cover.querySelector(band === 'art' || band === 'title' ? '[data-testid="frame-cover-mark"]' : '[data-breathing]')).not.toBeNull();
+      }
+    }
+  } finally {
+    await act(async () => { seedFlags(); });
   }
 });
 
@@ -1187,7 +1247,11 @@ it('targets the server at the pending navigation address rather than the previou
   const targetUrl = 'http://localhost:3001/next';
   const entries = [{ entryId: 'target-server', folderName: 'app', ownership: 'studio-started' as const, status: 'stopped' as const, port: 3001, ports: [{ port: 3001, origin: 'http://localhost:3001', measured: 'dead' as const, everLive: true }], everMeasuredLive: true }];
   const intents: unknown[] = [];
-  window.studio = { ...window.studio, serverIntent: (intent) => { intents.push(intent); } };
+  useProjectSetupStore.setState({ read: { kind: 'ready', snapshot: {
+    saved: { revision: 'r1', definition: { prepare: '', install: { script: '', inputs: [], outputs: [] }, servers: [{ id: 'web', cwd: '.', start: 'npm run dev', port: 3001 }] } },
+    verified: null, state: 'idle', failure: null,
+  } } });
+  window.studio = { ...window.studio, serverIntent: (intent) => { intents.push(intent); runFeedback.observeSetup('failed'); } };
   useServerStore.setState({ entries, pending: false });
   useCanvasStore.getState().applyServerBook(entries);
   useCanvasStore.getState().patchFrame(FRAME_ID, { target: { url: targetUrl, seq: 1 } });
@@ -1196,6 +1260,7 @@ it('targets the server at the pending navigation address rather than the previou
   const restart = [...container.querySelectorAll<HTMLButtonElement>('[data-testid="frame-recovery"] button')].find((button) => button.textContent === 'Restart')!;
   await act(async () => restart.click());
   expect(intents).toEqual([{ press: 'start', entryIds: ['target-server'] }]);
+  expect(useRunFeedbackStore.getState().notice).toBe('start-failed');
 });
 
 it('with frame covers off, a frame with a brief draws no brief and still mounts its guest', async () => {
