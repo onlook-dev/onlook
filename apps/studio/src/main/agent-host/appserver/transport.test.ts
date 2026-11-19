@@ -233,7 +233,8 @@ describe('nothing is ever left parked', () => {
       },
     });
     await waitFor(() => exited);
-    expect(await outcome(transport.request('anything'))).toThrow(/exited/);
+    const failure = await transport.request('anything').catch((error: unknown) => error);
+    expect(failure).toMatchObject({ reason: 'exited', exit: { exitCode: 0, signal: null } });
   });
 
   it('refuses a new request between close() and the child actually exiting', async () => {

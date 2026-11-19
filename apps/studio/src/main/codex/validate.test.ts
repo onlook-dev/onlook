@@ -67,6 +67,11 @@ require('node:readline').createInterface({ input: process.stdin }).on('line', li
     expect(result).toMatchObject({ outcome: 'broken', failure: 'exited', exitCode: null, signal: 'SIGSEGV' });
   });
 
+  it('retains a non-crash exit signal without prescribing a new download', async () => {
+    const result = await validateFixture('terminated', 'process.kill(process.pid, "SIGTERM");', validationRoot);
+    expect(result).toMatchObject({ outcome: 'failed', failure: 'exited', exitCode: null, signal: 'SIGTERM' });
+  });
+
   it('reports a connection failure when the startup handshake is rejected', async () => {
     const result = await validateFixture('connection-error', `
 require('node:readline').createInterface({ input: process.stdin }).on('line', line => {
@@ -84,6 +89,24 @@ require('node:readline').createInterface({ input: process.stdin }).on('line', li
     expect(result.exitCode).toBeUndefined();
     expect(result.signal).toBeUndefined();
   });
+
+  for (const method of ['account/read', 'thread/start']) {
+    it(`preserves a timeout during ${method} after a successful handshake`, async () => {
+      const result = await validateFixture(`timeout-${method.replace('/', '-')}`, `
+require('node:readline').createInterface({ input: process.stdin }).on('line', line => {
+  const request = JSON.parse(line);
+  if (!request.id || request.method === ${JSON.stringify(method)}) return;
+  const result = request.method === 'initialize'
+    ? { userAgent: 'onlook-studio/${CODEX_VERSION}' }
+    : { account: { type: 'chatgpt' } };
+  process.stdout.write(JSON.stringify({ id: request.id, result }) + '\\n');
+});`, validationRoot, { requestTimeoutMs: 1000 });
+      expect(result).toMatchObject({ outcome: 'failed', failure: 'timeout' });
+      expect(result.message).toContain(`${method} got no answer`);
+      expect(result.signal).toBeUndefined();
+      expect(result.exitCode).toBeUndefined();
+    });
+  }
 });
 
 /** Measured off a real handshake at the pinned version. */

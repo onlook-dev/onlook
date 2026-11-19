@@ -517,15 +517,16 @@ describe('Codex setup operation ownership', () => {
 });
 
 describe('Codex validation recovery', () => {
-  const cases: Array<{ result: ValidationResult & { outcome: 'failed' | 'broken' }; copy: string; redownload: boolean }> = [
+  const cases: Array<{ result: ValidationResult & { outcome: 'failed' | 'broken' }; copy: string; redownload: boolean; reject?: boolean }> = [
     { result: { outcome: 'failed', failure: 'exited', exitCode: 1, signal: null, message: 'synthetic startup detail' }, copy: 'stopped before setup finished', redownload: false },
     { result: { outcome: 'broken', failure: 'exited', exitCode: null, signal: 'SIGSEGV', message: 'synthetic startup detail' }, copy: 'Download it again', redownload: true },
     { result: { outcome: 'failed', failure: 'connection', message: 'synthetic startup detail' }, copy: 'Could not connect', redownload: false },
     { result: { outcome: 'failed', failure: 'timeout', message: 'synthetic startup detail' }, copy: 'took too long', redownload: false },
+    { result: { outcome: 'failed', failure: 'connection', message: 'synthetic-setting=local-only-value' }, copy: 'Could not connect', redownload: false, reject: true },
   ];
 
-  for (const { result, copy, redownload } of cases) {
-    it(`shows recovery guidance for ${result.failure} (${result.outcome}) and ${redownload ? 'replaces' : 'reuses'} the download on retry`, async () => {
+  for (const { result, copy, redownload, reject = false } of cases) {
+    it(`shows recovery guidance for ${reject ? 'rejected' : 'returned'} ${result.failure} (${result.outcome}) and ${redownload ? 'replaces' : 'reuses'} the download on retry`, async () => {
       await emptyCacheRoot();
       await cachedInstall(CODEX_VERSION);
       const forces: boolean[] = [];
@@ -536,7 +537,11 @@ describe('Codex validation recovery', () => {
           const root = codexInstallRoot();
           return { outcome: 'ok', root, bin: join(root, 'codex'), downloaded: force ?? false };
         },
-        validate: async () => ++validations === 1 ? result : { outcome: 'ok', message: 'connected' },
+        validate: async () => {
+          if (++validations !== 1) return { outcome: 'ok', message: 'connected' };
+          if (reject) throw new Error(result.message);
+          return result;
+        },
       });
       await host.preCheck();
       const state = host.current();
@@ -549,7 +554,7 @@ describe('Codex validation recovery', () => {
       expect(host.current().status).toBe('ready');
     });
 
-    it(`exports only safe ${result.failure} (${result.outcome}) diagnostics while retaining local detail`, async () => {
+    it(`exports only safe ${reject ? 'rejected' : 'returned'} ${result.failure} (${result.outcome}) diagnostics while retaining local detail`, async () => {
       await emptyCacheRoot();
       await cachedInstall(CODEX_VERSION);
       const fetchBefore = globalThis.fetch;
@@ -562,7 +567,10 @@ describe('Codex validation recovery', () => {
       }) as typeof fetch;
       configureLogExport({ key: 'phc_test', host: 'https://ingest.example.test' });
       try {
-        const host = registerCodexHost({ validate: async () => result });
+        const host = registerCodexHost({ validate: async () => {
+          if (reject) throw new Error(result.message);
+          return result;
+        } });
         await host.preCheck();
         await flushLog();
         const row = peekLinesForTesting().find((line) => line.msg === `validation ${result.outcome}`);
