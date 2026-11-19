@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef } from 'react';
 import type { WorkspaceCreated } from '@studio/events';
 import { RegionErrorBoundary } from '../../RegionErrorBoundary.js';
 import { Sidebar } from '../../sidebar/Sidebar.js';
+import { HAIRLINE, SURFACE } from '../../panels/rowGeometry.js';
 import { useWorkspaceStore } from '../../workspace/store.js';
 import type { Category } from './Showroom.js';
 
@@ -28,7 +29,7 @@ function RecoveryPanel({ state }: { state: 'missing' | 'error' | 'focus' }): Rea
     return () => { cancelAnimationFrame(focus); useWorkspaceStore.setState({ workspace: before }); };
   }, [state]);
   return <div ref={panel} style={{ width: 259, height: 520, background: 'var(--studio-ground)' }}>
-    <RegionErrorBoundary region="sidebar">
+    <RegionErrorBoundary region="sidebar" fallbackStyle={{ flex: '1 1 auto', minWidth: 0, ...SURFACE, borderRight: HAIRLINE }}>
       {state === 'missing' ? <Sidebar /> : <UnavailableSidebar />}
     </RegionErrorBoundary>
   </div>;

@@ -24,7 +24,7 @@ it('keeps the other regions mounted after a sidebar crash and retries the sideba
     await act(async () => {
       root.render(<>
         <div data-testid="canvas" />
-        <RegionErrorBoundary region="sidebar"><SidebarContent /></RegionErrorBoundary>
+        <RegionErrorBoundary region="sidebar" fallbackStyle={{ flex: '1 1 auto', backgroundImage: 'linear-gradient(var(--color-background-surface), var(--color-background-surface))' }}><SidebarContent /></RegionErrorBoundary>
         <textarea data-testid="chat" defaultValue="An unfinished message" />
       </>);
     });
@@ -33,6 +33,9 @@ it('keeps the other regions mounted after a sidebar crash and retries the sideba
     expect(canvas).not.toBeNull();
     expect(chat).not.toBeNull();
     expect(container.querySelector('[data-testid="region-error-sidebar"]')).not.toBeNull();
+    const fallback = container.querySelector<HTMLElement>('[data-testid="region-error-sidebar"]');
+    expect(fallback?.style.flex).toBe('1 1 auto');
+    expect(fallback?.style.backgroundImage).toContain('var(--color-background-surface)');
     expect(reports).toHaveLength(1);
     expect(reports[0]?.region).toBe('sidebar');
     const retry = container.querySelector('button');
