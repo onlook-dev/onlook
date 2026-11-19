@@ -540,9 +540,9 @@ describe('the discriminator, through a report', () => {
     }
   });
 
-  it.each(['unknown', 'source', 'container'] as const)('does not follow an old port held by a %s listener', async (kind) => {
+  it.each(['unknown', 'source', 'container'] as const)('does not follow an old port held by %s listeners', async (kind) => {
     const world = makeWorld(`move-${kind}-listener`);
-    const folder = kind === 'source' ? world.sourceRepo : join(world.root, '..', 'other-program');
+    const folder = kind === 'container' ? world.root : kind === 'source' ? world.sourceRepo : join(world.root, '..', 'other-program');
     mkdirSync(folder, { recursive: true });
     createServerEntry(world.worktree, { folder: world.worktree, port: 4700, ownership: 'agent-started' });
     const machine: Machine = { listeners: new Map([
@@ -556,6 +556,36 @@ describe('the discriminator, through a report', () => {
       await host.report(world.worktree, world.worktree, 4701);
       expect(moves).toEqual([]);
     } finally {
+      host.dispose();
+    }
+  });
+
+  it('keeps a reused port covered while the Frame move is pending', async () => {
+    const world = makeWorld('pending-reused-port-move');
+    const sibling = join(world.root, 'notes', 'main');
+    mkdirSync(sibling, { recursive: true });
+    createServerEntry(world.worktree, { folder: world.worktree, port: 4700, ownership: 'agent-started' });
+    const machine: Machine = { listeners: new Map([
+      [4700, { pid: 7, cwd: sibling }],
+      [4701, { pid: 8, cwd: world.worktree }],
+    ]) };
+    let releaseMove: () => void = () => undefined;
+    let moveStarted: () => void = () => undefined;
+    const started = new Promise<void>((resolve) => { moveStarted = resolve; });
+    const held = new Promise<void>((resolve) => { releaseMove = resolve; });
+    const { host, emitted } = makeHost(world, machine, {
+      authorPortMove: async () => { moveStarted(); await held; },
+    });
+    let reporting: Promise<void> | undefined;
+    try {
+      await host.openProject(world.worktree);
+      reporting = host.report(world.worktree, world.worktree, 4701);
+      await started;
+      host.press({ press: 'start' }, world.worktree);
+      expect(frameServerCover(emitted.at(-1)?.entries ?? [], 'http://localhost:4700/')).toBe('occupied');
+    } finally {
+      releaseMove();
+      await reporting;
       host.dispose();
     }
   });

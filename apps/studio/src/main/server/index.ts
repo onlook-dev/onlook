@@ -385,10 +385,10 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
         if (reading.kind === 'extend') {
           extendServerEntry(worktreePath, known.id, reported);
         } else if (reading.kind === 'move') {
-          moveServerEntryPort(worktreePath, known.id, { from: reading.deadPort, to: reported });
           if (reading.pairedMeasurement === 'dead' || measurements.get(reading.deadPort)?.studioOwned === true) {
             await deps.authorPortMove(reading.deadPort, reported, worktreePath);
           }
+          moveServerEntryPort(worktreePath, known.id, { from: reading.deadPort, to: reported });
         }
         entry = entryForFolder(worktreePath, folder) ?? known;
       }
