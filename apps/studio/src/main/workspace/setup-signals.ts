@@ -84,9 +84,9 @@ export function noteSetupStreaming(cwd: string, isStreaming: boolean): void {
 
 export function noteSetupEvent(event: StudioEvent): void {
   if (event.cwd === undefined) return;
-  if (event.type !== 'turn.ended' && event.type !== 'session.error') return;
+  if (event.type !== 'turn.ended') return;
   const record = recordFor(event.cwd);
-  const failed = event.type === 'session.error' || /error|fail|refus/i.test(event.stopReason ?? '');
+  const failed = event.isError === true;
   if (!failed && record.parked > 0) return;
   settle(record, { kind: failed ? 'turn-failed' : 'turn-ended' });
 }

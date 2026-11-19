@@ -1018,7 +1018,7 @@ export class AppServerSession implements AgentBackend {
         const ended = this.log.turnTally();
         if (ended !== undefined) {
           const retries = retryTelemetry(this.log.events, HARNESSES.codex.countsRetryAttempts);
-          this.log.push({ type: 'turn.ended', turnId: ended.turnId, stopReason: 'provider_error', filesChanged: ended.filesChanged });
+          this.log.push({ type: 'turn.ended', turnId: ended.turnId, stopReason: 'provider_error', isError: true, filesChanged: ended.filesChanged });
           this.opts.onTurnEnded?.({
             ...ended, stopReason: 'provider_error', origin: this.turnOrigin,
             retryAttempts: retries.retry_attempts,
@@ -1377,7 +1377,7 @@ export class AppServerSession implements AgentBackend {
         if (this.log.turnId === ownTurn) {
           const summary = this.log.turnTally();
           if (summary !== undefined) {
-            this.log.push({ type: 'turn.ended', turnId: summary.turnId, stopReason: ending, filesChanged: summary.filesChanged });
+            this.log.push({ type: 'turn.ended', turnId: summary.turnId, stopReason: ending, isError: ending === 'error', filesChanged: summary.filesChanged });
             this.opts.onTurnEnded?.({ ...summary, origin: this.turnOrigin, stopReason: ending });
           }
         }

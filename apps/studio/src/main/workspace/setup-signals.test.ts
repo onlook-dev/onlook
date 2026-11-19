@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import type { CanvasNode } from '@studio/events';
 import { createCancelToken } from './cancel.js';
+import { EventLog } from '../agent-host/event-log.js';
+import { handleSdkMessage } from '../agent-host/reduce.js';
 import {
   awaitSessionIdle,
   awaitStartOutcome,
@@ -20,8 +22,8 @@ const B = '/ws/b';
 const NOT_PLACED: FirstFrameAnswer = { kind: 'not-placed', reason: 'nothing to place in this test' };
 const place = async (): Promise<FirstFrameAnswer> => NOT_PLACED;
 
-function endTurn(stopReason = 'success', cwd = A): void {
-  noteSetupEvent({ type: 'turn.ended', turnId: 'turn-1', stopReason, cwd, sessionId: 'session-1', eventId: 'ended', seq: 1, ts: 0 });
+function endTurn(stopReason = 'success', cwd = A, isError = false): void {
+  noteSetupEvent({ type: 'turn.ended', turnId: 'turn-1', stopReason, isError, cwd, sessionId: 'session-1', eventId: 'ended', seq: 1, ts: 0 });
 }
 
 beforeEach(() => {
@@ -58,17 +60,19 @@ describe('awaitStartOutcome', () => {
       const outcome = awaitStartOutcome(A, createCancelToken(), place);
       noteSetupStreaming(A, true);
       noteSetupStreaming(A, false);
-      endTurn(reason);
+      endTurn(reason, A, true);
       expect(await outcome).toEqual({ kind: 'turn-failed' });
     },
   );
 
-  it('answers a session error before a turn starts without retaining it for Retry', async () => {
+  it('ignores nonterminal session errors while the Start turn can still report', async () => {
     const outcome = awaitStartOutcome(A, createCancelToken(), place);
     const other = awaitStartOutcome(B, createCancelToken(), place);
     noteSetupEvent({ type: 'session.error', cwd: A, message: 'Service unavailable', code: 'api_error', sessionId: 'session-1', eventId: 'error', seq: 1, ts: 0 });
-    expect(await outcome).toEqual({ kind: 'turn-failed' });
+    expect(await settled(outcome)).toEqual({ done: false });
     expect(await settled(other)).toEqual({ done: false });
+    await noteSetupReport(A, 5173);
+    expect(await outcome).toEqual({ kind: 'reported', port: 5173, frame: NOT_PLACED });
     const retry = awaitStartOutcome(A, createCancelToken(), place);
     endTurn();
     expect(await retry).toEqual({ kind: 'turn-ended' });
@@ -77,16 +81,34 @@ describe('awaitStartOutcome', () => {
   it('a failed turn settles even with a parked request', async () => {
     const outcome = awaitStartOutcome(A, createCancelToken(), place);
     noteSetupParked(A, 1);
-    endTurn('failed');
+    endTurn('failed', A, true);
     expect(await outcome).toEqual({ kind: 'turn-failed' });
   });
 
   it('a report already being placed wins over a later turn failure', async () => {
     const outcome = awaitStartOutcome(A, createCancelToken(), place);
     const reporting = noteSetupReport(A, 5173);
-    endTurn('failed');
+    endTurn('failed', A, true);
     await reporting;
     expect(await outcome).toEqual({ kind: 'reported', port: 5173, frame: NOT_PLACED });
+  });
+
+  it.each(['blocking_limit', 'budget_exhausted'])(
+    'uses Claude’s failure verdict for %s before its session error arrives', async (reason) => {
+      const outcome = awaitStartOutcome(A, createCancelToken(), place);
+      const log = new EventLog({ sessionId: 'session-1', cwd: A, emit: noteSetupEvent });
+      log.beginTurn();
+      handleSdkMessage(log, { type: 'result', subtype: 'success', is_error: true, terminal_reason: reason });
+      expect(await outcome).toEqual({ kind: 'turn-failed' });
+    },
+  );
+
+  it('keeps an interrupted Claude result out of the agent-failure class', async () => {
+    const outcome = awaitStartOutcome(A, createCancelToken(), place);
+    const log = new EventLog({ sessionId: 'session-1', cwd: A, emit: noteSetupEvent });
+    log.beginTurn();
+    handleSdkMessage(log, { type: 'result', subtype: 'success', is_error: true, terminal_reason: 'aborted_streaming' });
+    expect(await outcome).toEqual({ kind: 'turn-ended' });
   });
 
   it('keeps waiting through an idle transition while a question is parked — the agent may still report', async () => {

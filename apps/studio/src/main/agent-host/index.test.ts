@@ -1003,7 +1003,7 @@ describe("the session's server_running report reaches the setup machine (ONL-217
     const outcome = awaitStartOutcome(cwd, createCancelToken(), async () => ({ kind: 'no-setup' }));
     stateChanged({ isStreaming: true, isTurnLive: true, midTurn: 'steer' });
     stateChanged({ isStreaming: false, isTurnLive: false, midTurn: 'steer' });
-    publish({ type: 'turn.ended', cwd, turnId: 'start', stopReason: harness === 'claude' ? 'api_error' : 'failed', sessionId: started.session.id, eventId: 'ended', seq: 1, ts: 0 });
+    publish({ type: 'turn.ended', cwd, turnId: 'start', stopReason: harness === 'claude' ? 'api_error' : 'failed', isError: true, sessionId: started.session.id, eventId: 'ended', seq: 1, ts: 0 });
     expect(await outcome).toEqual({ kind: 'turn-failed' });
   });
 
