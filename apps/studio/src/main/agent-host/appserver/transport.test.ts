@@ -182,7 +182,8 @@ describe('nothing is ever left parked', () => {
     const transport = new AppServerTransport({
       ...fakeServer(`onLine = () => { process.exit(3); };`),
     });
-    expect(await outcome(transport.request('turn/start'))).toThrow(/exited/);
+    const failure = await transport.request('turn/start').catch((error: unknown) => error);
+    expect(failure).toMatchObject({ reason: 'exited', exit: { exitCode: 3, signal: null } });
     expect(transport.pendingCount).toBe(0);
   });
 
@@ -285,6 +286,7 @@ describe('nothing is ever left parked', () => {
     // Not pinned to `ENOENT`: Bun reaches the dead wire through a destroyed stdin rather than the spawn error.
     await waitFor(() => spawnFailure !== undefined);
     expect(spawnFailure).toBeDefined();
+    expect(spawnFailure).toMatchObject({ reason: 'connection' });
 
     const late = transport.request('thread/start');
     // Before the await: a caller parked here never settles, so a reorder hangs instead of going red.
@@ -297,11 +299,11 @@ describe('nothing is ever left parked', () => {
   it('gives up on a live child that never answers, when the caller asked for a bound', async () => {
     const transport = new AppServerTransport(fakeServer(`onLine = () => {};`));
     jest.useFakeTimers();
-    const asked = outcome(transport.request('account/read', {}, 150));
+    const asked = transport.request('account/read', {}, 150).catch((error: unknown) => error);
     jest.advanceTimersByTime(149);
     expect(transport.pendingCount).toBe(1);
     jest.advanceTimersByTime(1);
-    expect(await asked).toThrow(/no answer/);
+    expect(await asked).toMatchObject({ reason: 'timeout', exit: undefined });
     expect(transport.pendingCount).toBe(0);
     await transport.close();
   });

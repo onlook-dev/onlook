@@ -435,10 +435,11 @@ const firstRun: Category = {
   }))),
 };
 
-function ChatGptStartupStill({ failure, mode }: { failure: 'home' | 'startup'; mode: 'default' | 'hover' | 'focus' }): React.JSX.Element {
-  const message = failure === 'home' ? t('onboarding.setup.codex.detail.home') : t('onboarding.setup.codex.detail.startup');
-  const state = chatGptSetupState({ status: 'failed', message }, agentSetupStrings(), { otherReady: false }).state;
-  return <div style={{ width: 440 }}><Focused selector={mode === 'default' ? undefined : '[data-testid="setup-action-try-again"]'} hover={mode === 'hover'}>
+function ChatGptStartupStill({ failure, mode }: { failure: 'home' | 'exited' | 'crashed' | 'connection' | 'timeout'; mode: 'default' | 'hover' | 'focus' }): React.JSX.Element {
+  const message = t(`onboarding.setup.codex.detail.${failure}`);
+  const state = chatGptSetupState({ status: failure === 'crashed' ? 'broken' : 'failed', message }, agentSetupStrings(), { otherReady: false }).state;
+  const action = failure === 'crashed' ? 'download-again' : 'try-again';
+  return <div style={{ width: 440 }}><Focused selector={mode === 'default' ? undefined : `[data-testid="setup-action-${action}"]`} hover={mode === 'hover'}>
     <SetupDialog state={state} isOpen isInline onOpenChange={noop} strings={STRINGS} glyphs={CARD_GLYPHS} onAction={noop} />
   </Focused></div>;
 }
@@ -446,7 +447,7 @@ function ChatGptStartupStill({ failure, mode }: { failure: 'home' | 'startup'; m
 const chatGptStartup: Category = {
   id: 'chatgpt-startup',
   title: 'ChatGPT startup recovery',
-  stories: (['home', 'startup'] as const).flatMap(failure => (['default', 'hover', 'focus'] as const).map(mode => ({
+  stories: (['home', 'exited', 'crashed', 'connection', 'timeout'] as const).flatMap(failure => (['default', 'hover', 'focus'] as const).map(mode => ({
     id: `chatgpt-startup-${failure}-${mode}`,
     title: `${failure} · ${mode}`,
     render: () => <ChatGptStartupStill failure={failure} mode={mode} />,

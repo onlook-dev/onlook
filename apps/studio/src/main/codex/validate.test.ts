@@ -16,7 +16,12 @@ import { CODEX_VERSION } from './paths.js';
 const validationRoot = mkdtempSync(join(tmpdir(), 'codex-validation-'));
 afterAll(() => rmSync(validationRoot, { recursive: true, force: true }));
 
-async function validateFixture(name: string, body: string, home: string) {
+async function validateFixture(
+  name: string,
+  body: string,
+  home: string,
+  options: { requestTimeoutMs?: number } = {},
+) {
   const root = join(validationRoot, name);
   mkdirSync(root);
   for (const executable of ['codex', 'codex-code-mode-host']) {
@@ -24,7 +29,7 @@ async function validateFixture(name: string, body: string, home: string) {
     writeFileSync(binary, `#!/usr/bin/env node\n${body}`);
     chmodSync(binary, 0o755);
   }
-  return validateCodex({ root, codexHome: home });
+  return validateCodex({ root, codexHome: home, requestTimeoutMs: options.requestTimeoutMs });
 }
 
 describe('startup failures', () => {
@@ -51,10 +56,33 @@ require('node:readline').createInterface({ input: process.stdin }).on('line', li
     expect(result).toMatchObject({ outcome: 'failed', failure: 'home' });
   });
 
-  it('does not diagnose an unresponsive app-server as a broken download', async () => {
+  it('reports an early exit separately from a timeout without calling a configuration error a broken download', async () => {
     const result = await validateFixture('startup-error', 'process.stderr.write("invalid configuration"); process.exit(1);', validationRoot);
-    expect(result).toMatchObject({ outcome: 'failed', failure: 'unresponsive' });
+    expect(result).toMatchObject({ outcome: 'failed', failure: 'exited', exitCode: 1, signal: null });
     expect(result.message).toContain('invalid configuration');
+  });
+
+  it('offers a fresh download after a binary crash and retains the exit signal', async () => {
+    const result = await validateFixture('crashed', 'process.kill(process.pid, "SIGSEGV");', validationRoot);
+    expect(result).toMatchObject({ outcome: 'broken', failure: 'exited', exitCode: null, signal: 'SIGSEGV' });
+  });
+
+  it('reports a connection failure when the startup handshake is rejected', async () => {
+    const result = await validateFixture('connection-error', `
+require('node:readline').createInterface({ input: process.stdin }).on('line', line => {
+  const request = JSON.parse(line);
+  process.stdout.write(JSON.stringify({ id: request.id, error: { code: -32603, message: 'configuration rejected' } }) + '\\n');
+});`, validationRoot);
+    expect(result).toMatchObject({ outcome: 'failed', failure: 'connection' });
+    expect(result.exitCode).toBeUndefined();
+    expect(result.signal).toBeUndefined();
+  });
+
+  it('reports a real request timeout without confusing teardown with an early exit', async () => {
+    const result = await validateFixture('timeout', 'process.stdin.resume();', validationRoot, { requestTimeoutMs: 300 });
+    expect(result).toMatchObject({ outcome: 'failed', failure: 'timeout' });
+    expect(result.exitCode).toBeUndefined();
+    expect(result.signal).toBeUndefined();
   });
 });
 

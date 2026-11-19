@@ -48,6 +48,25 @@ export interface SpawnOptions {
   readonly env?: NodeJS.ProcessEnv;
 }
 
+export type TransportFailure = 'exited' | 'connection' | 'timeout';
+
+export interface ProcessExit {
+  exitCode: number | null;
+  signal: NodeJS.Signals | null;
+}
+
+export class AppServerTransportError extends Error {
+  readonly reason: TransportFailure;
+  readonly exit: ProcessExit | undefined;
+
+  constructor(reason: TransportFailure, message: string, exit?: ProcessExit) {
+    super(message);
+    this.name = 'AppServerTransportError';
+    this.reason = reason;
+    this.exit = exit;
+  }
+}
+
 /** An inherited credential outbids the ChatGPT subscription: all three go, whichever this codex version honours; `~/.codex/auth.json` is an account and stays. */
 export function stripInheritedCredentials(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   delete env['OPENAI_API_KEY'];
@@ -63,6 +82,7 @@ export class AppServerTransport {
   private exited = false;
   /** Sends guard on this, not `exited`: `close()` sets it while the child is still alive. */
   private dead = false;
+  private terminalError: AppServerTransportError | undefined;
 
   /** Not a parameter property: not erasable syntax, and `transport.pty.ts` loads this file under Node. */
   private readonly handlers: TransportHandlers;
@@ -97,21 +117,26 @@ export class AppServerTransport {
     this.child.on('exit', (code, signal) => {
       this.exited = true;
       this.dead = true;
-      this.failAllPending(
-        new Error(`the ChatGPT agent exited (code=${String(code)}, signal=${String(signal)})`),
+      this.terminalError = new AppServerTransportError(
+        'exited',
+        `the ChatGPT agent exited (code=${String(code)}, signal=${String(signal)})`,
+        { exitCode: code, signal },
       );
+      this.failAllPending(this.terminalError);
       this.handlers.onExit?.(code, signal);
     });
     // A spawn failure (ENOENT) never fires `exit`.
     this.child.on('error', (error: Error) => {
       this.exited = true;
       this.dead = true;
-      this.failAllPending(error);
+      this.terminalError = new AppServerTransportError('connection', error.message);
+      this.failAllPending(this.terminalError);
     });
     // Unlistened, a write into an ended stdin reaches Electron as a crash dialog.
     this.child.stdin.on('error', (error: Error) => {
       this.dead = true;
-      this.failAllPending(error);
+      this.terminalError ??= new AppServerTransportError('connection', error.message);
+      this.failAllPending(this.terminalError);
     });
   }
 
@@ -189,7 +214,13 @@ export class AppServerTransport {
 
   request(method: string, params?: unknown, timeoutMs?: number): Promise<unknown> {
     const problem = this.unusable();
-    if (problem !== undefined) return Promise.reject(new Error(`cannot send ${method}: ${problem}`));
+    if (problem !== undefined) {
+      return Promise.reject(new AppServerTransportError(
+        this.terminalError?.reason ?? 'connection',
+        `cannot send ${method}: ${problem}`,
+        this.terminalError?.exit,
+      ));
+    }
     const id = randomUUID();
     return new Promise<unknown>((resolve, reject) => {
       const timer =
@@ -197,7 +228,7 @@ export class AppServerTransport {
           ? undefined
           : setTimeout(() => {
               this.pending.delete(id);
-              reject(new Error(`${method} got no answer in ${String(timeoutMs)}ms`));
+              reject(new AppServerTransportError('timeout', `${method} got no answer in ${String(timeoutMs)}ms`));
             }, timeoutMs);
       timer?.unref?.();
       const settle = <T>(hand: (value: T) => void) => (value: T) => {
