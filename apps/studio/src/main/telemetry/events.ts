@@ -3,6 +3,7 @@
 
 import type {
   AppCommand,
+  CopyFailure,
   AppCommandEntryPoint,
   FrameCaptureStep,
   ActivationSurface,
@@ -359,6 +360,8 @@ export interface TelemetryEventMap {
 
   /** Setup details stay local: tool output can contain arbitrary repo names and contents. */
   project_setup_failed: {
+    failure_step?: CopyFailure['step'];
+    failure_cause?: CopyFailure['cause'];
     project_id?: string;
     stage: 'planning' | 'copying' | 'installing' | 'starting';
     duration_ms?: number;

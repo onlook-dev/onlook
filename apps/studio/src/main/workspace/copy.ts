@@ -3,7 +3,7 @@
 import { type Dirent, mkdirSync, writeFileSync } from 'node:fs';
 import { chmod, copyFile, lstat, mkdir, readdir, readlink, symlink } from 'node:fs/promises';
 import { basename, join } from 'node:path';
-import type { WorkspaceCreated, WorkspacePlan } from '@studio/events';
+import type { CopyFailure, WorkspaceCreated, WorkspacePlan } from '@studio/events';
 import { canonicalPath } from '../lib/canonical-path.js';
 import { systemAuthorArgs } from '../starter/retire.js';
 import {
@@ -19,6 +19,7 @@ import { configuredUserName, git, gitFailureDetail, initializeRepository, WORKTR
 import type { ReadyWorkspacePlan } from './index.js';
 import { copiedIdentityFor, generateWorkspaceName, resolveHandle } from './naming.js';
 import { listWorkspaces, nameUnnamedWorkspace } from './store.js';
+import { copyGitFailure, copyThrownFailure } from './creation-failure.js';
 
 export const COPY_INIT_COMMIT_MESSAGE = 'Initial copy of the project folder';
 
@@ -86,44 +87,56 @@ export function copiedBucket(plan: CopiedPlan): BlankBucket {
 export type CopyInitResult =
   | { ok: true }
   /** `claimed: false` lost to an existing bucket and owns nothing; rolling it back removes another attempt's bucket. */
-  | { ok: false; claimed: boolean; detail: string };
+  | { ok: false; claimed: boolean; detail: string; copyFailure: CopyFailure };
 
 export async function initCopiedSource(plan: ReadyWorkspacePlan): Promise<CopyInitResult> {
-  const claimed = claimBucket({
-    repoIdentity: plan.repoIdentity,
-    workspaceName: plan.workspaceName,
-    branchName: plan.branchName,
-  });
-  if (!claimed.ok) {
-    return { ok: false, claimed: false, detail: 'A copy of this folder is already being made.' };
-  }
-  const { source } = claimed.bucket;
+  let step: CopyFailure['step'] = 'claim';
+  let ownsBucket = false;
   try {
-    await copyTree(plan.sourcePath, source);
-  } catch (err) {
-    return { ok: false, claimed: true, detail: String(err) };
-  }
-
-  const init = await initializeRepository(source);
-  if (!init.ok) return { ok: false, claimed: true, detail: gitFailureDetail('init', init) };
-  const bytes = await git(source, ['config', 'core.autocrlf', 'false']);
-  if (!bytes.ok) return { ok: false, claimed: true, detail: gitFailureDetail('config', bytes) };
-  writeStudioExcludes(source);
-  // Excludes ride `add` as pathspecs: `info/exclude` alone loses to a user `.gitignore` that negates them, and a secret is committed.
-  const steps: { command: string; args: string[]; timeoutMs?: number }[] = [
-    { command: 'add', args: ['add', '-A', '--', '.', ...studioExcludePathspecs()], timeoutMs: WORKTREE_TIMEOUT_MS },
-    { command: 'commit', args: [...systemAuthorArgs(), 'commit', '--quiet', '-m', COPY_INIT_COMMIT_MESSAGE] },
-  ];
-  for (const step of steps) {
-    const result = await git(source, step.args, step.timeoutMs === undefined ? {} : { timeoutMs: step.timeoutMs });
-    if (!result.ok) {
-      const detail = result.timedOut
-        ? 'Copying the folder into git took too long and was stopped.'
-        : gitFailureDetail(step.command, result);
-      return { ok: false, claimed: true, detail };
+    const claimed = claimBucket({
+      repoIdentity: plan.repoIdentity,
+      workspaceName: plan.workspaceName,
+      branchName: plan.branchName,
+    });
+    if (!claimed.ok) {
+      return { ok: false, claimed: false, detail: '', copyFailure: { step, cause: 'copy_in_progress' } };
     }
+    ownsBucket = true;
+    const { source } = claimed.bucket;
+    step = 'copy_files';
+    await copyTree(plan.sourcePath, source);
+
+    step = 'git_init';
+    const init = await initializeRepository(source);
+    if (!init.ok) return { ok: false, claimed: true, detail: gitFailureDetail('init', init), copyFailure: copyGitFailure(step, init) };
+    step = 'git_config';
+    const bytes = await git(source, ['config', 'core.autocrlf', 'false']);
+    if (!bytes.ok) return { ok: false, claimed: true, detail: gitFailureDetail('config', bytes), copyFailure: copyGitFailure(step, bytes) };
+    writeStudioExcludes(source);
+    // Excludes ride `add` as pathspecs: `info/exclude` alone loses to a user `.gitignore` that negates them, and a secret is committed.
+    const steps: { command: string; args: string[]; timeoutMs?: number }[] = [
+      { command: 'add', args: ['add', '-A', '--', '.', ...studioExcludePathspecs()], timeoutMs: WORKTREE_TIMEOUT_MS },
+      { command: 'commit', args: [...systemAuthorArgs(), 'commit', '--quiet', '-m', COPY_INIT_COMMIT_MESSAGE] },
+    ];
+    for (const operation of steps) {
+      step = operation.command === 'add' ? 'git_add' : 'git_commit';
+      const result = await git(source, operation.args, operation.timeoutMs === undefined ? {} : { timeoutMs: operation.timeoutMs });
+      if (!result.ok) {
+        const detail = result.timedOut
+          ? 'Copying the folder into git took too long and was stopped.'
+          : gitFailureDetail(operation.command, result);
+        let copyFailure = copyGitFailure(step, result);
+        if (step === 'git_commit' && !result.timedOut) {
+          const files = await git(source, ['ls-files', '--cached', '-z']);
+          if (files.ok && files.out === '') copyFailure = { step, cause: 'ignored_files' };
+        }
+        return { ok: false, claimed: true, detail, copyFailure };
+      }
+    }
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, claimed: ownsBucket, detail: String(error), copyFailure: copyThrownFailure(step, error) };
   }
-  return { ok: true };
 }
 
 function writeStudioExcludes(repo: string): void {
@@ -146,7 +159,6 @@ async function copyTree(from: string, to: string): Promise<void> {
     } else if (entry.isDirectory()) {
       await mkdir(dest);
       await copyTree(src, dest);
-      await copyMode(src, dest);
     } else if (entry.isFile()) {
       await copyFile(src, dest);
       await copyMode(src, dest);

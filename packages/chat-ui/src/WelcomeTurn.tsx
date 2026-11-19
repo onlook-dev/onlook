@@ -137,11 +137,9 @@ function has(value: string): boolean {
  * gives way to, so the handover is a change of words rather than of surface.
  */
 export interface SetupFailure {
-  /** What Retry will do for this stage — one sentence, already translated. */
   nextAction: string;
   retryLabel: string;
-  onRetry: () => void;
-  /** Close the row (ONL-2363). Absent for a failure with no project behind it yet — Retry is then the only way out. */
+  onRetry?: () => void;
   dismissLabel?: string;
   onDismiss?: () => void;
   /** The machine's own words (git's, the package manager's). Shown verbatim, never the headline. */
@@ -211,13 +209,13 @@ export function SetupTurn({ line, repo, phase, failure, isRunning = false }: Set
             </Text>
           )}
           <HStack gap={2} align="center">
-            <Button
+            {failure.onRetry === undefined ? null : <Button
               label={failure.retryLabel}
               variant="secondary"
               size="sm"
               onClick={failure.onRetry}
               data-testid="chat-setup-retry"
-            />
+            />}
             {failure.onDismiss === undefined || failure.dismissLabel === undefined ? null : (
               <Button
                 label={failure.dismissLabel}

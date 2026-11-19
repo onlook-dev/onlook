@@ -149,7 +149,7 @@ export function modelMenuFooter({ harness, controls, ...menu }: {
 type Phase = NonNullable<Props['setup']>['phase'];
 type Narration =
   | { kind: 'progress'; phase: Phase; lineKey: StringKey; repo: string }
-  | { kind: 'failed'; phase: Phase; lineKey: StringKey; nextActionKey: StringKey; repo: string; detail?: string; canDismiss: boolean };
+  | { kind: 'failed'; phase: Phase; lineKey: StringKey; nextActionKey: StringKey; repo: string; detail?: string; canDismiss: boolean; canRetry?: boolean };
 
 export function setupNarration(narration: Narration | null, actions: { onRetry: () => void; onDismiss: () => void }): Props['setup'] {
   if (narration === null) return undefined;
@@ -161,7 +161,7 @@ export function setupNarration(narration: Narration | null, actions: { onRetry: 
     failure: {
       nextAction: t(narration.nextActionKey),
       retryLabel: t('project.create.retry'),
-      onRetry: actions.onRetry,
+      ...(narration.canRetry === false ? {} : { onRetry: actions.onRetry }),
       ...(narration.canDismiss ? { dismissLabel: t('project.create.dismiss'), onDismiss: actions.onDismiss } : {}),
       ...(narration.detail === undefined ? {} : { detail: narration.detail }),
     },

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { create } from 'zustand';
-import { creationWorkspace, type ProjectCreatePhase, type ProjectCreateState, type ProjectSetupFailure, type SetupRepairStep, type WorkspaceCreated } from '@studio/events';
+import { creationWorkspace, type CopyFailure, type ProjectCreatePhase, type ProjectCreateState, type ProjectSetupFailure, type SetupRepairStep, type WorkspaceCreated } from '@studio/events';
 import type { StringKey } from '@studio/i18n';
 import { useWorkspaceStore } from '../workspace/store.js';
 import { PhasePainter } from './phasePainter.js';
@@ -79,6 +79,17 @@ const NEXT_ACTION_KEY = {
   starting: 'project.create.next.starting',
 } as const satisfies Record<ProjectCreatePhase, StringKey>;
 
+const COPY_ACTION_KEY = {
+  ignored_files: 'project.create.copy.ignored_files',
+  permission_denied: 'project.create.copy.permission_denied',
+  folder_unavailable: 'project.create.copy.folder_unavailable',
+  copy_in_progress: 'project.create.copy.copy_in_progress',
+  disk_full: 'project.create.copy.disk_full',
+  git_timed_out: 'project.create.copy.git_timed_out',
+  git_failed: 'project.create.copy.git_failed',
+  unknown: 'project.create.next.copying',
+} as const satisfies Record<CopyFailure['cause'], StringKey>;
+
 export type SetupNarration =
   | { kind: 'progress'; phase: ProjectCreatePhase; lineKey: StringKey; repo: string }
   | {
@@ -90,6 +101,7 @@ export type SetupNarration =
       detail?: string;
       /** The row offers Dismiss (ONL-2363) only once a project exists behind it — forgetting a pre-landing failure leaves the editor with no project. */
       canDismiss: boolean;
+      canRetry?: boolean;
     };
 
 export interface SetupNarrationFacts {
@@ -143,7 +155,8 @@ export function narrationFor(state: ProjectCreateState | null, facts: SetupNarra
         kind: 'failed',
         phase: state.phase,
         lineKey: step === undefined ? FAILED_LINE_KEY[state.phase] : STEP_FAILED_LINE_KEY[step],
-        nextActionKey: step === undefined ? NEXT_ACTION_KEY[state.phase] : STEP_NEXT_ACTION_KEY[step],
+        nextActionKey: state.copyFailure !== undefined ? COPY_ACTION_KEY[state.copyFailure.cause] : step === undefined ? NEXT_ACTION_KEY[state.phase] : STEP_NEXT_ACTION_KEY[step],
+        ...(state.copyFailure === undefined ? {} : { canRetry: state.copyFailure.cause === 'git_timed_out' || state.copyFailure.cause === 'unknown' }),
         repo: state.workspace?.sourceRepoName ?? state.sourceRepoName,
         canDismiss: state.workspace !== undefined,
         ...(state.detail === undefined ? {} : { detail: state.detail }),

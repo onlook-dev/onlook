@@ -488,6 +488,24 @@ describe('the tab machine — the copied plan through createProject', () => {
 });
 
 describe('rollback and the boot sweep', () => {
+  it('removes a failed copy containing a read-only directory so the folder can be chosen again', async () => {
+    const root = useOwnWorkspaceRoot('read-only-rollback');
+    const folder = makeDirWithFiles({ name: 'read-only-source', files: { '.gitignore': '*\n', 'assets/icon.txt': 'icon' } });
+    const readOnly = join(folder, 'assets');
+    chmodSync(readOnly, 0o555);
+    try {
+      const first = await fabricateFromPlan(await planCopy(folder));
+      expect(first).toMatchObject({ ok: false, copyFailure: { cause: 'ignored_files' } });
+      expect(bucketsIn(root)).toEqual([]);
+      const second = await fabricateFromPlan(await planCopy(folder));
+      expect(second).toMatchObject({ ok: false, copyFailure: { cause: 'ignored_files' } });
+      expect(bucketsIn(root)).toEqual([]);
+      expect(lstatSync(readOnly).mode & 0o777).toBe(0o555);
+    } finally {
+      chmodSync(readOnly, 0o755);
+    }
+  });
+
   it('a failure after the marker rolls the bucket back — nothing under the root, nothing in the registry', async () => {
     const root = useOwnWorkspaceRoot('rollback');
     const folder = makeCopySourceDir({ name: 'rollback' });
@@ -514,6 +532,7 @@ describe('rollback and the boot sweep', () => {
     expect(created.ok).toBe(false);
     if (created.ok) return;
     expect(created.reason).toBe('create-failed');
+    expect(created).toMatchObject({ copyFailure: { step: 'copy_files', cause: 'folder_unavailable' } });
     expect(bucketsIn(root)).toEqual([]);
   });
 
@@ -529,6 +548,7 @@ describe('rollback and the boot sweep', () => {
     expect(created.reason).toBe('create-failed');
     expect(created.detail).toStartWith('git commit exited with code 1: nothing to commit');
     expect(created.detail).not.toContain(COPY_INIT_COMMIT_MESSAGE);
+    expect(created).toMatchObject({ copyFailure: { step: 'git_commit', cause: 'ignored_files' } });
     expect(bucketsIn(root)).toEqual([]);
   });
 
@@ -543,6 +563,7 @@ describe('rollback and the boot sweep', () => {
     expect(second.ok).toBe(false);
     if (second.ok) return;
     expect(second.reason).toBe('create-failed');
+    expect(second).toMatchObject({ copyFailure: { step: 'claim', cause: 'copy_in_progress' } });
     const bucket = copiedBucket(plan);
     expect(existsSync(bucket.marker)).toBe(true);
     expect(sh(bucket.source, ['rev-list', '--count', 'main'])).toBe('1');

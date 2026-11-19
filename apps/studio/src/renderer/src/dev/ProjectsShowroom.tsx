@@ -6,6 +6,7 @@ import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
 import { PILL_FIXTURES } from '@studio/git-ui/fixtures';
 import { SetupTurn } from '@studio/chat-ui';
+import type { CopyFailure } from '@studio/events';
 import { narrationFor } from '../create/projectCreate.js';
 import { t } from '@studio/i18n';
 import { discoveredMetaFor, type DiscoveredWorktreeItem } from '../projects/DiscoveredWorktrees.js';
@@ -182,8 +183,13 @@ export function ProjectsShowroom({ scenario = '' }: { scenario?: string }): Reac
   }, [scenario]);
 
   if (scenario.startsWith('copy-')) {
+    const causes: CopyFailure['cause'][] = ['ignored_files', 'permission_denied', 'folder_unavailable', 'copy_in_progress', 'disk_full', 'git_timed_out', 'git_failed', 'unknown'];
+    const cause = causes.find((value) => scenario === `copy-failure-${value.replaceAll('_', '-')}`);
+    const showsSetup = scenario === 'copy-setup' || scenario === 'copy-error' || cause !== undefined;
     const setup = narrationFor(
-      scenario === 'copy-error'
+      cause !== undefined
+        ? { kind: 'failed', phase: 'copying', sourceRepoName: 'Landing', copyFailure: { step: 'copy_files', cause } }
+        : scenario === 'copy-error'
         ? { kind: 'failed', phase: 'copying', sourceRepoName: 'Landing', detail: t('projects.copy.error.submodules') }
         : { kind: 'copying', sourceRepoName: 'fixture-app', workspaceName: 'landing-copy', duplicateSourceName: 'Landing' },
       { hasLiveServer: false },
@@ -191,7 +197,7 @@ export function ProjectsShowroom({ scenario = '' }: { scenario?: string }): Reac
     return (
       <ProjectsView
         title="zest-maps"
-        projects={scenario === 'copy-setup' || scenario === 'copy-error' ? [] : [{
+        projects={showsSetup ? [] : [{
           id: 'copy-source', name: 'Landing', meta: '2d', onOpen: noop,
           isArchived: scenario === 'copy-archived', isMissing: scenario === 'copy-missing',
           menu: <ProjectMenuItems
@@ -200,7 +206,7 @@ export function ProjectsShowroom({ scenario = '' }: { scenario?: string }): Reac
             onRename={noop} onDuplicate={noop} onReveal={noop} onArchive={noop} onRemove={noop}
           />,
         }]}
-        {...((scenario === 'copy-setup' || scenario === 'copy-error') && setup !== null ? {
+        {...(showsSetup && setup !== null ? {
           content: (
             <VStack style={SECTION}>
               <SetupTurn
@@ -211,7 +217,7 @@ export function ProjectsShowroom({ scenario = '' }: { scenario?: string }): Reac
                   failure: {
                     nextAction: t(setup.nextActionKey),
                     retryLabel: t('project.create.retry'),
-                    onRetry: noop,
+                    ...(setup.canRetry === false ? {} : { onRetry: noop }),
                     ...(setup.detail === undefined ? {} : { detail: setup.detail }),
                   },
                 } : {})}

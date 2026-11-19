@@ -4,6 +4,19 @@ import { t } from '@studio/i18n';
 import { ProjectsShowroom } from './ProjectsShowroom.js';
 
 describe('Project copy Showroom states (ONL-2515)', () => {
+  it('shows actionable copy guidance without Retry for problems that need a folder change', () => {
+    for (const cause of ['ignored_files', 'permission_denied', 'folder_unavailable', 'copy_in_progress', 'disk_full', 'git_failed'] as const) {
+      const markup = renderToStaticMarkup(<ProjectsShowroom scenario={`copy-failure-${cause.replaceAll('_', '-')}`} />);
+      expect(markup).toContain(renderToStaticMarkup(<>{t(`project.create.copy.${cause}`)}</>));
+      expect(markup).not.toContain('data-testid="chat-setup-retry"');
+    }
+  });
+
+  it('keeps Retry for a copy timeout and an unclassified failure', () => {
+    for (const cause of ['git_timed_out', 'unknown']) {
+      expect(renderToStaticMarkup(<ProjectsShowroom scenario={`copy-failure-${cause.replaceAll('_', '-')}`} />)).toContain('data-testid="chat-setup-retry"');
+    }
+  });
   it('exposes active, archived, missing, unresolved and limit card states through the real Projects grid', () => {
     for (const scenario of ['copy-active', 'copy-archived', 'copy-missing', 'copy-unresolved', 'copy-limit', 'copy-hover', 'copy-focus']) {
       const markup = renderToStaticMarkup(<ProjectsShowroom scenario={scenario} />);

@@ -15,6 +15,13 @@ const failedInstalling: ProjectCreateState = {
 const failedCopying: ProjectCreateState = { kind: 'failed', sourceRepoName: 'acme-storefront', phase: 'copying' };
 
 describe('narrationFor — the failed row (ONL-2363)', () => {
+  it('explains an ignored folder without offering a retry that cannot help', () => {
+    const state = { ...failedCopying, copyFailure: { step: 'git_commit', cause: 'ignored_files' } } as ProjectCreateState;
+    expect(narrationFor(state, { hasLiveServer: false })).toMatchObject({
+      nextActionKey: 'project.create.copy.ignored_files',
+      canRetry: false,
+    });
+  });
   it('names the source Project, rather than its repository, while making a duplicate (ONL-2515)', () => {
     for (const state of [
       { kind: 'planning', sourceRepoName: 'acme-storefront', duplicateSourceName: 'Landing' },
