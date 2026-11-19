@@ -81,7 +81,6 @@ export function QuestionSheet({
 }: QuestionSheetProps): ReactNode {
   const [state, setState] = useState<SheetState>(() => openSheet(requestId));
   const [isPending, setPending] = useState(false);
-  const [fadeAt, setFadeAt] = useState<NoteFade>('none');
   const row = useRef<HTMLDivElement>(null);
   const card = useRef<HTMLDivElement>(null);
   const note = useRef<HTMLDivElement>(null);
@@ -135,15 +134,11 @@ export function QuestionSheet({
   const press = (): void => {
     if (!key.isLit || isLocked) return;
     if (key.action === 'send') send();
-    else {
-      setFadeAt('none');
-      setState((current) => next(current, questions));
-    }
+    else setState((current) => next(current, questions));
   };
 
   const jump = (at: number): void => {
     if (isLocked) return;
-    setFadeAt('none');
     isFocusOwed.current = true;
     setState((current) => goTo(current, questions, at));
   };
@@ -177,9 +172,10 @@ export function QuestionSheet({
   }, [live.at]);
 
   useEffect(() => {
-    const input = note.current?.querySelector('input');
-    if (input == null) return;
-    const read = (): void => setFadeAt(noteFade(input));
+    const container = note.current;
+    const input = container?.querySelector('input');
+    if (container === null || input == null) return;
+    const read = (): void => { container.dataset.fade = noteFade(input); };
     const leave = (): void => {
       input.scrollLeft = 0;
       read();
@@ -251,7 +247,7 @@ export function QuestionSheet({
           <Options question={question} picks={draft.picks} isDisabled={isLocked} onPick={choose} />
         </div>
         <div data-sheet-part style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, borderTop: HAIRLINE, paddingBlock: 6, paddingInline: '14px 6px' }}>
-          <div ref={note} data-sheet-note data-fade={fadeAt} style={{ flex: 1, minWidth: 0 }}>
+          <div ref={note} data-sheet-note style={{ flex: 1, minWidth: 0 }}>
             <TextInput
               key={live.at}
               label={question.question}
