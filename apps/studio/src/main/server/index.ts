@@ -82,7 +82,6 @@ export interface StarterControl {
   /** Byte-identical to Studio's template, not merely present; the runner's own `isPresent` is existence only. */
   isPresent(worktreePath: string): boolean;
   spawn(worktreePath: string, port?: number): Promise<number>;
-  retire(worktreePath: string): Promise<void>;
 }
 
 export type AwaitRunningOutcome = 'running' | 'timed-out';
@@ -263,11 +262,6 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
     }
     await deps.authorPortMove(starterPort, reported, worktreePath);
     if (entry !== undefined) removeServerEntry(worktreePath, entry.id);
-    try {
-      await starter.retire(worktreePath);
-    } catch (err) {
-      logger.error('starter retire failed', { error: err });
-    }
   }
 
   async function measure(port: number, folder: string): Promise<PortReading> {

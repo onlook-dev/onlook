@@ -6,16 +6,13 @@ import type { StarterControl } from '../server/index.js';
 import { stateRoot } from '../state/root.js';
 import { isStudioServerFile, starterModulePath } from './adapter.js';
 import { writeStaticServer } from './adapters/static.js';
-import { removeStarterServerFile } from './retire.js';
 import { createStarterRunner, STARTER_SERVICE_PREFIX, type StarterRunner } from './runner.js';
 import { STARTER_SERVER_FILE } from './scaffold.js';
 import { log } from '../log/index.js';
 
 const logger = log('starter');
 
-export interface StarterHost extends StarterRunner {
-  retire(worktree: string): Promise<void>;
-}
+export type StarterHost = StarterRunner;
 
 function isStudioServerPresent(worktree: string): boolean {
   let content: string;
@@ -51,10 +48,6 @@ export function registerStarter(): StarterHost {
   host = {
     ...runner,
     isPresent: isStudioServerPresent,
-    async retire(worktree) {
-      await runner.stop(worktree);
-      await removeStarterServerFile(worktree);
-    },
   } satisfies StarterControl;
   return host;
 }

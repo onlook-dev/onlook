@@ -51,9 +51,10 @@ export function connectSetupLanding(): () => void {
   };
 }
 
-/** A blank draft's server is Studio's own and never shows as setup (ONL-2960). */
 export function projectSetupProgress(open: WorkspaceCreated | null, facts: ImportSetupFacts): ImportSetupProgress | null {
-  if (isBlankWorkspace(open)) return null;
+  if (isBlankWorkspace(open)) {
+    return facts.snapshot?.saved == null ? null : importSetupSteps({ snapshot: facts.snapshot, create: null });
+  }
   return importSetupSteps({ ...facts, create: ownCreateState(facts.create, open) });
 }
 

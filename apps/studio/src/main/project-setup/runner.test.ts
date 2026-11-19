@@ -1,5 +1,7 @@
 import { afterAll, describe, expect, it, spyOn } from 'bun:test';
-import { cleanupTempFixtures, makeDirWithFiles } from '@studio/fixtures';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { cleanupTempFixtures, gitOutput, makeDirWithFiles, makeGitRepo } from '@studio/fixtures';
 import type { VersionedProjectSetup } from '@studio/events';
 import { t } from '@studio/i18n';
 import { createProjectSetupService, redactSetupOutput, type ProjectSetupDeps } from './runner.js';
@@ -9,6 +11,30 @@ afterAll(cleanupTempFixtures);
 const definition = { prepare: '', install: { script: '', inputs: [], outputs: [] }, servers: [{ id: 'web', cwd: '.', start: 'sleep 10', port: 48001 }] };
 
 describe('setup runner failures and state', () => {
+  it('starts a saved setup after reopening a project whose server file Studio retired', async () => {
+    const project = makeGitRepo({ name: 'saved-start', remote: false }).path;
+    const content = "export const ready = true;\n\n";
+    writeFileSync(join(project, 'server.mjs'), content);
+    gitOutput(project, ['add', 'server.mjs']);
+    gitOutput(project, ['commit', '--quiet', '-m', 'Add site server']);
+    gitOutput(project, ['rm', '--quiet', 'server.mjs']);
+    gitOutput(project, ['-c', 'user.name=Onlook', '-c', 'user.email=studio@noreply.onlook.com', 'commit', '--quiet', '-m', 'chore: retire the starter page server']);
+    const root = makeDirWithFiles({});
+    const first = createProjectSetupService({ state: createSetupState(() => root), report: async () => undefined });
+    first.save(project, { ...definition, prepare: 'test -f server.mjs || exit 1' }, null);
+    await first.dispose();
+    const service = createProjectSetupService({
+      state: createSetupState(() => root), env: async () => process.env, probe: async () => true,
+      identify: async () => ({ pid: process.pid, cwd: project }), report: async () => undefined,
+    });
+    try {
+      expect(existsSync(join(project, 'server.mjs'))).toBe(false);
+      const result = await service.run(project, { action: 'start' });
+      expect(result.ok).toBe(true);
+      expect(readFileSync(join(project, 'server.mjs'), 'utf8')).toBe(content);
+    } finally { await service.dispose(); }
+  });
+
   it('keeps a superseded environment read from replacing the next run failure', async () => {
     const project = makeDirWithFiles({});
     const root = makeDirWithFiles({});
