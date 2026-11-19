@@ -127,8 +127,8 @@ export async function initCopiedSource(plan: ReadyWorkspacePlan): Promise<CopyIn
           : gitFailureDetail(operation.command, result);
         let copyFailure = copyGitFailure(step, result);
         if (step === 'git_commit' && !result.timedOut) {
-          const files = await git(source, ['ls-files', '--cached', '-z']);
-          if (files.ok && files.out === '') copyFailure = { step, cause: 'ignored_files' };
+          const empty = await git(source, ['diff', '--cached', '--quiet', '--no-ext-diff', '--no-textconv', '--ignore-submodules=none']);
+          if (empty.ok) copyFailure = { step, cause: 'ignored_files' };
         }
         return { ok: false, claimed: true, detail, copyFailure };
       }

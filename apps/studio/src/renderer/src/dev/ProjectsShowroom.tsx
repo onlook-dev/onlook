@@ -8,6 +8,7 @@ import { PILL_FIXTURES } from '@studio/git-ui/fixtures';
 import { SetupTurn } from '@studio/chat-ui';
 import type { CopyFailure } from '@studio/events';
 import { narrationFor } from '../create/projectCreate.js';
+import { setupNarration } from '../chat/panelProps.js';
 import { t } from '@studio/i18n';
 import { discoveredMetaFor, type DiscoveredWorktreeItem } from '../projects/DiscoveredWorktrees.js';
 import { ProjectCard } from '../projects/ProjectCard.js';
@@ -145,6 +146,9 @@ export function ProjectsShowroom({ scenario = '' }: { scenario?: string }): Reac
     let menuFrame: number | undefined;
     const frame = requestAnimationFrame(() => {
       if (scenario.endsWith('-focus')) document.documentElement.dataset.input = 'keyboard';
+      if (scenario.startsWith('copy-failure-') && scenario.endsWith('-focus')) {
+        document.querySelector<HTMLElement>('[data-testid="chat-setup-retry"]')?.focus();
+      }
       if (scenario.startsWith('copy-') && scenario !== 'copy-setup' && scenario !== 'copy-error') {
         const card = document.querySelector<HTMLElement>('[data-project-id="copy-source"]');
         if (card !== null) {
@@ -184,7 +188,7 @@ export function ProjectsShowroom({ scenario = '' }: { scenario?: string }): Reac
 
   if (scenario.startsWith('copy-')) {
     const causes: CopyFailure['cause'][] = ['ignored_files', 'permission_denied', 'folder_unavailable', 'copy_in_progress', 'disk_full', 'git_timed_out', 'git_failed', 'unknown'];
-    const cause = causes.find((value) => scenario === `copy-failure-${value.replaceAll('_', '-')}`);
+    const cause = causes.find((value) => scenario.replace(/-(hover|focus)$/, '') === `copy-failure-${value.replaceAll('_', '-')}`);
     const showsSetup = scenario === 'copy-setup' || scenario === 'copy-error' || cause !== undefined;
     const setup = narrationFor(
       cause !== undefined
@@ -194,6 +198,7 @@ export function ProjectsShowroom({ scenario = '' }: { scenario?: string }): Reac
         : { kind: 'copying', sourceRepoName: 'fixture-app', workspaceName: 'landing-copy', duplicateSourceName: 'Landing' },
       { hasLiveServer: false },
     );
+    const setupProps = setupNarration(setup, { onRetry: noop, onDismiss: noop });
     return (
       <ProjectsView
         title="zest-maps"
@@ -206,22 +211,11 @@ export function ProjectsShowroom({ scenario = '' }: { scenario?: string }): Reac
             onRename={noop} onDuplicate={noop} onReveal={noop} onArchive={noop} onRemove={noop}
           />,
         }]}
-        {...(showsSetup && setup !== null ? {
+        {...(showsSetup && setupProps !== undefined ? {
           content: (
             <VStack style={SECTION}>
-              <SetupTurn
-                line={t(setup.lineKey)}
-                repo={setup.repo}
-                phase={setup.phase}
-                {...(setup.kind === 'failed' ? {
-                  failure: {
-                    nextAction: t(setup.nextActionKey),
-                    retryLabel: t('project.create.retry'),
-                    ...(setup.canRetry === false ? {} : { onRetry: noop }),
-                    ...(setup.detail === undefined ? {} : { detail: setup.detail }),
-                  },
-                } : {})}
-              />
+              {scenario.endsWith('-hover') && <style>{'[data-testid="chat-setup-retry"] { background-image: linear-gradient(var(--color-overlay-hover), var(--color-overlay-hover)); }'}</style>}
+              <SetupTurn {...setupProps} />
             </VStack>
           ),
         } : {})}
