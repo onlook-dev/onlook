@@ -115,7 +115,7 @@ import { rememberReportedApp } from '../workspace/detect.js';
 import { knownProject, noteWorkspaceOpened } from '../workspace/index.js';
 import { renameProjectByAgent } from '../workspace/rename.js';
 import { createProjectTabByAgent } from '../workspace/agent-tab.js';
-import { noteSetupParked, noteSetupReport, noteSetupStreaming, noteSetupTabClosed } from '../workspace/setup-signals.js';
+import { noteSetupEvent, noteSetupParked, noteSetupReport, noteSetupStreaming, noteSetupTabClosed } from '../workspace/setup-signals.js';
 import { setProjectHarness, workspaceOrigin } from '../workspace/store.js';
 import { isRemovingProject } from '../workspace/remove-project.js';
 import { codexSetupStatus } from '../codex/index.js';
@@ -359,6 +359,7 @@ export class AgentHost {
   private handleEvent(event: StudioEvent, own: AgentBackend | undefined): void {
     // Before the route and the transcript write: one late row from a replaced session would empty the fresh chat (ONL-2198).
     if (own !== undefined && this.superseded.has(own)) return;
+    if (!own?.isRestoringTranscript) noteSetupEvent(event);
     if (own !== undefined && event.type === 'session.settings' && event.connectors !== undefined) {
       if (event.connectors === null) this.connectorInventories.delete(own);
       else {

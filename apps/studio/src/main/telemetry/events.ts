@@ -50,6 +50,7 @@ export type SetupErrorClass =
   | 'canceled'
   | 'dependency_install_failed'
   | 'dev_server_failed'
+  | 'agent_turn_failed'
   | 'port_unreachable'
   | 'clone_failed'
   | 'timeout'

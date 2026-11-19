@@ -987,6 +987,26 @@ describe('a session writes its own tail, and every close has a limit (ONL-2254)'
 });
 
 describe("the session's server_running report reaches the setup machine (ONL-2179)", () => {
+  test.each(['claude', 'appserver'] as const)('a %s start failure reaches setup after the streaming edge falls', async (harness) => {
+    resetSetupSignals();
+    const [cwd] = registerWorkspaces(`start-failure-${harness}`, ['app']) as [string];
+    const started = fakeSession(cwd, harness);
+    let publish: ((event: StudioEvent) => void) | undefined;
+    let stateChanged: ((state: BackendState) => void) | undefined;
+    const host = new AgentHost(false, new SessionMap(), (_cwd, _harness, _tools, onEvent, _connection, onState) => {
+      publish = onEvent;
+      stateChanged = onState;
+      return started.session;
+    });
+    await host.command({ type: 'session.start', cwd }, cwd);
+    if (!publish || !stateChanged) throw new Error('backend callbacks missing');
+    const outcome = awaitStartOutcome(cwd, createCancelToken(), async () => ({ kind: 'no-setup' }));
+    stateChanged({ isStreaming: true, isTurnLive: true, midTurn: 'steer' });
+    stateChanged({ isStreaming: false, isTurnLive: false, midTurn: 'steer' });
+    publish({ type: 'turn.ended', cwd, turnId: 'start', stopReason: harness === 'claude' ? 'api_error' : 'failed', sessionId: started.session.id, eventId: 'ended', seq: 1, ts: 0 });
+    expect(await outcome).toEqual({ kind: 'turn-failed' });
+  });
+
   test('a report through the sinks the host hands the backend settles a pending Start wait with its port, and the default port when none was named', async () => {
     resetSetupSignals();
     const [cwd] = registerWorkspaces('report-reaches-setup', ['reported']) as [string];

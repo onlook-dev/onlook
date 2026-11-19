@@ -829,6 +829,25 @@ describe('the stages inside the project failing (ONL-2179)', () => {
     expect(failed.workspace).toBeDefined();
     expect(recorder.framed).toEqual([]);
     expect(recorder.calls).not.toContain('awaitRunning');
+    expect(recorder.captured.find((entry) => entry.event === 'project_setup_failed')?.properties).toMatchObject({
+      stage: 'starting', error_class: 'dev_server_failed',
+    });
+  });
+
+  it('a failed Start turn names the agent and records an agent failure', async () => {
+    const recorder = makeRecorder({}, { start: { kind: 'turn-failed' } });
+
+    const state = await createProject({ sourcePath: '/somewhere/agent-fails', entryPoint: 'projects' }, recorder.deps);
+
+    const failed = expectKind(state, 'failed');
+    expect(failed.phase).toBe('starting');
+    expect(failed.detail).toBe('The Onlook Agent ran into an error while starting your app. Try again.');
+    expect(failed.workspace).toBeDefined();
+    expect(recorder.framed).toEqual([]);
+    expect(recorder.calls).not.toContain('awaitRunning');
+    expect(recorder.captured.find((entry) => entry.event === 'project_setup_failed')?.properties).toMatchObject({
+      stage: 'starting', error_class: 'agent_turn_failed',
+    });
   });
 
   it('a session that took no intent answers failed at starting', async () => {

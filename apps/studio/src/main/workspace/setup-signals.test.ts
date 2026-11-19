@@ -7,6 +7,7 @@ import {
   hasSetupRecord,
   isSessionStreaming,
   noteSetupParked,
+  noteSetupEvent,
   noteSetupReport,
   noteSetupStreaming,
   noteSetupTabClosed,
@@ -18,6 +19,10 @@ const A = '/ws/a';
 const B = '/ws/b';
 const NOT_PLACED: FirstFrameAnswer = { kind: 'not-placed', reason: 'nothing to place in this test' };
 const place = async (): Promise<FirstFrameAnswer> => NOT_PLACED;
+
+function endTurn(stopReason = 'success', cwd = A): void {
+  noteSetupEvent({ type: 'turn.ended', turnId: 'turn-1', stopReason, cwd, sessionId: 'session-1', eventId: 'ended', seq: 1, ts: 0 });
+}
 
 beforeEach(() => {
   resetSetupSignals();
@@ -38,12 +43,50 @@ describe('awaitStartOutcome', () => {
     expect(await settled(b)).toEqual({ done: false });
   });
 
-  it('answers turn-ended on the transition to idle when nothing is parked', async () => {
+  it('waits through idle until the actual turn outcome arrives', async () => {
     const a = awaitStartOutcome(A, createCancelToken(), place);
     noteSetupStreaming(A, true);
     expect(await settled(a)).toEqual({ done: false });
     noteSetupStreaming(A, false);
+    expect(await settled(a)).toEqual({ done: false });
+    endTurn();
     expect(await settled(a)).toEqual({ done: true, value: { kind: 'turn-ended' } });
+  });
+
+  it.each(['failed', 'api_error', 'provider_error', 'error_during_execution', 'error', 'refused'])(
+    'answers turn-failed for %s even if streaming fell first', async (reason) => {
+      const outcome = awaitStartOutcome(A, createCancelToken(), place);
+      noteSetupStreaming(A, true);
+      noteSetupStreaming(A, false);
+      endTurn(reason);
+      expect(await outcome).toEqual({ kind: 'turn-failed' });
+    },
+  );
+
+  it('answers a session error before a turn starts without retaining it for Retry', async () => {
+    const outcome = awaitStartOutcome(A, createCancelToken(), place);
+    const other = awaitStartOutcome(B, createCancelToken(), place);
+    noteSetupEvent({ type: 'session.error', cwd: A, message: 'Service unavailable', code: 'api_error', sessionId: 'session-1', eventId: 'error', seq: 1, ts: 0 });
+    expect(await outcome).toEqual({ kind: 'turn-failed' });
+    expect(await settled(other)).toEqual({ done: false });
+    const retry = awaitStartOutcome(A, createCancelToken(), place);
+    endTurn();
+    expect(await retry).toEqual({ kind: 'turn-ended' });
+  });
+
+  it('a failed turn settles even with a parked request', async () => {
+    const outcome = awaitStartOutcome(A, createCancelToken(), place);
+    noteSetupParked(A, 1);
+    endTurn('failed');
+    expect(await outcome).toEqual({ kind: 'turn-failed' });
+  });
+
+  it('a report already being placed wins over a later turn failure', async () => {
+    const outcome = awaitStartOutcome(A, createCancelToken(), place);
+    const reporting = noteSetupReport(A, 5173);
+    endTurn('failed');
+    await reporting;
+    expect(await outcome).toEqual({ kind: 'reported', port: 5173, frame: NOT_PLACED });
   });
 
   it('keeps waiting through an idle transition while a question is parked — the agent may still report', async () => {
@@ -51,6 +94,7 @@ describe('awaitStartOutcome', () => {
     noteSetupStreaming(A, true);
     noteSetupParked(A, 1);
     noteSetupStreaming(A, false);
+    endTurn();
     expect(await settled(a)).toEqual({ done: false });
     noteSetupParked(A, -1);
     noteSetupStreaming(A, true);
@@ -122,6 +166,7 @@ describe('noteSetupTabClosed', () => {
     expect(hasSetupRecord(A)).toBe(true);
     noteSetupStreaming(A, true);
     noteSetupStreaming(A, false);
+    endTurn();
     expect(await settled(a)).toEqual({ done: true, value: { kind: 'turn-ended' } });
   });
 

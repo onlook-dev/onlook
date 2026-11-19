@@ -1,6 +1,6 @@
 // Declared apart from the agent host so the setup machine's import graph never reaches the SDK module (ONL-2179).
 
-import type { BrowserNode } from '@studio/events';
+import type { BrowserNode, StudioEvent } from '@studio/events';
 import { canonicalPath } from '../lib/canonical-path.js';
 import { log } from '../log/index.js';
 import { t } from '@studio/i18n';
@@ -17,6 +17,7 @@ const logger = log('workspace');
 export type StartOutcome =
   | { kind: 'reported'; port: number; frame: FirstFrameAnswer }
   | { kind: 'turn-ended' }
+  | { kind: 'turn-failed' }
   | { kind: 'canceled' };
 
 export type FirstFramePlacer = (port: number, signal?: AbortSignal) => Promise<FirstFrameAnswer>;
@@ -79,9 +80,15 @@ export function noteSetupStreaming(cwd: string, isStreaming: boolean): void {
   const idle = [...record.idle];
   record.idle.clear();
   for (const waiter of idle) waiter();
-  // A parked permission or question is not a turn end: the agent may still report once answered.
-  if (record.parked > 0) return;
-  settle(record, { kind: 'turn-ended' });
+}
+
+export function noteSetupEvent(event: StudioEvent): void {
+  if (event.cwd === undefined) return;
+  if (event.type !== 'turn.ended' && event.type !== 'session.error') return;
+  const record = recordFor(event.cwd);
+  const failed = event.type === 'session.error' || /error|fail|refus/i.test(event.stopReason ?? '');
+  if (!failed && record.parked > 0) return;
+  settle(record, { kind: failed ? 'turn-failed' : 'turn-ended' });
 }
 
 export function noteSetupParked(cwd: string, delta: 1 | -1): void {

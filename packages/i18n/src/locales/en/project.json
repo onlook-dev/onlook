@@ -14,6 +14,7 @@
   "project.create.failed.installingPackages": "Couldn’t install packages for {repo}",
   "project.create.detail.noSession": "The agent wasn’t running in this copy.",
   "project.create.detail.noServer": "Onlook couldn’t find your app running.",
+  "project.create.detail.agentFailed": "The Onlook Agent ran into an error while starting your app. Try again.",
   "project.create.detail.neverOpened": "The project did not open in this tab, so the agent was not asked to start the app.",
   "project.create.next.planning": "Make sure the folder hasn’t moved, then click Retry.",
   "project.create.next.copying": "Nothing was left behind. To copy it again, click Retry.",

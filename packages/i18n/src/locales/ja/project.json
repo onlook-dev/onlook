@@ -14,6 +14,7 @@
   "project.create.failed.installingPackages": "{repo} のパッケージをインストールできませんでした",
   "project.create.detail.noSession": "このコピーではエージェントが実行されていませんでした。",
   "project.create.detail.noServer": "Onlook は実行中のアプリを見つけられませんでした。",
+  "project.create.detail.agentFailed": "アプリの起動中に Onlook エージェントでエラーが発生しました。もう一度お試しください。",
   "project.create.detail.neverOpened": "このタブでプロジェクトが開かれなかったため、エージェントにアプリの起動を依頼しませんでした。",
   "project.create.next.planning": "フォルダーが移動されていないか確認してから、「再試行」をクリックしてください。",
   "project.create.next.copying": "途中までのコピーは残っていません。もう一度コピーするには、「再試行」をクリックしてください。",
