@@ -73,6 +73,7 @@ type Measured = Extract<ServerPortMeasurement, 'live' | 'dead' | 'stranger'>;
 interface PortReading {
   measured: Measured;
   listener?: PortListener;
+  studioOwned?: boolean;
 }
 
 export interface StarterControl {
@@ -270,14 +271,16 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
     }
   }
 
-  async function measure(port: number, folder: string): Promise<PortReading> {
+  async function measure(port: number, folder: string, worktreePath: string): Promise<PortReading> {
     const answered = await probe(port);
     if (!answered) return { measured: 'dead' };
     const identity = await identify(port).catch((): undefined => undefined);
     if (verifiesFor(identity, folder) !== 'foreign') return { measured: 'live' };
-    return isContainerRuntime(identity?.command)
-      ? { measured: 'stranger', listener: 'container' }
-      : { measured: 'stranger' };
+    if (isContainerRuntime(identity?.command)) return { measured: 'stranger', listener: 'container' };
+    return {
+      measured: 'stranger',
+      studioOwned: attributeCwd(identity?.cwd, deps.attributionRoots(worktreePath)) === 'agent-started',
+    };
   }
 
   function seatFor(worktreePath: string, seats: SeatsByEntry, entry: ServerBookEntry): Seat {
@@ -368,22 +371,22 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
             : attributeCwd(folder, deps.attributionRoots(worktreePath)),
         });
       } else {
+        const measurements = new Map(
+          await Promise.all(
+            known.ports.map(async (claimed) =>
+              [claimed.port, await measure(claimed.port, known.folder, worktreePath)] as const),
+          ),
+        );
         const reading = discriminatePortReport(
           known.ports.map((p) => p.port),
           reported,
-          new Map(
-            await Promise.all(
-              known.ports.map(
-                async (p) => [p.port, (await measure(p.port, known.folder)).measured] as const,
-              ),
-            ),
-          ),
+          new Map([...measurements].map(([port, reading]) => [port, reading.measured])),
         );
         if (reading.kind === 'extend') {
           extendServerEntry(worktreePath, known.id, reported);
         } else if (reading.kind === 'move') {
           moveServerEntryPort(worktreePath, known.id, { from: reading.deadPort, to: reported });
-          if (reading.pairedMeasurement === 'dead') {
+          if (reading.pairedMeasurement === 'dead' || measurements.get(reading.deadPort)?.studioOwned === true) {
             await deps.authorPortMove(reading.deadPort, reported, worktreePath);
           }
         }
@@ -438,7 +441,7 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
             try {
               let livePort: number | undefined;
               for (const claimed of entry.ports) {
-                const reading = await measure(claimed.port, entry.folder);
+                const reading = await measure(claimed.port, entry.folder, worktreePath);
                 if (workspaces.get(worktreePath) !== seats) return;
                 recordPortMeasurement(
                   worktreePath,
