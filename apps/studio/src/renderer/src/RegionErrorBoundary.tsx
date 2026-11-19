@@ -8,7 +8,7 @@ import { t } from '@studio/i18n';
 type Props = {
   // Main validates the reported region by shape, not against this union, so a
   // new member needs no main-side change (ONL-2563).
-  region: 'chat' | 'canvas' | 'chrome' | 'code' | 'task-manager';
+  region: 'chat' | 'canvas' | 'chrome' | 'code' | 'task-manager' | 'sidebar';
   children: ReactNode;
 };
 

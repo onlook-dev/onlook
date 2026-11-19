@@ -179,9 +179,11 @@ export function App({
           style={panelStyle('left')}
         >
           <Rail head={<LogoMenu />} {...(isInteract ? {} : { foot: <RailFoot /> })} />
-          <LeftPanelContent view={leftPanelView} width={left.size - 1}>
-            {isCode ? <CodePanelSurface /> : leftPanelView === 'artifacts' ? <ArtifactSidebar /> : <Sidebar />}
-          </LeftPanelContent>
+          <RegionErrorBoundary region="sidebar" key={leftPanelView}>
+            <LeftPanelContent view={leftPanelView} width={left.size - 1}>
+              {isCode ? <CodePanelSurface /> : leftPanelView === 'artifacts' ? <ArtifactSidebar /> : <Sidebar />}
+            </LeftPanelContent>
+          </RegionErrorBoundary>
           {!leftHidden && <ResizeHandle
             resizable={left.props}
             tabIndex={-1}

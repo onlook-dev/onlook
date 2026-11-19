@@ -82,6 +82,15 @@ function recorder(git?: 'real'): Recorder {
 }
 
 describe('normalizeProjectName and renameTargetFor', () => {
+  it('can name a project whose saved branch name is missing', async () => {
+    const { worktree } = await project('missing-branch', { branchName: undefined });
+    const deps = recorder();
+    const result = await renameProjectByAgent(worktree, 'Landing Page', deps);
+    expect(result.ok).toBe(true);
+    expect(deps.moves[0]?.target).toMatch(/\/landing-page$/);
+    expect(knownProject(worktree)?.displayName).toBe('Landing Page');
+  });
+
   it('trims, collapses whitespace, and cuts a fourth word', () => {
     expect(normalizeProjectName('  Pricing   Page  ')).toBe('Pricing Page');
     expect(normalizeProjectName('Acme Store Pricing Page')).toBe('Acme Store Pricing');

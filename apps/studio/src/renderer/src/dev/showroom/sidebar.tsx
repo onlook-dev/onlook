@@ -29,6 +29,7 @@ import { useSettingsStore } from '../../settings/store.js';
 import { useWorkspaceStore } from '../../workspace/store.js';
 import type { Category, Gallery } from './Showroom.js';
 import { AGENT_STATUS } from './agentStatus.js';
+import { SIDEBAR_RECOVERY } from './sidebarRecovery.js';
 
 const PANEL = {
   width: 259,
@@ -751,5 +752,5 @@ export const SIDEBAR_GALLERY: Gallery = {
   title: 'Sidebar',
   subtitle:
     'The panel’s two sections — the pages of a project, and the designs on the page you are reading.',
-  categories: [PAGES, DESIGNS, FOOT, AGENT_STATUS],
+  categories: [PAGES, DESIGNS, FOOT, AGENT_STATUS, SIDEBAR_RECOVERY],
 };
