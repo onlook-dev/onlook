@@ -17,8 +17,9 @@
  * design's tertiary maps to `--color-text-gray`, and `TextColor` is semantic
  * only, so there is no `color="gray"` to reach for.
  */
-import type { ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { Button } from '@astryxdesign/core/Button';
+import { Icon, type IconType } from '@astryxdesign/core/Icon';
 import { HStack, VStack } from '@astryxdesign/core/Layout';
 import { Text } from '@astryxdesign/core/Text';
 import type { WelcomeProject } from '@studio/events';
@@ -140,10 +141,13 @@ export interface SetupFailure {
   nextAction: string;
   retryLabel: string;
   onRetry?: () => void;
+  /** Choose the source folder again (ONL-3285) — the way out of a failure Retry cannot clear. */
+  chooseLabel?: string;
+  onChoose?: () => void;
   dismissLabel?: string;
   onDismiss?: () => void;
-  /** The machine's own words (git's, the package manager's). Shown verbatim, never the headline. */
-  detail?: string;
+  /** The machine's own words (git's, the package manager's), behind a disclosure so the guidance leads (ONL-3285). */
+  detail?: { text: string; showLabel: string; hideLabel: string };
 }
 
 export interface SetupTurnProps {
@@ -156,6 +160,45 @@ export interface SetupTurnProps {
   failure?: SetupFailure;
   /** The line shimmers like a running tool row while the work it names is under way (ONL-2913). */
   isRunning?: boolean;
+  chevronIcon?: IconType;
+}
+
+function FailureDetail({ detail, chevronIcon }: { detail: NonNullable<SetupFailure['detail']>; chevronIcon?: IconType }): React.JSX.Element {
+  const bodyId = useId();
+  const [isOpen, setIsOpen] = useState(false);
+  const label = isOpen ? detail.hideLabel : detail.showLabel;
+  return (
+    <VStack align="start" gap={1} width="100%">
+      <Button
+        label={label}
+        variant="ghost"
+        size="sm"
+        aria-expanded={isOpen}
+        {...(isOpen ? { 'aria-controls': bodyId } : {})}
+        onClick={() => setIsOpen(!isOpen)}
+        data-testid="chat-setup-detail-toggle"
+        style={{ paddingInline: 0, color: 'inherit' }}
+        endContent={
+          chevronIcon === undefined ? undefined : (
+            <span aria-hidden="true" style={{ display: 'inline-flex', transform: isOpen ? 'rotate(90deg)' : undefined }}>
+              <Icon icon={chevronIcon} size="sm" />
+            </span>
+          )
+        }
+      />
+      {isOpen ? (
+        <Text
+          id={bodyId}
+          type="supporting"
+          color="inherit"
+          style={{ lineHeight: PROSE_LEADING, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}
+          data-testid="chat-setup-detail"
+        >
+          {detail.text}
+        </Text>
+      ) : null}
+    </VStack>
+  );
 }
 
 function SetupPhrase({ text, isRunning, testId }: { text: string; isRunning: boolean; testId?: string }): ReactNode {
@@ -171,7 +214,7 @@ function SetupPhrase({ text, isRunning, testId }: { text: string; isRunning: boo
   );
 }
 
-export function SetupTurn({ line, repo, phase, failure, isRunning = false }: SetupTurnProps): React.JSX.Element {
+export function SetupTurn({ line, repo, phase, failure, isRunning = false, chevronIcon }: SetupTurnProps): React.JSX.Element {
   const { before, after: rest } = around(line, 'repo');
   const [tail, after] = particleAfter(rest);
   const chip = <Chip kind="project">{repo}</Chip>;
@@ -198,16 +241,6 @@ export function SetupTurn({ line, repo, phase, failure, isRunning = false }: Set
       {failure === undefined ? null : (
         <VStack align="start" gap={2} width="100%">
           <Line>{failure.nextAction}</Line>
-          {failure.detail === undefined ? null : (
-            <Text
-              type="supporting"
-              color="inherit"
-              style={{ lineHeight: PROSE_LEADING, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}
-              data-testid="chat-setup-detail"
-            >
-              {failure.detail}
-            </Text>
-          )}
           <HStack gap={2} align="center">
             {failure.onRetry === undefined ? null : <Button
               label={failure.retryLabel}
@@ -216,6 +249,15 @@ export function SetupTurn({ line, repo, phase, failure, isRunning = false }: Set
               onClick={failure.onRetry}
               data-testid="chat-setup-retry"
             />}
+            {failure.onChoose === undefined || failure.chooseLabel === undefined ? null : (
+              <Button
+                label={failure.chooseLabel}
+                variant="secondary"
+                size="sm"
+                onClick={failure.onChoose}
+                data-testid="chat-setup-choose-folder"
+              />
+            )}
             {failure.onDismiss === undefined || failure.dismissLabel === undefined ? null : (
               <Button
                 label={failure.dismissLabel}
@@ -226,6 +268,7 @@ export function SetupTurn({ line, repo, phase, failure, isRunning = false }: Set
               />
             )}
           </HStack>
+          {failure.detail === undefined ? null : <FailureDetail detail={failure.detail} {...(chevronIcon === undefined ? {} : { chevronIcon })} />}
         </VStack>
       )}
     </VStack>

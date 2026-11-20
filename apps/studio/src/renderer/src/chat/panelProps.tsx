@@ -149,21 +149,23 @@ export function modelMenuFooter({ harness, controls, ...menu }: {
 type Phase = NonNullable<Props['setup']>['phase'];
 type Narration =
   | { kind: 'progress'; phase: Phase; lineKey: StringKey; repo: string }
-  | { kind: 'failed'; phase: Phase; lineKey: StringKey; nextActionKey: StringKey; repo: string; detail?: string; canDismiss: boolean; canRetry?: boolean };
+  | { kind: 'failed'; phase: Phase; lineKey: StringKey; nextActionKey: StringKey; repo: string; detail?: string; canDismiss: boolean; wayOut: 'retry' | 'choose-folder' };
 
-export function setupNarration(narration: Narration | null, actions: { onRetry: () => void; onDismiss: () => void }): Props['setup'] {
+export function setupNarration(narration: Narration | null, actions: { onRetry: () => void; onChooseFolder: () => void; onDismiss: () => void }): Props['setup'] {
   if (narration === null) return undefined;
   if (narration.kind === 'progress') return { line: t(narration.lineKey), repo: narration.repo, phase: narration.phase };
   return {
     line: t(narration.lineKey),
     repo: narration.repo,
     phase: narration.phase,
+    chevronIcon: PANEL_ICONS.chevronIcon,
     failure: {
       nextAction: t(narration.nextActionKey),
       retryLabel: t('project.create.retry'),
-      ...(narration.canRetry === false ? {} : { onRetry: actions.onRetry }),
+      chooseLabel: t('project.create.chooseFolder'),
+      ...(narration.wayOut === 'choose-folder' ? { onChoose: actions.onChooseFolder } : { onRetry: actions.onRetry }),
       ...(narration.canDismiss ? { dismissLabel: t('project.create.dismiss'), onDismiss: actions.onDismiss } : {}),
-      ...(narration.detail === undefined ? {} : { detail: narration.detail }),
+      ...(narration.detail === undefined ? {} : { detail: { text: narration.detail, showLabel: t('project.create.details.show'), hideLabel: t('project.create.details.hide') } }),
     },
   };
 }

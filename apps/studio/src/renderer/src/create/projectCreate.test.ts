@@ -15,12 +15,19 @@ const failedInstalling: ProjectCreateState = {
 const failedCopying: ProjectCreateState = { kind: 'failed', sourceRepoName: 'acme-storefront', phase: 'copying' };
 
 describe('narrationFor — the failed row (ONL-2363)', () => {
-  it('explains an ignored folder without offering a retry that cannot help', () => {
+  it('explains an ignored folder and sends the person back to the picker instead of Retry', () => {
     const state = { ...failedCopying, copyFailure: { step: 'git_commit', cause: 'ignored_files' } } as ProjectCreateState;
     expect(narrationFor(state, { hasLiveServer: false })).toMatchObject({
       nextActionKey: 'project.create.copy.ignored_files',
-      canRetry: false,
+      wayOut: 'choose-folder',
     });
+  });
+
+  it('keeps Retry for a copy that timed out or failed unclassified (ONL-3285)', () => {
+    for (const cause of ['git_timed_out', 'unknown'] as const) {
+      const state = { ...failedCopying, copyFailure: { step: 'git_commit', cause } } as ProjectCreateState;
+      expect(narrationFor(state, { hasLiveServer: false })).toMatchObject({ wayOut: 'retry' });
+    }
   });
   it('names the source Project, rather than its repository, while making a duplicate (ONL-2515)', () => {
     for (const state of [
@@ -41,6 +48,7 @@ describe('narrationFor — the failed row (ONL-2363)', () => {
       repo: 'acme-storefront',
       detail: 'boom',
       canDismiss: true,
+      wayOut: 'retry',
     });
   });
 

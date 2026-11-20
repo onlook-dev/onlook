@@ -311,7 +311,7 @@ export interface TelemetryEventMap {
   project_created: {
     project_id: string;
     source: WorkspaceOrigin;
-    entry_point: 'onboarding' | 'projects' | 'switcher' | 'band';
+    entry_point: 'onboarding' | 'projects' | 'switcher' | 'band' | 'setup-failure';
     creation_id?: string;
     duration_ms?: number;
   };
@@ -493,7 +493,7 @@ export interface TelemetryEventMap {
     project_id: string;
     mode: 'design' | 'experiment' | 'ship';
     source: WorkspaceOrigin;
-    entry_point: 'onboarding' | 'projects' | 'switcher' | 'band';
+    entry_point: 'onboarding' | 'projects' | 'switcher' | 'band' | 'setup-failure';
   };
 
   /** The name does not ship (ONL-2181). */

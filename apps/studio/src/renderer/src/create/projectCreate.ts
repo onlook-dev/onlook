@@ -79,16 +79,17 @@ const NEXT_ACTION_KEY = {
   starting: 'project.create.next.starting',
 } as const satisfies Record<ProjectCreatePhase, StringKey>;
 
-const COPY_ACTION_KEY = {
-  ignored_files: 'project.create.copy.ignored_files',
-  permission_denied: 'project.create.copy.permission_denied',
-  folder_unavailable: 'project.create.copy.folder_unavailable',
-  copy_in_progress: 'project.create.copy.copy_in_progress',
-  disk_full: 'project.create.copy.disk_full',
-  git_timed_out: 'project.create.copy.git_timed_out',
-  git_failed: 'project.create.copy.git_failed',
-  unknown: 'project.create.next.copying',
-} as const satisfies Record<CopyFailure['cause'], StringKey>;
+/** What a copy failure tells the person, and the one way out it leaves them: the same work again, or the picker. */
+const COPY_FAILURE = {
+  ignored_files: { actionKey: 'project.create.copy.ignored_files', wayOut: 'choose-folder' },
+  permission_denied: { actionKey: 'project.create.copy.permission_denied', wayOut: 'choose-folder' },
+  folder_unavailable: { actionKey: 'project.create.copy.folder_unavailable', wayOut: 'choose-folder' },
+  copy_in_progress: { actionKey: 'project.create.copy.copy_in_progress', wayOut: 'choose-folder' },
+  disk_full: { actionKey: 'project.create.copy.disk_full', wayOut: 'choose-folder' },
+  git_failed: { actionKey: 'project.create.copy.git_failed', wayOut: 'choose-folder' },
+  git_timed_out: { actionKey: 'project.create.copy.git_timed_out', wayOut: 'retry' },
+  unknown: { actionKey: 'project.create.next.copying', wayOut: 'retry' },
+} as const satisfies Record<CopyFailure['cause'], { actionKey: StringKey; wayOut: 'retry' | 'choose-folder' }>;
 
 export type SetupNarration =
   | { kind: 'progress'; phase: ProjectCreatePhase; lineKey: StringKey; repo: string }
@@ -101,7 +102,8 @@ export type SetupNarration =
       detail?: string;
       /** The row offers Dismiss (ONL-2363) only once a project exists behind it — forgetting a pre-landing failure leaves the editor with no project. */
       canDismiss: boolean;
-      canRetry?: boolean;
+      /** Retry only where repeating the same work can succeed; a copy the folder itself stopped sends the person back to the picker (ONL-3285). */
+      wayOut: 'retry' | 'choose-folder';
     };
 
 export interface SetupNarrationFacts {
@@ -151,12 +153,13 @@ export function narrationFor(state: ProjectCreateState | null, facts: SetupNarra
       if (facts.hasLiveServer && state.workspace !== undefined) return null;
       if (facts.isFailureCardHeld === true) return null;
       const step = failedStepOf(state.phase, facts);
+      const copy = state.copyFailure === undefined ? undefined : COPY_FAILURE[state.copyFailure.cause];
       return {
         kind: 'failed',
         phase: state.phase,
         lineKey: step === undefined ? FAILED_LINE_KEY[state.phase] : STEP_FAILED_LINE_KEY[step],
-        nextActionKey: state.copyFailure !== undefined ? COPY_ACTION_KEY[state.copyFailure.cause] : step === undefined ? NEXT_ACTION_KEY[state.phase] : STEP_NEXT_ACTION_KEY[step],
-        ...(state.copyFailure === undefined ? {} : { canRetry: state.copyFailure.cause === 'git_timed_out' || state.copyFailure.cause === 'unknown' }),
+        nextActionKey: copy?.actionKey ?? (step === undefined ? NEXT_ACTION_KEY[state.phase] : STEP_NEXT_ACTION_KEY[step]),
+        wayOut: copy?.wayOut ?? 'retry',
         repo: state.workspace?.sourceRepoName ?? state.sourceRepoName,
         canDismiss: state.workspace !== undefined,
         ...(state.detail === undefined ? {} : { detail: state.detail }),

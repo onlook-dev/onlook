@@ -32,7 +32,8 @@ export type ComfortChoice = 'design' | 'experiment' | 'ship';
 export const COMFORT_CHOICES = ['design', 'experiment', 'ship'] as const satisfies readonly ComfortChoice[];
 
 export type BlankEntryPoint = 'onboarding' | 'projects';
-export type CreationEntryPoint = BlankEntryPoint | 'switcher' | 'band';
+/** `setup-failure` is the folder picked again from a failed setup's own row (ONL-3285). */
+export type CreationEntryPoint = BlankEntryPoint | 'switcher' | 'band' | 'setup-failure';
 
 export type WorkspaceOrigin = 'blank' | 'imported' | 'copied' | 'duplicate';
 

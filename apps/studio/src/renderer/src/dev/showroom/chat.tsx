@@ -541,7 +541,7 @@ const welcome: Category = {
               onRetry: noop,
               dismissLabel: 'Dismiss',
               onDismiss: noop,
-              detail: 'error: ERR_PNPM_NO_LOCKFILE\nCannot install with "frozen-lockfile" because pnpm-lock.yaml is absent',
+              detail: { text: 'error: ERR_PNPM_NO_LOCKFILE\nCannot install with "frozen-lockfile" because pnpm-lock.yaml is absent', showLabel: t('project.create.details.show'), hideLabel: t('project.create.details.hide') },
             }}
           />
         </Panel>
@@ -562,7 +562,7 @@ const welcome: Category = {
               onRetry: noop,
               dismissLabel: t('project.create.dismiss'),
               onDismiss: noop,
-              detail: t('project.install.managerMissing', { manager: 'bun' }),
+              detail: { text: t('project.install.managerMissing', { manager: 'bun' }), showLabel: t('project.create.details.show'), hideLabel: t('project.create.details.hide') },
             }}
           />
         </Panel>

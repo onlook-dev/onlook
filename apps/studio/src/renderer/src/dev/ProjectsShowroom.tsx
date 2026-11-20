@@ -100,6 +100,9 @@ const SCREEN = {
 } as const;
 
 const SECTION = { padding: '24px 32px' } as const;
+
+/** A stand-in for the words the failing command printed, which the row keeps behind Show details. */
+const COPY_OUTPUT = 'git commit -q -m "Initial copy of the project folder"\nnothing added to commit but untracked files present';
 const CARD_SLOT = { width: '263px', minWidth: 0 } as const;
 
 /** The open menus float below their triggers; the room is reserved so a capture is not overlapped. */
@@ -147,7 +150,10 @@ export function ProjectsShowroom({ scenario = '' }: { scenario?: string }): Reac
     const frame = requestAnimationFrame(() => {
       if (scenario.endsWith('-focus')) document.documentElement.dataset.input = 'keyboard';
       if (scenario.startsWith('copy-failure-') && scenario.endsWith('-focus')) {
-        document.querySelector<HTMLElement>('[data-testid="chat-setup-retry"]')?.focus();
+        document.querySelector<HTMLElement>('[data-testid="chat-setup-retry"], [data-testid="chat-setup-choose-folder"]')?.focus();
+      }
+      if (scenario.startsWith('copy-failure-') && scenario.endsWith('-details')) {
+        document.querySelector<HTMLElement>('[data-testid="chat-setup-detail-toggle"]')?.click();
       }
       if (scenario.startsWith('copy-') && scenario !== 'copy-setup' && scenario !== 'copy-error') {
         const card = document.querySelector<HTMLElement>('[data-project-id="copy-source"]');
@@ -188,17 +194,17 @@ export function ProjectsShowroom({ scenario = '' }: { scenario?: string }): Reac
 
   if (scenario.startsWith('copy-')) {
     const causes: CopyFailure['cause'][] = ['ignored_files', 'permission_denied', 'folder_unavailable', 'copy_in_progress', 'disk_full', 'git_timed_out', 'git_failed', 'unknown'];
-    const cause = causes.find((value) => scenario.replace(/-(hover|focus)$/, '') === `copy-failure-${value.replaceAll('_', '-')}`);
+    const cause = causes.find((value) => scenario.replace(/-(hover|focus|details)$/, '') === `copy-failure-${value.replaceAll('_', '-')}`);
     const showsSetup = scenario === 'copy-setup' || scenario === 'copy-error' || cause !== undefined;
     const setup = narrationFor(
       cause !== undefined
-        ? { kind: 'failed', phase: 'copying', sourceRepoName: 'Landing', copyFailure: { step: 'copy_files', cause } }
+        ? { kind: 'failed', phase: 'copying', sourceRepoName: 'Landing', copyFailure: { step: 'copy_files', cause }, detail: COPY_OUTPUT }
         : scenario === 'copy-error'
         ? { kind: 'failed', phase: 'copying', sourceRepoName: 'Landing', detail: t('projects.copy.error.submodules') }
         : { kind: 'copying', sourceRepoName: 'fixture-app', workspaceName: 'landing-copy', duplicateSourceName: 'Landing' },
       { hasLiveServer: false },
     );
-    const setupProps = setupNarration(setup, { onRetry: noop, onDismiss: noop });
+    const setupProps = setupNarration(setup, { onRetry: noop, onChooseFolder: noop, onDismiss: noop });
     return (
       <ProjectsView
         title="zest-maps"
@@ -214,7 +220,7 @@ export function ProjectsShowroom({ scenario = '' }: { scenario?: string }): Reac
         {...(showsSetup && setupProps !== undefined ? {
           content: (
             <VStack style={SECTION}>
-              {scenario.endsWith('-hover') && <style>{'[data-testid="chat-setup-retry"] { background-image: linear-gradient(var(--color-overlay-hover), var(--color-overlay-hover)); }'}</style>}
+              {scenario.endsWith('-hover') && <style>{'[data-testid="chat-setup-retry"], [data-testid="chat-setup-choose-folder"] { background-image: linear-gradient(var(--color-overlay-hover), var(--color-overlay-hover)); }'}</style>}
               <SetupTurn {...setupProps} />
             </VStack>
           ),
