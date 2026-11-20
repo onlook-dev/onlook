@@ -3,8 +3,8 @@
 
 import type {
   AppCommand,
-  CopyFailure,
   AppCommandEntryPoint,
+  CopyFailure,
   FrameCaptureStep,
   ActivationSurface,
   ActivationDeadEnd,

@@ -631,7 +631,6 @@ describe('rollback and the boot sweep', () => {
       if (created.ok) return;
       expect(created.reason).toBe('create-failed');
       expect(created).toMatchObject({ copyFailure: { step: 'git_commit', cause: 'git_failed' } });
-      expect(created.copyFailure?.cause).not.toBe('ignored_files');
       expect(created.detail).toContain('Invalid cleanup mode');
       expect(created.detail).toContain('invalid-mode');
       expect(created.detail).not.toContain(COPY_INIT_COMMIT_MESSAGE);

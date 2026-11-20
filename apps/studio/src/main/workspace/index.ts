@@ -207,7 +207,8 @@ export async function createWorkspaceFromPlan(
         ok: false,
         reason: 'create-failed',
         detail: added.timedOut ? timedOutDetail(added.err) : added.err,
-        copyFailure: copyGitFailure('worktree_cut', added),
+        // Only a copy is narrated as one: the same cut runs for a folder Onlook never copied (ONL-3285).
+        ...(plan.origin === 'copied' ? { copyFailure: copyGitFailure('worktree_cut', added) } : {}),
       };
     }
 

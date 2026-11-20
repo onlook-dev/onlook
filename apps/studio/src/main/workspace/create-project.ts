@@ -165,8 +165,10 @@ export async function createProject(
       error_class: context.copyFailure?.cause === 'git_timed_out' ? 'timeout' : errorClass,
       ...(context.copyFailure === undefined ? {} : { failure_step: context.copyFailure.step, failure_cause: context.copyFailure.cause }),
     });
-    if (context.copyFailure !== undefined) logger.warn('project copy failed', { failure_step: context.copyFailure.step, failure_cause: context.copyFailure.cause });
-    if (deps.diagnoseFailure !== undefined && context.copyFailure === undefined) {
+    // A copy failure is explained by its own classification, never by the machine probe.
+    if (context.copyFailure !== undefined) {
+      logger.warn('project copy failed', { failure_step: context.copyFailure.step, failure_cause: context.copyFailure.cause });
+    } else if (deps.diagnoseFailure !== undefined) {
       detail = await deps.diagnoseFailure() ?? detail;
       // The checks are the only await here, so with no diagnosis there is no window a cancel can land in.
       if (token.canceled) return settle({ kind: 'canceled' });

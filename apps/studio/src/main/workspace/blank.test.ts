@@ -137,6 +137,8 @@ describe('claim + init + cut — the happy path up to registration', () => {
     expect(created.ok).toBe(false);
     expect(reported).toHaveLength(1);
     expect(reported[0]).toMatchObject({ ok: false, exitCode: 128, missing: false, timedOut: false });
+    // Nothing was copied, so the row must not narrate it as a copy failure and send the person to the folder picker (ONL-3285).
+    expect(created).not.toHaveProperty('copyFailure');
   });
 
   it('reports a blank project commit failure from stdout without recording the command line', async () => {
