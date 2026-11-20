@@ -33,10 +33,14 @@ import { FoundUsStep } from '@renderer/onboarding/FoundUsStep.js';
 import { LoginAside } from '@renderer/login/LoginAside.js';
 import { seedAgentSetupForShowroom } from '@renderer/agent-setup/store.js';
 import { CLAUDE_LOGIN_COMMAND } from '@studio/events';
-import { htmlLang } from '@studio/i18n';
+import { htmlLang, setLocale } from '@studio/i18n';
+import { isLocale } from '@studio/i18n/locale';
 import { AstryxLanguage } from '@renderer/AstryxLanguage.js';
 import { seedCapabilities } from '@renderer/capabilities.js';
 
+// `?lang=ja` previews a translation; the app takes its language from main instead.
+const labLang = new URLSearchParams(window.location.search).get('lang');
+if (isLocale(labLang)) setLocale(labLang);
 document.documentElement.lang = htmlLang();
 // The lab draws a build whose provider has accounts: no view is born here to carry that.
 seedCapabilities({ account: true, teams: true, github: true, report: true, survey: true });
