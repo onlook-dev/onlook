@@ -40,7 +40,7 @@ export interface FrameNavigationActions {
   /** A measurement is not a request: it re-navigates frames already on `port` and never adds or moves one (ONL-1966). */
   followServerPort: (port: number) => void;
   /** A resync carries a moved address without the op that moved it, which would leave the guest on a dead origin (ONL-2568). */
-  reaimMovedFrames: (previous: CanvasDoc | null) => void;
+  reaimMovedFrames: (previous: CanvasDoc | null, preserveTargetFor?: CanvasNodeId) => void;
   /** Overlay only: the guest's load events never author an op. */
   patchFrame: (id: string, patch: Partial<FrameNodeData>) => void;
   /** Dispatches the op and navigates: the echo never rewrites the webview's mount `src` (ONL-1941). */
@@ -203,11 +203,12 @@ export const createFrameNavigationActions: StateCreator<CanvasState, [], [], Fra
     }
   },
 
-  reaimMovedFrames: (previous) => {
+  reaimMovedFrames: (previous, preserveTargetFor) => {
     const doc = get().doc;
     if (!previous || !doc || previous.docId !== doc.docId) return;
     const nodes = doc.nodes;
     for (const frame of frameFlowNodes(get().nodes)) {
+      if (frame.id === preserveTargetFor) continue;
       const node = nodes[frame.id];
       const before = previous.nodes[frame.id];
       if (node === undefined || !isBrowserNode(node) || before === undefined || !isBrowserNode(before)) continue;
