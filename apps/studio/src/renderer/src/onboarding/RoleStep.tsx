@@ -60,7 +60,7 @@ export function RoleStep({ onContinue, onBack, aside, initial }: RoleStepProps):
           <h1 data-testid="onboarding-heading" style={{ margin: 0, textWrap: 'balance', fontSize: 32, lineHeight: 1.15, letterSpacing: '-0.02em', fontWeight: 'var(--font-weight-normal)', color: 'var(--color-text-primary)' }}>
             {t('onboarding.role.title')}
           </h1>
-          <div role="radiogroup" aria-label={t('onboarding.role.title')} className="found-groups" style={{ position: 'relative', width: '100%' }}>
+          <div role="group" aria-label={t('onboarding.role.title')} className="found-groups" style={{ position: 'relative', width: '100%' }}>
             {GROUPS.map((group) => (
               <div key={group.label} className="found-group">
                 <span className="found-group-label"><Text type="supporting" color="secondary">{t(group.label)}</Text></span>
