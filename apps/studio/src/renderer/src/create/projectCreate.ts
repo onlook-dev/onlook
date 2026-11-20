@@ -99,7 +99,10 @@ export type SetupNarration =
       lineKey: StringKey;
       nextActionKey: StringKey;
       repo: string;
+      /** A sentence main took from the catalogue, which belongs beside the guidance. */
       detail?: string;
+      /** The failing command's own words, which the row holds back until they are asked for (ONL-3285). */
+      output?: string;
       /** The row offers Dismiss (ONL-2363) only once a project exists behind it — forgetting a pre-landing failure leaves the editor with no project. */
       canDismiss: boolean;
       /** Retry only where repeating the same work can succeed; a copy the folder itself stopped sends the person back to the picker (ONL-3285). */
@@ -154,6 +157,8 @@ export function narrationFor(state: ProjectCreateState | null, facts: SetupNarra
       if (facts.isFailureCardHeld === true) return null;
       const step = failedStepOf(state.phase, facts);
       const copy = state.copyFailure === undefined ? undefined : COPY_FAILURE[state.copyFailure.cause];
+      // A detail with nothing in it is no detail: it would draw a control that opens an empty line.
+      const words = state.detail?.trim() === '' ? undefined : state.detail;
       return {
         kind: 'failed',
         phase: state.phase,
@@ -162,7 +167,8 @@ export function narrationFor(state: ProjectCreateState | null, facts: SetupNarra
         wayOut: copy?.wayOut ?? 'retry',
         repo: state.workspace?.sourceRepoName ?? state.sourceRepoName,
         canDismiss: state.workspace !== undefined,
-        ...(state.detail === undefined ? {} : { detail: state.detail }),
+        // Only a copy's detail is the command's own words; every other stage sends a sentence from the catalogue (ONL-3285).
+        ...(words === undefined ? {} : copy === undefined ? { detail: words } : { output: words }),
       };
     }
     default:

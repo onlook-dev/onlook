@@ -81,13 +81,13 @@ it('keeps Retry, and no folder picker, for a copy that timed out', async () => {
 
 it('keeps the failing command’s own words out of the guidance until they are asked for', async () => {
   await mount(failedCopy('ignored_files'));
-  const toggle = find('chat-setup-detail-toggle')!;
+  const toggle = find('chat-setup-output-toggle')!;
   expect(container!.textContent).not.toContain(GIT_OUTPUT);
   expect(toggle.getAttribute('aria-expanded')).toBe('false');
   expect(toggle.textContent).toContain(en['project.create.details.show']);
 
   await act(async () => { toggle.click(); });
-  expect(container!.querySelector('[data-testid="chat-setup-detail"]')?.textContent).toBe(GIT_OUTPUT);
+  expect(container!.querySelector('[data-testid="chat-setup-output"]')?.textContent).toBe(GIT_OUTPUT);
   expect(toggle.getAttribute('aria-expanded')).toBe('true');
   expect(toggle.textContent).toContain(en['project.create.details.hide']);
 
@@ -108,10 +108,25 @@ it('leaves the picker closed when the person cancels it', async () => {
 
 it('holds the next failure’s words back, however fast it replaced the last one', async () => {
   await mount(failedCopy('ignored_files'));
-  await act(async () => { find('chat-setup-detail-toggle')!.click(); });
+  await act(async () => { find('chat-setup-output-toggle')!.click(); });
   expect(container!.textContent).toContain(GIT_OUTPUT);
 
   await replace(failedCopy('permission_denied', 'EACCES: permission denied'));
   expect(container!.textContent).not.toContain('EACCES: permission denied');
-  expect(find('chat-setup-detail-toggle')!.getAttribute('aria-expanded')).toBe('false');
+  expect(find('chat-setup-output-toggle')!.getAttribute('aria-expanded')).toBe('false');
+});
+
+it('keeps a catalogued detail beside the guidance, where it is the instruction', async () => {
+  const managerMissing = en['project.install.managerMissing'].replace('{manager}', 'bun');
+  await mount({ kind: 'failed', sourceRepoName: 'acme-storefront', phase: 'installing', detail: managerMissing });
+  expect(container!.textContent).toContain(managerMissing);
+  expect(find('chat-setup-output-toggle')).toBeNull();
+  expect(find('chat-setup-retry')).not.toBeNull();
+});
+
+it('draws no details control for a failure that carries no words', async () => {
+  await mount(failedCopy('copy_in_progress', ''));
+  expect(container!.textContent).toContain(en['project.create.copy.copy_in_progress']);
+  expect(find('chat-setup-output-toggle')).toBeNull();
+  expect(find('chat-setup-choose-folder')).not.toBeNull();
 });

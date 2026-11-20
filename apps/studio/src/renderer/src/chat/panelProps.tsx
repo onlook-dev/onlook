@@ -149,7 +149,7 @@ export function modelMenuFooter({ harness, controls, ...menu }: {
 type Phase = NonNullable<Props['setup']>['phase'];
 type Narration =
   | { kind: 'progress'; phase: Phase; lineKey: StringKey; repo: string }
-  | { kind: 'failed'; phase: Phase; lineKey: StringKey; nextActionKey: StringKey; repo: string; detail?: string; canDismiss: boolean; wayOut: 'retry' | 'choose-folder' };
+  | { kind: 'failed'; phase: Phase; lineKey: StringKey; nextActionKey: StringKey; repo: string; detail?: string; output?: string; canDismiss: boolean; wayOut: 'retry' | 'choose-folder' };
 
 export function setupNarration(narration: Narration | null, actions: { onRetry: () => void; onChooseFolder: () => void; onDismiss: () => void }): Props['setup'] {
   if (narration === null) return undefined;
@@ -158,14 +158,14 @@ export function setupNarration(narration: Narration | null, actions: { onRetry: 
     line: t(narration.lineKey),
     repo: narration.repo,
     phase: narration.phase,
-    chevronIcon: PANEL_ICONS.chevronIcon,
     failure: {
       nextAction: t(narration.nextActionKey),
-      retryLabel: t('project.create.retry'),
-      chooseLabel: t('project.create.chooseFolder'),
-      ...(narration.wayOut === 'choose-folder' ? { onChoose: actions.onChooseFolder } : { onRetry: actions.onRetry }),
+      wayOut: narration.wayOut === 'choose-folder'
+        ? { kind: 'choose-folder', label: t('project.create.chooseFolder'), onAct: actions.onChooseFolder }
+        : { kind: 'retry', label: t('project.create.retry'), onAct: actions.onRetry },
       ...(narration.canDismiss ? { dismissLabel: t('project.create.dismiss'), onDismiss: actions.onDismiss } : {}),
-      ...(narration.detail === undefined ? {} : { detail: { text: narration.detail, showLabel: t('project.create.details.show'), hideLabel: t('project.create.details.hide') } }),
+      ...(narration.detail === undefined ? {} : { detail: narration.detail }),
+      ...(narration.output === undefined ? {} : { output: { text: narration.output, showLabel: t('project.create.details.show'), hideLabel: t('project.create.details.hide') } }),
     },
   };
 }

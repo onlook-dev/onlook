@@ -16,7 +16,7 @@
   "project.create.detail.noServer": "Onlook 找不到正在运行的应用。",
   "project.create.detail.neverOpened": "项目没有在这个标签页中打开，因此没有让智能体启动应用。",
   "project.create.next.planning": "确认文件夹没有被移动，然后点按“重试”。",
-  "project.create.next.copying": "请查看详细信息，然后点按“重试”再次拷贝文件夹。",
+  "project.create.next.copying": "要重新拷贝文件夹，请点按“重试”。",
   "project.create.copy.ignored_files": "此文件夹中的所有文件都被 Git 忽略规则排除了。请修改文件夹的 .gitignore 或全局 Git 忽略规则，然后重新选择文件夹。",
   "project.create.copy.permission_denied": "Onlook 无法读取或写入文件。请检查文件夹权限以及系统设置中授予 Onlook 的访问权限，然后重新选择文件夹。",
   "project.create.copy.folder_unavailable": "某个文件或文件夹已不可用。请确认文件夹仍在原处，且云端文件已下载，然后重新选择文件夹。",

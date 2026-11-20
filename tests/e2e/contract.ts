@@ -307,9 +307,11 @@ export const TESTID = {
   // Choosing the folder again, in place of Retry where repeating the copy cannot succeed (ONL-3285).
   chatSetupChooseFolder: 'chat-setup-choose-folder',
   chatSetupDismiss: 'chat-setup-dismiss',
-  // The failing command's own words, behind `chatSetupDetailToggle` (ONL-3285).
+  // A sentence from the catalogue, beside the guidance.
   chatSetupDetail: 'chat-setup-detail',
-  chatSetupDetailToggle: 'chat-setup-detail-toggle',
+  // The failing command's own words, behind `chatSetupOutputToggle` (ONL-3285).
+  chatSetupOutput: 'chat-setup-output',
+  chatSetupOutputToggle: 'chat-setup-output-toggle',
   // The live turn readout. While a question is held it reads the waiting phrase and stops
   // counting; answering resumes it with the wait taken out (ONL-2295).
   chatTurnTimer: 'chat-turn-timer',

@@ -139,15 +139,14 @@ function has(value: string): boolean {
  */
 export interface SetupFailure {
   nextAction: string;
-  retryLabel: string;
-  onRetry?: () => void;
-  /** Choose the source folder again (ONL-3285) — the way out of a failure Retry cannot clear. */
-  chooseLabel?: string;
-  onChoose?: () => void;
+  /** The one way out of this failure: the same work again, or the folder chooser where that cannot help (ONL-3285). */
+  wayOut: { kind: 'retry' | 'choose-folder'; label: string; onAct: () => void };
   dismissLabel?: string;
   onDismiss?: () => void;
-  /** The machine's own words (git's, the package manager's), behind a disclosure so the guidance leads (ONL-3285). */
-  detail?: { text: string; showLabel: string; hideLabel: string };
+  /** A sentence from the catalogue that belongs beside the guidance. */
+  detail?: string;
+  /** The failing command's own words, held behind a disclosure so the guidance leads (ONL-3285). */
+  output?: { text: string; showLabel: string; hideLabel: string };
 }
 
 export interface SetupTurnProps {
@@ -156,17 +155,17 @@ export interface SetupTurnProps {
   repo: string;
   /** The stage the line names, as the machine spells it — a fact for a driver, never rendered. */
   phase?: string;
-  /** Present when the stage the line names has FAILED (ONL-2179): the next action and Retry, in place. */
+  /** Present when the stage the line names has FAILED (ONL-2179): the next action and its way out, in place. */
   failure?: SetupFailure;
   /** The line shimmers like a running tool row while the work it names is under way (ONL-2913). */
   isRunning?: boolean;
   chevronIcon?: IconType;
 }
 
-function FailureDetail({ detail, chevronIcon }: { detail: NonNullable<SetupFailure['detail']>; chevronIcon?: IconType }): React.JSX.Element {
+function FailureOutput({ output, chevronIcon }: { output: NonNullable<SetupFailure['output']>; chevronIcon?: IconType }): React.JSX.Element {
   const bodyId = useId();
   const [isOpen, setIsOpen] = useState(false);
-  const label = isOpen ? detail.hideLabel : detail.showLabel;
+  const label = isOpen ? output.hideLabel : output.showLabel;
   return (
     <VStack align="start" gap={1} width="100%">
       <Button
@@ -176,7 +175,7 @@ function FailureDetail({ detail, chevronIcon }: { detail: NonNullable<SetupFailu
         aria-expanded={isOpen}
         {...(isOpen ? { 'aria-controls': bodyId } : {})}
         onClick={() => setIsOpen(!isOpen)}
-        data-testid="chat-setup-detail-toggle"
+        data-testid="chat-setup-output-toggle"
         style={{ paddingInline: 0, color: 'inherit' }}
         endContent={
           chevronIcon === undefined ? undefined : (
@@ -192,9 +191,9 @@ function FailureDetail({ detail, chevronIcon }: { detail: NonNullable<SetupFailu
           type="supporting"
           color="inherit"
           style={{ lineHeight: PROSE_LEADING, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}
-          data-testid="chat-setup-detail"
+          data-testid="chat-setup-output"
         >
-          {detail.text}
+          {output.text}
         </Text>
       ) : null}
     </VStack>
@@ -241,23 +240,24 @@ export function SetupTurn({ line, repo, phase, failure, isRunning = false, chevr
       {failure === undefined ? null : (
         <VStack align="start" gap={2} width="100%">
           <Line>{failure.nextAction}</Line>
+          {failure.detail === undefined ? null : (
+            <Text
+              type="supporting"
+              color="inherit"
+              style={{ lineHeight: PROSE_LEADING, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}
+              data-testid="chat-setup-detail"
+            >
+              {failure.detail}
+            </Text>
+          )}
           <HStack gap={2} align="center">
-            {failure.onRetry === undefined ? null : <Button
-              label={failure.retryLabel}
+            <Button
+              label={failure.wayOut.label}
               variant="secondary"
               size="sm"
-              onClick={failure.onRetry}
-              data-testid="chat-setup-retry"
-            />}
-            {failure.onChoose === undefined || failure.chooseLabel === undefined ? null : (
-              <Button
-                label={failure.chooseLabel}
-                variant="secondary"
-                size="sm"
-                onClick={failure.onChoose}
-                data-testid="chat-setup-choose-folder"
-              />
-            )}
+              onClick={failure.wayOut.onAct}
+              data-testid={failure.wayOut.kind === 'retry' ? 'chat-setup-retry' : 'chat-setup-choose-folder'}
+            />
             {failure.onDismiss === undefined || failure.dismissLabel === undefined ? null : (
               <Button
                 label={failure.dismissLabel}
@@ -269,7 +269,7 @@ export function SetupTurn({ line, repo, phase, failure, isRunning = false, chevr
             )}
           </HStack>
           {/* Keyed by the words themselves: the next failure's own words start held back, however fast it replaced this one (ONL-3285). */}
-          {failure.detail === undefined ? null : <FailureDetail key={failure.detail.text} detail={failure.detail} {...(chevronIcon === undefined ? {} : { chevronIcon })} />}
+          {failure.output === undefined ? null : <FailureOutput key={failure.output.text} output={failure.output} {...(chevronIcon === undefined ? {} : { chevronIcon })} />}
         </VStack>
       )}
     </VStack>

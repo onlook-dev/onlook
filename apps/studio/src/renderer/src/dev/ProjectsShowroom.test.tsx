@@ -15,9 +15,9 @@ describe('Project copy Showroom states (ONL-2515)', () => {
 
   it('keeps the failing command\u2019s own words behind the details control (ONL-3285)', () => {
     const markup = renderToStaticMarkup(<ProjectsShowroom scenario="copy-failure-ignored-files" />);
-    expect(markup).toContain('data-testid="chat-setup-detail-toggle"');
+    expect(markup).toContain('data-testid="chat-setup-output-toggle"');
     expect(markup).toContain(t('project.create.details.show'));
-    expect(markup).not.toContain('data-testid="chat-setup-detail"');
+    expect(markup).not.toContain('data-testid="chat-setup-output"');
     expect(markup).not.toContain('nothing added to commit');
   });
 
@@ -54,8 +54,9 @@ describe('Project copy Showroom states (ONL-2515)', () => {
     expect(markup).toContain('data-setup-failed="true"');
     expect(markup).toContain(t('project.create.failed.copying', { repo: '' }).trim());
     expect(markup).toContain(t('project.create.next.copying'));
-    expect(markup).toContain('data-testid="chat-setup-detail-toggle"');
-    expect(markup).not.toContain(renderToStaticMarkup(<>{t('projects.copy.error.submodules')}</>));
+    // A detail main took from the catalogue stays beside the guidance; only a command's own words are held back (ONL-3285).
+    expect(markup).toContain(renderToStaticMarkup(<>{t('projects.copy.error.submodules')}</>));
+    expect(markup).not.toContain('data-testid="chat-setup-output-toggle"');
     expect(markup).toContain('data-testid="chat-setup-retry"');
     expect(markup).toContain('Landing');
     expect(markup).not.toContain('data-project-id="copy-source"');

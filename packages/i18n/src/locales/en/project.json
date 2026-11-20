@@ -16,7 +16,7 @@
   "project.create.detail.noServer": "Onlook couldn’t find your app running.",
   "project.create.detail.neverOpened": "The project did not open in this tab, so the agent was not asked to start the app.",
   "project.create.next.planning": "Make sure the folder hasn’t moved, then click Retry.",
-  "project.create.next.copying": "Check the details, then click Retry to copy the folder again.",
+  "project.create.next.copying": "To copy the folder again, click Retry.",
   "project.create.copy.ignored_files": "Every file in this folder is excluded by Git ignore rules. Update the folder’s .gitignore or your global Git ignore rules, then choose the folder again.",
   "project.create.copy.permission_denied": "Onlook couldn’t read or write a file. Check the folder’s permissions and Onlook’s access in System Settings, then choose the folder again.",
   "project.create.copy.folder_unavailable": "A file or folder is no longer available. Check that the folder is still there and any cloud files are downloaded, then choose it again.",

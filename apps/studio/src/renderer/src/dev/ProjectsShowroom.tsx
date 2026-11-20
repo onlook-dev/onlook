@@ -17,6 +17,7 @@ import { ProjectsView } from '../projects/ProjectsView.js';
 import { ImportRefusalBody } from '../projects/ImportRefusalBody.js';
 import { RefusalBody } from '../canvas/RefusalDialog.js';
 import { WindowFrame } from '../topbar/WindowFrame.js';
+import { ForwardIcon } from '../icons/glyphs.js';
 import { MENU_SURFACE } from '../menu/surface.js';
 import { ProjectMenuItems, WorkspaceMenuItems } from '../projects/menus.js';
 import { noop } from './showroom/Showroom.js';
@@ -153,7 +154,7 @@ export function ProjectsShowroom({ scenario = '' }: { scenario?: string }): Reac
         document.querySelector<HTMLElement>('[data-testid="chat-setup-retry"], [data-testid="chat-setup-choose-folder"]')?.focus();
       }
       if (scenario.startsWith('copy-failure-') && scenario.endsWith('-details')) {
-        document.querySelector<HTMLElement>('[data-testid="chat-setup-detail-toggle"]')?.click();
+        document.querySelector<HTMLElement>('[data-testid="chat-setup-output-toggle"]')?.click();
       }
       if (scenario.startsWith('copy-') && scenario !== 'copy-setup' && scenario !== 'copy-error') {
         const card = document.querySelector<HTMLElement>('[data-project-id="copy-source"]');
@@ -221,7 +222,8 @@ export function ProjectsShowroom({ scenario = '' }: { scenario?: string }): Reac
           content: (
             <VStack style={SECTION}>
               {scenario.endsWith('-hover') && <style>{'[data-testid="chat-setup-retry"], [data-testid="chat-setup-choose-folder"] { background-image: linear-gradient(var(--color-overlay-hover), var(--color-overlay-hover)); }'}</style>}
-              <SetupTurn {...setupProps} />
+              {/* The panel hands the row its chevron; this instrument renders the row alone and hands it the same one. */}
+              <SetupTurn {...setupProps} chevronIcon={ForwardIcon} />
             </VStack>
           ),
         } : {})}
