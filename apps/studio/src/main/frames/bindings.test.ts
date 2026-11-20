@@ -283,6 +283,108 @@ it('keeps the route it remembers when a home move stays on the same origin', () 
   test.bindings.committed(docHolding(node), docHolding(edited), { type: 'set-home-url', id: node.id, homeUrl: edited.content.homeUrl });
   expect(test.bindings.browserUrl(test.owner, 'doc', edited)).toBe('https://example.test/design/colours');
 });
+for (const oldGuestState of ['ready', 'failed-old-port'] as const) {
+  it(`launches the new canonical port after a system home move despite stale native history (${oldGuestState})`, async () => {
+    const test = fixture();
+    const oldUrl = 'http://localhost:4700/';
+    const oldRoute = 'http://localhost:4700/preview?theme=light#details';
+    const newUrl = 'http://localhost:49158/';
+    const node: BrowserNode = { ...browser(), content: { homeUrl: oldUrl } };
+    const oldGuest = test.bind(node, oldUrl);
+    test.bindings.navigating(oldGuest, oldRoute);
+    oldGuest.navigate(oldRoute);
+    test.bindings.navigated(oldGuest, oldRoute);
+    if (oldGuestState === 'failed-old-port') {
+      test.bindings.navigating(oldGuest, oldUrl);
+      oldGuest.navigate('chrome-error://chromewebdata/');
+      test.bindings.failed(oldGuest);
+    }
+    const before = { schemaVersion: 1 as const, docId: 'doc', revision: 1, pages: {}, nodes: { [node.id]: node } };
+    const moved: BrowserNode = { ...node, content: { homeUrl: newUrl } };
+    const after = { ...before, revision: 2, nodes: { [moved.id]: moved } };
+    test.bindings.committed(before, after, { type: 'set-home-url', id: node.id, homeUrl: newUrl }, 'system');
+    test.bindings.navigating(oldGuest, oldRoute);
+    test.bindings.navigated(oldGuest, oldRoute);
+    const oldReadiness = test.bindings.readiness(test.owner, 'doc', moved, oldGuest.id);
+    const oldBoundGuest = test.bindings.guest(test.owner, 'doc', moved);
+    const handler = createFrameAttachHandler({
+      admitted: () => true,
+      workspace: () => '/project',
+      snapshot: async () => ({ doc: after }),
+      artifactUrl: async () => undefined,
+      browserUrl: (owner, docId, current) => test.bindings.browserUrl(owner, docId, current),
+      issue: (owner, docId, current, url) => test.bindings.issue(owner, docId, current, url),
+    });
+    const lease = await handler({ sender: test.owner }, { nodeId: node.id });
+    expect(lease).not.toBeNull();
+    const prepared = test.prepare(lease!.url);
+    const replacement = test.born(prepared.params['src']);
+    test.finish(replacement, prepared.params['src']!, newUrl);
+    expect(oldReadiness).toBe('retired');
+    expect(oldBoundGuest).toBeUndefined();
+    expect(test.bindings.readiness(test.owner, 'doc', moved, replacement.id)).toBe('ready');
+    expect(test.bindings.guest(test.owner, 'doc', moved)).toBe(replacement);
+    test.bindings.navigated(oldGuest, oldRoute);
+    test.bindings.failed(oldGuest);
+    expect(test.bindings.browserUrl(test.owner, 'doc', moved)).toBe(newUrl);
+    expect(test.bindings.guest(test.owner, 'doc', moved)).toBe(replacement);
+  });
+}
+
+for (const stage of ['lease-issued', 'prepared', 'birth-loaded', 'pending', 'issued', 'started'] as const) {
+  it(`retires outstanding old-port attachment work after a system home move (${stage})`, () => {
+    const test = fixture();
+    const oldUrl = 'http://localhost:4700/';
+    const newUrl = 'http://localhost:49158/';
+    const node: BrowserNode = { ...browser(), content: { homeUrl: oldUrl } };
+    const lease = test.issue(node, oldUrl);
+    let params: Record<string, string> | undefined;
+    let guest: ReturnType<typeof test.born> | undefined;
+    if (stage !== 'lease-issued') {
+      params = test.prepare(lease).params;
+      guest = test.born(params['src']);
+      if (stage !== 'prepared') {
+        expect(test.bindings.navigating(guest, params['src']!)).toBeUndefined();
+        if (stage === 'birth-loaded') {
+          expect(test.bindings.loaded(guest, params['src']!)).toBeUndefined();
+        } else {
+          expect(test.bindings.attached(test.owner, guest)).toBeUndefined();
+          expect(test.bindings.loaded(guest, params['src']!)).toBe(oldUrl);
+          if (stage !== 'pending') expect(test.bindings.activate(guest, oldUrl)).toBe(true);
+          if (stage === 'started') test.bindings.navigating(guest, oldUrl);
+        }
+      }
+    }
+    const before = { schemaVersion: 1 as const, docId: 'doc', revision: 1, pages: {}, nodes: { [node.id]: node } };
+    const moved: BrowserNode = { ...node, content: { homeUrl: newUrl } };
+    const after = { ...before, revision: 2, nodes: { [moved.id]: moved } };
+    test.bindings.committed(before, after, { type: 'set-home-url', id: node.id, homeUrl: newUrl }, 'system');
+    if (stage === 'lease-issued') {
+      expect(test.bindings.prepare(test.owner, {}, { src: lease })).toBe(false);
+    } else {
+      if (!params || !guest) throw new Error('missing pending native attachment');
+      expect(test.bindings.preparedDestination(test.owner, params)).toBeUndefined();
+      if (stage === 'birth-loaded') expect(test.bindings.attached(test.owner, guest)).toBeUndefined();
+      expect(test.bindings.navigating(guest, params['src']!)).toBeUndefined();
+      expect(test.bindings.loaded(guest, params['src']!)).toBeUndefined();
+      expect(test.bindings.attached(test.owner, guest)).toBeUndefined();
+      expect(test.bindings.activate(guest, oldUrl)).toBe(false);
+      test.bindings.navigated(guest, oldUrl);
+      test.bindings.failed(guest);
+      expect(test.bindings.destination(guest)).toBeUndefined();
+      if (stage === 'pending' || stage === 'issued' || stage === 'started') {
+        expect(test.bindings.readiness(test.owner, 'doc', moved, guest.id)).toBe('retired');
+      }
+    }
+    expect(test.bindings.guest(test.owner, 'doc', moved)).toBeUndefined();
+    expect(test.bindings.browserUrl(test.owner, 'doc', moved)).toBeUndefined();
+    const replacement = test.bind(moved, newUrl);
+    if (guest) test.bindings.navigated(guest, oldUrl);
+    expect(test.bindings.readiness(test.owner, 'doc', moved, replacement.id)).toBe('ready');
+    expect(test.bindings.guest(test.owner, 'doc', moved)).toBe(replacement);
+    expect(test.bindings.browserUrl(test.owner, 'doc', moved)).toBe(newUrl);
+  });
+}
 
 it('never revives a binding after main removes and recreates the same node id', () => {
   const test = fixture();
