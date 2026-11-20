@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { FRAME_ATTACH_PREFIX as ATTACH_PREFIX, FRAME_BIRTH_PREFIX as BIRTH_PREFIX, type CanvasDoc, type CanvasNode, type CanvasOp, type FrameDestinationReadiness } from '@studio/events';
+import { FRAME_ATTACH_PREFIX as ATTACH_PREFIX, FRAME_BIRTH_PREFIX as BIRTH_PREFIX, type CanvasDoc, type CanvasNode, type CanvasOp, type CanvasOpAuthor, type FrameDestinationReadiness } from '@studio/events';
 type Owner = Pick<Electron.WebContents, 'id'>;
 type Guest = Pick<Electron.WebContents, 'id' | 'hostWebContents' | 'isDestroyed'>;
 type Claim = { owner: Owner; docId: string; nodeId: string; identity: string; url: string; expires: number; prepared: boolean; birth?: string; guest?: Guest };
@@ -173,7 +173,7 @@ export function createFrameBindings(now = Date.now) {
       const entry = history.get(keyFor(owner, docId, node.id));
       return node.kind === 'browser' && entry?.claim.owner === owner && entry.claim.identity === frameBindingIdentity(node) ? entry.url : undefined;
     },
-    committed(before: CanvasDoc, after: CanvasDoc, op: CanvasOp): void {
+    committed(before: CanvasDoc, after: CanvasDoc, op: CanvasOp, author: CanvasOpAuthor = 'user'): void {
       for (const [key, claim] of latest) {
         if (claim.docId !== before.docId) continue;
         const prior = before.nodes[claim.nodeId];
@@ -184,7 +184,14 @@ export function createFrameBindings(now = Date.now) {
           history.delete(key);
           continue;
         }
-        if (op.type === 'set-home-url' && op.id === claim.nodeId && prior.kind === 'browser' && next.kind === 'browser' && prior.pageId === next.pageId) claim.identity = frameBindingIdentity(next);
+        if (op.type === 'set-home-url' && op.id === claim.nodeId && prior.kind === 'browser' && next.kind === 'browser' && prior.pageId === next.pageId) {
+          claim.identity = frameBindingIdentity(next);
+          if (author === 'system' && prior.content.homeUrl !== next.content.homeUrl) {
+            claim.expires = now();
+            bound.delete(key);
+            history.delete(key);
+          }
+        }
         if (claim.identity !== frameBindingIdentity(next)) {
           latest.delete(key);
           bound.delete(key);
