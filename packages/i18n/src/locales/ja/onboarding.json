@@ -178,5 +178,16 @@
   "onboarding.continue": "次へ",
   "onboarding.browser.default": "{browser}（デフォルト）",
   "onboarding.browser.signInWith": "{browser} でサインイン",
-  "onboarding.browser.choose": "ブラウザーを選択"
+  "onboarding.browser.choose": "ブラウザーを選択",
+  "onboarding.role.title": "主な役割は何ですか？",
+  "onboarding.role.designer": "デザイナー",
+  "onboarding.role.pm": "プロダクトマネージャー",
+  "onboarding.role.engineer": "エンジニア",
+  "onboarding.role.founder": "創業者",
+  "onboarding.role.student": "学生",
+  "onboarding.role.other": "その他",
+  "onboarding.role.otherLabel": "あなたの役割",
+  "onboarding.role.otherPlaceholder": "どんなお仕事をしていますか？",
+  "onboarding.role.group.team": "プロダクトチーム",
+  "onboarding.role.group.else": "それ以外"
 }

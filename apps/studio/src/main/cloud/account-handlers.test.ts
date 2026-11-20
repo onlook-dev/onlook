@@ -198,7 +198,7 @@ test('a found-us answer reaches telemetry as its option key, the first on the pe
     await ask(IPC_INVOKE.onlookAnswerSurvey, { question: 'found_us@v1', answer: 'other', detail: 'A private meetup' });
     await ask(IPC_INVOKE.onlookAnswerSurvey, { question: 'found_us@v1', answer: 'friend' });
     await ask(IPC_INVOKE.onlookAnswerSurvey, { question: 'found_us@v1', answer: 'private billboard' });
-    await ask(IPC_INVOKE.onlookAnswerSurvey, { question: 'role@v1', answer: 'designer' });
+    await ask(IPC_INVOKE.onlookAnswerSurvey, { question: 'unknown@v1', answer: 'designer' });
 
     expect(answered()).toEqual([
       { event: 'onboarding_survey_answered', properties: { question: 'found_us@v1', answer: 'other', has_detail: true, $set_once: { found_us: 'other' } } },
@@ -206,6 +206,27 @@ test('a found-us answer reaches telemetry as its option key, the first on the pe
     ]);
     expect(JSON.stringify(captures)).not.toContain('private');
     expect(surveyAnswers.map((answer) => answer.answer)).toEqual(['other', 'friend', 'private billboard', 'designer']);
+  } finally {
+    publisher.publish({ session: 'signed-out' });
+    enabled = false;
+  }
+});
+
+test('a role answer reaches telemetry as its option key, the latest on the person, and never the words typed for other (ONL-3347)', async () => {
+  enabled = true;
+  captures.length = 0;
+  const answered = () => captures.filter((capture) => capture.event === 'onboarding_survey_answered');
+  try {
+    publisher.publish({ session: 'signed-in' });
+    await ask(IPC_INVOKE.onlookAnswerSurvey, { question: 'role@v1', answer: 'other', detail: 'A private title' });
+    await ask(IPC_INVOKE.onlookAnswerSurvey, { question: 'role@v1', answer: 'founder' });
+    await ask(IPC_INVOKE.onlookAnswerSurvey, { question: 'role@v1', answer: 'astronaut' });
+
+    expect(answered()).toEqual([
+      { event: 'onboarding_survey_answered', properties: { question: 'role@v1', answer: 'other', has_detail: true, $set: { role: 'other' } } },
+      { event: 'onboarding_survey_answered', properties: { question: 'role@v1', answer: 'founder', has_detail: false, $set: { role: 'founder' } } },
+    ]);
+    expect(JSON.stringify(captures)).not.toContain('private');
   } finally {
     publisher.publish({ session: 'signed-out' });
     enabled = false;
