@@ -123,8 +123,16 @@ export const createFrameNavigationActions: StateCreator<CanvasState, [], [], Fra
       };
       // Judged here because no measured navigation follows: the guest mounts already home.
       let elementSelections = state.elementSelections;
+      let portFollowRefresh = state.portFollowRefresh;
+      const expected = portFollowRefresh[id];
+      if (expected !== undefined) {
+        portFollowRefresh = { ...portFollowRefresh };
+        delete portFollowRefresh[id];
+      }
       if (isCrossEntryHop(state.serverEntries, facts.currentUrl, homeUrl)) {
         elementSelections = afterPageGone(elementSelections, id, state.inlineChat);
+      } else if (expected !== undefined && !isOriginChange(expected, homeUrl)) {
+        elementSelections = rehomeFrameSelections(elementSelections, id, homeUrl);
       }
       return {
         ...recomposed(
@@ -133,6 +141,7 @@ export const createFrameNavigationActions: StateCreator<CanvasState, [], [], Fra
         ),
         elementSelections,
         ...afterSelections(state, elementSelections),
+        portFollowRefresh,
       };
     });
     return applied;

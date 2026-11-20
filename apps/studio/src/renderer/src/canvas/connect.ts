@@ -65,7 +65,9 @@ function resyncCanvasWithSystemMove(move?: SystemMove): Promise<void> {
         const target = state.overlay[move.frameId]?.target;
         if (node?.kind === 'browser' && node.content.homeUrl === move.homeUrl && targetBeforeSnapshot === move.targetAtGap &&
           target !== undefined && target !== targetBeforeSnapshot && target.url === move.homeUrl) {
+          state.notePortFollow(move.frameId, move.homeUrl);
           state.noteAddressAccepted(move.frameId, move.homeUrl);
+          state.rehomeDeadFrame(move.frameId, move.homeUrl, target);
         }
       }
       return doc === null ? undefined : seedStoredPageCameras(wire, doc.docId, epoch);
@@ -161,6 +163,8 @@ function onUpdate(update: CanvasUpdate): void {
     useCanvasStore.getState().retargetFrame(op.homeUrl, op.id);
     if (update.entry.author === 'system') {
       useCanvasStore.getState().noteAddressAccepted(op.id, op.homeUrl);
+      const acceptedTarget = useCanvasStore.getState().overlay[op.id]?.acceptedTarget;
+      if (acceptedTarget !== undefined) useCanvasStore.getState().rehomeDeadFrame(op.id, op.homeUrl, acceptedTarget);
     }
   }
 }

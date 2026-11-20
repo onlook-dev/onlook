@@ -2631,10 +2631,10 @@ describe('a localhost link from chat opens its own frame', () => {
 });
 
 describe('navigation on the broadcast: the author decides', () => {
-  it('an agent- or system-authored home move retargets the live frame; the mount URL never moves', async () => {
+  it('an agent-authored home move retargets the live frame; the mount URL never moves', async () => {
     await connect(docOf([browserNode('a')], 1));
 
-    fakeUpdate(entryOf(2, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:5173/a' }, 'system'));
+    fakeUpdate(entryOf(2, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:5173/a' }, 'agent'));
     expect(homeUrlOf(useCanvasStore.getState().doc, 'a')).toBe('http://localhost:5173/a');
     expect(targets()).toEqual(['http://localhost:5173/a']);
 
@@ -2645,6 +2645,23 @@ describe('navigation on the broadcast: the author decides', () => {
     });
 
     expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:3000/a');
+    expect(frameNodes()[0]?.data.guestEpoch).toBe(0);
+  });
+
+  it('a system-authored home move re-seats the mount before a later agent navigation', async () => {
+    await connect(docOf([browserNode('a')], 1));
+
+    fakeUpdate(entryOf(2, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:5173/a' }, 'system'));
+    expect(homeUrlOf(useCanvasStore.getState().doc, 'a')).toBe('http://localhost:5173/a');
+    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:5173/a');
+    expect(frameNodes()[0]?.data.currentUrl).toBe('http://localhost:5173/a');
+    expect(frameNodes()[0]?.data.guestEpoch).toBe(1);
+    expect(targets()).toEqual([undefined]);
+
+    fakeUpdate(entryOf(3, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:5174/' }, 'agent'));
+    expect(frameNodes()[0]?.data.target).toEqual({ url: 'http://localhost:5174/', seq: 1 });
+    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:5173/a');
+    expect(frameNodes()[0]?.data.guestEpoch).toBe(1);
   });
 
   it('the USER echo does not re-navigate — the committing renderer already did', async () => {
@@ -2744,7 +2761,7 @@ describe('navigation on the broadcast: the author decides', () => {
     }
   });
 
-  it('a home move landing on a COVERED frame re-seats the mount — the revival comes up at the new origin', async () => {
+  it('system home moves re-seat the mount both while covered and after revival', async () => {
     await connect(docOf([browserNode('a', { content: { homeUrl: 'http://localhost:4401/' } })], 1));
     useCanvasStore.getState().applyServerBook([serverEntry(4401, { everLive: true })]);
     expect(covers()).toEqual(['dead']);
@@ -2766,11 +2783,14 @@ describe('navigation on the broadcast: the author decides', () => {
     expect(covers()).toEqual([undefined]);
     expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:4402/');
 
+    const guestEpoch = frameNodes()[0]?.data.guestEpoch ?? 0;
     fakeUpdate(
       entryOf(3, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:4402/about' }, 'system'),
     );
-    expect(frameNodes()[0]?.data.target?.url).toBe('http://localhost:4402/about');
-    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:4402/');
+    expect(frameNodes()[0]?.data.target).toBeUndefined();
+    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:4402/about');
+    expect(frameNodes()[0]?.data.currentUrl).toBe('http://localhost:4402/about');
+    expect(frameNodes()[0]?.data.guestEpoch).toBe(guestEpoch + 1);
   });
 
   it('an agent-authored create composes through the normal read-model path — the mount is the navigation', async () => {
@@ -2786,7 +2806,7 @@ describe('navigation on the broadcast: the author decides', () => {
 });
 
 describe('the undo/redo dispatch seam (ONL-2042)', () => {
-  it('an undone set-home-url comes back SYSTEM-authored and re-navigates the live frame (two-sided)', async () => {
+  it('an undone set-home-url comes back SYSTEM-authored and re-seats the live frame (two-sided)', async () => {
     const wire = await connect(docOf([browserNode('a')], 2));
 
     dispatchCanvasUndo();
@@ -2799,8 +2819,10 @@ describe('the undo/redo dispatch seam (ONL-2042)', () => {
     expect(homeUrlOf(useCanvasStore.getState().doc, 'a')).toBe(
       'http://localhost:5173/prior',
     );
-    expect(targets()).toEqual(['http://localhost:5173/prior']);
-    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:3000/a');
+    expect(targets()).toEqual([undefined]);
+    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:5173/prior');
+    expect(frameNodes()[0]?.data.currentUrl).toBe('http://localhost:5173/prior');
+    expect(frameNodes()[0]?.data.guestEpoch).toBe(1);
   });
 });
 
@@ -3194,6 +3216,7 @@ describe('selection validity is three-tier (ONL-1994)', () => {
     fakeUpdate(
       entryOf(2, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:3001/a' }, 'system'),
     );
+    expect(useCanvasStore.getState().portFollowRefresh.a).toBeUndefined();
     useCanvasStore.getState().patchFrame('a', { currentUrl: 'http://localhost:3001/a' });
     expect(useCanvasStore.getState().elementSelections.map((s) => s.evidence.id)).toEqual([
       'picked',
@@ -3217,6 +3240,7 @@ describe('selection validity is three-tier (ONL-1994)', () => {
     fakeUpdate(
       entryOf(2, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:3001/a' }, 'system'),
     );
+    expect(useCanvasStore.getState().elementSelections[0]?.evidence.frameUrl).toBe('http://localhost:3001/a');
     useCanvasStore.getState().patchFrame('a', { currentUrl: 'http://localhost:3001/a' });
 
     expect(useCanvasStore.getState().elementSelections[0]?.evidence.frameUrl).toBe(
@@ -3229,6 +3253,26 @@ describe('selection validity is three-tier (ONL-1994)', () => {
         'http://localhost:3001/a',
       ).map((s) => s.evidence.id),
     ).toEqual(['picked']);
+  });
+
+  it('refreshes selected evidence once after a trusted system port follow recovered through a revision gap', async () => {
+    const wire = await connect(docOf([browserNode('a')], 1));
+    useCanvasStore.getState().addElementSelection(evidence('picked'), 'a', false);
+    useCanvasStore.getState().applyServerBook([serverEntry(3001, { measured: 'live', everLive: true, status: 'running' })]);
+    wire.answerSnapshotsWith(docOf([browserNode('a', { content: { homeUrl: 'http://localhost:3001/a' } })], 4));
+
+    fakeUpdate(entryOf(4, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:3001/a' }, 'system'));
+    await settled();
+
+    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:3001/a');
+    expect(targets()).toEqual([undefined]);
+    expect(useCanvasStore.getState().elementSelections[0]?.evidence.frameUrl).toBe('http://localhost:3001/a');
+    expect(seedableSelectionsForFrame(useCanvasStore.getState().elementSelections, 'a', 'http://localhost:3001/a')
+      .map(selection => selection.evidence.id)).toEqual(['picked']);
+    expect(useCanvasStore.getState().portFollowRefresh).toEqual({});
+
+    useCanvasStore.getState().patchFrame('a', { currentUrl: 'https://example.test/unrelated' });
+    expect(useCanvasStore.getState().elementSelections).toEqual([]);
   });
 
   it('a system move onto a DIFFERENT book entry’s port is no carve-out — two entries is a hop, not a follow', async () => {
@@ -7543,14 +7587,16 @@ describe('a port move landing on a frame whose server died (ONL-2568)', () => {
     expect(targets()).toEqual([undefined]);
   });
 
-  it('still navigates a frame whose page is live, which has something to lose', async () => {
+  it('re-seats a live frame immediately after the system accepts its new port', async () => {
     await connect(docOf([browserNode('a', { content: { homeUrl: 'http://localhost:3000/' } })], 1));
     useCanvasStore.getState().patchFrame('a', { health: 'live' });
 
     fakeUpdate(entryOf(2, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:4000/' }, 'system'));
 
-    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:3000/');
-    expect(targets()).toEqual(['http://localhost:4000/']);
+    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:4000/');
+    expect(frameNodes()[0]?.data.currentUrl).toBe('http://localhost:4000/');
+    expect(frameNodes()[0]?.data.guestEpoch).toBe(1);
+    expect(targets()).toEqual([undefined]);
   });
 });
 
@@ -7568,7 +7614,7 @@ describe('a moved address that arrives through a resync (ONL-2568)', () => {
     });
   }
 
-  it('re-aims the mounted guest at the new origin', async () => {
+  it('re-seats the mount at the trusted system origin recovered through a gap', async () => {
     const wire = await connect(
       docOf([browserNode('a', { content: { homeUrl: 'http://localhost:3000/' } })], 1),
     );
@@ -7584,7 +7630,10 @@ describe('a moved address that arrives through a resync (ONL-2568)', () => {
     await settled();
 
     expect(homeUrlOf(useCanvasStore.getState().doc, 'a')).toBe('http://localhost:4000/');
-    expect(targets()).toEqual(['http://localhost:4000/']);
+    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:4000/');
+    expect(frameNodes()[0]?.data.currentUrl).toBe('http://localhost:4000/');
+    expect(frameNodes()[0]?.data.guestEpoch).toBe(1);
+    expect(targets()).toEqual([undefined]);
   });
 
   it('leaves a frame the designer took deeper into the same origin where it stands', async () => {

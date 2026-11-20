@@ -456,19 +456,22 @@ for (const replyOrder of ['retirement-before-echo', 'retirement-after-echo']) {
   });
 }
 
-for (const [delivery, replyOrder] of [
-  ['direct', 'retirement-before-echo'],
-  ['direct', 'retirement-after-echo'],
-  ['gap', 'retirement-before-echo'],
-  ['gap', 'retirement-after-echo'],
+for (const [delivery, replyOrder, phase] of [
+  ['direct', 'retirement-before-echo', 'live'],
+  ['direct', 'retirement-after-echo', 'live'],
+  ['gap', 'retirement-before-echo', 'live'],
+  ['gap', 'retirement-after-echo', 'live'],
+  ['direct', 'pending-forever', 'prelaunch'],
+  ['gap', 'pending-forever', 'prelaunch'],
 ] as const) {
-  it(`replaces a live guest after trusted system port-follow acceptance (${delivery}, ${replyOrder})`, async () => {
+  it(`immediately replaces a ${phase} guest after trusted system port-follow acceptance (${delivery}, ${replyOrder})`, async () => {
     const initialDoc = useCanvasStore.getState().doc!;
     const initialFrame = initialDoc.nodes[FRAME_ID];
     if (initialFrame?.kind !== 'browser') throw new Error('missing browser frame');
     const sent: CanvasOpRequest[] = [];
     let onUpdate: ((update: CanvasUpdate) => void) | undefined;
     let snapshotRequests = 0;
+    let pendingReadiness = 0;
     let answerSnapshot: ((doc: CanvasDoc) => void) | undefined;
     type Readiness = Awaited<ReturnType<StudioBridge['canvasFrameReady']>>;
     const replies: { id: number; resolve: (value: Readiness) => void }[] = [];
@@ -491,7 +494,13 @@ for (const [delivery, replyOrder] of [
       onCanvasRejected: () => () => {},
       onAgentWorkingFrames: () => () => {},
       onCanvasFrameQuotes: () => () => {},
-      canvasFrameReady: ({ webContentsId }) => new Promise<Readiness>((resolve) => { replies.push({ id: webContentsId, resolve }); }),
+      canvasFrameReady: ({ webContentsId }) => {
+        if (phase === 'prelaunch' && webContentsId === 1) {
+          pendingReadiness += 1;
+          return Promise.resolve('pending' as const);
+        }
+        return new Promise<Readiness>((resolve) => { replies.push({ id: webContentsId, resolve }); });
+      },
     };
     const attachments = deferFrameAttachments();
     let disconnect: (() => void) | undefined;
@@ -500,10 +509,11 @@ for (const [delivery, replyOrder] of [
       await mount();
       await act(async () => { attachments[0]!.resolve({ url: 'about:blank#studio-frame-attach=starter' }); });
       const original = guests.at(-1)!;
-      await loaded(original, URL_A);
-      expect(useCanvasStore.getState().overlay[FRAME_ID]?.health).toBe('live');
+      await loaded(original, phase === 'prelaunch' ? original.element.getAttribute('src')! : URL_A);
+      expect(useCanvasStore.getState().overlay[FRAME_ID]?.health).toBe(phase === 'prelaunch' ? 'loading' : 'live');
       const beforeEcho = replies.splice(0);
-      expect(beforeEcho.length).toBeGreaterThan(0);
+      if (phase === 'prelaunch') expect(pendingReadiness).toBeGreaterThan(0);
+      else expect(beforeEcho.length).toBeGreaterThan(0);
       if (replyOrder === 'retirement-before-echo') {
         await act(async () => { for (const reply of beforeEcho) reply.resolve('retired'); });
       }
@@ -528,10 +538,6 @@ for (const [delivery, replyOrder] of [
       } else {
         expect(snapshotRequests).toBe(1);
       }
-      expect(attachments).toHaveLength(1);
-      const accepted = replies.splice(0);
-      expect(accepted.length).toBeGreaterThan(0);
-      await act(async () => { for (const reply of accepted) reply.resolve('retired'); });
       expect(attachments).toHaveLength(2);
       expect(useCanvasStore.getState().overlay[FRAME_ID]?.mountUrl).toBe(destination);
       expect(useCanvasStore.getState().overlay[FRAME_ID]?.target).toBeUndefined();
