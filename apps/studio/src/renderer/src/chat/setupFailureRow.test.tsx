@@ -25,22 +25,30 @@ afterEach(async () => {
 
 const GIT_OUTPUT = 'nothing added to commit but untracked files present';
 
-function failedCopy(cause: CopyFailure['cause']): ProjectCreateState {
-  return { kind: 'failed', sourceRepoName: 'acme-storefront', phase: 'copying', detail: GIT_OUTPUT, copyFailure: { step: 'git_commit', cause } };
+function failedCopy(cause: CopyFailure['cause'], detail = GIT_OUTPUT): ProjectCreateState {
+  return { kind: 'failed', sourceRepoName: 'acme-storefront', phase: 'copying', detail, copyFailure: { step: 'git_commit', cause } };
 }
 
-async function mount(state: ProjectCreateState): Promise<void> {
+function row(state: ProjectCreateState): React.JSX.Element {
   const setup = setupNarration(narrationFor(state, { hasLiveServer: false }), {
     onRetry: () => {},
     onChooseFolder: () => { void chooseProjectSource('setup-failure'); },
     onDismiss: () => {},
   });
+  return <SetupTurn {...setup!} />;
+}
+
+async function mount(state: ProjectCreateState): Promise<void> {
   container = document.createElement('div');
   document.body.appendChild(container);
   await act(async () => {
     root = createRoot(container!);
-    root.render(<SetupTurn {...setup!} />);
+    root.render(row(state));
   });
+}
+
+async function replace(state: ProjectCreateState): Promise<void> {
+  await act(async () => { root!.render(row(state)); });
 }
 
 const find = (testId: string): HTMLButtonElement | null => container!.querySelector<HTMLButtonElement>(`[data-testid="${testId}"]`);
@@ -96,4 +104,14 @@ it('leaves the picker closed when the person cancels it', async () => {
   await mount(failedCopy('permission_denied'));
   await act(async () => { find('chat-setup-choose-folder')!.click(); });
   expect(created).toEqual([]);
+});
+
+it('holds the next failure’s words back, however fast it replaced the last one', async () => {
+  await mount(failedCopy('ignored_files'));
+  await act(async () => { find('chat-setup-detail-toggle')!.click(); });
+  expect(container!.textContent).toContain(GIT_OUTPUT);
+
+  await replace(failedCopy('permission_denied', 'EACCES: permission denied'));
+  expect(container!.textContent).not.toContain('EACCES: permission denied');
+  expect(find('chat-setup-detail-toggle')!.getAttribute('aria-expanded')).toBe('false');
 });

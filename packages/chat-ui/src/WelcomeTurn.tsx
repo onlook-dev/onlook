@@ -268,7 +268,8 @@ export function SetupTurn({ line, repo, phase, failure, isRunning = false, chevr
               />
             )}
           </HStack>
-          {failure.detail === undefined ? null : <FailureDetail detail={failure.detail} {...(chevronIcon === undefined ? {} : { chevronIcon })} />}
+          {/* Keyed by the words themselves: the next failure's own words start held back, however fast it replaced this one (ONL-3285). */}
+          {failure.detail === undefined ? null : <FailureDetail key={failure.detail.text} detail={failure.detail} {...(chevronIcon === undefined ? {} : { chevronIcon })} />}
         </VStack>
       )}
     </VStack>
