@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import type { HarnessId, OnboardingImportChoice, OnboardingScreen } from '@studio/events';
+import type { HarnessId, OnboardingImportChoice, OnboardingScreen, SurveyAnswer } from '@studio/events';
 
 import { ConnectStep } from '../agent-setup/ConnectStep.js';
 import { harnessToRecord } from '../agent-setup/gate.js';
@@ -8,6 +8,7 @@ import type { ReadyPlan } from '../canvas/ConnectFlow.js';
 import { RefusalDialog, refusalFrom, type Refusal } from '../canvas/RefusalDialog.js';
 import { useBlankCreateStore } from '../create/store.js';
 import { FoundUsStep } from './FoundUsStep.js';
+import { RoleStep } from './RoleStep.js';
 import { ImportSourceChooser } from './ImportSourceChooser.js';
 import { OnboardingSplit } from './OnboardingShell.js';
 import { ignoreRefusal } from '../refusal.js';
@@ -22,7 +23,7 @@ import { createOnboardingWalk } from './walk.js';
 
 // Commits nothing: project state committed mid-flow flips the window bar to connected under an onboarding screen.
 
-type OnboardingStep = 'found' | 'agent' | 'import';
+type OnboardingStep = 'role' | 'found' | 'agent' | 'import';
 type Step = OnboardingStep;
 
 function reportPassed(screen: Exclude<OnboardingScreen, 'import'>): void;
@@ -42,7 +43,7 @@ export interface OnboardingFlowProps {
 
 export function OnboardingFlow({ onComplete, onCreateBlank, aside, startAt, onOpenExisting }: OnboardingFlowProps): React.JSX.Element {
   const asksSurvey = capable('survey');
-  const first: Step = asksSurvey ? startAt ?? 'found' : startAt === undefined || startAt === 'found' ? 'agent' : startAt;
+  const first: Step = asksSurvey ? startAt ?? 'role' : startAt === undefined || startAt === 'role' || startAt === 'found' ? 'agent' : startAt;
   // The checks run from here, behind the agents screen, so a quiet machine is never waited on; off they do not run, and the refresh is what knows it (ONL-3111).
   const isMachineCheckOn = useFlag('machine-check');
   useEffect(() => {
@@ -67,12 +68,15 @@ export function OnboardingFlow({ onComplete, onCreateBlank, aside, startAt, onOp
     if (showMachine) setMachineShown(true);
   }, [showMachine]);
   const isBehindSignIn = useContext(BlockedWindowBarContext);
-  const screen: OnboardingScreen = step === 'found' ? 'found' : showMachine ? 'machine' : step;
+  const screen: OnboardingScreen = step === 'role' || step === 'found' ? step : showMachine ? 'machine' : step;
   const [walk] = useState(createOnboardingWalk);
   useEffect(() => {
     const shown = walk.shownEvent(screen, isBehindSignIn);
     if (shown !== undefined) studio().telemetryEvent({ event: 'onboarding_screen_shown', properties: shown });
   }, [walk, screen, isBehindSignIn]);
+  // Held here so Back between the two survey screens returns to what was picked.
+  const [roleAnswer, setRoleAnswer] = useState<SurveyAnswer | undefined>(undefined);
+  const [foundAnswer, setFoundAnswer] = useState<SurveyAnswer | undefined>(undefined);
   const [refusal, setRefusal] = useState<Refusal | undefined>(undefined);
   const harness = useRef<HarnessId | undefined>(undefined);
   // Two picks in flight both resolve on the import step; only the first may create.
@@ -112,10 +116,24 @@ export function OnboardingFlow({ onComplete, onCreateBlank, aside, startAt, onOp
     onCreateBlank(harness.current);
   };
 
-  const body = step === 'found' ? (
+  const body = step === 'role' ? (
+    <RoleStep
+      aside={aside}
+      {...(roleAnswer === undefined ? {} : { initial: roleAnswer })}
+      onContinue={(answer) => {
+        setRoleAnswer(answer);
+        void studio().onlookAnswerSurvey(answer).catch(ignoreRefusal('onboarding', 'answer-survey'));
+        reportPassed('role');
+        setStep('found');
+      }}
+    />
+  ) : step === 'found' ? (
     <FoundUsStep
       aside={aside}
+      {...(foundAnswer === undefined ? {} : { initial: foundAnswer })}
+      onBack={() => { setStep('role'); }}
       onContinue={(answer) => {
+        setFoundAnswer(answer);
         void studio().onlookAnswerSurvey(answer).catch(ignoreRefusal('onboarding', 'answer-survey'));
         reportPassed('found');
         setStep('agent');

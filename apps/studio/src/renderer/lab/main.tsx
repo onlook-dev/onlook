@@ -104,7 +104,7 @@ createRoot(container).render(
             <AboutYouStep onContinue={() => {}} onBack={() => {}} aside={<LoginAside />} />
           ) : LAB_SCREEN === 'onboarding' ? (
             /* `?screen=onboarding` is the first-run flow a new account lands on after signing in; `&step=agent` opens it at the agent step. */
-            <OnboardingFlow startAt={LAB_PARAMS.get('step') === 'agent' ? 'agent' : 'found'} onComplete={() => {}} onCreateBlank={() => {}} aside={<LoginAside />} />
+            <OnboardingFlow startAt={LAB_PARAMS.get('step') === 'agent' ? 'agent' : 'role'} onComplete={() => {}} onCreateBlank={() => {}} aside={<LoginAside />} />
           ) : (
             /* Nowhere to exit to — the projects surface is not part of this
                harness, and a fake list would be a second thing to keep true. */

@@ -11,7 +11,7 @@ export interface OnboardingCompletion {
   harness?: HarnessId;
 }
 
-export const ONBOARDING_SCREENS = ['found', 'agent', 'machine', 'import'] as const;
+export const ONBOARDING_SCREENS = ['role', 'found', 'agent', 'machine', 'import'] as const;
 export type OnboardingScreen = (typeof ONBOARDING_SCREENS)[number];
 
 /** How the import screen handed off: a folder to copy, a worktree Studio already holds, or a blank project. */
@@ -24,6 +24,14 @@ export type FoundUsOption = (typeof FOUND_US_OPTIONS)[number];
 
 export function isFoundUsOption(value: unknown): value is FoundUsOption {
   return (FOUND_US_OPTIONS as readonly unknown[]).includes(value);
+}
+
+export const ROLE_QUESTION = 'role@v1';
+export const ROLE_OPTIONS = ['designer', 'pm', 'engineer', 'founder', 'student', 'other'] as const;
+export type RoleOption = (typeof ROLE_OPTIONS)[number];
+
+export function isRoleOption(value: unknown): value is RoleOption {
+  return (ROLE_OPTIONS as readonly unknown[]).includes(value);
 }
 
 /** `answer` is an option key, never display copy; a new option set is a new `question` version (`found_us@v2`). */

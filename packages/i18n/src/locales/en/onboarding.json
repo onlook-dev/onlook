@@ -178,5 +178,16 @@
   "onboarding.continue": "Continue",
   "onboarding.browser.default": "{browser} (default)",
   "onboarding.browser.signInWith": "Sign in with {browser}",
-  "onboarding.browser.choose": "Choose a browser"
+  "onboarding.browser.choose": "Choose a browser",
+  "onboarding.role.title": "What’s your primary role?",
+  "onboarding.role.designer": "Designer",
+  "onboarding.role.pm": "Product manager",
+  "onboarding.role.engineer": "Engineer",
+  "onboarding.role.founder": "Founder",
+  "onboarding.role.student": "Student",
+  "onboarding.role.other": "Other",
+  "onboarding.role.otherLabel": "Your role",
+  "onboarding.role.otherPlaceholder": "What do you do?",
+  "onboarding.role.group.team": "Product team",
+  "onboarding.role.group.else": "Something else"
 }

@@ -198,7 +198,7 @@ test('a found-us answer reaches telemetry as its option key, the first on the pe
     await ask(IPC_INVOKE.onlookAnswerSurvey, { question: 'found_us@v1', answer: 'other', detail: 'A private meetup' });
     await ask(IPC_INVOKE.onlookAnswerSurvey, { question: 'found_us@v1', answer: 'friend' });
     await ask(IPC_INVOKE.onlookAnswerSurvey, { question: 'found_us@v1', answer: 'private billboard' });
-    await ask(IPC_INVOKE.onlookAnswerSurvey, { question: 'role@v1', answer: 'designer' });
+    await ask(IPC_INVOKE.onlookAnswerSurvey, { question: 'job@v1', answer: 'designer' });
 
     expect(answered()).toEqual([
       { event: 'onboarding_survey_answered', properties: { question: 'found_us@v1', answer: 'other', has_detail: true, $set_once: { found_us: 'other' } } },
