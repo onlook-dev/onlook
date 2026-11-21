@@ -77,6 +77,7 @@ function armGrace(record: SetupRecord): void {
     if (record.streaming || record.parked > 0) return;
     settle(record, { kind: 'turn-stopped' });
   }, record.graceMs);
+  record.grace.unref();
 }
 
 // Placed here, not by the machine after it wakes: the agent's tool result waits on this, and the machine may be waiting on that turn to end (ONL-2424).
@@ -112,8 +113,8 @@ export function noteSetupStreaming(cwd: string, isStreaming: boolean): void {
   armGrace(record);
 }
 
-// A closed or superseded session pushes no `turn.ended`, and its turn can no longer report (ONL-3343).
-export function noteSetupSessionEnded(cwd: string): void {
+// A Stop, or a closed or superseded session, pushes no `turn.ended` the wait would hear, and leaves a codex turn streaming (ONL-3343).
+export function noteSetupTurnStopped(cwd: string): void {
   const record = records.get(canonicalPath(cwd));
   if (record === undefined) return;
   settle(record, { kind: 'turn-stopped' });

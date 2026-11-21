@@ -11,9 +11,9 @@ import {
   noteSetupParked,
   noteSetupEvent,
   noteSetupReport,
-  noteSetupSessionEnded,
   noteSetupStreaming,
   noteSetupTabClosed,
+  noteSetupTurnStopped,
   resetSetupSignals,
   type FirstFrameAnswer,
 } from './setup-signals.js';
@@ -164,12 +164,14 @@ describe('awaitStartOutcome', () => {
     expect(await settled(a)).toEqual({ done: false });
   });
 
-  it('a session that ends mid-turn settles the wait at once (ONL-3343)', async () => {
+  it('a turn stopped mid-stream settles the wait at once, without waiting out the grace (ONL-3343)', async () => {
     const a = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
     noteSetupStreaming(A, true);
-    noteSetupSessionEnded(A);
+    noteSetupTurnStopped(A);
     expect(await settled(a)).toEqual({ done: true, value: { kind: 'turn-stopped' } });
-    expect(() => noteSetupSessionEnded('/ws/never')).not.toThrow();
+    expect(isSessionStreaming(A)).toBe(true);
+    expect(() => noteSetupTurnStopped('/ws/never')).not.toThrow();
+    expect(hasSetupRecord('/ws/never')).toBe(false);
   });
 
   it('a report leaves no grace behind that could settle the next wait', async () => {

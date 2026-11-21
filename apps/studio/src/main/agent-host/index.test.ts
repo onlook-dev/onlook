@@ -1025,6 +1025,42 @@ describe("the session's server_running report reaches the setup machine (ONL-217
     expect(await outcome).toEqual({ kind: 'turn-stopped' });
   });
 
+  test.each(['claude', 'appserver'] as const)('Stop during a %s start turn fails the setup even while the turn is still streaming (ONL-3343)', async (harness) => {
+    resetSetupSignals();
+    const [cwd] = registerWorkspaces(`start-interrupted-${harness}`, ['app']) as [string];
+    const started = fakeSession(cwd, harness);
+    let stateChanged: ((state: BackendState) => void) | undefined;
+    const host = new AgentHost(false, new SessionMap(), (_cwd, _harness, _tools, _onEvent, _connection, onState) => {
+      stateChanged = onState;
+      return started.session;
+    });
+    await host.command({ type: 'session.start', cwd }, cwd);
+    if (!stateChanged) throw new Error('backend callbacks missing');
+    const outcome = awaitStartOutcome(cwd, createCancelToken(), async () => ({ kind: 'no-setup' }), 10);
+    // Streaming never falls: an app-server that takes the interrupt and then names no ending leaves it up.
+    stateChanged({ isStreaming: true, isTurnLive: true, midTurn: 'steer' });
+    await host.command({ type: 'interrupt', cause: 'stop' }, cwd);
+    expect(await outcome).toEqual({ kind: 'turn-stopped' });
+  });
+
+  test('skipping a question during the start turn leaves the setup waiting: the agent still has the turn (ONL-3343)', async () => {
+    resetSetupSignals();
+    const [cwd] = registerWorkspaces('start-question-skipped', ['app']) as [string];
+    const started = fakeSession(cwd);
+    let stateChanged: ((state: BackendState) => void) | undefined;
+    const host = new AgentHost(false, new SessionMap(), (_cwd, _harness, _tools, _onEvent, _connection, onState) => {
+      stateChanged = onState;
+      return started.session;
+    });
+    await host.command({ type: 'session.start', cwd }, cwd);
+    if (!stateChanged) throw new Error('backend callbacks missing');
+    const outcome = awaitStartOutcome(cwd, createCancelToken(), async () => ({ kind: 'no-setup' }), 10);
+    stateChanged({ isStreaming: true, isTurnLive: true, midTurn: 'steer' });
+    await host.command({ type: 'interrupt', cause: 'question.skip' }, cwd);
+    const raced = await Promise.race([outcome, new Promise((resolve) => setTimeout(() => resolve('pending'), 60))]);
+    expect(raced).toBe('pending');
+  });
+
   test.each(['claude', 'appserver'] as const)('closing a %s session mid-turn fails the setup, and a late verdict does not revive it (ONL-3343)', async (harness) => {
     resetSetupSignals();
     const [cwd] = registerWorkspaces(`start-closed-${harness}`, ['app']) as [string];
