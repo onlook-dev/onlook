@@ -980,7 +980,7 @@ describe('the reverify move binds to its own project (ONL-2280)', () => {
     const theirs = await applyAgentCreateFrame(forward, { url: 'http://localhost:3000' });
     if (!theirs.ok) throw new Error(`expected a create, got: ${theirs.reason}`);
 
-    expect(await move(3000, 5173, join(root, 'repo', 'never-opened'))).toBeUndefined();
+    expect(await move(3000, 5173, join(root, 'repo', 'never-opened'))).toBe('refused');
     expect((await listAgentFrames(forward)).map((frame) => frame.homeUrl)).toEqual([
       'http://localhost:3000/',
     ]);

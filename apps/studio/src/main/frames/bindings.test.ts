@@ -240,6 +240,49 @@ it('refreshes each browser from its own native navigation history and ignores re
   expect(test.bindings.browserUrl(test.owner, 'doc', firstNode)).toBeUndefined();
 });
 
+it('sends the next mount to the moved port, not to the route it remembers on the old one', async () => {
+  const test = fixture();
+  const onPort = (port: number, route = '/menu'): string => `http://localhost:${String(port)}${route}`;
+  let node: BrowserNode = { ...browser(), content: { homeUrl: onPort(4700) } };
+  const doc = (held: BrowserNode) => ({ schemaVersion: 1 as const, docId: 'doc', revision: 1, pages: {}, nodes: { [held.id]: held } });
+  const guest = test.bind(node, onPort(4700));
+  expect(test.bindings.browserUrl(test.owner, 'doc', node)).toBe(onPort(4700));
+
+  const moved: BrowserNode = { ...node, content: { homeUrl: onPort(4701) } };
+  test.bindings.committed(doc(node), doc(moved), { type: 'set-home-url', id: node.id, homeUrl: moved.content.homeUrl });
+  node = moved;
+  // The live guest keeps its binding; only where a fresh one would land has changed.
+  expect(test.bindings.guest(test.owner, 'doc', node)).toBe(guest);
+  expect(test.bindings.browserUrl(test.owner, 'doc', node)).toBeUndefined();
+
+  test.bindings.destroyed(guest);
+  const handler = createFrameAttachHandler({
+    admitted: () => true,
+    workspace: () => '/project',
+    snapshot: async () => ({ doc: doc(node) }),
+    artifactUrl: async () => undefined,
+    browserUrl: (owner, docId, held) => test.bindings.browserUrl(owner, docId, held),
+    issue: (owner, docId, held, url) => test.bindings.issue(owner, docId, held, url),
+  });
+  const lease = await handler({ sender: test.owner }, { nodeId: node.id });
+  if (!lease) throw new Error('the replacement mount was refused');
+  const prepared = test.prepare(lease.url);
+  const replacement = test.born(prepared.params['src']);
+  test.finish(replacement, prepared.params['src']!, onPort(4701));
+  expect(test.bindings.browserUrl(test.owner, 'doc', node)).toBe(onPort(4701));
+});
+
+it('keeps the route it remembers when a home move stays on the same origin', () => {
+  const test = fixture();
+  const node = browser();
+  const guest = test.bind(node);
+  test.bindings.navigated(guest, 'https://example.test/design/colours');
+  const doc = (held: BrowserNode) => ({ schemaVersion: 1 as const, docId: 'doc', revision: 1, pages: {}, nodes: { [held.id]: held } });
+  const edited: BrowserNode = { ...node, content: { homeUrl: 'https://example.test/other-home' } };
+  test.bindings.committed(doc(node), doc(edited), { type: 'set-home-url', id: node.id, homeUrl: edited.content.homeUrl });
+  expect(test.bindings.browserUrl(test.owner, 'doc', edited)).toBe('https://example.test/design/colours');
+});
+
 it('never revives a binding after main removes and recreates the same node id', () => {
   const test = fixture();
   const node = browser();

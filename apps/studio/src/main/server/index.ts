@@ -12,7 +12,7 @@ import {
   type ServerPortMeasurement,
   type ServerState,
 } from '@studio/events';
-import { createReverifyMoveAuthor, createServerPortFollow } from '../canvas/authors.js';
+import { createReverifyMoveAuthor, createServerPortFollow, type PortMoveOutcome } from '../canvas/authors.js';
 import { applyCanvasOps } from '../canvas/index.js';
 import { capture, resolveWorkspaceTelemetryProperties } from '../telemetry/index.js';
 import type { WorkspaceTelemetryProperties } from '../telemetry/events.js';
@@ -95,7 +95,12 @@ export interface ServerHostDeps {
   isBlankProject?: (worktreePath: string) => boolean;
   /** `worktreePath` must reach the author's own `apply()`: an unbound apply writes into the forward document (ONL-2226). */
   createPortFollow(worktreePath: string): { observed(state: ServerState): void };
-  authorPortMove(fromPort: number, toPort: number, worktreePath: string): void | Promise<void>;
+  /** Nothing returned reads as moved; only `refused` says the frames stayed where they were. */
+  authorPortMove(
+    fromPort: number,
+    toPort: number,
+    worktreePath: string,
+  ): void | PortMoveOutcome | Promise<void | PortMoveOutcome>;
   attributionRoots(worktreePath: string): AttributionRoots;
   probe?: (port: number) => Promise<boolean>;
   identify?: IdentifyListener;
@@ -385,10 +390,21 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
         if (reading.kind === 'extend') {
           extendServerEntry(worktreePath, known.id, reported);
         } else if (reading.kind === 'move') {
-          if (reading.pairedMeasurement === 'dead' || measurements.get(reading.deadPort)?.studioOwned === true) {
-            await deps.authorPortMove(reading.deadPort, reported, worktreePath);
+          const move = (): void =>
+            moveServerEntryPort(worktreePath, known.id, { from: reading.deadPort, to: reported });
+          if (measurements.get(reading.deadPort)?.studioOwned === true) {
+            // Frames leave before the entry stops claiming the old port: another Project answers
+            // there, and an unclaimed port mounts that Project's page (ONL-3287).
+            const outcome = await deps.authorPortMove(reading.deadPort, reported, worktreePath);
+            // A frame that stayed keeps its port claimed, so its cover still stands in for the page.
+            if (outcome === 'refused') extendServerEntry(worktreePath, known.id, reported);
+            else move();
+          } else {
+            move();
+            if (reading.pairedMeasurement === 'dead') {
+              await deps.authorPortMove(reading.deadPort, reported, worktreePath);
+            }
           }
-          moveServerEntryPort(worktreePath, known.id, { from: reading.deadPort, to: reported });
         }
         entry = entryForFolder(worktreePath, folder) ?? known;
       }

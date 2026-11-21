@@ -8,6 +8,14 @@ type Binding = { claim: Claim; guest: Guest; state: 'pending' | 'issued' | 'star
 
 const frameBindingIdentity = (node: CanvasNode): string => JSON.stringify([node.id, node.pageId, node.kind, node.content]);
 
+function sameOrigin(a: string, b: string): boolean {
+  try {
+    return new URL(a).origin === new URL(b).origin;
+  } catch {
+    return false;
+  }
+}
+
 export function createFrameBindings(now = Date.now) {
   const claims = new Map<string, Claim>();
   const created = new WeakMap<Guest, Birth>();
@@ -184,7 +192,13 @@ export function createFrameBindings(now = Date.now) {
           history.delete(key);
           continue;
         }
-        if (op.type === 'set-home-url' && op.id === claim.nodeId && prior.kind === 'browser' && next.kind === 'browser' && prior.pageId === next.pageId) claim.identity = frameBindingIdentity(next);
+        if (op.type === 'set-home-url' && op.id === claim.nodeId && prior.kind === 'browser' && next.kind === 'browser' && prior.pageId === next.pageId) {
+          claim.identity = frameBindingIdentity(next);
+          // A remembered route on an origin the home has left is where the next mount would go, and
+          // whatever answers there now is not this project's app (ONL-3287).
+          const remembered = history.get(key);
+          if (remembered !== undefined && !sameOrigin(remembered.url, next.content.homeUrl)) history.delete(key);
+        }
         if (claim.identity !== frameBindingIdentity(next)) {
           latest.delete(key);
           bound.delete(key);

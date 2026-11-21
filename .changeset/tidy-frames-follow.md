@@ -2,4 +2,4 @@
 '@studio/app': patch
 ---
 
-Frames reopen on their own project's app.
+Switching back to an older project shows its own app, not a newer project's.
