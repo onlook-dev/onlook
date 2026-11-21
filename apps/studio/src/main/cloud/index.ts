@@ -1,6 +1,6 @@
 import { handle } from '../ipc/bridge.js';
 import { identity as cloudIdentity } from '@onlook/cloud-provider';
-import { FOUND_US_QUESTION, IPC_EMIT, IPC_INVOKE, SIGN_IN_FAILURE_CODES, isFoundUsOption, type OnlookSignInMethod, type OnlookState, type SignInFailureCode, type StudioIdentity, type SurveyAnswer } from '@studio/events';
+import { FOUND_US_QUESTION, IPC_EMIT, ROLE_QUESTION, isRoleOption, IPC_INVOKE, SIGN_IN_FAILURE_CODES, isFoundUsOption, type OnlookSignInMethod, type OnlookState, type SignInFailureCode, type StudioIdentity, type SurveyAnswer } from '@studio/events';
 import { everyRenderer } from '../window/host.js';
 import { broadcastToRenderers } from '../tabs/broadcast.js';
 import { clearAccountIdentity, completeBrowserSignIn, onIdentity } from '../identity/ipc.js';
@@ -404,6 +404,10 @@ function isSurveyAnswer(value: unknown): value is SurveyAnswer {
 
 /** Only a known option key leaves for PostHog; `detail` is the person's own words, so only its presence does (ONL-3259). */
 function recordSurveyAnswer({ question, answer, detail }: SurveyAnswer): void {
-  if (question !== FOUND_US_QUESTION || !isFoundUsOption(answer)) return;
-  capture('onboarding_survey_answered', { question, answer, has_detail: detail !== undefined, $set_once: { found_us: answer } });
+  if (question === FOUND_US_QUESTION && isFoundUsOption(answer)) {
+    capture('onboarding_survey_answered', { question, answer, has_detail: detail !== undefined, $set_once: { found_us: answer } });
+  } else if (question === ROLE_QUESTION && isRoleOption(answer)) {
+    // `$set`, not `$set_once`: someone who goes Back and changes their role means the new one (ONL-3347).
+    capture('onboarding_survey_answered', { question, answer, has_detail: detail !== undefined, $set: { role: answer } });
+  }
 }

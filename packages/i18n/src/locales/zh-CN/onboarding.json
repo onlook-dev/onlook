@@ -178,5 +178,16 @@
   "onboarding.continue": "继续",
   "onboarding.browser.default": "{browser}（默认）",
   "onboarding.browser.signInWith": "在 {browser} 中登录",
-  "onboarding.browser.choose": "选择浏览器"
+  "onboarding.browser.choose": "选择浏览器",
+  "onboarding.role.title": "你的主要角色是什么？",
+  "onboarding.role.designer": "设计师",
+  "onboarding.role.pm": "产品经理",
+  "onboarding.role.engineer": "工程师",
+  "onboarding.role.founder": "创始人",
+  "onboarding.role.student": "学生",
+  "onboarding.role.other": "其他",
+  "onboarding.role.otherLabel": "你的角色",
+  "onboarding.role.otherPlaceholder": "你是做什么的？",
+  "onboarding.role.group.team": "产品团队",
+  "onboarding.role.group.else": "其他身份"
 }
