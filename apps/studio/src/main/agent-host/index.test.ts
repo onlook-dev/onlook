@@ -1007,6 +1007,65 @@ describe("the session's server_running report reaches the setup machine (ONL-217
     expect(await outcome).toEqual({ kind: 'turn-failed' });
   });
 
+  test.each(['claude', 'appserver'] as const)('a %s Stop that leaves no verdict fails the setup instead of holding it (ONL-3343)', async (harness) => {
+    resetSetupSignals();
+    const [cwd] = registerWorkspaces(`start-stopped-${harness}`, ['app']) as [string];
+    const started = fakeSession(cwd, harness);
+    let stateChanged: ((state: BackendState) => void) | undefined;
+    const host = new AgentHost(false, new SessionMap(), (_cwd, _harness, _tools, _onEvent, _connection, onState) => {
+      stateChanged = onState;
+      return started.session;
+    });
+    await host.command({ type: 'session.start', cwd }, cwd);
+    if (!stateChanged) throw new Error('backend callbacks missing');
+    const outcome = awaitStartOutcome(cwd, createCancelToken(), async () => ({ kind: 'no-setup' }), 10);
+    stateChanged({ isStreaming: true, isTurnLive: true, midTurn: 'steer' });
+    // A Stop drops `isStreaming` and leaves the turn up (ONL-2294), and no `turn.ended` follows it.
+    stateChanged({ isStreaming: false, isTurnLive: true, midTurn: 'steer' });
+    expect(await outcome).toEqual({ kind: 'turn-stopped' });
+  });
+
+  test.each(['claude', 'appserver'] as const)('closing a %s session mid-turn fails the setup, and a late verdict does not revive it (ONL-3343)', async (harness) => {
+    resetSetupSignals();
+    const [cwd] = registerWorkspaces(`start-closed-${harness}`, ['app']) as [string];
+    const started = fakeSession(cwd, harness);
+    let publish: ((event: StudioEvent) => void) | undefined;
+    let stateChanged: ((state: BackendState) => void) | undefined;
+    const host = new AgentHost(false, new SessionMap(), (_cwd, _harness, _tools, onEvent, _connection, onState) => {
+      publish = onEvent;
+      stateChanged = onState;
+      return started.session;
+    });
+    await host.command({ type: 'session.start', cwd }, cwd);
+    if (!publish || !stateChanged) throw new Error('backend callbacks missing');
+    const outcome = awaitStartOutcome(cwd, createCancelToken(), async () => ({ kind: 'no-setup' }), 10);
+    // Streaming only rises: the close, not the grace, is what settles this wait.
+    stateChanged({ isStreaming: true, isTurnLive: true, midTurn: 'steer' });
+    await host.command({ type: 'session.stop' }, cwd);
+    expect(started.closed()).toBe(true);
+    publish({ type: 'turn.ended', cwd, turnId: 'start', stopReason: 'session_closed', isError: false, sessionId: started.session.id, eventId: 'ended', seq: 1, ts: 0 });
+    expect(await outcome).toEqual({ kind: 'turn-stopped' });
+  });
+
+  test.each(['claude', 'appserver'] as const)('a %s chat replaced mid-turn fails the setup instead of holding it (ONL-3343)', async (harness) => {
+    resetSetupSignals();
+    const [cwd] = registerWorkspaces(`start-replaced-${harness}`, ['app']) as [string];
+    const started = fakeSession(cwd, harness);
+    let stateChanged: ((state: BackendState) => void) | undefined;
+    const host = new AgentHost(false, new SessionMap(), (_cwd, _harness, _tools, _onEvent, _connection, onState) => {
+      stateChanged = onState;
+      return started.session;
+    });
+    await host.command({ type: 'session.start', cwd }, cwd);
+    if (!stateChanged) throw new Error('backend callbacks missing');
+    // New chat archives what the user said, so the session needs a spoken row before it will replace one.
+    started.session.prompt('start my app', [], undefined, 'user');
+    const outcome = awaitStartOutcome(cwd, createCancelToken(), async () => ({ kind: 'no-setup' }), 10);
+    stateChanged({ isStreaming: true, isTurnLive: true, midTurn: 'steer' });
+    expect(await host.command({ type: 'session.newChat' }, cwd)).toEqual({ accepted: true });
+    expect(await outcome).toEqual({ kind: 'turn-stopped' });
+  });
+
   test('a report through the sinks the host hands the backend settles a pending Start wait with its port, and the default port when none was named', async () => {
     resetSetupSignals();
     const [cwd] = registerWorkspaces('report-reaches-setup', ['reported']) as [string];

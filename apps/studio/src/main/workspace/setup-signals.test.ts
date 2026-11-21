@@ -11,6 +11,7 @@ import {
   noteSetupParked,
   noteSetupEvent,
   noteSetupReport,
+  noteSetupSessionEnded,
   noteSetupStreaming,
   noteSetupTabClosed,
   resetSetupSignals,
@@ -19,8 +20,11 @@ import {
 
 const A = '/ws/a';
 const B = '/ws/b';
+const GRACE_MS = 10;
 const NOT_PLACED: FirstFrameAnswer = { kind: 'not-placed', reason: 'nothing to place in this test' };
 const place = async (): Promise<FirstFrameAnswer> => NOT_PLACED;
+
+const pastGrace = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, GRACE_MS * 4));
 
 function endTurn(stopReason = 'success', cwd = A, isError = false): void {
   noteSetupEvent({ type: 'turn.ended', turnId: 'turn-1', stopReason, isError, cwd, sessionId: 'session-1', eventId: 'ended', seq: 1, ts: 0 });
@@ -122,6 +126,61 @@ describe('awaitStartOutcome', () => {
     noteSetupStreaming(A, true);
     noteSetupReport(A, 3000);
     expect(await settled(a)).toEqual({ done: true, value: { kind: 'reported', port: 3000, frame: NOT_PLACED } });
+  });
+
+  it('settles once the turn is over and no verdict follows it, so the setup is never left pending (ONL-3343)', async () => {
+    const a = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    noteSetupStreaming(A, true);
+    noteSetupStreaming(A, false);
+    expect(await settled(a)).toEqual({ done: false });
+    expect(await a).toEqual({ kind: 'turn-stopped' });
+  });
+
+  it('a verdict that lands inside the grace still names the failure', async () => {
+    const a = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    noteSetupStreaming(A, true);
+    noteSetupStreaming(A, false);
+    endTurn('api_error', A, true);
+    expect(await a).toEqual({ kind: 'turn-failed' });
+  });
+
+  it('a turn that streams again before the grace is out is still waited on', async () => {
+    const a = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    noteSetupStreaming(A, true);
+    noteSetupStreaming(A, false);
+    noteSetupStreaming(A, true);
+    await pastGrace();
+    expect(await settled(a)).toEqual({ done: false });
+    noteSetupReport(A, 5173);
+    expect(await a).toEqual({ kind: 'reported', port: 5173, frame: NOT_PLACED });
+  });
+
+  it('a parked question outlives the grace: the agent may still report once it is answered', async () => {
+    const a = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    noteSetupStreaming(A, true);
+    noteSetupParked(A, 1);
+    noteSetupStreaming(A, false);
+    await pastGrace();
+    expect(await settled(a)).toEqual({ done: false });
+  });
+
+  it('a session that ends mid-turn settles the wait at once (ONL-3343)', async () => {
+    const a = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    noteSetupStreaming(A, true);
+    noteSetupSessionEnded(A);
+    expect(await settled(a)).toEqual({ done: true, value: { kind: 'turn-stopped' } });
+    expect(() => noteSetupSessionEnded('/ws/never')).not.toThrow();
+  });
+
+  it('a report leaves no grace behind that could settle the next wait', async () => {
+    const first = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    noteSetupStreaming(A, true);
+    noteSetupStreaming(A, false);
+    await noteSetupReport(A, 5173);
+    expect(await first).toEqual({ kind: 'reported', port: 5173, frame: NOT_PLACED });
+    const retry = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    await pastGrace();
+    expect(await settled(retry)).toEqual({ done: false });
   });
 
   it('a parked count never goes negative, so one stray resolve cannot un-park a later question', async () => {

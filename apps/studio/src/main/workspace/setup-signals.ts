@@ -18,7 +18,11 @@ export type StartOutcome =
   | { kind: 'reported'; port: number; frame: FirstFrameAnswer }
   | { kind: 'turn-ended' }
   | { kind: 'turn-failed' }
+  | { kind: 'turn-stopped' }
   | { kind: 'canceled' };
+
+// The turn going quiet is the Start wait's deadline; the grace is the window the verdict that names why has to land in, because both backends drop streaming before pushing it (ONL-2294).
+const START_VERDICT_GRACE_MS = 2_000;
 
 export type FirstFramePlacer = (port: number, signal?: AbortSignal) => Promise<FirstFrameAnswer>;
 
@@ -31,6 +35,8 @@ interface SetupRecord {
   parked: number;
   streaming: boolean;
   isOpen: boolean;
+  graceMs: number;
+  grace?: ReturnType<typeof setTimeout>;
   waiters: Set<StartWaiter>;
   idle: Set<() => void>;
   opening: Set<() => void>;
@@ -42,16 +48,35 @@ function recordFor(cwd: string): SetupRecord {
   const key = canonicalPath(cwd);
   let record = records.get(key);
   if (record === undefined) {
-    record = { parked: 0, streaming: false, isOpen: false, waiters: new Set(), idle: new Set(), opening: new Set() };
+    record = { parked: 0, streaming: false, isOpen: false, graceMs: START_VERDICT_GRACE_MS, waiters: new Set(), idle: new Set(), opening: new Set() };
     records.set(key, record);
   }
   return record;
 }
 
+// The grace belongs to the waiters it was armed for; a stale one would settle the next Start wait.
+function clearGrace(record: SetupRecord): void {
+  if (record.grace === undefined) return;
+  clearTimeout(record.grace);
+  record.grace = undefined;
+}
+
 function settle(record: SetupRecord, outcome: StartOutcome): void {
+  clearGrace(record);
   const waiters = [...record.waiters];
   record.waiters.clear();
   for (const waiter of waiters) waiter.resolve(outcome);
+}
+
+function armGrace(record: SetupRecord): void {
+  clearGrace(record);
+  if (record.waiters.size === 0) return;
+  record.grace = setTimeout(() => {
+    record.grace = undefined;
+    // A parked permission or question is not a turn end: the agent may still report once answered.
+    if (record.streaming || record.parked > 0) return;
+    settle(record, { kind: 'turn-stopped' });
+  }, record.graceMs);
 }
 
 // Placed here, not by the machine after it wakes: the agent's tool result waits on this, and the machine may be waiting on that turn to end (ONL-2424).
@@ -61,6 +86,7 @@ export async function noteSetupReport(cwd: string, port: number, signal?: AbortS
   const waiters = [...record.waiters];
   const first = waiters[0];
   if (first === undefined) return { kind: 'no-setup' };
+  clearGrace(record);
   record.waiters.clear();
   let frame: FirstFrameAnswer;
   try {
@@ -76,10 +102,21 @@ export async function noteSetupReport(cwd: string, port: number, signal?: AbortS
 export function noteSetupStreaming(cwd: string, isStreaming: boolean): void {
   const record = recordFor(cwd);
   record.streaming = isStreaming;
-  if (isStreaming) return;
+  if (isStreaming) {
+    clearGrace(record);
+    return;
+  }
   const idle = [...record.idle];
   record.idle.clear();
   for (const waiter of idle) waiter();
+  armGrace(record);
+}
+
+// A closed or superseded session pushes no `turn.ended`, and its turn can no longer report (ONL-3343).
+export function noteSetupSessionEnded(cwd: string): void {
+  const record = records.get(canonicalPath(cwd));
+  if (record === undefined) return;
+  settle(record, { kind: 'turn-stopped' });
 }
 
 export function noteSetupEvent(event: StudioEvent): void {
@@ -149,14 +186,18 @@ export function awaitStartOutcome(
   cwd: string,
   token: CancelToken,
   place: FirstFramePlacer,
+  graceMs = START_VERDICT_GRACE_MS,
 ): Promise<StartOutcome> {
   const record = recordFor(cwd);
   if (token.canceled) return Promise.resolve({ kind: 'canceled' });
+  record.graceMs = graceMs;
   return new Promise((resolve) => {
     const waiter: StartWaiter = { resolve, place };
     record.waiters.add(waiter);
     void token.whenCanceled.then(() => {
-      if (record.waiters.delete(waiter)) resolve({ kind: 'canceled' });
+      if (!record.waiters.delete(waiter)) return;
+      if (record.waiters.size === 0) clearGrace(record);
+      resolve({ kind: 'canceled' });
     });
   });
 }
@@ -166,6 +207,7 @@ export function noteSetupTabClosed(cwd: string): void {
   const key = canonicalPath(cwd);
   const record = records.get(key);
   if (record === undefined || record.waiters.size > 0 || record.idle.size > 0 || record.opening.size > 0) return;
+  clearGrace(record);
   records.delete(key);
 }
 
@@ -174,5 +216,6 @@ export function hasSetupRecord(cwd: string): boolean {
 }
 
 export function resetSetupSignals(): void {
+  for (const record of records.values()) clearGrace(record);
   records.clear();
 }

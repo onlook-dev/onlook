@@ -115,7 +115,7 @@ import { rememberReportedApp } from '../workspace/detect.js';
 import { knownProject, noteWorkspaceOpened } from '../workspace/index.js';
 import { renameProjectByAgent } from '../workspace/rename.js';
 import { createProjectTabByAgent } from '../workspace/agent-tab.js';
-import { noteSetupEvent, noteSetupParked, noteSetupReport, noteSetupStreaming, noteSetupTabClosed } from '../workspace/setup-signals.js';
+import { noteSetupEvent, noteSetupParked, noteSetupReport, noteSetupSessionEnded, noteSetupStreaming, noteSetupTabClosed } from '../workspace/setup-signals.js';
 import { setProjectHarness, workspaceOrigin } from '../workspace/store.js';
 import { isRemovingProject } from '../workspace/remove-project.js';
 import { codexSetupStatus } from '../codex/index.js';
@@ -1791,6 +1791,7 @@ export class AgentHost {
     this.notifications.cancel(session);
     await session.close();
     this.superseded.add(session);
+    noteSetupSessionEnded(cwd);
     // Not on a replacement: the view, its composer chips and its pen all outlive one (ONL-2294).
     if (stop === 'destroyed') releaseAllPending(session.cwd);
     this.emitSession({ sessionId: undefined, cwd: session.cwd });
