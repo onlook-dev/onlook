@@ -169,9 +169,32 @@ describe('awaitStartOutcome', () => {
     noteSetupStreaming(A, true);
     noteSetupTurnStopped(A);
     expect(await settled(a)).toEqual({ done: true, value: { kind: 'turn-stopped' } });
-    expect(isSessionStreaming(A)).toBe(true);
     expect(() => noteSetupTurnStopped('/ws/never')).not.toThrow();
     expect(hasSetupRecord('/ws/never')).toBe(false);
+  });
+
+  // The Retry the failure row offers waits for the session to be idle first, and a stopped codex
+  // turn never reports the falling edge that would say so (ONL-3343).
+  it('a stopped turn leaves the session idle, so a Retry is not left waiting on it', async () => {
+    void awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    noteSetupStreaming(A, true);
+    const idle = awaitSessionIdle(A, createCancelToken());
+    expect(await settled(idle)).toEqual({ done: false });
+    noteSetupTurnStopped(A);
+    expect(await settled(idle)).toEqual({ done: true, value: 'idle' });
+    expect(isSessionStreaming(A)).toBe(false);
+    expect(await awaitSessionIdle(A, createCancelToken())).toBe('idle');
+  });
+
+  it('answering the question the grace waited on gives the wait its deadline back (ONL-3343)', async () => {
+    const a = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    noteSetupStreaming(A, true);
+    noteSetupParked(A, 1);
+    noteSetupStreaming(A, false);
+    await pastGrace();
+    expect(await settled(a)).toEqual({ done: false });
+    noteSetupParked(A, -1);
+    expect(await a).toEqual({ kind: 'turn-stopped' });
   });
 
   it('a report leaves no grace behind that could settle the next wait', async () => {

@@ -1083,7 +1083,10 @@ describe("the session's server_running report reaches the setup machine (ONL-217
     expect(await outcome).toEqual({ kind: 'turn-stopped' });
   });
 
-  test.each(['claude', 'appserver'] as const)('a %s chat replaced mid-turn fails the setup instead of holding it (ONL-3343)', async (harness) => {
+  // New chat replaces the session the setup was waiting on, so the wait fails rather than holding for
+  // a turn that belongs to a chat the user has left. The replaced session is superseded too, so no
+  // verdict of its own can arrive later (ONL-3343).
+  test.each(['claude', 'appserver'] as const)('a new %s chat during the start turn fails the setup (ONL-3343)', async (harness) => {
     resetSetupSignals();
     const [cwd] = registerWorkspaces(`start-replaced-${harness}`, ['app']) as [string];
     const started = fakeSession(cwd, harness);
@@ -1388,6 +1391,29 @@ describe('AgentHost and the Claude machine (ONL-2186)', () => {
     host.noteClaudeSetup(claude('signed-in'), { afterLogin: true });
     return host;
   }
+
+  // The prompt that carries the start intent revives a stale session first, so a setup waiting on
+  // that turn must outlive the revival: the agent has not been asked yet (ONL-3343).
+  test('a stale session revived under a pending setup leaves the setup waiting', async () => {
+    resetSetupSignals();
+    const cwd = registeredWorkspace();
+    const map = new SessionMap();
+    const before = fakeSession(cwd);
+    map.set(before.session);
+    const host = await staleRestartHost(map);
+    const after = fakeSession(cwd);
+    host.onStart = () => {
+      map.set(after.session);
+    };
+
+    const outcome = awaitStartOutcome(cwd, createCancelToken(), async () => ({ kind: 'no-setup' }), 10);
+    expect(await host.command({ type: 'prompt', text: 'start my app' }, cwd)).toEqual({ accepted: true });
+
+    expect(before.closed()).toBe(true);
+    expect(after.prompts).toEqual(['start my app']);
+    const raced = await Promise.race([outcome, new Promise((resolve) => setTimeout(() => resolve('pending'), 60))]);
+    expect(raced).toBe('pending');
+  });
 
   test('two prompts arriving across one stale restart both land on the new session', async () => {
     const cwd = registeredWorkspace();

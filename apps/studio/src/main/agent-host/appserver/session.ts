@@ -600,7 +600,7 @@ export class AppServerSession implements AgentBackend {
       // that would have closed it, so it is closed here or it stays live under the next one (ONL-2863).
       const stopped = this.log.turnTally();
       if (stopped !== undefined) {
-        this.log.push({ type: 'turn.ended', turnId: stopped.turnId, stopReason: 'interrupted', filesChanged: stopped.filesChanged });
+        this.log.push({ type: 'turn.ended', turnId: stopped.turnId, stopReason: 'interrupted', isError: false, filesChanged: stopped.filesChanged });
         this.opts.onTurnEnded?.({ ...stopped, origin: this.turnOrigin, stopReason: 'interrupted' });
       }
       this.stopStreaming();

@@ -220,7 +220,8 @@ const logger = log('agent-host');
 const CODEX_REFUSED: AgentConnection = { status: 'unauthenticated', harness: 'codex' };
 
 /** A `replaced` stop keeps the pen loaded: the view stays open, and it reads a draft once per landing, so one written now is never read back (ONL-2294). */
-type SessionStop = 'destroyed' | 'replaced';
+// `revived` is the only stop the user did not ask for, so it is the only one a pending setup outlives (ONL-3343).
+type SessionStop = 'destroyed' | 'replaced' | 'revived';
 
 interface PenSlot {
   pen: PenState | null;
@@ -986,7 +987,7 @@ export class AgentHost {
     const run = this.lifecycle.run(key, async () => {
       if (!this.isWanted(cwd) || !this.stale.has(key)) return;
       this.stale.delete(key);
-      await this.stopSession(cwd, 'replaced');
+      await this.stopSession(cwd, 'revived');
       if (!this.isWanted(cwd)) return;
       await this.startSession(cwd);
       if (this.sessions.get(cwd) === undefined && this.isWanted(cwd)) this.stale.add(key);
@@ -1176,9 +1177,11 @@ export class AgentHost {
       case 'interrupt': {
         const ending = session === undefined ? undefined : this.questionEnding(session);
         if (session !== undefined) this.notifications.cancel(session);
+        // Before the interrupt, which can push a `turn.ended` of its own: that verdict would settle a
+        // pending setup as a missing app, and this Stop is why the turn ended. A skip is not a Stop:
+        // it hands the turn back to the agent (ONL-3343).
+        if (session !== undefined && cwd !== undefined && command.cause !== 'question.skip') noteSetupTurnStopped(cwd);
         await session?.interrupt();
-        // A skip hands the turn back to the agent; a Stop ends it, and codex keeps streaming with no `turn.ended` (ONL-3343).
-        if (cwd !== undefined && command.cause !== 'question.skip') noteSetupTurnStopped(cwd);
         ending?.(command.cause === 'question.skip' ? 'skipped' : 'stopped');
         return { accepted: true };
       }
@@ -1774,11 +1777,11 @@ export class AgentHost {
       return;
     }
     // Before the delete, so a held prompt is never left with nothing to send it into (ONL-2294).
-    if (stop === 'replaced') {
+    if (stop === 'destroyed') {
+      this.closePen(cwd);
+    } else {
       this.penSlot(cwd).turnId = undefined;
       this.penAction(cwd, { type: 'sessionReplaced' });
-    } else {
-      this.closePen(cwd);
     }
     this.sessions.delete(cwd);
     const busyKey = projectKey(cwd);
@@ -1793,7 +1796,7 @@ export class AgentHost {
     this.notifications.cancel(session);
     await session.close();
     this.superseded.add(session);
-    noteSetupTurnStopped(cwd);
+    if (stop !== 'revived') noteSetupTurnStopped(cwd);
     // Not on a replacement: the view, its composer chips and its pen all outlive one (ONL-2294).
     if (stop === 'destroyed') releaseAllPending(session.cwd);
     this.emitSession({ sessionId: undefined, cwd: session.cwd });

@@ -100,23 +100,31 @@ export async function noteSetupReport(cwd: string, port: number, signal?: AbortS
   return frame;
 }
 
-export function noteSetupStreaming(cwd: string, isStreaming: boolean): void {
-  const record = recordFor(cwd);
-  record.streaming = isStreaming;
-  if (isStreaming) {
-    clearGrace(record);
-    return;
-  }
+function goIdle(record: SetupRecord): void {
+  record.streaming = false;
   const idle = [...record.idle];
   record.idle.clear();
   for (const waiter of idle) waiter();
+}
+
+export function noteSetupStreaming(cwd: string, isStreaming: boolean): void {
+  const record = recordFor(cwd);
+  if (isStreaming) {
+    record.streaming = true;
+    clearGrace(record);
+    return;
+  }
+  goIdle(record);
   armGrace(record);
 }
 
-// A Stop, or a closed or superseded session, pushes no `turn.ended` the wait would hear, and leaves a codex turn streaming (ONL-3343).
+// A Stop, or a closed or superseded session, pushes no `turn.ended` the wait would hear. The turn is
+// over whatever the runtime still reports: codex leaves `streaming` up after an interrupt it answers
+// with nothing, and a Retry's first wait is for this session to be idle (ONL-3343).
 export function noteSetupTurnStopped(cwd: string): void {
   const record = records.get(canonicalPath(cwd));
   if (record === undefined) return;
+  goIdle(record);
   settle(record, { kind: 'turn-stopped' });
 }
 
@@ -132,6 +140,8 @@ export function noteSetupEvent(event: StudioEvent): void {
 export function noteSetupParked(cwd: string, delta: 1 | -1): void {
   const record = recordFor(cwd);
   record.parked = Math.max(0, record.parked + delta);
+  // The grace that expired while this question was up settled nothing; the answer is when the turn is over again.
+  if (record.parked === 0 && !record.streaming) armGrace(record);
 }
 
 export function isSessionStreaming(cwd: string): boolean {
