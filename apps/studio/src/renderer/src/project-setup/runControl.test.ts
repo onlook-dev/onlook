@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, jest } from 'bun:test';
 import { runFeedback, useRunFeedbackStore } from '../server/runFeedbackStore.js';
 import { useServerStore } from '../server/store.js';
 import type { RunIntent, ServerEntryState } from '@studio/events';
-import { projectRunIntent, reportProjectRunIntent } from './runControl.js';
+import { projectRunIntent, reportProjectRunIntent, reportRunIntent } from './runControl.js';
 
 function entry(entryId: string, ownership: ServerEntryState['ownership'], port: number): ServerEntryState {
   return { entryId, ownership, folderName: entryId, status: 'running', everMeasuredLive: true,
@@ -12,6 +12,19 @@ function entry(entryId: string, ownership: ServerEntryState['ownership'], port: 
 afterEach(() => { runFeedback.reset(); jest.useRealTimers(); });
 
 describe('direct Canvas project control', () => {
+  it('begins feedback before a targeted frame restart can synchronously fail its saved setup', () => {
+    const intents: RunIntent[] = [];
+    const intent: RunIntent = { press: 'start', entryIds: ['frame-server'] };
+    reportRunIntent(intent, true, [entry('unrelated-server', 'agent-started', 4000)], ['http://localhost:3000'], {
+      serverIntent: (received) => {
+        intents.push(received);
+        runFeedback.observeSetup('failed');
+      },
+    });
+    expect(intents).toEqual([intent]);
+    expect(useRunFeedbackStore.getState().notice).toBe('start-failed');
+  });
+
   it('clears an agent-free starter restart without changing the main intent', () => {
     jest.useFakeTimers();
     const starter = { ...entry('starter', 'studio-started', 3000), status: 'stopped' as const,

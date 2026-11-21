@@ -107,7 +107,7 @@ function useOwnWorkspaceRoot(name: string): string {
   return root;
 }
 
-function makeHost(deps: Pick<CanvasHostDeps, 'preparePlacements' | 'onPlacementsCommitted' | 'saveArtifactDimensions'> = {}): {
+function makeHost(deps: Pick<CanvasHostDeps, 'preparePlacements' | 'onPlacementsCommitted' | 'onDocumentApplied' | 'saveArtifactDimensions'> = {}): {
   host: ReturnType<typeof createCanvasHost>;
   updates: CanvasUpdate[];
   rejections: CanvasRejection[];
@@ -137,6 +137,25 @@ const browserNode = (id: string, docId: string): CanvasNode & { provenance?: nev
   height: 800,
   order: 0,
   content: { homeUrl: 'http://localhost:3000' },
+});
+
+it('passes the committed author to document application observers', async () => {
+  const root = useOwnWorkspaceRoot('document-applied-author');
+  const worktree = join(root, 'worktree');
+  const applied: unknown[][] = [];
+  const { host } = makeHost({ onDocumentApplied: (...args) => { applied.push(args); } });
+  await host.open(worktree);
+  try {
+    expect(await host.apply('user', doc => [{ type: 'create', node: browserNode('frame', doc.docId) }], worktree)).toMatchObject({ ok: true });
+    applied.length = 0;
+    for (const [index, author] of (['system', 'user', 'agent'] as const).entries()) {
+      expect(await host.apply(author, () => [{ type: 'set-home-url', id: 'frame', homeUrl: `http://localhost:${4800 + index}/` }], worktree)).toMatchObject({ ok: true });
+    }
+    expect(applied).toHaveLength(3);
+    expect(applied.map(args => args[3])).toEqual(['system', 'user', 'agent']);
+  } finally {
+    await host.close(worktree);
+  }
 });
 
 it('bounds both undo and redo without leaving a partial oldest batch', async () => {

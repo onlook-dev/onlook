@@ -1,7 +1,7 @@
 import { useAgentStore } from '../agent/store.js';
 import { useImportSetupProgress, useSetupTurnStore } from '../create/setupProgress.js';
 import { selectProjectSetupSnapshot, useProjectSetupStore } from '../project-setup/store.js';
-import { useWorkspaceStore } from '../workspace/store.js';
+import { isBlankWorkspace, useWorkspaceStore } from '../workspace/store.js';
 import { isSetupFailureCardShown, setupFailureCard, useSetupFailureCardStore, type SetupFailureCard } from './failureCentre.js';
 import { useCanvasStore } from './store.js';
 
@@ -12,12 +12,14 @@ export function useSetupFailure() {
   const agentFailed = useSetupTurnStore((state) => state.agentFailed);
   const asked = useSetupTurnStore((state) => state.askedFailure);
   const hasNodes = useCanvasStore((state) => state.nodes.length > 0);
+  const isBlankProject = useWorkspaceStore((state) => isBlankWorkspace(state.workspace));
   const workspacePath = useWorkspaceStore((state) => state.workspace?.workspacePath);
   const ask = useSetupFailureCardStore((state) => state.ask);
   const isStreaming = useAgentStore((state) => state.isStreaming);
-  const card = setupFailureCard({ progress, snapshot, agentFailed, hasNodes }, 'chat');
+  const facts = { progress, snapshot, agentFailed, hasNodes, isBlankProject };
+  const card = setupFailureCard(facts, 'chat');
   const isShown = card !== null && isSetupFailureCardShown({ ask, workspacePath, isStreaming, asked, failure: snapshot?.failure ?? null });
-  return { card, isShown, canvasCard: hasNodes ? null : card, workspacePath, failure: snapshot?.failure ?? null };
+  return { card, isShown, canvasCard: setupFailureCard(facts), workspacePath, failure: snapshot?.failure ?? null };
 }
 
 export function useSetupFailureCard(): { card: SetupFailureCard | null; isShown: boolean } {

@@ -76,7 +76,7 @@ export interface CanvasHostDeps {
   onPlacementsCommitted?: (ops: readonly CanvasOp[], author: CanvasOpAuthor, worktreePath: string) => void;
   store: CanvasDocumentStore;
   emitUpdate(update: CanvasUpdate): void;
-  onDocumentApplied?(before: CanvasDoc, after: CanvasDoc, op: CanvasOp): void;
+  onDocumentApplied?(before: CanvasDoc, after: CanvasDoc, op: CanvasOp, author: CanvasOpAuthor): void;
   saveArtifactDimensions?(artifactId: string, dimensions: { width: number; height: number }, options?: { onlyIfUnset?: boolean }): void;
   emitRejection(rejection: CanvasRejection): void;
   /** Never a capture: the counter and the cooldown are the service's (ONL-2471). */
@@ -272,7 +272,7 @@ export function createCanvasHost(deps: CanvasHostDeps): CanvasHost {
     options: CommitOptions = {},
   ): AppliedCanvasOp {
     const { via, withinBatch = false, silent = false } = options;
-    deps.onDocumentApplied?.(slot.doc, result.doc, result.entry.op);
+    deps.onDocumentApplied?.(slot.doc, result.doc, result.entry.op, result.entry.author);
     if (result.entry.op.type === 'resize' || (result.entry.op.type === 'create' && via === undefined)) {
       const nodeId = result.entry.op.type === 'resize' ? result.entry.op.id : result.entry.op.node.id;
       const resized = result.doc.nodes[nodeId];
@@ -709,8 +709,8 @@ export const host = createCanvasHost({
   },
   store: createFsDocumentStore(),
   emitUpdate: (update) => broadcastToRenderers(IPC_EMIT.canvasUpdate, update),
-  onDocumentApplied: (before, after, op) => {
-    frameBindings.committed(before, after, op);
+  onDocumentApplied: (before, after, op, author) => {
+    frameBindings.committed(before, after, op, author);
     noteQuotedDocument(after);
   },
   emitRejection: (rejection) => broadcastToRenderers(IPC_EMIT.canvasRejected, rejection),

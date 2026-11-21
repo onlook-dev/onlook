@@ -12,14 +12,15 @@ export interface CanvasCentreFacts {
   /** The Project Chat's last turn ended in the agent's own error: its notices, not the card, say what to do. */
   agentFailed: boolean;
   hasNodes: boolean;
+  isBlankProject?: boolean;
   isCreateFailed: boolean;
   /** `rail-foot`: off, nothing else says where a rerun stands, so the centre keeps its illustration. */
   isFootOn: boolean;
 }
 
 /** Only a failure the setup machine names, since the card's ask is the machine's repair ask (ONL-2961). */
-export function setupFailureCard({ progress, snapshot, agentFailed, hasNodes }: Omit<CanvasCentreFacts, 'isCreateFailed' | 'isFootOn'>, location: 'canvas' | 'chat' = 'canvas'): SetupFailureCard | null {
-  if ((hasNodes && location === 'canvas') || agentFailed || progress?.state !== 'failed') return null;
+export function setupFailureCard({ progress, snapshot, agentFailed, hasNodes, isBlankProject }: Omit<CanvasCentreFacts, 'isCreateFailed' | 'isFootOn'>, location: 'canvas' | 'chat' = 'canvas'): SetupFailureCard | null {
+  if ((hasNodes && !isBlankProject && location === 'canvas') || agentFailed || progress?.state !== 'failed') return null;
   const stage = progress.failure.stage;
   if (stage === undefined || snapshot === null || projectSetupAskKind(snapshot) !== 'repair') return null;
   const step = setupRepairStep({ stage });

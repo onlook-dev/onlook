@@ -7,6 +7,7 @@ import type { ProjectSetupSnapshot, WorkspaceCreated } from '@studio/events';
 import { useAgentStore } from '../agent/store.js';
 import { useCanvasStore } from '../canvas/store.js';
 import { useSetupFailureCardStore } from '../canvas/failureCentre.js';
+import { SetupFailureCardSlot } from '../canvas/SetupFailureCard.js';
 import { useProjectSetupStore } from '../project-setup/store.js';
 import { useWorkspaceStore } from '../workspace/store.js';
 import { installBridge } from '../testing/bridge.js';
@@ -67,6 +68,31 @@ it('shows and repairs the saved setup failure with frames on a reopened canvas',
     useProjectSetupStore.setState({ read: { kind: 'ready', snapshot: { ...snapshot, state: 'running', failure: null } } });
   });
   expect(container.innerHTML).toBe('');
+});
+
+it('keeps a blank project’s saved setup failure recoverable on the canvas with stopped frames', async () => {
+  let asks = 0;
+  installBridge({ projectSetupAsk: async () => { asks += 1; return { ok: true }; } });
+  useWorkspaceStore.setState({ workspace: { workspacePath: '/work/blank', sourceRepoName: 'blank', repoIdentity: 'blank', origin: 'blank' } as WorkspaceCreated });
+  useCanvasStore.setState({ nodes: [{ id: 'saved-frame', type: 'frame', position: { x: 0, y: 0 }, data: { homeUrl: 'http://localhost:4710', currentUrl: 'http://localhost:4710', name: 'Home', title: '', health: 'unreachable', canGoBack: false, canGoForward: false } }] });
+  const snapshot: ProjectSetupSnapshot = {
+    state: 'failed', verified: null,
+    saved: { revision: 'r1', definition: { prepare: 'test -f server.mjs', install: { script: '', inputs: [], outputs: [] }, servers: [{ id: 'web', cwd: '.', start: 'node server.mjs', port: 4710 }] } },
+    failure: { revision: 'r1', stage: 'prepare', command: 'test -f server.mjs', reason: 'The command exited with code 1.', outputTail: '', elapsedMs: 20 },
+  };
+  useProjectSetupStore.setState({ read: { kind: 'ready', snapshot } });
+  runFeedback.begin({ press: 'start', entryIds: ['saved-server'] }, true);
+  runFeedback.observeSetup('failed');
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  await act(async () => {
+    root = createRoot(container!);
+    root.render(<><AppRunNotice /><SetupFailureCardSlot card={{ step: 'install', cause: 'install' }} /></>);
+  });
+  expect(container.querySelector('[data-testid="setup-failure-card"]')).not.toBeNull();
+  expect(container.querySelector('[data-testid="app-run-notice"]')).toBeNull();
+  await act(async () => { container!.querySelector<HTMLButtonElement>('[data-testid="setup-failure-ask"]')!.click(); });
+  expect(asks).toBe(1);
 });
 
 it('renders a neutral notice with a disabled repair action and an actionable ask refusal', () => {
