@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { FRAME_ATTACH_PREFIX as ATTACH_PREFIX, FRAME_BIRTH_PREFIX as BIRTH_PREFIX, type CanvasDoc, type CanvasNode, type CanvasOp, type FrameDestinationReadiness } from '@studio/events';
+import { FRAME_ATTACH_PREFIX as ATTACH_PREFIX, FRAME_BIRTH_PREFIX as BIRTH_PREFIX, urlOrigin, type CanvasDoc, type CanvasNode, type CanvasOp, type FrameDestinationReadiness } from '@studio/events';
 type Owner = Pick<Electron.WebContents, 'id'>;
 type Guest = Pick<Electron.WebContents, 'id' | 'hostWebContents' | 'isDestroyed'>;
 type Claim = { owner: Owner; docId: string; nodeId: string; identity: string; url: string; expires: number; prepared: boolean; birth?: string; guest?: Guest };
@@ -8,12 +8,10 @@ type Binding = { claim: Claim; guest: Guest; state: 'pending' | 'issued' | 'star
 
 const frameBindingIdentity = (node: CanvasNode): string => JSON.stringify([node.id, node.pageId, node.kind, node.content]);
 
-function sameOrigin(a: string, b: string): boolean {
-  try {
-    return new URL(a).origin === new URL(b).origin;
-  } catch {
-    return false;
-  }
+/** An origin neither side can name is not one a remembered route can be trusted on. */
+function keepsOrigin(remembered: string, home: string): boolean {
+  const origin = urlOrigin(remembered);
+  return origin !== null && origin === urlOrigin(home);
 }
 
 export function createFrameBindings(now = Date.now) {
@@ -194,10 +192,10 @@ export function createFrameBindings(now = Date.now) {
         }
         if (op.type === 'set-home-url' && op.id === claim.nodeId && prior.kind === 'browser' && next.kind === 'browser' && prior.pageId === next.pageId) {
           claim.identity = frameBindingIdentity(next);
-          // A remembered route on an origin the home has left is where the next mount would go, and
-          // whatever answers there now is not this project's app (ONL-3287).
+          // A remembered route is where the next mount goes, so one on an origin the home has left
+          // would mount whatever answers there now, which is not this project's app (ONL-3287).
           const remembered = history.get(key);
-          if (remembered !== undefined && !sameOrigin(remembered.url, next.content.homeUrl)) history.delete(key);
+          if (remembered !== undefined && !keepsOrigin(remembered.url, next.content.homeUrl)) history.delete(key);
         }
         if (claim.identity !== frameBindingIdentity(next)) {
           latest.delete(key);

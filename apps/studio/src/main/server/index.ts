@@ -95,7 +95,7 @@ export interface ServerHostDeps {
   isBlankProject?: (worktreePath: string) => boolean;
   /** `worktreePath` must reach the author's own `apply()`: an unbound apply writes into the forward document (ONL-2226). */
   createPortFollow(worktreePath: string): { observed(state: ServerState): void };
-  /** Nothing returned reads as moved; only `refused` says the frames stayed where they were. */
+  /** Only `refused` says the frames stayed where they were; anything else reads as moved. */
   authorPortMove(
     fromPort: number,
     toPort: number,
@@ -382,10 +382,14 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
               [claimed.port, await measure(claimed.port, known.folder, worktreePath)] as const),
           ),
         );
+        // What was just measured, before any await: a claim left with a stale `live` covers nothing (ONL-3287).
+        for (const [port, measurement] of measurements) {
+          recordPortMeasurement(worktreePath, known.id, port, measurement.measured, measurement.listener);
+        }
         const reading = discriminatePortReport(
           known.ports.map((p) => p.port),
           reported,
-          new Map([...measurements].map(([port, reading]) => [port, reading.measured])),
+          new Map([...measurements].map(([port, measurement]) => [port, measurement.measured])),
         );
         if (reading.kind === 'extend') {
           extendServerEntry(worktreePath, known.id, reported);
@@ -395,10 +399,10 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
           if (measurements.get(reading.deadPort)?.studioOwned === true) {
             // Frames leave before the entry stops claiming the old port: another Project answers
             // there, and an unclaimed port mounts that Project's page (ONL-3287).
-            const outcome = await deps.authorPortMove(reading.deadPort, reported, worktreePath);
-            // A frame that stayed keeps its port claimed, so its cover still stands in for the page.
-            if (outcome === 'refused') extendServerEntry(worktreePath, known.id, reported);
-            else move();
+            if ((await deps.authorPortMove(reading.deadPort, reported, worktreePath)) !== 'refused') {
+              move();
+            }
+            // A refused move leaves the frames on the old port, and the entry claiming it, so they stay covered.
           } else {
             move();
             if (reading.pairedMeasurement === 'dead') {

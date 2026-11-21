@@ -514,7 +514,8 @@ describe('the discriminator, through a report', () => {
         moves.push([from, to, worktree]);
         order.push('frames moved');
       },
-      emit: (_worktree, state) => {
+      emit: (worktree, state) => {
+        if (worktree !== world.worktree) return;
         if (frameServerCover(state.entries, 'http://localhost:4700/') === undefined) {
           order.push('old port uncovered');
         }
@@ -563,7 +564,7 @@ describe('the discriminator, through a report', () => {
     }
   });
 
-  it('keeps the old port claimed when the Frame move is refused — its cover stands in for the page', async () => {
+  it('leaves a refused move on the old port, covered, so Start is still the way back', async () => {
     const world = makeWorld('refused-reused-port-move');
     const sibling = join(world.root, 'notes', 'main');
     mkdirSync(sibling, { recursive: true });
@@ -576,7 +577,7 @@ describe('the discriminator, through a report', () => {
     try {
       await host.openProject(world.worktree);
       await host.report(world.worktree, world.worktree, 4701);
-      expect(serverBookEntries(world.worktree)[0]?.ports.map((port) => port.port)).toEqual([4700, 4701]);
+      expect(serverBookEntries(world.worktree)[0]?.ports.map((port) => port.port)).toEqual([4700]);
       expect(frameServerCover(host.snapshotFor(world.worktree).entries, 'http://localhost:4700/')).toBe('occupied');
     } finally {
       host.dispose();
@@ -631,23 +632,24 @@ describe('the discriminator, through a report', () => {
     const world = makeWorld('pending-reused-port-move');
     const sibling = join(world.root, 'notes', 'main');
     mkdirSync(sibling, { recursive: true });
-    createServerEntry(world.worktree, { folder: world.worktree, port: 4700, ownership: 'agent-started' });
+    const saved = createServerEntry(world.worktree, { folder: world.worktree, port: 4700, ownership: 'agent-started' });
     const machine: Machine = { listeners: new Map([
       [4700, { pid: 7, cwd: sibling }],
       [4701, { pid: 8, cwd: world.worktree }],
     ]) };
     let releaseMove: () => void = () => undefined;
-    let moveStarted: () => void = () => undefined;
-    const started = new Promise<void>((resolve) => { moveStarted = resolve; });
+    let moveStarted = false;
     const held = new Promise<void>((resolve) => { releaseMove = resolve; });
     const { host, emitted } = makeHost(world, machine, {
-      authorPortMove: async () => { moveStarted(); await held; },
+      authorPortMove: async () => { moveStarted = true; await held; },
     });
     let reporting: Promise<void> | undefined;
     try {
       await host.openProject(world.worktree);
+      // The claim still reads live from when this project held the port.
+      recordPortMeasurement(world.worktree, saved.id, 4700, 'live');
       reporting = host.report(world.worktree, world.worktree, 4701);
-      await started;
+      await waitFor(() => moveStarted, 'the Frame move to start');
       host.press({ press: 'start' }, world.worktree);
       expect(frameServerCover(emitted.at(-1)?.entries ?? [], 'http://localhost:4700/')).toBe('occupied');
     } finally {
