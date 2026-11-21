@@ -37,7 +37,9 @@ const ACQUIRE_DETAIL: Record<AcquireFailure, StringKey | undefined> = {
 const VALIDATION_DETAIL: Record<ValidationFailure, StringKey | undefined> = {
   unusable: 'onboarding.setup.codex.detail.unusable',
   'no-version': 'onboarding.setup.codex.detail.noVersion',
-  unresponsive: 'onboarding.setup.codex.detail.startup',
+  exited: 'onboarding.setup.codex.detail.exited',
+  connection: 'onboarding.setup.codex.detail.connection',
+  timeout: 'onboarding.setup.codex.detail.timeout',
   home: 'onboarding.setup.codex.detail.home',
 };
 
@@ -316,16 +318,16 @@ class CodexHost {
           t('onboarding.setup.codex.detail.outdated', { version: result.version ?? '', floor: CODEX_VERSION }),
         );
       } else if (result.outcome === 'failed') {
-        logger.warn('validation failed', { failure: result.failure, message: result.message });
+        logger.warn('validation failed', { failure: result.failure, exitCode: result.exitCode, signal: result.signal, stderr: result.message });
         this.machine.failed(detail(result.failure === undefined ? undefined : VALIDATION_DETAIL[result.failure]));
       } else {
-        logger.warn('validation broken', { failure: result.failure, message: result.message });
-        this.machine.broken(detail(result.failure === undefined ? undefined : VALIDATION_DETAIL[result.failure]));
+        logger.warn('validation broken', { failure: result.failure, exitCode: result.exitCode, signal: result.signal, stderr: result.message });
+        this.machine.broken(detail(result.failure === 'exited' ? 'onboarding.setup.codex.detail.crashed' : result.failure === undefined ? undefined : VALIDATION_DETAIL[result.failure]));
       }
     } catch (error) {
       if (!this.owns(owner)) return;
-      logger.warn('validation threw', { error });
-      this.machine.failed(t('onboarding.setup.codex.detail.startup'));
+      logger.warn('validation failed', { failure: 'connection', stderr: messageOf(error) });
+      this.machine.failed(t('onboarding.setup.codex.detail.connection'));
     }
   }
 

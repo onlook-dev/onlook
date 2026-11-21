@@ -6,7 +6,7 @@ import { CODEX_API_KEY_PLAN } from '@studio/events';
 
 import { checkHealth, resolveCodex } from '../agent-host/appserver/resolve.js';
 import { appServerToolSpecs, inertToolSinks } from '../agent-host/appserver/tools.js';
-import { AppServerTransport } from '../agent-host/appserver/transport.js';
+import { AppServerTransport, AppServerTransportError, type TransportFailure } from '../agent-host/appserver/transport.js';
 import { userEnv } from '../env/shell-env.js';
 import { CODEX_VERSION } from './paths.js';
 
@@ -19,13 +19,14 @@ export const CODEX_CLIENT_NAME = 'onlook-studio';
 /** `broken` offers a re-download, so an account that will not answer is `signed-out`, never `broken` (ONL-2020). */
 type ValidationOutcome = 'ok' | 'signed-out' | 'outdated' | 'broken' | 'failed';
 
-export type ValidationFailure = 'unusable' | 'no-version' | 'unresponsive' | 'home';
+export type ValidationFailure = 'unusable' | 'no-version' | 'home' | TransportFailure;
 
 export interface ValidationResult {
   outcome: ValidationOutcome;
-  /** Carries paths and raw errors on `broken`: the log reads it, the setup card does not (ONL-2459). */
   message: string;
   failure?: ValidationFailure;
+  exitCode?: number | null;
+  signal?: NodeJS.Signals | null;
   version?: string;
   account?: string;
   email?: string;
@@ -105,9 +106,11 @@ export interface ValidateOptions {
   root: string;
   /** Test seam: a scratch home is logged out, so the product validates the real one. */
   codexHome?: string;
+  requestTimeoutMs?: number;
 }
 
 export async function validateCodex(options: ValidateOptions): Promise<ValidationResult> {
+  const requestTimeoutMs = options.requestTimeoutMs ?? REQUEST_TIMEOUT_MS;
   // A codex missing its `codex-code-mode-host` sibling spawns and handshakes fine; only the on-disk check sees it.
   const resolved = resolveCodex(options.root);
   const health = checkHealth(resolved, options.root);
@@ -149,7 +152,7 @@ export async function validateCodex(options: ValidateOptions): Promise<Validatio
         clientInfo: { name: CODEX_CLIENT_NAME, title: 'Onlook', version: '0.0.0' },
         capabilities: { experimentalApi: true },
       },
-      REQUEST_TIMEOUT_MS,
+      requestTimeoutMs,
     )) as { userAgent?: string };
 
     const userAgent = initialized.userAgent ?? '';
@@ -173,7 +176,7 @@ export async function validateCodex(options: ValidateOptions): Promise<Validatio
 
     const account = accountVerdict(
       // `refreshToken: true` here writes refreshed tokens back into the user's auth.json.
-      (await transport.request('account/read', {}, REQUEST_TIMEOUT_MS)) as AccountResponse,
+      (await transport.request('account/read', {}, requestTimeoutMs)) as AccountResponse,
     );
     if (!account.usable) {
       return {
@@ -196,7 +199,7 @@ export async function validateCodex(options: ValidateOptions): Promise<Validatio
         approvalPolicy: 'never',
         dynamicTools: appServerToolSpecs(inertToolSinks()),
       },
-      REQUEST_TIMEOUT_MS,
+      requestTimeoutMs,
     );
 
     return {
@@ -210,7 +213,16 @@ export async function validateCodex(options: ValidateOptions): Promise<Validatio
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     const noise = [...errors, stderr.trim()].filter(Boolean).join('; ');
-    return { outcome: 'failed', failure: 'unresponsive', message: `${detail}${noise ? ` (${noise})` : ''}` };
+    const failure = error instanceof AppServerTransportError ? error.reason : 'connection';
+    const exit = error instanceof AppServerTransportError ? error.exit : undefined;
+    const crashed = exit?.signal !== null && exit?.signal !== undefined
+      && ['SIGILL', 'SIGSEGV', 'SIGBUS', 'SIGABRT'].includes(exit.signal);
+    return {
+      outcome: crashed ? 'broken' : 'failed',
+      failure,
+      ...exit,
+      message: `${detail}${noise ? ` (${noise})` : ''}`,
+    };
   } finally {
     await transport.close();
     await rm(cwd, { recursive: true, force: true });

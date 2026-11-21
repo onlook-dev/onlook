@@ -10,6 +10,8 @@ import { codexSetupStatus, prepareCodexForSession, registerCodexHost, startCodex
 import type { DownloadProgress } from './acquire.js';
 import type { LoginHandle, LoginOutcome } from './login.js';
 import { CODEX_VERSION, codexInstallRoot } from './paths.js';
+import { configureLogExport, flushLog, peekLinesForTesting, recordLinesForTesting, resetLogForTesting } from '../log/index.js';
+import type { ValidationResult } from './validate.js';
 
 const KEYS = ['STUDIO_CODEX_CACHE_ROOT', 'STUDIO_CODEX_SETUP', 'STUDIO_CODEX_ROOT'] as const;
 const saved = Object.fromEntries(KEYS.map((key) => [key, process.env[key]]));
@@ -512,6 +514,82 @@ describe('Codex setup operation ownership', () => {
     expect(duringValidation).toStrictEqual({ status: 'validating' });
     expect(host.current()).toStrictEqual({ status: 'ready', email: 'designer@example.test', plan: 'plus' });
   });
+});
+
+describe('Codex validation recovery', () => {
+  const cases: Array<{ result: ValidationResult & { outcome: 'failed' | 'broken' }; copy: string; redownload: boolean; reject?: boolean }> = [
+    { result: { outcome: 'failed', failure: 'exited', exitCode: 1, signal: null, message: 'synthetic startup detail' }, copy: 'stopped before setup finished', redownload: false },
+    { result: { outcome: 'broken', failure: 'exited', exitCode: null, signal: 'SIGSEGV', message: 'synthetic startup detail' }, copy: 'Download it again', redownload: true },
+    { result: { outcome: 'failed', failure: 'connection', message: 'synthetic startup detail' }, copy: 'Could not connect', redownload: false },
+    { result: { outcome: 'failed', failure: 'timeout', message: 'synthetic startup detail' }, copy: 'took too long', redownload: false },
+    { result: { outcome: 'failed', failure: 'connection', message: 'synthetic-setting=local-only-value' }, copy: 'Could not connect', redownload: false, reject: true },
+  ];
+
+  for (const { result, copy, redownload, reject = false } of cases) {
+    it(`shows recovery guidance for ${reject ? 'rejected' : 'returned'} ${result.failure} (${result.outcome}) and ${redownload ? 'replaces' : 'reuses'} the download on retry`, async () => {
+      await emptyCacheRoot();
+      await cachedInstall(CODEX_VERSION);
+      const forces: boolean[] = [];
+      let validations = 0;
+      const host = registerCodexHost({
+        acquire: async ({ force }) => {
+          forces.push(force ?? false);
+          const root = codexInstallRoot();
+          return { outcome: 'ok', root, bin: join(root, 'codex'), downloaded: force ?? false };
+        },
+        validate: async () => {
+          if (++validations !== 1) return { outcome: 'ok', message: 'connected' };
+          if (reject) throw new Error(result.message);
+          return result;
+        },
+      });
+      await host.preCheck();
+      const state = host.current();
+      expect(state.status).toBe(result.outcome);
+      expect(state.message).toContain(copy);
+      expect(state.message).not.toContain(result.message);
+      host.install();
+      await host.preCheck();
+      expect(forces).toEqual([redownload]);
+      expect(host.current().status).toBe('ready');
+    });
+
+    it(`exports only safe ${reject ? 'rejected' : 'returned'} ${result.failure} (${result.outcome}) diagnostics while retaining local detail`, async () => {
+      await emptyCacheRoot();
+      await cachedInstall(CODEX_VERSION);
+      const fetchBefore = globalThis.fetch;
+      const payloads: string[] = [];
+      resetLogForTesting();
+      recordLinesForTesting();
+      globalThis.fetch = (async (_url: unknown, init?: RequestInit) => {
+        payloads.push(String(init?.body));
+        return new Response('{}');
+      }) as typeof fetch;
+      configureLogExport({ key: 'phc_test', host: 'https://ingest.example.test' });
+      try {
+        const host = registerCodexHost({ validate: async () => {
+          if (reject) throw new Error(result.message);
+          return result;
+        } });
+        await host.preCheck();
+        await flushLog();
+        const row = peekLinesForTesting().find((line) => line.msg === `validation ${result.outcome}`);
+        expect(row).toMatchObject({ failure: result.failure, stderr: result.message });
+        const exported = payloads.join('');
+        expect(exported).toContain(result.failure!);
+        expect(exported).not.toContain(result.message);
+        expect(exported).not.toContain('stderr');
+        if (result.failure === 'exited') {
+          expect(row).toMatchObject({ exitCode: result.exitCode, signal: result.signal });
+          expect(exported).toContain('exitCode');
+          expect(exported).toContain('signal');
+        }
+      } finally {
+        resetLogForTesting();
+        globalThis.fetch = fetchBefore;
+      }
+    });
+  }
 });
 
 async function emptyCacheRoot(): Promise<string> {
