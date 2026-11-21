@@ -25,6 +25,7 @@ import { LogoMenu } from './rail/LogoMenu.js';
 import { Rail } from './rail/Rail.js';
 import { RailFoot } from './rail/RailFoot.js';
 import { RegionErrorBoundary } from './RegionErrorBoundary.js';
+import { HAIRLINE, SURFACE } from './panels/rowGeometry.js';
 import { subscribeToPanelWidths, usePanelsStore } from './panels/store.js';
 import { useSwitchClearance } from './panels/useSwitchClearance.js';
 import { LeftPanelContent } from './panels/LeftPanelContent.js';
@@ -179,9 +180,12 @@ export function App({
           style={panelStyle('left')}
         >
           <Rail head={<LogoMenu />} {...(isInteract ? {} : { foot: <RailFoot /> })} />
-          <LeftPanelContent view={leftPanelView} width={left.size - 1}>
-            {isCode ? <CodePanelSurface /> : leftPanelView === 'artifacts' ? <ArtifactSidebar /> : <Sidebar />}
-          </LeftPanelContent>
+          <RegionErrorBoundary region="sidebar" key={leftPanelView}
+            fallbackStyle={{ flex: '1 1 auto', minWidth: 0, ...SURFACE, borderRight: HAIRLINE }}>
+            <LeftPanelContent view={leftPanelView} width={left.size - 1}>
+              {isCode ? <CodePanelSurface /> : leftPanelView === 'artifacts' ? <ArtifactSidebar /> : <Sidebar />}
+            </LeftPanelContent>
+          </RegionErrorBoundary>
           {!leftHidden && <ResizeHandle
             resizable={left.props}
             tabIndex={-1}

@@ -53,8 +53,8 @@ const BRANCH_LINE = {
 const BRANCH_GLYPH = { display: 'block', flex: 'none', width: 'calc(1cap * 1.5)', height: 'calc(1cap * 1.5)' } as const;
 
 /** A blank project's drawn name, not one the first prompt or the user gave; matches the tab's rule (ONL-2744). */
-function isDrawnName(name: string, branchName: string): boolean {
-  return name === branchName.slice(branchName.lastIndexOf('/') + 1);
+function isDrawnName(name: string, branchName: string | undefined): boolean {
+  return typeof branchName === 'string' && name === branchName.slice(branchName.lastIndexOf('/') + 1);
 }
 
 /** Reserves its height before a project lands, so the list below never jumps. */
@@ -103,7 +103,7 @@ function ProjectTitle(): React.JSX.Element {
           {title === undefined ? '\u00a0' : workspace !== null && isBlankWorkspace(workspace) && isDrawnName(title, workspace.branchName) ? t('sidebar.projectTitle.untitled') : title}
         </Text>
       )}
-      {workspace ? (
+      {workspace && typeof workspace.branchName === 'string' && workspace.branchName !== '' ? (
         <Tooltip
           content={isBlankWorkspace(workspace)
             // A blank project's folder is Studio's own, so its drawn name means nothing to the designer (ONL-2744).

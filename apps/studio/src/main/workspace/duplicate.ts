@@ -58,8 +58,9 @@ export async function planDuplicate(sourcePath: string): Promise<WorkspacePlan> 
     cut.snapshot = await captureDiskSnapshot(source.workspacePath);
     const live = await canvasSnapshotFor(source.workspacePath);
     cut.doc = structuredClone(live.doc ?? (sourceDocId === undefined ? emptyCanvasDoc(cut.docId) : readExistingCanvasDoc(sourceDocId)));
-    const slash = source.branchName.indexOf('/');
-    const handle = slash > 0 ? source.branchName.slice(0, slash) : 'onlook';
+    const branch = typeof source.branchName === 'string' ? source.branchName : '';
+    const slash = branch.indexOf('/');
+    const handle = slash > 0 ? branch.slice(0, slash) : 'onlook';
     return {
       kind: 'ready', sourcePath: source.workspacePath, sourceRepoRoot: source.sourceRepoRoot,
       sourceRepoName: source.sourceRepoName, repoIdentity: source.repoIdentity,
