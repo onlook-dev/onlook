@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { StarterFailure } from '../starter/failure.js';
 import { pickStarterPort } from '../starter/port.js';
-import { gitFailure, systemErrorCode, thrownFailure } from './creation-failure.js';
+import { copyGitFailure, copyThrownFailure, gitFailure, systemErrorCode, thrownFailure } from './creation-failure.js';
 import type { GitResult } from './git.js';
 
 const failed = (err: string, exitCode: number | null = 128, extra: Partial<GitResult> = {}): GitResult => ({
@@ -79,5 +79,51 @@ describe('a thrown failure is named by its code, never its message', () => {
   it('reads no system code from nothing', () => {
     expect(systemErrorCode(undefined)).toBeUndefined();
     expect(systemErrorCode(null)).toBeUndefined();
+  });
+});
+
+describe('a copy failure keeps only its step and cause', () => {
+  const gitCases = [
+    ['a timeout takes precedence over stderr', failed(`fatal: ${PRIVATE}: Permission denied`, null, { timedOut: true }), 'git_timed_out'],
+    ['a full disk', failed(`fatal: ${PRIVATE}: No space left on device`), 'disk_full'],
+    ['a refused write', failed(`fatal: ${PRIVATE}: Permission denied`), 'permission_denied'],
+    ['an operation not permitted', failed(`fatal: ${PRIVATE}: Operation not permitted`), 'permission_denied'],
+    ['a read-only volume', failed(`fatal: ${PRIVATE}: Read-only file system`), 'permission_denied'],
+    ['a missing git executable', failed(PRIVATE, null, { missing: true }), 'git_failed'],
+    ['an inconclusive run is not a timeout', failed(PRIVATE, null), 'git_failed'],
+    ['a broken git config', failed(`fatal: bad config line 1 in file ${PRIVATE}/.gitconfig`), 'git_failed'],
+    ['an unaccepted license', failed('You have not agreed to the Xcode license agreements.', 69), 'git_failed'],
+    ['another git failure', failed(`Preparing worktree (new branch '${BRANCH}')\nfatal: ${PRIVATE} already exists`), 'git_failed'],
+  ] as const;
+
+  for (const [name, result, cause] of gitCases) {
+    it(`maps ${name} without retaining git output or exit codes`, () => {
+      expect(copyGitFailure('git_commit', { ...result, out: `${PRIVATE} ${BRANCH}` })).toStrictEqual({ step: 'git_commit', cause });
+    });
+  }
+
+  const thrownCases = [
+    ['ENOSPC', 'disk_full'],
+    ['EACCES', 'permission_denied'],
+    ['EPERM', 'permission_denied'],
+    ['EROFS', 'permission_denied'],
+    ['ENOENT', 'folder_unavailable'],
+    ['ENOTDIR', 'folder_unavailable'],
+    ['EMFILE', 'unknown'],
+    [PRIVATE, 'unknown'],
+    ['ERR_INVALID_ARG_TYPE', 'unknown'],
+  ] as const;
+
+  for (const [code, cause] of thrownCases) {
+    it(`maps thrown code ${code} without retaining errno or paths`, () => {
+      const error = Object.assign(new Error(`${PRIVATE} ${BRANCH}`), { code, path: PRIVATE });
+      expect(copyThrownFailure('copy_files', error)).toStrictEqual({ step: 'copy_files', cause });
+    });
+  }
+
+  it('does not classify message text or non-errors as an errno', () => {
+    for (const error of [new Error(`ENOSPC: Permission denied ${PRIVATE}`), PRIVATE, null, undefined]) {
+      expect(copyThrownFailure('claim', error)).toStrictEqual({ step: 'claim', cause: 'unknown' });
+    }
   });
 });

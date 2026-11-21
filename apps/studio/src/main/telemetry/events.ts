@@ -4,6 +4,7 @@
 import type {
   AppCommand,
   AppCommandEntryPoint,
+  CopyFailure,
   FrameCaptureStep,
   ActivationSurface,
   ActivationDeadEnd,
@@ -312,7 +313,7 @@ export interface TelemetryEventMap {
   project_created: {
     project_id: string;
     source: WorkspaceOrigin;
-    entry_point: 'onboarding' | 'projects' | 'switcher' | 'band';
+    entry_point: 'onboarding' | 'projects' | 'switcher' | 'band' | 'setup-failure';
     creation_id?: string;
     duration_ms?: number;
   };
@@ -361,6 +362,8 @@ export interface TelemetryEventMap {
 
   /** Setup details stay local: tool output can contain arbitrary repo names and contents. */
   project_setup_failed: {
+    failure_step?: CopyFailure['step'];
+    failure_cause?: CopyFailure['cause'];
     project_id?: string;
     stage: 'planning' | 'copying' | 'installing' | 'starting';
     duration_ms?: number;
@@ -492,7 +495,7 @@ export interface TelemetryEventMap {
     project_id: string;
     mode: 'design' | 'experiment' | 'ship';
     source: WorkspaceOrigin;
-    entry_point: 'onboarding' | 'projects' | 'switcher' | 'band';
+    entry_point: 'onboarding' | 'projects' | 'switcher' | 'band' | 'setup-failure';
   };
 
   /** The name does not ship (ONL-2181). */
