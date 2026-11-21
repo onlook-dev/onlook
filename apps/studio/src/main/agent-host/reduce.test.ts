@@ -882,6 +882,7 @@ describe('the rate limit the reducer used to drop (ONL-2197)', () => {
     const error = emitted.find((event) => event.type === 'session.error');
     if (error?.type !== 'session.error') throw new Error('shape');
     expect(error.code).toBe('rate_limited');
+    expect(emitted.find((event) => event.type === 'turn.ended')).toMatchObject({ isError: true });
     expect(raised).toEqual([]);
   });
 
@@ -896,6 +897,7 @@ describe('the rate limit the reducer used to drop (ONL-2197)', () => {
     });
 
     expect(types(emitted)).toContain('session.error');
+    expect(emitted.find((event) => event.type === 'turn.ended')).toMatchObject({ isError: true });
   });
 });
 

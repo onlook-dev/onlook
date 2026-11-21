@@ -289,6 +289,7 @@ export type StudioEvent =
       type: 'turn.ended';
       turnId: string;
       stopReason?: string;
+      isError?: boolean;
       /** Cumulative for the session, not this turn. */
       totalCostUsd?: number;
       costDeltaUsd?: number;
