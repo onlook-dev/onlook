@@ -65,6 +65,8 @@
   "projectSetup.failure.hostUnavailable": "Onlook's server host is unavailable",
   "projectSetup.failure.bookNotReady": "The server book did not confirm that the app is ready",
   "projectSetup.failure.frameNotPlaced": "Could not place the running app: {reason}",
+  "projectSetup.failure.placeError": "Onlook hit an error placing it",
+  "projectSetup.failure.frameMissing": "the frame did not land",
   "projectSetup.stage.prepare": "preparation",
   "projectSetup.stage.install": "installation",
   "projectSetup.stage.start": "start",
