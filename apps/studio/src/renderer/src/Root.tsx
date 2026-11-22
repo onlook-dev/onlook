@@ -247,7 +247,7 @@ export function Root(): React.JSX.Element {
     /* Registered synchronously: a tab mid-cut is assigned nothing (`assignment.ts`), and a listener attached after the read would miss its push. */
     const unsubscribeAssigned = studio().onTabAssigned(applyAssignment);
     if (BIRTH_PURPOSE === 'parked') {
-      void Promise.all([studio().tabAssignment().catch(() => null), creating]).then(([assignment, createState]) => {
+      void Promise.all([studio().tabAssignment().catch((error: unknown) => { ignoreRefusal('tabs', 'tabAssignment')(error); return null; }), creating]).then(([assignment, createState]) => {
         if (!isActive) return;
         const taken = parkedAssignment(assignment, createState);
         if (taken !== null) applyAssignment(taken);

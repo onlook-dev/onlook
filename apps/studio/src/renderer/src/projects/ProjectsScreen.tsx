@@ -144,7 +144,7 @@ export function ProjectsScreen({
   const commitRename = useCallback((req: RenameRequest): void => {
 
     setRenaming(undefined);
-    void studio().rename(req).catch(() => undefined);
+    void studio().rename(req).catch(ignoreRefusal('projects', 'rename'));
   }, []);
 
   const cancelRename = useCallback((): void => {
