@@ -55,6 +55,10 @@ Lints for unused code with knip. It fails on a source file nothing imports, an e
 
 Lints for throwaway scripts. It fails on a tracked `.scratch/` path or `.scratch.*` name anywhere, and on a script file under `tests/e2e` or `tests/live` that no test runner there collects. It reads only tracked files and only checks those locations.
 
+### `check:workflows`
+
+Lints `.github/workflows` with actionlint: workflow syntax, expressions, job dependencies and the inputs each action takes. It downloads the version pinned in `check-workflows.ts` and checks the archive's SHA-256 before extracting it. Its shell and Python checks are off, so a run gives the same result on any machine. It isn't part of `verify`; the Workflow lint workflow runs it when a workflow or `check-workflows.ts` changes. The security rules for workflows are in `workflow-security.ts` and run with the unit tests.
+
 ### `check:lint`
 
 oxlint. Errors fail; warnings are a visible backlog. Suppressions are in `.oxlintrc.json`, each with its reason.
