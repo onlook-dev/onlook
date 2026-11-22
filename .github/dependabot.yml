@@ -1,0 +1,15 @@
+version: 2
+updates:
+  # Actions only: a package bump also regenerates NOTICE and the inventory (compliance/README.md), which Dependabot can't do.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns: ['*']
+    labels: [dependencies]
+    commit-message:
+      prefix: ci(github)
