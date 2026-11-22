@@ -32,6 +32,7 @@
   "projectSetup.failure.commandTimeout": "セットアップコマンドがタイムアウトしました",
   "projectSetup.failure.commandFailed": "セットアップコマンドが失敗しました",
   "projectSetup.failure.unknownServer": "不明なセットアップサーバー",
+  "projectSetup.failure.shellMissing": "Windows のセットアップスクリプトは Git for Windows がインストールする sh.exe で実行されますが、git と同じ場所に sh.exe が見つかりませんでした。git-scm.com から Git for Windows をインストールしてから、もう一度お試しください。",
   "projectSetup.failure.ambiguousServer": "選択したセットアップサーバーが、所有する複数のプロセスグループに一致します",
   "projectSetup.failure.changedSetup": "変更したセットアップを検証するには、既存のサーバーを再起動してください",
   "projectSetup.failure.changedServer": "変更したセットアップを実行する前に、既存のサーバーを停止してください",
