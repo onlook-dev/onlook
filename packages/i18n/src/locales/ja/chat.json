@@ -141,7 +141,6 @@
   "chat.attach.selectionName": "選択範囲",
   "chat.attach.remove": "{name} を削除",
   "chat.attach.preview": "{name} のプレビュー",
-  "chat.attach.size": "{bytes} バイト",
   "chat.attach.failed.unsupported-format": "{name} を添付できませんでした — 読み取り可能な UTF-8 テキストファイル、PNG、JPEG、GIF、WebP、または Claude では PDF を使用してください",
   "chat.attach.failed.too-large": "{name} を添付できませんでした — 上限は 10 MB です",
   "chat.attach.failed.pdfUnsupported": "{name} を添付できませんでした — ChatGPT は PDF を読み取れません。Claude に切り替えてください。",

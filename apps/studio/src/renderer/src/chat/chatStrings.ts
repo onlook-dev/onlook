@@ -2,6 +2,7 @@ import type { ChatStrings } from '@studio/chat-ui';
 import type { HarnessId } from '@studio/events';
 import { t } from '@studio/i18n';
 import { failureStrings } from './failureStrings.js';
+import { formatFileSize } from './fileSize.js';
 import { penRowStrings } from './penRow.js';
 import { toolLineStrings } from './toolLineStrings.js';
 
@@ -49,7 +50,7 @@ export function chatStrings(agent: string, harnessId: HarnessId | undefined, isS
       hard_reset: t('chat.permission.destructive.hardReset'),
     },
     imageAttachmentLabel: t('chat.image.label'),
-    fileSizeLabel: (bytes) => t('chat.attach.size', { bytes }),
+    fileSizeLabel: formatFileSize,
     imageAlt: t('chat.image.alt'),
     imageUnavailable: t('chat.image.unavailable'),
     toolVerbs: {

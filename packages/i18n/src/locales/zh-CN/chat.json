@@ -141,7 +141,6 @@
   "chat.attach.selectionName": "所选内容",
   "chat.attach.remove": "移除 {name}",
   "chat.attach.preview": "{name} 的预览",
-  "chat.attach.size": "{bytes} 字节",
   "chat.attach.failed.unsupported-format": "无法附加 {name}：请使用可读的 UTF-8 文本文件、PNG、JPEG、GIF、WebP，或在 Claude 上使用 PDF",
   "chat.attach.failed.too-large": "无法附加 {name}：文件大小上限为 10 MB",
   "chat.attach.failed.pdfUnsupported": "无法附加 {name}：ChatGPT 无法读取 PDF。请切换到 Claude。",
