@@ -33,7 +33,7 @@ describe('import copies only local image/font dependencies without editing the s
     const imported = importArtifactFromProject(root, 'idea/index.html', () => null);
     expect(imported.ok).toBe(false);
     if (imported.ok) throw new Error('Expected import to fail');
-    expect(imported.reason).toContain('idea/index.html');
+    expect(imported.reason).toContain(JSON.stringify(join('idea', 'index.html')));
     expect(imported.reason).toContain('cart.html');
     expect(imported.reason).toContain('separate artifact');
     expect(readFileSync(join(root, 'idea', 'index.html'), 'utf8')).toBe(entry);
@@ -69,6 +69,17 @@ describe('import copies only local image/font dependencies without editing the s
     }
   });
 
+  it('does not echo a source path outside the project', () => {
+    const source = '../outside/page.html';
+    const refused = importArtifactFromProject(root, source, () => null);
+    expect(refused.ok).toBe(false);
+    if (refused.ok) throw new Error('Expected import to fail');
+    expect(refused.reason).toContain('inside this project');
+    expect(refused.reason).not.toContain(source);
+    expect(refused.reason).not.toContain('outside');
+    expect(refused.reason).not.toContain(root);
+  });
+
   it('identifies a missing dependency in a nested stylesheet without exposing filesystem errors', () => {
     mkdirSync(join(root, 'styles'));
     writeFileSync(join(root, 'index.html'), '<link rel="stylesheet" href="styles/theme.css">');
@@ -76,7 +87,7 @@ describe('import copies only local image/font dependencies without editing the s
     const refused = importArtifactFromProject(root, 'index.html', () => null);
     expect(refused.ok).toBe(false);
     if (refused.ok) throw new Error('Expected import to fail');
-    expect(refused.reason).toContain('styles/theme.css');
+    expect(refused.reason).toContain(JSON.stringify(join('styles', 'theme.css')));
     expect(refused.reason).toContain('missing.png');
     expect(refused.reason).toContain('readable');
     expect(refused.reason).not.toContain(root);
