@@ -3,12 +3,13 @@ import { randomUUID } from 'node:crypto';
 import { log } from '../log/index.js';
 import { envWithout, leadsOwnGroup, startChild } from './child.js';
 import { type DeadlineClock, systemClock } from './deadline.js';
-import { isWindows } from './platform.js';
+import { isMac, isWindows } from './platform.js';
 
 const logger = log('env');
 
 /** Per `CAPTURE_ARGV` rung; a wedged shell would otherwise be an app that never opens a window. */
 const CAPTURE_TIMEOUT_MS = 5_000;
+const CAPTURE_RETRY_MS = 30_000;
 
 const MAX_BUFFER = 8 * 1024 * 1024;
 
@@ -163,9 +164,17 @@ let pending: Promise<Env> | undefined;
 let settled: Env | undefined;
 let generation = 0;
 let captureUserEnv = captureShellEnv;
+let envNow = () => performance.now();
+let retryAt: number | undefined;
+const fallbackEnvs = new WeakSet<Env>();
+
+export function isShellEnvFallback(env: Env): boolean {
+  return fallbackEnvs.has(env);
+}
 
 /** Memoised as the promise: a value would let early spawns race ahead of the capture. */
 export function userEnv(): Promise<Env> {
+  if (retryAt !== undefined && envNow() >= retryAt) return refreshUserEnv();
   const capturingGeneration = generation;
   pending ??= (async () => {
     const shell = loginShell();
@@ -177,7 +186,18 @@ export function userEnv(): Promise<Env> {
     }
     // Inherited first: Electron's runtime vars and `STUDIO_*` survive under what the shell does not mention.
     const env = captured ? mergeEnv(inherited, captured) : inherited;
-    if (generation === capturingGeneration) settled = env;
+    if (shell && !captured) {
+      fallbackEnvs.add(env);
+      if (isMac()) {
+        env['PATH'] = [...new Set([
+          ...(env['PATH'] ?? '').split(':').filter(Boolean), '/opt/homebrew/bin', '/usr/local/bin',
+        ])].join(':');
+      }
+    }
+    if (generation === capturingGeneration) {
+      settled = env;
+      retryAt = shell && !captured ? envNow() + CAPTURE_RETRY_MS : undefined;
+    }
     return env;
   })();
   return pending;
@@ -186,6 +206,7 @@ export function userEnv(): Promise<Env> {
 export function refreshUserEnv(): Promise<Env> {
   generation += 1;
   pending = undefined;
+  retryAt = undefined;
   return userEnv();
 }
 
@@ -199,9 +220,14 @@ export function primeUserEnv(): void {
   void userEnv();
 }
 
-export function resetUserEnvForTests(capture: typeof captureShellEnv = captureShellEnv): void {
+export function resetUserEnvForTests(
+  capture: typeof captureShellEnv = captureShellEnv,
+  now: () => number = () => performance.now(),
+): void {
   generation += 1;
   pending = undefined;
   settled = undefined;
   captureUserEnv = capture;
+  envNow = now;
+  retryAt = undefined;
 }

@@ -5,6 +5,9 @@ import { afterAll, afterEach, describe, expect, it } from 'bun:test';
 import { manualClock, until } from '@studio/fixtures';
 import { peekLinesForTesting, recordLinesForTesting, resetLogForTesting } from '../log/index.js';
 import { captureShellEnv, refreshUserEnv, resetUserEnvForTests, userEnv, userEnvSync } from './shell-env.js';
+import { runCli } from './cli.js';
+import { ghReader } from '../git-status/github/gh-reader.js';
+import { isMac } from './platform.js';
 
 const inherited = { ...process.env };
 const made: string[] = [];
@@ -14,7 +17,7 @@ afterAll(() => {
 });
 
 afterEach(() => {
-  for (const key of ['SHELL', 'STUDIO_STATE_ROOT']) {
+  for (const key of ['SHELL', 'PATH', 'STUDIO_STATE_ROOT']) {
     if (inherited[key] === undefined) delete process.env[key];
     else process.env[key] = inherited[key];
   }
@@ -39,6 +42,99 @@ function shell(directory: string, name: string, preamble: string): string {
 }
 
 describe('shell environment recovery', () => {
+  it('retries a failed capture after a cooldown without restarting', async () => {
+    fixture();
+    process.env['SHELL'] = '/test/shell';
+    let now = 0;
+    let captures = 0;
+    resetUserEnvForTests(async () => {
+      captures += 1;
+      return captures === 1 ? undefined : { RECOVERY_VALUE: 'recovered' };
+    }, () => now);
+    await userEnv();
+    now = 29_999;
+    await userEnv();
+    expect(captures).toBe(1);
+    now = 30_000;
+    const [first, second] = await Promise.all([userEnv(), userEnv()]);
+    expect(first['RECOVERY_VALUE']).toBe('recovered');
+    expect(second).toBe(first);
+    expect(captures).toBe(2);
+    now = 90_000;
+    expect(await userEnv()).toBe(first);
+    expect(captures).toBe(2);
+  });
+
+  it('keeps Homebrew discoverable when login-shell capture fails', async () => {
+    fixture();
+    process.env['SHELL'] = '/test/shell';
+    process.env['PATH'] = '/usr/bin:/bin';
+    resetUserEnvForTests(async () => undefined);
+    expect((await userEnv())['PATH']).toBe(isMac() ? '/usr/bin:/bin:/opt/homebrew/bin:/usr/local/bin' : '/usr/bin:/bin');
+  });
+
+  it('preserves inherited path order and does not change a captured path', async () => {
+    fixture();
+    process.env['SHELL'] = '/test/shell';
+    process.env['PATH'] = '/usr/local/bin:/usr/bin:/opt/homebrew/bin';
+    resetUserEnvForTests(async () => undefined);
+    expect((await userEnv())['PATH']).toBe(process.env['PATH']);
+    resetUserEnvForTests(async () => ({ PATH: '/custom/bin:/usr/bin' }));
+    expect((await userEnv())['PATH']).toBe('/custom/bin:/usr/bin');
+  });
+
+  it('bounds repeated failed captures to one attempt per cooldown', async () => {
+    fixture();
+    process.env['SHELL'] = '/test/shell';
+    let now = 0;
+    let captures = 0;
+    resetUserEnvForTests(async () => {
+      captures += 1;
+      return undefined;
+    }, () => now);
+    await userEnv();
+    now = 30_000;
+    await Promise.all([userEnv(), userEnv()]);
+    now = 59_999;
+    await userEnv();
+    expect(captures).toBe(2);
+    now = 60_000;
+    await userEnv();
+    expect(captures).toBe(3);
+  });
+
+  it('recovers GitHub CLI sign-in after a failed launch capture', async () => {
+    const tools = fixture();
+    const project = fixture();
+    process.env['SHELL'] = '/test/shell';
+    process.env['PATH'] = '/usr/bin:/bin';
+    const executable = join(tools, 'studio-test-gh');
+    writeFileSync(executable, '#!/bin/sh\ncase "$1" in --version) echo "gh version 2.81.0";; auth) echo \'{"hosts":{"github.com":[{"login":"example-designer","state":"success","active":true}]}}\';; esac\n');
+    chmodSync(executable, 0o755);
+    let now = 0;
+    let captures = 0;
+    resetUserEnvForTests(async () => {
+      captures += 1;
+      return captures === 1 ? undefined : { PATH: `${tools}:/usr/bin:/bin` };
+    }, () => now);
+    const reader = ghReader(project, (cwd, args) => runCli('studio-test-gh', cwd, args, { timeoutMs: 1_000 }));
+    expect(await reader.present()).toEqual({ ok: false, partial: true });
+    now = 30_000;
+    expect(await reader.present()).toEqual({ ok: true, value: true });
+    expect(await reader.identity()).toEqual({ ok: true, value: { account: 'example-designer' } });
+    expect(captures).toBe(2);
+  });
+
+  it('does not report GitHub CLI missing while the shell environment is unknown', async () => {
+    const directory = fixture();
+    process.env['SHELL'] = '/test/shell';
+    resetUserEnvForTests(async () => undefined);
+    const reader = ghReader(directory, (cwd, args) => runCli('studio-test-absent-gh', cwd, args, { timeoutMs: 1_000 }));
+    expect(await reader.present()).toEqual({ ok: false, partial: true });
+    resetUserEnvForTests(async () => ({ PATH: '/usr/bin:/bin' }));
+    expect(await reader.present()).toEqual({ ok: false, partial: false });
+  });
+
   it('reports degraded login-only capture after a slow interactive shell', async () => {
     const directory = fixture();
     const ready = join(directory, 'ready');
