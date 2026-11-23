@@ -23,6 +23,7 @@ const logger = makeLog('agent-host');
  * That bounds what it can do, honestly:
  *  - text only: no tool cards, no thinking, no token or cost figures;
  *  - no permissions: freebuff decides its own, so the composer offers none;
+ *  - no attachments: the composer's images and files have no way into its prompt;
  *  - no model or effort control, and no resume;
  *  - the TUI redraws, so the stream is a best-effort transcript, not a replay of its screen.
  *
@@ -52,8 +53,15 @@ export interface FreebuffSessionOptions {
 
 /** Silence this long after output reads as the turn's end; freebuff draws a spinner while it works. */
 const IDLE_END_MS = 2_000;
+/**
+ * Nothing counts as an answer before this: the TUI echoes the prompt back, and that echo must not
+ * close the turn while the model is still starting.
+ */
+const MIN_TURN_MS = 8_000;
 /** A turn that never draws anything still has to end. */
 const FIRST_BYTE_MS = 45_000;
+/** The TUI paints a pasted prompt before it accepts Enter; sending both at once leaves it unsubmitted. */
+const SUBMIT_DELAY_MS = 600;
 
 export class FreebuffSession implements AgentBackend {
   readonly id = `f${Date.now().toString(36)}`;
@@ -70,6 +78,7 @@ export class FreebuffSession implements AgentBackend {
   private idle?: ReturnType<typeof setTimeout>;
   private firstByte?: ReturnType<typeof setTimeout>;
   private lastTurn?: string;
+  private promptedAt = 0;
   private closed = false;
   /** Lines already streamed: a full-screen TUI rewrites its own chrome on every keystroke. */
   private readonly seenLines = new Set<string>();
@@ -187,13 +196,19 @@ export class FreebuffSession implements AgentBackend {
     }
     if (this.streaming) {
       this.append(clean);
-      if (this.idle !== undefined) clearTimeout(this.idle);
-      this.idle = setTimeout(() => this.endTurn('completed'), IDLE_END_MS);
-      this.idle.unref();
+      this.scheduleIdleEnd();
       return;
     }
     // Before the first prompt the TUI's own startup chrome is not the conversation.
     if (this.attaching) this.remember(clean);
+  }
+
+  /** The quiet window opens, but the echo alone is not an answer: the floor keeps it patient. */
+  private scheduleIdleEnd(): void {
+    if (this.idle !== undefined) clearTimeout(this.idle);
+    const elapsed = Date.now() - this.promptedAt;
+    this.idle = setTimeout(() => this.endTurn('completed'), Math.max(IDLE_END_MS, MIN_TURN_MS - elapsed));
+    this.idle.unref();
   }
 
   private remember(text: string): void {
@@ -240,12 +255,14 @@ export class FreebuffSession implements AgentBackend {
     });
     this.streaming = true;
     this.attaching = false;
+    this.promptedAt = Date.now();
     this.publishState();
 
     const spoken = [text, context ?? ''].filter((part) => part !== '').join('\n\n');
     // A bracketed paste keeps a multi-line prompt from submitting one line at a time.
     this.term.write(`\u001b[200~${spoken}\u001b[201~`);
-    this.term.write('\r');
+    const submit = setTimeout(() => this.term?.write('\r'), SUBMIT_DELAY_MS);
+    submit.unref();
 
     this.firstByte = setTimeout(() => {
       this.log.push({ type: 'session.error', message: 'freebuff did not answer the prompt' });

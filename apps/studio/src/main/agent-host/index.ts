@@ -1681,6 +1681,7 @@ export class AgentHost {
       const acp = createAcpSession({
         cwd,
         ...(model === undefined ? {} : { model }),
+        ...permissionMode,
         ...(restored.length > 0 ? { restoredEvents: restored } : {}),
         keepRaw: this.isDev,
         onEvent,

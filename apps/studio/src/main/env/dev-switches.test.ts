@@ -21,11 +21,13 @@ test('the variables the harnesses and recording tooling set keep their names', (
     showroom: 'STUDIO_SHOWROOM',
     noPty: 'STUDIO_NO_PTY',
     cloudTestBuild: 'STUDIO_CLOUD_TEST_BUILD',
+    opencodeBin: 'STUDIO_OPENCODE_BIN',
+    freebuffBin: 'STUDIO_FREEBUFF_BIN',
   });
   const variables = [...Object.values(SWITCH_NAMES), ...PROOF_SWITCHES];
   expect(new Set(variables).size).toBe(variables.length);
   expect(variables.every((name) => /^(STUDIO_[A-Z0-9_]+|AGENT_HEADLESS|AGENT_CDP_PORT)$/.test(name))).toBe(true);
-  expect(Object.keys(SWITCH_NAMES)).toHaveLength(43);
+  expect(Object.keys(SWITCH_NAMES)).toHaveLength(45);
   expect(PROOF_SWITCHES).toHaveLength(10);
 });
 

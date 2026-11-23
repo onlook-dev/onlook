@@ -13,10 +13,12 @@ import type {
   TurnTokens,
   WelcomeProject,
 } from '@studio/events';
+import { readProjectAttachment } from '../../images/store.js';
 import { log as makeLog } from '../../log/index.js';
 import type { AgentBackend, BackendState, ModelPick } from '../backend.js';
 import { EventLog } from '../event-log.js';
 import type { TurnSummary } from '../event-log.js';
+import { buildPromptContent, formatArtifactAttachments, resolveAttachments, splitAttachments } from '../prompt-content.js';
 import { StdioRpc, type RpcHandlers } from './rpc.js';
 
 const logger = makeLog('agent-host');
@@ -39,6 +41,8 @@ export interface AcpSessionOptions {
   readonly onEnded?: (end: { reason: 'completed' | 'error' | 'interrupted' | 'max_turns'; durationMs: number; turnCount: number }) => void;
   readonly onExited?: () => void;
   readonly model?: string;
+  /** The mode the chat was left in; applied to the fresh child, which has its own default. */
+  readonly permissionMode?: PermissionMode;
   readonly restoredEvents?: readonly StudioEvent[];
   readonly keepRaw?: boolean;
 }
@@ -121,6 +125,7 @@ export class AcpSession implements AgentBackend {
   private sessionId?: string;
   private streaming = false;
   private model?: string;
+  private mode: PermissionMode;
   /** ACP has no question protocol: a permission request is the only way an agent parks anything. */
   private readonly permissions = new Map<string, PendingPermission>();
   private readonly openTools = new Map<string, { name: string; startedAt: number; status: ToolStatus }>();
@@ -134,6 +139,7 @@ export class AcpSession implements AgentBackend {
     this.opts = options;
     this.cwd = options.cwd;
     this.model = options.model;
+    this.mode = options.permissionMode ?? 'default';
     this.log = new EventLog({
       sessionId: this.id,
       cwd: options.cwd,
@@ -232,6 +238,13 @@ export class AcpSession implements AgentBackend {
       const advertised = this.modelChoices(created);
       const current = created.configOptions?.find((option) => option.id === 'model')?.currentValue ?? created.models?.currentModelId;
       this.model = this.model ?? current;
+      // The child starts on its own defaults, so a stored choice is only real once it is pushed.
+      // A refusal is not fatal: the session runs on the default and `session.settings` says which.
+      if (this.model !== undefined) {
+        const picked = await this.selectModel(this.model);
+        if (!picked && current !== undefined) this.model = current;
+      }
+      if (this.mode === 'plan') this.mode = (await this.selectMode('plan')) ? 'plan' : 'default';
 
       this.log.push({
         type: 'session.started',
@@ -246,15 +259,16 @@ export class AcpSession implements AgentBackend {
         ...(this.model === undefined ? {} : { model: this.model }),
         // Only what this backend actually enforces: the composer offers no dead switches.
         permissionModes: ['default', 'plan'],
-        permissionMode: 'default',
+        permissionMode: this.mode,
       });
       this.opts.onConnection({ status: 'ok', harness: 'opencode' });
       this.publishState();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       logger.warn('opencode acp did not connect', { error: message });
-      this.log.push({ type: 'session.error', message, code: 'cli_missing' });
-      this.opts.onConnection({ status: message.includes('could not start') ? 'cli_missing' : 'error', harness: 'opencode', detail: message });
+      const missing = message.includes('could not start');
+      this.log.push({ type: 'session.error', message, code: missing ? 'cli_missing' : 'unknown' });
+      this.opts.onConnection({ status: missing ? 'cli_missing' : 'error', harness: 'opencode', detail: message });
     }
   }
 
@@ -434,7 +448,9 @@ export class AcpSession implements AgentBackend {
       .map((option) => ({
         optionId: option.optionId,
         label: option.name ?? option.optionId,
-        kind: option.kind === 'allow_always' ? 'allow_always' : option.kind === 'reject_once' ? 'reject_once' : 'allow_once',
+        // `reject_always` is ACP's own "never again" button; it has no chip of its own, and deny is
+        // the truthful label. The option id still travels, so the agent gets exactly what was chosen.
+        kind: option.kind === 'allow_always' ? 'allow_always' : option.kind === 'reject_once' || option.kind === 'reject_always' ? 'reject_once' : 'allow_once',
       }));
     const requestId = String(id);
     this.permissions.set(requestId, {
@@ -467,7 +483,7 @@ export class AcpSession implements AgentBackend {
 
   prompt(
     text: string,
-    _attachments?: PromptAttachment[],
+    attachments: PromptAttachment[] = [],
     context?: string,
     origin: PromptOrigin = 'user',
     display?: { origin: PromptOrigin; hidden?: true },
@@ -477,7 +493,6 @@ export class AcpSession implements AgentBackend {
     const turnId = this.log.beginTurn(origin);
     this.lastTurn = { id: turnId };
     this.turnCostUsd = undefined;
-    const modelText = [text, context ?? ''].filter((part) => part !== '').join('\n\n');
     this.log.push({
       type: 'message.user',
       turnId,
@@ -490,7 +505,7 @@ export class AcpSession implements AgentBackend {
     this.publishState();
 
     void this.peer
-      ?.request('session/prompt', { sessionId: this.sessionId, prompt: [{ type: 'text', text: modelText }] })
+      ?.request('session/prompt', { sessionId: this.sessionId, prompt: this.promptBlocks(text, attachments, context) })
       .then((result) => {
         const response = result as { stopReason?: string; usage?: unknown } | null;
         this.finishTurn(response?.stopReason ?? 'end_turn', response?.usage);
@@ -501,6 +516,35 @@ export class AcpSession implements AgentBackend {
         this.finishTurn('refusal');
       });
     return true;
+  }
+
+  /**
+   * ACP carries text and images inline, so the composer's attachments travel as real blocks rather
+   * than as prose. PDFs have no block here: they are named in the text so the agent can ask for a
+   * saved copy instead of silently never seeing the file.
+   */
+  private promptBlocks(text: string, attachments: readonly PromptAttachment[], context?: string): { type: string; text?: string; mimeType?: string; data?: string }[] {
+    const { images, files, elements, skills } = splitAttachments(attachments);
+    const resolved = resolveAttachments([...images, ...files], (id) => readProjectAttachment(this.cwd, id));
+    const unreadable = resolved.filter((attachment) => attachment.mediaType === 'application/pdf');
+    const sendable = resolved.filter((attachment) => attachment.mediaType !== 'application/pdf');
+    const lead = [
+      text,
+      context ?? '',
+      formatArtifactAttachments(attachments),
+      unreadable.length === 0
+        ? ''
+        : `The user attached ${unreadable.map((attachment) => attachment.name ?? 'a PDF').join(', ')}, which this agent cannot read inline. Ask them to save it into the project first.`,
+    ]
+      .filter((part) => part !== '')
+      .join('\n\n');
+    const content = buildPromptContent(lead, sendable, elements, skills);
+    if (typeof content === 'string') return content === '' ? [] : [{ type: 'text', text: content }];
+    return content.map((block) =>
+      block.type === 'image'
+        ? { type: 'image', mimeType: block.source.media_type, data: block.source.data }
+        : { type: 'text', text: block.type === 'text' ? block.text : '' },
+    );
   }
 
   private finishTurn(stopReason: string, usage?: unknown): void {
@@ -544,17 +588,25 @@ export class AcpSession implements AgentBackend {
     this.publishState();
   }
 
-  async setModel(model: string): Promise<ModelPick> {
-    if (this.sessionId === undefined || this.peer === undefined) return { accepted: false };
+  /** The wire only: callers decide what to announce, so connect can apply silently. */
+  private async selectModel(model: string): Promise<boolean> {
+    if (this.sessionId === undefined || this.peer === undefined) return false;
     try {
       await this.peer.request('session/set_config_option', { sessionId: this.sessionId, configId: 'model', value: model }, 20_000);
+      return true;
     } catch {
       try {
         await this.peer.request('session/set_model', { sessionId: this.sessionId, modelId: model }, 20_000);
+        return true;
       } catch {
-        return { accepted: false };
+        return false;
       }
     }
+  }
+
+  async setModel(model: string): Promise<ModelPick> {
+    const accepted = await this.selectModel(model);
+    if (!accepted) return { accepted: false };
     this.model = model;
     this.log.push({ type: 'session.settings', model });
     return { accepted: true };
@@ -564,18 +616,26 @@ export class AcpSession implements AgentBackend {
     // ACP exposes no reasoning-effort knob; the composer hides the control when nothing changes.
   }
 
-  async setPermissionMode(mode: PermissionMode): Promise<boolean> {
+  private async selectMode(mode: PermissionMode): Promise<boolean> {
     if (this.sessionId === undefined || this.peer === undefined) return false;
+    // opencode names its two modes `build` and `plan`; ours are `default` and `plan`.
     const modeId = mode === 'plan' ? 'plan' : 'build';
     try {
       await this.peer.request('session/set_config_option', { sessionId: this.sessionId, configId: 'mode', value: modeId }, 15_000);
+      return true;
     } catch {
       try {
         await this.peer.request('session/set_mode', { sessionId: this.sessionId, modeId }, 15_000);
+        return true;
       } catch {
         return false;
       }
     }
+  }
+
+  async setPermissionMode(mode: PermissionMode): Promise<boolean> {
+    if (!(await this.selectMode(mode))) return false;
+    this.mode = mode;
     this.log.push({ type: 'session.settings', permissionMode: mode });
     return true;
   }
@@ -624,8 +684,13 @@ export class AcpSession implements AgentBackend {
   async interrupt(): Promise<void> {
     if (this.sessionId === undefined || this.peer === undefined) return;
     this.peer.notify('session/cancel', { sessionId: this.sessionId });
-    // The prompt's own rejection settles the turn; a child that stays silent is ended here.
-    const deadline = setTimeout(() => this.endTurn('interrupted', 'the turn was stopped'), 4_000);
+    // The prompt's own rejection settles the turn; a child that stays silent is ended here. Bound to
+    // the turn that was stopped, so a prompt sent in the next four seconds is not ended with it.
+    const stopped = this.lastTurn;
+    const deadline = setTimeout(() => {
+      if (this.lastTurn !== stopped || !this.log.isTurnLive) return;
+      this.endTurn('interrupted', 'the turn was stopped');
+    }, 4_000);
     deadline.unref();
   }
 
