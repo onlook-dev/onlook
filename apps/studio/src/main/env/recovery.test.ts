@@ -1,10 +1,10 @@
-import { chmodSync, existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, afterEach, describe, expect, it } from 'bun:test';
 import { manualClock, until } from '@studio/fixtures';
 import { peekLinesForTesting, recordLinesForTesting, resetLogForTesting } from '../log/index.js';
-import { captureShellEnv, refreshUserEnv, resetUserEnvForTests, userEnv, userEnvSync } from './shell-env.js';
+import { captureShellEnv, isShellEnvFallback, refreshUserEnv, resetUserEnvForTests, userEnv, userEnvSync } from './shell-env.js';
 import { runCli } from './cli.js';
 import { ghReader } from '../git-status/github/gh-reader.js';
 import { isMac } from './platform.js';
@@ -133,6 +133,51 @@ describe('shell environment recovery', () => {
     expect(await reader.present()).toEqual({ ok: false, partial: true });
     resetUserEnvForTests(async () => ({ PATH: '/usr/bin:/bin' }));
     expect(await reader.present()).toEqual({ ok: false, partial: false });
+  });
+
+  for (const oldFails of [true, false]) {
+    it(`keeps fallback identity and retry state when an obsolete capture ${oldFails ? 'fails' : 'succeeds'}`, async () => {
+      fixture();
+      process.env['SHELL'] = '/test/shell';
+      const capture = Promise.withResolvers<Record<string, string> | undefined>();
+      let now = 0;
+      let captures = 0;
+      resetUserEnvForTests(() => {
+        captures += 1;
+        if (captures === 1) return capture.promise;
+        return Promise.resolve(captures === 2 && !oldFails ? undefined : { RECOVERY_VALUE: 'current' });
+      }, () => now);
+      const old = userEnv();
+      const current = await refreshUserEnv();
+      capture.resolve(oldFails ? undefined : { RECOVERY_VALUE: 'obsolete' });
+      const obsolete = await old;
+      expect(isShellEnvFallback(obsolete)).toBe(oldFails);
+      expect(isShellEnvFallback(current)).toBe(!oldFails);
+      expect(userEnvSync()).toBe(current);
+      now = 30_000;
+      expect((await userEnv())['RECOVERY_VALUE']).toBe('current');
+      expect(captures).toBe(oldFails ? 2 : 3);
+    });
+  }
+
+  it('rejects project executables even when the shell environment is incomplete', async () => {
+    const project = fixture();
+    const tools = fixture();
+    process.env['SHELL'] = '/test/shell';
+    resetUserEnvForTests(async () => undefined);
+    const executable = join(project, 'studio-test-untrusted');
+    writeFileSync(executable, '#!/bin/sh\nprintf untrusted\n');
+    chmodSync(executable, 0o755);
+    symlinkSync(executable, join(tools, 'studio-test-untrusted'));
+    let spawned = false;
+    const result = await runCli('studio-test-untrusted', project, [], {
+      timeoutMs: 1_000, env: { PATH: `.:${project}:${tools}` },
+    }, {
+      spawn: () => { spawned = true; throw new Error('Untrusted program must not spawn'); },
+      signalGroup: () => {},
+    });
+    expect(result).toMatchObject({ ok: false, missing: false });
+    expect(spawned).toBe(false);
   });
 
   it('reports degraded login-only capture after a slow interactive shell', async () => {
