@@ -8,6 +8,7 @@ import { log } from '../log/index.js';
 import { terminateWindowsTree } from '../env/windows.js';
 import { repeatWork, workActivity, type WorkActivity } from '../background-work/activity.js';
 import { isWindows } from '../env/platform.js';
+import { previewStderrTail, type PreviewDiagnostics } from '../telemetry/preview-diagnostics.js';
 
 const logger = log('starter');
 
@@ -54,6 +55,8 @@ export interface StarterRunnerDeps {
   timing?: Partial<StarterTiming>;
   log?: (line: string) => void;
   activity?: WorkActivity;
+  diagnostics?: (cwd: string, measurement: Partial<PreviewDiagnostics>, reset?: boolean) => void;
+  serverExited?: (cwd: string) => void;
 }
 
 export interface StarterRunner {
@@ -120,7 +123,13 @@ export function createStarterRunner(deps: StarterRunnerDeps): StarterRunner {
       if (!existsSync(join(key, STARTER_SERVER_FILE))) throw new Error(`no ${STARTER_SERVER_FILE} in ${worktree}`);
 
       const port = await pickPort(preferred);
+      const measure = (patch: Partial<PreviewDiagnostics>, reset = false): void => {
+        try { deps.diagnostics?.(key, patch, reset); }
+        catch { logger.warn('starter analytics callback failed'); }
+      };
+      measure({ project_source: 'template', expected_port: port, port_occupied: preferred === undefined ? null : preferred !== port }, true);
       const env = { ...(await deps.env()), PORT: String(port) };
+      const spawnedAt = Date.now();
       const child = deps.fork(modulePathFor(key), {
         cwd: key,
         env,
@@ -131,10 +140,18 @@ export function createStarterRunner(deps: StarterRunnerDeps): StarterRunner {
       let stdout = '';
       let exited = false;
       let exitCode: number | undefined;
+      let readyPort: number | undefined;
       const exit = new Promise<void>((resolveExit) => {
         child.on('exit', (code) => {
           exited = true;
           exitCode = code;
+          if (!entry.stopping) {
+            measure({ cause: 'process_exited', process_exited: true, exit_code: code, stderr_tail: previewStderrTail(stderr), spawn_to_failure_ms: Date.now() - spawnedAt, actual_port: readyPort ?? null });
+            if (readyPort !== undefined) {
+              try { deps.serverExited?.(key); }
+              catch { logger.warn('starter exit analytics callback failed'); }
+            }
+          }
           stopHeartbeat();
           if (entries.get(key)?.child === child) entries.delete(key);
           log(`exited (code ${String(code)})`);
@@ -169,6 +186,7 @@ export function createStarterRunner(deps: StarterRunnerDeps): StarterRunner {
           if (settled) return;
           settled = true;
           clearTimeout(timer);
+          measure({ cause: 'readiness_timeout', process_exited: exited, exit_code: exitCode ?? null, stderr_tail: previewStderrTail(stderr), spawn_to_failure_ms: Date.now() - spawnedAt });
           kill(entry);
           void exit.then(() => reject(error));
         };
@@ -181,6 +199,8 @@ export function createStarterRunner(deps: StarterRunnerDeps): StarterRunner {
           settled = true;
           clearTimeout(timer);
           const bound = Number(match[1]);
+          readyPort = bound;
+          measure({ actual_port: bound, reported_port: bound, process_exited: false, install_succeeded: true });
           entry.port = bound;
           log(`ready on ${String(bound)}`);
           resolveReady(bound);

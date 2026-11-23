@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import type { AppLike } from './index.js';
+import { notePreviewDiagnostics } from './preview-diagnostics.js';
 
 const { resetIdentityCache } = await import('../identity/store.js');
 const { initTelemetry, peekQueueForTesting, resetTelemetryForTesting, setAppForTesting } =
@@ -64,6 +65,12 @@ const workspaceTelemetry = { project_id: 'p1', workspace_instance_id: 'instance-
 const otherWorkspaceTelemetry = { project_id: 'p2', workspace_instance_id: 'instance-2' };
 
 describe('recordPreviewSettlement', () => {
+  it('ships the measured startup cause on an unreachable preview', () => {
+    notePreviewDiagnostics('preview-project', { cause: 'process_exited', expected_port: 4100, exit_code: 23, process_exited: true });
+    recordPreviewSettlement({ workspaceTelemetry, workspacePath: 'preview-project', state: 'unreachable', elapsedMs: 9000 });
+    expect(previewRows()[0]).toMatchObject({ cause: 'process_exited', expected_port: 4100, exit_code: 23, process_exited: true });
+  });
+
   it('a live frame is the win', () => {
     recordPreviewSettlement({ workspaceTelemetry, state: 'live', elapsedMs: 4200 });
     expect(previewRows()).toEqual([

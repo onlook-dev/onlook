@@ -272,6 +272,6 @@ export function useFrameWebview(
       element.removeEventListener('page-title-updated', onTitle);
       element.removeEventListener('render-process-gone', onGone);
     };
-  }, [frameId, ref, patchFrame, mountNonce]);
+  }, [frameId, ref, patchFrame, mountNonce, hasGuest]);
 
 }

@@ -63,6 +63,7 @@ import {
   scrubMessage,
   ACTIVATION_DEAD_ENDS,
   ACTIVATION_ERROR_CLASSES,
+  PREVIEW_COVERS,
   ACTIVATION_SURFACES,
   ATTACHMENT_REJECT_REASONS,
   ATTACHMENT_SIZE_BUCKETS,
@@ -225,7 +226,8 @@ export function receiveRendererTelemetry(payload: RendererTelemetryEvent, render
       if (renderer === undefined || !isRecord(props) || !oneOf(ACTIVATION_SURFACES, props.surface)) return;
       const deadEnd = props.dead_end;
       if (deadEnd !== undefined && (!isRecord(deadEnd) || !oneOf(ACTIVATION_DEAD_ENDS, deadEnd.state) || !oneOf(ACTIVATION_ERROR_CLASSES, deadEnd.error_class) || props.surface !== 'error_state')) return;
-      recordActivationSurface(renderer, { surface: props.surface, ...(deadEnd === undefined ? {} : { dead_end: { state: deadEnd.state, error_class: deadEnd.error_class } }) });
+      if (deadEnd?.cover !== undefined && !oneOf(PREVIEW_COVERS, deadEnd.cover)) return;
+      recordActivationSurface(renderer, { surface: props.surface, ...(deadEnd === undefined ? {} : { dead_end: { state: deadEnd.state, error_class: deadEnd.error_class, ...(deadEnd.cover === undefined ? {} : { cover: deadEnd.cover }) } }) });
       return;
     }
     case 'cloud_update_required_shown':

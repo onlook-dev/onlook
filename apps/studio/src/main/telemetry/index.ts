@@ -19,6 +19,7 @@ import { markMergeCompleted, readIdentity, readMergeCompleted } from '../identit
 import { knownProject } from '../workspace/store.js';
 import { bindWebAttribution, legacyWebIdOnDisk, markAttributionQueued, parseAttribution, readWebAttribution, retainAttribution, FIRST_TOUCH_PROPERTIES } from './attribution.js';
 import { cpuFamily, underRosetta } from './hardware.js';
+import { previewFailureDiagnostics, resetPreviewDiagnostics } from './preview-diagnostics.js';
 import { isSourceBuild } from './build.js';
 import { flagOn, flagSnapshot } from '../flags/index.js';
 import { activeLocale } from '@studio/i18n';
@@ -655,9 +656,10 @@ export function perfWindowOverride(): number | undefined {
 export function capture<N extends TelemetryEventName>(
   event: N,
   properties: TelemetryProperties<N>,
+  workspacePath?: string,
 ): boolean {
   if (!isEnabled()) return false;
-  enqueue(event, { ...envelope(), ...properties });
+  enqueue(event, { ...envelope(), ...previewFailureDiagnostics(event, properties, workspacePath), ...properties });
   return true;
 }
 
@@ -910,12 +912,13 @@ export function beginTelemetryQuit(): void {
   surfaceFrozen = true;
 }
 
-export function recordDeadEndShown(state: DeadEndState, errorClass?: DeadEndErrorClass, projectId?: string): void {
+export function recordDeadEndShown(state: DeadEndState, errorClass?: DeadEndErrorClass, projectId?: string, context: { cover?: NonNullable<ActivationSurfaceReport['dead_end']>['cover']; workspacePath?: string } = {}): void {
   capture('dead_end_shown', {
     state,
     ...(errorClass === undefined ? {} : { error_class: errorClass }),
     ...(projectId === undefined ? {} : { project_id: projectId }),
-  });
+    ...(context.cover === undefined ? {} : { cover: context.cover }),
+  }, context.workspacePath);
 }
 
 function rendererProjectId(renderer: number): string | undefined {
@@ -924,7 +927,7 @@ function rendererProjectId(renderer: number): string | undefined {
 }
 
 function sameDeadEnd(left: ShownDeadEnd | undefined, right: ShownDeadEnd): boolean {
-  return left?.state === right.state && left.error_class === right.error_class && left.project_id === right.project_id;
+  return left?.state === right.state && left.error_class === right.error_class && left.project_id === right.project_id && left.cover === right.cover;
 }
 
 /** Sent when what the tab shows differs from what it last showed the person; bringing the tab back alone sends nothing (ONL-3260). */
@@ -934,7 +937,7 @@ function showSurface(renderer: number, report: ActivationSurfaceReport): void {
   const shown = shownDeadEnds.get(renderer);
   shownDeadEnds.set(renderer, deadEnd);
   if (deadEnd === undefined || sameDeadEnd(shown, deadEnd)) return;
-  recordDeadEndShown(deadEnd.state, deadEnd.error_class, deadEnd.project_id);
+  recordDeadEndShown(deadEnd.state, deadEnd.error_class, deadEnd.project_id, { cover: deadEnd.cover, workspacePath: workspaceOfRenderer(renderer) });
 }
 
 export function recordActivationSurface(renderer: number, report: ActivationSurfaceReport): void {
@@ -978,6 +981,7 @@ export function peekQueueForTesting(): readonly QueuedEvent[] {
 }
 
 export function resetTelemetryForTesting(): void {
+  resetPreviewDiagnostics();
   consentAbort.abort();
   consentAbort = new AbortController();
   liveIdentity = undefined;

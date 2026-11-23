@@ -918,6 +918,27 @@ it('covers startup with a neutral loading surface until the new guest is live', 
   expect(container.querySelector('.frame-loading-glyph')).toBeNull();
 });
 
+it('unloads the page under Nothing answered and mounts a fresh guest on Try again', async () => {
+  seedFlags({ 'frame-covers': true });
+  try {
+    const original = await mount();
+    await loaded(original);
+    await act(async () => useCanvasStore.getState().patchFrame(FRAME_ID, { health: 'unreachable' }));
+    expect(container.querySelector('[data-cover="nothing"]')).not.toBeNull();
+    expect(container.querySelector('webview')).toBeNull();
+    expect(useCanvasStore.getState().overlay[FRAME_ID]?.health).toBe('unreachable');
+    const retry = container.querySelector<HTMLButtonElement>('[data-action="try-again"]')!;
+    await act(async () => retry.click());
+    const replacement = guests.at(-1)!;
+    expect(replacement.element).not.toBe(original.element);
+    await loaded(replacement);
+    expect(container.querySelector('[data-cover="nothing"]')).toBeNull();
+    expect(useCanvasStore.getState().overlay[FRAME_ID]?.health).toBe('live');
+  } finally {
+    await act(async () => seedFlags());
+  }
+});
+
 it('restarts an unclaimed failed preview by replacing its guest, not starting unrelated project servers', async () => {
   const original = await mount();
   await loaded(original);

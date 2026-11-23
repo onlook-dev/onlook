@@ -11,6 +11,7 @@ import { createProjectSetupAsk } from './ask.js';
 import { createProjectSetupReport } from './report.js';
 import { t } from '@studio/i18n';
 import { capture, resolveWorkspaceTelemetryProperties } from '../telemetry/index.js';
+import { recordProjectPreviewDiagnostics } from '../workspace/preview-diagnostics.js';
 import { log } from '../log/index.js';
 
 const logger = log('project-setup');
@@ -19,8 +20,10 @@ function initialize(): void {
   initializeProjectSetup({
     allowed: (cwd) => registeredProject(cwd) !== undefined,
     changed: (cwd, snapshot) => views.routeTo(cwd, IPC_EMIT.projectSetupChanged, snapshot),
-    runCompleted: (cwd, measurement) => capture('project_setup_run_completed', { ...resolveWorkspaceTelemetryProperties(cwd), ...measurement }),
+    runCompleted: (cwd, measurement) => capture('project_setup_run_completed', { ...resolveWorkspaceTelemetryProperties(cwd), ...measurement }, cwd),
     installationChecked: (cwd, reused) => capture('project_setup_installation_checked', { ...resolveWorkspaceTelemetryProperties(cwd), reused }),
+    diagnostics: recordProjectPreviewDiagnostics,
+    serverExited: (cwd) => capture('dev_server_exited', { ...resolveWorkspaceTelemetryProperties(cwd) }, cwd),
     report: createProjectSetupReport({
       host: serverHost,
       telemetryProperties: resolveWorkspaceTelemetryProperties,

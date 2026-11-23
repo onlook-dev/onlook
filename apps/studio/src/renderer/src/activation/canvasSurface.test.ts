@@ -6,7 +6,7 @@ describe('canvas activation state', () => {
   it('counts server-covered frames as dead ends but not while starting or stopping', () => {
     for (const serverCover of ['non-started', 'dead', 'occupied', 'container', 'users-own'] as const) {
       const frames = [{ health: 'loading' as const, serverCover }];
-      expect(canvasSurface({ ...base, frames })).toMatchObject({ surface: 'error_state', dead_end: { error_class: serverCover === 'occupied' || serverCover === 'container' ? 'unknown' : 'port_unreachable' } });
+      expect(canvasSurface({ ...base, frames })).toMatchObject({ surface: 'error_state', dead_end: { cover: serverCover, error_class: serverCover === 'occupied' || serverCover === 'container' ? 'unknown' : 'port_unreachable' } });
       expect(canvasSurface({ ...base, frames, starting: true })).toEqual({ surface: 'preview_loading' });
     }
   });

@@ -17,6 +17,8 @@ import { applyCanvasOps } from '../canvas/index.js';
 import { capture, resolveWorkspaceTelemetryProperties } from '../telemetry/index.js';
 import type { WorkspaceTelemetryProperties } from '../telemetry/events.js';
 import { recordPreviewSettlement } from '../telemetry/preview.js';
+import { recordProjectPreviewDiagnostics } from '../workspace/preview-diagnostics.js';
+import { previewDiagnostics } from '../telemetry/preview-diagnostics.js';
 import { settleCreationPreview } from '../github-import/telemetry.js';
 import {
   knownProject,
@@ -47,7 +49,7 @@ import {
 import { ServerMonitor, sleep } from './monitor.js';
 import { installFrameHealthProofHook, removeFrameHealthProofHook } from './frame-health-proof.js';
 import { noteStartIntent } from './start-intent.js';
-import { noteServerStart, noteServerStop } from './user-stop.js';
+import { noteServerStart, noteServerStop, serverWasStopped } from './user-stop.js';
 import { views, workspaceOf } from '../tabs/views.js';
 import {
   attributeCwd,
@@ -107,7 +109,7 @@ export interface ServerHostDeps {
   signalProcess?: (pid: number, signal: NodeJS.Signals) => void | Promise<void>;
   delay?: (ms: number) => Promise<void>;
   timing?: Partial<MonitorTiming>;
-  onFrameState?: (change: FrameStateChange & { worktreePath: string }) => void;
+  onFrameState?: (change: FrameStateChange & { worktreePath: string; port?: number }) => void;
   workspaceTelemetryPropertiesFor?: (worktreePath: string) => WorkspaceTelemetryProperties | undefined;
 }
 
@@ -335,7 +337,7 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
         broadcastFor(worktreePath);
         for (const observer of seat.observers) observer(state);
       },
-      ...(deps.onFrameState === undefined ? {} : { onFrameState: (change) => deps.onFrameState?.({ ...change, worktreePath }) }),
+      ...(deps.onFrameState === undefined ? {} : { onFrameState: (change) => deps.onFrameState?.({ ...change, worktreePath, ...(monitor.state?.port === undefined ? {} : { port: monitor.state.port }) }) }),
     });
     const seat: Seat = {
       monitor,
@@ -746,13 +748,20 @@ export function registerServerBook(options: { starter?: StarterControl } = {}): 
       sourceRepoRoot: knownProject(worktreePath)?.sourceRepoRoot,
     }),
     onFrameState: (change) => {
+      const previous = previewDiagnostics(change.worktreePath);
+      recordProjectPreviewDiagnostics(change.worktreePath, {
+        ...(change.port === undefined ? {} : { expected_port: change.port }),
+        ...(change.state === 'live' ? { was_live: true, actual_port: change.port ?? null, cause: 'unknown' as const } : {}),
+        ...(change.state === 'unreachable' ? { cause: serverWasStopped(change.worktreePath, change.port === undefined ? undefined : [{ folder: change.worktreePath, port: change.port }]) ? 'user_stop' as const : previous.cause !== 'unknown' ? previous.cause : previous.was_live ? 'server_down' as const : 'not_started' as const } : {}),
+      });
       capture('frame_state_changed', {
         ...change.workspaceTelemetry,
         state: change.state,
         elapsed_ms: change.elapsedMs,
-      });
+      }, change.worktreePath);
       recordPreviewSettlement({
         workspaceTelemetry: change.workspaceTelemetry,
+        workspacePath: change.worktreePath,
         state: change.state,
         elapsedMs: change.elapsedMs,
         entryPoint: settleCreationPreview(change.workspaceTelemetry.project_id, change.state, change.worktreePath),

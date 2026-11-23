@@ -184,15 +184,21 @@ export function FrameNode({
   const mountUrl = refreshCurrent?.url ?? data.homeUrl;
   const [hasSettled, setHasSettled] = useState(data.health !== 'loading');
   if (!hasSettled && data.health !== 'loading') setHasSettled(true);
+  const attempt = `${mountNonce}:${guestEpoch}:${discardEpoch}`;
+  const unreachable = data.health === 'unreachable';
+  const [failedGuest, setFailedGuest] = useState({ unreachable, attempt, target: data.target });
+  if (failedGuest.unreachable !== unreachable) setFailedGuest({ unreachable, attempt, target: data.target });
+  const suspended = under.kind === 'unreachable' && (!failedGuest.unreachable || (failedGuest.attempt === attempt && failedGuest.target === data.target));
   // An arriving Frame flies without its page: a heavy load mid-flight stutters the film, so the guest mounts when it lands.
-  const hasGuest = serverCover === undefined && !discarded && !isArriving;
+  const canMountGuest = serverCover === undefined && !discarded && !isArriving;
+  const hasGuest = canMountGuest && !suspended;
   const attachUrl = useFrameAttachUrl(id, mountUrl, `${mountNonce}:${guestEpoch}:${discardEpoch}`, hasGuest);
 
   const currentUrl = data.currentUrl;
   const retargetFrame = useCanvasStore((state) => state.retargetFrame);
   const remountGuest = useCallback(
     (url: string, bypassCache: boolean) => {
-      if (!hasGuest) return;
+      if (!canMountGuest) return;
       setRefresh((previous) => ({
         nonce: (previous?.nonce ?? 0) + 1,
         url,
@@ -201,7 +207,7 @@ export function FrameNode({
         discardEpoch,
       }));
     },
-    [hasGuest, guestEpoch, discardEpoch],
+    [canMountGuest, guestEpoch, discardEpoch],
   );
   /** The toolbar reloads where the guest sits (ONL-2897). */
   const refreshGuest = useCallback(
@@ -429,7 +435,7 @@ export function FrameNode({
                 {t(SERVER_COVER_COPY[serverCover], { url: displayUrl(data.currentUrl) })}
               </Text>}
             </Center>
-          ) : !discarded && attachUrl !== undefined && (
+          ) : hasGuest && attachUrl !== undefined && (
             /* `src` changes only with the `key`, so a re-render never reloads the user's app; navigation goes through the element's API. */
             <webview
               key={`guest-${guestInstance}`}
