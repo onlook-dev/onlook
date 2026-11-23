@@ -14,7 +14,6 @@ import {
   type CanvasNodeId,
   type CanvasOp,
   type StackPosition,
-  type ViewRect,
 } from '@studio/events';
 import type { StateCreator } from 'zustand';
 import { log as rendererLog } from '../log.js';
@@ -65,9 +64,9 @@ export interface NodeActions {
   /** Destroys the artifact itself. The nodes showing it stay, and land in their missing state. */
   deleteArtifact: (nodeId: CanvasNodeId) => Promise<void>;
   /** `at` is exact, except dropped back on the source, where the anti-stack placement answers as ⌘D would. */
-  duplicateFrame: (id: string, view?: ViewRect, at?: { x: number; y: number }) => string | undefined;
-  duplicateSelectedFrame: (view?: ViewRect) => string | undefined;
-  openInNewFrame: (sourceId: string, url: string, view?: ViewRect) => string;
+  duplicateFrame: (id: string, at?: { x: number; y: number }) => string | undefined;
+  duplicateSelectedFrame: () => string | undefined;
+  openInNewFrame: (sourceId: string, url: string) => string;
   beginRename: (id: CanvasNodeId) => void;
   endRename: () => void;
   renameFrame: (id: CanvasNodeId, name: string) => void;
@@ -308,7 +307,7 @@ export const createNodeActions: StateCreator<CanvasState, [], [], NodeActions> =
     forgetArtifact(artifactId);
   },
 
-  duplicateFrame: (id, view, at) => {
+  duplicateFrame: (id, at) => {
     const state = get();
     const doc = state.doc;
     const source = doc?.nodes[id];
@@ -324,7 +323,6 @@ export const createNodeActions: StateCreator<CanvasState, [], [], NodeActions> =
             source,
             { width: source.width, height: source.height },
             state.nodes.map((n) => n.position),
-            view,
           );
     const minted = mintDuplicate(source, position, nextOrder(doc));
     if (minted === undefined) return undefined;
@@ -335,7 +333,7 @@ export const createNodeActions: StateCreator<CanvasState, [], [], NodeActions> =
     return minted;
   },
 
-  duplicateSelectedFrame: (view) => {
+  duplicateSelectedFrame: () => {
     const state = get();
     const doc = state.doc;
     if (!doc) return undefined;
@@ -360,7 +358,6 @@ export const createNodeActions: StateCreator<CanvasState, [], [], NodeActions> =
         source,
         { width: source.width, height: source.height },
         occupied,
-        view,
       );
       occupied.push(position);
       const duplicate = mintedDuplicate(source, position, order);
@@ -378,13 +375,13 @@ export const createNodeActions: StateCreator<CanvasState, [], [], NodeActions> =
     return minted.at(-1);
   },
 
-  openInNewFrame: (sourceId, url, view) => {
+  openInNewFrame: (sourceId, url) => {
     const state = get();
     const source = state.doc?.nodes[sourceId];
     if (!source) return get().addFrame(url);
     return get().addFrame(
       url,
-      placeNearSource(source, DEFAULT_FRAME_SIZE, state.nodes.map((n) => n.position), view),
+      placeNearSource(source, DEFAULT_FRAME_SIZE, state.nodes.map((n) => n.position)),
     );
   },
 

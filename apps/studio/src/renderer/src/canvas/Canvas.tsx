@@ -561,7 +561,7 @@ export function Canvas({
   useShortcut('canvas.send-to-back', () => stackSelected('back'));
 
   useShortcut('canvas.duplicate-frame', () => {
-    useCanvasStore.getState().duplicateSelectedFrame(windowViewRect(screenToFlowPosition, window));
+    useCanvasStore.getState().duplicateSelectedFrame();
   });
 
   // On macOS the Edit menu's accelerator takes the chord first; its `edit:undo` lands in `topbar/WindowFrame.tsx` (ONL-2042).
@@ -772,7 +772,7 @@ export function Canvas({
             );
             useCanvasStore
               .getState()
-              .beginDuplicateDrag(node.id, windowViewRect(screenToFlowPosition, window));
+              .beginDuplicateDrag(node.id);
           }
         }}
         onNodeDragStop={() => {
