@@ -963,6 +963,74 @@ describe('the mid-turn delivery chip (ONL-2180)', () => {
   });
 });
 
+describe('steered messages at pickup (ONL-3306)', () => {
+  const sent: Input[] = [
+    { type: 'turn.started', turnId: 'turn' },
+    { type: 'message.user', turnId: 'turn', text: 'Review the layout' },
+    startTool('read'),
+    { type: 'message.user', turnId: 'turn', messageId: 'steer', text: 'Use warmer colors', delivery: 'steering' },
+    startTool('inspect'),
+  ];
+
+  it('keeps a pending steer visible below continuing work without splitting the tool group', () => {
+    const state = foldSessionState(log(...sent));
+    expect(kinds(state)).toEqual(['user', 'tools', 'user']);
+    expect(state.items[1]).toMatchObject({ calls: [{ toolCallId: 'read' }, { toolCallId: 'inspect' }] });
+    expect(state.items[2]).toMatchObject({ text: 'Use warmer colors', delivery: 'steering' });
+  });
+
+  it('anchors the steer at pickup before the response and new tools, including on replay', () => {
+    const events = log(
+      ...sent,
+      { type: 'message.delivery', messageId: 'steer', outcome: 'delivered' },
+      { type: 'text.start', blockId: 'answer' },
+      { type: 'text.delta', blockId: 'answer', delta: 'I will use warmer colors.' },
+      startTool('edit'),
+      { type: 'message.delivery', messageId: 'steer', outcome: 'delivered' },
+    );
+    const state = foldSessionState(events);
+    expect(kinds(state)).toEqual(['user', 'tools', 'user', 'assistant-text', 'tools']);
+    expect(state.items[2]).toMatchObject({ id: 'e4', text: 'Use warmer colors', joinsTurn: true });
+    expect(state.items[2]).not.toHaveProperty('delivery');
+    expect(state.items[3]).toMatchObject({ text: 'I will use warmer colors.' });
+    expect(foldSessionState(JSON.parse(JSON.stringify(events)) as StudioEvent[])).toEqual(state);
+  });
+
+  it('preserves multiple steers, their metadata and the outcome of a stopped turn', () => {
+    const attachments = [{ id: 'reference', mediaType: 'image/png' as const }];
+    const state = foldSessionState(log(
+      ...sent,
+      { type: 'message.user', turnId: 'turn', messageId: 'next', text: 'Keep the spacing', attachments, context: 'Selected heading', delivery: 'steering' },
+      { type: 'message.delivery', messageId: 'steer', outcome: 'delivered' },
+      startTool('edit'),
+      { type: 'message.delivery', messageId: 'next', outcome: 'discarded' },
+    ));
+    expect(kinds(state)).toEqual(['user', 'tools', 'user', 'tools', 'user']);
+    expect(state.items[2]).toMatchObject({ text: 'Use warmer colors' });
+    expect(state.items[4]).toMatchObject({ text: 'Keep the spacing', attachments, context: 'Selected heading', delivery: 'discarded' });
+  });
+
+  it('keeps streaming text and thinking indices valid while steers await pickup', () => {
+    const state = foldSessionState(log(
+      { type: 'turn.started', turnId: 'turn' },
+      { type: 'thinking.start', blockId: 'thought' },
+      { type: 'text.start', blockId: 'answer' },
+      { type: 'message.user', turnId: 'turn', messageId: 'first', text: 'Warmer colors', delivery: 'steering' },
+      { type: 'thinking.delta', blockId: 'thought', delta: 'Still checking' },
+      { type: 'text.delta', blockId: 'answer', delta: 'Checking the layout.' },
+      { type: 'message.user', turnId: 'turn', messageId: 'second', text: 'More spacing', delivery: 'steering' },
+      { type: 'message.delivery', messageId: 'first', outcome: 'delivered' },
+      { type: 'message.delivery', messageId: 'second', outcome: 'delivered' },
+      { type: 'text.end', blockId: 'answer', text: 'Checking the layout.' },
+    ));
+    expect(kinds(state)).toEqual(['assistant-thinking', 'assistant-text', 'user', 'user']);
+    expect(state.items[0]).toMatchObject({ text: 'Still checking', isStreaming: false });
+    expect(state.items[1]).toMatchObject({ text: 'Checking the layout.', isStreaming: false });
+    expect(state.items[2]).toMatchObject({ text: 'Warmer colors' });
+    expect(state.items[3]).toMatchObject({ text: 'More spacing' });
+  });
+});
+
 describe('an event type this fold does not know (ONL-2353)', () => {
   it('is recorded once per type and leaves the transcript as it was', () => {
     const known: StudioEvent = { type: 'turn.started', turnId: 't1', sessionId: 's1', eventId: 'e1', seq: 1, ts: 0 };

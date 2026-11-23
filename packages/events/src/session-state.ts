@@ -78,6 +78,7 @@ export function foldSessionState(events: readonly StudioEvent[]): SessionState {
   /** A dismissal interrupts its turn to end it, which is not a stop to resume (ONL-2901). */
   let dismissedSinceUser = false;
   const userRows = new Map<string, number>();
+  const pendingSteers = new Map<string, UserRow>();
 
   const state: SessionState = {
     ...emptyState,
@@ -212,9 +213,6 @@ export function foldSessionState(events: readonly StudioEvent[]): SessionState {
       case 'message.user':
         state.interrupted = false;
         dismissedSinceUser = false;
-        closeToolGroup();
-        settleThinking(undefined, true);
-        if (e.messageId !== undefined) userRows.set(e.messageId, items.length);
         const joinsTurn = e.turnId === lastUserTurnId;
         lastUserTurnId = e.turnId;
         const row: UserRow = {
@@ -228,13 +226,28 @@ export function foldSessionState(events: readonly StudioEvent[]): SessionState {
           ...(e.delivery === undefined ? {} : { delivery: e.delivery }),
           ...(joinsTurn ? { joinsTurn: true as const } : {}),
         };
-        items.push(row);
+        if (e.delivery === 'steering' && e.messageId !== undefined) {
+          pendingSteers.set(e.messageId, row);
+        } else {
+          closeToolGroup();
+          settleThinking(undefined, true);
+          if (e.messageId !== undefined) userRows.set(e.messageId, items.length);
+          items.push(row);
+        }
         turnPrompt = resendOf(row);
         turnHasPrompt = true;
         turnPromptId = e.turnId;
         break;
 
       case 'message.delivery': {
+        const pending = pendingSteers.get(e.messageId);
+        if (pending !== undefined) {
+          closeToolGroup();
+          settleThinking(undefined, true);
+          userRows.set(e.messageId, items.length);
+          items.push(pending);
+          pendingSteers.delete(e.messageId);
+        }
         const idx = userRows.get(e.messageId);
         const it = idx === undefined ? undefined : items[idx];
         if (idx === undefined || it === undefined || it.kind !== 'user') break;
@@ -481,6 +494,7 @@ export function foldSessionState(events: readonly StudioEvent[]): SessionState {
       t.permission && !t.permission.stale ? 'awaiting_approval' : t.status,
   });
 
+  for (const pending of pendingSteers.values()) items.push(pending);
   state.items = items.map((it) =>
     it.kind === 'tools'
       ? {
@@ -496,4 +510,3 @@ export function foldSessionState(events: readonly StudioEvent[]): SessionState {
   state.touchedFiles = touchedFilesOf(events);
   return state;
 }
-
