@@ -260,12 +260,13 @@ describe('the turn ends natively — nothing is synthesized', () => {
     ]);
     expect(types(events)).toEqual(['turn.started', 'session.error', 'turn.ended']);
     expect(events[1]).toMatchObject({ message: 'model unavailable' });
-    expect(events[2]).toMatchObject({ stopReason: 'failed' });
+    expect(events[2]).toMatchObject({ stopReason: 'failed', isError: true });
   });
 
   it('does not emit session.error for a completed turn', () => {
     const { events } = drive([turnStarted, turnCompleted()]);
     expect(types(events)).not.toContain('session.error');
+    expect(events.find((event) => event.type === 'turn.ended')).toMatchObject({ isError: false });
   });
 });
 
