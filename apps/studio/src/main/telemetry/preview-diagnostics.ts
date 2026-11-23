@@ -1,4 +1,4 @@
-type PreviewFailureCause = 'unknown' | 'install_failed' | 'prepare_failed' | 'process_exited' | 'process_error' | 'readiness_timeout' | 'port_occupied' | 'listener_foreign' | 'listener_unseen' | 'reported_port_mismatch' | 'user_stop' | 'server_down' | 'not_started';
+type PreviewFailureCause = 'unknown' | 'install_failed' | 'prepare_failed' | 'process_exited' | 'process_error' | 'readiness_timeout' | 'port_occupied' | 'listener_foreign' | 'listener_unseen' | 'reported_port_mismatch' | 'user_stop' | 'server_down' | 'not_started' | 'start_turn_no_report' | 'start_request_failed';
 
 export interface PreviewDiagnostics {
   cause: PreviewFailureCause;
@@ -63,6 +63,18 @@ export function reportedPreviewPort(output: string): number | null {
 
 export function previewFailureDiagnostics(event: string, properties: object, workspacePath?: string): Partial<PreviewDiagnostics> {
   const values = properties as Record<string, unknown>;
+  if (event === 'dead_end_shown' && values['state'] === 'preview_failed') {
+    const project = previewDiagnostics(workspacePath);
+    return {
+      ...EMPTY_DIAGNOSTICS,
+      framework: project.framework,
+      package_manager: project.package_manager,
+      project_source: project.project_source,
+      install_succeeded: project.install_succeeded,
+      was_live: project.was_live,
+      cause: values['cover'] === 'non-started' ? 'not_started' : 'unknown',
+    };
+  }
   const failed = (event === 'project_setup_failed' && values['error_class'] === 'dev_server_failed') ||
     (event === 'preview_ready' && values['outcome'] === 'failure') ||
     (event === 'dead_end_shown' && values['state'] === 'preview_failed') ||

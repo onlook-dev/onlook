@@ -22,7 +22,14 @@ let resizeScale: number | undefined;
 mock.module('../NodeResizeHandles.jsx', () => ({ NodeResizeHandles: ({ scale }: { scale: number }) => { resizeScale = scale; return null; } }));
 mock.module('../InlineElementChat.jsx', () => ({ InlineElementChat: () => null }));
 let toolbarRenders = 0;
-mock.module('./FrameToolbar.jsx', () => ({ FrameToolbar: ({ onRefresh }: { onRefresh: (bypassCache: boolean) => void }) => { toolbarRenders += 1; return <button onClick={() => onRefresh(false)}>Refresh fixture</button>; } }));
+mock.module('./FrameToolbar.jsx', () => ({ FrameToolbar: ({ onRefresh, data }: { onRefresh: (bypassCache: boolean) => void; data: { canGoBack: boolean; canGoForward: boolean } }) => {
+  toolbarRenders += 1;
+  return <>
+    <button onClick={() => onRefresh(false)}>Refresh fixture</button>
+    {data.canGoBack && <button data-testid="frame-back-fixture">Back fixture</button>}
+    {data.canGoForward && <button data-testid="frame-forward-fixture">Forward fixture</button>}
+  </>;
+} }));
 
 const { FrameNode } = await import('./FrameNode.js');
 const FRAME_ID = 'frame-a';
@@ -923,17 +930,90 @@ it('unloads the page under Nothing answered and mounts a fresh guest on Try agai
   try {
     const original = await mount();
     await loaded(original);
+    Object.assign(original.element, { canGoBack: () => true, canGoForward: () => true });
+    await act(async () => { original.element.dispatchEvent(new Event('did-navigate')); });
+    expect(container.querySelector('[data-testid="frame-back-fixture"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="frame-forward-fixture"]')).not.toBeNull();
     await act(async () => useCanvasStore.getState().patchFrame(FRAME_ID, { health: 'unreachable' }));
     expect(container.querySelector('[data-cover="nothing"]')).not.toBeNull();
     expect(container.querySelector('webview')).toBeNull();
     expect(useCanvasStore.getState().overlay[FRAME_ID]?.health).toBe('unreachable');
+    expect(container.querySelector('[data-testid="frame-back-fixture"]')).toBeNull();
+    expect(container.querySelector('[data-testid="frame-forward-fixture"]')).toBeNull();
+    expect(useCanvasStore.getState().overlay[FRAME_ID]).toMatchObject({ canGoBack: false, canGoForward: false });
     const retry = container.querySelector<HTMLButtonElement>('[data-action="try-again"]')!;
     await act(async () => retry.click());
     const replacement = guests.at(-1)!;
     expect(replacement.element).not.toBe(original.element);
+    expect(useCanvasStore.getState().overlay[FRAME_ID]).toMatchObject({ health: 'loading', canGoBack: false, canGoForward: false });
     await loaded(replacement);
     expect(container.querySelector('[data-cover="nothing"]')).toBeNull();
     expect(useCanvasStore.getState().overlay[FRAME_ID]?.health).toBe('live');
+    expect(container.querySelector('[data-testid="frame-back-fixture"]')).toBeNull();
+    expect(container.querySelector('[data-testid="frame-forward-fixture"]')).toBeNull();
+    await act(async () => {
+      replacement.url = URL_B;
+      replacement.element.dispatchEvent(new Event('did-navigate'));
+    });
+    expect(container.querySelector('[data-testid="frame-back-fixture"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="frame-forward-fixture"]')).toBeNull();
+  } finally {
+    await act(async () => seedFlags());
+  }
+});
+
+it('keeps the guest and its history capabilities under a named page failure', async () => {
+  seedFlags({ 'frame-covers': true });
+  try {
+    const original = await mount();
+    await loaded(original);
+    Object.assign(original.element, { canGoBack: () => true, canGoForward: () => true });
+    await act(async () => {
+      original.element.dispatchEvent(new Event('did-navigate'));
+      original.element.dispatchEvent(Object.assign(new Event('did-fail-load'), { errorCode: -102, isMainFrame: true, validatedURL: URL_B, errorDescription: 'refused' }));
+    });
+    expect(container.querySelector('[data-cover="page-failed"]')).not.toBeNull();
+    expect(container.querySelector('webview')).toBe(original.element);
+    expect(useCanvasStore.getState().overlay[FRAME_ID]).toMatchObject({ health: 'unreachable', canGoBack: true, canGoForward: true });
+    expect(container.querySelector('[data-testid="frame-back-fixture"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="frame-forward-fixture"]')).not.toBeNull();
+  } finally {
+    await act(async () => seedFlags());
+  }
+});
+
+it('ignores a deferred navigation rejection after the failed guest is unloaded', async () => {
+  seedFlags({ 'frame-covers': true });
+  useCanvasStore.setState({ serverEntries: [] });
+  useServerStore.setState({ entries: [], pending: false });
+  try {
+    const original = await mount();
+    await loaded(original);
+    let rejectNavigation!: (error: Error) => void;
+    Object.assign(original.element, { loadURL: (url: string) => {
+      original.navigations.push(url);
+      original.element.dispatchEvent(new Event('did-start-loading'));
+      return new Promise<void>((_resolve, reject) => { rejectNavigation = reject; });
+    } });
+    await act(async () => useCanvasStore.getState().retargetFrame(URL_B, FRAME_ID));
+    expect(original.navigations).toEqual([URL_B]);
+    await act(async () => {
+      original.element.dispatchEvent(Object.assign(new Event('did-fail-load'), { errorCode: -102, isMainFrame: true, validatedURL: URL_B, errorDescription: 'refused' }));
+    });
+    expect(container.querySelector('webview')).toBeNull();
+    const pendingTarget = useCanvasStore.getState().overlay[FRAME_ID]?.target;
+    const guestCount = guests.length;
+    await act(async () => { rejectNavigation(new Error('navigation refused')); });
+    expect(guests).toHaveLength(guestCount);
+    expect(container.querySelector('webview')).toBeNull();
+    expect(useCanvasStore.getState().overlay[FRAME_ID]?.target).toBe(pendingTarget);
+    expect(useCanvasStore.getState().overlay[FRAME_ID]).toMatchObject({ health: 'unreachable', loadFailure: { url: URL_B }, canGoBack: false, canGoForward: false });
+    await act(async () => { container.querySelector<HTMLButtonElement>('[data-action="try-again"]')!.click(); });
+    const replacement = guests.at(-1)!;
+    expect(replacement.element).not.toBe(original.element);
+    await loaded(replacement);
+    expect(replacement.navigations).toEqual([URL_B]);
+    expect(useCanvasStore.getState().overlay[FRAME_ID]).toMatchObject({ health: 'live', currentUrl: URL_B });
   } finally {
     await act(async () => seedFlags());
   }

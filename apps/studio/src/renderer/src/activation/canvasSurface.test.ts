@@ -17,7 +17,8 @@ describe('canvas activation state', () => {
   });
   it('does not misreport guest crashes and page load failures as unreachable ports', () => {
     expect(canvasSurface({ ...base, frames: [{ health: 'unreachable' }] })).toMatchObject({ dead_end: { error_class: 'unknown' } });
-    expect(canvasSurface({ ...base, frames: [{ health: 'unreachable', loadFailure: {} }] })).toMatchObject({ dead_end: { error_class: 'load_failed' } });
+    expect(canvasSurface({ ...base, frames: [{ health: 'unreachable', loadFailure: {} }] })).toMatchObject({ dead_end: { cover: 'nothing', error_class: 'unknown' } });
+    expect(canvasSurface({ ...base, frames: [{ health: 'unreachable', serverLive: true, loadFailure: {} }] })).toMatchObject({ dead_end: { cover: 'page-failed', error_class: 'load_failed' } });
   });
   it('reports the blocking empty state and allows a live frame to recover the canvas', () => {
     expect(canvasSurface({ ...base, nodeCount: 0, frames: [], emptyFailure: 'preview' })).toMatchObject({ dead_end: { state: 'app_not_started' } });

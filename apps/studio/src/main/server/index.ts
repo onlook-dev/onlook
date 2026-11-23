@@ -18,7 +18,7 @@ import { capture, resolveWorkspaceTelemetryProperties } from '../telemetry/index
 import type { WorkspaceTelemetryProperties } from '../telemetry/events.js';
 import { recordPreviewSettlement } from '../telemetry/preview.js';
 import { recordProjectPreviewDiagnostics } from '../workspace/preview-diagnostics.js';
-import { previewDiagnostics } from '../telemetry/preview-diagnostics.js';
+import { newPreviewAttempt, previewDiagnostics } from '../telemetry/preview-diagnostics.js';
 import { settleCreationPreview } from '../github-import/telemetry.js';
 import {
   knownProject,
@@ -109,7 +109,7 @@ export interface ServerHostDeps {
   signalProcess?: (pid: number, signal: NodeJS.Signals) => void | Promise<void>;
   delay?: (ms: number) => Promise<void>;
   timing?: Partial<MonitorTiming>;
-  onFrameState?: (change: FrameStateChange & { worktreePath: string; port?: number }) => void;
+  onFrameState?: (change: FrameStateChange & { worktreePath: string; folder: string; port?: number; wasLive: boolean }) => void;
   workspaceTelemetryPropertiesFor?: (worktreePath: string) => WorkspaceTelemetryProperties | undefined;
 }
 
@@ -298,6 +298,7 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
     const roots = deps.attributionRoots(worktreePath);
     const isStarterEntry = starterEntryTest(worktreePath);
     let watchedPort: number | undefined;
+    let wasLive = false;
     let lastAnswer: ServerOwnership | undefined;
     let lastCommand: string | undefined;
     const monitor = new ServerMonitor({
@@ -337,14 +338,18 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
         broadcastFor(worktreePath);
         for (const observer of seat.observers) observer(state);
       },
-      ...(deps.onFrameState === undefined ? {} : { onFrameState: (change) => deps.onFrameState?.({ ...change, worktreePath, ...(monitor.state?.port === undefined ? {} : { port: monitor.state.port }) }) }),
+      ...(deps.onFrameState === undefined ? {} : { onFrameState: (change) => {
+        wasLive ||= change.state === 'live';
+        deps.onFrameState?.({ ...change, worktreePath, folder: entry.folder, wasLive, ...(watchedPort === undefined ? {} : { port: watchedPort }) });
+      } }),
     });
     const seat: Seat = {
       monitor,
       watch: (port, workspaceTelemetry) => {
         lastAnswer = undefined;
         lastCommand = undefined;
-        watchedPort = undefined;
+        watchedPort = port;
+        wasLive = false;
         monitor.watch(port, workspaceTelemetry);
       },
       observers: new Set(),
@@ -749,10 +754,13 @@ export function registerServerBook(options: { starter?: StarterControl } = {}): 
     }),
     onFrameState: (change) => {
       const previous = previewDiagnostics(change.worktreePath);
+      const endpoint = previous.expected_port === change.port ? previous : newPreviewAttempt();
       recordProjectPreviewDiagnostics(change.worktreePath, {
+        ...endpoint,
+        was_live: previous.was_live || change.state === 'live',
         ...(change.port === undefined ? {} : { expected_port: change.port }),
         ...(change.state === 'live' ? { was_live: true, actual_port: change.port ?? null, cause: 'unknown' as const } : {}),
-        ...(change.state === 'unreachable' ? { cause: serverWasStopped(change.worktreePath, change.port === undefined ? undefined : [{ folder: change.worktreePath, port: change.port }]) ? 'user_stop' as const : previous.cause !== 'unknown' ? previous.cause : previous.was_live ? 'server_down' as const : 'not_started' as const } : {}),
+        ...(change.state === 'unreachable' ? { cause: change.port !== undefined && serverWasStopped(change.worktreePath, [{ folder: change.folder, port: change.port }]) ? 'user_stop' as const : endpoint.cause !== 'unknown' ? endpoint.cause : change.wasLive ? 'server_down' as const : 'not_started' as const } : {}),
       });
       capture('frame_state_changed', {
         ...change.workspaceTelemetry,

@@ -492,7 +492,7 @@ export function Canvas({
   const activationFrames = frameFlowNodes(nodes);
   const activationFailed = emptyState.kind === 'failed' && nodes.length === 0 && !chromeHidden;
   const activation = canvasSurface({ ...(activationFailed ? { emptyFailure: emptyState.stage } : {}), copying: emptyState.kind === 'copying', starting: runState === 'starting' || runState === 'stopping', nodeCount: nodes.length, frames: activationFrames.map((frame) => frame.data) });
-  useSurface('canvas', activation.surface, activation.dead_end?.state, activation.dead_end?.error_class);
+  useSurface('canvas', activation.surface, activation.dead_end?.state, activation.dead_end?.error_class, activation.dead_end?.cover);
   const showsSetupPending = setupPhase !== null && nodes.length === 0;
   /** `canSubmitPrompt` alone: the agent host refuses a session outside a project (ONL-1829), and the workspace store misses `workspace:created` after a remount. */
   const canRun = useAgentStore(canSubmitPrompt);

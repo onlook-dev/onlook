@@ -270,10 +270,14 @@ export async function createProject(
       sent = await deps.sendStartIntent(cwd, detected.context);
     }
   } catch (err) {
+    recordProjectPreviewDiagnostics(cwd, { cause: 'start_request_failed' });
     return fail('starting', String(err), context);
   }
   if (token.canceled) return settle({ kind: 'canceled' });
-  if (!sent) return fail('starting', t('project.create.detail.noSession'), context);
+  if (!sent) {
+    recordProjectPreviewDiagnostics(cwd, { cause: 'start_request_failed' });
+    return fail('starting', t('project.create.detail.noSession'), context);
+  }
 
   const started = await outcome;
   if (started.kind === 'canceled') return settle({ kind: 'canceled' });
@@ -284,15 +288,18 @@ export async function createProject(
     return fail('starting', t('project.create.detail.agentStopped'), context, 'agent_turn_stopped');
   }
   if (started.kind === 'turn-ended') {
+    recordProjectPreviewDiagnostics(cwd, { cause: 'start_turn_no_report' });
     return fail('starting', t('project.create.detail.noServer'), context);
   }
 
+  recordProjectPreviewDiagnostics(cwd, { expected_port: started.port, reported_port: started.port });
   const running = await Promise.race([
     deps.awaitRunning(cwd, started.port, deps.runningBoundMs ?? RUNNING_BOUND_MS),
     token.whenCanceled.then(() => 'canceled' as const),
   ]);
   if (running === 'canceled' || token.canceled) return settle({ kind: 'canceled' });
   if (running !== 'running') {
+    recordProjectPreviewDiagnostics(cwd, { cause: 'readiness_timeout' });
     return fail(
       'starting',
       `The agent reported port ${String(started.port)}, but nothing answered there.`,

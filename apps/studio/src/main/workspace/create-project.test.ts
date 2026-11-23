@@ -830,7 +830,7 @@ describe('the stages inside the project failing (ONL-2179)', () => {
     expect(recorder.framed).toEqual([]);
     expect(recorder.calls).not.toContain('awaitRunning');
     expect(recorder.captured.find((entry) => entry.event === 'project_setup_failed')?.properties).toMatchObject({
-      stage: 'starting', error_class: 'dev_server_failed',
+      stage: 'starting', error_class: 'dev_server_failed', cause: 'start_turn_no_report',
     });
   });
 
@@ -886,6 +886,9 @@ describe('the stages inside the project failing (ONL-2179)', () => {
     const failed = expectKind(state, 'failed');
     expect(failed.phase).toBe('starting');
     expect(failed.detail).toContain('4321');
+    expect(recorder.captured.find((entry) => entry.event === 'project_setup_failed')?.properties).toMatchObject({
+      cause: 'readiness_timeout', expected_port: 4321, reported_port: 4321, actual_port: null,
+    });
     expect(recorder.framed).toEqual([{ cwd: failed.workspace?.workspacePath ?? '', port: 4321 }]);
   });
 });

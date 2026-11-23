@@ -25,13 +25,14 @@ it('a starter that exits before its ready line says so with its exit code', asyn
   const diagnostics: Parameters<NonNullable<StarterRunnerDeps['diagnostics']>>[1][] = [];
   const runner = createStarterRunner({ fork: () => child, env: async () => ({}), pickPort: async () => 4000, diagnostics: (_cwd, patch) => { diagnostics.push(patch); } });
   try {
-    const spawning = runner.spawn(root).catch((error: unknown) => error);
+    const spawning = runner.spawn(root, 3000).catch((error: unknown) => error);
     for (let turn = 0; turn < 10; turn += 1) await Promise.resolve();
     child.emit('exit', 7);
     const error = await spawning;
     expect(error).toBeInstanceOf(StarterFailure);
     expect(error).toMatchObject({ failureCause: 'starter_exited', exitCode: 7 });
     expect(String(error)).toBe('Error: starter exited (code 7) before it was ready');
+    expect(diagnostics[0]).toMatchObject({ expected_port: 4000, port_occupied: null });
     expect(diagnostics.at(-1)).toMatchObject({ cause: 'process_exited', process_exited: true, exit_code: 7, actual_port: null, spawn_to_failure_ms: expect.any(Number) });
   } finally {
     runner.dispose();

@@ -405,7 +405,7 @@ export function FrameNode({
         >
           <FrameToolbar
             frameId={id}
-            data={data}
+            data={hasGuest && attachUrl !== undefined ? data : { ...data, canGoBack: false, canGoForward: false }}
             webviewRef={webviewRef}
             isAddressOccluded={isAddressOccluded}
             compact={isChromeCompactNow}

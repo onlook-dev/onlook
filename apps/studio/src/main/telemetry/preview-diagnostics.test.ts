@@ -23,9 +23,18 @@ it('isolates project diagnostics and clears stale failures on a new start', () =
 });
 
 it('exports only allowlisted error codes from a bounded stderr tail', () => {
-  const privateOutput = 'contact person@example.test at /Users/designer/private-app\nTOKEN=secret-value https://private.example.test\nError: EADDRINUSE in personal-component.ts\ncustom user text';
+  const privateOutput = 'contact person@example.test at /workspace/sample-app\nTOKEN=secret-value https://private.example.test\nError: EADDRINUSE in sample-component.ts\ncustom user text';
   expect(previewStderrTail(privateOutput)).toBe('[redacted]\n[redacted]\nEADDRINUSE\n[redacted]');
   expect(previewStderrTail('secret '.repeat(10000))).toBe('[redacted]');
+});
+
+it('does not attribute an unaddressed canvas cover to a different endpoint in the Project', () => {
+  notePreviewDiagnostics('one', { cause: 'process_exited', expected_port: 4100, actual_port: 4100, exit_code: 17, was_live: true, framework: 'Vite' });
+  for (const cover of ['nothing', 'mixed', 'dead']) {
+    expect(previewFailureDiagnostics('dead_end_shown', { state: 'preview_failed', cover }, 'one')).toMatchObject({
+      cause: 'unknown', expected_port: null, actual_port: null, exit_code: null, process_exited: null, was_live: true, framework: 'Vite',
+    });
+  }
 });
 
 it('records only valid advertised loopback ports, not URLs or untrusted hostnames', () => {
