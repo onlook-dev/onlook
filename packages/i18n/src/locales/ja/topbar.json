@@ -10,5 +10,6 @@
   "topbar.update.ready": "再起動してアップデート",
   "topbar.update.upToDate": "最新の状態です",
   "topbar.update.failed": "アップデートに失敗しました",
+  "topbar.update.authorizationDenied": "アップデートを一時停止しました。管理者に Onlook のアップデートを依頼してください。",
   "topbar.update.diskFull": "ディスクの空き容量が不足しています。アップデートするには空き容量を確保してください。"
 }

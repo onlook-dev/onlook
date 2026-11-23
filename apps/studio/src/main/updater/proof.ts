@@ -62,6 +62,7 @@ export function installUpdateProof(machine: UpdateMachine): ReturnType<typeof cr
     prepare() { nativeUpdater.emit('update-downloaded'); },
     fail() { updater.emit('error', new Error('Squirrel could not prepare the update')); },
     diskFull() { updater.emit('error', new Error('No space left on device')); },
+    authorizationDenied() { updater.emit('error', new Error('The operation couldn’t be completed. (OSStatus error -60005.)')); },
     snapshot() { return { downloads: [...downloads], installs: [...installs], failures: [...failures], state: machine.current() }; },
   } });
   return session;

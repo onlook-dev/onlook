@@ -60,6 +60,10 @@ export const TOPBAR_GALLERY: Gallery = {
   subtitle: 'Select one state to inspect the real window-bar component over the screen below it.',
   categories: [
     {
+      id: 'authorization-denied', title: 'Update · administrator access',
+      stories: [{ id: 'topbar-gallery-authorization-denied', title: 'Updates paused', render: () => <Band slots={ONBOARDING_SLOTS} isHome update={{ status: 'error', message: 'UPDATE_AUTHORIZATION_DENIED' }} /> }],
+    },
+    {
       id: 'disk-full', title: 'Update · disk full',
       stories: [{ id: 'topbar-gallery-disk-full', title: 'Free space before updating', render: () => <Band slots={ONBOARDING_SLOTS} isHome update={{ status: 'error', message: 'No space left on device' }} /> }],
     },

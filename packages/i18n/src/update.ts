@@ -32,6 +32,9 @@ export const UPDATE_PRESENTATION = {
 } satisfies Record<UpdateStatus, StatusPresentation>;
 
 export function presentation(status: UpdateStatus, message?: string): StatusPresentation {
+  if (status === 'error' && message === 'UPDATE_AUTHORIZATION_DENIED') {
+    return { menu: UPDATE_PRESENTATION.error.menu, pill: 'topbar.update.authorizationDenied' };
+  }
   if (status === 'error' && isDiskFull(message)) {
     return { menu: UPDATE_PRESENTATION.error.menu, pill: 'topbar.update.diskFull' };
   }

@@ -13,8 +13,15 @@ import { log } from '../log/index.js';
 import { capabilities } from '../cloud/capabilities.js';
 import { isMac } from '../env/platform.js';
 import { devSwitches } from '../env/dev-switches.js';
+import { defineDomain } from '../state/store.js';
 
 const logger = log('updater');
+const recovery = defineDomain<string | null>({
+  name: 'update-authorization-paused',
+  version: 1,
+  fallback: () => null,
+  migrate: (data) => typeof data === 'string' ? data : null,
+});
 
 /** Matches the placeholder `publish.url` in electron-builder.yml; `.invalid` never resolves (RFC 2606). */
 const PLACEHOLDER_HOST = '.invalid';
@@ -152,7 +159,16 @@ async function wire(url: string): Promise<void> {
   try {
     autoUpdater = await loadAutoUpdater();
 
-    session = createUpdateSession(autoUpdater, machine, isMac() ? electron.autoUpdater : undefined);
+    session = createUpdateSession(autoUpdater, machine, isMac() ? electron.autoUpdater : undefined, reportUpdateFailure, undefined, {
+      authorizationPaused: recovery.read() === app.getVersion(),
+      onAuthorizationPauseChange: (paused) => {
+        try {
+          recovery.write(paused ? app.getVersion() : null);
+        } catch (error) {
+          logger.warn('could not save update authorization state', { error });
+        }
+      },
+    });
     logger.info('enabled', { url });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

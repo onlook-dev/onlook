@@ -10,5 +10,6 @@
   "topbar.update.ready": "Restart to update",
   "topbar.update.upToDate": "Up to date",
   "topbar.update.failed": "Update failed",
+  "topbar.update.authorizationDenied": "Updates paused. Ask an administrator to update Onlook.",
   "topbar.update.diskFull": "Disk full. Free up space to update."
 }

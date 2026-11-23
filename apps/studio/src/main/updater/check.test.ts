@@ -47,9 +47,17 @@ describe('what an update failure is owned by', () => {
     ]) expect(updateFailureOwner(new Error(message))).toBe('environment');
     expect(updateFailureOwner(Object.assign(new Error('blocked'), { statusCode: 403 }))).toBe('environment');
     expect(updateFailureOwner(new Error('404 Not Found'))).toBe('ours');
-    expect(updateFailureOwner(new Error('500 Internal Server Error'))).toBe('ours');
+    expect(updateFailureOwner(new Error('500 Internal Server Error'))).toBe('environment');
     expect(updateFailureOwner(new Error('sha512 checksum mismatch'))).toBe('ours');
   });
+});
+
+it('classifies native authorization errors and download HTTP statuses without hiding unrelated errors', () => {
+  expect(updateFailureOwner(new Error('The operation couldn’t be completed. (OSStatus error -60005.)'))).toBe('environment');
+  expect(updateFailureReason(new Error('OSStatus error -60005.'))).toBe('authorization-denied');
+  expect(updateFailureOwner(new Error('Cannot download "https://updates.example/update.zip", status 502: Bad Gateway'))).toBe('environment');
+  expect(updateFailureOwner(new Error('OSStatus error -60006.'))).toBe('environment');
+  expect(updateFailureOwner(new Error('OSStatus error -12345.'))).toBe('ours');
 });
 
 describe('failure reporting', () => {

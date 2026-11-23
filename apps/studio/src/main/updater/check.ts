@@ -4,17 +4,26 @@ import { messageOf } from '../errors/message.js';
 import { capture } from '../telemetry/index.js';
 
 const NETWORK_CODE = /^net::(ERR_[A-Z0-9_]+)/;
+const AUTHORIZATION_CODE = /\bOSStatus(?: error)?\s+(-6000[56])\b/i;
+
+export function updateAuthorizationDenied(error: unknown): boolean {
+  return AUTHORIZATION_CODE.exec(messageOf(error))?.[1] === '-60005';
+}
 
 export function updateHttpStatus(error: unknown): number | undefined {
   if (error !== null && typeof error === 'object' && 'statusCode' in error && typeof error.statusCode === 'number') {
     return error.statusCode;
   }
-  const status = /^(?:HttpError: )?(\d{3})\b/.exec(messageOf(error))?.[1];
+  const message = messageOf(error);
+  const status = /^(?:HttpError: )?(\d{3})\b/.exec(message)?.[1]
+    ?? /^Cannot download "[^"\n]+", status (\d{3})\b/.exec(message)?.[1];
   return status === undefined ? undefined : Number(status);
 }
 
 export function updateFailureOwner(error: unknown): ErrorOwner {
-  if (updateHttpStatus(error) === 403) return 'environment';
+  const status = updateHttpStatus(error);
+  if (status === 403 || (status !== undefined && status >= 500 && status <= 599)) return 'environment';
+  if (AUTHORIZATION_CODE.test(messageOf(error))) return 'environment';
   if (/^Code signature at URL .+ did not pass validation\b/i.test(messageOf(error))) return 'environment';
   if (NETWORK_CODE.test(messageOf(error))) return 'environment';
   if (messageOf(error).startsWith('Cannot update while running on a read-only volume.')) return 'environment';
@@ -22,6 +31,8 @@ export function updateFailureOwner(error: unknown): ErrorOwner {
 }
 
 export function updateFailureReason(error: unknown): string {
+  if (updateAuthorizationDenied(error)) return 'authorization-denied';
+  if (AUTHORIZATION_CODE.test(messageOf(error))) return 'authorization-canceled';
   return NETWORK_CODE.exec(messageOf(error))?.[1] ?? 'other';
 }
 

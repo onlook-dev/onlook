@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { EventEmitter } from 'node:events';
+import { setImmediate as settle } from 'node:timers/promises';
 import type { AppUpdater } from 'electron-updater';
 import type { UpdateState } from '@studio/events';
 import { UpdateMachine } from './machine.js';
@@ -52,17 +53,17 @@ class UpdateFixture extends EventEmitter {
 const sessions: Array<ReturnType<typeof createUpdateSession>> = [];
 afterEach(() => { for (const session of sessions.splice(0)) session.dispose(); });
 
-function fixture(native = true, wait?: (delay: number, signal: AbortSignal) => Promise<void>) {
+function fixture(native = true, wait?: (delay: number, signal: AbortSignal) => Promise<void>, recovery: Parameters<typeof createUpdateSession>[5] = {}) {
   const seen: UpdateState[] = [];
   const reports: Array<{ stage: string; error: unknown }> = [];
   const updater = new UpdateFixture();
   const nativeUpdater = new EventEmitter();
   const machine = new UpdateMachine({ emit: (state) => seen.push(state), waitForNativeStage: native });
-  const session = createUpdateSession(updater as unknown as AppUpdater, machine, native ? nativeUpdater : undefined, (stage, error) => { reports.push({ stage, error }); }, wait);
+  const session = createUpdateSession(updater as unknown as AppUpdater, machine, native ? nativeUpdater : undefined, (stage, error) => { reports.push({ stage, error }); }, wait, recovery);
   sessions.push(session);
   const download = async () => {
     const check = session.check();
-    await Promise.resolve();
+    await settle();
     updater.finishDownload?.();
     await check;
   };
@@ -70,6 +71,106 @@ function fixture(native = true, wait?: (delay: number, signal: AbortSignal) => P
 }
 
 describe('the real updater event sequence', () => {
+  it.each([403, 404, 500, 503])('reports download HTTP %s once after bounded retries', async (status) => {
+    const delays: number[] = [];
+    const test = fixture(false, async (delay) => { delays.push(delay); });
+    let attempts = 0;
+    test.updater.downloadUpdate = async () => {
+      attempts += 1;
+      const error = new Error(`Cannot download "https://updates.example/update.zip", status ${status}: unavailable`);
+      test.updater.emit('error', error);
+      throw error;
+    };
+    await test.session.check(true);
+    expect(attempts).toBe(status >= 500 ? 3 : 1);
+    expect(delays).toEqual(status >= 500 ? [1000, 2000] : []);
+    expect(test.reports).toHaveLength(1);
+    expect(test.reports[0]?.stage).toBe('download');
+    expect(test.machine.current().status).toBe('idle');
+  });
+
+  it('pauses a native authorization failure emitted and rejected during download without retrying it', async () => {
+    const delays: number[] = [];
+    const test = fixture(true, async (delay) => { delays.push(delay); });
+    test.updater.downloadUpdate = async () => {
+      const error = new Error('OSStatus error -60005.');
+      test.updater.emit('error', error);
+      throw error;
+    };
+    await test.session.check();
+    await test.session.check();
+    expect(delays).toEqual([]);
+    expect(test.machine.current()).toEqual({ status: 'error', message: 'UPDATE_AUTHORIZATION_DENIED' });
+    expect(test.reports).toHaveLength(1);
+    expect(test.updater.autoInstallOnAppQuit).toBe(false);
+  });
+
+  it('restores an authorization pause after relaunch and saves recovery only after native preparation', async () => {
+    const saved: boolean[] = [];
+    const test = fixture(true, undefined, { authorizationPaused: true, onAuthorizationPauseChange: (paused) => { saved.push(paused); } });
+    await test.session.check();
+    expect(test.updater.downloads).toEqual([]);
+    expect(test.updater.autoInstallOnAppQuit).toBe(false);
+    expect(test.machine.current()).toEqual({ status: 'error', message: 'UPDATE_AUTHORIZATION_DENIED' });
+    const retry = test.session.check(true);
+    await settle();
+    test.updater.finishDownload?.();
+    await retry;
+    expect(saved).toEqual([]);
+    test.nativeUpdater.emit('update-downloaded');
+    expect(saved).toEqual([false]);
+  });
+
+  it('saves an authorization pause once even when native errors repeat', async () => {
+    const saved: boolean[] = [];
+    const test = fixture(true, undefined, { onAuthorizationPauseChange: (paused) => { saved.push(paused); } });
+    await test.download();
+    test.updater.emit('error', new Error('OSStatus error -60005.'));
+    test.updater.emit('error', new Error('OSStatus error -60005.'));
+    await test.session.check();
+    expect(saved).toEqual([true]);
+    expect(test.reports).toHaveLength(1);
+    expect(test.updater.downloads).toHaveLength(1);
+  });
+
+  it('pauses automatic updates after macOS denies authorization and allows an explicit retry', async () => {
+    const test = fixture();
+    await test.download();
+    test.updater.emit('error', new Error('The operation couldn’t be completed. (OSStatus error -60005.)'));
+    expect(test.machine.current()).toEqual({ status: 'error', message: 'UPDATE_AUTHORIZATION_DENIED' });
+    expect(test.updater.autoInstallOnAppQuit).toBe(false);
+    await test.session.check();
+    expect(test.updater.downloads).toHaveLength(1);
+    const retry = test.session.check(true);
+    await settle();
+    expect(test.updater.autoInstallOnAppQuit).toBe(true);
+    test.updater.finishDownload?.();
+    await retry;
+    test.nativeUpdater.emit('update-downloaded');
+    expect(test.machine.current().status).toBe('downloaded');
+  });
+
+  it('retries download server errors without reporting a recovered failure', async () => {
+    const delays: number[] = [];
+    const test = fixture(false, async (delay) => { delays.push(delay); });
+    let attempts = 0;
+    test.updater.downloadUpdate = async () => {
+      attempts += 1;
+      if (attempts < 3) {
+        const error = new Error('Cannot download "https://updates.example/update.zip", status 503: Service Unavailable');
+        test.updater.emit('error', error);
+        throw error;
+      }
+      test.updater.emit('update-downloaded', { version: test.updater.version });
+      return [];
+    };
+    await test.session.check(true);
+    expect(attempts).toBe(3);
+    expect(delays).toEqual([1000, 2000]);
+    expect(test.reports).toEqual([]);
+    expect(test.machine.current().status).toBe('downloaded');
+  });
+
   for (const { label, error } of [
     { label: 'native text', error: new Error('No space left on device') },
     { label: 'errno only', error: Object.assign(new Error('write failed'), { code: 'ENOSPC' }) },
@@ -146,7 +247,7 @@ describe('the real updater event sequence', () => {
       throw new Error('503 Service Unavailable');
     };
     const check = test.session.check(true);
-    await Promise.resolve();
+    await settle();
     await test.session.check(true);
     expect(attempts).toBe(1);
     test.session.dispose();
@@ -183,7 +284,7 @@ describe('the real updater event sequence', () => {
     test.nativeUpdater.emit('update-downloaded');
     test.updater.version = '1.2.4';
     const refresh = test.session.check();
-    await Promise.resolve();
+    await settle();
     test.session.restart();
     test.session.restart();
     expect(test.updater.installs).toEqual([]);
@@ -200,6 +301,7 @@ describe('the real updater event sequence', () => {
     const test = fixture();
     const check = test.session.check();
     await test.session.check(true);
+    await settle();
     test.updater.finishDownload?.();
     await check;
     test.updater.version = '1.2.4';
@@ -221,7 +323,7 @@ describe('the real updater event sequence', () => {
     test.nativeUpdater.emit('update-downloaded');
     expect(test.machine.current().restarting).toBeUndefined();
     test.session.restart();
-    await Promise.resolve();
+    await settle();
     expect(test.updater.installs).toEqual(['1.2.3']);
   });
 
@@ -241,7 +343,7 @@ describe('the real updater event sequence', () => {
     test.nativeUpdater.emit('update-downloaded');
     test.updater.failCheck = true;
     test.session.restart();
-    await Promise.resolve();
+    await settle();
     expect(test.updater.installs).toEqual(['1.2.3']);
     expect(test.machine.current()).toEqual({ status: 'downloaded', version: '1.2.3', restarting: true });
     expect(test.reports.map((report) => report.stage)).toEqual(['check']);
@@ -254,7 +356,7 @@ describe('the real updater event sequence', () => {
     test.updater.version = '1.2.4';
     test.updater.failDownload = true;
     const refresh = test.session.check();
-    await Promise.resolve();
+    await settle();
     if (restarting) test.session.restart();
     test.updater.finishDownload?.();
     await refresh;
@@ -293,7 +395,7 @@ describe('the real updater event sequence', () => {
     test.updater.pauseCheck = true;
 
     const background = test.session.check();
-    await Promise.resolve();
+    await settle();
     expect(test.seen).toEqual([{ status: 'checking' }]);
 
     await test.session.check(true);
@@ -310,10 +412,10 @@ describe('the real updater event sequence', () => {
     test.nativeUpdater.emit('update-downloaded');
     test.updater.version = '1.2.4';
     test.session.restart();
-    await Promise.resolve();
+    await settle();
     expect(test.updater.installs).toEqual([]);
     test.updater.finishDownload?.();
-    await Promise.resolve();
+    await settle();
     test.nativeUpdater.emit('update-downloaded');
     expect(test.updater.installs).toEqual(['1.2.4']);
   });
