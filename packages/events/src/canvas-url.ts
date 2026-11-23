@@ -30,6 +30,17 @@ export function displayUrl(input: string): string {
   }
 }
 
+/** `null` for an address with no origin to name — unreadable, or opaque. What that means is the caller's to decide (ONL-2518). */
+export function urlOrigin(url: string): string | null {
+  let origin: string;
+  try {
+    origin = new URL(url).origin;
+  } catch {
+    return null;
+  }
+  return origin === 'null' ? null : origin;
+}
+
 // `0.0.0.0` stays: dev servers print it and designers paste it.
 export const LOCAL_HOSTS: ReadonlySet<string> = new Set(['localhost', '127.0.0.1', '[::1]', '0.0.0.0']);
 

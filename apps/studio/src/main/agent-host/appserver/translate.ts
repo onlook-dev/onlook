@@ -444,6 +444,7 @@ export function handleAppServerFrame(
         type: 'turn.ended',
         turnId: log.turnId,
         stopReason: status,
+        isError: status === 'failed',
         durationMs,
         waitedMs: log.turnWaitedMs,
         filesChanged: log.turnFilesChanged,

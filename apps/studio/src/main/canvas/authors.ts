@@ -85,6 +85,9 @@ export interface ServerPortFollow {
   observed(state: ServerState): void;
 }
 
+/** `refused` means no frame moved, so whatever still points at the old port is still pointing there. */
+export type PortMoveOutcome = 'moved' | 'refused';
+
 export function createServerPortFollow(apply: ApplyCanvasOps, worktreePath?: string): ServerPortFollow {
   let sequence = 0;
   let latest: { sequence: number; port: number } | undefined;
@@ -135,21 +138,22 @@ export function createServerPortFollow(apply: ApplyCanvasOps, worktreePath?: str
 /** Never rejects. The host awaits it before broadcasting the moved book, or a guest mounts at the dead origin (ONL-1994). */
 export function createReverifyMoveAuthor(
   apply: ApplyCanvasOps,
-): (fromPort: number, toPort: number, worktreePath?: string) => Promise<void> {
+): (fromPort: number, toPort: number, worktreePath?: string) => Promise<PortMoveOutcome> {
   return async (fromPort, toPort, worktreePath) => {
-    if (fromPort === toPort) return;
-    await drainCanvasOps(
+    if (fromPort === toPort) return 'moved';
+    return drainCanvasOps(
       (resolve) => apply('system', resolve, worktreePath),
       (doc) => portFollowOps(doc, fromPort, toPort),
     )
-      .then((result) => {
+      .then((result): PortMoveOutcome => {
         const reason = refusedReason(result);
-        if (reason !== undefined) {
-          logger.warn('reverify-move was refused', { reason, from_port: fromPort, to_port: toPort });
-        }
+        if (reason === undefined) return 'moved';
+        logger.warn('reverify-move was refused', { reason, from_port: fromPort, to_port: toPort });
+        return 'refused';
       })
-      .catch((err: unknown) => {
+      .catch((err: unknown): PortMoveOutcome => {
         logger.error('reverify-move could not author', { error: err });
+        return 'refused';
       });
   };
 }

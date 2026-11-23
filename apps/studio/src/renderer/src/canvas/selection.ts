@@ -1,5 +1,6 @@
 import {
   MAX_ELEMENT_SELECTIONS,
+  urlOrigin,
   withinAggregateBytes,
   type CanvasNode,
   type ElementEvidence,
@@ -86,15 +87,8 @@ export function rehomeFrameSelections(
 
 /** Answers only for two addresses it could read; an origin it cannot name is not one it can match (ONL-2518). */
 function isSameOrigin(fromUrl: string, toUrl: string): boolean {
-  let from: string;
-  let to: string;
-  try {
-    from = new URL(fromUrl).origin;
-    to = new URL(toUrl).origin;
-  } catch {
-    return false;
-  }
-  return from !== 'null' && from === to;
+  const from = urlOrigin(fromUrl);
+  return from !== null && from === urlOrigin(toUrl);
 }
 
 /** What a frame's document is offered to re-adopt: a `domPath` that matches on another origin would hand the agent that site's element, so only the origin they were picked on gets them (ONL-2518). */
@@ -110,16 +104,9 @@ export function seedableSelectionsForFrame(
 }
 
 export function isOriginChange(fromUrl: string, toUrl: string): boolean {
-  let from: string;
-  let to: string;
-  try {
-    from = new URL(fromUrl).origin;
-    to = new URL(toUrl).origin;
-  } catch {
-    return false;
-  }
-  if (from === 'null' || to === 'null') return false;
-  return from !== to;
+  const from = urlOrigin(fromUrl);
+  const to = urlOrigin(toUrl);
+  return from !== null && to !== null && from !== to;
 }
 
 export function markStale(

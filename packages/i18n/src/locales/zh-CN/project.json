@@ -14,6 +14,8 @@
   "project.create.failed.installingPackages": "无法为 {repo} 安装依赖包",
   "project.create.detail.noSession": "智能体没有在这个副本中运行。",
   "project.create.detail.noServer": "Onlook 找不到正在运行的应用。",
+  "project.create.detail.agentFailed": "Onlook 智能体在启动应用时遇到了错误。",
+  "project.create.detail.agentStopped": "Onlook 智能体在应用启动前已停止。",
   "project.create.detail.neverOpened": "项目没有在这个标签页中打开，因此没有让智能体启动应用。",
   "project.create.next.planning": "确认文件夹没有被移动，然后点按“重试”。",
   "project.create.next.copying": "要重新拷贝文件夹，请点按“重试”。",
