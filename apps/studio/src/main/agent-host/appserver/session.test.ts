@@ -1393,7 +1393,8 @@ describe('unanswered Codex turns and user resumes', () => {
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
     // The crash row and Retry are the surface; a background tab must not also be told the turn failed.
     expect(delivered.filter((event) => event.type === 'turn.ended')).toEqual([]);
-    expect(emitted).toContainEqual(expect.objectContaining({ type: 'turn.ended', stopReason: 'provider_error' }));
+    // `isError` is what tells project setup an agent failure from a missing app (ONL-3343).
+    expect(emitted).toContainEqual(expect.objectContaining({ type: 'turn.ended', stopReason: 'provider_error', isError: true }));
   });
 
   it('a prompt sent after the transport exited is refused out loud, not in silence', async () => {
@@ -1456,6 +1457,7 @@ describe('unanswered Codex turns and user resumes', () => {
       expect(turns).toHaveLength(1);
       expect(turns[0]).toMatchObject({ stopReason: 'provider_error', hadProviderStall: hadStall });
       expect(ofType(emitted, 'turn.ended')).toHaveLength(1);
+      expect(ofType(emitted, 'turn.ended')[0]).toMatchObject({ isError: true });
       jest.advanceTimersByTime(240_000);
       expect(stalls).toHaveLength(hadStall ? 1 : 0);
       jest.useRealTimers();

@@ -600,7 +600,7 @@ export class AppServerSession implements AgentBackend {
       // that would have closed it, so it is closed here or it stays live under the next one (ONL-2863).
       const stopped = this.log.turnTally();
       if (stopped !== undefined) {
-        this.log.push({ type: 'turn.ended', turnId: stopped.turnId, stopReason: 'interrupted', filesChanged: stopped.filesChanged });
+        this.log.push({ type: 'turn.ended', turnId: stopped.turnId, stopReason: 'interrupted', isError: false, filesChanged: stopped.filesChanged });
         this.opts.onTurnEnded?.({ ...stopped, origin: this.turnOrigin, stopReason: 'interrupted' });
       }
       this.stopStreaming();
@@ -1018,7 +1018,7 @@ export class AppServerSession implements AgentBackend {
         const ended = this.log.turnTally();
         if (ended !== undefined) {
           const retries = retryTelemetry(this.log.events, HARNESSES.codex.countsRetryAttempts);
-          this.log.push({ type: 'turn.ended', turnId: ended.turnId, stopReason: 'provider_error', filesChanged: ended.filesChanged });
+          this.log.push({ type: 'turn.ended', turnId: ended.turnId, stopReason: 'provider_error', isError: true, filesChanged: ended.filesChanged });
           this.opts.onTurnEnded?.({
             ...ended, stopReason: 'provider_error', origin: this.turnOrigin,
             retryAttempts: retries.retry_attempts,
@@ -1377,7 +1377,7 @@ export class AppServerSession implements AgentBackend {
         if (this.log.turnId === ownTurn) {
           const summary = this.log.turnTally();
           if (summary !== undefined) {
-            this.log.push({ type: 'turn.ended', turnId: summary.turnId, stopReason: ending, filesChanged: summary.filesChanged });
+            this.log.push({ type: 'turn.ended', turnId: summary.turnId, stopReason: ending, isError: ending === 'error', filesChanged: summary.filesChanged });
             this.opts.onTurnEnded?.({ ...summary, origin: this.turnOrigin, stopReason: ending });
           }
         }

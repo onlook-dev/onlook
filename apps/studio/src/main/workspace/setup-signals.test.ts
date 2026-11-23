@@ -1,23 +1,34 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import type { CanvasNode } from '@studio/events';
 import { createCancelToken } from './cancel.js';
+import { EventLog } from '../agent-host/event-log.js';
+import { handleSdkMessage } from '../agent-host/reduce.js';
 import {
   awaitSessionIdle,
   awaitStartOutcome,
   hasSetupRecord,
   isSessionStreaming,
   noteSetupParked,
+  noteSetupEvent,
   noteSetupReport,
   noteSetupStreaming,
   noteSetupTabClosed,
+  noteSetupTurnStopped,
   resetSetupSignals,
   type FirstFrameAnswer,
 } from './setup-signals.js';
 
 const A = '/ws/a';
 const B = '/ws/b';
+const GRACE_MS = 10;
 const NOT_PLACED: FirstFrameAnswer = { kind: 'not-placed', reason: 'nothing to place in this test' };
 const place = async (): Promise<FirstFrameAnswer> => NOT_PLACED;
+
+const pastGrace = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, GRACE_MS * 4));
+
+function endTurn(stopReason = 'success', cwd = A, isError = false): void {
+  noteSetupEvent({ type: 'turn.ended', turnId: 'turn-1', stopReason, isError, cwd, sessionId: 'session-1', eventId: 'ended', seq: 1, ts: 0 });
+}
 
 beforeEach(() => {
   resetSetupSignals();
@@ -38,12 +49,70 @@ describe('awaitStartOutcome', () => {
     expect(await settled(b)).toEqual({ done: false });
   });
 
-  it('answers turn-ended on the transition to idle when nothing is parked', async () => {
+  it('waits through idle until the actual turn outcome arrives', async () => {
     const a = awaitStartOutcome(A, createCancelToken(), place);
     noteSetupStreaming(A, true);
     expect(await settled(a)).toEqual({ done: false });
     noteSetupStreaming(A, false);
+    expect(await settled(a)).toEqual({ done: false });
+    endTurn();
     expect(await settled(a)).toEqual({ done: true, value: { kind: 'turn-ended' } });
+  });
+
+  it.each(['failed', 'api_error', 'provider_error', 'error_during_execution', 'error', 'refused'])(
+    'answers turn-failed for %s even if streaming fell first', async (reason) => {
+      const outcome = awaitStartOutcome(A, createCancelToken(), place);
+      noteSetupStreaming(A, true);
+      noteSetupStreaming(A, false);
+      endTurn(reason, A, true);
+      expect(await outcome).toEqual({ kind: 'turn-failed' });
+    },
+  );
+
+  it('ignores nonterminal session errors while the Start turn can still report', async () => {
+    const outcome = awaitStartOutcome(A, createCancelToken(), place);
+    const other = awaitStartOutcome(B, createCancelToken(), place);
+    noteSetupEvent({ type: 'session.error', cwd: A, message: 'Service unavailable', code: 'api_error', sessionId: 'session-1', eventId: 'error', seq: 1, ts: 0 });
+    expect(await settled(outcome)).toEqual({ done: false });
+    expect(await settled(other)).toEqual({ done: false });
+    await noteSetupReport(A, 5173);
+    expect(await outcome).toEqual({ kind: 'reported', port: 5173, frame: NOT_PLACED });
+    const retry = awaitStartOutcome(A, createCancelToken(), place);
+    endTurn();
+    expect(await retry).toEqual({ kind: 'turn-ended' });
+  });
+
+  it('a failed turn settles even with a parked request', async () => {
+    const outcome = awaitStartOutcome(A, createCancelToken(), place);
+    noteSetupParked(A, 1);
+    endTurn('failed', A, true);
+    expect(await outcome).toEqual({ kind: 'turn-failed' });
+  });
+
+  it('a report already being placed wins over a later turn failure', async () => {
+    const outcome = awaitStartOutcome(A, createCancelToken(), place);
+    const reporting = noteSetupReport(A, 5173);
+    endTurn('failed', A, true);
+    await reporting;
+    expect(await outcome).toEqual({ kind: 'reported', port: 5173, frame: NOT_PLACED });
+  });
+
+  it.each(['blocking_limit', 'budget_exhausted'])(
+    'uses Claude’s failure verdict for %s before its session error arrives', async (reason) => {
+      const outcome = awaitStartOutcome(A, createCancelToken(), place);
+      const log = new EventLog({ sessionId: 'session-1', cwd: A, emit: noteSetupEvent });
+      log.beginTurn();
+      handleSdkMessage(log, { type: 'result', subtype: 'success', is_error: true, terminal_reason: reason });
+      expect(await outcome).toEqual({ kind: 'turn-failed' });
+    },
+  );
+
+  it('keeps an interrupted Claude result out of the agent-failure class', async () => {
+    const outcome = awaitStartOutcome(A, createCancelToken(), place);
+    const log = new EventLog({ sessionId: 'session-1', cwd: A, emit: noteSetupEvent });
+    log.beginTurn();
+    handleSdkMessage(log, { type: 'result', subtype: 'success', is_error: true, terminal_reason: 'aborted_streaming' });
+    expect(await outcome).toEqual({ kind: 'turn-ended' });
   });
 
   it('keeps waiting through an idle transition while a question is parked — the agent may still report', async () => {
@@ -51,11 +120,92 @@ describe('awaitStartOutcome', () => {
     noteSetupStreaming(A, true);
     noteSetupParked(A, 1);
     noteSetupStreaming(A, false);
+    endTurn();
     expect(await settled(a)).toEqual({ done: false });
     noteSetupParked(A, -1);
     noteSetupStreaming(A, true);
     noteSetupReport(A, 3000);
     expect(await settled(a)).toEqual({ done: true, value: { kind: 'reported', port: 3000, frame: NOT_PLACED } });
+  });
+
+  it('settles once the turn is over and no verdict follows it, so the setup is never left pending (ONL-3343)', async () => {
+    const a = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    noteSetupStreaming(A, true);
+    noteSetupStreaming(A, false);
+    expect(await settled(a)).toEqual({ done: false });
+    expect(await a).toEqual({ kind: 'turn-stopped' });
+  });
+
+  it('a verdict that lands inside the grace still names the failure', async () => {
+    const a = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    noteSetupStreaming(A, true);
+    noteSetupStreaming(A, false);
+    endTurn('api_error', A, true);
+    expect(await a).toEqual({ kind: 'turn-failed' });
+  });
+
+  it('a turn that streams again before the grace is out is still waited on', async () => {
+    const a = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    noteSetupStreaming(A, true);
+    noteSetupStreaming(A, false);
+    noteSetupStreaming(A, true);
+    await pastGrace();
+    expect(await settled(a)).toEqual({ done: false });
+    noteSetupReport(A, 5173);
+    expect(await a).toEqual({ kind: 'reported', port: 5173, frame: NOT_PLACED });
+  });
+
+  it('a parked question outlives the grace: the agent may still report once it is answered', async () => {
+    const a = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    noteSetupStreaming(A, true);
+    noteSetupParked(A, 1);
+    noteSetupStreaming(A, false);
+    await pastGrace();
+    expect(await settled(a)).toEqual({ done: false });
+  });
+
+  it('a turn stopped mid-stream settles the wait at once, without waiting out the grace (ONL-3343)', async () => {
+    const a = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    noteSetupStreaming(A, true);
+    noteSetupTurnStopped(A);
+    expect(await settled(a)).toEqual({ done: true, value: { kind: 'turn-stopped' } });
+    expect(() => noteSetupTurnStopped('/ws/never')).not.toThrow();
+    expect(hasSetupRecord('/ws/never')).toBe(false);
+  });
+
+  // The Retry the failure row offers waits for the session to be idle first, and a stopped codex
+  // turn never reports the falling edge that would say so (ONL-3343).
+  it('a stopped turn leaves the session idle, so a Retry is not left waiting on it', async () => {
+    void awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    noteSetupStreaming(A, true);
+    const idle = awaitSessionIdle(A, createCancelToken());
+    expect(await settled(idle)).toEqual({ done: false });
+    noteSetupTurnStopped(A);
+    expect(await settled(idle)).toEqual({ done: true, value: 'idle' });
+    expect(isSessionStreaming(A)).toBe(false);
+    expect(await awaitSessionIdle(A, createCancelToken())).toBe('idle');
+  });
+
+  it('answering the question the grace waited on gives the wait its deadline back (ONL-3343)', async () => {
+    const a = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    noteSetupStreaming(A, true);
+    noteSetupParked(A, 1);
+    noteSetupStreaming(A, false);
+    await pastGrace();
+    expect(await settled(a)).toEqual({ done: false });
+    noteSetupParked(A, -1);
+    expect(await a).toEqual({ kind: 'turn-stopped' });
+  });
+
+  it('a report leaves no grace behind that could settle the next wait', async () => {
+    const first = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    noteSetupStreaming(A, true);
+    noteSetupStreaming(A, false);
+    await noteSetupReport(A, 5173);
+    expect(await first).toEqual({ kind: 'reported', port: 5173, frame: NOT_PLACED });
+    const retry = awaitStartOutcome(A, createCancelToken(), place, GRACE_MS);
+    await pastGrace();
+    expect(await settled(retry)).toEqual({ done: false });
   });
 
   it('a parked count never goes negative, so one stray resolve cannot un-park a later question', async () => {
@@ -122,6 +272,7 @@ describe('noteSetupTabClosed', () => {
     expect(hasSetupRecord(A)).toBe(true);
     noteSetupStreaming(A, true);
     noteSetupStreaming(A, false);
+    endTurn();
     expect(await settled(a)).toEqual({ done: true, value: { kind: 'turn-ended' } });
   });
 

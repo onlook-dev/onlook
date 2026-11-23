@@ -875,6 +875,7 @@ export function handleSdkMessage(
         type: 'turn.ended',
         turnId: log.turnId,
         stopReason,
+        isError: isFailed && !wasInterrupted,
         totalCostUsd,
         costDeltaUsd,
         durationMs: num(msg.duration_ms),
