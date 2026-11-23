@@ -119,6 +119,34 @@ describe('the real updater event sequence', () => {
     expect(saved).toEqual([]);
     test.nativeUpdater.emit('update-downloaded');
     expect(saved).toEqual([false]);
+    test.updater.version = '1.2.4';
+    const background = test.session.check();
+    await settle();
+    expect(test.updater.downloads).toHaveLength(2);
+    test.updater.finishDownload?.();
+    await background;
+  });
+
+  it('cancels download retries when disposed during backoff', async () => {
+    let enteredBackoff: (() => void) | undefined;
+    const backoff = new Promise<void>((resolve) => { enteredBackoff = resolve; });
+    const test = fixture(false, async (_delay, signal) => {
+      enteredBackoff?.();
+      await new Promise<void>((_resolve, reject) => {
+        signal.addEventListener('abort', () => reject(signal.reason), { once: true });
+      });
+    });
+    let attempts = 0;
+    test.updater.downloadUpdate = async () => {
+      attempts += 1;
+      throw new Error('503 Service Unavailable');
+    };
+    const check = test.session.check();
+    await backoff;
+    test.session.dispose();
+    await check;
+    expect(attempts).toBe(1);
+    expect(test.reports).toEqual([]);
   });
 
   it('saves an authorization pause once even when native errors repeat', async () => {
