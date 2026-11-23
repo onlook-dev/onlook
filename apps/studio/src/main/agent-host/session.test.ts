@@ -971,6 +971,8 @@ describe('Stop means stop (ONL-2180)', () => {
     await drain();
     const [ended] = ofType(emitted, 'turn.ended');
     expect(ended?.stopReason).toBe('interrupted');
+    // A Stop is not an agent failure, so setup must not report one (ONL-3343).
+    expect(ended).toMatchObject({ isError: false });
     expect(ofType(emitted, 'session.error')).toEqual([]);
     expect(turns.map((t) => t.turnId)).toEqual(['t1']);
 
@@ -2013,6 +2015,8 @@ describe('the silence a prompt that got no answer leaves (ONL-2491)', () => {
       expect(turns).toHaveLength(1);
       expect(turns[0]).toMatchObject({ stopReason: 'provider_error', hadProviderStall: hadStall });
       expect(ofType(emitted, 'turn.ended')).toHaveLength(1);
+      // `isError` is what tells project setup an agent failure from a missing app (ONL-3343).
+      expect(ofType(emitted, 'turn.ended')[0]).toMatchObject({ isError: true });
       jest.advanceTimersByTime(240_000);
       expect(stalls).toHaveLength(hadStall ? 1 : 0);
       jest.useRealTimers();

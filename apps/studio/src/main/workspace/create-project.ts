@@ -277,6 +277,12 @@ export async function createProject(
 
   const started = await outcome;
   if (started.kind === 'canceled') return settle({ kind: 'canceled' });
+  if (started.kind === 'turn-failed') {
+    return fail('starting', t('project.create.detail.agentFailed'), context, 'agent_turn_failed');
+  }
+  if (started.kind === 'turn-stopped') {
+    return fail('starting', t('project.create.detail.agentStopped'), context, 'agent_turn_stopped');
+  }
   if (started.kind === 'turn-ended') {
     return fail('starting', t('project.create.detail.noServer'), context);
   }
