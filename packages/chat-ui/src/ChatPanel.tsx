@@ -683,7 +683,7 @@ export function ChatPanel({
             style={welcomeSlot === undefined ? { marginBlockStart: 'auto' } : { marginBlock: 'auto' }}
             data-testid="chat-resting"
           >
-            {setup ? <SetupTurn {...setup} /> : null}
+            {setup ? <SetupTurn {...setup} chevronIcon={chevronIcon} /> : null}
             {welcomeSlot}
           </VStack>
         ) : (
@@ -862,7 +862,7 @@ export function ChatPanel({
           /* The transcript's own inline inset, not the resting block's: this row
              follows tool rows and shares their left edge (ONL-2499). */
           <VStack width="100%" paddingInline={3} paddingBlock={4} data-testid="chat-setup-row">
-            <SetupTurn {...setup} />
+            <SetupTurn {...setup} chevronIcon={chevronIcon} />
           </VStack>
         ) : null}
         {signInHere && signInPlacement === 'transcript' && signInLine !== undefined ? (
