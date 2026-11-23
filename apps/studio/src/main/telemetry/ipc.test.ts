@@ -589,7 +589,7 @@ describe('receiveRendererTelemetry', () => {
     receiveRendererTelemetry({ event: 'onboarding_screen_shown', properties: { screen: 'machine', visit: 2 } });
     receiveRendererTelemetry({ event: 'onboarding_screen_passed', properties: { screen: 'import', choice: 'blank' } });
     for (const properties of [
-      { screen: 'role', visit: 1 },
+      { screen: 'pricing', visit: 1 },
       { screen: 'agent', visit: 0 },
       { screen: 'agent', visit: 1.5 },
       { screen: 'agent' },
@@ -598,7 +598,7 @@ describe('receiveRendererTelemetry', () => {
       { screen: 'import' },
       { screen: 'import', choice: 'github' },
       { screen: 'agent', choice: 'new' },
-      { screen: 'role' },
+      { screen: 'pricing' },
     ]) receiveRendererTelemetry({ event: 'onboarding_screen_passed', properties } as unknown as RendererTelemetryEvent);
 
     const sent = peekQueueForTesting().filter((event) => event.event.startsWith('onboarding_screen_'));

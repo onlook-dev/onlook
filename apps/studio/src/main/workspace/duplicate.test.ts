@@ -210,6 +210,17 @@ function createdWorkspace(state: ProjectCreateState): WorkspaceCreated {
 }
 
 describe('Make a copy creation lifecycle (ONL-2515)', () => {
+  it('copies a project whose saved branch name is missing', async () => {
+    const source = await sourceProject('missing-branch', 'design');
+    const { branchName: _branchName, ...withoutBranch } = source;
+    rememberProject(withoutBranch as WorkspaceCreated);
+    const plan = await planDuplicate(source.workspacePath);
+    expect(plan.kind).toBe('ready');
+    if (plan.kind !== 'ready') throw new Error('expected a copy plan');
+    expect(plan.branchName).toBe(`onlook/${plan.workspaceName}`);
+    await rollbackDuplicate(plan);
+  });
+
   it.each(['nested-app', 'unknown-app', 'ambiguous-app'] as const)('uses authoritative claims rather than inferring the %s port from Frames', async (kind) => {
     const source = await sourceProject(kind, 'design');
     const claim = entryForFolder(source.workspacePath, source.workspacePath);

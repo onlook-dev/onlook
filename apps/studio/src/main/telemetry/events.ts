@@ -37,6 +37,8 @@ import type {
   WorkspaceRefusalReason,
   BlankEntryPoint,
   FOUND_US_QUESTION,
+  ROLE_QUESTION,
+  RoleOption,
   FoundUsOption,
   OnboardingImportChoice,
   OnboardingScreen,
@@ -569,10 +571,12 @@ export interface TelemetryEventMap {
 
   /** Sent on every answer; the person keeps the first (ONL-3259). */
   onboarding_survey_answered: {
-    question: typeof FOUND_US_QUESTION;
-    answer: FoundUsOption;
+    question: typeof FOUND_US_QUESTION | typeof ROLE_QUESTION;
+    answer: FoundUsOption | RoleOption;
     has_detail: boolean;
-    $set_once: { found_us: FoundUsOption };
+    /** Where the person first heard of us stays the first answer; a role changed on Back is the new one (ONL-3347). */
+    $set_once?: { found_us: FoundUsOption };
+    $set?: { role: RoleOption };
   };
 
   frame_tool_armed: Record<string, never>;

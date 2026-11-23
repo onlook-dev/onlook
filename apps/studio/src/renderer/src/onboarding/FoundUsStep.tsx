@@ -18,7 +18,7 @@ import { Text } from '@astryxdesign/core/Text';
 
 import { t } from '@studio/i18n';
 import type { StringKey } from '@studio/i18n';
-import { FOUND_US_QUESTION, type FoundUsOption, type SurveyAnswer } from '@studio/events';
+import { FOUND_US_QUESTION, isFoundUsOption, type FoundUsOption, type SurveyAnswer } from '@studio/events';
 import { ChoiceChip, MARK_RULES } from './AboutYouStep.js';
 import { OnboardingAccount, OnboardingFooter } from './OnboardingParts.js';
 import { OnboardingShell } from './OnboardingShell.js';
@@ -47,18 +47,21 @@ const OPTIONS: Record<FoundUsOption, { label: StringKey; Glyph: React.ComponentT
   other: { label: 'onboarding.found.other', Glyph: IconDotGrid1x3Horizontal },
 };
 
-const GROUP_RULES = `.found-groups{display:flex;flex-direction:column;gap:20px}.found-group{display:flex;flex-direction:column;gap:8px}.found-chips{display:flex;flex-wrap:wrap;gap:8px}@media (max-height:720px),(max-width:900px){.found-groups{flex-direction:row;flex-wrap:wrap;gap:8px}.found-group,.found-chips{display:contents}.found-group-label{display:none}.found-groups{padding-bottom:64px}.found-other{top:auto !important;bottom:0;margin-top:0 !important}}`;
+// Both survey screens hold the same block height, so their headings sit at one y and nothing jumps between them.
+export const GROUP_RULES = `.survey-block{min-height:344px}.found-groups{display:flex;flex-direction:column;gap:20px}.found-group{display:flex;flex-direction:column;gap:8px}.found-chips{display:flex;flex-wrap:wrap;gap:8px}@media (max-height:720px),(max-width:900px){.found-groups{flex-direction:row;flex-wrap:wrap;gap:8px}.found-group,.found-chips{display:contents}.found-group-label{display:none}.found-groups{padding-bottom:64px}.found-other{top:auto !important;bottom:0;margin-top:0 !important}.survey-block{min-height:0}}`;
 
 export interface FoundUsStepProps {
   /** Hands back the answer as an option key (`x`, `friend`, `other`), never display copy. */
   onContinue: (answer: SurveyAnswer) => void;
   onBack?: () => void;
   aside?: React.ReactNode;
+  /** The answer already given, so returning here keeps it. */
+  initial?: SurveyAnswer;
 }
 
-export function FoundUsStep({ onContinue, onBack, aside }: FoundUsStepProps): React.JSX.Element {
-  const [source, setSource] = useState<FoundUsOption | null>(null);
-  const [otherText, setOtherText] = useState('');
+export function FoundUsStep({ onContinue, onBack, aside, initial }: FoundUsStepProps): React.JSX.Element {
+  const [source, setSource] = useState<FoundUsOption | null>(initial !== undefined && isFoundUsOption(initial.answer) ? initial.answer : null);
+  const [otherText, setOtherText] = useState(initial?.detail ?? '');
   const isOther = source === 'other';
   const submit = (): void => {
     if (source === null || (isOther && otherText.trim() === '')) return;
@@ -70,7 +73,7 @@ export function FoundUsStep({ onContinue, onBack, aside }: FoundUsStepProps): Re
     <style href="about-chip-mark" precedence="medium">{MARK_RULES}</style>
     <style href="found-groups" precedence="medium">{GROUP_RULES}</style>
     <OnboardingShell data-testid="onboarding-found" aside={aside} headerEnd={<OnboardingAccount />}>
-      <VStack width="100%" gap={8} align="start" style={{ maxWidth: COLUMN_WIDTH }}>
+      <VStack width="100%" gap={8} align="start" className="survey-block" style={{ maxWidth: COLUMN_WIDTH }}>
         <h1 data-testid="onboarding-heading" style={{ margin: 0, textWrap: 'balance', fontSize: 32, lineHeight: 1.15, letterSpacing: '-0.02em', fontWeight: 'var(--font-weight-normal)', color: 'var(--color-text-primary)' }}>
           {t('onboarding.found.title')}
         </h1>

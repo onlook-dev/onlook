@@ -1,4 +1,4 @@
-import { Component, type ReactNode } from 'react';
+import { Component, type CSSProperties, type ReactNode } from 'react';
 import { Button } from '@astryxdesign/core/Button';
 import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
@@ -8,8 +8,9 @@ import { t } from '@studio/i18n';
 type Props = {
   // Main validates the reported region by shape, not against this union, so a
   // new member needs no main-side change (ONL-2563).
-  region: 'chat' | 'canvas' | 'chrome' | 'code' | 'task-manager';
+  region: 'chat' | 'canvas' | 'chrome' | 'code' | 'task-manager' | 'sidebar';
   children: ReactNode;
+  fallbackStyle?: CSSProperties;
 };
 
 type State = { failed: boolean };
@@ -41,6 +42,7 @@ export class RegionErrorBoundary extends Component<Props, State> {
         hAlign="center"
         vAlign="center"
         data-testid={`region-error-${this.props.region}`}
+        style={this.props.fallbackStyle}
       >
         <Text color="secondary">{t('errorBoundary.body')}</Text>
         <Button label={t('errorBoundary.retry')} onClick={this.retry} />

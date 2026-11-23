@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { Button } from '@astryxdesign/core/Button';
 import { HStack, VStack } from '@astryxdesign/core/Layout';
 import { NoConnection } from '@studio/chat-ui';
-import { CLAUDE_LOGIN_COMMAND, type HarnessId } from '@studio/events';
+import { CLAUDE_LOGIN_COMMAND, ROLE_QUESTION, type HarnessId } from '@studio/events';
 import {
   CHAT_CARD_STATES,
   CHATGPT_SETUP_STATES,
@@ -24,6 +24,7 @@ import type { ClaudeTurnFacts, ClaudeVerificationDetail } from '@studio/events';
 import { seedAgentSetupForShowroom } from '../../agent-setup/store.js';
 import { onboardingUiStrings } from '../../onboarding/uiStrings.js';
 import { FoundUsStep } from '../../onboarding/FoundUsStep.js';
+import { RoleStep } from '../../onboarding/RoleStep.js';
 import { ImportSourceChooser } from '../../onboarding/ImportSourceChooser.js';
 import { GettingStarted } from '../../cloud/GettingStarted.js';
 import { LoginAside } from '../../login/LoginAside.js';
@@ -393,7 +394,7 @@ const failedCheckAliases: Category = {
   stories: failedChecks.stories.flatMap((story) => story.id === story.id.toLowerCase() ? [] : [{ ...story, id: story.id.toLowerCase() }]),
 };
 
-function FirstRunStill({ surface, state, isolated }: { surface: 'login' | 'survey' | 'agents' | 'import'; state: string; isolated: boolean }): React.JSX.Element {
+function FirstRunStill({ surface, state, isolated }: { surface: 'login' | 'role' | 'survey' | 'agents' | 'import'; state: string; isolated: boolean }): React.JSX.Element {
   const container = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const node = container.current;
@@ -413,7 +414,8 @@ function FirstRunStill({ surface, state, isolated }: { surface: 'login' | 'surve
     {/* A card wears its hover on its own `::after`, where a button takes it on its ground. */}
     <style>{'[data-first-run-state="hover"] button:not(:disabled){background-image:linear-gradient(var(--color-overlay-hover),var(--color-overlay-hover))}[data-first-run-state="hover"] [data-testid="add-codebase"]::after{background-color:var(--color-overlay-hover)!important}[data-first-run-state="email-hover"] .hosted-email-sign-in{color:var(--color-text-primary)!important;filter:brightness(0.9)}'}</style>
     {surface === 'login' ? <GettingStarted aside={aside} onSignIn={noop} onCancel={noop} {...(state === 'pending' ? { busy: 'google', step: 'browser' } as const : {})} {...(state === 'email-pending' ? { busy: 'email' } as const : {})} {...(state === 'error' ? { error: 'failed' } as const : {})} />
-      : surface === 'survey' ? <FoundUsStep aside={aside} onContinue={noop} />
+      : surface === 'role' ? <RoleStep aside={aside} onContinue={noop} {...(state === 'selected' ? { initial: { question: ROLE_QUESTION, answer: 'designer' } } : state === 'other' ? { initial: { question: ROLE_QUESTION, answer: 'other' } } : {})} />
+      : surface === 'survey' ? <FoundUsStep aside={aside} onContinue={noop} onBack={noop} />
       : surface === 'agents' ? <ConnectStepView aside={aside} facts={CONNECT_FACTS[state === 'selected' ? 'both' : 'none']} isContinueEnabled={state === 'selected'} onTap={noop} onContinue={noop} {...(state === 'selected' ? { preferred: 'codex', onMakePreferred: noop } as const : {})} />
       : state === 'switching' ? <ImportSourceChooser onPick={noop} onBack={noop} />
       : <ImportSourceChooser aside={aside} onPick={noop} onBack={noop} onCreateBlank={noop} onOpen={noop} />}
@@ -425,6 +427,7 @@ const firstRun: Category = {
   title: 'First-run screens and interaction states',
   stories: ([
     ['login', ['default', 'hover', 'focus', 'email-focus', 'email-hover', 'email-pending', 'pending', 'error']],
+    ['role', ['default', 'selected', 'other']],
     ['survey', ['default', 'selected', 'other', 'hover', 'focus']],
     ['agents', ['default', 'selected', 'hover', 'focus']],
     /* `switching` is the same step inside a project, where only a codebase is on offer. */
@@ -435,10 +438,11 @@ const firstRun: Category = {
   }))),
 };
 
-function ChatGptStartupStill({ failure, mode }: { failure: 'home' | 'startup'; mode: 'default' | 'hover' | 'focus' }): React.JSX.Element {
-  const message = failure === 'home' ? t('onboarding.setup.codex.detail.home') : t('onboarding.setup.codex.detail.startup');
-  const state = chatGptSetupState({ status: 'failed', message }, agentSetupStrings(), { otherReady: false }).state;
-  return <div style={{ width: 440 }}><Focused selector={mode === 'default' ? undefined : '[data-testid="setup-action-try-again"]'} hover={mode === 'hover'}>
+function ChatGptStartupStill({ failure, mode }: { failure: 'home' | 'exited' | 'crashed' | 'connection' | 'timeout'; mode: 'default' | 'hover' | 'focus' }): React.JSX.Element {
+  const message = t(`onboarding.setup.codex.detail.${failure}`);
+  const state = chatGptSetupState({ status: failure === 'crashed' ? 'broken' : 'failed', message }, agentSetupStrings(), { otherReady: false }).state;
+  const action = failure === 'crashed' ? 'download-again' : 'try-again';
+  return <div style={{ width: 440 }}><Focused selector={mode === 'default' ? undefined : `[data-testid="setup-action-${action}"]`} hover={mode === 'hover'}>
     <SetupDialog state={state} isOpen isInline onOpenChange={noop} strings={STRINGS} glyphs={CARD_GLYPHS} onAction={noop} />
   </Focused></div>;
 }
@@ -446,7 +450,7 @@ function ChatGptStartupStill({ failure, mode }: { failure: 'home' | 'startup'; m
 const chatGptStartup: Category = {
   id: 'chatgpt-startup',
   title: 'ChatGPT startup recovery',
-  stories: (['home', 'startup'] as const).flatMap(failure => (['default', 'hover', 'focus'] as const).map(mode => ({
+  stories: (['home', 'exited', 'crashed', 'connection', 'timeout'] as const).flatMap(failure => (['default', 'hover', 'focus'] as const).map(mode => ({
     id: `chatgpt-startup-${failure}-${mode}`,
     title: `${failure} · ${mode}`,
     render: () => <ChatGptStartupStill failure={failure} mode={mode} />,

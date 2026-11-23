@@ -19,9 +19,10 @@ export function normalizeProjectName(raw: string): string {
   return raw.trim().split(/\s+/).filter(Boolean).slice(0, PROJECT_NAME_WORD_CAP).join(' ');
 }
 
-export function renameTargetFor(branchName: string, name: string): string | undefined {
-  const slash = branchName.indexOf('/');
-  const handle = slash > 0 ? branchName.slice(0, slash) : resolveHandle({});
+export function renameTargetFor(branchName: string | undefined, name: string): string | undefined {
+  const branch = typeof branchName === 'string' ? branchName : '';
+  const slash = branch.indexOf('/');
+  const handle = slash > 0 ? branch.slice(0, slash) : resolveHandle({});
   const slug = slugify(name);
   return slug === '' ? undefined : `${handle}/${slug}`;
 }
