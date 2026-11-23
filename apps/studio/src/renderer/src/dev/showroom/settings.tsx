@@ -63,7 +63,7 @@ function SignInStill({ readiness, mode }: { readiness: Readiness; mode: 'default
   }, [id, mode]);
   return <div ref={root} data-settings-sign-in={mode}>
     <style>{'[data-settings-sign-in="hover"] [data-testid="settings-agent-setup"] { background-image: linear-gradient(var(--color-overlay-hover), var(--color-overlay-hover)); } [data-settings-sign-in="focus"] [data-testid="settings-agent-setup"] { outline: 2px solid var(--color-accent); outline-offset: var(--button-focus-offset); }'}</style>
-    <LiveRow initial="claude" readiness={{ claude: readiness, codex: 'ready' }} />
+    <LiveRow initial="claude" readiness={{ claude: readiness, codex: 'ready', opencode: 'ready', freebuff: 'ready' }} />
   </div>;
 }
 
@@ -268,7 +268,7 @@ const CATEGORIES: Category[] = [
     stories: [{
       id: 'settings-analytics-general',
       title: 'General Settings',
-      render: () => <SettingsPane agent="codex" readiness={{ claude: 'ready', codex: 'ready' }} onAgentChange={noop} onSetUp={noop} notifications={{ preference: DEFAULT_NOTIFICATIONS, onAction: noop }} analytics={{ value: true, onChange: noop }} />,
+      render: () => <SettingsPane agent="codex" readiness={{ claude: 'ready', codex: 'ready', opencode: 'ready', freebuff: 'ready' }} onAgentChange={noop} onSetUp={noop} notifications={{ preference: DEFAULT_NOTIFICATIONS, onAction: noop }} analytics={{ value: true, onChange: noop }} />,
     }, ...[true, false].flatMap((value) => (['default', 'hover', 'focus', 'saving', 'error'] as const).map((state) => ({
       id: `settings-analytics-${value ? 'on' : 'off'}-${state}`,
       title: `${value ? 'On' : 'Off'} ${state}`,

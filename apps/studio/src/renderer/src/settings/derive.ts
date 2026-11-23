@@ -1,6 +1,11 @@
 import { findModelChoice, type EffortLevel, type HarnessId, type ModelChoice, type SettingsDefaults } from '@studio/events';
 
-export const NO_DEFAULTS: SettingsDefaults = { claude: { models: [] }, codex: { models: [] } };
+export const NO_DEFAULTS: SettingsDefaults = {
+  claude: { models: [] },
+  codex: { models: [] },
+  opencode: { models: [] },
+  freebuff: { models: [] },
+};
 
 /** Absent levels offer none, never every level. */
 export function effortLevelsFor(options: readonly ModelChoice[], value: string | null): readonly EffortLevel[] {

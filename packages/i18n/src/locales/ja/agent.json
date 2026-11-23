@@ -1,5 +1,7 @@
 {
   "agent.card.comingSoon": "対応予定",
   "agent.name.claude": "Claude",
-  "agent.name.codex": "ChatGPT"
+  "agent.name.codex": "ChatGPT",
+  "agent.name.opencode": "OpenCode",
+  "agent.name.freebuff": "Freebuff"
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { HStack, VStack } from '@astryxdesign/core/Layout';
-import type { HarnessId, SetupEntryPoint } from '@studio/events';
+import { isSetupHarnessId, type HarnessId, type SetupEntryPoint } from '@studio/events';
 import { HarnessTile } from '@studio/onboarding-ui';
 import { markFor } from '@studio/onboarding-ui/state';
 import { OnboardingAccount, OnboardingDisplayHeading, OnboardingFooter, OnboardingHeading } from '../onboarding/OnboardingParts.js';
@@ -100,7 +100,13 @@ export function ConnectStep({ entryPoint, onContinue, hasBack, onBack, onSkip, a
   useEffect(() => {
     if (first === undefined && firstConnected !== undefined) setFirst(firstConnected);
   }, [first, firstConnected]);
-  const preferred = savedPreferred !== undefined && connected.includes(savedPreferred) ? savedPreferred : first !== undefined && connected.includes(first) ? first : firstConnected;
+  const firstSetup = first !== undefined && isSetupHarnessId(first) ? first : undefined;
+  const preferred =
+    savedPreferred !== undefined && isSetupHarnessId(savedPreferred) && connected.includes(savedPreferred)
+      ? savedPreferred
+      : firstSetup !== undefined && connected.includes(firstSetup)
+        ? firstSetup
+        : firstConnected;
   return (
     <>
       <ConnectStepView

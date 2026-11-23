@@ -1,4 +1,4 @@
-import type { HarnessId, SetupEntryPoint } from '@studio/events';
+import { isSetupHarnessId, type HarnessId, type SetupEntryPoint } from '@studio/events';
 import type { SetupAction, SetupState } from '@studio/onboarding-ui/state';
 import { accountLink, openAccountLink } from '../agents/accountLinks.js';
 import { chatGptSetupState, claudeSetupState, isClaudeConnected, isCodexConnected, type AgentSetupStrings, type MappedSetup } from '../agents/mapping.js';
@@ -7,7 +7,8 @@ import type { AgentSetupState } from './store.js';
 export type SetupDialogFacts = Pick<AgentSetupState, 'claude' | 'claudeSettled' | 'codex' | 'code' | 'codexSignInAttempted' | 'inFlight'>;
 
 export function mappedSetupFor(harness: HarnessId, facts: SetupDialogFacts, strings: AgentSetupStrings, now = Date.now()): MappedSetup {
-  const flight = facts.inFlight[harness];
+  // A CLI harness has no setup sheet; nothing in flight is the honest answer if one is ever asked.
+  const flight = isSetupHarnessId(harness) ? facts.inFlight[harness] : { detect: false, submit: false, check: false, signIn: false };
   // `check` counts too: a Check again drew the in-flight sheet without its shimmer, so the sheet read as hung (ONL-2496).
   const busy = flight.detect || flight.submit || flight.signIn || flight.check;
   return harness === 'claude'

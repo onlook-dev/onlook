@@ -21,7 +21,12 @@ const STATE_KEYS: Record<ConnectorState, StringKey> = {
   adding: 'chat.connectors.state.adding', 'awaiting-sign-in': 'chat.connectors.state.awaitingSignIn', 'sign-in-failed': 'chat.connectors.state.failed',
 };
 
-const AGENT_KEYS: Record<HarnessId, StringKey> = { claude: 'agent.name.claude', codex: 'agent.name.codex' };
+const AGENT_KEYS: Record<HarnessId, StringKey> = {
+  claude: 'agent.name.claude',
+  codex: 'agent.name.codex',
+  opencode: 'agent.name.opencode',
+  freebuff: 'agent.name.freebuff',
+};
 
 /** Every right-hand label and action in this menu reads at one size, so a new one cannot ship microscopic (ONL-3181). */
 const DETAIL_TEXT: React.CSSProperties = { fontSize: 'var(--text-supporting-size)', lineHeight: 'var(--text-supporting-leading)' };

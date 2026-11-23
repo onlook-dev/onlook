@@ -22,8 +22,11 @@ export type MachineInstallResult = 'installed' | 'failed' | 'unsupported';
 export const MACHINE_HELP_IDS = ['developer-tools', 'activity-monitor', 'claude', 'chatgpt'] as const;
 export type MachineHelpId = typeof MACHINE_HELP_IDS[number];
 
-/** Where a prompt gets pasted: the agent's own app when it is installed, its site otherwise. */
-export const MACHINE_AGENT_HELP: Record<HarnessId, MachineHelpId> = { claude: 'claude', codex: 'chatgpt' };
+/**
+ * Where a prompt gets pasted: the agent's own app when it is installed, its site otherwise.
+ * OpenCode and Freebuff have no help destination of their own yet, so they have none to open.
+ */
+export const MACHINE_AGENT_HELP: Partial<Record<HarnessId, MachineHelpId>> = { claude: 'claude', codex: 'chatgpt' };
 
 export function machineHasFailure(checks: readonly MachineCheck[]): boolean {
   return checks.some((check) => check.status === 'failed');

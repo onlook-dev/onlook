@@ -211,6 +211,8 @@ import { saveAttachment } from '../images/save-attachment.js';
 import type { AgentBackend, BackendState, ModelPick } from './backend.js';
 import { SessionMap } from './session-map.js';
 import { codexRoot, createAppServerSession, selectedHarness } from './appserver/index.js';
+import { createAcpSession, probeAcpConnection } from './acp/index.js';
+import { createFreebuffSession, probeFreebuffConnection } from './freebuff/index.js';
 import { bindProjectHarness, hasAgentAnswer, projectHarness } from './project-harness.js';
 import { hasUserMessage } from './user-message.js';
 import { devSwitches } from '../env/dev-switches.js';
@@ -838,7 +840,11 @@ export class AgentHost {
       const runtime = runtimeOfAsker ?? this.defaultHarness();
       const result = await (runtime === 'appserver'
         ? Promise.resolve(probeCodexConnection(codexSetupStatus(), codexRoot()))
-        : probeConnection());
+        : runtime === 'acp'
+          ? probeAcpConnection()
+          : runtime === 'pty'
+            ? Promise.resolve(probeFreebuffConnection())
+            : probeConnection());
       this.probed = result;
       this.emitMachine(result, runtime);
       return result;
@@ -1284,14 +1290,26 @@ export class AgentHost {
     const harness = storedHarness(projectHarness(cwd));
 
     // A resume restores the conversation into the model only; the transcript is ours (ONL-1913).
-    const plan = harness === 'appserver' ? ({ kind: 'appserver' } as const) : await planSession(cwd);
+    // The CLI harnesses own their own sessions: ACP keeps one per child, and a TUI has none to resume.
+    const plan =
+      harness === 'appserver'
+        ? ({ kind: 'appserver' } as const)
+        : harness === 'acp'
+          ? ({ kind: 'acp' } as const)
+          : harness === 'pty'
+            ? ({ kind: 'pty' } as const)
+            : await planSession(cwd);
     await holdStartForProof(cwd);
     // The tab may have closed while this planned (ONL-2264).
     if (!this.isWanted(cwd)) return;
 
     // A resume keeps its own record; a read that fails starts on defaults (ONL-2183).
     const isResume =
-      plan.kind === 'appserver' ? storedAppServerThread(cwd) !== undefined : plan.kind === 'resume';
+      plan.kind === 'appserver'
+        ? storedAppServerThread(cwd) !== undefined
+        : plan.kind === 'acp' || plan.kind === 'pty'
+          ? false
+          : plan.kind === 'resume';
     const preference = ((): ChatPreference => {
       try {
         return (isResume ? preferenceFor(cwd, harness) : seedPreference(cwd, harness)) ?? {};
@@ -1655,6 +1673,71 @@ export class AgentHost {
       });
       // No fallthrough to Claude, and no welcome: only the session knows at resume time whether this is a first meeting.
       adopt(appserver);
+      return;
+    }
+
+    if (plan.kind === 'acp') {
+      const restored = readTranscript(cwd, 'acp');
+      const acp = createAcpSession({
+        cwd,
+        ...(model === undefined ? {} : { model }),
+        ...(restored.length > 0 ? { restoredEvents: restored } : {}),
+        keepRaw: this.isDev,
+        onEvent,
+        onState: emitState,
+        onConnection: emitConnection,
+        onTurnEnded: (summary) => {
+          recordAgentTurnEnded(acpRef, summary);
+          recordAgentTurnSeen(acpRef, cwd, summary);
+          recordSetupStepsEnded(acpRef, summary, acp.events);
+        },
+        onTurnStarted: (turnId, origin) => recordAgentTurnStarted(acpRef, { turnId, origin }),
+        onTurnStalled: (turnId, silentMs) => recordAgentTurnStalled(acpRef, { turnId, silentMs }),
+        onEnded: (end) => recordAgentSessionEnded(acpRef, { reason: end.reason, durationMs: end.durationMs, turnCount: end.turnCount }),
+        onExited: () => {
+          this.stale.add(projectKey(cwd));
+        },
+      });
+      const acpRef: AgentSessionRef = {
+        repoIdentity: workspace.repoIdentity,
+        sessionId: acp.id,
+        harness,
+      };
+      recordAgentSessionStarted(acpRef, {
+        ...(model === undefined ? {} : { model }),
+        isAuthenticated: null,
+      });
+      adopt(acp);
+      return;
+    }
+
+    if (plan.kind === 'pty') {
+      const restored = readTranscript(cwd, 'pty');
+      const pty = createFreebuffSession({
+        cwd,
+        ...(restored.length > 0 ? { restoredEvents: restored } : {}),
+        keepRaw: this.isDev,
+        onEvent,
+        onState: emitState,
+        onConnection: emitConnection,
+        onTurnEnded: (summary) => {
+          recordAgentTurnEnded(ptyRef, summary);
+          recordAgentTurnSeen(ptyRef, cwd, summary);
+          recordSetupStepsEnded(ptyRef, summary, pty.events);
+        },
+        onTurnStarted: (turnId, origin) => recordAgentTurnStarted(ptyRef, { turnId, origin }),
+        onTurnStalled: (turnId, silentMs) => recordAgentTurnStalled(ptyRef, { turnId, silentMs }),
+        onExited: () => {
+          this.stale.add(projectKey(cwd));
+        },
+      });
+      const ptyRef: AgentSessionRef = {
+        repoIdentity: workspace.repoIdentity,
+        sessionId: pty.id,
+        harness,
+      };
+      recordAgentSessionStarted(ptyRef, { isAuthenticated: null });
+      adopt(pty);
       return;
     }
 

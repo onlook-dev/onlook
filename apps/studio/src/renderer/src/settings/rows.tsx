@@ -210,6 +210,10 @@ function agentName(harness: HarnessId): string {
       return t('agent.name.claude');
     case 'codex':
       return t('agent.name.codex');
+    case 'opencode':
+      return t('agent.name.opencode');
+    case 'freebuff':
+      return t('agent.name.freebuff');
   }
 }
 

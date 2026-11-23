@@ -5,7 +5,7 @@ import {
   type ClaudeSetupState,
   type ClaudeStatusRequest,
   type CodexSetupState,
-  type HarnessId,
+  type SetupHarnessId,
   type SetupEntryPoint,
   CODE_MAX_LENGTH,
   sanitizeCode,
@@ -37,10 +37,10 @@ export interface AgentSetupState {
   codex: CodexSetupState;
   code: string;
   codexSignInAttempted: boolean;
-  touched: Record<HarnessId, boolean>;
-  lastConnected: HarnessId | null;
-  requests: Record<HarnessId, HarnessRequests>;
-  inFlight: Record<HarnessId, HarnessFlight>;
+  touched: Record<SetupHarnessId, boolean>;
+  lastConnected: SetupHarnessId | null;
+  requests: Record<SetupHarnessId, HarnessRequests>;
+  inFlight: Record<SetupHarnessId, HarnessFlight>;
 }
 
 interface AgentSetupStore extends AgentSetupState {
@@ -89,17 +89,17 @@ const INITIAL: AgentSetupState = {
 
 function nextLastConnected(
   state: AgentSetupState,
-  harness: HarnessId,
+  harness: SetupHarnessId,
   wasConnected: boolean,
   isNowConnected: boolean,
   viaTap: boolean,
-): HarnessId | null {
+): SetupHarnessId | null {
   if (!state.touched[harness] || !isNowConnected) return state.lastConnected;
   return !wasConnected || viaTap ? harness : state.lastConnected;
 }
 
 export const useAgentSetupStore = create<AgentSetupStore>()((set, get) => {
-  const updateRequests = (harness: HarnessId, update: (requests: HarnessRequests) => HarnessRequests): void => {
+  const updateRequests = (harness: SetupHarnessId, update: (requests: HarnessRequests) => HarnessRequests): void => {
     set((state) => {
       const requests = update(state.requests[harness]);
       return {
@@ -109,22 +109,22 @@ export const useAgentSetupStore = create<AgentSetupStore>()((set, get) => {
     });
   };
 
-  const start = (harness: HarnessId, action?: keyof HarnessFlight): SetupRequest => {
+  const start = (harness: SetupHarnessId, action?: keyof HarnessFlight): SetupRequest => {
     const request: SetupRequest = { action, revision: get().requests[harness].revision };
     updateRequests(harness, (requests) => ({ ...requests, latest: request, pending: [...requests.pending, request] }));
     return request;
   };
 
-  const finish = (harness: HarnessId, request: SetupRequest): void => {
+  const finish = (harness: SetupHarnessId, request: SetupRequest): void => {
     updateRequests(harness, (requests) => ({ ...requests, pending: requests.pending.filter((pending) => pending !== request) }));
   };
 
-  const ownsReply = (harness: HarnessId, request: SetupRequest): boolean => {
+  const ownsReply = (harness: SetupHarnessId, request: SetupRequest): boolean => {
     const { latest, revision } = get().requests[harness];
     return latest === request && revision === request.revision;
   };
 
-  const invalidate = (harness: HarnessId): void => {
+  const invalidate = (harness: SetupHarnessId): void => {
     updateRequests(harness, (requests) => ({ ...requests, latest: undefined }));
   };
 

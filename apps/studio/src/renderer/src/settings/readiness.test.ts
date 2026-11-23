@@ -129,8 +129,8 @@ describe('offersSetUp', () => {
 
 describe('readinessByHarness', () => {
   it('maps both harnesses at once', () => {
-    expect(readinessByHarness('signed-in', 'checking')).toEqual({ claude: 'ready', codex: 'checking' });
-    expect(readinessByHarness('signed-out', 'unsupported')).toEqual({ claude: 'not-signed-in', codex: 'not-installed' });
-    expect(readinessByHarness('awaiting-code', 'signing-in')).toEqual({ claude: 'sign-in-incomplete', codex: 'checking' });
+    expect(readinessByHarness('signed-in', 'checking')).toEqual({ claude: 'ready', codex: 'checking', opencode: 'ready', freebuff: 'ready' });
+    expect(readinessByHarness('signed-out', 'unsupported')).toEqual({ claude: 'not-signed-in', codex: 'not-installed', opencode: 'ready', freebuff: 'ready' });
+    expect(readinessByHarness('awaiting-code', 'signing-in')).toEqual({ claude: 'sign-in-incomplete', codex: 'checking', opencode: 'ready', freebuff: 'ready' });
   });
 });

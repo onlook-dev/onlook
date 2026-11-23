@@ -11,7 +11,7 @@ import type {
 } from '@studio/events';
 
 /** Which SDK ran the session, not which product the user picked — `HarnessId` is that. */
-export type SessionHarness = 'claude' | 'appserver';
+export type SessionHarness = 'claude' | 'appserver' | 'acp' | 'pty';
 
 export type ModelPick = { accepted: true } | { accepted: false; refusal?: ModelRefusal };
 

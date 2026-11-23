@@ -46,13 +46,44 @@ export const HARNESSES = {
     grantsFollowProviderThread: true,
     skillsCarryPath: true,
   },
+  /** opencode's ACP mode: structured updates, so a real tool card and a real turn. */
+  opencode: {
+    id: 'opencode',
+    stored: 'acp',
+    telemetry: 'opencode',
+    executable: 'opencode',
+    processClass: 'other',
+    pdfAttachments: false,
+    reportsPromptChars: false,
+    countsRetryAttempts: false,
+    grantsFollowProviderThread: false,
+    skillsCarryPath: false,
+  },
+  /** A TUI in a pseudo-terminal: text turns only, and it says so wherever it is asked (ONL-2xxx). */
+  freebuff: {
+    id: 'freebuff',
+    stored: 'pty',
+    telemetry: 'freebuff',
+    executable: 'freebuff',
+    processClass: 'terminal',
+    pdfAttachments: false,
+    reportsPromptChars: false,
+    countsRetryAttempts: false,
+    grantsFollowProviderThread: false,
+    skillsCarryPath: false,
+  },
 } as const satisfies Record<HarnessId, HarnessFacts>;
 
 export type Harness = (typeof HARNESSES)[HarnessId];
 
-const ALL = [HARNESSES.claude, HARNESSES.codex] as const;
+const ALL = [HARNESSES.claude, HARNESSES.codex, HARNESSES.opencode, HARNESSES.freebuff] as const;
 
-export const STORED_HARNESSES = [HARNESSES.claude.stored, HARNESSES.codex.stored] as const;
+export const STORED_HARNESSES = [
+  HARNESSES.claude.stored,
+  HARNESSES.codex.stored,
+  HARNESSES.opencode.stored,
+  HARNESSES.freebuff.stored,
+] as const;
 
 /** A name no Harness answers to reads as Claude, as an absent choice does (ONL-2120). */
 export function harnessFor(id: HarnessId): Harness {

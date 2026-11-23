@@ -11,7 +11,9 @@ import {
   type ClaudeVerificationDetail,
   type CodexSetupState,
   type CodexSetupStatus,
+  isSetupHarnessId,
   type HarnessId,
+  type SetupHarnessId,
 } from '@studio/events';
 import { fill } from '@studio/chat-ui';
 import {
@@ -352,10 +354,12 @@ export interface SetupFacts {
   claudeSettled?: ClaudeSetupState | undefined;
   codex: CodexSetupState;
   codexSignInAttempted?: boolean;
-  touched: Record<HarnessId, boolean>;
+  touched: Record<SetupHarnessId, boolean>;
 }
 
 export function isConnected(facts: Pick<SetupFacts, 'claude' | 'codex'>, harness: HarnessId): boolean {
+  // A CLI harness signs in on the terminal it was installed from; there is nothing here to set up.
+  if (!isSetupHarnessId(harness)) return true;
   return harness === 'claude' ? isClaudeConnected(facts.claude) : isCodexConnected(facts.codex);
 }
 

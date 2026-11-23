@@ -36,6 +36,9 @@ export const MODEL_CATALOGS: Record<HarnessId, readonly ModelChoice[]> = {
     { value: 'gpt-5.6', displayName: 'gpt-5.6', supportedEffortLevels: ['low', 'medium', 'high', 'xhigh', 'max', 'ultra'] },
     { value: 'gpt-5.5', displayName: 'gpt-5.5', supportedEffortLevels: ['low', 'medium', 'high', 'xhigh'] },
   ],
+  // The CLI harnesses read their catalogs from the agent at session start, never from a fixture.
+  opencode: [],
+  freebuff: [],
 };
 
 export const EMPTY_CATALOG: readonly ModelChoice[] = [];

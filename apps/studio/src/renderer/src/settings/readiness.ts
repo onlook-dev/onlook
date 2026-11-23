@@ -69,7 +69,13 @@ export function readinessByHarness(
   codex: CodexSetupStatus,
   claudeDetail?: ClaudeSetupDetail,
 ): Record<HarnessId, Readiness> {
-  return { claude: claudeReadiness(claude, claudeDetail), codex: codexReadiness(codex) };
+  return {
+    claude: claudeReadiness(claude, claudeDetail),
+    codex: codexReadiness(codex),
+    // Whatever login these have lives in the terminal, not in Onlook's setup state.
+    opencode: 'ready',
+    freebuff: 'ready',
+  };
 }
 
 export function offersSetUp(readiness: Readiness): boolean {
