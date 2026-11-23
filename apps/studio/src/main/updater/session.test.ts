@@ -71,23 +71,25 @@ function fixture(native = true, wait?: (delay: number, signal: AbortSignal) => P
 }
 
 describe('the real updater event sequence', () => {
-  it.each([403, 404, 500, 503])('reports download HTTP %s once after bounded retries', async (status) => {
-    const delays: number[] = [];
-    const test = fixture(false, async (delay) => { delays.push(delay); });
-    let attempts = 0;
-    test.updater.downloadUpdate = async () => {
-      attempts += 1;
-      const error = new Error(`Cannot download "https://updates.example/update.zip", status ${status}: unavailable`);
-      test.updater.emit('error', error);
-      throw error;
-    };
-    await test.session.check(true);
-    expect(attempts).toBe(status >= 500 ? 3 : 1);
-    expect(delays).toEqual(status >= 500 ? [1000, 2000] : []);
-    expect(test.reports).toHaveLength(1);
-    expect(test.reports[0]?.stage).toBe('download');
-    expect(test.machine.current().status).toBe('idle');
-  });
+  for (const status of [403, 404, 500, 503]) {
+    it(`reports download HTTP ${status} once after bounded retries`, async () => {
+      const delays: number[] = [];
+      const test = fixture(false, async (delay) => { delays.push(delay); });
+      let attempts = 0;
+      test.updater.downloadUpdate = async () => {
+        attempts += 1;
+        const error = new Error(`Cannot download "https://updates.example/update.zip", status ${status}: unavailable`);
+        test.updater.emit('error', error);
+        throw error;
+      };
+      await test.session.check(true);
+      expect(attempts).toBe(status >= 500 ? 3 : 1);
+      expect(delays).toEqual(status >= 500 ? [1000, 2000] : []);
+      expect(test.reports).toHaveLength(1);
+      expect(test.reports[0]?.stage).toBe('download');
+      expect(test.machine.current().status).toBe('idle');
+    });
+  }
 
   it('pauses a native authorization failure emitted and rejected during download without retrying it', async () => {
     const delays: number[] = [];
