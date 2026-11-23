@@ -540,7 +540,7 @@ const welcome: Category = {
               wayOut: { kind: 'retry', label: 'Retry', onAct: noop },
               dismissLabel: 'Dismiss',
               onDismiss: noop,
-              output: { text: 'error: ERR_PNPM_NO_LOCKFILE\nCannot install with "frozen-lockfile" because pnpm-lock.yaml is absent', showLabel: t('project.create.details.show'), hideLabel: t('project.create.details.hide') },
+              detail: 'error: ERR_PNPM_NO_LOCKFILE\nCannot install with "frozen-lockfile" because pnpm-lock.yaml is absent',
             }}
           />
         </Panel>
