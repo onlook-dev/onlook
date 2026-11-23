@@ -34,24 +34,39 @@ describe('import copies only local image/font dependencies without editing the s
     expect(imported.ok).toBe(false);
     if (imported.ok) throw new Error('Expected import to fail');
     expect(imported.reason).toContain('idea/index.html');
-    expect(imported.reason).toContain('cart.html#buy');
+    expect(imported.reason).toContain('cart.html');
     expect(imported.reason).toContain('separate artifact');
     expect(readFileSync(join(root, 'idea', 'index.html'), 'utf8')).toBe(entry);
   });
-  it('names the remote reference and retries successfully with a local replacement', () => {
+  it('locates the remote reference and retries successfully with a local replacement', () => {
     const original = '<link rel="stylesheet" href="https://example.invalid/theme.css">';
     writeFileSync(join(root, 'original.html'), original);
     const refused = importArtifactFromProject(root, 'original.html', () => null);
     expect(refused.ok).toBe(false);
     if (refused.ok) throw new Error('Expected import to fail');
     expect(refused.reason).toContain('original.html');
-    expect(refused.reason).toContain('https://example.invalid/theme.css');
+    expect(refused.reason).toContain(`reference at character ${original.indexOf('https:') + 1}`);
     expect(refused.reason).toContain('local');
     expect(refused.reason).not.toContain(root);
     writeFileSync(join(root, 'copy.html'), '<link rel="stylesheet" href="theme.css">');
     writeFileSync(join(root, 'theme.css'), 'body{color:blue}');
     expect(importArtifactFromProject(root, 'copy.html', () => null).ok).toBe(true);
     expect(readFileSync(join(root, 'original.html'), 'utf8')).toBe(original);
+  });
+
+  it('locates unsafe references without echoing URLs, machine paths or query values', () => {
+    for (const reference of ['https://reader:placeholder@example.invalid/theme.css?key=placeholder', '/tmp/theme.css', '../outside/theme.css', 'theme.css?key=placeholder', 'https&#58;//example.invalid/theme.css']) {
+      const html = `<link href="${reference}">`;
+      writeFileSync(join(root, 'index.html'), html);
+      const refused = importArtifactFromProject(root, 'index.html', () => null);
+      expect(refused.ok).toBe(false);
+      if (refused.ok) throw new Error('Expected import to fail');
+      expect(refused.reason).toContain('index.html');
+      expect(refused.reason).toContain(`reference at character ${html.indexOf(reference) + 1}`);
+      expect(refused.reason).not.toContain(reference);
+      expect(refused.reason).not.toContain('placeholder');
+      expect(refused.reason).not.toContain('example.invalid');
+    }
   });
 
   it('identifies a missing dependency in a nested stylesheet without exposing filesystem errors', () => {

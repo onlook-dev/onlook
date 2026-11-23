@@ -40,7 +40,8 @@ export function importArtifactFromProject(cwd: string, path: string,
   let context = 'the HTML file';
   try {
     const root = realpathSync(cwd);
-    context = JSON.stringify(relative(root, resolve(root, path)));
+    const sourcePath = resolve(root, path);
+    context = sourcePath.startsWith(root + sep) ? JSON.stringify(relative(root, sourcePath)) : 'the HTML file';
     const source = containedFile(root, path);
     if (extname(source).toLowerCase() !== '.html') return { ok: false, reason: 'Choose an HTML file in this project.' };
     const files: NonNullable<ArtifactCreate['bundle']>['files'] = [];
@@ -63,7 +64,10 @@ export function importArtifactFromProject(cwd: string, path: string,
         const text = bytes.toString('utf8');
         const replacements: Parameters<typeof rewriteArtifactReferences>[1] = [];
         for (const reference of artifactReferences(text, extension)) {
-          context = `${JSON.stringify(relative(root, absolute))}, reference ${JSON.stringify(reference.value)}`;
+          const referencePath = reference.value.split('#')[0] ?? '';
+          const insideProject = resolve(dirname(absolute), referencePath).startsWith(root + sep);
+          const label = !insideProject || /^\/|[\\:?%&\u0000-\u001f]/.test(referencePath) ? '' : ` (${JSON.stringify(referencePath)})`;
+          context = `${JSON.stringify(relative(root, absolute))}, reference at character ${reference.start + 1}${label}`;
           const decoded = decodedReference(reference.value);
           if (decoded === '' || decoded.startsWith('#')) continue;
           const [local, fragment] = decoded.split('#');
