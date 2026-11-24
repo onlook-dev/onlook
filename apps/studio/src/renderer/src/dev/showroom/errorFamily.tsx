@@ -241,8 +241,10 @@ export const ERROR_FAMILY_CATEGORY: Gallery['categories'][number] = {
   title: 'A failing turn, as one line',
   stories: [
     ...MOMENTS.map(({ id, title }) => ({ id: `error-family-${id}`, title, render: () => <ErrorFamilyRail which={id} /> })),
-    ...[320, 480].map((width) => ({ id: `error-family-sign-in-${width}`, title: `Sign-in with browser choices at ${width}px`, render: () => <ErrorFamilyRail which="sign-in" width={width} hasBrowserChoices /> })),
-    { id: 'error-family-sign-in-fallback-320', title: 'Sign-in recovery with browser choices', render: () => <ErrorFamilyRail which="sign-in-fallback" width={320} hasBrowserChoices /> },
+    ...[320, 480, 800].flatMap((width) => [
+      { id: `error-family-sign-in-${width}`, title: `Sign-in with browser choices at ${width}px`, render: () => <ErrorFamilyRail which="sign-in" width={width} hasBrowserChoices /> },
+      ...(['signing-in', 'sign-in-paste-code', 'sign-in-cannot-connect', 'sign-in-fallback', 'sign-in-not-now'] as const).map((which) => ({ id: `error-family-${which}-${width}`, title: `${which} at ${width}px`, render: () => <ErrorFamilyRail which={which} width={width} hasBrowserChoices /> })),
+    ]),
     { id: 'error-family-sign-in-busy-320', title: 'Sign-in busy with browser choices', render: () => <ErrorFamilyRail which="sign-in" width={320} hasBrowserChoices isBusy /> },
   ],
 };

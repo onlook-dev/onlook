@@ -20,7 +20,7 @@ export interface ClaudeSignInButtonProps {
   variant?: 'primary' | 'secondary';
   testId: string;
   label?: string;
-  width?: '100%';
+  wrapLabel?: boolean;
 }
 
 // The accent re-pointed to white, as New project does, so each half keeps the primary variant's own hover and press.
@@ -48,11 +48,11 @@ function Chevron(): React.JSX.Element {
   );
 }
 
-export function ClaudeSignInButton({ browsers, strings, onSignIn, isDisabled, size, variant = 'primary', testId, label, width }: ClaudeSignInButtonProps): React.JSX.Element {
+export function ClaudeSignInButton({ browsers, strings, onSignIn, isDisabled, size, variant = 'primary', testId, label, wrapLabel }: ClaudeSignInButtonProps): React.JSX.Element {
   const fallback = browsers?.find((browser) => browser.isDefault)?.id ?? browsers?.[0]?.id;
   const [chosenId, setChosenId] = useState<string | undefined>(undefined);
-  const button = { label: label ?? strings.action['sign-in'], variant, isDisabled, size, width };
-  const responsiveStyle = width === undefined ? undefined : { minWidth: 0, flex: '1 1 0', whiteSpace: 'normal', overflowWrap: 'anywhere', height: 'auto', minHeight: `var(--size-element-${size ?? 'md'})` } as const;
+  const button = { label: label ?? strings.action['sign-in'], variant, isDisabled, size };
+  const responsiveStyle = !wrapLabel ? undefined : { minWidth: 0, maxWidth: '100%', width: 'max-content', flex: '0 1 auto', whiteSpace: 'normal', overflowWrap: 'anywhere', height: 'auto', minHeight: `var(--size-element-${size ?? 'md'})` } as const;
   if (browsers === undefined || browsers.length < 2) {
     return <Button {...button} style={responsiveStyle} onClick={() => onSignIn?.()} data-testid={testId} />;
   }
@@ -60,11 +60,11 @@ export function ClaudeSignInButton({ browsers, strings, onSignIn, isDisabled, si
   return (
     <span data-split-sign-in="" style={{ display: 'contents' }}>
     <style href="split-sign-in" precedence="medium">{HOVER_RULES}</style>
-    <ButtonGroup label={button.label} size={size ?? 'md'} style={{ width, minWidth: 0 }} data-testid={testId}>
+    <ButtonGroup label={button.label} size={size ?? 'md'} style={wrapLabel ? { width: 'max-content', maxWidth: '100%', minWidth: 0 } : undefined} data-testid={testId}>
       <Button {...button} label={chosen === undefined ? button.label : fill(strings.signInWith, { browser: chosen.name })}
         style={{ ...(variant === 'primary' ? NO_BORDER : undefined), ...responsiveStyle }} onClick={() => onSignIn?.(chosen?.id)} data-testid={`${testId}-main`} />
       <DropdownMenu hasChevron={false} placement="below" menuWidth={220} data-testid={`${testId}-menu`}
-        button={{ label: strings.chooseBrowser, variant, size: size ?? 'md', isIconOnly: true, isDisabled, style: { ...(variant === 'primary' ? MENU_SEAM : undefined), ...(width === undefined ? {} : { height: 'auto', width: `var(--size-element-${size ?? 'md'})`, flexShrink: 0 }) }, icon: <Chevron /> }}>
+        button={{ label: strings.chooseBrowser, variant, size: size ?? 'md', isIconOnly: true, isDisabled, style: { ...(variant === 'primary' ? MENU_SEAM : undefined), ...(!wrapLabel ? {} : { height: 'auto', width: `var(--size-element-${size ?? 'md'})`, flexShrink: 0 }) }, icon: <Chevron /> }}>
         <DropdownMenuRadioGroup value={chosen?.id} onChange={setChosenId} aria-label={strings.chooseBrowser}>
           {browsers.map((browser) => (
             <DropdownMenuRadioItem key={browser.id} value={browser.id} label={browser.isDefault ? fill(strings.browserDefault, { browser: browser.name }) : browser.name} />

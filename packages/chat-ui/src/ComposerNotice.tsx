@@ -55,10 +55,10 @@ export function NoticeCard({
   );
 }
 
-export function NoticeButtons({ dismiss, primary, layout = 'inline' }: { dismiss?: ComposerNoticeButton; primary?: ReactNode; layout?: 'inline' | 'stacked' }): ReactNode {
+export function NoticeButtons({ dismiss, primary, layout = 'inline' }: { dismiss?: ComposerNoticeButton; primary?: ReactNode; layout?: 'inline' | 'wrap' }): ReactNode {
   if (dismiss === undefined && primary === undefined) return null;
   const dismissButton = dismiss === undefined ? null : <Button label={dismiss.label} variant="ghost" size="sm" isDisabled={dismiss.isDisabled ?? false} onClick={dismiss.onClick} data-testid={dismiss.testId} />;
-  if (layout === 'stacked') return <VStack gap={2}>{primary}{dismissButton}</VStack>;
+  if (layout === 'wrap') return <div style={{ display: 'flex', flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 'var(--spacing-2)', width: '100%' }}>{primary}{dismissButton}</div>;
   return (
     <HStack gap={2} justify="end">
       {dismissButton}

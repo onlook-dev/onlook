@@ -141,6 +141,7 @@ describe('service failure switching (ONL-2958, ONL-2612)', () => {
     const markup = renderFailure({ connection: { status: 'unauthenticated', harness: 'claude' }, signInSlot: <div>Sign in</div>, isSignInSetAside: true });
     expect(markup).not.toContain('data-testid="chat-sign-in-slot"');
     expect(markup).toContain('data-testid="chat-composer"');
+    expect(markup).toBe(renderFailure({ connection: { status: 'unauthenticated', harness: 'claude' }, signInSlot: <div>Different notice content</div>, isSignInSetAside: true }));
   });
 
   it('renders the alternative before Retry', () => {
