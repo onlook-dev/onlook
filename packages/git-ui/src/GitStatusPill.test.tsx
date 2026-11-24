@@ -20,6 +20,19 @@ const FACTS = ['feat/x', '1 ahead, 0 behind', 'as of now'];
 const HINT = 'Wait for the turn';
 const noop = (): void => undefined;
 
+describe('tab preview pills', () => {
+  test.each([...GIT_PILL_STATES])('shows %s without interactive controls', (id) => {
+    const html = renderToStaticMarkup(
+      <GitStatusPill state={PILL_FIXTURES[id]} strings={STUB_STRINGS} glyphs={GLYPHS} scale="preview"
+        onAction={noop} onOpenPr={noop} onPick={noop} onNoActionPress={noop} />,
+    );
+    expect(html).toContain('data-git-scale="preview"');
+    if (id !== 'first-paint') expect(html).toContain(STUB_STRINGS.pillLabel[id]);
+    expect(html).not.toContain('<button');
+    expect(menuFor(PILL_FIXTURES[id], 'preview')).toBeUndefined();
+  });
+});
+
 function working(state: GitPillState): GitPillState {
   return { ...state, mode: 'working' } as GitPillState;
 }

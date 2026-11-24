@@ -1,11 +1,13 @@
 import { useRef, useState } from 'react';
-import { IDLE_UPDATE_STATE, MAX_PROJECT_TABS, PANEL_DEFAULTS, type UpdateState } from '@studio/events';
+import { GIT_PILL_SHIPPED_DEFAULTS, IDLE_UPDATE_STATE, MAX_PROJECT_TABS, PANEL_DEFAULTS, type UpdateState } from '@studio/events';
+import { MEASUREMENT_FIXTURES, row } from '@studio/git-ui/measurement-fixtures';
 
 import { REGION } from '../../layout.js';
 import { ParkedScreen } from '../../ParkedScreen.js';
 import { UpdatePillView } from '../../chrome/UpdatePill.js';
 import { TAB_HEIGHT } from '../../chrome/tabs/geometry.js';
 import { TabStrip, type TabStripProps } from '../../chrome/tabs/TabStrip.js';
+import { TabPreviewCard } from '../../chrome/tabs/TabPreviewCard.js';
 import type { StudioTab } from '../../chrome/tabs/Tab.js';
 import { noop, type Category, type Gallery } from './Showroom.js';
 
@@ -110,6 +112,32 @@ function MenuSwapStrip(): React.JSX.Element {
 }
 
 const CATEGORIES: Category[] = [
+  {
+    id: 'tab-previews',
+    title: 'Tab hover previews',
+    stories: [
+      ...(['create-pr', 'upload-changes', 'checks-running', 'local-only'] as const).map((state) => ({
+        id: `tabs-preview-${state}`,
+        title: state,
+        render: () => (
+          <div style={{ width: 280, height: 240, transform: 'translateZ(0)' }}>
+            <TabPreviewCard name="Project" left={8} now={0} preview={{ git: {
+              row: row(MEASUREMENT_FIXTURES[state]), defaults: GIT_PILL_SHIPPED_DEFAULTS,
+            } }} />
+          </div>
+        ),
+      })),
+      {
+        id: 'tabs-preview-no-snapshot',
+        title: 'No snapshot',
+        render: () => (
+          <div style={{ width: 280, height: 240, transform: 'translateZ(0)' }}>
+            <TabPreviewCard name="Project" left={8} now={0} preview={{}} />
+          </div>
+        ),
+      },
+    ],
+  },
   {
     id: 'health',
     title: 'Health — a view that died (ONL-2352)',
