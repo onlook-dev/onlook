@@ -20,7 +20,7 @@ export function creationStarted(source: CreationSource): void {
 }
 
 export function creationAbandoned(source: CreationSource): void {
-  capture('workspace_creation_flow', { source, step: 'abandoned', outcome: 'failure' });
+  capture('workspace_creation_flow', { source, step: 'abandoned', outcome: 'abandoned' });
 }
 
 export function beginCreation(path: string, source: CreationSource, recordStart = true): void {

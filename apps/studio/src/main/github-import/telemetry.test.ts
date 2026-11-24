@@ -31,7 +31,7 @@ const register = (workspacePath: string, repoIdentity: string, origin?: 'duplica
   rememberProject({ workspacePath, workspaceName: 'slate-swift', branchName: 'tester/slate-swift', baseBranch: 'main', sourceRepoName: 'test', sourcePath: '/private-source', sourceRepoRoot: '/private-source', repoIdentity, copiedEnvFiles: [], ...(origin === undefined ? {} : { origin }) });
 };
 
-test('dismissing GitHub import from Projects clears the running marker without an onboarding screen', async () => {
+for (const ending of ['dismiss', 'cancel', 'dispose'] as const) test(`abandoning GitHub import from Projects is not a creation failure: ${ending}`, async () => {
   const previousRoot = process.env['STUDIO_STATE_ROOT'];
   process.env['STUDIO_STATE_ROOT'] = makeStateRoot({ name: 'import-running-marker' });
   const events: GithubObservation[] = [];
@@ -47,12 +47,15 @@ test('dismissing GitHub import from Projects clears the running marker without a
     claimRunningMarker('0199e1e0-0000-7000-8000-000000000001', '2.0.0');
     await service.command({ kind: 'begin', entryPoint: 'projects' });
     expect(readRunningContext()?.during_workspace_creation).toBe(true);
-    await service.command({ kind: 'leave', next: 'dismiss' });
+    if (ending === 'dispose') service.dispose();
+    else if (ending === 'cancel') await service.command({ kind: 'cancel' });
+    else await service.command({ kind: 'leave', next: 'dismiss' });
     expect(readRunningContext()).toEqual({ last_event: 'workspace_creation_flow', during_workspace_creation: false });
     expect(events).toEqual([
       { event: 'workspace_creation_flow', properties: { source: 'github', step: 'started', outcome: 'started' } },
-      { event: 'workspace_creation_flow', properties: { source: 'github', step: 'abandoned', outcome: 'failure' } },
+      { event: 'workspace_creation_flow', properties: { source: 'github', step: 'abandoned', outcome: 'abandoned' } },
     ]);
+    expect(events.some(({ properties }) => 'outcome' in properties && properties.outcome === 'failure')).toBe(false);
     expect(claimRunningMarker('0199e1e0-0000-7000-8000-000000000002', '2.0.0')?.context?.during_workspace_creation).toBe(false);
   } finally {
     service.dispose();
