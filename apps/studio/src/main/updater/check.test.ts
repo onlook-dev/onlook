@@ -72,12 +72,33 @@ it('matches authorization refusal by code without relying on localized wording',
 });
 
 it.each([
+  'Der Vorgang konnte nicht abgeschlossen werden. (OSStatus-Fehler -60005.)',
+  '操作を完了できませんでした。(OSStatus エラー -60005。)',
+  '操作未能完成。（OSStatus 错误 -60005。）',
+])('matches authorization refusal in localized OSStatus message %s', (message) => {
+  expect(updateAuthorizationDenied(new Error(message))).toBe(true);
+  expect(updateFailureReason(new Error(message))).toBe('authorization-denied');
+  expect(updateFailureOwner(new Error(message))).toBe('environment');
+});
+
+it.each([
   'Cannot replace /Applications/build-60005.app',
   'Cannot replace /Applications/OSStatus error -60005.app',
   'Cannot replace /Applications/Code=-60005.zip',
   'Error -60005',
   'Error Code=-600050',
   'OSStatus error -600050',
+  'Cannot replace /Applications/OSStatus-Fehler -60005.app',
+  'Cannot replace /Applications/Onlook (OSStatus-Fehler -60005).app',
+  'Cannot replace /Applications/Onlook (OSStatus エラー -60005)/Contents',
+  'Cannot replace /Applications/Onlook (OSStatus-Fehler -60005.).app',
+  'Cannot replace /Applications/Onlook (OSStatus エラー -60005。)/Contents',
+  'Cannot replace OSStatus エラー -60005.zip',
+  'Cannot download https://updates.example/OSStatus/错误/-60005',
+  'Cannot download https://updates.example/OSStatus-Fehler/-60005',
+  'Cannot replace C:\\Applications\\OSStatus\\错误\\-60005',
+  'OSStatus error 12 -60005',
+  `OSStatus ${'x'.repeat(33)} -60005`,
 ])('does not infer authorization refusal from unrelated message %s', (message) => {
   expect(updateAuthorizationDenied(new Error(message))).toBe(false);
 });
