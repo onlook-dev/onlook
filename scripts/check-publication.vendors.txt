@@ -44,7 +44,7 @@ apps/studio/src/main/log/index.test.ts → workos 2
 apps/studio/src/main/log/index.ts → posthog 1
 apps/studio/src/main/perf/sampler-startup.test.ts → posthog 4
 apps/studio/src/main/perf/sampler.test.ts → posthog 4
-apps/studio/src/main/settings/source-consent.test.ts → posthog 2
+apps/studio/src/main/settings/source-consent.test.ts → posthog 1
 apps/studio/src/main/settings/telemetry.test.ts → posthog 2
 apps/studio/src/main/telemetry/attribution.test.ts → posthog 6
 apps/studio/src/main/telemetry/attribution.ts → workos 5

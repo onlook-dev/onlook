@@ -245,6 +245,7 @@ const answers: Omit<StudioBridge, Inert> & Partial<Pick<StudioBridge, Inert>> = 
   tabOnScreen: async () => ({ isOnScreen: true }),
 
   onboardingState: async () => ({ hasOnboarded: true }),
+  onboardingProgress: async () => {},
   machineCheck: async () => ({ checks: MACHINE_CHECK_IDS.map((id) => ({ id, status: 'inconclusive' })), platform: 'mac', canChooseFolder: false }),
   machineChooseFolder: async () => 'unavailable',
   machineInstallTools: async () => 'unsupported',

@@ -227,8 +227,9 @@ export function receiveRendererTelemetry(payload: RendererTelemetryEvent, render
       const deadEnd = props.dead_end;
       if (deadEnd !== undefined && (!isRecord(deadEnd) || !oneOf(ACTIVATION_DEAD_ENDS, deadEnd.state) || !oneOf(ACTIVATION_ERROR_CLASSES, deadEnd.error_class) || props.surface !== 'error_state')) return;
       if (deadEnd?.cover !== undefined && !oneOf(PREVIEW_COVERS, deadEnd.cover)) return;
+      if (deadEnd?.harness !== undefined && !oneOf(HARNESS_IDS, deadEnd.harness)) return;
       if (deadEnd?.server_port !== undefined && (typeof deadEnd.server_port !== 'number' || !Number.isInteger(deadEnd.server_port) || deadEnd.server_port < 1 || deadEnd.server_port > 65535)) return;
-      recordActivationSurface(renderer, { surface: props.surface, ...(deadEnd === undefined ? {} : { dead_end: { state: deadEnd.state, error_class: deadEnd.error_class, ...(deadEnd.cover === undefined ? {} : { cover: deadEnd.cover }), ...(deadEnd.server_port === undefined ? {} : { server_port: deadEnd.server_port }) } }) });
+      recordActivationSurface(renderer, { surface: props.surface, ...(deadEnd === undefined ? {} : { dead_end: { state: deadEnd.state, error_class: deadEnd.error_class, ...(deadEnd.cover === undefined ? {} : { cover: deadEnd.cover }), ...(deadEnd.server_port === undefined ? {} : { server_port: deadEnd.server_port }), ...(deadEnd.harness === undefined ? {} : { harness: deadEnd.harness }) } }) });
       return;
     }
     case 'cloud_update_required_shown':
@@ -906,6 +907,7 @@ export function receiveRendererException(payload: RendererExceptionReport): void
     {
       owner: failureOwner(value),
       subsystem: surface === 'frame-preload' ? 'frame-preload' : 'renderer',
+      process_type: 'renderer',
       mechanism,
       surface,
       ...(region === undefined ? {} : { region }),

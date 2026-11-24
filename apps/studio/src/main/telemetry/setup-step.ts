@@ -2,6 +2,7 @@ import { capture } from './index.js';
 import { HARNESS_IDS } from '@studio/events';
 import type { TelemetryProperties, SetupSkipReason } from './events.js';
 import { markAgentSetupCompleted, resetSetupCompletionCacheForTesting } from './setup-completion.js';
+import { classifySetupFailure, rememberSetupFailure, type SetupFailureInput } from './setup-failure.js';
 
 type SetupStep = TelemetryProperties<'agent_setup_step'>;
 type Provider = SetupStep['provider'];
@@ -34,14 +35,16 @@ export function recordAgentSetupOpened(provider: Provider, entryPoint: EntryPoin
 export function recordAgentSetupStep(
   provider: Provider,
   step: Step,
-  opts: { entryPoint?: EntryPoint; outcome?: Outcome; browserChoice?: SetupStep['browser_choice']; reason?: SetupSkipReason } = {},
+  opts: { entryPoint?: EntryPoint; outcome?: Outcome; browserChoice?: SetupStep['browser_choice']; reason?: SetupSkipReason; failure?: SetupFailureInput } = {},
 ): void {
   if (opts.entryPoint !== undefined && opts.entryPoint !== 'startup') lastEntryPoint[provider] = opts.entryPoint;
   const entryPoint = opts.entryPoint ?? lastEntryPoint[provider] ?? lastEntryPoint.claude ?? 'unknown';
   const outcome = opts.outcome === undefined ? {} : { outcome: opts.outcome };
   const browser = opts.browserChoice === undefined ? {} : { browser_choice: opts.browserChoice };
   const reason = opts.reason === undefined ? {} : { reason: opts.reason };
-  capture('agent_setup_step', { provider, step, entry_point: entryPoint, ...outcome, ...browser, ...reason });
+  const failure = step === 'fallback' ? classifySetupFailure({ outcome: opts.outcome, ...opts.failure }) : undefined;
+  if (step === 'fallback' || step === 'connected' || step === 'install_started' || step === 'sign_in_started') rememberSetupFailure(provider, failure);
+  capture('agent_setup_step', { provider, harness: provider, step, entry_point: entryPoint, ...outcome, ...browser, ...reason, ...failure });
   if (TERMINAL_STEPS.has(step)) delete attempts[provider];
   else if (step === 'opened' || step === 'sign_in_started' || step === 'install_started' || step === 'verify_started' || attempts[provider] !== undefined) attempts[provider] = { ...attempts[provider], step, entryPoint };
   if (step === 'connected') {
@@ -55,9 +58,9 @@ export function recordAgentSetupStep(
   }
 }
 
-export function recordCodexSetupState(status: string): void {
-  if (status === 'failed' || status === 'broken' || status === 'outdated') {
-    recordAgentSetupStep('codex', 'fallback', { outcome: 'failed' });
+export function recordCodexSetupState(status: string, message?: string, failure?: SetupFailureInput): void {
+  if (status === 'failed' || status === 'broken' || status === 'outdated' || status === 'unsupported') {
+    recordAgentSetupStep('codex', 'fallback', { outcome: 'failed', failure: failure ?? { detail: status, error: message } });
   }
 }
 
@@ -77,6 +80,8 @@ export function abandonSetupForRenderer(renderer: number): void {
 }
 
 export function resetSetupTelemetryForTesting(): void {
+  rememberSetupFailure('claude');
+  rememberSetupFailure('codex');
   resetSetupCompletionCacheForTesting();
   delete lastEntryPoint.claude;
   delete lastEntryPoint.codex;

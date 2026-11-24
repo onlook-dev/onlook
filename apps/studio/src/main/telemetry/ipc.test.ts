@@ -1135,9 +1135,21 @@ describe('receiveRendererException', () => {
     expect(JSON.stringify(sent)).not.toContain('/Users/');
   });
 
-  it('a report becomes one $exception owned by us, frames re-scrubbed, surface and mechanism kept', () => {
+  function enableExceptionTelemetry(): void {
     process.env['STUDIO_POSTHOG_KEY'] = 'phc_test';
     initTelemetry();
+  }
+
+  it('Windows renderer exceptions retain scrubbed stack frames and their process type', () => {
+    enableExceptionTelemetry();
+    receiveRendererException({ type: 'TypeError', value: 'failed at C:\\private\\project\\file.ts', surface: 'tab', mechanism: 'window-error', frames: [{ platform: 'web:javascript', filename: 'C:\\private\\Onlook\\resources\\app.asar\\out\\renderer\\index.js', function: 'render', lineno: 19, colno: 4, in_app: true }] });
+    const event = peekQueueForTesting().find((entry) => entry.event === '$exception');
+    expect(event?.properties).toMatchObject({ process_type: 'renderer', $exception_type: 'TypeError', $exception_list: [{ stacktrace: { frames: [{ filename: 'app://studio/out/renderer/index.js', lineno: 19, colno: 4 }] } }] });
+    expect(JSON.stringify(event)).not.toContain('private');
+  });
+
+  it('a report becomes one $exception owned by us, frames re-scrubbed, surface and mechanism kept', () => {
+    enableExceptionTelemetry();
     recordLinesForTesting();
     receiveRendererException({
       type: 'TypeError',
@@ -1156,6 +1168,7 @@ describe('receiveRendererException', () => {
     expect(props['mechanism']).toBe('window-error');
     expect(props['region']).toBe('chat');
     expect(props['subsystem']).toBe('renderer');
+    expect(props['process_type']).toBe('renderer');
     expect(JSON.stringify(props)).not.toContain('/Users/');
     expect((props['$exception_list'] as Array<{ stacktrace: { frames: Array<{ filename: string; platform: string }> } }>)[0]!.stacktrace.frames[0]).toMatchObject({
       filename: 'app://studio/renderer/index.js',

@@ -2,7 +2,15 @@ import type { HarnessId } from './models.js';
 
 export interface OnboardingState {
   hasOnboarded: boolean;
+  resumeAt?: OnboardingProgress['resumeAt'];
   /** Absent is common and resolves to Claude; reading it as consent moved every pre-existing user onto codex (ONL-2120). */
+  harness?: HarnessId;
+}
+
+export const ONBOARDING_RESUME_STEPS = ['role', 'found', 'agent', 'import'] as const;
+
+export interface OnboardingProgress {
+  resumeAt: (typeof ONBOARDING_RESUME_STEPS)[number];
   harness?: HarnessId;
 }
 

@@ -303,6 +303,33 @@ const HAPPY_PATH = [
 ];
 
 describe('the sequence', () => {
+  it('passes the Project path separately from emitted properties on creation and setup failure, including retries', async () => {
+    for (const resumed of [false, true]) {
+      const captured: { event: string; properties: object; workspacePath?: string }[] = [];
+      const recorder = makeRecorder({
+        capture: (event, properties, workspacePath) => { captured.push({ event, properties, workspacePath }); },
+      }, { install: { outcome: 'failed', manager: 'bun', detail: 'fixture install failed' } });
+      const created = fakeCut(fakePlan('/somewhere/scoped-setup'));
+      if (!created.ok) throw new Error('fixture failed');
+      const state = await createProject(
+        { sourcePath: '/somewhere/scoped-setup', entryPoint: 'projects' },
+        recorder.deps,
+        createCancelToken(),
+        resumed ? { phase: 'installing', workspace: created.workspace } : undefined,
+      );
+      const failed = expectKind(state, 'failed');
+      expect(failed.phase).toBe('installing');
+      expect(failed.workspace).toBeDefined();
+      const workspacePath = failed.workspace!.workspacePath;
+      expect(captured.map(({ event, workspacePath }) => ({ event, workspacePath }))).toEqual(
+        (resumed ? ['project_setup_failed'] : ['project_created', 'project_setup_failed']).map((event) => ({ event, workspacePath })),
+      );
+      const serialized = JSON.stringify(captured.map(({ event, properties }) => ({ event, properties })));
+      expect(serialized).not.toContain(workspacePath);
+      expect(serialized).not.toContain('/somewhere/scoped-setup');
+    }
+  });
+
   it('reuses the machine diagnosis when a later project cannot be planned', async () => {
     const recorder = makeRecorder({
       plan: async () => { throw new Error('raw Git failure'); },

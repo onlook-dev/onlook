@@ -189,7 +189,7 @@ export function Root(): React.JSX.Element {
         await settingsReady;
         if (!isActive) return;
         if (!onboardingState.hasOnboarded) {
-          commitFirst({ kind: 'onboarding' });
+          commitFirst({ kind: 'onboarding', ...('resumeAt' in onboardingState ? { resumeAt: onboardingState.resumeAt } : {}), ...('harness' in onboardingState ? { harness: onboardingState.harness } : {}) });
           return;
         }
 
@@ -288,6 +288,8 @@ export function Root(): React.JSX.Element {
     if (screen.kind === 'onboarding') {
       return (
         <OnboardingFlow
+          startAt={screen.resumeAt}
+          resumeHarness={screen.harness}
           aside={<LoginAside />}
           onOpenExisting={(path) => {
             void prepareAssigned(path).then((next) => {
