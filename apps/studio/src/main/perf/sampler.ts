@@ -21,6 +21,7 @@ import {
   type ViewProcess,
 } from './resources.js';
 import { hostPlatform, isMac, isWindows } from '../env/platform.js';
+import { recordProcessExit } from '../errors/index.js';
 
 const WINDOW_MS = 5 * 60_000;
 const FIRST_SAMPLE_MS = 60_000;
@@ -196,7 +197,7 @@ function installGoneCounting(): void {
     if (reason === undefined) return;
     const processClass: ProcessClass =
       contents.getType() === 'webview' ? 'frame' : tabHost()?.isBandContents(contents.id) === true ? 'band' : 'tab';
-    capture('process_gone', { process_class: processClass, reason, exit_code: details.exitCode });
+    recordProcessExit({ process_class: processClass, reason, exit_code: details.exitCode });
   });
   electron.app.on('child-process-gone', (_event, details) => {
     const reason = goneReason(details.reason);
@@ -206,6 +207,6 @@ function installGoneCounting(): void {
     if (starter && reason === 'killed') return;
     const processClass: ProcessClass =
       details.type === 'GPU' ? 'gpu' : starter ? 'dev_server' : details.type === 'Utility' ? 'utility' : 'other';
-    capture('process_gone', { process_class: processClass, reason, exit_code: details.exitCode });
+    recordProcessExit({ process_class: processClass, reason, exit_code: details.exitCode });
   });
 }

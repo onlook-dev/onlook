@@ -701,7 +701,8 @@ describe('super properties', () => {
     }
     for (const event of events) {
       expect(event.properties['platform']).not.toBe(process.platform);
-      expect(event.properties['os']).toBeUndefined();
+      expect(event.properties['os']).toBe(event.properties['$os']);
+      expect(event.properties['os_version']).toBeString();
     }
   });
 });

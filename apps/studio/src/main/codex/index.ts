@@ -13,6 +13,7 @@ import {
 import { checkHealth, resolveCodex } from '../agent-host/appserver/resolve.js';
 import { broadcastToRenderers } from '../tabs/broadcast.js';
 import { checkSetupAbandoned, recordAgentSetupStep, recordCodexSetupState } from '../telemetry/setup-step.js';
+import type { SetupFailureInput } from '../telemetry/setup-failure.js';
 import { t, type StringKey } from '@studio/i18n';
 import { acquireCodex, type AcquireFailure } from './acquire.js';
 import { createClaudeBrowsers } from '../claude/browsers.js';
@@ -120,13 +121,14 @@ class CodexHost {
   private acquisition: AcquisitionOwner | undefined;
   private login: LoginOwner | undefined;
   private reinstallRequired = false;
+  private setupFailure: SetupFailureInput | undefined;
 
   constructor(options: CodexHostOptions = {}) {
     this.options = options;
     this.onState = options.onState;
     this.machine = new CodexSetupMachine({
       emit: (state) => {
-        if (this.acquisition?.mode !== 'silent') recordCodexSetupState(state.status);
+        if (this.acquisition?.mode !== 'silent') recordCodexSetupState(state.status, 'message' in state ? state.message : undefined, this.setupFailure);
         broadcastToRenderers(IPC_EMIT.codexState, state);
         this.onState?.(state);
       },
@@ -250,6 +252,7 @@ class CodexHost {
   }
 
   private async run(owner: AcquisitionOwner, force = false): Promise<void> {
+    this.setupFailure = undefined;
     const cacheRoot = codexCacheRoot();
     const root = codexInstallRoot();
     logger.info('setup', { cache_root: cacheRoot, install_root: root });
@@ -271,6 +274,7 @@ class CodexHost {
     owner.phase = 'settled';
 
     if (acquired.outcome === 'unsupported') {
+      this.setupFailure = { detail: 'unsupported' };
       logger.warn('setup unsupported', { message: acquired.message });
       if (!this.owns(owner)) return;
       this.machine.unsupported(
@@ -279,12 +283,14 @@ class CodexHost {
       return;
     }
     if (acquired.outcome === 'failed') {
+      this.setupFailure = { detail: acquired.failure, error: acquired.message };
       logger.warn('setup failed', { failure: acquired.failure, message: acquired.message });
       if (!this.owns(owner)) return;
       this.machine.failed(detail(ACQUIRE_DETAIL[acquired.failure]));
       return;
     }
     if (acquired.outcome === 'broken') {
+      this.setupFailure = { detail: 'broken', error: acquired.message };
       logger.warn('download unusable', { message: acquired.message });
       if (!this.owns(owner)) return;
       this.machine.broken(t('onboarding.setup.codex.detail.unusable'));
@@ -300,6 +306,7 @@ class CodexHost {
 
   /** `broken` and `outdated` offer a re-download, so only what a re-download fixes lands there. */
   private async validate(root: string, owner: SetupOwner): Promise<void> {
+    this.setupFailure = undefined;
     if (!this.owns(owner)) return;
     if (owner.kind === 'login' || owner.mode === 'explicit') this.machine.validating();
     try {
@@ -314,19 +321,23 @@ class CodexHost {
         if (owner.kind === 'login' || owner.mode === 'explicit') recordAgentSetupStep('codex', 'connected');
       } else if (result.outcome === 'signed-out') this.machine.signedOut(result.message);
       else if (result.outcome === 'outdated') {
+        this.setupFailure = { detail: 'outdated' };
         this.machine.outdated(
           t('onboarding.setup.codex.detail.outdated', { version: result.version ?? '', floor: CODEX_VERSION }),
         );
       } else if (result.outcome === 'failed') {
         logger.warn('validation failed', { failure: result.failure, exitCode: result.exitCode, signal: result.signal, stderr: result.message });
+        this.setupFailure = { detail: result.failure, error: result.message, exitCode: result.exitCode };
         this.machine.failed(detail(result.failure === undefined ? undefined : VALIDATION_DETAIL[result.failure]));
       } else {
         logger.warn('validation broken', { failure: result.failure, exitCode: result.exitCode, signal: result.signal, stderr: result.message });
+        this.setupFailure = { detail: result.failure ?? 'broken', error: result.message, exitCode: result.exitCode };
         this.machine.broken(detail(result.failure === 'exited' ? 'onboarding.setup.codex.detail.crashed' : result.failure === undefined ? undefined : VALIDATION_DETAIL[result.failure]));
       }
     } catch (error) {
       if (!this.owns(owner)) return;
       logger.warn('validation failed', { failure: 'connection', stderr: messageOf(error) });
+      this.setupFailure = { error };
       this.machine.failed(t('onboarding.setup.codex.detail.connection'));
     }
   }
@@ -376,7 +387,7 @@ class CodexHost {
     if (!this.owns(owner)) return;
     owner.state = { phase: 'settled' };
     this.machine.signedOut(message);
-    recordAgentSetupStep('codex', 'fallback', { outcome: 'failed' });
+    recordAgentSetupStep('codex', 'fallback', { outcome: 'failed', failure: { error: message } });
   }
 }
 

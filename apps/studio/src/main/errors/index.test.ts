@@ -10,13 +10,14 @@ import type { AppLike } from '../telemetry/index.js';
 const { resetIdentityCache } = await import('../identity/store.js');
 const { initTelemetry, peekQueueForTesting, resetTelemetryForTesting, setAppForTesting } = await import('../telemetry/index.js');
 const { peekLinesForTesting, recordLinesForTesting, resetLogForTesting } = await import('../log/index.js');
-const { captureError, fingerprintFor, installProcessHooks, resetErrorsForTesting } = await import('./index.js');
+const { captureError, fingerprintFor, installProcessHooks, resetErrorsForTesting, recordProcessExit } = await import('./index.js');
 const { reportUpdateFailure } = await import('../updater/check.js');
 
 const made: string[] = [];
 const ENV_KEYS = ['STUDIO_STATE_ROOT', 'STUDIO_POSTHOG_KEY', 'STUDIO_TELEMETRY', 'AGENT_HEADLESS'] as const;
 const originalEnv = new Map<string, string | undefined>(ENV_KEYS.map((key) => [key, process.env[key]]));
 const realFetch = globalThis.fetch;
+const postedEvents: Array<{ event: string; properties: Record<string, unknown> }> = [];
 
 function makeRoot(name: string): string {
   const root = mkdtempSync(join(tmpdir(), `studio-errors-${name}-`));
@@ -37,7 +38,12 @@ beforeEach(() => {
   process.env['STUDIO_STATE_ROOT'] = makeRoot('state');
   process.env['STUDIO_POSTHOG_KEY'] = 'phc_test';
   setAppForTesting(fakeApp(makeRoot('userdata')));
-  globalThis.fetch = (() => Promise.resolve(new Response('{"status":1}'))) as unknown as typeof fetch;
+  postedEvents.length = 0;
+  globalThis.fetch = ((_url: string, init: { body: string }) => {
+    const body = JSON.parse(init.body) as { batch: typeof postedEvents };
+    postedEvents.push(...body.batch);
+    return Promise.resolve(new Response('{"status":1}'));
+  }) as unknown as typeof fetch;
   recordLinesForTesting();
   initTelemetry();
 });
@@ -61,6 +67,44 @@ afterAll(() => {
 
 const exceptions = () => peekQueueForTesting().filter((event) => event.event === '$exception');
 const errorLines = () => peekLinesForTesting().filter((line) => line['owner'] !== undefined);
+
+it('Windows main exceptions keep a scrubbed JavaScript stack in error tracking', async () => {
+  const platform = Object.getOwnPropertyDescriptor(process, 'platform')!;
+  try {
+    Object.defineProperty(process, 'platform', { ...platform, value: 'win32' });
+    const target = new EventEmitter();
+    installProcessHooks(target as unknown as Parameters<typeof installProcessHooks>[0]);
+    const error = new TypeError('failed at C:\\private\\project\\file.ts');
+    error.stack = 'TypeError: failed\n    at boot (C:\\private\\Onlook\\resources\\app.asar\\out\\main\\index.js:12:8)';
+    target.emit('uncaughtException', error, 'uncaughtException');
+    await Bun.sleep(10);
+    const exception = postedEvents.find(({ event }) => event === '$exception')?.properties;
+    expect(exception).toMatchObject({ process_type: 'main', $exception_type: 'TypeError' });
+    expect(exception?.['$exception_list']).toMatchObject([{ stacktrace: { frames: [{ filename: 'app://studio/out/main/index.js', lineno: 12, colno: 8 }] } }]);
+    expect(JSON.stringify(exception)).not.toContain('private');
+  } finally {
+    Object.defineProperty(process, 'platform', platform);
+  }
+});
+
+it('GPU and utility crashes carry their native reason and code without inventing a JavaScript stack', async () => {
+  recordProcessExit({ process_class: 'gpu', reason: 'crashed', exit_code: -1073741819 });
+  recordProcessExit({ process_class: 'utility', reason: 'oom', exit_code: 1 });
+  await Bun.sleep(10);
+  const events = [...postedEvents, ...peekQueueForTesting()];
+  expect(events.filter(({ event }) => event === '$exception').map(({ properties }) => properties['process_type'])).toEqual(['gpu', 'utility']);
+  const crashes = events.filter(({ event }) => event === 'crash_detected');
+  expect(crashes.map(({ properties }) => [properties['process_type'], properties['reason'], properties['exit_code']])).toEqual([['gpu', 'crashed', -1073741819], ['utility', 'oom', 1]]);
+  for (const exception of exceptions()) expect(exception.properties['$exception_list']).toMatchObject([{ type: 'NativeProcessCrash' }]);
+});
+
+it('intentional child termination and a user app crash are not Onlook exceptions', () => {
+  recordProcessExit({ process_class: 'tab', reason: 'killed', exit_code: 0 });
+  recordProcessExit({ process_class: 'frame', reason: 'crashed', exit_code: 1 });
+  recordProcessExit({ process_class: 'dev_server', reason: 'crashed', exit_code: 1 });
+  expect(exceptions()).toEqual([]);
+  expect(peekQueueForTesting().filter(({ event }) => event === 'process_gone')).toHaveLength(3);
+});
 
 describe('update-check network failures', () => {
   it.each([

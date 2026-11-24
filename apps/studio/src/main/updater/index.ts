@@ -13,6 +13,7 @@ import { log } from '../log/index.js';
 import { capabilities } from '../cloud/capabilities.js';
 import { isMac } from '../env/platform.js';
 import { devSwitches } from '../env/dev-switches.js';
+import { capture } from '../telemetry/index.js';
 
 const logger = log('updater');
 
@@ -157,6 +158,7 @@ async function wire(url: string): Promise<void> {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     logger.warn('could not initialise', { error });
+    reportUpdateFailure('check', error);
     machine.unsupported(firstLine(message));
     return;
   }
@@ -173,6 +175,7 @@ export async function checkForUpdatesNow(): Promise<void> {
 
   const state = machine.current();
   if (!session) {
+    capture('update_check_unavailable', { reason: state.status === 'unsupported' ? 'unsupported' : 'not_initialized' });
     logger.info('check refused', { reason: state.message ?? 'no updater' });
     machine.refusedCheck();
     return;

@@ -48,6 +48,7 @@ import type {
 import type { Locale } from '@studio/i18n/locale';
 import type { GitStateReason } from './git-state.js';
 import type { PreviewDiagnostics } from './preview-diagnostics.js';
+import type { AgentSetupErrorClass } from './setup-failure.js';
 
 /** An enum, not the message: the message is a shell command, which names a directory. */
 export type SetupErrorClass =
@@ -167,6 +168,7 @@ type Forwarded<N extends RendererTelemetryEventName> = RendererTelemetryEventMap
     : RendererTelemetryEventMap[N];
 
 export interface TelemetryEventMap {
+  environment_checked: import('./environment.js').EnvironmentDiagnostics;
   machine_check_failed: { check_id: import('@studio/events').MachineCheckId };
   machine_install_tools: { outcome: import('@studio/events').MachineInstallResult; elapsed_ms: number };
   machine_help_opened: { help: import('@studio/events').MachineHelpId; opened: boolean };
@@ -281,9 +283,15 @@ export interface TelemetryEventMap {
   };
 
   crash_detected: {
-    previous_launch_id: string;
+    previous_launch_id?: string;
     app_version: string | null;
     reporter_app_version: string;
+    process_type?: 'main' | 'renderer' | 'gpu' | 'utility' | 'other';
+    exit_code?: number | null;
+    reason?: 'unclean_exit' | 'crashed' | 'oom' | 'integrity-failure';
+    last_event?: string;
+    last_screen?: string;
+    during_workspace_creation?: boolean;
   };
 
   /** `project_id` is `workspaceTelemetryId()`'s hash; the path does not ship. `oldest_text_node_days` is absent when the op log reads back empty, where zero would read as "every label is new" (ONL-2486). */
@@ -907,6 +915,10 @@ export interface TelemetryEventMap {
 
   agent_setup_step: {
     provider: 'claude' | 'codex';
+    harness?: HarnessId;
+    error_class?: AgentSetupErrorClass;
+    stderr_class?: AgentSetupErrorClass;
+    exit_code?: number | null;
     step:
       | 'opened'
       | 'sign_in_started'
@@ -1133,6 +1145,7 @@ export interface TelemetryEventMap {
 
   /** Fired when the visible tab shows a dead end other than the one it last showed, such as "Your app didn't start" or every frame under a server cover (ONL-2686, ONL-3260). */
   dead_end_shown: Partial<PreviewDiagnostics> & {
+    harness?: HarnessId;
     state: DeadEndState;
     server_port?: number;
     cover?: NonNullable<import('@studio/events').ActivationSurfaceReport['dead_end']>['cover'];
@@ -1211,6 +1224,9 @@ export interface TelemetryEventMap {
     stage: 'check' | 'download' | 'install';
     reason: string;
   };
+  update_check_started: { requested: boolean };
+  update_check_completed: { requested: boolean; outcome: 'available' | 'up_to_date' };
+  update_check_unavailable: { reason: 'unsupported' | 'not_initialized' };
 }
 
 export type TelemetryEventName = keyof TelemetryEventMap;

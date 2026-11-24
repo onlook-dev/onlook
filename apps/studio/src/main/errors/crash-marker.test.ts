@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync 
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'bun:test';
-import { claimRunningMarker, clearRunningMarker, ownsRunningMarker, runningMarkerPath } from './crash-marker.js';
+import { claimRunningMarker, clearRunningMarker, ownsRunningMarker, runningMarkerPath, updateRunningContext } from './crash-marker.js';
 
 const made: string[] = [];
 const saved = process.env['STUDIO_STATE_ROOT'];
@@ -25,6 +25,22 @@ afterAll(() => {
 });
 
 describe('the marker', () => {
+  it('keeps the last screen and project creation checkpoint across an unclean restart', () => {
+    claimRunningMarker(FIRST_LAUNCH, '2.0.0');
+    updateRunningContext('onboarding_screen_shown', { screen: 'import' });
+    updateRunningContext('workspace_creation_flow', { step: 'started', outcome: 'started' });
+    const previous = claimRunningMarker(SECOND_LAUNCH, '2.0.1');
+    expect(previous?.context).toEqual({ last_event: 'workspace_creation_flow', last_screen: 'import', during_workspace_creation: true });
+  });
+
+  it('does not retain payloads or another launch’s context', () => {
+    claimRunningMarker(FIRST_LAUNCH, '2.0.0');
+    updateRunningContext('onboarding_screen_shown', { screen: 'private text', path: 'C:\\private\\project' });
+    expect(claimRunningMarker(SECOND_LAUNCH, '2.0.1')?.context).toEqual({ last_event: 'onboarding_screen_shown' });
+    updateRunningContext('workspace_creation_flow', { step: 'preview', outcome: 'success' });
+    expect(claimRunningMarker(FIRST_LAUNCH, '2.0.1')?.context).toEqual({ last_event: 'workspace_creation_flow', during_workspace_creation: false });
+    expect(readFileSync(runningMarkerPath(), 'utf8')).not.toContain('private');
+  });
   it('does not claim or erase a future marker, even without a preceding read', () => {
     const bytes = JSON.stringify({ version: 99, data: { launchId: FIRST_LAUNCH, appVersion: '0.5.0' } });
     writeFileSync(runningMarkerPath(), bytes);

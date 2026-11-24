@@ -6,8 +6,12 @@ import { ClaudeHost } from '../claude/index.js';
 import { ClaudeBrowserPreparationError } from '../claude/browsers.js';
 import type { ClaudeLoginHandle } from '../claude/login.js';
 import { resetIdentityCache } from '../identity/store.js';
-import { initTelemetry, peekQueueForTesting, resetTelemetryForTesting, setAppForTesting } from './index.js';
+import { capture, initTelemetry, peekQueueForTesting, resetTelemetryForTesting, setAppForTesting } from './index.js';
 import { checkSetupAbandoned, recordAgentSetupStep, resetSetupTelemetryForTesting } from './setup-step.js';
+import { EventEmitter } from 'node:events';
+import type { AppUpdater } from 'electron-updater';
+import { createUpdateSession } from '../updater/session.js';
+import { UpdateMachine } from '../updater/machine.js';
 
 const ENV_KEYS = [
   'STUDIO_STATE_ROOT',
@@ -21,6 +25,36 @@ const ENV_KEYS = [
 let previousEnv: Array<string | undefined>;
 let root: string;
 const realFetch = globalThis.fetch;
+
+it('Windows-style update checks report started, available, and up-to-date outcomes', async () => {
+  let available = true;
+  const updater = Object.assign(new EventEmitter(), { checkForUpdates: async () => ({ isUpdateAvailable: available, updateInfo: { version: '2.0.1' } }), downloadUpdate: async () => [], quitAndInstall: () => {} });
+  const machine = new UpdateMachine({ emit: () => {}, waitForNativeStage: false });
+  const session = createUpdateSession(updater as unknown as AppUpdater, machine);
+  try {
+    await session.check(true);
+    available = false;
+    await session.check();
+    const events = peekQueueForTesting().filter(({ event }) => event === 'update_check_started' || event === 'update_check_completed');
+    expect(events.map(({ event, properties }) => [event, properties['requested'], properties['outcome']])).toEqual([
+      ['update_check_started', true, undefined], ['update_check_completed', true, 'available'],
+      ['update_check_started', false, undefined], ['update_check_completed', false, 'up_to_date'],
+    ]);
+  } finally { session.dispose(); }
+});
+
+it('setup fallback and its dead end keep the same scrubbed cause for the correct harness', () => {
+  recordAgentSetupStep('claude', 'fallback', { outcome: 'failed', failure: { error: 'spawn EACCES C:\\private\\agent.exe', exitCode: 5 } });
+  recordAgentSetupStep('codex', 'fallback', { outcome: 'timeout' });
+  capture('dead_end_shown', { state: 'setup_failed', error_class: 'unknown', harness: 'claude' });
+  const events = peekQueueForTesting();
+  const deadEnd = events.find(({ event }) => event === 'dead_end_shown');
+  expect(deadEnd?.properties).toMatchObject({ harness: 'claude', error_class: 'spawn_eacces', exit_code: 5, stderr_class: 'spawn_eacces', failure_cause: 'spawn_eacces' });
+  expect(JSON.stringify(events)).not.toContain('private');
+  recordAgentSetupStep('claude', 'sign_in_started');
+  capture('dead_end_shown', { state: 'setup_failed', error_class: 'unknown', harness: 'claude' });
+  expect(peekQueueForTesting().at(-1)?.properties['error_class']).toBe('unknown');
+});
 
 beforeEach(() => {
   previousEnv = ENV_KEYS.map((key) => process.env[key]);

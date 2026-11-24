@@ -1,7 +1,7 @@
 // The env doors are not gated on `is.dev`: the packaged e2e drives the signed `.app` through them (ONL-1849).
 
 import { join } from 'node:path';
-import { HARNESS_IDS, type HarnessId, type OnboardingCompletion, type OnboardingState } from '@studio/events';
+import { HARNESS_IDS, type HarnessId, type OnboardingCompletion, type OnboardingState, type OnboardingProgress } from '@studio/events';
 import { canWriteStateFile, eraseStateFile, readStateFile, writeStateFile } from '../state/file.js';
 import { clearSettingsHarness, setSettingsHarness } from '../settings/state.js';
 import { stateRoot } from '../state/root.js';
@@ -15,6 +15,7 @@ function statePath(): string {
 interface PersistedState {
   completedAt?: string;
   harness?: HarnessId;
+  resumeAt?: OnboardingProgress['resumeAt'];
 }
 
 export function pinnedHarness(): HarnessId | undefined {
@@ -57,8 +58,17 @@ export function readOnboardingState(): OnboardingState {
   const harness = pinned ?? state.harness;
   return {
     hasOnboarded: state.completedAt !== undefined,
+    ...(state.completedAt === undefined && state.resumeAt !== undefined && ['role', 'found', 'agent', 'import'].includes(state.resumeAt) ? { resumeAt: state.resumeAt } : {}),
     ...(harness ? { harness } : {}),
   };
+}
+
+export function saveOnboardingProgress(progress: OnboardingProgress): void {
+  if (forced() !== undefined || sealed || load().completedAt !== undefined) return;
+  if (progress === null || typeof progress !== 'object' || !['role', 'found', 'agent', 'import'].includes(progress.resumeAt)) return;
+  if (progress.harness !== undefined && !HARNESS_IDS.includes(progress.harness)) return;
+  const next: PersistedState = { ...load(), resumeAt: progress.resumeAt, ...(progress.harness === undefined ? {} : { harness: progress.harness }) };
+  if (writeStateFile(statePath(), 1, next)) cache = next;
 }
 
 export function chosenHarness(): HarnessId | undefined {

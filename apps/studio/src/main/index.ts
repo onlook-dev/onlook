@@ -1,4 +1,5 @@
 import { mkdirSync } from 'node:fs';
+import { release, tmpdir } from 'node:os';
 import { flag } from '@onlook/cloud-provider';
 import { primeFlags } from './flags/index.js';
 import { applyChromiumLanguage, chooseLocale } from './locale/index.js';
@@ -18,7 +19,10 @@ import { installArtifacts } from './artifacts/index.js';
 import { artifactSchemeRegistration } from './artifacts/protocol.js';
 import { installThumbnailProtocol, registerThumbnailScheme } from './canvas/thumbnail/protocol.js';
 import { cancelClaudeLoginForQuit, recheckClaudeAfterUnauthenticated, registerClaudeHost, startClaudeBootPreCheck } from './claude/index.js';
-import { primeUserEnv } from './env/shell-env.js';
+import { primeUserEnv, userEnv } from './env/shell-env.js';
+import { hostPlatform } from './env/platform.js';
+import { hostExecutable } from './env/executable.js';
+import { runCli } from './env/cli.js';
 import { registerIdentityHandlers } from './identity/ipc.js';
 import { registerOnlookHandlers, initializeOnlook, disposeOnlook } from './cloud/index.js';
 import { registerImageHandlers } from './images/index.js';
@@ -57,13 +61,14 @@ import { registerGithubImportHandlers } from './github-import/index.js';
 import { initAutoUpdater, registerUpdaterHandlers } from './updater/index.js';
 import { offerMoveToApplications } from './updater/location.js';
 import { beginTurnSeenQuit } from './telemetry/turn-seen.js';
-import { beginTelemetryQuit, capture, correlation, noteAppShown, prepareTelemetry, receiveWebAttribution, setPreviewDiagnosticsRestorer, shutdownTelemetry } from './telemetry/index.js';
+import { beginTelemetryQuit, capture, correlation, noteAppShown, prepareTelemetry, receiveWebAttribution, setCrashContextRecorder, setPreviewDiagnosticsRestorer, shutdownTelemetry } from './telemetry/index.js';
 import { restoreProjectPreviewDiagnostics } from './workspace/preview-diagnostics.js';
 import { registerAttributionLinks } from './telemetry/attribution-links.js';
 import { checkSetupAbandoned } from './telemetry/setup-step.js';
 import { installProcessHooks } from './errors/index.js';
+import { checkEnvironment } from './telemetry/environment.js';
 import { registerDevErrorHook } from './errors/dev-hook.js';
-import { claimRunningMarker, clearRunningMarker, ownsRunningMarker } from './errors/crash-marker.js';
+import { claimRunningMarker, clearRunningMarker, ownsRunningMarker, updateRunningContext } from './errors/crash-marker.js';
 import { pruneCrashDumps } from './errors/crash-dumps.js';
 import { stateRoot } from './state/root.js';
 import { flushLog, initLog, log } from './log/index.js';
@@ -283,7 +288,14 @@ void app.whenReady().then(() => {
   primeFlags(flag);
   chooseLocale();
   setPreviewDiagnosticsRestorer(restoreProjectPreviewDiagnostics);
+  setCrashContextRecorder(updateRunningContext);
   prepareTelemetry();
+  void checkEnvironment({
+    platform: hostPlatform(), release: release(), arch: process.arch,
+    env: userEnv,
+    resolves: (bin, env) => hostExecutable(bin, tmpdir(), env) !== undefined,
+    run: (bin, args, env) => runCli(bin, tmpdir(), args, { env, timeoutMs: 5_000, maxBuffer: 16_384 }),
+  }).then((context) => capture('environment_checked', context)).catch((error: unknown) => bootLog.warn('environment checks failed', { error }));
   registerLogHandlers((receive) => on(IPC_SEND.logLine, (_event, payload) => receive(payload)));
   installProcessHooks();
   // Dumps stay local and 0700 like the log file; nothing uploads them.
@@ -302,6 +314,10 @@ void app.whenReady().then(() => {
         previous_launch_id: previous.launchId,
         app_version: previous.appVersion,
         reporter_app_version: app.getVersion(),
+        process_type: 'main',
+        exit_code: null,
+        reason: 'unclean_exit',
+        ...previous.context,
       });
     }
   }

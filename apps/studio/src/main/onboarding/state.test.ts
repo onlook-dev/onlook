@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'bun:test';
 import { cleanupTempFixtures, makeStateRoot } from '@studio/fixtures';
 
-const { chosenHarness, clearOnboarded, completeOnboarding, readOnboardingState, resetOnboardingCache } =
+const { chosenHarness, clearOnboarded, completeOnboarding, readOnboardingState, resetOnboardingCache, saveOnboardingProgress } =
   await import('./state.js');
 const { resetSettingsCache, settingsHarness } = await import('../settings/state.js');
 
@@ -32,6 +32,34 @@ function useOwnStateRoot(name: string): string {
   resetSettingsCache();
   return root;
 }
+
+it('resumes the first project after a crash without repeating surveys or losing the chosen agent', () => {
+  useOwnStateRoot('onboarding-restart');
+  saveOnboardingProgress({ resumeAt: 'found' });
+  resetOnboardingCache();
+  expect(readOnboardingState()).toEqual({ hasOnboarded: false, resumeAt: 'found' });
+  saveOnboardingProgress({ resumeAt: 'agent' });
+  saveOnboardingProgress({ resumeAt: 'import', harness: 'codex' });
+  resetOnboardingCache();
+  expect(readOnboardingState()).toEqual({ hasOnboarded: false, resumeAt: 'import', harness: 'codex' });
+  expect(settingsHarness()).toBeUndefined();
+  completeOnboarding({ harness: 'codex' });
+  resetOnboardingCache();
+  expect(readOnboardingState()).toEqual({ hasOnboarded: true, harness: 'codex' });
+});
+
+it('rejects malformed and late onboarding checkpoints and respects forced runs', () => {
+  const root = useOwnStateRoot('onboarding-progress-validation');
+  saveOnboardingProgress({ resumeAt: 'private text', harness: 'private text' } as never);
+  expect(existsSync(join(root, 'onboarding.json'))).toBe(false);
+  process.env['STUDIO_FIRST_RUN'] = '1';
+  saveOnboardingProgress({ resumeAt: 'import', harness: 'codex' });
+  expect(existsSync(join(root, 'onboarding.json'))).toBe(false);
+  delete process.env['STUDIO_FIRST_RUN'];
+  clearOnboarded();
+  saveOnboardingProgress({ resumeAt: 'agent' });
+  expect(existsSync(join(root, 'onboarding.json'))).toBe(false);
+});
 
 it('preserves a future onboarding record on first completion, read, and reset', () => {
   const root = useOwnStateRoot('onboarding-future');

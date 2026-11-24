@@ -1,6 +1,6 @@
-import { failureOwner, scrubException, type ScrubbedException } from '@studio/events';
+import { failureOwner, scrubException, type ScrubbedException, type ProcessGone } from '@studio/events';
 import { FILE_ONLY_KEYS, log, scrubFields, type LogFields } from '../log/index.js';
-import { captureException, flush } from '../telemetry/index.js';
+import { capture, captureException, correlation, flush } from '../telemetry/index.js';
 
 export type ErrorOwner = 'ours' | 'environment' | 'user_app' | 'expected';
 
@@ -49,6 +49,17 @@ export function captureError(error: unknown | ScrubbedException, options: Captur
   });
 }
 
+export function recordProcessExit(details: ProcessGone): void {
+  capture('process_gone', details);
+  if (details.reason !== 'crashed' && details.reason !== 'oom' && details.reason !== 'integrity-failure') return;
+  if (details.process_class === 'frame' || details.process_class === 'dev_server') return;
+  const processType = details.process_class === 'tab' || details.process_class === 'band' ? 'renderer' : details.process_class === 'gpu' || details.process_class === 'utility' ? details.process_class : 'other';
+  const version = correlation()?.appVersion ?? null;
+  capture('crash_detected', { app_version: version, reporter_app_version: version ?? 'unknown', process_type: processType, reason: details.reason, exit_code: details.exit_code });
+  captureError({ type: 'NativeProcessCrash', value: `${processType}: ${details.reason} (${details.exit_code})` }, { owner: 'ours', subsystem: 'process', process_type: processType, ...details });
+  void flush();
+}
+
 function isScrubbed(value: unknown): value is ScrubbedException {
   return (
     value !== null &&
@@ -80,7 +91,7 @@ export function installProcessHooks(target: HookTarget = process): void {
 
 function report(error: unknown, mechanism: string): void {
   try {
-    captureError(error, { owner: failureOwner(error), subsystem: 'process', mechanism });
+    captureError(error, { owner: failureOwner(error), subsystem: 'process', process_type: 'main', mechanism });
   } catch {
     try {
       log('process').error('the error reporter threw while reporting', { mechanism });

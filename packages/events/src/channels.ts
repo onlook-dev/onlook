@@ -84,7 +84,7 @@ import type {
   CodeWriteResult,
 } from './code.js';
 import type { LaunchLocation, StudioLocation } from './location.js';
-import type { OnboardingCompletion, OnboardingState, SurveyAnswer } from './onboarding.js';
+import type { OnboardingCompletion, OnboardingState, OnboardingProgress, SurveyAnswer } from './onboarding.js';
 import type { MachineHelpId, MachineInstallResult, MachineSnapshot } from './machine.js';
 import type { PanelsState } from './panels.js';
 import type { SidebarLayout } from './sidebar-layout.js';
@@ -211,6 +211,7 @@ export const CHANNELS = {
     workspacePlan: { name: 'workspace:plan', from: TAB, request: one<WorkspacePlanRequest>(), response: of<WorkspacePlan>(), tab: 'workspacePlan' },
     workspaceCreateBlank: { name: 'workspace:createBlank', from: TAB, request: one<CreateBlankRequest>(), response: of<BlankCreateResult>(), tab: 'workspaceCreateBlank' },
     onboardingState: { name: 'onboarding:state', from: TAB, request: none, response: of<OnboardingState>(), tab: 'onboardingState' },
+    onboardingProgress: { name: 'onboarding:progress', from: TAB, request: one<OnboardingProgress>(), response: of<void>(), tab: 'onboardingProgress' },
     machineCheck: { name: 'machine:check', from: TAB, request: none, response: of<MachineSnapshot>(), tab: 'machineCheck' },
     machineChooseFolder: { name: 'machine:chooseFolder', from: TAB, request: none, response: of<'chosen' | 'canceled' | 'unavailable'>(), tab: 'machineChooseFolder' },
     /** Settles when the install is done or has stopped, not when it is requested. */

@@ -5,6 +5,7 @@ import { gt } from 'semver';
 import { log } from '../log/index.js';
 import { reportUpdateFailure, updateHttpStatus, type UpdateFailureStage } from './check.js';
 import type { UpdateMachine } from './machine.js';
+import { capture } from '../telemetry/index.js';
 
 const logger = log('updater');
 
@@ -73,6 +74,7 @@ export function createUpdateSession(
       }
       if (machine.isStaging() || machine.current().restarting) return;
       busy = true;
+      capture('update_check_started', { requested });
       stage = 'check';
       const prior = machine.current();
       const stagedVersion = prior.status === 'downloaded' ? prior.version : undefined;
@@ -96,6 +98,7 @@ export function createUpdateSession(
           if (lifetime.signal.aborted) return;
         }
         if (lifetime.signal.aborted) return;
+        capture('update_check_completed', { requested, outcome: result?.isUpdateAvailable ? 'available' : 'up_to_date' });
         if (result?.isUpdateAvailable && (!stagedVersion || gt(result.updateInfo.version, stagedVersion))) {
           stage = 'download';
           await updater.downloadUpdate();
