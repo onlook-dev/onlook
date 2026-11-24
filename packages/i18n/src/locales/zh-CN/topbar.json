@@ -10,6 +10,6 @@
   "topbar.update.ready": "重新启动以更新",
   "topbar.update.upToDate": "已是最新版本",
   "topbar.update.failed": "更新失败",
-  "topbar.update.authorizationDenied": "更新已暂停。请联系管理员更新 Onlook。",
+  "topbar.update.authorizationDenied": "更新需要管理员权限。点击重试。",
   "topbar.update.diskFull": "磁盘已满。释放空间后再更新。"
 }

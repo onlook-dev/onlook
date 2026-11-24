@@ -19,29 +19,32 @@ export function createUpdateSession(
   nativeUpdater?: NativeStageEmitter,
   report: typeof reportUpdateFailure = reportUpdateFailure,
   wait: (ms: number, signal: AbortSignal) => Promise<void> = (ms, signal) => delay(ms, undefined, { signal }),
-  recovery: { authorizationPaused?: boolean; onAuthorizationPauseChange?: (paused: boolean) => void } = {},
+  recovery: { refusedVersion?: string | null; onRefusedVersionChange?: (version: string | null) => void } = {},
 ): { check(requested?: boolean): Promise<void>; restart(): void; dispose(): void } {
   let busy = false;
   let stage: UpdateFailureStage = 'check';
   const lifetime = new AbortController();
   let attempting = false;
   let attemptError: Error | undefined;
-  let authorizationPaused = recovery.authorizationPaused ?? false;
-  const pauseAuthorization = (paused: boolean): void => {
-    if (authorizationPaused === paused) return;
-    authorizationPaused = paused;
-    recovery.onAuthorizationPauseChange?.(paused);
+  let refusedVersion = recovery.refusedVersion ?? null;
+  let attemptedVersion: string | undefined;
+  let checkRequested = false;
+  const pauseAuthorization = (version: string | null): void => {
+    if (refusedVersion === version) return;
+    refusedVersion = version;
+    recovery.onRefusedVersionChange?.(version);
   };
+  const canAttempt = (version: string): boolean => checkRequested || !refusedVersion || gt(version, refusedVersion);
   const reported = new WeakSet<Error>();
   const failure = (error: Error): void => {
     if (lifetime.signal.aborted) return;
     if (reported.has(error)) return;
     reported.add(error);
     const failedStage = machine.isStaging() || (!busy && machine.current().status === 'downloaded') ? 'install' : stage;
-    const denied = updateAuthorizationDenied(error);
-    const alreadyPaused = authorizationPaused;
-    if (denied) {
-      pauseAuthorization(true);
+    const denied = updateAuthorizationDenied(error) && attemptedVersion !== undefined;
+    const alreadyPaused = refusedVersion === attemptedVersion;
+    if (denied && attemptedVersion) {
+      pauseAuthorization(attemptedVersion);
       updater.autoInstallOnAppQuit = false;
     }
     logger.warn('update failed', { stage: failedStage, error });
@@ -53,8 +56,12 @@ export function createUpdateSession(
     else failure(error);
   };
   const checking = (): void => machine.checking();
-  const available = (info: { version: string }): void => machine.available(info.version);
-  const upToDate = (): void => machine.upToDate();
+  const available = (info: { version: string }): void => {
+    if (canAttempt(info.version)) machine.available(info.version);
+  };
+  const upToDate = (): void => {
+    if (!refusedVersion || checkRequested) machine.upToDate();
+  };
   const progress = (info: { percent: number }): void => machine.downloading(Math.round(info.percent));
   const downloaded = (info: { version: string }): void => {
     logger.info('downloaded', { version: info.version });
@@ -63,8 +70,9 @@ export function createUpdateSession(
   };
   const staged = (): void => {
     logger.info('prepared for install', { version: machine.current().version });
+    const prepared = machine.current().status === 'downloaded';
     machine.nativeStaged();
-    pauseAuthorization(false);
+    if (prepared) pauseAuthorization(null);
   };
   const retryServerErrors = async <Result>(run: () => Promise<Result>): Promise<Result> => {
     for (let attempt = 0; ; attempt += 1) {
@@ -86,8 +94,8 @@ export function createUpdateSession(
   };
 
   updater.autoDownload = false;
-  updater.autoInstallOnAppQuit = !authorizationPaused;
-  if (authorizationPaused) machine.failed('UPDATE_AUTHORIZATION_DENIED', 'install');
+  updater.autoInstallOnAppQuit = !refusedVersion;
+  if (refusedVersion) machine.failed('UPDATE_AUTHORIZATION_DENIED', 'install');
   updater.on('checking-for-update', checking);
   updater.on('update-available', available);
   updater.on('update-not-available', upToDate);
@@ -99,15 +107,18 @@ export function createUpdateSession(
   const session = {
     async check(requested = false): Promise<void> {
       if (lifetime.signal.aborted) return;
-      if (authorizationPaused && !requested) return;
       // A click during a check in flight adopts it rather than queueing a second; only `busy` guarantees the `checkFinished()` that spends the claim (ONL-2620).
       if (busy) {
-        if (requested) machine.claimCheck();
+        if (requested) {
+          checkRequested = true;
+          machine.claimCheck();
+        }
         return;
       }
       if (machine.isStaging() || machine.current().restarting) return;
-      updater.autoInstallOnAppQuit = true;
+      updater.autoInstallOnAppQuit = !refusedVersion;
       busy = true;
+      checkRequested = requested;
       stage = 'check';
       const prior = machine.current();
       const stagedVersion = prior.status === 'downloaded' ? prior.version : undefined;
@@ -115,7 +126,9 @@ export function createUpdateSession(
       try {
         const result = await retryServerErrors(() => updater.checkForUpdates());
         if (lifetime.signal.aborted) return;
-        if (result?.isUpdateAvailable && (!stagedVersion || gt(result.updateInfo.version, stagedVersion))) {
+        if (result?.isUpdateAvailable && canAttempt(result.updateInfo.version) && (!stagedVersion || gt(result.updateInfo.version, stagedVersion))) {
+          attemptedVersion = result.updateInfo.version;
+          updater.autoInstallOnAppQuit = true;
           stage = 'download';
           await retryServerErrors(() => updater.downloadUpdate());
         }
@@ -123,6 +136,11 @@ export function createUpdateSession(
         failure(error instanceof Error ? error : new Error(String(error)));
       } finally {
         busy = false;
+        checkRequested = false;
+        const current = machine.current();
+        if (!lifetime.signal.aborted && refusedVersion && current.status !== 'downloaded' && current.status !== 'error') {
+          machine.failed('UPDATE_AUTHORIZATION_DENIED', 'install');
+        }
         if (!lifetime.signal.aborted) machine.checkFinished();
       }
     },

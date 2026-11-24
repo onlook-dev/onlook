@@ -16,10 +16,12 @@ class UpdateFixture extends EventEmitter {
   failCheck = false;
   failDownload = false;
   hasNothingNewer = false;
+  checks = 0;
   pauseCheck = false;
   finishDownload: (() => void) | undefined;
   finishCheck: (() => void) | undefined;
   checkForUpdates = async () => {
+    this.checks += 1;
     this.emit('checking-for-update');
     if (this.failCheck) throw new Error('net::ERR_NAME_NOT_RESOLVED');
     if (this.pauseCheck) await new Promise<void>((resolve) => { this.finishCheck = resolve; });
@@ -108,10 +110,11 @@ describe('the real updater event sequence', () => {
   });
 
   it('restores an authorization pause after relaunch and saves recovery only after native preparation', async () => {
-    const saved: boolean[] = [];
-    const test = fixture(true, undefined, { authorizationPaused: true, onAuthorizationPauseChange: (paused) => { saved.push(paused); } });
+    const saved: Array<string | null> = [];
+    const test = fixture(true, undefined, { refusedVersion: '1.2.3', onRefusedVersionChange: (version) => { saved.push(version); } });
     await test.session.check();
     expect(test.updater.downloads).toEqual([]);
+    expect(test.updater.checks).toBe(1);
     expect(test.updater.autoInstallOnAppQuit).toBe(false);
     expect(test.machine.current()).toEqual({ status: 'error', message: 'UPDATE_AUTHORIZATION_DENIED' });
     const retry = test.session.check(true);
@@ -120,7 +123,7 @@ describe('the real updater event sequence', () => {
     await retry;
     expect(saved).toEqual([]);
     test.nativeUpdater.emit('update-downloaded');
-    expect(saved).toEqual([false]);
+    expect(saved).toEqual([null]);
     test.updater.version = '1.2.4';
     const background = test.session.check();
     await settle();
@@ -152,13 +155,13 @@ describe('the real updater event sequence', () => {
   });
 
   it('saves an authorization pause once even when native errors repeat', async () => {
-    const saved: boolean[] = [];
-    const test = fixture(true, undefined, { onAuthorizationPauseChange: (paused) => { saved.push(paused); } });
+    const saved: Array<string | null> = [];
+    const test = fixture(true, undefined, { onRefusedVersionChange: (version) => { saved.push(version); } });
     await test.download();
     test.updater.emit('error', new Error('OSStatus error -60005.'));
     test.updater.emit('error', new Error('OSStatus error -60005.'));
     await test.session.check();
-    expect(saved).toEqual([true]);
+    expect(saved).toEqual(['1.2.3']);
     expect(test.reports).toHaveLength(1);
     expect(test.updater.downloads).toHaveLength(1);
   });
@@ -178,6 +181,65 @@ describe('the real updater event sequence', () => {
     await retry;
     test.nativeUpdater.emit('update-downloaded');
     expect(test.machine.current().status).toBe('downloaded');
+  });
+
+  it('tries a newer release once after relaunch and pauses that release if refused too', async () => {
+    const saved: Array<string | null> = [];
+    const test = fixture(true, undefined, { refusedVersion: '1.2.3', onRefusedVersionChange: (version) => { saved.push(version); } });
+    await test.session.check();
+    expect(test.updater.downloads).toEqual([]);
+    expect(test.seen.every((state) => state.message === 'UPDATE_AUTHORIZATION_DENIED')).toBe(true);
+    test.updater.version = '1.2.4';
+    await test.download();
+    expect(test.updater.downloads).toEqual(['1.2.4']);
+    test.updater.emit('error', new Error('OSStatus error -60005.'));
+    expect(saved).toEqual(['1.2.4']);
+    await test.session.check();
+    test.updater.version = '1.2.3';
+    await test.session.check();
+    expect(test.updater.downloads).toEqual(['1.2.4']);
+    expect(test.updater.autoInstallOnAppQuit).toBe(false);
+    expect(test.machine.current().message).toBe('UPDATE_AUTHORIZATION_DENIED');
+  });
+
+  it('does not clear a refused release on a late native preparation event', async () => {
+    const saved: Array<string | null> = [];
+    const test = fixture(true, undefined, { onRefusedVersionChange: (version) => { saved.push(version); } });
+    await test.download();
+    test.updater.emit('error', new Error('OSStatus error -60005.'));
+    test.nativeUpdater.emit('update-downloaded');
+    await test.session.check();
+    expect(saved).toEqual(['1.2.3']);
+    expect(test.updater.downloads).toEqual(['1.2.3']);
+    expect(test.machine.current().message).toBe('UPDATE_AUTHORIZATION_DENIED');
+  });
+
+  it('preserves disk-full guidance if a newer release fails for an ordinary reason', async () => {
+    const saved: Array<string | null> = [];
+    const test = fixture(true, undefined, { refusedVersion: '1.2.2', onRefusedVersionChange: (version) => { saved.push(version); } });
+    test.updater.downloadUpdate = async () => { throw new Error('No space left on device'); };
+    await test.session.check();
+    expect(test.machine.current()).toEqual({ status: 'error', message: 'ENOSPC' });
+    expect(saved).toEqual([]);
+    expect(test.reports).toHaveLength(1);
+  });
+
+  it('keeps refused-release guidance when the feed reports no update', async () => {
+    const test = fixture(true, undefined, { refusedVersion: '1.2.3' });
+    test.updater.hasNothingNewer = true;
+    await test.session.check();
+    expect(test.machine.current().message).toBe('UPDATE_AUTHORIZATION_DENIED');
+    expect(test.updater.downloads).toEqual([]);
+  });
+
+  it('does not pause automatic retries when an administrator prompt is canceled', async () => {
+    const saved: Array<string | null> = [];
+    const test = fixture(true, undefined, { onRefusedVersionChange: (version) => { saved.push(version); } });
+    await test.download();
+    test.updater.emit('error', new Error('OSStatus error -60006.'));
+    expect(saved).toEqual([]);
+    await test.download();
+    expect(test.updater.downloads).toEqual(['1.2.3', '1.2.3']);
   });
 
   it('retries download server errors without reporting a recovered failure', async () => {

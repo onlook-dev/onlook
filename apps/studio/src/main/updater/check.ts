@@ -7,7 +7,8 @@ const NETWORK_CODE = /^net::(ERR_[A-Z0-9_]+)/;
 const AUTHORIZATION_CODE = /\bOSStatus(?: error)?\s+(-6000[56])\b/i;
 
 export function updateAuthorizationDenied(error: unknown): boolean {
-  return AUTHORIZATION_CODE.exec(messageOf(error))?.[1] === '-60005';
+  if (error !== null && typeof error === 'object' && 'code' in error && (error.code === -60005 || error.code === '-60005')) return true;
+  return /(?<![\d-])-60005(?!\d)/.test(messageOf(error));
 }
 
 export function updateHttpStatus(error: unknown): number | undefined {
@@ -23,7 +24,7 @@ export function updateHttpStatus(error: unknown): number | undefined {
 export function updateFailureOwner(error: unknown): ErrorOwner {
   const status = updateHttpStatus(error);
   if (status === 403 || (status !== undefined && status >= 500 && status <= 599)) return 'environment';
-  if (AUTHORIZATION_CODE.test(messageOf(error))) return 'environment';
+  if (updateAuthorizationDenied(error) || AUTHORIZATION_CODE.test(messageOf(error))) return 'environment';
   if (/^Code signature at URL .+ did not pass validation\b/i.test(messageOf(error))) return 'environment';
   if (NETWORK_CODE.test(messageOf(error))) return 'environment';
   if (messageOf(error).startsWith('Cannot update while running on a read-only volume.')) return 'environment';

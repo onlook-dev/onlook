@@ -53,7 +53,7 @@ export function installUpdateProof(machine: UpdateMachine): ReturnType<typeof cr
   const session = createUpdateSession(updater as unknown as AppUpdater, machine, nativeUpdater, (stage) => { failures.push(stage); });
   Object.assign(globalThis, { __studioUpdateProof: {
     offer(version: string | null) { offered = version; },
-    check() { void session.check(); },
+    check() { return session.check(); },
     request() { void session.check(true); },
     holdCheck() { holding = true; },
     finishCheck() { const go = answer; answer = undefined; holding = false; go?.(); },

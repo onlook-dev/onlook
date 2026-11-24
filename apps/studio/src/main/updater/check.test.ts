@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 
 const { peekLinesForTesting, recordLinesForTesting, resetLogForTesting } = await import('../log/index.js');
-const { reportUpdateFailure, updateFailureOwner, updateFailureReason } = await import('./check.js');
+const { reportUpdateFailure, updateAuthorizationDenied, updateFailureOwner, updateFailureReason } = await import('./check.js');
 
 const READ_ONLY = 'Cannot update while running on a read-only volume. The application is on a disk image.';
 
@@ -58,6 +58,16 @@ it('classifies native authorization errors and download HTTP statuses without hi
   expect(updateFailureOwner(new Error('Cannot download "https://updates.example/update.zip", status 502: Bad Gateway'))).toBe('environment');
   expect(updateFailureOwner(new Error('OSStatus error -60006.'))).toBe('environment');
   expect(updateFailureOwner(new Error('OSStatus error -12345.'))).toBe('ours');
+});
+
+it('matches authorization refusal by code without relying on localized wording', () => {
+  expect(updateAuthorizationDenied(Object.assign(new Error('Authorization failed'), { code: -60005 }))).toBe(true);
+  expect(updateAuthorizationDenied(Object.assign(new Error('Authorization failed'), { code: '-60005' }))).toBe(true);
+  expect(updateAuthorizationDenied(new Error('操作を完了できませんでした。(-60005)'))).toBe(true);
+  expect(updateAuthorizationDenied(new Error('Error -600050'))).toBe(false);
+  expect(updateAuthorizationDenied(new Error('Error -160005'))).toBe(false);
+  expect(updateAuthorizationDenied(new Error('OSStatus error -60006.'))).toBe(false);
+  expect(updateAuthorizationDenied(new Error('Administrator password refused'))).toBe(false);
 });
 
 describe('failure reporting', () => {
