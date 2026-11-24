@@ -4,11 +4,16 @@ import type { ArtifactCreate } from './adapter.js';
 import { ARTIFACT_TEXT_EXTENSIONS, MAX_ARTIFACT_BYTES, MAX_ARTIFACT_FILES, MAX_ARTIFACT_FILE_BYTES, validArtifactBundle } from './files.js';
 import { artifactPrivacyIssues } from './privacy.js';
 import { boundedFont, boundedRaster } from './assets.js';
-import { artifactReferences, rewriteArtifactReferences } from './references.js';
+import { ArtifactDependencyError, artifactReferences, rewriteArtifactReferences } from './references.js';
 
 export type ArtifactImportResult = { ok: true; input: ArtifactCreate } | { ok: false; reason: string };
 
 class ArtifactImportError extends Error {}
+
+function diagnosticPath(path: string): string {
+  const issues = artifactPrivacyIssues({ pages: [], files: [{ path: 'diagnostic.txt', bytes: Buffer.from(path) }] });
+  return issues.length === 0 ? JSON.stringify(path) : 'a project file';
+}
 
 function containedFile(root: string, path: string): string {
   const absolute = resolve(root, path);
@@ -41,7 +46,7 @@ export function importArtifactFromProject(cwd: string, path: string,
   try {
     const root = realpathSync(cwd);
     const sourcePath = resolve(root, path);
-    context = sourcePath.startsWith(root + sep) ? JSON.stringify(relative(root, sourcePath)) : 'the HTML file';
+    context = sourcePath.startsWith(root + sep) ? diagnosticPath(relative(root, sourcePath)) : 'the HTML file';
     const source = containedFile(root, path);
     if (extname(source).toLowerCase() !== '.html') return { ok: false, reason: 'Choose an HTML file in this project.' };
     const files: NonNullable<ArtifactCreate['bundle']>['files'] = [];
@@ -53,7 +58,7 @@ export function importArtifactFromProject(cwd: string, path: string,
       if (queue.length > MAX_ARTIFACT_FILES) throw new ArtifactImportError('Reduce the artifact to 256 files or fewer.');
       const absolute = queue[cursor];
       if (absolute === undefined) throw new Error('missing dependency');
-      context = JSON.stringify(relative(root, absolute));
+      context = diagnosticPath(relative(root, absolute));
       const destination = destinations.get(absolute);
       if (destination === undefined) throw new Error('missing destination');
       const bytes = readFileSync(absolute);
@@ -66,8 +71,8 @@ export function importArtifactFromProject(cwd: string, path: string,
         for (const reference of artifactReferences(text, extension)) {
           const referencePath = reference.value.split('#')[0] ?? '';
           const insideProject = resolve(dirname(absolute), referencePath).startsWith(root + sep);
-          const label = !insideProject || /^\/|[\\:?%&\u0000-\u001f]/.test(referencePath) ? '' : ` (${JSON.stringify(referencePath)})`;
-          context = `${JSON.stringify(relative(root, absolute))}, reference at character ${reference.start + 1}${label}`;
+          const label = !insideProject || /^\/|[\\:?%&\u0000-\u001f]/.test(referencePath) ? '' : ` (${diagnosticPath(referencePath)})`;
+          context = `${diagnosticPath(relative(root, absolute))}, reference at character ${reference.start + 1}${label}`;
           const decoded = decodedReference(reference.value);
           if (decoded === '' || decoded.startsWith('#')) continue;
           const [local, fragment] = decoded.split('#');
@@ -104,7 +109,8 @@ export function importArtifactFromProject(cwd: string, path: string,
     }
     return { ok: true, input: { title: basename(source, extname(source)), html, bundle } };
   } catch (error) {
-    const reason = error instanceof ArtifactImportError ? error.message : 'Use a readable file with complete HTML, classic scripts without imports or network requests, and no embedded media or module scripts.';
+    if (error instanceof ArtifactDependencyError) context += `, unsupported content at character ${error.start + 1}`;
+    const reason = error instanceof ArtifactImportError || error instanceof ArtifactDependencyError ? error.message : 'Use a readable file with complete HTML, classic scripts without imports or network requests, and no embedded media or module scripts.';
     return { ok: false, reason: `Cannot import ${context}: ${reason} Prepare an import copy without changing the original, then retry.` };
   }
 }
