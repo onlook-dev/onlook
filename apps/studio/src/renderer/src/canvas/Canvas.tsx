@@ -441,6 +441,7 @@ export function Canvas({
   useCanvasCameraSync({
     nodes,
     flyTo,
+    cover,
     fitRequest,
     viewportRequest,
     getViewport,

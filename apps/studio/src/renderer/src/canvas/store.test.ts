@@ -1079,7 +1079,7 @@ describe('duplicate and create gestures (ONL-1994)', () => {
       id: minted,
       pageId: 'pg_main',
       kind: 'browser',
-      x: 100 + 800 + PLACEMENT_GAP,
+      x: DEFAULT_FRAME_SIZE.width + PLACEMENT_GAP,
       y: 50,
       width: 800,
       height: 600,
@@ -1153,6 +1153,40 @@ describe('duplicate and create gestures (ONL-1994)', () => {
     const op = singleOp(wire.sent[0]);
     if (op.type !== 'create') throw new Error('expected a create op');
     expect({ x: op.node.x, y: op.node.y }).toEqual({ x: 3400, y: 700 });
+  });
+
+  it('skips an offset neighbour and requests a pan only for duplicates and new-frame opens', async () => {
+    const source = browserNode('a', { x: 0, y: 100, width: 400, height: 300 });
+    const neighbour = browserNode('b', { x: 650, y: 150, width: 700, height: 300, order: 1 });
+    for (const action of ['keyboard', 'menu', 'new-frame'] as const) {
+      const wire = await connect(docOf([source, neighbour], 1));
+      useCanvasStore.getState().selectFrame('a', false);
+      const state = useCanvasStore.getState();
+      const minted = action === 'keyboard' ? state.duplicateSelectedFrame()
+        : action === 'menu' ? state.duplicateFrame('a') : state.openInNewFrame('a', 'http://localhost:9000/');
+      const op = singleOp(wire.sent[0]);
+      if (op.type !== 'duplicate' && op.type !== 'create') throw new Error('expected a new node');
+      expect({ x: op.node.x, y: op.node.y }).toEqual({ x: 1450, y: 100 });
+      expect(useCanvasStore.getState().flyTo).toMatchObject({ id: minted, panOnly: true });
+      fakeUpdate(entryOf(2, op));
+      expect(selection()).toEqual([minted!]);
+      expect(useCanvasStore.getState().doc?.nodes.a).toEqual(source);
+      expect(useCanvasStore.getState().doc?.nodes.b).toEqual(neighbour);
+      disconnect?.();
+      disconnect = null;
+    }
+  });
+
+  it('keeps an exact option-drag drop even over a neighbour and does not request a pan', async () => {
+    const wire = await connect(docOf([
+      browserNode('a', { width: 400, height: 300 }),
+      browserNode('b', { x: 650, y: 150, width: 700, height: 300 }),
+    ]));
+    useCanvasStore.getState().duplicateFrame('a', { x: 680, y: 160 });
+    const op = singleOp(wire.sent[0]);
+    if (op.type !== 'duplicate') throw new Error('expected a duplicate');
+    expect({ x: op.node.x, y: op.node.y }).toEqual({ x: 680, y: 160 });
+    expect(useCanvasStore.getState().flyTo).toBeNull();
   });
 
   it('a refused single duplicate mints nothing — never a selection of an id main never heard', async () => {
