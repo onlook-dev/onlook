@@ -10,6 +10,8 @@ import { removeStarterServerFile } from './retire.js';
 import { createStarterRunner, STARTER_SERVICE_PREFIX, type StarterRunner } from './runner.js';
 import { STARTER_SERVER_FILE } from './scaffold.js';
 import { log } from '../log/index.js';
+import { capture, resolveWorkspaceTelemetryProperties } from '../telemetry/index.js';
+import { recordProjectPreviewDiagnostics } from '../workspace/preview-diagnostics.js';
 
 const logger = log('starter');
 
@@ -42,6 +44,8 @@ export function registerStarter(): StarterHost {
         serviceName: options.serviceName,
       }),
     env: userEnv,
+    diagnostics: recordProjectPreviewDiagnostics,
+    serverExited: (cwd) => capture('dev_server_exited', { ...resolveWorkspaceTelemetryProperties(cwd) }, cwd),
     modulePath: (worktree) => starterModulePath(worktree, () => writeStaticServer(join(stateRoot(), 'starter'))),
   });
   app.on('child-process-gone', (_event, details) => {

@@ -10,6 +10,7 @@ export interface PreviewSettlement {
   state: 'loading' | 'live' | 'unreachable';
   elapsedMs: number;
   entryPoint?: 'blank' | 'import' | 'repo' | 'reopen';
+  workspacePath?: string;
 }
 
 export function recordPreviewSettlement(settlement: PreviewSettlement): void {
@@ -23,7 +24,7 @@ export function recordPreviewSettlement(settlement: PreviewSettlement): void {
     duration_ms: settlement.elapsedMs,
     ...(settlement.entryPoint === undefined ? {} : { entry_point: settlement.entryPoint }),
     ...(failed ? { error_class: 'port_unreachable' satisfies SetupErrorClass } : {}),
-  });
+  }, settlement.workspacePath);
 }
 
 export function resetPreviewLatchForTesting(): void {

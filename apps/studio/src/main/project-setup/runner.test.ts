@@ -9,6 +9,29 @@ afterAll(cleanupTempFixtures);
 const definition = { prepare: '', install: { script: '', inputs: [], outputs: [] }, servers: [{ id: 'web', cwd: '.', start: 'sleep 10', port: 48001 }] };
 
 describe('setup runner failures and state', () => {
+  it('diagnoses a verified alternate listening port without treating a printed URL as proof', async () => {
+    for (const owned of [true, false]) {
+      const project = makeDirWithFiles({});
+      const root = makeDirWithFiles({});
+      const elsewhere = makeDirWithFiles({});
+      const diagnostics: Parameters<NonNullable<ProjectSetupDeps['diagnostics']>>[1][] = [];
+      const service = createProjectSetupService({
+        state: createSetupState(() => root), env: async () => process.env,
+        report: async () => undefined, stopGraceMs: 25, readyTimeoutMs: 150,
+        probe: async port => port === 48002,
+        identify: async () => ({ pid: process.pid, cwd: owned ? project : elsewhere }),
+        diagnostics: (_cwd, measurement) => { diagnostics.push(measurement); },
+      });
+      try {
+        service.save(project, { ...definition, servers: [{ ...definition.servers[0]!, start: 'printf "Local: http://localhost:48002/\\n"; sleep 10' }] }, null);
+        expect((await service.run(project, { action: 'start' })).ok).toBe(false);
+        expect(diagnostics.find(row => row.reported_port === 48002)).toMatchObject({ expected_port: 48001, cause: 'readiness_timeout', process_exited: false });
+        expect(diagnostics.some(row => row.actual_port === 48002)).toBe(owned);
+        if (owned) expect(diagnostics.at(-1)).toMatchObject({ actual_port: 48002, cause: 'reported_port_mismatch' });
+      } finally { await service.dispose(); }
+    }
+  });
+
   it('keeps a superseded environment read from replacing the next run failure', async () => {
     const project = makeDirWithFiles({});
     const root = makeDirWithFiles({});
@@ -267,12 +290,14 @@ describe('setup runner failures and state', () => {
     const root = makeDirWithFiles({});
     const measurements: Parameters<NonNullable<ProjectSetupDeps['runCompleted']>>[1][] = [];
     const reuse: boolean[] = [];
+    const diagnostics: Parameters<NonNullable<ProjectSetupDeps['diagnostics']>>[1][] = [];
     const service = createProjectSetupService({
       state: createSetupState(() => root),
       env: async () => process.env,
       report: async () => undefined,
       runCompleted: (_cwd, measurement) => { measurements.push(measurement); },
       installationChecked: (_cwd, reused) => { reuse.push(reused); },
+      diagnostics: (_cwd, measurement) => { diagnostics.push(measurement); },
       stopGraceMs: 25,
     });
     try {
@@ -284,6 +309,9 @@ describe('setup runner failures and state', () => {
       expect(JSON.stringify(measurements)).not.toContain(project);
       expect(JSON.stringify(measurements)).not.toContain('private-install-output');
       expect(JSON.stringify(measurements)).not.toContain('exit 17');
+      expect(diagnostics.at(-1)).toMatchObject({ cause: 'install_failed', process_exited: true, exit_code: 17, install_succeeded: false, spawn_to_failure_ms: expect.any(Number) });
+      expect(JSON.stringify(diagnostics)).not.toContain(project);
+      expect(JSON.stringify(diagnostics)).not.toContain('private-install-output');
     } finally { await service.dispose(); }
   });
 

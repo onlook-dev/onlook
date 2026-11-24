@@ -9,6 +9,8 @@ import { log } from '../log/index.js';
 import { identifyListener, isAlive, verifiesFor, type IdentifyListener, type ListenerIdentity } from '../server/owner.js';
 import { probePort } from '../server/probe.js';
 import type { SetupRunFailureReason, TelemetryProperties } from '../telemetry/events.js';
+import { previewStderrTail, reportedPreviewPort, type PreviewDiagnostics } from '../telemetry/preview-diagnostics.js';
+import { previewProjectTools } from '../workspace/preview-tools.js';
 import { installFingerprint, installationReusable } from './fingerprint.js';
 import { containedPath, setupState, snapshotOf, validatePaths, versionDefinition, type SetupState } from './state.js';
 import { setupShell } from './shell.js';
@@ -31,6 +33,8 @@ interface ReconnectedEndpoint extends RuntimeEndpoint {
 interface ProcessHandle extends RuntimeEndpoint {
   child: ChildProcess;
   output: string;
+  stderr: string;
+  spawnedAt: number;
   exit: { code: number | null; signal: string | null } | undefined;
   error: string | undefined;
   done: Promise<void>;
@@ -65,6 +69,8 @@ export interface ProjectSetupDeps {
   changed?: (cwd: string, snapshot: ProjectSetupSnapshot) => void;
   runCompleted?: (cwd: string, measurement: Omit<TelemetryProperties<'project_setup_run_completed'>, 'project_id'>) => void;
   installationChecked?: (cwd: string, reused: boolean) => void;
+  diagnostics?: (cwd: string, measurement: Partial<PreviewDiagnostics>, reset?: boolean) => void;
+  serverExited?: (cwd: string) => void;
   report: (cwd: string, folder: string, port: number, signal: AbortSignal) => Promise<void>;
   installTimeoutMs?: number;
   readyTimeoutMs?: number;
@@ -176,7 +182,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
     const childEnv = envWithout(env, ['ELECTRON_RUN_AS_NODE', 'ELECTRON_NO_ASAR', 'NODE_OPTIONS', 'NODE_CHANNEL_FD']);
     if (server) childEnv['PORT'] = String(server.port);
     const child = startChild(shell, ['-e', '-c', command], { cwd, env: childEnv, detached: leadsOwnGroup(), windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
-    const handle: ProcessHandle = { child, output: '', exit: undefined, error: undefined, done: Promise.resolve(), closed: Promise.resolve(), version, termination: { state: 'live' }, safeCommand: redactSetupOutput(server?.start ?? command, env), ...(server ? { server, folder: canonicalPath(containedPath(cwd, server.cwd)) } : {}) };
+    const handle: ProcessHandle = { child, output: '', stderr: '', spawnedAt: Date.now(), exit: undefined, error: undefined, done: Promise.resolve(), closed: Promise.resolve(), version, termination: { state: 'live' }, safeCommand: redactSetupOutput(server?.start ?? command, env), ...(server ? { server, folder: canonicalPath(containedPath(cwd, server.cwd)) } : {}) };
     handle.done = new Promise((done) => {
       child.once('error', (error) => { handle.error = error.message; done(); });
       child.once('exit', (code, signal) => { handle.exit = { code, signal }; done(); });
@@ -184,7 +190,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
     handle.closed = new Promise((closed) => { child.once('close', () => closed()); });
     const collect = (chunk: Buffer) => { handle.output = (handle.output + chunk.toString()).slice(-32768); };
     child.stdout?.on('data', collect);
-    child.stderr?.on('data', collect);
+    child.stderr?.on('data', (chunk: Buffer) => { collect(chunk); handle.stderr = (handle.stderr + chunk.toString()).slice(-8192); });
     return handle;
   };
   const kill = (handle: ProcessHandle): void => {
@@ -231,9 +237,27 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
     let failureHandle: ProcessHandle | undefined;
     const check = () => { if (controller.signal.aborted || pendingRun(phases.get(cwd)) !== run) throw new Error(t('projectSetup.failure.canceled')); };
     let failureReason: SetupRunFailureReason | undefined;
+    let measuredFailure = false;
+    const measure = (patch: Partial<PreviewDiagnostics>, reset = false): void => recordMeasurement(() => deps.diagnostics?.(cwd, patch, reset));
+    const measureFailure = (handle?: ProcessHandle, code?: SetupRunFailureReason): void => {
+      measuredFailure = true;
+      const reported = reportedPreviewPort(handle?.output ?? '');
+      measure({
+        cause: code ?? (stage === 'install' ? 'install_failed' : stage === 'prepare' ? 'prepare_failed' : handle?.error ? 'process_error' : handle?.exit ? 'process_exited' : 'unknown'),
+        ...((handle?.server ?? currentServer) ? { expected_port: (handle?.server ?? currentServer)!.port } : {}),
+        reported_port: reported,
+        process_exited: handle === undefined ? null : handle.exit !== undefined,
+        exit_code: handle?.exit?.code ?? null,
+        exit_signal: handle?.exit?.signal ?? null,
+        stderr_tail: previewStderrTail(handle?.stderr ?? ''),
+        spawn_to_failure_ms: handle === undefined ? null : Date.now() - handle.spawnedAt,
+        ...(stage === 'install' ? { install_succeeded: false } : {}),
+      });
+    };
     const fail = (stage: ProjectSetupFailure['stage'], command: string, reason: string, handle?: ProcessHandle, code?: SetupRunFailureReason): never => {
       failureHandle = handle;
       failureReason = code;
+      measureFailure(handle, code);
       const server = handle?.server ?? currentServer;
       const failure: ProjectSetupFailure = {
         revision: version.revision, stage, command: redactSetupOutput(command, env), reason: redactSetupOutput(reason, env),
@@ -245,6 +269,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
       throw failure;
     };
     try {
+      measure({}, true);
       env = await untilAborted<NodeJS.ProcessEnv>((deps.env ?? userEnv)(), controller.signal);
       check();
       validatePaths(cwd, version.definition);
@@ -283,6 +308,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
         store.write(cwd, { ...store.read(cwd), installFingerprint: installFingerprint(cwd, version.definition) });
       }
       stage = 'start';
+      measure({ install_succeeded: true });
       publishRun(cwd, run, 'starting');
       for (const server of requested) {
         stage = 'start';
@@ -290,6 +316,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
         currentServer = server;
         check();
         const folder = containedPath(cwd, server.cwd);
+        measure({ ...previewProjectTools(folder), expected_port: server.port, actual_port: null, reported_port: null, port_occupied: null, port_owner: null });
         command = `${version.definition.prepare}\ncd ${quote(folder)}\n${server.start}`;
         const owned = ownedForServer([...live, ...endpoints], cwd, server, version.definition.servers);
         if (owned.length > 1) throw new Error(t('projectSetup.failure.ambiguousServer'));
@@ -328,6 +355,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
         if (await probe(server.port)) {
           const identity = await identityOf(server.port, folder, controller.signal);
           const ownership = verifiesFor(identity, folder);
+          measure({ port_occupied: true, port_owner: ownership === 'ours' ? 'project' : ownership === 'foreign' ? 'other' : 'unknown' });
           check();
           if (ownership === 'unknown') fail('ready', command, t('projectSetup.failure.listenerUnseen', { port: server.port }), undefined, 'listener_unseen');
           if (ownership !== 'ours') fail('ready', command, t('projectSetup.failure.occupiedPort', { port: server.port }), undefined, 'port_occupied');
@@ -342,6 +370,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
           continue;
         }
         if (remembered) endpoints.delete(remembered);
+        measure({ port_occupied: false, port_owner: null });
         check();
         const handle = launch(shellPath, cwd, command, env, version, server);
         currentHandle = handle;
@@ -359,6 +388,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
             check();
             if (ownership === 'unknown') fail('ready', command, t('projectSetup.failure.listenerUnseen', { port: server.port }), handle, 'listener_unseen');
             if (ownership !== 'ours') fail('ready', command, t('projectSetup.failure.listenerFolder'), handle, 'listener_foreign');
+            measure({ actual_port: server.port, reported_port: reportedPreviewPort(handle.output), cause: 'unknown', process_exited: false });
             ready = true;
             break;
           }
@@ -401,6 +431,8 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
       for (const handle of launched) {
         void handle.done.then(async () => {
           if (!live.has(handle) || handle.termination.state !== 'live' || !handle.server) return;
+          measureFailure(handle);
+          recordMeasurement(() => deps.serverExited?.(cwd));
           const failure: ProjectSetupFailure = { revision: version.revision, stage: 'start', serverId: handle.server.id, command: redactSetupOutput(handle.server.start, env), reason: t('projectSetup.failure.unexpectedExit'), outputTail: redactSetupOutput(handle.output, env), elapsedMs: Date.now() - started, ...(handle.exit?.code === null || handle.exit?.code === undefined ? {} : { exitCode: handle.exit.code }), ...(handle.exit?.signal ? { signal: handle.exit.signal } : {}) };
           const recordExit = (failure: ProjectSetupFailure): void => {
             const pending = pendingRun(phases.get(cwd));
@@ -416,6 +448,16 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
       }
       return result(cwd);
     } catch (error) {
+      if (!controller.signal.aborted && !measuredFailure) measureFailure(currentHandle);
+      const reported = reportedPreviewPort((failureHandle ?? currentHandle)?.output ?? '');
+      if (!controller.signal.aborted && currentServer && reported !== null && reported !== currentServer.port) {
+        try {
+          const folder = containedPath(cwd, currentServer.cwd);
+          if (await probe(reported) && verifiesFor(await identityOf(reported, folder, controller.signal), folder) === 'ours') {
+            measure({ actual_port: reported, ...(failureReason === 'readiness_timeout' ? { cause: 'reported_port_mismatch' as const } : {}) });
+          }
+        } catch { }
+      }
       const cleanup = await Promise.allSettled([...launched].map(async (handle) => { await terminate(handle); live.delete(handle); }));
       const terminationFailure = cleanup.find((entry) => entry.status === 'rejected');
       if (terminationFailure?.status === 'rejected') {
