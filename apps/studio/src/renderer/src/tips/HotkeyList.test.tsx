@@ -17,3 +17,8 @@ it('shows an empty search without shortcut columns', () => {
   expect(markup).toContain('tips-empty');
   expect(markup).not.toContain('tips-key-columns');
 });
+
+it('compacts group spacing only when the Code shortcut is present', () => {
+  expect(TIPS_RULES).toContain('.tips-key-group { break-inside: avoid; margin: 0 0 20px; padding-top: 8px; }');
+  expect(TIPS_RULES).toContain(".tips-key-columns:has([data-hotkey-row='saveCode']) .tips-key-group { margin-bottom: 0; padding-top: 4px; }");
+});

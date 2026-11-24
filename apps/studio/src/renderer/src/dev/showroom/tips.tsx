@@ -49,6 +49,9 @@ const CATEGORIES: Category[] = [
       story('prompts', 'Prompts', 'click a card to zoom into its detail; ← → step', () => <Guide />),
       { ...story('hotkeys', 'Hotkeys', 'grouped, two columns', (context) => <Guide view="hotkeys" isInline={!context?.isIsolated} />), wide: true },
       { ...story('hotkeys-code', 'Hotkeys with Code', 'all shortcut groups fit in two columns', (context) => <CodeHotkeys isInline={!context?.isIsolated} />), wide: true },
+      { ...story('hotkeys-code-1280', 'Hotkeys with Code at 1280 × 800', 'all rows visible in a smaller window', (context) => context?.isIsolated
+        ? <CodeHotkeys isInline={false} />
+        : <div style={{ width: 1280, height: 800, display: 'grid', placeItems: 'center' }}><CodeHotkeys isInline /></div>), wide: true },
       story('empty', 'No match', 'a search with no prompt behind it', () => <Guide query="zebra" />),
     ],
   },

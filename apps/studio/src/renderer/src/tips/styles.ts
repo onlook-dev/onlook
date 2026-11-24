@@ -57,6 +57,7 @@ export const TIPS_RULES = `
 .tips-keys { flex: 1; overflow-y: auto; padding: 8px 24px; scrollbar-width: thin; }
 .tips-key-columns { columns: 2; column-gap: 40px; }
 .tips-key-group { break-inside: avoid; margin: 0 0 20px; padding-top: 8px; }
+.tips-key-columns:has([data-hotkey-row='saveCode']) .tips-key-group { margin-bottom: 0; padding-top: 4px; }
 .tips-key-group h3 { font-size: 12px; font-weight: 500; color: var(--panel-ink-3); margin: 0 0 4px; }
 .tips-key-row { display: flex; align-items: center; justify-content: space-between; height: 36px; border-bottom: var(--border-width) solid var(--panel-line);
   font-size: 13px; color: var(--panel-ink); }

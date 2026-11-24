@@ -66,6 +66,10 @@ export const HOTKEYS: readonly HotkeyGroup[] = [
     ],
   },
   {
+    label: 'tips.keys.group.code',
+    rows: [{ id: 'saveCode', label: 'tips.keys.saveCode', combos: ['mod+s'] }],
+  },
+  {
     label: 'tips.keys.group.edit',
     rows: [
       { id: 'undo', label: 'tips.keys.undo', combos: ['mod+z'] },
@@ -86,10 +90,6 @@ export const HOTKEYS: readonly HotkeyGroup[] = [
       { id: 'measure', label: 'tips.keys.measure', combos: ['alt'], word: 'tips.keys.hover' },
       { id: 'scrollPage', label: 'tips.keys.scrollPage', combos: ['s'], word: 'tips.keys.scroll' },
     ],
-  },
-  {
-    label: 'tips.keys.group.code',
-    rows: [{ id: 'saveCode', label: 'tips.keys.saveCode', combos: ['mod+s'] }],
   },
 ];
 
