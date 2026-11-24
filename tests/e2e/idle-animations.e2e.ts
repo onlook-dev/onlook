@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { cleanupTempFixtures, makeSourceCheckout, makeWorkspaceRoot } from '@studio/fixtures';
-import { closeStudio, createProjectWithoutStart, editorPage, launchStudio } from './launch.js';
-import { measureIdlePaint } from './idle-paint.js';
+import { closeStudio, createProjectWithoutStart, editorPage, launchStudio, measureIdlePaint } from './launch.js';
 
 test('idle Tips and composer animations do not repaint and respect Reduce Motion', async () => {
   test.setTimeout(60_000);
@@ -11,6 +10,8 @@ test('idle Tips and composer animations do not repaint and respect Reduce Motion
     await createProjectWithoutStart(page, makeSourceCheckout().path);
     await page.locator('.tips-pill-light').first().waitFor({ state: 'attached' });
     await page.locator('.chat-composer-shimmer').waitFor({ state: 'attached' });
+    await app.evaluate(({ BaseWindow }) => BaseWindow.getAllWindows()[0]!.show());
+    expect(await app.evaluate(({ BaseWindow }) => BaseWindow.getAllWindows()[0]!.isVisible())).toBe(true);
     await page.waitForTimeout(2000);
     const animationTime = () => page.evaluate(() => document.getAnimations().filter(animation => ['tips-lap', 'chat-composer-placeholder-sweep'].includes((animation as CSSAnimation).animationName)).map(animation => Number(animation.currentTime)));
     const before = await animationTime();
@@ -18,6 +19,7 @@ test('idle Tips and composer animations do not repaint and respect Reduce Motion
     expect((await measureIdlePaint(app, page)).paintedFrames).toBe(0);
     expect((await animationTime()).every((time, index) => time > before[index]!)).toBe(true);
     await app.evaluate(({ BaseWindow }) => BaseWindow.getAllWindows()[0]!.hide());
+    expect(await app.evaluate(({ BaseWindow }) => BaseWindow.getAllWindows()[0]!.isVisible())).toBe(false);
     await page.waitForTimeout(1000);
     expect((await measureIdlePaint(app, page)).paintedFrames).toBe(0);
     await app.evaluate(({ BaseWindow }) => BaseWindow.getAllWindows()[0]!.show());
