@@ -1,4 +1,5 @@
 import { isHarnessId } from '@studio/events';
+import { canonicalPath } from '../lib/canonical-path.js';
 import { setupFailureContext } from './setup-failure.js';
 
 const projectFailures = new Map<string, Record<string, unknown>>();
@@ -7,9 +8,9 @@ function known(value: unknown): unknown {
   return value === undefined || value === 'unknown' ? undefined : value;
 }
 
-export function failureContext(event: string, properties: object, preview: { cause?: string }): Record<string, unknown> {
+export function failureContext(event: string, properties: object, preview: { cause?: string }, workspacePath?: string): Record<string, unknown> {
   const values = properties as Record<string, unknown>;
-  const project = typeof values['project_id'] === 'string' ? values['project_id'] : undefined;
+  const project = workspacePath === undefined ? undefined : canonicalPath(workspacePath);
   if ((event === 'project_created' || event === 'project_setup_started' || event === 'project_setup_completed') && project !== undefined) projectFailures.delete(project);
   const isFailure = ['project_creation_failed', 'project_setup_failed', 'project_folder_refused', 'dead_end_shown'].includes(event);
   if (!isFailure) return {};

@@ -65,10 +65,11 @@ import { beginTelemetryQuit, capture, correlation, noteAppShown, prepareTelemetr
 import { restoreProjectPreviewDiagnostics } from './workspace/preview-diagnostics.js';
 import { registerAttributionLinks } from './telemetry/attribution-links.js';
 import { checkSetupAbandoned } from './telemetry/setup-step.js';
-import { installProcessHooks } from './errors/index.js';
+import { installProcessHooks, setProcessCrashContextReader } from './errors/index.js';
+import { installProcessCrashHooks } from './errors/processes.js';
 import { checkEnvironment } from './telemetry/environment.js';
 import { registerDevErrorHook } from './errors/dev-hook.js';
-import { claimRunningMarker, clearRunningMarker, ownsRunningMarker, updateRunningContext } from './errors/crash-marker.js';
+import { claimRunningMarker, clearRunningMarker, ownsRunningMarker, readRunningContext, updateRunningContext } from './errors/crash-marker.js';
 import { pruneCrashDumps } from './errors/crash-dumps.js';
 import { stateRoot } from './state/root.js';
 import { flushLog, initLog, log } from './log/index.js';
@@ -298,6 +299,8 @@ void app.whenReady().then(() => {
   }).then((context) => capture('environment_checked', context)).catch((error: unknown) => bootLog.warn('environment checks failed', { error }));
   registerLogHandlers((receive) => on(IPC_SEND.logLine, (_event, payload) => receive(payload)));
   installProcessHooks();
+  setProcessCrashContextReader(readRunningContext);
+  installProcessCrashHooks();
   // Dumps stay local and 0700 like the log file; nothing uploads them.
   const crashDumps = join(stateRoot(), 'crashes');
   mkdirSync(crashDumps, { recursive: true, mode: 0o700 });

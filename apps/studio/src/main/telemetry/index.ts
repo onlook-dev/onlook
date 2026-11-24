@@ -678,7 +678,7 @@ export function capture<N extends TelemetryEventName>(
     previewDiagnosticsRestorer?.(workspacePath, properties.server_port);
   }
   const preview = previewFailureDiagnostics(event, properties, workspacePath);
-  enqueue(event, { ...envelope(), ...preview, ...properties, ...failureContext(event, properties, preview) });
+  enqueue(event, { ...envelope(), ...preview, ...properties, ...failureContext(event, properties, preview, workspacePath) });
   return true;
 }
 

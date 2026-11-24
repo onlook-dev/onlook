@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, utimesSync, wr
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'bun:test';
-import { claimRunningMarker, clearRunningMarker, ownsRunningMarker, runningMarkerPath, updateRunningContext } from './crash-marker.js';
+import { claimRunningMarker, clearRunningMarker, ownsRunningMarker, readRunningContext, runningMarkerPath, updateRunningContext } from './crash-marker.js';
 
 const made: string[] = [];
 const saved = process.env['STUDIO_STATE_ROOT'];
@@ -25,6 +25,23 @@ afterAll(() => {
 });
 
 describe('the marker', () => {
+  it('keeps creation active after registration until the first preview settles', () => {
+    claimRunningMarker(FIRST_LAUNCH, '2.0.0');
+    updateRunningContext('workspace_creation_flow', { step: 'started', outcome: 'started' });
+    updateRunningContext('workspace_creation_flow', { step: 'created', outcome: 'success' });
+    updateRunningContext('project_created', {});
+    expect(readRunningContext()?.during_workspace_creation).toBe(true);
+    updateRunningContext('workspace_creation_flow', { step: 'preview', outcome: 'success' });
+    expect(readRunningContext()?.during_workspace_creation).toBe(false);
+  });
+
+  it('clears active creation when setup fails before a preview', () => {
+    claimRunningMarker(FIRST_LAUNCH, '2.0.0');
+    updateRunningContext('workspace_creation_flow', { step: 'started', outcome: 'started' });
+    updateRunningContext('project_setup_failed', {});
+    expect(readRunningContext()?.during_workspace_creation).toBe(false);
+  });
+
   it('does not rewrite an unchanged crash checkpoint', () => {
     claimRunningMarker(FIRST_LAUNCH, '2.0.0');
     updateRunningContext('agent_setup_step', {});

@@ -1,6 +1,7 @@
 import { failureOwner, scrubException, type ScrubbedException, type ProcessGone } from '@studio/events';
 import { FILE_ONLY_KEYS, log, scrubFields, type LogFields } from '../log/index.js';
 import { capture, captureException, correlation, flush } from '../telemetry/index.js';
+import type { RunningMarker } from './crash-marker.js';
 
 export type ErrorOwner = 'ours' | 'environment' | 'user_app' | 'expected';
 
@@ -49,15 +50,22 @@ export function captureError(error: unknown | ScrubbedException, options: Captur
   });
 }
 
-export function recordProcessExit(details: ProcessGone): void {
+let crashContextReader: (() => RunningMarker['context']) | undefined;
+
+export function setProcessCrashContextReader(read: typeof crashContextReader): void {
+  crashContextReader = read;
+}
+
+export function recordProcessExit(details: ProcessGone): Promise<void> | undefined {
   capture('process_gone', details);
   if (details.reason !== 'crashed' && details.reason !== 'oom' && details.reason !== 'integrity-failure') return;
   if (details.process_class === 'frame' || details.process_class === 'dev_server') return;
   const processType = details.process_class === 'tab' || details.process_class === 'band' ? 'renderer' : details.process_class === 'gpu' || details.process_class === 'utility' ? details.process_class : 'other';
   const version = correlation()?.appVersion ?? null;
-  capture('crash_detected', { app_version: version, reporter_app_version: version ?? 'unknown', process_type: processType, reason: details.reason, exit_code: details.exit_code });
-  captureError({ type: 'NativeProcessCrash', value: `${processType}: ${details.reason} (${details.exit_code})` }, { owner: 'ours', subsystem: 'process', process_type: processType, ...details });
-  void flush();
+  const context = crashContextReader?.();
+  capture('crash_detected', { app_version: version, reporter_app_version: version ?? 'unknown', process_type: processType, reason: details.reason, exit_code: details.exit_code, ...context });
+  captureError({ type: 'NativeProcessCrash', value: `${processType}: ${details.reason} (${details.exit_code})` }, { owner: 'ours', subsystem: 'process', process_type: processType, ...details, ...context });
+  return flush();
 }
 
 function isScrubbed(value: unknown): value is ScrubbedException {
@@ -108,4 +116,5 @@ function report(error: unknown, mechanism: string): void {
 
 export function resetErrorsForTesting(): void {
   hooksInstalled = false;
+  crashContextReader = undefined;
 }
