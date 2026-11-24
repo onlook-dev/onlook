@@ -12,7 +12,7 @@ import { INERT_BUTTON, PillText } from './primitives.js';
 import { dropdownFor, isActionable, prOf, type GitPillDropdownId, type GitPillState, type GitPullRequest } from './state.js';
 import { fill, type GitStatusStrings } from './strings.js';
 
-export type GitPillScale = 'chrome' | 'card';
+export type GitPillScale = 'chrome' | 'card' | 'preview';
 
 export interface GitPillGlyphs {
   branch: ReactNode;
@@ -176,7 +176,7 @@ function showsPrSegment(state: GitPillState): boolean {
 }
 
 export function menuFor(state: GitPillState, scale: GitPillScale): GitPillDropdownId | undefined {
-  return scale !== 'card' && state.mode !== 'working' ? dropdownFor(state) : undefined;
+  return scale === 'chrome' && state.mode !== 'working' ? dropdownFor(state) : undefined;
 }
 
 // A queued cell explains itself where the pointer is; the branch line stays the branch line.
@@ -436,10 +436,10 @@ export function GitStatusPill({
   const lastPrRef = useRef<GitPullRequest | undefined>(undefined);
   /** Likewise the departing menu. */
   const lastDropdownRef = useRef<GitPillDropdownId | undefined>(undefined);
-  const isCard = scale === 'card';
+  const isChrome = scale === 'chrome';
   const isWorking = state.mode === 'working';
   /* Chrome-only, like the menu: the card pill carries no queue of its own. */
-  const showsQueued = isQueued && !isCard && !isWorking;
+  const showsQueued = isQueued && isChrome && !isWorking;
   const look = lookOf(state, showsQueued);
   const pr = prOf(state);
   const dropdown = menuFor(state, scale);
@@ -451,16 +451,16 @@ export function GitStatusPill({
     if (dropdown !== undefined) lastDropdownRef.current = dropdown;
   }, [dropdown]);
   // The card pill exists only with a PR; the card's status word carries the rest (ONL-2172).
-  if (isCard && !pr) return null;
+  if (scale === 'card' && !pr) return null;
   /* Queued takes the body whatever the state derives: the word says Take Back, so the press must take back. */
-  const action = isCard ? undefined : showsQueued ? onAction : bodyAction(state, onAction, onOpenPr);
+  const action = !isChrome ? undefined : showsQueued ? onAction : bodyAction(state, onAction, onOpenPr);
   const label = labelFor(state, strings, isBodyHovered, action !== undefined, showsQueued);
-  const revealDropdown = isCard ? undefined : dropdown ?? lastDropdownRef.current;
+  const revealDropdown = isChrome ? dropdown ?? lastDropdownRef.current : undefined;
   const current = currentOptionOf(state);
   const hasPrSegment = showsPrSegment(state);
 
-  const height = isCard ? 'var(--studio-attachment-pill-height)' : 'var(--studio-git-pill-height)';
-  const fontSize = isCard ? 'var(--studio-git-card-label-size)' : 'var(--text-supporting-size)';
+  const height = isChrome ? 'var(--studio-git-pill-height)' : 'var(--studio-attachment-pill-height)';
+  const fontSize = isChrome ? 'var(--text-supporting-size)' : 'var(--studio-git-card-label-size)';
   /* The two dividers are unlike on purpose: a full seam before the branch, a short faded dash before the chevron. */
   const divider = (
     <span
@@ -525,18 +525,18 @@ export function GitStatusPill({
       {prText}
     </HStack>
   );
-  const EDGE = isCard ? 'var(--spacing-1-5)' : 'var(--spacing-2)';
+  const EDGE = isChrome ? 'var(--spacing-2)' : 'var(--spacing-1-5)';
   const DIVIDER = 'var(--studio-git-divider-gap)';
   /* A point, not an Astryx `gap` step. On the glyph box, so it closes with it. */
   const LEADING_GAP_PX = 6;
-  const hasLabelCell = !isCard;
+  const hasLabelCell = scale !== 'card';
   const prStart = hasLabelCell ? DIVIDER : EDGE;
   const prEnd = prStart;
   /** Always mounted at chrome scale — see `Reveal`. */
-  const hasReveal = isCard ? hasPrSegment : true;
+  const hasReveal = isChrome || hasPrSegment;
   const prCell = (() => {
     if (!hasReveal) return null;
-    if (!revealPr || !onOpenPr || isCard)
+    if (!revealPr || !onOpenPr || !isChrome)
       return (
         <span className={CELL_CLASS} style={cellStyle(false, prStart, prEnd)}>
           {prSegment}
@@ -575,7 +575,7 @@ export function GitStatusPill({
     <HStack
       {...bodyProps}
       className={CELL_CLASS}
-      onClick={action === undefined && !isCard ? onNoActionPress : undefined}
+      onClick={action === undefined && isChrome ? onNoActionPress : undefined}
       {...(action === undefined ? {} : { 'data-interactive': 'true' })}
       onMouseEnter={() => setIsBodyHovered(true)}
       onMouseLeave={() => setIsBodyHovered(false)}
@@ -669,7 +669,7 @@ export function GitStatusPill({
       )}
       {prCell === null ? null : (
         <Reveal isOpen={hasPrSegment} testId="git-status-reveal">
-          {!isCard && divider}
+          {hasLabelCell && divider}
           {withTooltip(prCell, hoverLines.pr)}
         </Reveal>
       )}

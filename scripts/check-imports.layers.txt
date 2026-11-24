@@ -85,7 +85,6 @@ apps/studio/src/renderer/src/chat/skillMatch.ts → apps/studio/src/renderer/src
 apps/studio/src/renderer/src/chat/submitPrompt.ts → apps/studio/src/renderer/src/canvas/selection.ts
 apps/studio/src/renderer/src/chat/submitRegistry.ts → apps/studio/src/renderer/src/canvas/selection.ts
 apps/studio/src/renderer/src/chrome/tabs/TabPreviewCard.tsx → apps/studio/src/renderer/src/projects/ProjectCard.tsx
-apps/studio/src/renderer/src/chrome/tabs/TabPreviewCard.tsx → apps/studio/src/renderer/src/projects/gitCardProps.ts
 apps/studio/src/renderer/src/chrome/tabs/TabPreviewCard.tsx → apps/studio/src/renderer/src/projects/relativeTime.ts
 apps/studio/src/renderer/src/cloud/AccessBoundary.tsx → apps/studio/src/renderer/src/login/LoginAside.tsx
 apps/studio/src/renderer/src/cloud/GettingStarted.tsx → apps/studio/src/renderer/src/onboarding/OnboardingParts.tsx
