@@ -11,7 +11,7 @@ import { listWorkspaces } from '../workspace/store.js';
 import { repoIdentityFromRemoteUrl } from '../workspace/naming.js';
 import { captureGithub as capture, type GithubObservation } from './capture.js';
 import { createGithubImport, type GithubImportDeps } from './service.js';
-import { beginCreation } from './telemetry.js';
+import { beginCreation, creationAbandoned, creationStarted } from './telemetry.js';
 import { cleanupPendingClones } from './pending.js';
 import { proofSwitchOn } from '../diagnostics/gate.js';
 import { cloneRepository } from './clone.js';
@@ -70,14 +70,13 @@ export function registerGithubImportHandlers(): void {
           ?.projects.find((project) => !project.missing && existsSync(project.workspacePath))?.workspacePath,
         connectEvent: (outcome, next_action, entry_point) => capture('github_connect_finished', { outcome, next_action, entry_point }),
         cloneEvent: (outcome, entry_point) => capture('github_clone', { outcome, entry_point }),
+        creationEvent: (step) => { if (step === 'started') creationStarted('github'); else creationAbandoned('github'); },
         cloned: (path) => beginCreation(path, 'github', false),
         ...fixture,
       });
       services.set(event.sender.id, service);
       event.sender.once('destroyed', () => { service?.dispose(); services.delete(event.sender.id); });
     }
-    const state = await service.command(command);
-    if (command.kind === 'begin' && state.enabled && command.entryPoint !== 'settings') capture('workspace_creation_flow', { source: 'github', step: 'started', outcome: 'started' });
-    return state;
+    return service.command(command);
   });
 }

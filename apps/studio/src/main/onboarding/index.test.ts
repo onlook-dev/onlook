@@ -29,7 +29,7 @@ afterEach(() => {
 
 test('the machine channels are absent until machine-check is on (ONL-3111)', () => {
   const off = registeredChannels();
-  expect(off).toEqual(['onboarding:state', 'onboarding:complete']);
+  expect(off).toEqual(['onboarding:state', 'onboarding:progress', 'onboarding:complete']);
 
   process.env['STUDIO_FLAGS'] = 'machine-check';
   expect(registeredChannels()).toEqual([

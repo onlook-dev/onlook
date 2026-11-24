@@ -8,15 +8,18 @@ import type { PostHog } from 'posthog-js/dist/module.no-external';
 import type { AppLike } from '../telemetry/index.js';
 
 const { resetIdentityCache } = await import('../identity/store.js');
-const { initTelemetry, peekQueueForTesting, resetTelemetryForTesting, setAppForTesting } = await import('../telemetry/index.js');
+const { flush, initTelemetry, peekQueueForTesting, resetTelemetryForTesting, setAppForTesting } = await import('../telemetry/index.js');
 const { peekLinesForTesting, recordLinesForTesting, resetLogForTesting } = await import('../log/index.js');
-const { captureError, fingerprintFor, installProcessHooks, resetErrorsForTesting } = await import('./index.js');
+const { captureError, fingerprintFor, installProcessHooks, resetErrorsForTesting, recordProcessExit, setProcessCrashContextReader } = await import('./index.js');
+const { claimRunningMarker, readRunningContext, updateRunningContext } = await import('./crash-marker.js');
+const { installProcessCrashHooks, resetProcessCrashHooksForTesting } = await import('./processes.js');
 const { reportUpdateFailure } = await import('../updater/check.js');
 
 const made: string[] = [];
 const ENV_KEYS = ['STUDIO_STATE_ROOT', 'STUDIO_POSTHOG_KEY', 'STUDIO_TELEMETRY', 'AGENT_HEADLESS'] as const;
 const originalEnv = new Map<string, string | undefined>(ENV_KEYS.map((key) => [key, process.env[key]]));
 const realFetch = globalThis.fetch;
+const postedEvents: Array<{ event: string; properties: Record<string, unknown> }> = [];
 
 function makeRoot(name: string): string {
   const root = mkdtempSync(join(tmpdir(), `studio-errors-${name}-`));
@@ -32,12 +35,18 @@ beforeEach(() => {
   resetTelemetryForTesting();
   resetLogForTesting();
   resetErrorsForTesting();
+  resetProcessCrashHooksForTesting();
   resetIdentityCache();
   for (const key of ENV_KEYS) delete process.env[key];
   process.env['STUDIO_STATE_ROOT'] = makeRoot('state');
   process.env['STUDIO_POSTHOG_KEY'] = 'phc_test';
   setAppForTesting(fakeApp(makeRoot('userdata')));
-  globalThis.fetch = (() => Promise.resolve(new Response('{"status":1}'))) as unknown as typeof fetch;
+  postedEvents.length = 0;
+  globalThis.fetch = ((_url: string, init: { body: string }) => {
+    const body = JSON.parse(init.body) as { batch: typeof postedEvents };
+    postedEvents.push(...body.batch);
+    return Promise.resolve(new Response('{"status":1}'));
+  }) as unknown as typeof fetch;
   recordLinesForTesting();
   initTelemetry();
 });
@@ -61,6 +70,81 @@ afterAll(() => {
 
 const exceptions = () => peekQueueForTesting().filter((event) => event.event === '$exception');
 const errorLines = () => peekLinesForTesting().filter((line) => line['owner'] !== undefined);
+
+it('Windows main exceptions keep a scrubbed JavaScript stack in error tracking', async () => {
+  const platform = Object.getOwnPropertyDescriptor(process, 'platform')!;
+  try {
+    Object.defineProperty(process, 'platform', { ...platform, value: 'win32' });
+    const target = new EventEmitter();
+    installProcessHooks(target as unknown as Parameters<typeof installProcessHooks>[0]);
+    const error = new TypeError('failed at C:\\private\\project\\file.ts');
+    error.stack = 'TypeError: failed\n    at boot (C:\\private\\Onlook\\resources\\app.asar\\out\\main\\index.js:12:8)';
+    target.emit('uncaughtException', error, 'uncaughtException');
+    await flush();
+    const exception = postedEvents.find(({ event }) => event === '$exception')?.properties;
+    expect(exception).toMatchObject({ process_type: 'main', $exception_type: 'TypeError' });
+    expect(exception?.['$exception_list']).toMatchObject([{ stacktrace: { frames: [{ filename: 'app://studio/out/main/index.js', lineno: 12, colno: 8 }] } }]);
+    expect(JSON.stringify(exception)).not.toContain('private');
+  } finally {
+    Object.defineProperty(process, 'platform', platform);
+  }
+});
+
+it('GPU and utility crashes carry their native reason and code without inventing a JavaScript stack', async () => {
+  await recordProcessExit({ process_class: 'gpu', reason: 'crashed', exit_code: -1073741819 });
+  await recordProcessExit({ process_class: 'utility', reason: 'oom', exit_code: 1 });
+  const events = [...postedEvents, ...peekQueueForTesting()];
+  const nativeExceptions = events.filter(({ event }) => event === '$exception');
+  expect(nativeExceptions).toHaveLength(2);
+  expect(nativeExceptions.map(({ properties }) => properties['process_type'])).toEqual(['gpu', 'utility']);
+  expect(events.filter(({ event }) => event === 'crash_detected')).toEqual([]);
+  expect(nativeExceptions.map(({ properties }) => [properties['reason'], properties['exit_code']])).toEqual([['crashed', -1073741819], ['oom', 1]]);
+  expect(events.filter(({ event }) => event === 'process_gone').map(({ properties }) => [properties['process_class'], properties['reason'], properties['exit_code']])).toEqual([['gpu', 'crashed', -1073741819], ['utility', 'oom', 1]]);
+  for (const exception of nativeExceptions) {
+    const list = exception.properties['$exception_list'] as Record<string, unknown>[];
+    expect(list).toHaveLength(1);
+    expect(list[0]).toMatchObject({ type: 'NativeProcessCrash' });
+    expect(list[0]).not.toHaveProperty('stacktrace');
+  }
+});
+
+it('live child crashes include the current screen and active creation checkpoint', async () => {
+  claimRunningMarker('0199e1e0-0000-7000-8000-000000000001', '2.0.0');
+  updateRunningContext('onboarding_screen_shown', { screen: 'import' });
+  updateRunningContext('workspace_creation_flow', { step: 'started', outcome: 'started' });
+  setProcessCrashContextReader(readRunningContext);
+  await recordProcessExit({ process_class: 'utility', reason: 'crashed', exit_code: 3 });
+  const events = [...postedEvents, ...peekQueueForTesting()];
+  expect(events.filter(({ event }) => event === 'crash_detected')).toEqual([]);
+  const reports = events.filter(({ event }) => event === '$exception');
+  expect(reports).toHaveLength(1);
+  for (const report of reports) expect(report.properties).toMatchObject({ last_event: 'workspace_creation_flow', last_screen: 'import', during_workspace_creation: true });
+});
+
+it('process crash hooks observe startup exits before performance sampling and install only once', async () => {
+  const target = new EventEmitter();
+  installProcessCrashHooks(target as unknown as Parameters<typeof installProcessCrashHooks>[0]);
+  installProcessCrashHooks(target as unknown as Parameters<typeof installProcessCrashHooks>[0]);
+  expect(target.listenerCount('child-process-gone')).toBe(1);
+  expect(target.listenerCount('render-process-gone')).toBe(1);
+  target.emit('child-process-gone', {}, { type: 'GPU', reason: 'crashed', exitCode: 3 });
+  target.emit('child-process-gone', {}, { type: 'Utility', reason: 'oom', exitCode: 1 });
+  target.emit('render-process-gone', {}, { id: 99, getType: () => 'window' }, { reason: 'crashed', exitCode: 2 });
+  await flush();
+  const events = [...postedEvents, ...peekQueueForTesting()];
+  expect(events.filter(({ event }) => event === 'crash_detected')).toEqual([]);
+  expect(events.filter(({ event }) => event === 'process_gone').map(({ properties }) => properties['process_class'])).toEqual(['gpu', 'utility', 'tab']);
+  expect(events.filter(({ event }) => event === '$exception').map(({ properties }) => [properties['$exception_type'], properties['process_type']])).toEqual([['NativeProcessCrash', 'gpu'], ['NativeProcessCrash', 'utility'], ['NativeProcessCrash', 'renderer']]);
+});
+
+it('intentional child termination and a user app crash are not Onlook exceptions', () => {
+  recordProcessExit({ process_class: 'tab', reason: 'killed', exit_code: 0 });
+  recordProcessExit({ process_class: 'frame', reason: 'crashed', exit_code: 1 });
+  recordProcessExit({ process_class: 'dev_server', reason: 'crashed', exit_code: 1 });
+  expect(exceptions()).toEqual([]);
+  expect(peekQueueForTesting().filter(({ event }) => event === 'crash_detected')).toEqual([]);
+  expect(peekQueueForTesting().filter(({ event }) => event === 'process_gone')).toHaveLength(3);
+});
 
 describe('update-check network failures', () => {
   it.each([

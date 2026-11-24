@@ -90,7 +90,7 @@ export interface ProjectCreateDeps {
   fabricate(plan: ReadyWorkspacePlan): Promise<WorkspaceCreateResult>;
   rollback(plan: ReadyWorkspacePlan): Promise<void>;
   register(workspace: WorkspaceCreated): void;
-  capture<N extends TelemetryEventName>(event: N, properties: TelemetryProperties<N>): void;
+  capture<N extends TelemetryEventName>(event: N, properties: TelemetryProperties<N>, workspacePath?: string): void;
   startSession(cwd: string): Promise<void>;
   install(workspacePath: string, signal: AbortSignal): Promise<InstallOutcome>;
   refreshEnvironment?(): Promise<unknown>;
@@ -167,7 +167,7 @@ export async function createProject(
       duration_ms: Date.now() - startedAt,
       error_class: context.copyFailure?.cause === 'git_timed_out' ? 'timeout' : errorClass,
       ...(context.copyFailure === undefined ? {} : { failure_step: context.copyFailure.step, failure_cause: context.copyFailure.cause }),
-    });
+    }, context.workspace?.workspacePath);
     // A copy failure is explained by its own classification, never by the machine probe.
     if (context.copyFailure !== undefined) {
       logger.warn('project copy failed', { failure_step: context.copyFailure.step, failure_cause: context.copyFailure.cause });
@@ -398,7 +398,7 @@ async function bear(
     ...workspaceTelemetryProperties(workspace.repoIdentity),
     source: origin,
     entry_point: request.entryPoint,
-  });
+  }, workspace.workspacePath);
   if (request.comfort !== undefined) {
     deps.capture('project_mode_chosen', {
       ...workspaceTelemetryProperties(workspace.repoIdentity),

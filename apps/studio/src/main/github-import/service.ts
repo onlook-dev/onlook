@@ -34,6 +34,7 @@ export interface GithubImportDeps {
   existing(repository: GithubRepository): string | undefined;
   connectEvent(outcome: 'connected' | 'waiting' | 'no_connection', next: 'clone' | 'folder' | 'retry' | 'dismiss' | 'waiting', entryPoint: GithubEntryPoint): void;
   cloneEvent(outcome: 'started' | 'done' | NonNullable<GithubImportState['failure']>, entryPoint: GithubEntryPoint): void;
+  creationEvent?(step: 'started' | 'abandoned'): void;
   cloned(path: string): void;
   clone?: typeof cloneRepository;
   branches?: (credential: Extract<GithubCredential, { status: 'ready' }>) => Promise<string[]>;
@@ -67,6 +68,7 @@ export function createGithubImport(deps: GithubImportDeps) {
   let work: { controller: AbortController; running: Promise<void> } | undefined;
   let attempt: ConnectionAttempt = { kind: 'none' };
   let approval: 'none' | 'waiting' = 'none';
+  let creationActive = false;
 
   const now = (): number => (deps.now ?? Date.now)();
 
@@ -89,6 +91,7 @@ export function createGithubImport(deps: GithubImportDeps) {
   }
 
   function reset(): void {
+    abandonCreation();
     generation += 1;
     work?.controller.abort();
     context = githubOff();
@@ -96,6 +99,12 @@ export function createGithubImport(deps: GithubImportDeps) {
     account = deps.subject();
     attempt = { kind: 'none' };
     approval = 'none';
+  }
+
+  function abandonCreation(): void {
+    if (!creationActive) return;
+    creationActive = false;
+    deps.creationEvent?.('abandoned');
   }
 
   function finish(next: 'clone' | 'folder' | 'retry' | 'dismiss' | 'waiting'): void {
@@ -112,14 +121,22 @@ export function createGithubImport(deps: GithubImportDeps) {
     const active = (): boolean => generation === epoch && account === deps.subject() && deps.enabled();
     if (command.kind === 'begin') {
       finish('dismiss');
+      abandonCreation();
       generation += 1;
       const owner = generation;
       phase = { kind: 'idle' };
+      if (command.entryPoint !== 'settings') {
+        creationActive = true;
+        deps.creationEvent?.('started');
+      }
       work?.controller.abort();
       await work?.running;
-      return owner === generation && account === deps.subject() && deps.enabled() ? snapshot() : githubOff();
+      if (owner !== generation) return githubOff();
+      if (account !== deps.subject() || !deps.enabled()) { abandonCreation(); return githubOff(); }
+      return snapshot();
     }
     if (command.kind === 'cancel') {
+      abandonCreation();
       work?.controller.abort();
       await work?.running;
       return active() ? snapshot() : githubOff();
@@ -131,6 +148,7 @@ export function createGithubImport(deps: GithubImportDeps) {
         return snapshot();
       }
       finish(command.next);
+      abandonCreation();
       generation += 1;
       const owner = generation;
       phase = { kind: 'idle' };
@@ -269,6 +287,10 @@ export function createGithubImport(deps: GithubImportDeps) {
         if (!ownsLoading()) return active() ? snapshot() : githubOff();
         if (destination === undefined) { phase = { kind: 'failed', selection, failure: 'destination' }; return snapshot(); }
         context = { ...context, destination, destinationChoice: context.destinationChoice ?? 'onlook' };
+        if (!creationActive && command.entryPoint !== 'settings') {
+          creationActive = true;
+          deps.creationEvent?.('started');
+        }
         finish('clone');
         deps.cloneEvent('started', command.entryPoint);
         const controller = new AbortController();
@@ -289,6 +311,7 @@ export function createGithubImport(deps: GithubImportDeps) {
               outcome = result.ok ? 'done' : result.failure;
               if (result.ok && ownsClone()) {
                 deps.cloned(result.sourcePath);
+                creationActive = false;
                 phase = { kind: 'done', selection, sourcePath: result.sourcePath, progress: cloning.progress };
               }
             }

@@ -296,14 +296,14 @@ export class ClaudeHost {
   }
 
   /** The one caller of `machine.failed`: `fallback` telemetry rides every failure. */
-  private failWith(detail: ClaudeLoginDetail): void {
+  private failWith(detail: ClaudeLoginDetail, failure: import('../telemetry/setup-failure.js').SetupFailureInput = { detail }): void {
     this.machine.failed(detail);
-    recordAgentSetupStep('claude', 'fallback', { outcome: fallbackOutcome(detail), ...(this.cause === 'boot' ? { entryPoint: 'startup' } : {}) });
+    recordAgentSetupStep('claude', 'fallback', { outcome: fallbackOutcome(detail), failure, ...(this.cause === 'boot' ? { entryPoint: 'startup' } : {}) });
   }
 
   private verificationFailed(detail: ClaudeVerificationDetail, pinned?: true, facts?: ClaudeTurnFacts): void {
     this.machine.verificationFailed(detail, facts, this.plan);
-    if (pinned !== true) recordAgentSetupStep('claude', 'fallback', { outcome: fallbackOutcome(detail), ...(this.cause === 'boot' ? { entryPoint: 'startup' } : {}) });
+    if (pinned !== true) recordAgentSetupStep('claude', 'fallback', { outcome: fallbackOutcome(detail), failure: { detail }, ...(this.cause === 'boot' ? { entryPoint: 'startup' } : {}) });
   }
 
   private detectionIsCurrent(owner: DetectionOwner): boolean {
@@ -333,14 +333,14 @@ export class ClaudeHost {
       });
       if (!this.detectionIsCurrent(owner)) return this.current();
       if (verdict.status === 'signed-in') await this.settleCredential(verdict, env, owner);
-      else if (verdict.status === 'failed') this.failWith(verdict.detail);
+      else if (verdict.status === 'failed') this.failWith(verdict.detail, verdict.diagnostics === undefined ? { detail: verdict.detail } : { detail: verdict.diagnostics.error_class, exitCode: verdict.diagnostics.exit_code });
       // A login child that exited without leaving a credential is the fallback, not a fresh start (ONL-2186).
       else if (this.cause === 'login') this.failWith(loginFailed ? 'server-rejected' : 'exited');
       else this.machine.signedOut();
     } catch (error) {
       if (!this.detectionIsCurrent(owner)) return this.current();
       logger.warn('status failed', { error });
-      this.failWith('exited');
+      this.failWith('exited', { detail: 'exited', error });
     }
     return this.current();
   }
@@ -420,7 +420,7 @@ export class ClaudeHost {
         this.machine.signedOut('exited');
         recordAgentSetupStep('claude', 'fallback', { outcome: 'failed' });
       } else {
-        this.failWith(isSpawnFailure(error) ? 'spawn' : 'exited');
+        this.failWith(isSpawnFailure(error) ? 'spawn' : 'exited', { error });
       }
       return;
     }

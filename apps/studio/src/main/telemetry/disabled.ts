@@ -8,6 +8,7 @@ export const resolveWorkspaceTelemetryId: typeof Telemetry.resolveWorkspaceTelem
 export const headlessTelemetryAllowed: typeof Telemetry.headlessTelemetryAllowed = () => false;
 export const correlation: typeof Telemetry.correlation = () => undefined;
 export const prepareTelemetry: typeof Telemetry.prepareTelemetry = () => {};
+export const checkLaunchEnvironment: typeof Telemetry.checkLaunchEnvironment = async () => {};
 export const noteAppShown: typeof Telemetry.noteAppShown = () => {};
 export const initTelemetry: typeof Telemetry.initTelemetry = () => {};
 export const receiveWebAttribution: typeof Telemetry.receiveWebAttribution = () => {};
@@ -19,6 +20,7 @@ export const launchIsFirst: typeof Telemetry.launchIsFirst = () => undefined;
 export const currentTelemetryConfig: typeof Telemetry.currentTelemetryConfig = () => ({ enabled: false });
 export const perfWindowOverride: typeof Telemetry.perfWindowOverride = () => undefined;
 export const capture: typeof Telemetry.capture = () => false;
+export const setCrashContextRecorder: typeof Telemetry.setCrashContextRecorder = () => {};
 export const setPreviewDiagnosticsRestorer: typeof Telemetry.setPreviewDiagnosticsRestorer = () => {};
 export const captureException: typeof Telemetry.captureException = () => {};
 export const recordProjectRenamed: typeof Telemetry.recordProjectRenamed = () => {};

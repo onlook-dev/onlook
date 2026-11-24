@@ -1,9 +1,9 @@
-import type { ProjectCreateState, WorkspaceCreated } from '@studio/events';
+import type { OnboardingProgress, ProjectCreateState, WorkspaceCreated } from '@studio/events';
 
 export type Screen =
   | { kind: 'pending' }
   | { kind: 'parked' }
-  | { kind: 'onboarding' }
+  | ({ kind: 'onboarding' } & Partial<OnboardingProgress>)
   | {
       kind: 'editor';
       restored?: WorkspaceCreated;

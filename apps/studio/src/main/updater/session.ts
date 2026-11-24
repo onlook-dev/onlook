@@ -5,6 +5,7 @@ import { gt } from 'semver';
 import { log } from '../log/index.js';
 import { reportUpdateFailure, updateAuthorizationDenied, updateHttpStatus, type UpdateFailureStage } from './check.js';
 import type { UpdateMachine } from './machine.js';
+import { capture } from '../telemetry/index.js';
 
 const logger = log('updater');
 
@@ -122,6 +123,7 @@ export function createUpdateSession(
       if (machine.isStaging() || machine.current().restarting) return;
       updater.autoInstallOnAppQuit = !refusedVersion;
       busy = true;
+      capture('update_check_started', { requested });
       checkRequested = requested;
       stage = 'check';
       const prior = machine.current();
@@ -130,6 +132,7 @@ export function createUpdateSession(
       try {
         const result = await retryServerErrors(() => updater.checkForUpdates());
         if (lifetime.signal.aborted) return;
+        capture('update_check_completed', { requested, outcome: result?.isUpdateAvailable ? 'available' : 'up_to_date' });
         if (result && !result.isUpdateAvailable && checkRequested && refusedVersion) upToDate();
         if (result?.isUpdateAvailable && canAttempt(result.updateInfo.version) && (!stagedVersion || gt(result.updateInfo.version, stagedVersion))) {
           attemptedVersion = result.updateInfo.version;
