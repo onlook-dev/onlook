@@ -89,7 +89,7 @@ describe('a copy failure keeps only its step and cause', () => {
     ['a refused write', failed(`fatal: ${PRIVATE}: Permission denied`), 'permission_denied'],
     ['an operation not permitted', failed(`fatal: ${PRIVATE}: Operation not permitted`), 'permission_denied'],
     ['a read-only volume', failed(`fatal: ${PRIVATE}: Read-only file system`), 'permission_denied'],
-    ['a missing git executable', failed(PRIVATE, null, { missing: true }), 'git_failed'],
+    ['a missing git executable', failed(PRIVATE, null, { missing: true }), 'git_not_found'],
     ['an inconclusive run is not a timeout', failed(PRIVATE, null), 'git_failed'],
     ['a broken git config', failed(`fatal: bad config line 1 in file ${PRIVATE}/.gitconfig`), 'git_failed'],
     ['an unaccepted license', failed('You have not agreed to the Xcode license agreements.', 69), 'git_failed'],

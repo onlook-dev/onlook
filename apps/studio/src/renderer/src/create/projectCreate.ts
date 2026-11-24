@@ -86,6 +86,7 @@ const COPY_FAILURE = {
   folder_unavailable: { actionKey: 'project.create.copy.folder_unavailable', wayOut: 'choose-folder' },
   copy_in_progress: { actionKey: 'project.create.copy.copy_in_progress', wayOut: 'choose-folder' },
   disk_full: { actionKey: 'project.create.copy.disk_full', wayOut: 'choose-folder' },
+  git_not_found: { actionKey: 'machine.failure.git_not_found', wayOut: 'choose-folder' },
   git_failed: { actionKey: 'project.create.copy.git_failed', wayOut: 'choose-folder' },
   git_timed_out: { actionKey: 'project.create.copy.git_timed_out', wayOut: 'retry' },
   unknown: { actionKey: 'project.create.next.copying', wayOut: 'retry' },

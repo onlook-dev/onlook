@@ -641,6 +641,25 @@ describe('rollback and the boot sweep', () => {
     });
   });
 
+  it('a missing Git executable keeps its cause and leaves the source untouched', async () => {
+    const root = useOwnWorkspaceRoot('git-missing');
+    const folder = makeDirWithFiles({ name: 'git-missing', files: { 'index.html': 'Hello' } });
+    const before = hashTree(folder);
+    const plan = await planCopy(folder);
+    const run = spyOn(workspaceGit, 'git').mockResolvedValue({
+      ok: false, out: '', err: 'Host executable not found in trusted PATH', timedOut: false, missing: true, exitCode: null,
+    });
+    try {
+      const result = await fabricateFromPlan(plan);
+      expect(result).toMatchObject({ ok: false, reason: 'create-failed', copyFailure: { step: 'git_init', cause: 'git_not_found' } });
+      expect(bucketsIn(root)).toEqual([]);
+      expect(hashTree(folder)).toBe(before);
+      expect(existsSync(join(folder, '.git'))).toBe(false);
+    } finally {
+      run.mockRestore();
+    }
+  });
+
   it('a timed-out commit stays timed out without probing whether the index is empty', async () => {
     const root = useOwnWorkspaceRoot('commit-timeout');
     const folder = makeDirWithFiles({ name: 'commit-timeout', files: { 'index.html': 'x' } });
