@@ -1,5 +1,9 @@
 export interface ArtifactReference { value: string; start: number; end: number }
 
+export class ArtifactDependencyError extends Error {
+  constructor(message: string, readonly start: number) { super(message); }
+}
+
 function cssReferences(text: string, base: number): ArtifactReference[] {
   const references: ArtifactReference[] = [];
   for (const match of text.matchAll(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^\s)]+))\s*\)/gi)) {
@@ -42,10 +46,15 @@ export function findTagEnd(html: string, from: number): number {
   return end;
 }
 
-export function artifactReferences(text: string, extension: string): ArtifactReference[] {
+export function artifactReferences(text: string, extension: string, base = 0): ArtifactReference[] {
   if (extension === '.css') return cssReferences(text, 0);
   if (extension === '.js') {
-    if (/\b(?:import\s*(?:\(|[\w*{])|require\s*\(|fetch\s*\(|importScripts\s*\(|new\s+(?:Image|WebSocket|XMLHttpRequest|EventSource|RTCPeerConnection|Worker)\b)|\.(?:src|href|srcset)\s*=|\.setAttribute\s*\(\s*['"](?:src|href|srcset)['"]/u.test(text) || /(?:(?:https?|wss?|studio-artifact):\/\/|(?:\b|\\(?:[bfnrtv]|[0-7]{1,3}|x[\da-f]{2}|u[\da-f]{4}))file:)/iu.test(text)) throw new Error('unsupported script dependency');
+    const dependency = /\b(?:import\s*(?:\(|[\w*{])|require\s*\(|fetch\s*\(|importScripts\s*\(|new\s+(?:Image|WebSocket|XMLHttpRequest|EventSource|RTCPeerConnection|Worker)\b)|\.(?:src|href|srcset)\s*=|\.setAttribute\s*\(\s*['"](?:src|href|srcset)['"]/u.exec(text)
+      ?? /(?:(?:https?|wss?|studio-artifact):\/\/|(?:\b|\\(?:[bfnrtv]|[0-7]{1,3}|x[\da-f]{2}|u[\da-f]{4}))file:)/iu.exec(text);
+    if (dependency !== null) {
+      const action = /^(?:import|require)/.test(dependency[0]) ? 'import' : 'resource access';
+      throw new ArtifactDependencyError(`Remove this script ${action} and use self-contained classic JavaScript.`, base + dependency.index);
+    }
     return [];
   }
   const references: ArtifactReference[] = [];
@@ -62,7 +71,8 @@ export function artifactReferences(text: string, extension: string): ArtifactRef
     if (end >= text.length) throw new Error('incomplete HTML tag');
     const tag = text.slice(start, end + 1);
     const name = /^<\s*([a-z\d-]+)/i.exec(tag)?.[1]?.toLowerCase();
-    if (['base', 'iframe', 'object', 'embed', 'video', 'audio', 'source', 'track'].includes(name ?? '') || /\stype\s*=\s*["']?module\b/i.test(tag)) throw new Error('unsupported HTML dependency');
+    if (['base', 'iframe', 'object', 'embed', 'video', 'audio', 'source', 'track'].includes(name ?? '')) throw new ArtifactDependencyError(`Remove this <${name}> element from the import copy.`, start);
+    if (/\stype\s*=\s*["']?module\b/i.test(tag)) throw new ArtifactDependencyError('Replace this module script with self-contained classic JavaScript.', start);
     for (const match of tag.matchAll(/\s(src|srcset|href|style|action|formaction)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi)) {
       const value = match[2] ?? match[3] ?? match[4] ?? '';
       const valueStart = start + (match.index ?? 0) + match[0].indexOf(value, match[0].indexOf('=') + 1);
@@ -75,7 +85,7 @@ export function artifactReferences(text: string, extension: string): ArtifactRef
       const closing = text.toLowerCase().indexOf(`</${name}`, offset);
       if (closing < 0) throw new Error('incomplete raw-text tag');
       if (name === 'style') references.push(...cssReferences(text.slice(offset, closing), offset));
-      if (name === 'script') artifactReferences(text.slice(offset, closing), '.js');
+      if (name === 'script') artifactReferences(text.slice(offset, closing), '.js', offset);
       offset = closing;
     }
   }

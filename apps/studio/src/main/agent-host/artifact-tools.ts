@@ -52,7 +52,7 @@ export function artifactTools(report: ArtifactToolReport, quotes = false, liftsA
       artifactId: id, ...markup,
       edits: z.array(z.object({ path: z.string().max(240), oldText: z.string().min(1).max(5 * 1024 * 1024), newText: z.string().max(5 * 1024 * 1024) })).min(1).max(128).optional(),
     }, true),
-    make(ARTIFACT_TOOL_NAMES.import, 'import', 'Import HTML from this project, leaving the original unchanged', { path: z.string().min(1).max(4096) }, true),
+    make(ARTIFACT_TOOL_NAMES.import, 'import', 'Import one HTML document from this project with local CSS, classic JavaScript, PNG/JPEG images and WOFF/WOFF2 fonts. No remote references, links to other HTML documents, module scripts or symlinks. If import fails, use the reported file and reference to prepare a compatible copy and retry, leaving the original unchanged', { path: z.string().min(1).max(4096) }, true),
     make(ARTIFACT_TOOL_NAMES.place, 'place', 'Place a known artifact page on this canvas', {
       artifactId: id, pagePath: z.string().max(240).optional(), pageId: z.string().optional(),
       beside: z.string().optional(), x: z.number().finite().optional(), y: z.number().finite().optional(),

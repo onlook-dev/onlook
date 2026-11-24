@@ -1,5 +1,5 @@
 import { expect, it } from 'bun:test';
-import { artifactReferences, rewriteArtifactReferences } from './references.js';
+import { ArtifactDependencyError, artifactReferences, rewriteArtifactReferences } from './references.js';
 
 it('rewrites only actual markup/style references, never lookalike script text or data attributes', () => {
   const html = '<!-- <img src="ignored.png"> --><img data-src="not-a-reference" src="url.png" style="background:url(url.png)"><script>const label=\'src="url.png"\';</script><style>body{background:url("url.png")}</style>';
@@ -25,12 +25,12 @@ it.each(['ws', 'rows', 'news', 'wss', 'http', 'https', 'profile', 'myfile'])('al
 
 it.each(['http://', 'https://', 'ws://', 'wss://', 'studio-artifact://', 'file:', 'file:/', 'file://', 'file:///', 'WSS://', 'FILE:'])('still refuses %s references in standalone and inline scripts', (scheme) => {
   const script = `const address = '${scheme}example.invalid/resource';`;
-  expect(() => artifactReferences(script, '.js')).toThrow('unsupported script dependency');
-  expect(() => artifactReferences(`<script>${script}</script>`, '.html')).toThrow('unsupported script dependency');
+  expect(() => artifactReferences(script, '.js')).toThrow(ArtifactDependencyError);
+  expect(() => artifactReferences(`<script>${script}</script>`, '.html')).toThrow(ArtifactDependencyError);
 });
 
 it.each([String.raw`\b`, String.raw`\f`, String.raw`\n`, String.raw`\r`, String.raw`\t`, String.raw`\v`, String.raw`\0`, String.raw`\040`, String.raw`\12`, String.raw`\x20`, String.raw`\u0020`, String.raw`\u{20}`])('still refuses file references after escaped whitespace %s', (prefix) => {
   const script = `const address = '${prefix}file:///example.invalid/resource';`;
-  expect(() => artifactReferences(script, '.js')).toThrow('unsupported script dependency');
-  expect(() => artifactReferences(`<script>${script}</script>`, '.html')).toThrow('unsupported script dependency');
+  expect(() => artifactReferences(script, '.js')).toThrow(ArtifactDependencyError);
+  expect(() => artifactReferences(`<script>${script}</script>`, '.html')).toThrow(ArtifactDependencyError);
 });
