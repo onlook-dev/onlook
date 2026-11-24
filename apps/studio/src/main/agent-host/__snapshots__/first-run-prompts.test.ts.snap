@@ -1860,7 +1860,7 @@ Edit the existing artifact in place without content undo. Prefer edits for small
 
 ## import_artifact
 
-Import HTML from this project, leaving the original unchanged
+Import one HTML document from this project with local CSS, classic JavaScript, PNG/JPEG images and WOFF/WOFF2 fonts. No remote references, links to other HTML documents, module scripts or symlinks. If import fails, use the reported file and reference to prepare a compatible copy and retry, leaving the original unchanged
 
 {
   "type": "object",
