@@ -22,6 +22,18 @@ const workspace: WelcomeProject = {
   baseBranch: 'main',
 };
 
+describe('canvas page creation (ONL-3092)', () => {
+  for (const harness of ['claude', 'codex'] as const) {
+    it(`keeps ${harness} on the current canvas page unless the user explicitly asks for a new one`, () => {
+      const text = briefing(workspace, { harness });
+      expect(text).toContain('Keep new work on the current canvas page by default');
+      expect(text).toContain('Use `create_page` only when the user explicitly asks for a new canvas page');
+      expect(text).toContain('A new site route, design, or variant is not a request for a new canvas page');
+      expect(text).not.toContain('rather than crowded onto what is already on screen');
+    });
+  }
+});
+
 describe('structured project file removal', () => {
   for (const harness of ['claude', 'codex'] as const) {
     it(`requires ${harness} to use the owned deletion tool rather than shell removal`, () => {
