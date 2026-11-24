@@ -23,8 +23,9 @@ export async function checkPlaceholderPixels(app: ElectronApplication, page: Pag
   const oldText = 'WWWW WWWW WWWW WWWW WWWW WWWW WWWW WWWW';
   const newText = 'IIII IIII IIII IIII IIII IIII IIII IIII';
   const animationTime = () => placeholder.evaluate(element => Number(element.getAnimations({ subtree: true })[0]?.currentTime));
-  const freezeSweep = () => placeholder.evaluate(element => {
+  const freezeSweep = () => placeholder.evaluate(async element => {
     for (const animation of element.getAnimations({ subtree: true })) { animation.pause(); animation.currentTime = 1200; }
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
   });
   await placeholder.locator('..').evaluate((element, size) => { (element as HTMLElement).style.width = `${size}px`; }, width);
   const capture = async () => {
