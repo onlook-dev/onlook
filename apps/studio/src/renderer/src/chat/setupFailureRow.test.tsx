@@ -53,6 +53,14 @@ async function replace(state: ProjectCreateState): Promise<void> {
 
 const find = (testId: string): HTMLButtonElement | null => container!.querySelector<HTMLButtonElement>(`[data-testid="${testId}"]`);
 
+it('shows installation guidance for missing Git without Retry or raw command output', async () => {
+  await mount(failedCopy('git_not_found'));
+  expect(container!.textContent).toContain(en['machine.failure.git_not_found']);
+  expect(container!.textContent).not.toContain(GIT_OUTPUT);
+  expect(find('chat-setup-retry')).toBeNull();
+  expect(find('chat-setup-choose-folder')?.textContent).toContain(en['project.create.chooseFolder']);
+});
+
 it('offers choosing the folder again, and no Retry, where repeating the copy cannot succeed', async () => {
   const picks: PickFolderRequest[] = [];
   const created: unknown[] = [];

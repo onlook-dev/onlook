@@ -77,7 +77,7 @@ export function workspaceDisplayName(workspace: {
 
 export interface CopyFailure {
   step: 'claim' | 'copy_files' | 'git_init' | 'git_config' | 'git_add' | 'git_commit' | 'worktree_cut';
-  cause: 'ignored_files' | 'permission_denied' | 'folder_unavailable' | 'copy_in_progress' | 'disk_full' | 'git_timed_out' | 'git_failed' | 'unknown';
+  cause: 'ignored_files' | 'permission_denied' | 'folder_unavailable' | 'copy_in_progress' | 'disk_full' | 'git_not_found' | 'git_timed_out' | 'git_failed' | 'unknown';
 }
 
 export type WorkspaceCreateResult =

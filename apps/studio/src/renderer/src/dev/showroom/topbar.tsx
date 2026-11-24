@@ -31,7 +31,7 @@ function Band({ slots, isHome, update = IDLE_UPDATE_STATE, interaction, isWindow
   }, [interaction, updateInteraction]);
   return <div ref={host} style={{ width: 700 }}>
     <TopBarView
-      update={<Presence isShown={pillKey(update) !== null} gap={12}><UpdatePillView state={update} onRestart={noop} isRestarting={update.restarting} /></Presence>}
+      update={<Presence isShown={pillKey(update) !== null} gap={12}><UpdatePillView state={update} onRestart={noop} onRetry={noop} isRestarting={update.restarting} /></Presence>}
       appMenu={<AppMenuView sections={appMenuSections(APP_COMMAND_ORDER, helpMenuItems(), slots.rails !== undefined)} onCommand={noop} onHelp={noop} />}
       tabs={isHome ? [] : [{ id: 'project', name: 'Website' }]}
       activeTabId={isHome ? 'home' : 'project'}
@@ -59,6 +59,14 @@ export const TOPBAR_GALLERY: Gallery = {
   title: 'Onboarding window bar',
   subtitle: 'Select one state to inspect the real window-bar component over the screen below it.',
   categories: [
+    {
+      id: 'authorization-denied', title: 'Update · administrator access',
+      stories: [{ id: 'topbar-gallery-authorization-denied', title: 'Updates paused', render: () => <Band slots={ONBOARDING_SLOTS} isHome update={{ status: 'error', message: 'UPDATE_AUTHORIZATION_DENIED' }} /> }],
+    },
+    ...(['hover', 'focus'] as const).map((interaction) => ({
+      id: `authorization-denied-${interaction}`, title: `Update retry · ${interaction}`,
+      stories: [{ id: `topbar-gallery-authorization-denied-${interaction}`, title: 'Retry update', render: () => <Band slots={ONBOARDING_SLOTS} isHome update={{ status: 'error', message: 'UPDATE_AUTHORIZATION_DENIED' }} interaction={interaction} updateInteraction /> }],
+    })),
     {
       id: 'disk-full', title: 'Update · disk full',
       stories: [{ id: 'topbar-gallery-disk-full', title: 'Free space before updating', render: () => <Band slots={ONBOARDING_SLOTS} isHome update={{ status: 'error', message: 'No space left on device' }} /> }],

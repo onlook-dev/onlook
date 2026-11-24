@@ -15,6 +15,15 @@ const failedInstalling: ProjectCreateState = {
 const failedCopying: ProjectCreateState = { kind: 'failed', sourceRepoName: 'acme-storefront', phase: 'copying' };
 
 describe('narrationFor — the failed row (ONL-2363)', () => {
+  it('explains missing Git with the existing installation guidance instead of Retry', () => {
+    const state = { ...failedCopying, copyFailure: { step: 'git_init', cause: 'git_not_found' } } as ProjectCreateState;
+    expect(narrationFor(state, { hasLiveServer: false })).toMatchObject({
+      nextActionKey: 'machine.failure.git_not_found',
+      wayOut: 'choose-folder',
+      canDismiss: false,
+    });
+  });
+
   it('explains an ignored folder and sends the person back to the picker instead of Retry', () => {
     const state = { ...failedCopying, copyFailure: { step: 'git_commit', cause: 'ignored_files' } } as ProjectCreateState;
     expect(narrationFor(state, { hasLiveServer: false })).toMatchObject({

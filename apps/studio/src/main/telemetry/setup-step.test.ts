@@ -43,6 +43,38 @@ it('Windows-style update checks report started, available, and up-to-date outcom
   } finally { session.dispose(); }
 });
 
+it('update checks keep diagnostics while an explicit retry recovers a refused release', async () => {
+  let downloads = 0;
+  const updater = Object.assign(new EventEmitter(), {
+    checkForUpdates: async () => {
+      updater.emit('checking-for-update');
+      updater.emit('update-available', { version: '2.0.1' });
+      return { isUpdateAvailable: true, updateInfo: { version: '2.0.1' } };
+    },
+    downloadUpdate: async () => {
+      downloads += 1;
+      updater.emit('update-downloaded', { version: '2.0.1' });
+      return [];
+    },
+    quitAndInstall: () => {},
+  });
+  const machine = new UpdateMachine({ emit: () => {}, waitForNativeStage: false });
+  const session = createUpdateSession(updater as unknown as AppUpdater, machine, undefined, undefined, undefined, { refusedVersion: '2.0.1' });
+  try {
+    await session.check();
+    expect(downloads).toBe(0);
+    expect(machine.current()).toMatchObject({ status: 'error', message: 'UPDATE_AUTHORIZATION_DENIED' });
+    await session.check(true);
+    expect(downloads).toBe(1);
+    expect(machine.current().status).toBe('downloaded');
+    const events = peekQueueForTesting().filter(({ event }) => event === 'update_check_started' || event === 'update_check_completed');
+    expect(events.map(({ event, properties }) => [event, properties['requested'], properties['outcome']])).toEqual([
+      ['update_check_started', false, undefined], ['update_check_completed', false, 'available'],
+      ['update_check_started', true, undefined], ['update_check_completed', true, 'available'],
+    ]);
+  } finally { session.dispose(); }
+});
+
 it('setup fallback and its dead end keep the same scrubbed cause for the correct harness', () => {
   recordAgentSetupStep('claude', 'fallback', { outcome: 'failed', failure: { error: 'spawn EACCES C:\\private\\agent.exe', exitCode: 5 } });
   recordAgentSetupStep('codex', 'fallback', { outcome: 'timeout' });
