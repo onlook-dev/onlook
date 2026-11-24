@@ -52,7 +52,7 @@ export function ClaudeSignInButton({ browsers, strings, onSignIn, isDisabled, si
   const fallback = browsers?.find((browser) => browser.isDefault)?.id ?? browsers?.[0]?.id;
   const [chosenId, setChosenId] = useState<string | undefined>(undefined);
   const button = { label: label ?? strings.action['sign-in'], variant, isDisabled, size };
-  const responsiveStyle = !wrapLabel ? undefined : { minWidth: 0, maxWidth: '100%', width: 'max-content', flex: '0 1 auto', whiteSpace: 'normal', overflowWrap: 'anywhere', height: 'auto', minHeight: `var(--size-element-${size ?? 'md'})` } as const;
+  const responsiveStyle = !wrapLabel ? undefined : { minWidth: 0, maxWidth: '100%', width: 'max-content', flex: '0 1 auto', whiteSpace: 'normal', overflowWrap: 'anywhere', height: 'auto', minHeight: `var(--size-element-${size ?? 'md'})`, paddingBlock: 'var(--spacing-1)' } as const;
   if (browsers === undefined || browsers.length < 2) {
     return <Button {...button} style={responsiveStyle} onClick={() => onSignIn?.()} data-testid={testId} />;
   }

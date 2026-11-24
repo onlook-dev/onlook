@@ -15,6 +15,7 @@ describe('sign-in notice actions', () => {
     expect(markup).toContain('white-space:normal');
     expect(markup).toContain('flex-wrap:wrap');
     expect(markup).toContain('width:max-content');
+    expect(markup).toContain('padding-block:var(--spacing-1)');
     expect(markup.indexOf('data-testid="sign-in-action-sign-in"')).toBeLessThan(markup.indexOf('data-testid="chat-sign-in-not-now"'));
   });
 
