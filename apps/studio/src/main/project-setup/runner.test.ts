@@ -160,13 +160,13 @@ describe('setup runner failures and state', () => {
         expect(stopped.snapshot.failure?.stage).toBe('stop');
         expect(service.ownsPort(project, 48001)).toBe(true);
         expect((await service.run(project, { action: 'restart', serverIds: ids })).ok).toBe(false);
-        expect(stopIdentifications).toBe(change === 'unknown' ? 6 : 2);
+        expect(stopIdentifications).toBe(0);
         expect(signal).not.toHaveBeenCalled();
       } finally { restore(); await service.dispose(); }
     }
   });
 
-  it('reidentifies the exact reconnect listener before escalating beyond SIGTERM', async () => {
+  it('never signals a reconnected listener that Onlook did not start', async () => {
     const project = makeDirWithFiles({});
     const root = makeDirWithFiles({});
     const pid = process.pid + 100000;
@@ -182,7 +182,8 @@ describe('setup runner failures and state', () => {
       const signal = spyOn(process, 'kill').mockImplementation(() => { replaced = true; return true; });
       restore = () => signal.mockRestore();
       expect((await service.run(project, { action: 'stop' })).ok).toBe(false);
-      expect(signal.mock.calls).toEqual([[pid, 'SIGTERM']]);
+      expect(signal).not.toHaveBeenCalled();
+      expect(service.read(project).failure?.reason).toContain(t('projectSetup.failure.notStartedHere', { port: 48001 }));
       expect(service.ownsPort(project, 48001)).toBe(true);
     } finally { restore(); await service.dispose(); }
   });
@@ -264,10 +265,11 @@ describe('setup runner failures and state', () => {
       expect(service.ownsPort(project, 48001)).toBe(true);
       const signal = spyOn(process, 'kill').mockImplementation(() => { listening = false; return true; });
       restore = () => signal.mockRestore();
+      listening = false;
       const stopped = await service.run(project, { action: 'stop', serverIds: ['web'] });
       expect(stopped.ok).toBe(true);
       expect(stopped.snapshot.state).toBe('idle');
-      expect(signal.mock.calls).toEqual([[pid, 'SIGTERM']]);
+      expect(signal).not.toHaveBeenCalled();
       expect((await starting).ok).toBe(false);
       expect(service.ownsPort(project, 48001)).toBe(false);
       expect(service.serverIdsForPorts(project, [48001])).toEqual([]);
@@ -461,7 +463,7 @@ describe('setup runner failures and state', () => {
     for (const entry of [{ start: 'exit 23', stage: 'start' }, { start: 'sleep 10', stage: 'ready' }] as const) {
       const project = makeDirWithFiles({});
       const root = makeDirWithFiles({});
-      const service = createProjectSetupService({ state: createSetupState(() => root), env: async () => process.env, probe: async () => false, report: async () => undefined, readyTimeoutMs: 150, stopGraceMs: 25 });
+      const service = createProjectSetupService({ state: createSetupState(() => root), env: async () => process.env, probe: async () => false, report: async () => undefined, readyTimeoutMs: entry.stage === 'start' ? 2000 : 150, stopGraceMs: 25 });
       service.save(project, { ...definition, servers: [{ ...definition.servers[0]!, start: entry.start }] }, null);
       const failed = await service.run(project, { action: 'start' });
       expect(failed.ok).toBe(false);

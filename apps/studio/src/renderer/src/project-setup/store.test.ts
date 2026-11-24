@@ -31,6 +31,25 @@ afterEach(() => {
 });
 
 describe('project setup snapshot read lifecycle', () => {
+  it('announces a successful port move once without announcing ordinary snapshots or initial reads', async () => {
+    const snapshot = { ...setupSnapshot('running'), portMoves: [{ from: 48002, to: 4701 }] };
+    const moves: { from: number; to: number }[] = [];
+    let changed: (snapshot: ProjectSetupSnapshot) => void = () => undefined;
+    dispose = connectProjectSetup({
+      projectSetupRead: async () => snapshot,
+      onProjectSetupChanged: (callback) => { changed = callback; return () => undefined; },
+    }, move => { moves.push(move); });
+    await Promise.resolve();
+    expect(moves).toEqual([]);
+    changed(snapshot);
+    expect(moves).toEqual([]);
+    const moved = { ...snapshot, portMoves: [{ from: 48001, to: 4700 }] };
+    changed(moved);
+    changed(structuredClone(moved));
+    changed({ ...moved, state: 'failed', portMoves: [{ from: 48003, to: 4702 }] });
+    expect(moves).toEqual(moved.portMoves);
+  });
+
   it('derives existing UI props from every read state', () => {
     const snapshot = setupSnapshot();
     const cases: { read: SnapshotRead; snapshot: ProjectSetupSnapshot | null; readFailed: boolean }[] = [

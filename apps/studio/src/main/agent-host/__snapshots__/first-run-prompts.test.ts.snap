@@ -568,7 +568,7 @@ Read this project's saved setup, verified revision and retained failure. Takes n
 
 ## save_project_setup
 
-Save a reusable setup script outside the repository. First read get_project_setup and pass saved.revision as expectedRevision, or null for no saved script. Include repeatable POSIX prepare activation and prerequisite checks, installation input files and output sentinels, and foreground servers with contained relative cwd and fixed ports. Never embed credentials. Saving does not verify execution. Keep commands in the foreground without nohup or shell backgrounding.
+Save a reusable setup script outside the repository. First read get_project_setup and pass saved.revision as expectedRevision, or null for no saved script. Include repeatable POSIX prepare activation and prerequisite checks, installation input files and output sentinels, and foreground servers with contained relative cwd and ports. A start command can explicitly opt into automatic port changes by using {{port}} wherever its port is needed, for example npm run dev -- --port {{port}} --strictPort. Onlook substitutes the saved port and, only if another project or app occupies it, chooses a free port and updates the saved setup and Frames. Use this only when the command supports choosing a port. Fixed-port commands keep their existing repair path. Never embed credentials. Saving does not verify execution. Keep commands in the foreground without nohup or shell backgrounding.
 
 {
   "type": "object",

@@ -1,4 +1,7 @@
 {
+  "projectSetup.portMoved": "端口 {from} 已被占用，应用和画框已切换到端口 {to}。",
+  "projectSetup.failure.notStartedHere": "端口 {port} 上的应用不是由 Onlook 启动的，因此无法停止。",
+  "projectSetup.failure.portMove": "画框无法切换到端口 {port}。请重新启动应用。",
   "projectSetup.ask.install": "我的应用依赖包没能安装成功。你能帮我解决，或者告诉我该怎么做吗？",
   "projectSetup.ask.start": "我的应用没能启动。你能帮我解决，或者告诉我该怎么做吗？",
   "projectSetup.loading": "正在载入配置脚本…",

@@ -1,4 +1,7 @@
 {
+  "projectSetup.portMoved": "ポート {from} は使用中のため、アプリとフレームをポート {to} に切り替えました。",
+  "projectSetup.failure.notStartedHere": "ポート {port} のアプリは Onlook が起動したものではないため、停止できません。",
+  "projectSetup.failure.portMove": "フレームをポート {port} に切り替えられませんでした。アプリをもう一度起動してください。",
   "projectSetup.ask.install": "アプリのパッケージがインストールされませんでした。対応してもらえますか？難しければ、どうすればよいか説明してください。",
   "projectSetup.ask.start": "アプリが起動しませんでした。対応してもらえますか？難しければ、どうすればよいか説明してください。",
   "projectSetup.loading": "セットアップスクリプトを読み込み中…",
