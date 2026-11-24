@@ -68,11 +68,9 @@ interface ShownPreview {
   now: number;
 }
 
-/** The tab you are on is the one you can already see, so it never previews. */
 export function previewTab(state: {
   hoveredId: string | undefined;
   tabs: ReadonlyMap<string, StudioTab>;
-  activeTabId: string;
   editingId?: string | undefined;
   pressedId?: string | undefined;
   /** A drag or the new-tab menu holds the strip. */
@@ -80,7 +78,7 @@ export function previewTab(state: {
 }): string | undefined {
   const { hoveredId } = state;
   if (hoveredId === undefined || state.isBlocked || !state.tabs.has(hoveredId)) return undefined;
-  if (hoveredId === state.activeTabId || hoveredId === state.editingId || hoveredId === state.pressedId) return undefined;
+  if (hoveredId === state.editingId || hoveredId === state.pressedId) return undefined;
   return hoveredId;
 }
 
@@ -253,7 +251,6 @@ export function TabStrip({
   const previewTarget = previewTab({
     hoveredId: ownHoveredId,
     tabs: byId,
-    activeTabId,
     editingId,
     pressedId,
     isBlocked: isDragActive || isNewMenuOpen,
