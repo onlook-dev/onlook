@@ -10,5 +10,6 @@
   "topbar.update.ready": "再起動してアップデート",
   "topbar.update.upToDate": "最新の状態です",
   "topbar.update.failed": "アップデートに失敗しました",
+  "topbar.update.authorizationDenied": "アップデートには管理者権限が必要です。クリックして再試行。",
   "topbar.update.diskFull": "ディスクの空き容量が不足しています。アップデートするには空き容量を確保してください。"
 }

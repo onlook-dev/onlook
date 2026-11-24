@@ -19,6 +19,14 @@
   outline-offset: -2px;
 }
 
+.update-pill[data-update-status='error']:focus-visible {
+  outline-color: var(--studio-update-ink);
+}
+
+button.update-pill[data-update-status='error']:hover {
+  filter: brightness(0.9);
+}
+
 .update-pill-quiet:hover {
   --update-shimmer-base: color-mix(in srgb, var(--studio-update-ink) 45%, transparent);
   --update-shimmer-crest: var(--studio-update-ink);

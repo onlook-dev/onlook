@@ -13,6 +13,7 @@ import { log } from '../log/index.js';
 import { capabilities } from '../cloud/capabilities.js';
 import { isMac } from '../env/platform.js';
 import { devSwitches } from '../env/dev-switches.js';
+import { createUpdateRecovery } from './recovery.js';
 
 const logger = log('updater');
 
@@ -152,7 +153,7 @@ async function wire(url: string): Promise<void> {
   try {
     autoUpdater = await loadAutoUpdater();
 
-    session = createUpdateSession(autoUpdater, machine, isMac() ? electron.autoUpdater : undefined);
+    session = createUpdateSession(autoUpdater, machine, isMac() ? electron.autoUpdater : undefined, reportUpdateFailure, undefined, createUpdateRecovery(app.getVersion()));
     logger.info('enabled', { url });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
