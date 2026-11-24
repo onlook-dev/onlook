@@ -83,7 +83,10 @@ export function reportedPreviewPort(output: string): number | null {
 export function previewFailureDiagnostics(event: string, properties: object, workspacePath?: string): Partial<PreviewDiagnostics> {
   const values = properties as Record<string, unknown>;
   if (event === 'dead_end_shown' && values['state'] === 'preview_failed') {
-    if (typeof values['server_port'] === 'number') return previewDiagnostics(workspacePath, values['server_port']);
+    if (typeof values['server_port'] === 'number') {
+      const endpoint = previewDiagnostics(workspacePath, values['server_port']);
+      return { ...endpoint, cause: endpoint.cause === 'unknown' && values['cover'] === 'non-started' ? 'not_started' : endpoint.cause };
+    }
     const project = previewDiagnostics(workspacePath);
     return {
       ...EMPTY_DIAGNOSTICS,

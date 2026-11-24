@@ -47,6 +47,12 @@ it('attributes a single-server canvas cover to its measured endpoint rather than
   expect(previewFailureDiagnostics('dead_end_shown', { state: 'preview_failed', cover: 'dead', server_port: 4101 }, 'one')).toMatchObject({ cause: 'process_exited', expected_port: 4100, actual_port: 4101 });
 });
 
+it('keeps the not-started cause for an identified server with no measurements yet', () => {
+  expect(previewFailureDiagnostics('dead_end_shown', { state: 'preview_failed', cover: 'non-started', server_port: 4100 }, 'one')).toMatchObject({ cause: 'not_started', actual_port: null, process_exited: null });
+  notePreviewDiagnostics('one', { expected_port: 4100, cause: 'readiness_timeout' });
+  expect(previewFailureDiagnostics('dead_end_shown', { state: 'preview_failed', cover: 'non-started', server_port: 4100 }, 'one')).toMatchObject({ cause: 'readiness_timeout', expected_port: 4100 });
+});
+
 it('keeps detected project metadata when an endpoint changes state or starts a new attempt', () => {
   notePreviewDiagnostics('one', { framework: 'Vite', package_manager: 'pnpm', project_source: 'imported', expected_port: 4100 });
   notePreviewDiagnostics('one', { ...newPreviewAttempt(), expected_port: 4200, cause: 'not_started' });
