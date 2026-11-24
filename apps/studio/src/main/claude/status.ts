@@ -4,6 +4,7 @@ import { claudeBillingPlan } from './billing.js';
 import { runCli, type CliResult } from '../env/cli.js';
 import { type Env } from '../env/shell-env.js';
 import { STUDIO_SESSION_VARS } from './env.js';
+import { classifySetupFailure, type SetupFailureDiagnostics } from '../telemetry/setup-failure.js';
 
 /** Well above a human answering a keychain dialog; a hit is `did-not-answer`, not signed-out (ONL-2186). */
 export const STATUS_TIMEOUT_MS = 60_000;
@@ -11,7 +12,7 @@ export const STATUS_TIMEOUT_MS = 60_000;
 export type ClaudeStatusVerdict =
   | { status: 'signed-in'; email?: string; plan?: string }
   | { status: 'signed-out' }
-  | { status: 'failed'; detail: ClaudeLoginDetail };
+  | { status: 'failed'; detail: ClaudeLoginDetail; diagnostics?: SetupFailureDiagnostics };
 
 export type StatusRunner = (
   bin: string,
@@ -34,12 +35,13 @@ export async function claudeAuthStatus(options: ClaudeAuthStatusOptions): Promis
     env: options.env,
     unset: STUDIO_SESSION_VARS,
   });
-  if (result.missing || /\bspawn\b[^\r\n]*\b(?:EACCES|ENOEXEC|ENOTDIR)\b/.test(result.err)) return { status: 'failed', detail: 'spawn' };
-  if (result.timedOut) return { status: 'failed', detail: 'did-not-answer' };
+  const diagnostics = classifySetupFailure({ error: result.err, exitCode: result.exitCode, detail: result.missing ? 'path_not_found' : result.timedOut ? 'did-not-answer' : 'exited' });
+  if (result.missing || /\bspawn\b[^\r\n]*\b(?:EACCES|ENOEXEC|ENOTDIR)\b/.test(result.err)) return { status: 'failed', detail: 'spawn', diagnostics };
+  if (result.timedOut) return { status: 'failed', detail: 'did-not-answer', diagnostics };
 
   const body = parse(result.out);
   if (result.exitCode === 1) return { status: 'signed-out' };
-  if (result.exitCode !== 0 || body === undefined) return { status: 'failed', detail: 'exited' };
+  if (result.exitCode !== 0 || body === undefined) return { status: 'failed', detail: 'exited', diagnostics };
   if (body['loggedIn'] !== true) return { status: 'signed-out' };
 
   const email = body['email'];

@@ -1,8 +1,8 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'bun:test';
-import { claimRunningMarker, clearRunningMarker, ownsRunningMarker, runningMarkerPath } from './crash-marker.js';
+import { claimRunningMarker, clearRunningMarker, ownsRunningMarker, readRunningContext, runningMarkerPath, updateRunningContext } from './crash-marker.js';
 
 const made: string[] = [];
 const saved = process.env['STUDIO_STATE_ROOT'];
@@ -25,6 +25,59 @@ afterAll(() => {
 });
 
 describe('the marker', () => {
+  it('clears creation when registration finishes without starting a preview', () => {
+    claimRunningMarker(FIRST_LAUNCH, '2.0.0');
+    updateRunningContext('workspace_creation_flow', { step: 'started', outcome: 'started' });
+    updateRunningContext('workspace_creation_flow', { step: 'created', outcome: 'success' });
+    updateRunningContext('project_created', {});
+    expect(readRunningContext()?.during_workspace_creation).toBe(false);
+    expect(claimRunningMarker(SECOND_LAUNCH, '2.0.1')?.context?.during_workspace_creation).toBe(false);
+  });
+
+  it('clears creation when the user abandons setup', () => {
+    claimRunningMarker(FIRST_LAUNCH, '2.0.0');
+    updateRunningContext('workspace_creation_flow', { step: 'started', outcome: 'started' });
+    updateRunningContext('onboarding_screen_shown', { screen: 'agent' });
+    expect(readRunningContext()?.during_workspace_creation).toBe(false);
+    updateRunningContext('workspace_creation_flow', { step: 'started', outcome: 'started' });
+    updateRunningContext('project_creation_failed', { reason: 'canceled' });
+    expect(readRunningContext()?.during_workspace_creation).toBe(false);
+  });
+
+  it('clears active creation when setup fails before a preview', () => {
+    claimRunningMarker(FIRST_LAUNCH, '2.0.0');
+    updateRunningContext('workspace_creation_flow', { step: 'started', outcome: 'started' });
+    updateRunningContext('project_setup_failed', {});
+    expect(readRunningContext()?.during_workspace_creation).toBe(false);
+  });
+
+  it('does not rewrite an unchanged crash checkpoint', () => {
+    claimRunningMarker(FIRST_LAUNCH, '2.0.0');
+    updateRunningContext('agent_setup_step', {});
+    const earlier = new Date('2020-01-01T00:00:00Z');
+    utimesSync(runningMarkerPath(), earlier, earlier);
+    updateRunningContext('agent_setup_step', {});
+    expect(statSync(runningMarkerPath()).mtimeMs).toBe(earlier.getTime());
+    updateRunningContext('onboarding_screen_shown', { screen: 'import' });
+    expect(statSync(runningMarkerPath()).mtimeMs).toBeGreaterThan(earlier.getTime());
+  });
+
+  it('keeps the last screen and project creation checkpoint across an unclean restart', () => {
+    claimRunningMarker(FIRST_LAUNCH, '2.0.0');
+    updateRunningContext('onboarding_screen_shown', { screen: 'import' });
+    updateRunningContext('workspace_creation_flow', { step: 'started', outcome: 'started' });
+    const previous = claimRunningMarker(SECOND_LAUNCH, '2.0.1');
+    expect(previous?.context).toEqual({ last_event: 'workspace_creation_flow', last_screen: 'import', during_workspace_creation: true });
+  });
+
+  it('does not retain payloads or another launch’s context', () => {
+    claimRunningMarker(FIRST_LAUNCH, '2.0.0');
+    updateRunningContext('onboarding_screen_shown', { screen: 'private text', path: 'C:\\private\\project' });
+    expect(claimRunningMarker(SECOND_LAUNCH, '2.0.1')?.context).toEqual({ last_event: 'onboarding_screen_shown' });
+    updateRunningContext('workspace_creation_flow', { step: 'preview', outcome: 'success' });
+    expect(claimRunningMarker(FIRST_LAUNCH, '2.0.1')?.context).toEqual({ last_event: 'workspace_creation_flow', during_workspace_creation: false });
+    expect(readFileSync(runningMarkerPath(), 'utf8')).not.toContain('private');
+  });
   it('does not claim or erase a future marker, even without a preceding read', () => {
     const bytes = JSON.stringify({ version: 99, data: { launchId: FIRST_LAUNCH, appVersion: '0.5.0' } });
     writeFileSync(runningMarkerPath(), bytes);

@@ -19,6 +19,10 @@ export function creationStarted(source: CreationSource): void {
   capture('workspace_creation_flow', { source, step: 'started', outcome: 'started' });
 }
 
+export function creationAbandoned(source: CreationSource): void {
+  capture('workspace_creation_flow', { source, step: 'abandoned', outcome: 'abandoned' });
+}
+
 export function beginCreation(path: string, source: CreationSource, recordStart = true): void {
   if (sources.has(path)) return;
   sources.set(path, source);

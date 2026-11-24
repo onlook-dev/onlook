@@ -36,6 +36,81 @@ function deferred<Value>() {
 }
 
 describe('GitHub import boundary', () => {
+  for (const ending of ['dismiss', 'cancel', 'dispose'] as const) test(`an active Projects creation is abandoned once on ${ending} without a connection attempt`, async () => {
+    const steps: string[] = [];
+    const flow = fixture({ creationEvent: (step) => { steps.push(step); } });
+    await flow.service.command({ kind: 'begin', entryPoint: 'projects' });
+    if (ending === 'dispose') flow.service.dispose();
+    else if (ending === 'cancel') await flow.service.command({ kind: 'cancel' });
+    else await flow.service.command({ kind: 'leave', next: 'dismiss' });
+    flow.service.dispose();
+    expect(steps).toEqual(['started', 'abandoned']);
+    expect(flow.events).toEqual([]);
+  });
+
+  test('Settings and inactive services never abandon a creation', async () => {
+    const steps: string[] = [];
+    const flow = fixture({ creationEvent: (step) => { steps.push(step); } });
+    await flow.service.command({ kind: 'cancel' });
+    await flow.service.command({ kind: 'leave', next: 'dismiss' });
+    await flow.service.command({ kind: 'begin', entryPoint: 'settings' });
+    await flow.service.command({ kind: 'leave', next: 'dismiss' });
+    flow.service.dispose();
+    expect(steps).toEqual([]);
+  });
+
+  test('cancelling a pending begin cannot restart creation after cleanup', async () => {
+    const cleanup = deferred<{ ok: false; failure: 'cancelled' }>();
+    const steps: string[] = [];
+    const flow = fixture({ clone: () => cleanup.promise, creationEvent: (step) => { steps.push(step); } });
+    await flow.select();
+    await flow.service.command({ kind: 'clone', repositoryId: REPO.id, branch: 'design', entryPoint: 'projects' });
+    await Bun.sleep(0);
+    const beginning = flow.service.command({ kind: 'begin', entryPoint: 'projects' });
+    const cancelling = flow.service.command({ kind: 'cancel' });
+    cleanup.resolve({ ok: false, failure: 'cancelled' });
+    await Promise.all([beginning, cancelling]);
+    flow.service.dispose();
+    expect(steps).toEqual(['started', 'abandoned', 'started', 'abandoned']);
+  });
+
+  test('a cloned handoff is not abandoned by leaving, cancelling or disposal', async () => {
+    const steps: string[] = [];
+    const flow = fixture({ creationEvent: (step) => { steps.push(step); } });
+    await flow.service.command({ kind: 'begin', entryPoint: 'projects' });
+    await flow.select();
+    await flow.service.command({ kind: 'clone', repositoryId: REPO.id, branch: 'design', entryPoint: 'projects' });
+    await Bun.sleep(0);
+    expect((await flow.service.command({ kind: 'status' })).phase).toBe('done');
+    expect(flow.calls).toContainEqual(['cloned', '/chosen/source']);
+    await flow.service.command({ kind: 'leave', next: 'dismiss' });
+    await flow.service.command({ kind: 'cancel' });
+    flow.service.dispose();
+    expect(steps).toEqual(['started']);
+    expect(flow.events).toEqual([['clone', 'started', 'projects'], ['clone', 'done', 'projects']]);
+  });
+
+  test('waiting for approval keeps creation active until dismissal', async () => {
+    const steps: string[] = [];
+    const flow = fixture({ creationEvent: (step) => { steps.push(step); } });
+    await flow.service.command({ kind: 'begin', entryPoint: 'onboarding' });
+    await flow.service.command({ kind: 'leave', next: 'waiting' });
+    expect(steps).toEqual(['started']);
+    await flow.service.command({ kind: 'leave', next: 'dismiss' });
+    expect(steps).toEqual(['started', 'abandoned']);
+  });
+
+  test('creation abandonment belongs to the service that began it', async () => {
+    const steps: string[] = [];
+    const flow = fixture({ creationEvent: (step) => { steps.push(step); } });
+    const sibling = fixture({ creationEvent: (step) => { steps.push(step); } });
+    await flow.service.command({ kind: 'begin', entryPoint: 'projects' });
+    sibling.service.dispose();
+    expect(steps).toEqual(['started']);
+    flow.service.dispose();
+    expect(steps).toEqual(['started', 'abandoned']);
+  });
+
   test('selecting a listed repository never waits on credentials or remote branches', async () => {
     const flow = fixture();
     flow.backend.credential = () => new Promise(() => {});
@@ -275,13 +350,15 @@ describe('GitHub import boundary', () => {
     const cleanup = deferred<void>();
     const aborted = deferred<void>();
     const cloned: unknown[] = [];
-    const flow = fixture({ clone: async ({ signal, repository, branch, parent }) => {
+    const steps: string[] = [];
+    const flow = fixture({ creationEvent: (step) => { steps.push(step); }, clone: async ({ signal, repository, branch, parent }) => {
       cloned.push([repository, branch, parent]);
       if (cloned.length > 1) return { ok: true, sourcePath: '/chosen/restarted' };
       signal.addEventListener('abort', () => aborted.resolve(), { once: true });
       await cleanup.promise;
       return { ok: false, failure: 'cancelled' };
     } });
+    await flow.service.command({ kind: 'begin', entryPoint: 'projects' });
     await flow.select();
     await flow.service.command({ kind: 'destination', destination: 'documents' });
     await flow.service.command({ kind: 'clone', repositoryId: REPO.id, branch: 'design', entryPoint: 'projects' });
@@ -292,6 +369,7 @@ describe('GitHub import boundary', () => {
     expect(cancelled).toBe(false);
     cleanup.resolve();
     expect((await cancel).failure).toBe('cancelled');
+    expect(steps).toEqual(['started', 'abandoned']);
     await flow.service.command({ kind: 'clone', repositoryId: REPO.id, branch: 'design', entryPoint: 'projects' });
     await Bun.sleep(0);
     const done = await flow.service.command({ kind: 'status' });
@@ -299,6 +377,7 @@ describe('GitHub import boundary', () => {
     expect(done.sourcePath).toBe('/chosen/restarted');
     expect(cloned).toEqual([[REPO.fullName, 'design', '/chosen/folder'], [REPO.fullName, 'design', '/chosen/folder']]);
     expect(done.destinationChoice).toBe('documents');
+    expect(steps).toEqual(['started', 'abandoned', 'started']);
   });
 
   test('account replacement clears approval and selection while an old destination lookup is pending', async () => {
