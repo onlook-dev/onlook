@@ -32,7 +32,8 @@ export type ComfortChoice = 'design' | 'experiment' | 'ship';
 export const COMFORT_CHOICES = ['design', 'experiment', 'ship'] as const satisfies readonly ComfortChoice[];
 
 export type BlankEntryPoint = 'onboarding' | 'projects';
-export type CreationEntryPoint = BlankEntryPoint | 'switcher' | 'band';
+/** `setup-failure` is the folder picked again from a failed setup's own row (ONL-3285). */
+export type CreationEntryPoint = BlankEntryPoint | 'switcher' | 'band' | 'setup-failure';
 
 export type WorkspaceOrigin = 'blank' | 'imported' | 'copied' | 'duplicate';
 
@@ -74,12 +75,17 @@ export function workspaceDisplayName(workspace: {
   return workspace.displayName ?? workspace.workspaceName;
 }
 
+export interface CopyFailure {
+  step: 'claim' | 'copy_files' | 'git_init' | 'git_config' | 'git_add' | 'git_commit' | 'worktree_cut';
+  cause: 'ignored_files' | 'permission_denied' | 'folder_unavailable' | 'copy_in_progress' | 'disk_full' | 'git_timed_out' | 'git_failed' | 'unknown';
+}
+
 export type WorkspaceCreateResult =
   | {
       ok: true;
       workspace: WorkspaceCreated;
     }
-  | { ok: false; reason: WorkspaceRefusalReason | 'create-failed'; detail?: string };
+  | { ok: false; reason: WorkspaceRefusalReason | 'create-failed'; detail?: string; copyFailure?: CopyFailure };
 
 export type BlankCreateStage = 'setting-up' | 'installing' | 'starting';
 
@@ -116,6 +122,7 @@ export type ProjectCreateState =
       sourceRepoName: string;
       phase: ProjectCreatePhase;
       detail?: string;
+      copyFailure?: CopyFailure;
       workspace?: WorkspaceCreated;
     }
   | { kind: 'canceled'; detail?: string };

@@ -446,7 +446,7 @@ function SetupRowPanel({ hasFailure, hasDuration = false }: { hasFailure: boolea
         setup: {
           narration: {
             line: 'Starting', repo: 'acme-storefront', phase: 'starting',
-            ...(hasFailure ? { failure: { nextAction: 'Retry starts the project again.', retryLabel: 'Retry', onRetry: noop } } : {}),
+            ...(hasFailure ? { failure: { nextAction: 'Retry starts the project again.', wayOut: { kind: 'retry' as const, label: 'Retry', onAct: noop } } } : {}),
           },
         },
       })} />
@@ -537,8 +537,7 @@ const welcome: Category = {
             phase="installing"
             failure={{
               nextAction: 'Retry runs the install again in the copy.',
-              retryLabel: 'Retry',
-              onRetry: noop,
+              wayOut: { kind: 'retry', label: 'Retry', onAct: noop },
               dismissLabel: 'Dismiss',
               onDismiss: noop,
               detail: 'error: ERR_PNPM_NO_LOCKFILE\nCannot install with "frozen-lockfile" because pnpm-lock.yaml is absent',
@@ -558,8 +557,7 @@ const welcome: Category = {
             phase="installing"
             failure={{
               nextAction: t('project.create.next.installing'),
-              retryLabel: t('project.create.retry'),
-              onRetry: noop,
+              wayOut: { kind: 'retry', label: t('project.create.retry'), onAct: noop },
               dismissLabel: t('project.create.dismiss'),
               onDismiss: noop,
               detail: t('project.install.managerMissing', { manager: 'bun' }),
