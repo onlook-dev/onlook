@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { create } from 'zustand';
-import { creationWorkspace, type ProjectCreatePhase, type ProjectCreateState, type ProjectSetupFailure, type SetupRepairStep, type WorkspaceCreated } from '@studio/events';
+import { creationWorkspace, type CopyFailure, type ProjectCreatePhase, type ProjectCreateState, type ProjectSetupFailure, type SetupRepairStep, type WorkspaceCreated } from '@studio/events';
 import type { StringKey } from '@studio/i18n';
 import { useWorkspaceStore } from '../workspace/store.js';
 import { PhasePainter } from './phasePainter.js';
@@ -79,6 +79,18 @@ const NEXT_ACTION_KEY = {
   starting: 'project.create.next.starting',
 } as const satisfies Record<ProjectCreatePhase, StringKey>;
 
+/** What a copy failure tells the person, and the one way out it leaves them: the same work again, or the picker. */
+const COPY_FAILURE = {
+  ignored_files: { actionKey: 'project.create.copy.ignored_files', wayOut: 'choose-folder' },
+  permission_denied: { actionKey: 'project.create.copy.permission_denied', wayOut: 'choose-folder' },
+  folder_unavailable: { actionKey: 'project.create.copy.folder_unavailable', wayOut: 'choose-folder' },
+  copy_in_progress: { actionKey: 'project.create.copy.copy_in_progress', wayOut: 'choose-folder' },
+  disk_full: { actionKey: 'project.create.copy.disk_full', wayOut: 'choose-folder' },
+  git_failed: { actionKey: 'project.create.copy.git_failed', wayOut: 'choose-folder' },
+  git_timed_out: { actionKey: 'project.create.copy.git_timed_out', wayOut: 'retry' },
+  unknown: { actionKey: 'project.create.next.copying', wayOut: 'retry' },
+} as const satisfies Record<CopyFailure['cause'], { actionKey: StringKey; wayOut: 'retry' | 'choose-folder' }>;
+
 export type SetupNarration =
   | { kind: 'progress'; phase: ProjectCreatePhase; lineKey: StringKey; repo: string }
   | {
@@ -87,9 +99,14 @@ export type SetupNarration =
       lineKey: StringKey;
       nextActionKey: StringKey;
       repo: string;
+      /** A sentence main took from the catalogue, which belongs beside the guidance. */
       detail?: string;
+      /** The failing command's own words, which the row holds back until they are asked for (ONL-3285). */
+      output?: string;
       /** The row offers Dismiss (ONL-2363) only once a project exists behind it — forgetting a pre-landing failure leaves the editor with no project. */
       canDismiss: boolean;
+      /** Retry only where repeating the same work can succeed; a copy the folder itself stopped sends the person back to the picker (ONL-3285). */
+      wayOut: 'retry' | 'choose-folder';
     };
 
 export interface SetupNarrationFacts {
@@ -139,14 +156,19 @@ export function narrationFor(state: ProjectCreateState | null, facts: SetupNarra
       if (facts.hasLiveServer && state.workspace !== undefined) return null;
       if (facts.isFailureCardHeld === true) return null;
       const step = failedStepOf(state.phase, facts);
+      const copy = state.copyFailure === undefined ? undefined : COPY_FAILURE[state.copyFailure.cause];
+      // A detail with nothing in it is no detail: it would draw a control that opens an empty line.
+      const words = state.detail?.trim() === '' ? undefined : state.detail;
       return {
         kind: 'failed',
         phase: state.phase,
         lineKey: step === undefined ? FAILED_LINE_KEY[state.phase] : STEP_FAILED_LINE_KEY[step],
-        nextActionKey: step === undefined ? NEXT_ACTION_KEY[state.phase] : STEP_NEXT_ACTION_KEY[step],
+        nextActionKey: copy?.actionKey ?? (step === undefined ? NEXT_ACTION_KEY[state.phase] : STEP_NEXT_ACTION_KEY[step]),
+        wayOut: copy?.wayOut ?? 'retry',
         repo: state.workspace?.sourceRepoName ?? state.sourceRepoName,
         canDismiss: state.workspace !== undefined,
-        ...(state.detail === undefined ? {} : { detail: state.detail }),
+        // Only a copy's detail is the command's own words; every other stage sends a sentence from the catalogue (ONL-3285).
+        ...(words === undefined ? {} : copy === undefined ? { detail: words } : { output: words }),
       };
     }
     default:

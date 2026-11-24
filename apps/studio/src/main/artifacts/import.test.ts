@@ -32,7 +32,124 @@ describe('import copies only local image/font dependencies without editing the s
     writeFileSync(join(root, 'idea', 'code.js'), 'document.body.dataset.ready="yes";');
     const imported = importArtifactFromProject(root, 'idea/index.html', () => null);
     expect(imported.ok).toBe(false);
+    if (imported.ok) throw new Error('Expected import to fail');
+    expect(imported.reason).toContain(JSON.stringify(join('idea', 'index.html')));
+    expect(imported.reason).toContain('cart.html');
+    expect(imported.reason).toContain('separate artifact');
     expect(readFileSync(join(root, 'idea', 'index.html'), 'utf8')).toBe(entry);
+  });
+  it('locates the remote reference and retries successfully with a local replacement', () => {
+    const original = '<link rel="stylesheet" href="https://example.invalid/theme.css">';
+    writeFileSync(join(root, 'original.html'), original);
+    const refused = importArtifactFromProject(root, 'original.html', () => null);
+    expect(refused.ok).toBe(false);
+    if (refused.ok) throw new Error('Expected import to fail');
+    expect(refused.reason).toContain('original.html');
+    expect(refused.reason).toContain(`reference at character ${original.indexOf('https:') + 1}`);
+    expect(refused.reason).toContain('local');
+    expect(refused.reason).not.toContain(root);
+    writeFileSync(join(root, 'copy.html'), '<link rel="stylesheet" href="theme.css">');
+    writeFileSync(join(root, 'theme.css'), 'body{color:blue}');
+    expect(importArtifactFromProject(root, 'copy.html', () => null).ok).toBe(true);
+    expect(readFileSync(join(root, 'original.html'), 'utf8')).toBe(original);
+  });
+
+  it('locates unsafe references without echoing URLs, machine paths or query values', () => {
+    for (const reference of ['https://reader:placeholder@example.invalid/theme.css?key=placeholder', '/tmp/theme.css', '../outside/theme.css', 'theme.css?key=placeholder', 'https&#58;//example.invalid/theme.css']) {
+      const html = `<link href="${reference}">`;
+      writeFileSync(join(root, 'index.html'), html);
+      const refused = importArtifactFromProject(root, 'index.html', () => null);
+      expect(refused.ok).toBe(false);
+      if (refused.ok) throw new Error('Expected import to fail');
+      expect(refused.reason).toContain('index.html');
+      expect(refused.reason).toContain(`reference at character ${html.indexOf(reference) + 1}`);
+      expect(refused.reason).not.toContain(reference);
+      expect(refused.reason).not.toContain('placeholder');
+      expect(refused.reason).not.toContain('example.invalid');
+    }
+  });
+
+  it('does not echo a source path outside the project', () => {
+    const source = '../outside/page.html';
+    const refused = importArtifactFromProject(root, source, () => null);
+    expect(refused.ok).toBe(false);
+    if (refused.ok) throw new Error('Expected import to fail');
+    expect(refused.reason).toContain('inside this project');
+    expect(refused.reason).not.toContain(source);
+    expect(refused.reason).not.toContain('outside');
+    expect(refused.reason).not.toContain(root);
+  });
+
+  it('masks sensitive filenames in source and dependency diagnostics without changing import decisions', () => {
+    const sensitiveName = `ghp_${'a'.repeat(24)}`;
+    const html = `<link href="${sensitiveName}.css">`;
+    writeFileSync(join(root, 'index.html'), html);
+    const missing = importArtifactFromProject(root, 'index.html', () => null);
+    expect(missing.ok).toBe(false);
+    if (missing.ok) throw new Error('Expected import to fail');
+    expect(missing.reason).toContain(`"index.html", reference at character ${html.indexOf(sensitiveName) + 1}`);
+    expect(missing.reason).not.toContain(sensitiveName);
+    writeFileSync(join(root, `${sensitiveName}.html`), '<iframe></iframe>');
+    const source = importArtifactFromProject(root, `${sensitiveName}.html`, () => null);
+    expect(source.ok).toBe(false);
+    if (source.ok) throw new Error('Expected import to fail');
+    expect(source.reason).toContain('a project file, unsupported content at character 1');
+    expect(source.reason).not.toContain(sensitiveName);
+    writeFileSync(join(root, `${sensitiveName}.css`), 'body{color:blue}');
+    expect(importArtifactFromProject(root, 'index.html', () => null).ok).toBe(true);
+  });
+
+  for (const [label, content, marker, guidance] of [
+    ['iframe', '<iframe src="https://example.invalid/placeholder"></iframe>', '<iframe', 'Remove this <iframe> element'],
+    ['embedded media', '<video src="https://example.invalid/placeholder"></video>', '<video', 'Remove this <video> element'],
+    ['module script', '<script type="module">const placeholder = true;</script>', '<script', 'Replace this module script'],
+    ['inline script import', '<script>\nimport("https://example.invalid/placeholder");</script>', 'import(', 'Remove this script import'],
+    ['inline script network request', '<script>\nfetch("https://example.invalid/placeholder");</script>', 'fetch(', 'Remove this script resource access'],
+  ] as const) {
+    it(`identifies the ${label} and its location without echoing its contents`, () => {
+      const html = `<!doctype html>\n<h1>Preview</h1>\n${content}`;
+      writeFileSync(join(root, 'index.html'), html);
+      const refused = importArtifactFromProject(root, 'index.html', () => null);
+      expect(refused.ok).toBe(false);
+      if (refused.ok) throw new Error('Expected import to fail');
+      expect(refused.reason).toContain(`"index.html", unsupported content at character ${html.indexOf(marker) + 1}:`);
+      expect(refused.reason).toContain(guidance);
+      expect(refused.reason).not.toContain('example.invalid');
+      expect(refused.reason).not.toContain('placeholder');
+      expect(refused.reason).not.toContain(root);
+      expect(readFileSync(join(root, 'index.html'), 'utf8')).toBe(html);
+    });
+  }
+
+  it('locates script imports and network requests in a local JavaScript dependency', () => {
+    writeFileSync(join(root, 'index.html'), '<script src="code.js"></script>');
+    for (const [script, marker] of [
+      ['const ready = true;\nimport value from "./placeholder.js";', 'import'],
+      ['const ready = true;\nfetch("https://example.invalid/placeholder");', 'fetch'],
+    ] as const) {
+      writeFileSync(join(root, 'code.js'), script);
+      const refused = importArtifactFromProject(root, 'index.html', () => null);
+      expect(refused.ok).toBe(false);
+      if (refused.ok) throw new Error('Expected import to fail');
+      expect(refused.reason).toContain(`"code.js", unsupported content at character ${script.indexOf(marker) + 1}:`);
+      expect(refused.reason).toContain(marker === 'import' ? 'Remove this script import' : 'Remove this script resource access');
+      expect(refused.reason).not.toContain('placeholder');
+      expect(refused.reason).not.toContain('example.invalid');
+    }
+  });
+
+  it('identifies a missing dependency in a nested stylesheet without exposing filesystem errors', () => {
+    mkdirSync(join(root, 'styles'));
+    writeFileSync(join(root, 'index.html'), '<link rel="stylesheet" href="styles/theme.css">');
+    writeFileSync(join(root, 'styles/theme.css'), 'body{background:url("missing.png")}');
+    const refused = importArtifactFromProject(root, 'index.html', () => null);
+    expect(refused.ok).toBe(false);
+    if (refused.ok) throw new Error('Expected import to fail');
+    expect(refused.reason).toContain(JSON.stringify(join('styles', 'theme.css')));
+    expect(refused.reason).toContain('missing.png');
+    expect(refused.reason).toContain('readable');
+    expect(refused.reason).not.toContain(root);
+    expect(refused.reason).not.toContain('ENOENT');
   });
   it('copies/reencodes an image and keeps only a safe relative reference', () => {
     mkdirSync(join(root, 'images'));
@@ -48,6 +165,23 @@ describe('import copies only local image/font dependencies without editing the s
     expect(JSON.stringify(result)).not.toContain(root);
     expect(readFileSync(join(root, 'sketch.html'), 'utf8')).toBe(html);
     expect(readFileSync(join(root, 'images', 'original.png'))).toEqual(sourceBytes);
+  });
+
+  it('explains an unsupported font and an oversized file without relaxing either limit', () => {
+    writeFileSync(join(root, 'index.html'), '<style>@font-face{src:url("type.ttf")}</style>');
+    writeFileSync(join(root, 'type.ttf'), 'font');
+    const unsupported = importArtifactFromProject(root, 'index.html', () => null);
+    expect(unsupported.ok).toBe(false);
+    if (unsupported.ok) throw new Error('Expected import to fail');
+    expect(unsupported.reason).toContain('type.ttf');
+    expect(unsupported.reason).toContain('WOFF/WOFF2');
+    writeFileSync(join(root, 'index.html'), ' '.repeat(5 * 1024 * 1024 + 1));
+    const oversized = importArtifactFromProject(root, 'index.html', () => null);
+    expect(oversized.ok).toBe(false);
+    if (oversized.ok) throw new Error('Expected import to fail');
+    expect(oversized.reason).toContain('index.html');
+    expect(oversized.reason).toContain('5 MB');
+    expect(oversized.reason).not.toContain(root);
   });
 
   it('refuses absolute, network, encoded and symlink references', () => {

@@ -87,15 +87,24 @@ export function claimBucket(claim: {
     if ((err as NodeJS.ErrnoException).code === 'EEXIST') return { ok: false, reason: 'bucket-exists' };
     throw err;
   }
-  const record: BlankMarker = {
-    repoIdentity: claim.repoIdentity,
-    workspacePath: bucket.worktree,
-    branchName: claim.branchName,
-  };
-  // Marker before `source/`: a crash at any later step leaves a bucket the boot sweep recognises.
-  if (!writeStateFile(bucket.marker, 1, record)) return { ok: false, reason: 'bucket-exists' };
-  mkdirSync(bucket.source);
-  return { ok: true, bucket };
+  try {
+    const record: BlankMarker = {
+      repoIdentity: claim.repoIdentity,
+      workspacePath: bucket.worktree,
+      branchName: claim.branchName,
+    };
+    // Marker before `source/`: a crash at any later step leaves a bucket the boot sweep recognises.
+    if (!writeStateFile(bucket.marker, 1, record)) return { ok: false, reason: 'bucket-exists' };
+    mkdirSync(bucket.source);
+    return { ok: true, bucket };
+  } catch (err) {
+    try {
+      removeDir(bucket.identityDir);
+    } catch (cleanupError) {
+      logger.error('blank bucket could not be removed', { system_error: systemErrorCode(cleanupError) });
+    }
+    throw err;
+  }
 }
 
 export async function initBlankSource(
