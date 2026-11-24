@@ -35,7 +35,6 @@ import { BlendedWindowBar } from './topbar/slots.js';
 import { WindowFrame } from './topbar/WindowFrame.js';
 import {
   beginCreate,
-  activateRestoredProject,
   closeProject,
   createPrimed,
   followCreate,
@@ -43,7 +42,7 @@ import {
   joinCreate,
   leaveProject,
   openCreated,
-  openProject,
+  openAssignedProject,
 } from './workspace/session.js';
 import { useWorkspaceStore } from './workspace/store.js';
 import { useTabNotices } from './notifications/NotificationSurfaces.js';
@@ -73,13 +72,12 @@ export function Root(): React.JSX.Element {
   useSurface('screen', screenSurface(screen.kind));
   /** `failed` sends a scaffold home; `stale` leaves the screen to the newer run (ONL-2593). */
   const prepareAssigned = useCallback(async (workspacePath: string, background = false): Promise<Screen | 'failed' | 'stale'> => {
-    const opened = await openProject(workspacePath, background);
+    const opened = await openAssignedProject(workspacePath, background);
     if (opened.kind === 'ready') return { kind: 'editor', restored: opened.workspace };
     return opened.kind === 'failed' ? 'failed' : 'stale';
   }, []);
 
   const openAssigned = useCallback(async (workspacePath: string, background = false): Promise<void> => {
-    if (!background) await activateRestoredProject(workspacePath);
     const next = await prepareAssigned(workspacePath, background);
     if (next === 'stale') return;
     /* The scaffold has no exit: an unopenable assignment would leave dead rails forever (ONL-2318). Only off the scaffold: an assignment must not land over a gate this view already committed. */

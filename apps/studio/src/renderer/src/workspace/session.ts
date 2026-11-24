@@ -251,17 +251,23 @@ export async function landProject(workspace: WorkspaceCreated): Promise<void> {
   }
 }
 
-export async function activateRestoredProject(workspacePath: string): Promise<void> {
-  if (restoringProject !== workspacePath) return;
+export async function openAssignedProject(workspacePath: string, background = false): Promise<Opened> {
+  if (!background && await activateRestoredProject(workspacePath)) return { kind: 'superseded' };
+  return openProject(workspacePath, background);
+}
+
+export async function activateRestoredProject(workspacePath: string): Promise<boolean> {
+  if (restoringProject !== workspacePath) return false;
   restoringProject = null;
   const workspace = store.getState().workspace;
-  if (workspace?.workspacePath !== workspacePath || landing !== null) return;
+  if (workspace?.workspacePath !== workspacePath || landing !== null) return true;
   const run = store.getState().run;
   const { bridge, homeUrl } = seated();
   await bridge().locationSet({ kind: 'project', repoIdentity: workspace.repoIdentity, workspacePath });
-  if (!isCurrent(run) || store.getState().workspace !== workspace) return;
+  if (!isCurrent(run) || store.getState().workspace !== workspace) return true;
   const devUrl = homeUrl();
   await bridge().notifyProjectSelected({ path: workspacePath, ...(devUrl ? { devUrl } : {}) });
+  return true;
 }
 
 /** A close is an order: whatever is in flight goes stale and the cover comes down now (ONL-2265). */

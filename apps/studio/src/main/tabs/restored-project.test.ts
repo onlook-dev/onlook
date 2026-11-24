@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { WebContentsView } from 'electron';
+import { app, type WebContentsView } from 'electron';
 import { afterAll, afterEach, beforeEach, describe, expect, it, jest, mock } from 'bun:test';
 import { IPC_EMIT, type CanvasDoc, type TabAssignment } from '@studio/events';
 import { cleanupTempFixtures, makeStateRoot, makeWorkspaceRoot, restoreWorkspaceRoot } from '@studio/fixtures';
@@ -29,8 +29,10 @@ interface RestoredTab {
 const enteringStateRoot = process.env['STUDIO_STATE_ROOT'];
 const presentations: TabPresentation[] = [];
 let workspaceRoot: string;
+let enteringAppMetrics: PropertyDescriptor | undefined;
 
 beforeEach(() => {
+  enteringAppMetrics = Object.getOwnPropertyDescriptor(app, 'getAppMetrics');
   workspaceRoot = makeWorkspaceRoot({ name: 'tab-restored-project' });
   process.env['STUDIO_WORKSPACE_ROOT'] = workspaceRoot;
   process.env['STUDIO_STATE_ROOT'] = makeStateRoot({ name: 'tab-restored-project' });
@@ -41,6 +43,8 @@ beforeEach(() => {
 
 afterEach(() => {
   for (const presentation of presentations.splice(0)) presentation.cancelRestoration();
+  if (enteringAppMetrics === undefined) Reflect.deleteProperty(app, 'getAppMetrics');
+  else Object.defineProperty(app, 'getAppMetrics', enteringAppMetrics);
   jest.useRealTimers();
   resetCanvasRegistryCache();
   resetWorkspaceCache();
@@ -53,7 +57,7 @@ afterAll(() => {
   cleanupTempFixtures();
 });
 
-function restorationHost() {
+function restorationHost({ productionMemory = false }: { productionMemory?: boolean } = {}) {
   const newView = mock(() => { throw new Error('restoration must reuse an already primed view'); });
   const teardown = mock();
   const windowDestroyed = mock(() => false);
@@ -69,7 +73,7 @@ function restorationHost() {
   const presentation = host.pieces.presentation as TabPresentation;
   const seam = presentation as unknown as RestorationSeam;
   const memoryKb = mock(() => 1_000);
-  seam.memoryKb = memoryKb;
+  if (!productionMemory) seam.memoryKb = memoryKb;
   presentations.push(presentation);
   return { host, presentation, seam, memoryKb, newView, teardown, windowDestroyed };
 }
@@ -100,6 +104,100 @@ async function savedTab(rig: ReturnType<typeof restorationHost>, id: string, edi
   const assignment: TabAssignment = { tabId: id, purpose: 'project', workspacePath, repoIdentity };
   return { tab, contents, view, docId, assignment };
 }
+
+function processMetrics(...workingSets: number[]): ReturnType<typeof app.getAppMetrics> {
+  return workingSets.map((workingSetSize, processIndex) => ({
+    pid: processIndex + 1, memory: { workingSetSize },
+  })) as ReturnType<typeof app.getAppMetrics>;
+}
+
+describe('restoration reads Electron process memory', () => {
+  const invalidReads: [string, () => ReturnType<typeof app.getAppMetrics>][] = [
+    ['empty metrics', () => processMetrics()],
+    ['a throwing read', () => { throw new Error('synthetic metrics read failure'); }],
+    ...[Number.NaN, 0, -1, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY].map(
+      (invalid): [string, () => ReturnType<typeof app.getAppMetrics>] => [
+        `one ${invalid} row among valid rows`, () => processMetrics(400, invalid, 600),
+      ],
+    ),
+    ['a sum overflowing to infinity', () => processMetrics(Number.MAX_VALUE, Number.MAX_VALUE)],
+  ];
+
+  it('sums every process at baseline and on polls across the inclusive 15% limit', async () => {
+    const metrics = mock(() => processMetrics(400, 600));
+    app.getAppMetrics = metrics;
+    const rig = restorationHost({ productionMemory: true });
+    const restored = await savedTab(rig, 'restored');
+    await rig.seam.restoreOne(['restored']);
+
+    expect(restored.contents.send).toHaveBeenCalledWith(IPC_EMIT.tabsAssigned, { ...restored.assignment, restoring: true });
+    expect(metrics).toHaveBeenCalledTimes(1);
+    metrics.mockReturnValue(processMetrics(450, 700));
+    jest.advanceTimersByTime(1_000);
+
+    expect(metrics).toHaveBeenCalledTimes(2);
+    expect(rig.teardown).not.toHaveBeenCalled();
+    metrics.mockReturnValue(processMetrics(450, 701));
+    jest.advanceTimersByTime(1_000);
+
+    expect(metrics).toHaveBeenCalledTimes(3);
+    expect(rig.teardown).toHaveBeenCalledTimes(1);
+    expect(rig.teardown).toHaveBeenCalledWith(restored.tab.id);
+    expect(rig.presentation.promoteRestored(restored.tab as Tab)).toBe(false);
+    jest.advanceTimersByTime(10_000);
+
+    expect(metrics).toHaveBeenCalledTimes(3);
+    expect(rig.teardown).toHaveBeenCalledTimes(1);
+    expect(rig.memoryKb).not.toHaveBeenCalled();
+    expect(rig.newView).not.toHaveBeenCalled();
+  });
+
+  it.each(invalidReads)('prevents assignment when baseline metrics contain %s', async (_name, read) => {
+    const metrics = mock(read);
+    app.getAppMetrics = metrics;
+    const rig = restorationHost({ productionMemory: true });
+    const first = await savedTab(rig, 'first');
+    const second = await savedTab(rig, 'second');
+
+    await rig.seam.restoreOne(['first', 'second']);
+    metrics.mockReturnValue(processMetrics(400, 600));
+    await rig.seam.restoreOne(['second']);
+    jest.advanceTimersByTime(10_000);
+
+    expect(first.contents.send).not.toHaveBeenCalled();
+    expect(second.contents.send).not.toHaveBeenCalled();
+    expect(rig.presentation.assignmentFrom(first.view.webContents)).toBeNull();
+    expect(metrics).toHaveBeenCalledTimes(1);
+    expect(rig.teardown).not.toHaveBeenCalled();
+    expect(rig.memoryKb).not.toHaveBeenCalled();
+    expect(rig.newView).not.toHaveBeenCalled();
+  });
+
+  it.each(invalidReads)('tears down once and stops polling when current metrics contain %s', async (_name, read) => {
+    const metrics = mock(() => processMetrics(400, 600));
+    app.getAppMetrics = metrics;
+    const rig = restorationHost({ productionMemory: true });
+    const restored = await savedTab(rig, 'restored');
+    await rig.seam.restoreOne(['restored']);
+
+    expect(restored.contents.send).toHaveBeenCalledWith(IPC_EMIT.tabsAssigned, { ...restored.assignment, restoring: true });
+    metrics.mockImplementation(read);
+    jest.advanceTimersByTime(1_000);
+
+    expect(metrics).toHaveBeenCalledTimes(2);
+    expect(rig.teardown).toHaveBeenCalledTimes(1);
+    expect(rig.teardown).toHaveBeenCalledWith(restored.tab.id);
+    expect(rig.presentation.promoteRestored(restored.tab as Tab)).toBe(false);
+    metrics.mockReturnValue(processMetrics(400, 600));
+    jest.advanceTimersByTime(10_000);
+
+    expect(metrics).toHaveBeenCalledTimes(2);
+    expect(rig.teardown).toHaveBeenCalledTimes(1);
+    expect(restored.contents.send).toHaveBeenCalledTimes(1);
+    expect(rig.memoryKb).not.toHaveBeenCalled();
+    expect(rig.newView).not.toHaveBeenCalled();
+  });
+});
 
 describe('bounded background Project restoration', () => {
   it('admits only one primed Project, reuses its view, and never refills the budget', async () => {

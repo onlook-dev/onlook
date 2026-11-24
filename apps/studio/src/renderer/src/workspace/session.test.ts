@@ -13,6 +13,7 @@ import {
   landProject,
   leaveProject,
   openCreated,
+  openAssignedProject,
   openProject,
   outgoingProject,
   replaceProject,
@@ -551,6 +552,48 @@ describe('restoring a background project', () => {
     expect(main.locations).toHaveLength(1);
     expect(main.announces).toEqual([]);
     expect(phase()).toEqual({ kind: action === 'close' ? 'none' : 'closing' });
+  });
+
+  it.each(['location', 'announcement'] as const)('a closed assignment does not reopen after its late %s response', async (stage) => {
+    await settleOpen(A, true);
+    const assigned = openAssignedProject(A.workspacePath);
+    if (stage === 'announcement') {
+      main.locations[0]!.answer.settle();
+      await turn();
+    }
+    leaveProject();
+    closeProject();
+
+    if (stage === 'location') main.locations[0]!.answer.settle();
+    else main.announces[0]!.answer.settle();
+
+    expect(await assigned).toEqual({ kind: 'superseded' });
+    expect(main.opens.map((open) => open.path)).toEqual([A.workspacePath]);
+    expect(phase()).toEqual({ kind: 'none' });
+    expect(useWorkspaceStore.getState().workspace).toBeNull();
+  });
+
+  it.each(['location', 'announcement'] as const)('a newer Project opening survives the old assignment\'s late %s response', async (stage) => {
+    await settleOpen(A, true);
+    const assigned = openAssignedProject(A.workspacePath);
+    if (stage === 'announcement') {
+      main.locations[0]!.answer.settle();
+      await turn();
+    }
+    leaveProject();
+    closeProject();
+    const next = openProject(B.workspacePath);
+
+    if (stage === 'location') main.locations[0]!.answer.settle();
+    else main.announces[0]!.answer.settle();
+
+    expect(await assigned).toEqual({ kind: 'superseded' });
+    expect(main.opens.map((open) => open.path)).toEqual([A.workspacePath, B.workspacePath]);
+    expect(phase()).toEqual({ kind: 'opening', covered: true, workspacePath: B.workspacePath });
+    main.opens[1]!.answer.settle(held(B));
+    await turn();
+    main.primes[1]!.settle();
+    expect(await next).toEqual({ kind: 'ready', workspace: B });
   });
 
   it.each(['close', 'abandon'] as const)('a %s before activation refuses late selection and announcements', async (action) => {
