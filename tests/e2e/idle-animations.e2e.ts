@@ -6,6 +6,11 @@ test('idle Tips and composer animations do not repaint and respect Reduce Motion
   test.setTimeout(60_000);
   const app = await launchStudio('build', { STUDIO_WORKSPACE_ROOT: makeWorkspaceRoot(), STUDIO_AGENT_PROBE: 'ok', STUDIO_AGENT_VERIFY: 'ok' });
   try {
+    const windowShows = await app.evaluateHandle(({ BaseWindow }) => {
+      const shows: number[] = [];
+      for (const window of BaseWindow.getAllWindows()) window.on('show', () => shows.push(window.id));
+      return shows;
+    });
     const page = await editorPage(app);
     await createProjectWithoutStart(page, makeSourceCheckout().path);
     await expect(page.locator('.astryx-chat-composer-input [contenteditable="true"]')).toHaveAttribute('contenteditable', 'true');
@@ -35,6 +40,7 @@ test('idle Tips and composer animations do not repaint and respect Reduce Motion
     await expect(placeholder).not.toHaveCSS('color', 'rgba(0, 0, 0, 0)');
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await expect.poll(async () => (await animationTime()).length).toBe(3);
+    expect(await windowShows.evaluate(shows => shows.length)).toBe(headed ? 1 : 0);
   } finally {
     await closeStudio(app);
     cleanupTempFixtures();
@@ -44,6 +50,11 @@ test('idle Tips and composer animations do not repaint and respect Reduce Motion
 test('shimmering placeholder repaints changed text, including wrapped text', async () => {
   const app = await launchStudio('build', { STUDIO_WORKSPACE_ROOT: makeWorkspaceRoot(), STUDIO_AGENT_PROBE: 'ok', STUDIO_AGENT_VERIFY: 'ok' });
   try {
+    const windowShows = await app.evaluateHandle(({ BaseWindow }) => {
+      const shows: number[] = [];
+      for (const window of BaseWindow.getAllWindows()) window.on('show', () => shows.push(window.id));
+      return shows;
+    });
     const page = await editorPage(app);
     await createProjectWithoutStart(page, makeSourceCheckout().path);
     await expect(page.locator('.astryx-chat-composer-input [contenteditable="true"]')).toHaveAttribute('contenteditable', 'true');
@@ -60,6 +71,7 @@ test('shimmering placeholder repaints changed text, including wrapped text', asy
     expect(await app.evaluate(({ BaseWindow }) => BaseWindow.getAllWindows()[0]!.isVisible())).toBe(headed);
     await page.waitForTimeout(500);
     expect((await measureIdlePaint(app, page, 4000)).paintedFrames).toBe(0);
+    expect(await windowShows.evaluate(shows => shows.length)).toBe(0);
   } finally {
     await closeStudio(app);
     cleanupTempFixtures();
