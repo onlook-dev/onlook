@@ -20,6 +20,7 @@ import {
   type CanvasDoc,
   type CanvasOp,
   type ComfortChoice,
+  type CopyFailure,
   type CreationEntryPoint,
   type ProjectCreatePhase,
   type ProjectCreateState,
@@ -164,9 +165,13 @@ export async function createProject(
       ...(context.repoIdentity === undefined ? {} : workspaceTelemetryProperties(context.repoIdentity)),
       stage: phase,
       duration_ms: Date.now() - startedAt,
-      error_class: errorClass,
+      error_class: context.copyFailure?.cause === 'git_timed_out' ? 'timeout' : errorClass,
+      ...(context.copyFailure === undefined ? {} : { failure_step: context.copyFailure.step, failure_cause: context.copyFailure.cause }),
     });
-    if (deps.diagnoseFailure !== undefined) {
+    // A copy failure is explained by its own classification, never by the machine probe.
+    if (context.copyFailure !== undefined) {
+      logger.warn('project copy failed', { failure_step: context.copyFailure.step, failure_cause: context.copyFailure.cause });
+    } else if (deps.diagnoseFailure !== undefined) {
       detail = await deps.diagnoseFailure() ?? detail;
       // The checks are the only await here, so with no diagnosis there is no window a cancel can land in.
       if (token.canceled) return settle({ kind: 'canceled' });
@@ -176,6 +181,7 @@ export async function createProject(
       sourceRepoName: context.sourceRepoName,
       phase,
       ...(detail === undefined ? {} : { detail }),
+      ...(context.copyFailure === undefined ? {} : { copyFailure: context.copyFailure }),
       ...(context.workspace === undefined ? {} : { workspace: context.workspace }),
     });
   };
@@ -313,6 +319,7 @@ interface FailContext {
   sourceRepoName: string;
   workspace?: WorkspaceCreated;
   repoIdentity?: string;
+  copyFailure?: CopyFailure;
 }
 
 async function bear(
@@ -366,7 +373,7 @@ async function bear(
   if (!created.ok) {
     // `fabricate` rolls its own unhealthy cut back, so there is nothing here to undo.
     if (token.canceled) return settle({ kind: 'canceled' });
-    if (created.reason === 'create-failed') return fail('copying', created.detail, context);
+    if (created.reason === 'create-failed') return fail('copying', created.detail, { ...context, ...(created.copyFailure === undefined ? {} : { copyFailure: created.copyFailure }) });
     const detail = created.detail === undefined ? {} : { detail: created.detail };
     return settle({ kind: 'refused', sourceRepoName, reason: created.reason, ...detail });
   }

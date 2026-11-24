@@ -4,6 +4,30 @@ import { t } from '@studio/i18n';
 import { ProjectsShowroom } from './ProjectsShowroom.js';
 
 describe('Project copy Showroom states (ONL-2515)', () => {
+  it('shows actionable copy guidance, and choosing the folder again in place of Retry, for problems that need a folder change', () => {
+    for (const cause of ['ignored_files', 'permission_denied', 'folder_unavailable', 'copy_in_progress', 'disk_full', 'git_failed'] as const) {
+      const markup = renderToStaticMarkup(<ProjectsShowroom scenario={`copy-failure-${cause.replaceAll('_', '-')}`} />);
+      expect(markup).toContain(renderToStaticMarkup(<>{t(`project.create.copy.${cause}`)}</>));
+      expect(markup).not.toContain('data-testid="chat-setup-retry"');
+      expect(markup).toContain('data-testid="chat-setup-choose-folder"');
+    }
+  });
+
+  it('keeps the failing command\u2019s own words behind the details control (ONL-3285)', () => {
+    const markup = renderToStaticMarkup(<ProjectsShowroom scenario="copy-failure-ignored-files" />);
+    expect(markup).toContain('data-testid="chat-setup-output-toggle"');
+    expect(markup).toContain(t('project.create.details.show'));
+    expect(markup).not.toContain('data-testid="chat-setup-output"');
+    expect(markup).not.toContain('nothing added to commit');
+  });
+
+  it('keeps Retry for a copy timeout and an unclassified failure', () => {
+    for (const cause of ['git_timed_out', 'unknown']) {
+      const markup = renderToStaticMarkup(<ProjectsShowroom scenario={`copy-failure-${cause.replaceAll('_', '-')}`} />);
+      expect(markup).toContain('data-testid="chat-setup-retry"');
+      expect(markup).not.toContain('data-testid="chat-setup-choose-folder"');
+    }
+  });
   it('exposes active, archived, missing, unresolved and limit card states through the real Projects grid', () => {
     for (const scenario of ['copy-active', 'copy-archived', 'copy-missing', 'copy-unresolved', 'copy-limit', 'copy-hover', 'copy-focus']) {
       const markup = renderToStaticMarkup(<ProjectsShowroom scenario={scenario} />);
@@ -30,7 +54,9 @@ describe('Project copy Showroom states (ONL-2515)', () => {
     expect(markup).toContain('data-setup-failed="true"');
     expect(markup).toContain(t('project.create.failed.copying', { repo: '' }).trim());
     expect(markup).toContain(t('project.create.next.copying'));
+    // A detail main took from the catalogue stays beside the guidance; only a command's own words are held back (ONL-3285).
     expect(markup).toContain(renderToStaticMarkup(<>{t('projects.copy.error.submodules')}</>));
+    expect(markup).not.toContain('data-testid="chat-setup-output-toggle"');
     expect(markup).toContain('data-testid="chat-setup-retry"');
     expect(markup).toContain('Landing');
     expect(markup).not.toContain('data-project-id="copy-source"');
