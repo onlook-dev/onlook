@@ -25,6 +25,7 @@ import { discoverCardVisible } from './discoverCta.js';
 import { gitCardPropsFor } from './gitCardProps.js';
 import { discoveredMetaFor, type DiscoveredWorktreeItem } from './DiscoveredWorktrees.js';
 import { ImportRefusalDialog } from './ImportRefusalBody.js';
+import { OpenRefusalDialog } from './OpenRefusalDialog.js';
 import { type ProjectGridItem } from './ProjectGrid.js';
 import { ProjectMenuItems, WorkspaceMenuItems } from './menus.js';
 import { ProjectsView } from './ProjectsView.js';
@@ -89,6 +90,7 @@ export function ProjectsScreen({
   );
   const [refusal, setRefusal] = useState<Refusal | null>(null);
   const [importRefusal, setImportRefusal] = useState<ProjectImportRefusalReason | null>(null);
+  const [openRefusal, setOpenRefusal] = useState<React.ComponentProps<typeof OpenRefusalDialog>['reason']>(null);
   const [removing, setRemoving] = useState<string[]>([]);
   const version = useAppInfoStore((state) => state.version);
   const isSettingsPrimed = useSettingsStore((state) => state.isPrimed);
@@ -173,8 +175,9 @@ export function ProjectsScreen({
 
       if (useBlankCreateStore.getState().status.kind !== 'idle') return;
       const opened = await openProject(project.workspacePath);
+      if (!isMounted.current) return;
       if (opened.kind === 'failed') {
-
+        setOpenRefusal(opened.reason ?? 'failed');
         await refreshProjects();
         return;
       }
@@ -532,6 +535,7 @@ export function ProjectsScreen({
           setImportRefusal(null);
         }}
       />
+      <OpenRefusalDialog reason={openRefusal} onDismiss={() => { setOpenRefusal(null); }} />
     </>
   );
 }
