@@ -539,7 +539,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
       const cleanup = await Promise.allSettled([...launched].map(async (handle) => { await terminate(handle); live.delete(handle); }));
       const terminationFailure = cleanup.find((entry) => entry.status === 'rejected');
       if (terminationFailure?.status === 'rejected') {
-        const reason = t('projectSetup.failure.stopTermination', { reason: String(terminationFailure.reason) });
+        const reason = t('projectSetup.failure.stopListener');
         recordFailure(cwd, { revision: failureVersion.revision, stage: 'stop', command: redactSetupOutput(command, env), reason, outputTail: '', elapsedMs: Date.now() - started });
         return result(cwd, reason);
       }
@@ -556,7 +556,23 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
   };
   const terminateReconnected = async (endpoint: ReconnectedEndpoint): Promise<void> => {
     const { port } = endpoint.server;
-    if (await probe(port)) throw new Error(t('projectSetup.failure.notStartedHere', { port }));
+    const signal = new AbortController().signal;
+    const signalListener = async (name: NodeJS.Signals): Promise<void> => {
+      if (!await probe(port)) return;
+      const identity = await identityOf(port, endpoint.folder, signal);
+      const ownership = verifiesFor(identity, endpoint.folder);
+      if (ownership === 'unknown' || !sameListener(endpoint, identity) || !Number.isInteger(endpoint.pid) || endpoint.pid <= 1 || endpoint.pid === process.pid) {
+        if (!await probe(port)) return;
+        throw new Error(ownership === 'unknown' ? t('projectSetup.failure.listenerUnseen', { port }) : t('projectSetup.failure.unverifiedListener'));
+      }
+      try { process.kill(endpoint.pid, name); }
+      catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error; }
+    };
+    if (!await probe(port)) return;
+    await signalListener('SIGTERM');
+    const deadline = Date.now() + (deps.stopGraceMs ?? 2000);
+    while (await probe(port) && Date.now() < deadline) await delay(25);
+    if (await probe(port)) await signalListener('SIGKILL');
   };
   const stop = (cwd: string, serverIds?: string[], includeReconnected = true): Promise<ProjectSetupResult> => {
     const phase = phases.get(cwd);
@@ -593,7 +609,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
       const terminationFailure = cleanup.find((entry) => entry.status === 'rejected');
       if (terminationFailure?.status === 'rejected') {
         const handle = selected[cleanup.indexOf(terminationFailure)]!;
-        const reason = t('projectSetup.failure.stopTermination', { reason: String(terminationFailure.reason) });
+        const reason = t('projectSetup.failure.stopListener');
         return settleFailure({ revision: handle.version.revision, stage: 'stop', ...(handle.server ? { serverId: handle.server.id } : {}), command: handle.safeCommand, reason, outputTail: '', elapsedMs: 0 });
       }
       /** A group that outlived an earlier termination is never one of `selected`: a selected one either left `live` or rejected above. */
@@ -613,12 +629,13 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
         if (!('child' in handle)) reconnected.get(cwd)?.delete(handle);
       }
       const running = [...live ?? []].find((handle) => handle.server && !handle.exit && !handle.error && handle.termination.state === 'live') ?? [...reconnected.get(cwd) ?? []][0];
+      if (!running) portMoves.delete(cwd);
       settle(running ? { state: 'running' } : { state: 'idle' });
       return result(cwd);
-    }).catch((error: unknown) => {
+    }).catch(() => {
       const owner = observed ?? selected[0];
       const version = owner?.version ?? pending?.version ?? store.read(cwd).saved;
-      const reason = t('projectSetup.failure.stopTermination', { reason: String(error) });
+      const reason = t('projectSetup.failure.stopListener');
       if (version) return settleFailure({ revision: version.revision, stage: 'stop', ...(owner?.server ? { serverId: owner.server.id } : {}), command: owner?.safeCommand ?? '', reason, outputTail: '', elapsedMs: 0 });
       settle({ state: 'idle' });
       return result(cwd, reason);

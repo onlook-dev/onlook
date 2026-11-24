@@ -1,6 +1,5 @@
 {
   "projectSetup.portMoved": "ポート {from} は使用中のため、アプリとフレームをポート {to} に切り替えました。",
-  "projectSetup.failure.notStartedHere": "ポート {port} のアプリは Onlook が起動したものではないため、停止できません。",
   "projectSetup.failure.portMove": "フレームをポート {port} に切り替えられませんでした。アプリをもう一度起動してください。",
   "projectSetup.ask.install": "アプリのパッケージがインストールされませんでした。対応してもらえますか？難しければ、どうすればよいか説明してください。",
   "projectSetup.ask.start": "アプリが起動しませんでした。対応してもらえますか？難しければ、どうすればよいか説明してください。",
@@ -46,7 +45,6 @@
   "projectSetup.failure.readinessTimeout": "サーバーの準備完了待ちがタイムアウトしました",
   "projectSetup.failure.unexpectedExit": "サーバーが予期せず終了しました",
   "projectSetup.failure.stopListener": "所有するプロセスグループを停止した後も、ポートが応答しています",
-  "projectSetup.failure.stopTermination": "所有するプロセスグループを停止できませんでした: {reason}",
   "projectSetup.failure.processGroupAlive": "所有するプロセスグループがまだ実行中です",
   "projectSetup.failure.staleRevision": "読み込み後にセットアップが変更されました",
   "projectSetup.failure.unknownAction": "不明なセットアップアクション",

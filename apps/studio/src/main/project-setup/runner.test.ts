@@ -9,6 +9,51 @@ afterAll(cleanupTempFixtures);
 const definition = { prepare: '', install: { script: '', inputs: [], outputs: [] }, servers: [{ id: 'web', cwd: '.', start: 'sleep 10', port: 48001 }] };
 
 describe('setup runner failures and state', () => {
+  it('stops a reconnected own app with one SIGTERM and returns to idle', async () => {
+    const project = makeDirWithFiles({});
+    const root = makeDirWithFiles({});
+    const pid = process.pid + 100000;
+    let listening = true;
+    const service = createProjectSetupService({
+      state: createSetupState(() => root), env: async () => process.env,
+      probe: async () => listening, identify: async () => ({ pid, cwd: project }), report: async () => undefined,
+    });
+    let restore: () => void = () => undefined;
+    try {
+      service.save(project, definition, null);
+      const started = await service.run(project, { action: 'start' });
+      expect(started.ok).toBe(true);
+      const signal = spyOn(process, 'kill').mockImplementation(() => { listening = false; return true; });
+      restore = () => signal.mockRestore();
+      const stopped = await service.run(project, { action: 'stop' });
+      expect(stopped.ok).toBe(true);
+      expect(stopped.snapshot.state).toBe('idle');
+      expect(stopped.snapshot.saved).toEqual(started.snapshot.saved);
+      expect(signal.mock.calls).toEqual([[pid, 'SIGTERM']]);
+    } finally { restore(); await service.dispose(); }
+  });
+
+  it('shows a plain stop failure without exposing a process error', async () => {
+    const project = makeDirWithFiles({});
+    const root = makeDirWithFiles({});
+    const service = createProjectSetupService({
+      state: createSetupState(() => root), env: async () => process.env,
+      probe: async () => true, identify: async () => ({ pid: process.pid + 100000, cwd: project }), report: async () => undefined,
+    });
+    let restore: () => void = () => undefined;
+    try {
+      service.save(project, definition, null);
+      expect((await service.run(project, { action: 'start' })).ok).toBe(true);
+      const signal = spyOn(process, 'kill').mockImplementation(() => { throw new Error('Could not stop the owned process group: Error: denied'); });
+      restore = () => signal.mockRestore();
+      const stopped = await service.run(project, { action: 'stop' });
+      expect(stopped.ok).toBe(false);
+      if (stopped.ok) throw new Error('Expected the stop to fail');
+      expect(stopped.reason).toBe(t('projectSetup.failure.stopListener'));
+      expect(stopped.snapshot.failure?.reason).toBe(t('projectSetup.failure.stopListener'));
+    } finally { restore(); await service.dispose(); }
+  });
+
   it('diagnoses a verified alternate listening port without treating a printed URL as proof', async () => {
     for (const owned of [true, false]) {
       const project = makeDirWithFiles({});
@@ -160,13 +205,13 @@ describe('setup runner failures and state', () => {
         expect(stopped.snapshot.failure?.stage).toBe('stop');
         expect(service.ownsPort(project, 48001)).toBe(true);
         expect((await service.run(project, { action: 'restart', serverIds: ids })).ok).toBe(false);
-        expect(stopIdentifications).toBe(0);
+        expect(stopIdentifications).toBe(change === 'unknown' ? 6 : 2);
         expect(signal).not.toHaveBeenCalled();
       } finally { restore(); await service.dispose(); }
     }
   });
 
-  it('never signals a reconnected listener that Onlook did not start', async () => {
+  it('reidentifies the exact reconnect listener before escalating beyond SIGTERM', async () => {
     const project = makeDirWithFiles({});
     const root = makeDirWithFiles({});
     const pid = process.pid + 100000;
@@ -182,8 +227,7 @@ describe('setup runner failures and state', () => {
       const signal = spyOn(process, 'kill').mockImplementation(() => { replaced = true; return true; });
       restore = () => signal.mockRestore();
       expect((await service.run(project, { action: 'stop' })).ok).toBe(false);
-      expect(signal).not.toHaveBeenCalled();
-      expect(service.read(project).failure?.reason).toContain(t('projectSetup.failure.notStartedHere', { port: 48001 }));
+      expect(signal.mock.calls).toEqual([[pid, 'SIGTERM']]);
       expect(service.ownsPort(project, 48001)).toBe(true);
     } finally { restore(); await service.dispose(); }
   });
@@ -265,11 +309,10 @@ describe('setup runner failures and state', () => {
       expect(service.ownsPort(project, 48001)).toBe(true);
       const signal = spyOn(process, 'kill').mockImplementation(() => { listening = false; return true; });
       restore = () => signal.mockRestore();
-      listening = false;
       const stopped = await service.run(project, { action: 'stop', serverIds: ['web'] });
       expect(stopped.ok).toBe(true);
       expect(stopped.snapshot.state).toBe('idle');
-      expect(signal).not.toHaveBeenCalled();
+      expect(signal.mock.calls).toEqual([[pid, 'SIGTERM']]);
       expect((await starting).ok).toBe(false);
       expect(service.ownsPort(project, 48001)).toBe(false);
       expect(service.serverIdsForPorts(project, [48001])).toEqual([]);

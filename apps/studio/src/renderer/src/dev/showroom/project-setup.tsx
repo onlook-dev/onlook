@@ -80,7 +80,6 @@ const STATES: { id: string; snapshot: ProjectSetupSnapshot | null; ask?: AskStat
   { id: 'error', snapshot: PROJECT_SETUP_FAILED },
   { id: 'port-moved', snapshot: { saved: MOVED, verified: MOVED, failure: null, state: 'running', portMoves: [{ from: 4710, to: 4720 }] } },
   { id: 'port-occupied', snapshot: { ...PROJECT_SETUP_FAILED, failure: { revision: SAVED.revision, serverId: 'web', stage: 'ready', command: SAVED.definition.servers[0]!.start, reason: t('projectSetup.failure.occupiedPort', { port: 3000 }), outputTail: '', elapsedMs: 1250 } } },
-  { id: 'not-started-here', snapshot: { ...PROJECT_SETUP_FAILED, failure: { revision: SAVED.revision, serverId: 'web', stage: 'stop', command: SAVED.definition.servers[0]!.start, reason: t('projectSetup.failure.notStartedHere', { port: 3000 }), outputTail: '', elapsedMs: 1250 } } },
   { id: 'port-move-failed', snapshot: { ...PROJECT_SETUP_FAILED, failure: { revision: SAVED.revision, serverId: 'web', stage: 'ready', command: MOVED.definition.servers[0]!.start, reason: t('projectSetup.failure.portMove', { port: 4720 }), outputTail: '', elapsedMs: 1250 } } },
   { id: 'repair-focus', snapshot: PROJECT_SETUP_FAILED },
   { id: 'repair-sending', snapshot: PROJECT_SETUP_FAILED, ask: 'sending' },

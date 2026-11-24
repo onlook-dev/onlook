@@ -85,9 +85,10 @@ describe('saved setup port conflicts', () => {
     const output = join(project, 'selected-port');
     const reports: number[] = [];
     const moves: number[][] = [];
+    let stopped = false;
     const service = createProjectSetupService({
       state: createSetupState(() => root), env: async () => process.env,
-      probe: async port => port === 48001 || existsSync(output),
+      probe: async port => port === 48001 || (!stopped && existsSync(output)),
       identify: async port => ({ pid: process.pid, cwd: port === 48001 ? elsewhere : project }),
       report: async (_cwd, _folder, port) => { reports.push(port); },
       movePort: async (_cwd, from, to) => { moves.push([from, to]); return async () => undefined; }, stopGraceMs: 25,
@@ -104,6 +105,12 @@ describe('saved setup port conflicts', () => {
       expect(result.snapshot.verified).toEqual(result.snapshot.saved);
       expect(result.snapshot.portMoves).toEqual([{ from: 48001, to: port }]);
       expect(projectSetupAskKind(result.snapshot)).toBe(null);
+      stopped = true;
+      const stopping = await service.run(project, { action: 'stop' });
+      expect(stopping.ok).toBe(true);
+      expect(stopping.snapshot.state).toBe('idle');
+      expect(stopping.snapshot.portMoves).toBeUndefined();
+      expect(stopping.snapshot.saved).toEqual(result.snapshot.saved);
     } finally { await service.dispose(); }
   });
 

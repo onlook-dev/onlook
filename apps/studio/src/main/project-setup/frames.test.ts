@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { MAX_CANVAS_OPS_PER_REQUEST, type BrowserNode, type CanvasDoc } from '@studio/events';
+import { displayUrl, MAX_CANVAS_OPS_PER_REQUEST, type BrowserNode, type CanvasDoc } from '@studio/events';
 import { createSetupPortMove } from './frames.js';
 import type { ApplyCanvasOps } from '../canvas/authors.js';
 
@@ -18,6 +18,7 @@ function fixture(nodes: BrowserNode[]) {
     const ops = resolve(doc);
     if (!Array.isArray(ops)) return { ok: false, reason: ops.reason };
     for (const op of ops) {
+      if (op.type === 'rename') { doc.nodes[op.id]!.name = op.name; continue; }
       if (op.type !== 'set-home-url') throw new Error('Unexpected canvas operation');
       const node = doc.nodes[op.id];
       if (node?.kind === 'browser') node.content.homeUrl = op.homeUrl;
@@ -28,6 +29,41 @@ function fixture(nodes: BrowserNode[]) {
 }
 
 describe('setup Frame port changes', () => {
+  it('updates address-generated Frame names and preserves custom names', async () => {
+    const nodes = [frame('address', 48001), frame('custom', 48001, 'second'), frame('destination-name', 48001)];
+    nodes[0]!.name = displayUrl(nodes[0]!.content.homeUrl);
+    nodes[2]!.name = 'localhost:4700/notes?sort=name';
+    const { apply } = fixture(nodes);
+    const undo = await createSetupPortMove(apply)('/project', 48001, 4700, new AbortController().signal);
+    expect(nodes.map(node => node.name)).toEqual(['localhost:4700/notes?sort=name', 'custom', 'localhost:4700/notes?sort=name']);
+    await undo();
+    expect(nodes.map(node => node.name)).toEqual(['localhost:48001/notes?sort=name', 'custom', 'localhost:4700/notes?sort=name']);
+  });
+
+  it('keeps a later custom name when rolling back an address change', async () => {
+    const node = frame('address', 48001);
+    node.name = displayUrl(node.content.homeUrl);
+    const { apply } = fixture([node]);
+    const undo = await createSetupPortMove(apply)('/project', 48001, 4700, new AbortController().signal);
+    node.name = 'Preview';
+    await undo();
+    expect(node.name).toBe('Preview');
+    expect(node.content.homeUrl).toContain(':48001/');
+  });
+
+  it('moves and restores mixed Frame names across operation batch boundaries', async () => {
+    const nodes = Array.from({ length: MAX_CANVAS_OPS_PER_REQUEST + 1 }, (_value, index) => frame(`frame-${index}`, 48001));
+    for (const [index, node] of nodes.entries()) if (index % 2 === 0) node.name = displayUrl(node.content.homeUrl);
+    const names = nodes.map(node => node.name);
+    const { apply } = fixture(nodes);
+    const undo = await createSetupPortMove(apply)('/project', 48001, 4700, new AbortController().signal);
+    expect(nodes.every(node => node.content.homeUrl.includes(':4700/'))).toBe(true);
+    expect(nodes.map(node => node.name)).toEqual(names.map((name, index) => index % 2 === 0 ? name.replace(':48001/', ':4700/') : name));
+    await undo();
+    expect(nodes.every(node => node.content.homeUrl.includes(':48001/'))).toBe(true);
+    expect(nodes.map(node => node.name)).toEqual(names);
+  });
+
   it('moves Frames on every Page, preserves routes and only targets this project', async () => {
     const nodes = [frame('notes', 48001), frame('details', 48001, 'second'), frame('other', 48002)];
     const { apply, projects } = fixture(nodes);
@@ -52,6 +88,7 @@ describe('setup Frame port changes', () => {
   it('restores partial batches when a move is canceled or refused', async () => {
     for (const cancel of [false, true]) {
       const nodes = Array.from({ length: MAX_CANVAS_OPS_PER_REQUEST + 1 }, (_value, index) => frame(`frame-${index}`, 48001));
+      for (const node of nodes) node.name = displayUrl(node.content.homeUrl);
       const { apply } = fixture(nodes);
       const controller = new AbortController();
       let writes = 0;
@@ -64,6 +101,7 @@ describe('setup Frame port changes', () => {
       };
       await expect(createSetupPortMove(interrupted)('/project', 48001, 4700, controller.signal)).rejects.toThrow();
       expect(nodes.every(node => node.content.homeUrl === 'http://localhost:48001/notes?sort=name#today')).toBe(true);
+      expect(nodes.every(node => node.name === displayUrl(node.content.homeUrl))).toBe(true);
     }
   });
 });
