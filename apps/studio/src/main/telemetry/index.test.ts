@@ -607,6 +607,37 @@ it('keeps legacy plain install ids and writes new ids in an envelope', () => {
 });
 
 describe('super properties', () => {
+  it('does not start deferred environment probes or publish an old check after consent is withdrawn', async () => {
+    process.env[ANALYTICS_KEY] = 'phc_test';
+    initTelemetry();
+    let finishXcode!: (result: { ok: boolean; out: string }) => void;
+    const xcode = new Promise<{ ok: boolean; out: string }>((resolve) => { finishXcode = resolve; });
+    const commands: string[] = [];
+    let probeSignal: AbortSignal | undefined;
+    let resolutions = 0;
+    const check = checkLaunchEnvironment({
+      platform: 'darwin', release: '25.1.0', arch: 'arm64', env: async () => ({ PATH: '/usr/bin' }),
+      resolves: () => { resolutions += 1; return false; },
+      run: async (bin, _args, _env, signal?: AbortSignal) => {
+        commands.push(bin);
+        probeSignal = signal;
+        return bin === 'xcode-select' ? xcode : { ok: false, out: '' };
+      },
+    });
+    await Promise.resolve();
+    expect(commands).toEqual(['xcode-select', 'node', 'npm']);
+    setAnalyticsEnabled(false);
+    refreshTelemetryConsent();
+    expect(probeSignal?.aborted).toBe(true);
+    setAnalyticsEnabled(true);
+    refreshTelemetryConsent();
+    finishXcode({ ok: true, out: '' });
+    await check;
+    expect(commands).toEqual(['xcode-select', 'node', 'npm']);
+    expect(resolutions).toBe(0);
+    expect(peekQueueForTesting().some(({ event }) => event === 'environment_checked')).toBe(false);
+  });
+
   it.each(['no-key', 'switch-off', 'analytics-off'])('environment subprocesses are skipped when analytics is %s', async (mode) => {
     if (mode !== 'no-key') process.env[ANALYTICS_KEY] = 'phc_test';
     if (mode === 'switch-off') process.env['STUDIO_TELEMETRY'] = '0';

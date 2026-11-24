@@ -26,7 +26,7 @@ export interface EnvironmentReaders {
   arch: string;
   env(): Promise<Env>;
   resolves(bin: string, env: Env): boolean;
-  run(bin: string, args: string[], env: Env): Promise<EnvironmentProbe>;
+  run(bin: string, args: string[], env: Env, signal?: AbortSignal): Promise<EnvironmentProbe>;
 }
 
 function version(result: EnvironmentProbe): string | null {

@@ -185,7 +185,7 @@ export interface TelemetryEventMap {
   };
   workspace_creation_flow: {
     source: 'folder' | 'scratch' | 'github';
-    step: 'started' | 'created' | 'preview';
+    step: 'started' | 'created' | 'preview' | 'abandoned';
     outcome: 'started' | 'success' | 'failure';
     project_id?: string;
   };

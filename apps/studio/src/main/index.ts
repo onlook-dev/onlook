@@ -69,7 +69,7 @@ import { installProcessHooks, setProcessCrashContextReader } from './errors/inde
 import { installProcessCrashHooks } from './errors/processes.js';
 import { prepareOnboardingRecovery } from './onboarding/state.js';
 import { registerDevErrorHook } from './errors/dev-hook.js';
-import { claimRunningMarker, clearRunningMarker, ownsRunningMarker, readRunningContext, updateRunningContext } from './errors/crash-marker.js';
+import { readRunningContext, trackRunningLaunch, updateRunningContext } from './errors/crash-marker.js';
 import { pruneCrashDumps } from './errors/crash-dumps.js';
 import { stateRoot } from './state/root.js';
 import { flushLog, initLog, log } from './log/index.js';
@@ -92,6 +92,7 @@ const processStartedAt = Date.now();
 // The leaves take what they need from above here, lowest first, before anything below runs.
 reportStateFaultsTo(log('state'));
 const bootLog = log('boot');
+let runningLaunch: ReturnType<typeof trackRunningLaunch>;
 const identity = buildIdentity(OFFICIAL_BUILD);
 app.setName(OFFICIAL_BUILD ? (app.isPackaged ? identity.appId : 'Onlook Development') : identity.productName);
 
@@ -295,7 +296,7 @@ void app.whenReady().then(() => {
     platform: hostPlatform(), release: release(), arch: process.arch,
     env: userEnv,
     resolves: (bin, env) => hostExecutable(bin, tmpdir(), env) !== undefined,
-    run: (bin, args, env) => runCli(bin, tmpdir(), args, { env, timeoutMs: 5_000, maxBuffer: 16_384 }),
+    run: (bin, args, env, signal) => runCli(bin, tmpdir(), args, { env, signal, timeoutMs: 5_000, maxBuffer: 16_384 }),
   }).catch((error: unknown) => bootLog.warn('environment checks failed', { error }));
   registerLogHandlers((receive) => on(IPC_SEND.logLine, (_event, payload) => receive(payload)));
   installProcessHooks();
@@ -308,22 +309,20 @@ void app.whenReady().then(() => {
   crashReporter.start({ uploadToServer: false });
   setImmediate(() => pruneCrashDumps(crashDumps));
   // Only a launch that owns the state root it writes may claim the marker.
-  const ids = correlation();
-  if (ids !== undefined && ownsRunningMarker()) {
-    const previous = claimRunningMarker(ids.launchId, app.getVersion());
-    prepareOnboardingRecovery(previous !== undefined);
-    if (previous !== undefined) {
-      bootLog.warn('the previous launch did not quit cleanly', { previous_launch_id: previous.launchId });
-      capture('crash_detected', {
-        previous_launch_id: previous.launchId,
-        app_version: previous.appVersion,
-        reporter_app_version: app.getVersion(),
-        process_type: 'main',
-        exit_code: null,
-        reason: 'unclean_exit',
-        ...previous.context,
-      });
-    }
+  runningLaunch = trackRunningLaunch(app.getVersion(), correlation()?.launchId);
+  const previous = runningLaunch?.previous;
+  prepareOnboardingRecovery(runningLaunch === undefined ? undefined : previous !== undefined);
+  if (previous !== undefined) {
+    bootLog.warn('the previous launch did not quit cleanly', { previous_launch_id: previous.launchId });
+    capture('crash_detected', {
+      previous_launch_id: previous.launchId,
+      app_version: previous.appVersion,
+      reporter_app_version: app.getVersion(),
+      process_type: 'main',
+      exit_code: null,
+      reason: 'unclean_exit',
+      ...previous.context,
+    });
   }
   // Before any host or window: a move quits this copy, and nothing it started should outlive it (ONL-2641).
   if (offerMoveToApplications()) return;
@@ -436,7 +435,7 @@ const quitTeardown = createQuitTeardown({
   // The marker clears here, not in the drain chain: the chain sits behind the cap, and a marker left behind is a false crash next launch.
   // `flushAllDomains` here catches the debounced last window move; the chain's flush can be starved by the cap.
   // The spare goes first and is never waited on: it holds no session, so quit must not pay for it (ONL-2318, ONL-2254).
-  synchronous: [beginTelemetryQuit, beginTurnSeenQuit, () => checkSetupAbandoned(), beginProjectSetupQuit, () => tabHost()?.beginQuit(), () => gitStatusCadence()?.dispose(), () => { const ids = correlation(); if (ids !== undefined) clearRunningMarker(ids.launchId); }, flushAllDomains, disposeServerBook, disposeStarter, () => providerIdentity.dispose(), cancelClaudeLoginForQuit],
+  synchronous: [beginTelemetryQuit, beginTurnSeenQuit, () => checkSetupAbandoned(), beginProjectSetupQuit, () => tabHost()?.beginQuit(), () => gitStatusCadence()?.dispose(), () => runningLaunch?.clear(), flushAllDomains, disposeServerBook, disposeStarter, () => providerIdentity.dispose(), cancelClaudeLoginForQuit],
   // Canvas first: behind the agent host's close the cap starves it (ONL-1993). Telemetry after the agent host, whose close queues each session's final capture.
   // The second domain flush writes rows sessions push while closing (ONL-2254).
   // Setup's own stop goes behind every write that can lose work and ahead of the domain flush it feeds: `beginProjectSetupQuit` already killed its handles, so what is left is a per-handle port probe that outlasts this cap (ONL-2499).

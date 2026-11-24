@@ -6,6 +6,7 @@ import { cleanupTempFixtures, makeStateRoot } from '@studio/fixtures';
 const { chosenHarness, clearOnboarded, completeOnboarding, readOnboardingState, resetOnboardingCache, saveOnboardingProgress, prepareOnboardingRecovery } =
   await import('./state.js');
 const { resetSettingsCache, settingsHarness } = await import('../settings/state.js');
+const { trackRunningLaunch } = await import('../errors/crash-marker.js');
 
 const savedStateRoot = process.env['STUDIO_STATE_ROOT'];
 const savedFirstRun = process.env['STUDIO_FIRST_RUN'];
@@ -61,6 +62,56 @@ it('a normal quit starts incomplete onboarding without a saved step or agent cho
   resetOnboardingCache();
   prepareOnboardingRecovery(true);
   expect(readOnboardingState()).toEqual({ hasOnboarded: false, resumeAt: 'found' });
+});
+
+it('does not resurrect a discarded clean-launch checkpoint after a later crash', () => {
+  const root = useOwnStateRoot('onboarding-discarded-progress');
+  saveOnboardingProgress({ resumeAt: 'import', harness: 'codex' });
+  prepareOnboardingRecovery(false);
+  expect(existsSync(join(root, 'onboarding.json'))).toBe(false);
+  resetOnboardingCache();
+  prepareOnboardingRecovery(true);
+  expect(readOnboardingState()).toEqual({ hasOnboarded: false });
+  expect(chosenHarness()).toBeUndefined();
+});
+
+it('leaves incomplete checkpoints intact when this launch does not own the running marker', () => {
+  const root = useOwnStateRoot('onboarding-non-owning-launch');
+  saveOnboardingProgress({ resumeAt: 'import', harness: 'codex' });
+  const path = join(root, 'onboarding.json');
+  const bytes = readFileSync(path, 'utf8');
+  const headless = process.env['AGENT_HEADLESS'];
+  let launch: ReturnType<typeof trackRunningLaunch>;
+  try {
+    process.env['AGENT_HEADLESS'] = '1';
+    delete process.env['STUDIO_STATE_ROOT'];
+    launch = trackRunningLaunch('1.0.0');
+  } finally {
+    restore('AGENT_HEADLESS', headless);
+    process.env['STUDIO_STATE_ROOT'] = root;
+  }
+  expect(launch).toBeUndefined();
+  prepareOnboardingRecovery(launch === undefined ? undefined : launch.previous !== undefined);
+  expect(readOnboardingState()).toEqual({ hasOnboarded: false, resumeAt: 'import', harness: 'codex' });
+  expect(readFileSync(path, 'utf8')).toBe(bytes);
+});
+
+it('recovers from a local crash without an analytics identity and clears the same launch on normal quit', () => {
+  useOwnStateRoot('onboarding-local-launch');
+  const first = trackRunningLaunch('1.0.0');
+  expect(first?.previous).toBeUndefined();
+  prepareOnboardingRecovery(first?.previous !== undefined);
+  saveOnboardingProgress({ resumeAt: 'import', harness: 'codex' });
+  const afterCrash = trackRunningLaunch('1.0.0');
+  expect(afterCrash?.previous).toBeDefined();
+  prepareOnboardingRecovery(afterCrash?.previous !== undefined);
+  expect(readOnboardingState()).toEqual({ hasOnboarded: false, resumeAt: 'import', harness: 'codex' });
+  afterCrash?.clear();
+  const afterQuit = trackRunningLaunch('1.0.0');
+  expect(afterQuit?.previous).toBeUndefined();
+  prepareOnboardingRecovery(afterQuit?.previous !== undefined);
+  expect(readOnboardingState()).toEqual({ hasOnboarded: false });
+  afterQuit?.clear();
 });
 
 it('rejects malformed and late onboarding checkpoints and respects forced runs', () => {

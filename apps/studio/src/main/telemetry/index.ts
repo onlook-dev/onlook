@@ -671,7 +671,14 @@ let launchEnvironmentCheck: Promise<void> | undefined;
 
 export function checkLaunchEnvironment(readers: EnvironmentReaders): Promise<void> {
   if (!isEnabled()) return Promise.resolve();
-  launchEnvironmentCheck ??= readEnvironment(readers).then((context) => { capture('environment_checked', context); });
+  if (launchEnvironmentCheck !== undefined) return launchEnvironmentCheck;
+  const signal = consentAbort.signal;
+  const enabled = (): boolean => !signal.aborted && isEnabled();
+  launchEnvironmentCheck = readEnvironment({
+    ...readers,
+    resolves: (bin, env) => enabled() && readers.resolves(bin, env),
+    run: (bin, args, env) => enabled() ? readers.run(bin, args, env, signal) : Promise.resolve({ ok: false, out: '' }),
+  }).then((context) => { if (enabled()) capture('environment_checked', context); });
   return launchEnvironmentCheck;
 }
 

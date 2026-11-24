@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { eraseStateFile, readStateFile, writeStateFile } from '../state/file.js';
 import { stateRoot } from '../state/root.js';
@@ -88,6 +89,11 @@ export function claimRunningMarker(launchId: string, appVersion: string): Runnin
     // An unwritable state root: nothing else writes either.
   }
   return existing?.launchId === launchId ? undefined : existing;
+}
+
+export function trackRunningLaunch(appVersion: string, launchId: string = randomUUID()): { previous: RunningMarker | undefined; clear(): void } | undefined {
+  if (!ownsRunningMarker()) return;
+  return { previous: claimRunningMarker(launchId, appVersion), clear: () => clearRunningMarker(launchId) };
 }
 
 export function clearRunningMarker(launchId: string): void {
