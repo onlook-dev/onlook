@@ -7,6 +7,7 @@ import { RefusalDialog } from '../../canvas/RefusalDialog.js';
 import { ConnectFlowProvider } from '../../canvas/ConnectFlow.js';
 import { BlankCreateFailedDialog } from '../../create/BlankCreateModal.js';
 import { ImportRefusalDialog } from '../../projects/ImportRefusalBody.js';
+import { OpenRefusalDialog } from '../../projects/OpenRefusalDialog.js';
 import { Focused, noop, type Gallery, type Story } from './Showroom.js';
 
 const FOLDER_REASONS = ['already-copied', 'no-base-ref', 'name-unavailable', 'nothing-to-copy'] as const satisfies readonly WorkspaceRefusalReason[];
@@ -39,6 +40,8 @@ function Interactive(): React.JSX.Element {
 }
 
 const stories: Story[] = [
+  ...(['at-limit', 'unknown-project', 'workspace-missing', 'removing', 'failed'] as const).map((reason) => ({ id: `open-${reason}`, title: `Open project: ${reason}`, render: () => <OpenRefusalDialog reason={reason} isInline onDismiss={noop} /> })),
+  ...(['focus', 'hover'] as const).map((state) => ({ id: `open-close-${state}`, title: `Open project Close: ${state}`, render: () => <Focused selector="[data-testid='project-open-dismiss']" hover={state === 'hover'}><OpenRefusalDialog reason="at-limit" isInline onDismiss={noop} /></Focused> })),
   { id: 'refusals-interactive', title: 'Open, focus and dismiss', render: () => <Interactive /> },
   { id: 'canvas-refusal', title: 'Canvas caller', render: (context) => context?.isIsolated ? <ConnectFlowProvider creating={{ kind: 'refused', sourceRepoName: 'Lemonade', reason: 'no-base-ref' }}><Text>Canvas refusal</Text></ConnectFlowProvider> : <Text>Open this story to inspect the Canvas refusal.</Text> },
   { id: 'refusals-family', title: 'One failure family', wide: true, render: () => <><Folder reason="already-copied" /><Import reason="not-a-repository" /><div style={{ width: 460 }}><BlankCreateFailedDialog failure={{ stage: 'installing', detail: 'The package manager exited before installation finished.' }} isInline onRetry={noop} onClose={noop} /></div></> },
