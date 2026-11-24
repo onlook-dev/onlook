@@ -110,6 +110,25 @@ describe('withCaptureView', () => {
     expect(facts.geometry).toEqual(geometry(0.6));
   });
 
+  test('a resize recapture accumulates time and attempts without counting the first capture as negative reveal time', async () => {
+    let now = 0;
+    const deps = { ...clock(), now: () => now };
+    const port = fakePort(MOVES);
+    const ask = port.ask;
+    port.ask = async (request, limitMs) => {
+      now += 30;
+      return ask(request, limitMs);
+    };
+    const facts: RevealFacts = { viewMoved: false, revealMs: 0, geometry: null };
+    const capture = async (): Promise<Judged> => {
+      now += 100;
+      return 'whole';
+    };
+    await withCaptureView(port, 'f', capture, value => value, deps, facts);
+    await withCaptureView(port, 'f', capture, value => value, deps, facts);
+    expect(facts).toMatchObject({ revealMs: 180, captureMs: 200, freezeMs: 320, paintMs: 200, attempts: 2 });
+  });
+
   test('a move the tab answers too late is refused without capturing, and the view is still restored before the freeze lifts', async () => {
     let now = 0;
     const port = fakePort({ ...MOVES, move: null });
