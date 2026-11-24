@@ -93,7 +93,7 @@
   "canvas.empty.question.mark": "?",
   "canvas.empty.failed.setup.title": "Setup didn’t finish",
   "canvas.empty.failed.preview.title": "Preview isn’t running",
-  "canvas.empty.failed.body": "To try again, click Retry in chat",
+  "canvas.empty.failed.body": "Check chat for what to do next",
   "canvas.setupFailure.install.body": "The install command stopped with an error. The agent can look into it, then fix it or tell you what’s in the way.",
   "canvas.setupFailure.start.body": "The start command stopped with an error. The agent can look into it, then fix it or tell you what’s in the way.",
   "canvas.setupFailure.ready.body": "The start command ran, but your app never answered. The agent can look into it, then fix it or tell you what’s in the way.",

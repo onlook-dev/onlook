@@ -93,7 +93,7 @@
   "canvas.empty.question.mark": "？",
   "canvas.empty.failed.setup.title": "配置未完成",
   "canvas.empty.failed.preview.title": "预览未运行",
-  "canvas.empty.failed.body": "点按对话中的“重试”即可再试一次",
+  "canvas.empty.failed.body": "在对话中查看下一步操作",
   "canvas.setupFailure.install.body": "安装命令出错并停止。智能体可以排查原因，然后修复问题，或告诉你卡在了哪里。",
   "canvas.setupFailure.start.body": "启动命令出错并停止。智能体可以排查原因，然后修复问题，或告诉你卡在了哪里。",
   "canvas.setupFailure.ready.body": "启动命令已运行，但应用一直没有响应。智能体可以排查原因，然后修复问题，或告诉你卡在了哪里。",
