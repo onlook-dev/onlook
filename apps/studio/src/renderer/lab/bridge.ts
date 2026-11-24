@@ -40,6 +40,8 @@ const agentStateListeners = new Set<Parameters<StudioBridge['onAgentState']>[0]>
 const LAB_SETTINGS_DEFAULTS: SettingsDefaults = {
   claude: { models: [] },
   codex: { models: [] },
+  opencode: { models: [] },
+  freebuff: { models: [] },
 };
 
 const noop = (): void => {};

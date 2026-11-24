@@ -1,6 +1,6 @@
 import type { HarnessId } from '@studio/events';
 
-const AGENT: Record<HarnessId, string> = { claude: 'Claude', codex: 'ChatGPT' };
+const AGENT: Record<HarnessId, string> = { claude: 'Claude', codex: 'ChatGPT', opencode: 'OpenCode', freebuff: 'Freebuff' };
 
 export function previousChatInstruction(previous: HarnessId, savedAt: string): string {
   return (

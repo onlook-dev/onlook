@@ -1,4 +1,4 @@
-import type { HarnessId } from '@studio/events';
+import { isSetupHarnessId, type HarnessId, type SetupHarnessId } from '@studio/events';
 import { HARNESSES } from '@studio/onboarding-ui/state';
 import { isConnected, type SetupFacts } from '../agents/mapping.js';
 
@@ -8,9 +8,9 @@ export function canContinue(facts: Pick<SetupFacts, 'claude' | 'codex' | 'touche
 }
 
 export function skipsDetectedSetup(facts: Pick<SetupFacts, 'claude' | 'codex' | 'touched'>, harness: HarnessId): boolean {
-  return !facts.touched[harness] && isConnected(facts, harness);
+  return isSetupHarnessId(harness) && !facts.touched[harness] && isConnected(facts, harness);
 }
 
-export function harnessToRecord(store: { lastConnected: HarnessId | null }): HarnessId {
+export function harnessToRecord(store: { lastConnected: SetupHarnessId | null }): SetupHarnessId {
   return store.lastConnected ?? 'claude';
 }

@@ -14,9 +14,9 @@ import { devSwitches } from '../../env/dev-switches.js';
 
 const logger = log('agent-host');
 
-/** Only an explicit `codex` selects codex; an absent or unreadable choice is Claude (ONL-2120). */
+/** An absent choice is Claude; any Harness the person's settings name is theirs to run (ONL-2120). */
 export function selectedHarness(): HarnessId {
-  return resolvedHarness() === 'codex' ? 'codex' : 'claude';
+  return resolvedHarness() ?? 'claude';
 }
 
 /** No PATH lookup: `which codex` finds the JS shim, which answers wrongly without crashing. */

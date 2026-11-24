@@ -1,6 +1,7 @@
 // Not in index.ts: the agent host announces here and index.ts imports the agent host, so merging makes an import cycle (ONL-2115).
 
 import {
+  HARNESS_IDS,
   IPC_EMIT,
   type HarnessDefaults,
   type HarnessId,
@@ -43,7 +44,7 @@ function defaultsFor(id: HarnessId): HarnessDefaults {
 }
 
 export function settingsDefaults(): SettingsDefaults {
-  return { claude: defaultsFor('claude'), codex: defaultsFor('codex') };
+  return Object.fromEntries(HARNESS_IDS.map((id) => [id, defaultsFor(id)])) as SettingsDefaults;
 }
 
 export function broadcastSettingsChanged(state: SettingsState = settingsState()): void {

@@ -1,4 +1,4 @@
-import type { HarnessId } from '@studio/events';
+import type { HarnessId, SetupHarnessId } from '@studio/events';
 
 export const HARNESSES = ['claude', 'codex'] as const satisfies readonly HarnessId[];
 
@@ -54,7 +54,7 @@ export const CANNOT_CONNECT_CAUSES = [
 
 /** The other agent, offered as a choice with what it takes; `ready` once it is set up on this Mac (ONL-2903). */
 export interface OtherAgentOffer {
-  harness: HarnessId;
+  harness: SetupHarnessId;
   ready: boolean;
 }
 

@@ -36,7 +36,7 @@ export interface AgentSessionRef {
 }
 
 /** The telemetry spelling, which is not the stored one: the persisted key stays `appserver` (ONL-2431). */
-function telemetryHarness(harness: SessionHarness): 'claude' | 'codex' {
+function telemetryHarness(harness: SessionHarness): HarnessId {
   return harnessStoredAs(harness).telemetry;
 }
 

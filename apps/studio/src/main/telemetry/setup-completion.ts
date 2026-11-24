@@ -1,9 +1,9 @@
 import { join } from 'node:path';
-import { isHarnessId } from '@studio/events';
+import { isHarnessId, type HarnessId } from '@studio/events';
 import { readStateFile, writeStateFile } from '../state/file.js';
 import { stateRoot } from '../state/root.js';
 
-type Provider = 'claude' | 'codex';
+type Provider = HarnessId;
 
 let cache: { path: string; providers: Set<Provider> } | undefined;
 

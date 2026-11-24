@@ -10,6 +10,7 @@ import { OnboardingAccount, OnboardingDisplayHeading, OnboardingFooter, Onboardi
 import { OnboardingShell } from './OnboardingShell.js';
 import { machineDetail, machineRows, type MachineRecovery, type MachineRow, type MachineState } from './machine-rows.js';
 import { chooseMachineFolder, closeMachineDetail, copyMachineCommand, installMachineTools, openMachineDetail, openMachineHelp, recheckMachineCheck, useMachineStore } from './machine-store.js';
+import type { SetupHarnessId } from '@studio/events';
 import { useConnectedAgents } from './agents.js';
 
 const CHECK_ICONS = { git: CodeBracketsGlyph, workspace: FolderIcon, port: WindowGlyph, helper: ConsoleIcon } as const;
@@ -17,7 +18,7 @@ const ACTION_LABELS = { install: 'machine.install', choose: 'machine.choose', fi
 /** White for what Onlook does for you, muted for what you choose or have to sort out (ONL-3111). */
 const ACTION_VARIANTS = { install: 'primary', choose: 'secondary', fix: 'secondary' } as const;
 /** Named as the person knows them: Codex's agent signs in with ChatGPT. */
-const AGENT_LABELS = { claude: 'machine.open.claude', codex: 'machine.open.chatgpt' } as const;
+const AGENT_LABELS: Record<SetupHarnessId, 'machine.open.claude' | 'machine.open.chatgpt'> = { claude: 'machine.open.claude', codex: 'machine.open.chatgpt' };
 /** With the focus-ring padding below it, the title sits 24px under the wordmark, where the prototype draws it (ONL-3111). */
 const HEADER_DROP = 'var(--spacing-5)';
 // The prototype's rhythm needs room the window's own 600px floor does not have; there the screen keeps the tighter one it had (ONL-3111).
@@ -110,9 +111,9 @@ function CheckDetail({ state, agents, onCopy, onHelp, onOpenAgent }: {
         onCopy={() => onCopy(prompt)}
         actions={agents.map((harness) => ({
           id: harness,
-          label: t(AGENT_LABELS[harness]),
+          label: t(AGENT_LABELS[harness as SetupHarnessId]),
           copiesFirst: true,
-          onPress: () => { onOpenAgent(harness); },
+          onPress: () => { onOpenAgent(harness as SetupHarnessId); },
         }))}
         testId="machine-copy-block"
       />
@@ -179,6 +180,6 @@ export function MachineStep(props: { aside?: React.ReactNode; onContinue: () => 
       onCloseDetail={closeMachineDetail}
       onCopy={copyMachineCommand}
       onHelp={() => { if (detail?.help !== undefined) void openMachineHelp(detail.help); }}
-      onOpenAgent={(harness) => { void openMachineHelp(MACHINE_AGENT_HELP[harness]); }} />
+      onOpenAgent={(harness) => { const help = MACHINE_AGENT_HELP[harness]; if (help !== undefined) void openMachineHelp(help); }} />
   );
 }

@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test, type ElectronApplication, type Page } from '@playwright/test';
-import type { HarnessId } from '@studio/events';
+import type { SetupHarnessId } from '@studio/events';
 import {
   claudeShimLogins,
   cleanupTempFixtures,
@@ -16,20 +16,20 @@ import { addCodebaseFromFolder, claudeShimFor, closeStudio, editorPage, FIRST_RU
 
 const target = (process.env['STUDIO_TARGET'] ?? 'build') as Target;
 
-const tile = (page: Page, harness: HarnessId) =>
+const tile = (page: Page, harness: SetupHarnessId) =>
   page.getByTestId(harness === 'claude' ? TESTID.onboardingTileClaude : TESTID.onboardingTileCodex);
 // A row opens setup only from its end button, the last one in the row.
-const open = (page: Page, harness: HarnessId) => tile(page, harness).getByRole('button').last().click();
-const dialog = (page: Page, harness: HarnessId) =>
+const open = (page: Page, harness: SetupHarnessId) => tile(page, harness).getByRole('button').last().click();
+const dialog = (page: Page, harness: SetupHarnessId) =>
   page.getByTestId(harness === 'claude' ? TESTID.onboardingDialogClaude : TESTID.onboardingDialogCodex);
 const action = (page: Page, name: string) => page.getByTestId(`${TESTID.setupActionPrefix}${name}`);
 const paste = (page: Page) => page.getByTestId(`${TESTID.signInActionPrefix}paste`);
 
-async function expectSettled(page: Page, harness: HarnessId, state: string): Promise<void> {
+async function expectSettled(page: Page, harness: SetupHarnessId, state: string): Promise<void> {
   await expect(settledDialog(page, harness, state)).toBeVisible({ timeout: 15_000 });
 }
 
-async function done(page: Page, harness: HarnessId): Promise<void> {
+async function done(page: Page, harness: SetupHarnessId): Promise<void> {
   await action(page, 'done').click();
   await expect(dialog(page, harness)).toBeHidden();
 }

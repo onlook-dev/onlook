@@ -26,7 +26,7 @@ test('analytics uses the settings switch, shows consent and preserves failure an
 test('analytics follows notifications in General Settings', () => {
   const pane = renderToStaticMarkup(<SettingsSections
     agent="codex"
-    readiness={{ claude: 'ready', codex: 'ready' }}
+    readiness={{ claude: 'ready', codex: 'ready', opencode: 'ready', freebuff: 'ready' }}
     onAgentChange={() => {}}
     onSetUp={() => {}}
     analytics={{ value: true, onChange: () => {} }}

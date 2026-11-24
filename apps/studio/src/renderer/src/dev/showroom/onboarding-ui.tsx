@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { Button } from '@astryxdesign/core/Button';
 import { HStack, VStack } from '@astryxdesign/core/Layout';
 import { NoConnection } from '@studio/chat-ui';
-import { CLAUDE_LOGIN_COMMAND, ROLE_QUESTION, type HarnessId } from '@studio/events';
+import { CLAUDE_LOGIN_COMMAND, isSetupHarnessId, ROLE_QUESTION, type HarnessId } from '@studio/events';
 import {
   CHAT_CARD_STATES,
   CHATGPT_SETUP_STATES,
@@ -311,6 +311,8 @@ function chatStory(harness: HarnessId, label: string, id: string, state: SetupSt
 }
 
 function chatStories(harness: HarnessId, label: string, fixtures: Record<string, SetupState>): Story[] {
+  // The chat sign-in card exists for the two agents Onlook signs in for.
+  if (!isSetupHarnessId(harness)) return [];
   return CHAT_CARD_STATES[harness].map((id) => chatStory(harness, label, id, fixtures[id]!));
 }
 

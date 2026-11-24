@@ -1,4 +1,4 @@
-import type { HarnessId } from '@studio/events';
+import type { SetupHarnessId } from '@studio/events';
 import type {
   ChatGptSetupStateId,
   ClaudeSetupStateId,
@@ -13,9 +13,9 @@ export interface PerHarnessCopy {
 
 /** `{percent}`, `{email}` and `{plan}` are templates. */
 export interface OnboardingUiStrings {
-  harnessName: Record<HarnessId, string>;
-  setUp: Record<HarnessId, string>;
-  subscription: Record<HarnessId, string>;
+  harnessName: Record<SetupHarnessId, string>;
+  setUp: Record<SetupHarnessId, string>;
+  subscription: Record<SetupHarnessId, string>;
   manage: string;
   preferred: string;
   makePreferred: string;
@@ -25,11 +25,11 @@ export interface OnboardingUiStrings {
   dialogTitle: PerHarnessCopy;
   dialogTitleNoEmail: string;
   dialogBody: PerHarnessCopy;
-  dialogHeader: Record<HarnessId, string>;
+  dialogHeader: Record<SetupHarnessId, string>;
   action: Record<SetupAction, string>;
   comingSoon: string;
   comingSoonName: Record<ComingSoonId, string>;
-  chatLine: Record<HarnessId, string>;
+  chatLine: Record<SetupHarnessId, string>;
   chatSignedIn: string;
   chatSignedInNoEmail: string;
   /** The sign-in notice over the composer (ONL-2973). */
@@ -42,9 +42,9 @@ export interface OnboardingUiStrings {
   mark: { attention: string; connected: string };
   /** The other agent's card on a failed sheet, keyed by the agent it offers (ONL-2903). */
   otherAgent: {
-    label: Record<HarnessId, string>;
-    needs: Record<HarnessId, string>;
-    ready: Record<HarnessId, string>;
+    label: Record<SetupHarnessId, string>;
+    needs: Record<SetupHarnessId, string>;
+    ready: Record<SetupHarnessId, string>;
     setUp: string;
     use: string;
   };

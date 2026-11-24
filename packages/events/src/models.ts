@@ -72,10 +72,22 @@ export function findModelChoice(
   );
 }
 
-export type HarnessId = 'claude' | 'codex';
+export type HarnessId = 'claude' | 'codex' | 'opencode' | 'freebuff';
 
-export const HARNESS_IDS = ['claude', 'codex'] as const satisfies readonly HarnessId[];
+export const HARNESS_IDS = ['claude', 'codex', 'opencode', 'freebuff'] as const satisfies readonly HarnessId[];
 
 export function isHarnessId(value: unknown): value is HarnessId {
   return HARNESS_IDS.some((id) => id === value);
+}
+
+/**
+ * The Harnesses Onlook installs and signs in for. OpenCode and Freebuff bring their own login from
+ * the terminal, so they need no setup step and the setup screens never ask about them.
+ */
+export type SetupHarnessId = Extract<HarnessId, 'claude' | 'codex'>;
+
+export const SETUP_HARNESS_IDS = ['claude', 'codex'] as const satisfies readonly SetupHarnessId[];
+
+export function isSetupHarnessId(value: unknown): value is SetupHarnessId {
+  return SETUP_HARNESS_IDS.some((id) => id === value);
 }

@@ -23,6 +23,7 @@ export const TILE_GLYPHS: TileGlyphs = {
   claude: glyph(ClaudeMarkIcon),
   codex: glyph(OpenAiMarkIcon),
   opencode: glyph(OpenCodeMarkIcon),
+  freebuff: glyph(AiProvidersIcon),
   other: glyph(AiProvidersIcon),
   star: <IconStar size={16} />,
   // Central's star draws through a mask with a fixed id, shared by every star on the page, so filling one filled
@@ -42,6 +43,8 @@ export const TILE_GLYPHS: TileGlyphs = {
 export const CARD_GLYPHS: CardGlyphs = {
   claude: glyph(ClaudeMarkIcon, 'sm'),
   codex: glyph(OpenAiMarkIcon, 'sm'),
+  opencode: glyph(OpenCodeMarkIcon, 'sm'),
+  freebuff: glyph(AiProvidersIcon, 'sm'),
   spinner: (
     <span style={SPIN}>
       <GlyphLoadingCircle width={18} height={18} />
