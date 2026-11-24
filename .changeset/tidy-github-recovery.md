@@ -2,4 +2,4 @@
 "@studio/app": patch
 ---
 
-GitHub status recovers when your login shell is unavailable at launch.
+GitHub status reconnects without restarting Onlook.
