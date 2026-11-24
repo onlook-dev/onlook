@@ -1,4 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
+import { ClickableCard } from '@astryxdesign/core/ClickableCard';
+import { Text } from '@astryxdesign/core/Text';
+import { GlyphSlot } from '@studio/chat-ui';
+import { t } from '@studio/i18n';
 import { HStack, VStack } from '@astryxdesign/core/Layout';
 import { isSetupHarnessId, type HarnessId, type SetupEntryPoint } from '@studio/events';
 import { HarnessTile } from '@studio/onboarding-ui';
@@ -21,6 +25,10 @@ interface ConnectFooterProps {
   onSkip?: () => void;
 }
 
+/** The CLIs this machine already has: nothing to install and nothing to sign in to. */
+export const CLI_AGENTS = ['opencode', 'freebuff'] as const;
+export type CliAgent = (typeof CLI_AGENTS)[number];
+
 export interface ConnectStepViewProps extends ConnectFooterProps {
   facts: ConnectFacts;
   isContinueEnabled: boolean;
@@ -29,9 +37,12 @@ export interface ConnectStepViewProps extends ConnectFooterProps {
   aside?: React.ReactNode;
   preferred?: HarnessId;
   onMakePreferred?: (harness: HarnessId) => void;
+  /** Given, the screen offers the local CLIs beside the two managed agents. */
+  cliHarness?: CliAgent;
+  onPickCli?: (harness: CliAgent) => void;
 }
 
-export function ConnectStepView({ facts, isContinueEnabled: enabled, onTap, onContinue, hasBack = false, onBack, onSkip, aside, preferred, onMakePreferred }: ConnectStepViewProps): React.JSX.Element {
+export function ConnectStepView({ facts, isContinueEnabled: enabled, onTap, onContinue, hasBack = false, onBack, onSkip, aside, preferred, onMakePreferred, cliHarness, onPickCli }: ConnectStepViewProps): React.JSX.Element {
   const strings = setupStrings().ui;
   const split = aside !== undefined;
   const claudeTile = claudeTileState(facts);
@@ -51,9 +62,32 @@ export function ConnectStepView({ facts, isContinueEnabled: enabled, onTap, onCo
           style={split ? { flexDirection: 'column', border: '0.5px solid var(--color-border)', borderRadius: 12, overflow: 'hidden' } : undefined}>
           <HarnessTile tile={claudeTile} strings={strings} glyphs={TILE_GLYPHS} onSelect={() => onTap('claude')} {...preference('claude')} layout={split ? 'row' : 'tile'} testId="onboarding-tile-claude" />
           <HarnessTile tile={codexTile} strings={strings} glyphs={TILE_GLYPHS} onSelect={() => onTap('codex')} {...preference('codex')} layout={split ? 'row' : 'tile'} hasDivider={split} testId="onboarding-tile-codex" />
-          <HarnessTile tile={{ kind: 'coming-soon', id: 'opencode' }} strings={strings} glyphs={TILE_GLYPHS} layout={split ? 'row' : 'tile'} hasDivider={split} testId="onboarding-tile-coming-soon-opencode" />
           <HarnessTile tile={{ kind: 'coming-soon', id: 'other' }} strings={strings} glyphs={TILE_GLYPHS} layout={split ? 'row' : 'tile'} hasDivider={split} testId="onboarding-tile-coming-soon-other" />
         </HStack>
+        {onPickCli === undefined ? null : (
+          // A second row, not another tile: these need no setup, so they read as a shortcut.
+          <VStack width="100%" gap={2} data-testid="onboarding-cli-agents">
+            {CLI_AGENTS.map((harness) => (
+              <ClickableCard
+                key={harness}
+                label={t(`agent.name.${harness}`)}
+                variant={cliHarness === harness ? 'gray' : 'transparent'}
+                onClick={() => onPickCli(harness)}
+                data-testid={`onboarding-tile-${harness}`}
+                data-state={cliHarness === harness ? 'picked' : 'idle'}
+                style={{ width: '100%', border: 'var(--border-width) solid var(--color-border)', borderRadius: 12 }}
+              >
+                <HStack gap={3} align="center" width="100%" padding={3}>
+                  <GlyphSlot size={20}>{TILE_GLYPHS[harness]}</GlyphSlot>
+                  <Text type="body" weight="medium" color="primary" style={{ flex: 1 }}>
+                    {t(`agent.name.${harness}`)}
+                  </Text>
+                  {cliHarness === harness ? <Text type="supporting" color="secondary">{strings.manage}</Text> : null}
+                </HStack>
+              </ClickableCard>
+            ))}
+          </VStack>
+        )}
       </VStack>
       <OnboardingFooter
         hasBack={hasBack}
@@ -81,6 +115,8 @@ export function ConnectStep({ entryPoint, onContinue, hasBack, onBack, onSkip, a
   const [open, setOpen] = useState<HarnessId | null>(null);
   const [first, setFirst] = useState<HarnessId | undefined>(undefined);
   const savedPreferred = useSettingsStore((s) => s.isPrimed ? s.harness : undefined);
+  // Seeded from Settings, so a person already on a CLI is not asked to choose again.
+  const [cli, setCli] = useState<CliAgent | undefined>(() => CLI_AGENTS.find((harness) => harness === savedPreferred));
   const setPreferred = useSettingsStore((s) => s.setHarness);
 
   const tap = useCallback(
@@ -111,9 +147,14 @@ export function ConnectStep({ entryPoint, onContinue, hasBack, onBack, onSkip, a
     <>
       <ConnectStepView
         facts={facts}
-        isContinueEnabled={canContinue(facts)}
+        isContinueEnabled={cli !== undefined || canContinue(facts)}
+        cliHarness={cli}
+        onPickCli={(harness) => {
+          setCli(harness);
+          void setPreferred(harness);
+        }}
         onTap={tap}
-        onContinue={() => onContinue(preferred)}
+        onContinue={() => onContinue(cli ?? preferred)}
         aside={aside}
         {...(preferred === undefined ? {} : { preferred })}
         onMakePreferred={(harness) => {
