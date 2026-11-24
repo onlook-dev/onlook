@@ -29,6 +29,7 @@ import { log } from '../log/index.js';
 import { beginCreation } from '../github-import/telemetry.js';
 import { judgeWorktreeHead } from './head-check.js';
 import { initCopiedSource, planCopiedWorkspace, rollbackCopied } from './copy.js';
+import { copyGitFailure } from './creation-failure.js';
 import { copyEnvFiles } from './env-files.js';
 import { broadcastWorkspacesChanged, visibleWorkspaces } from './workspaces-changed.js';
 import { isRemovingProject, removeProjectByUser, removeWorkspaceByUser } from './remove-project.js';
@@ -156,7 +157,7 @@ export async function fabricateFromPlan(plan: ReadyWorkspacePlan): Promise<Works
   if (!inited.ok) {
     // A claim that lost to a bucket already there owns nothing and removes nothing (ONL-2177).
     if (inited.claimed) await rollbackCopied(plan);
-    return { ok: false, reason: 'create-failed', detail: inited.detail };
+    return { ok: false, reason: 'create-failed', detail: inited.detail, copyFailure: inited.copyFailure };
   }
   const created = await createWorkspaceFromPlan(plan);
   if (!created.ok) await rollbackCopied(plan);
@@ -206,6 +207,8 @@ export async function createWorkspaceFromPlan(
         ok: false,
         reason: 'create-failed',
         detail: added.timedOut ? timedOutDetail(added.err) : added.err,
+        // Only a copy is narrated as one: the same cut runs for a folder Onlook never copied (ONL-3285).
+        ...(plan.origin === 'copied' ? { copyFailure: copyGitFailure('worktree_cut', added) } : {}),
       };
     }
 

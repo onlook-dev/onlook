@@ -6,7 +6,9 @@ import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
 import { PILL_FIXTURES } from '@studio/git-ui/fixtures';
 import { SetupTurn } from '@studio/chat-ui';
+import type { CopyFailure } from '@studio/events';
 import { narrationFor } from '../create/projectCreate.js';
+import { setupNarration } from '../chat/panelProps.js';
 import { t } from '@studio/i18n';
 import { discoveredMetaFor, type DiscoveredWorktreeItem } from '../projects/DiscoveredWorktrees.js';
 import { ProjectCard } from '../projects/ProjectCard.js';
@@ -15,6 +17,7 @@ import { ProjectsView } from '../projects/ProjectsView.js';
 import { ImportRefusalBody } from '../projects/ImportRefusalBody.js';
 import { RefusalBody } from '../canvas/RefusalDialog.js';
 import { WindowFrame } from '../topbar/WindowFrame.js';
+import { ForwardIcon } from '../icons/glyphs.js';
 import { MENU_SURFACE } from '../menu/surface.js';
 import { ProjectMenuItems, WorkspaceMenuItems } from '../projects/menus.js';
 import { noop } from './showroom/Showroom.js';
@@ -98,6 +101,9 @@ const SCREEN = {
 } as const;
 
 const SECTION = { padding: '24px 32px' } as const;
+
+/** A stand-in for the words the failing command printed, which the row keeps behind Show details. */
+const COPY_OUTPUT = 'git commit -q -m "Initial copy of the project folder"\nnothing added to commit but untracked files present';
 const CARD_SLOT = { width: '263px', minWidth: 0 } as const;
 
 /** The open menus float below their triggers; the room is reserved so a capture is not overlapped. */
@@ -144,6 +150,12 @@ export function ProjectsShowroom({ scenario = '' }: { scenario?: string }): Reac
     let menuFrame: number | undefined;
     const frame = requestAnimationFrame(() => {
       if (scenario.endsWith('-focus')) document.documentElement.dataset.input = 'keyboard';
+      if (scenario.startsWith('copy-failure-') && scenario.endsWith('-focus')) {
+        document.querySelector<HTMLElement>('[data-testid="chat-setup-retry"], [data-testid="chat-setup-choose-folder"]')?.focus();
+      }
+      if (scenario.startsWith('copy-failure-') && scenario.endsWith('-details')) {
+        document.querySelector<HTMLElement>('[data-testid="chat-setup-output-toggle"]')?.click();
+      }
       if (scenario.startsWith('copy-') && scenario !== 'copy-setup' && scenario !== 'copy-error') {
         const card = document.querySelector<HTMLElement>('[data-project-id="copy-source"]');
         if (card !== null) {
@@ -182,16 +194,22 @@ export function ProjectsShowroom({ scenario = '' }: { scenario?: string }): Reac
   }, [scenario]);
 
   if (scenario.startsWith('copy-')) {
+    const causes: CopyFailure['cause'][] = ['ignored_files', 'permission_denied', 'folder_unavailable', 'copy_in_progress', 'disk_full', 'git_timed_out', 'git_failed', 'unknown'];
+    const cause = causes.find((value) => scenario.replace(/-(hover|focus|details)$/, '') === `copy-failure-${value.replaceAll('_', '-')}`);
+    const showsSetup = scenario === 'copy-setup' || scenario === 'copy-error' || cause !== undefined;
     const setup = narrationFor(
-      scenario === 'copy-error'
+      cause !== undefined
+        ? { kind: 'failed', phase: 'copying', sourceRepoName: 'Landing', copyFailure: { step: 'copy_files', cause }, detail: COPY_OUTPUT }
+        : scenario === 'copy-error'
         ? { kind: 'failed', phase: 'copying', sourceRepoName: 'Landing', detail: t('projects.copy.error.submodules') }
         : { kind: 'copying', sourceRepoName: 'fixture-app', workspaceName: 'landing-copy', duplicateSourceName: 'Landing' },
       { hasLiveServer: false },
     );
+    const setupProps = setupNarration(setup, { onRetry: noop, onChooseFolder: noop, onDismiss: noop });
     return (
       <ProjectsView
         title="zest-maps"
-        projects={scenario === 'copy-setup' || scenario === 'copy-error' ? [] : [{
+        projects={showsSetup ? [] : [{
           id: 'copy-source', name: 'Landing', meta: '2d', onOpen: noop,
           isArchived: scenario === 'copy-archived', isMissing: scenario === 'copy-missing',
           menu: <ProjectMenuItems
@@ -200,22 +218,12 @@ export function ProjectsShowroom({ scenario = '' }: { scenario?: string }): Reac
             onRename={noop} onDuplicate={noop} onReveal={noop} onArchive={noop} onRemove={noop}
           />,
         }]}
-        {...((scenario === 'copy-setup' || scenario === 'copy-error') && setup !== null ? {
+        {...(showsSetup && setupProps !== undefined ? {
           content: (
             <VStack style={SECTION}>
-              <SetupTurn
-                line={t(setup.lineKey)}
-                repo={setup.repo}
-                phase={setup.phase}
-                {...(setup.kind === 'failed' ? {
-                  failure: {
-                    nextAction: t(setup.nextActionKey),
-                    retryLabel: t('project.create.retry'),
-                    onRetry: noop,
-                    ...(setup.detail === undefined ? {} : { detail: setup.detail }),
-                  },
-                } : {})}
-              />
+              {scenario.endsWith('-hover') && <style>{'[data-testid="chat-setup-retry"], [data-testid="chat-setup-choose-folder"] { background-image: linear-gradient(var(--color-overlay-hover), var(--color-overlay-hover)); }'}</style>}
+              {/* The panel hands the row its chevron; this instrument renders the row alone and hands it the same one. */}
+              <SetupTurn {...setupProps} chevronIcon={ForwardIcon} />
             </VStack>
           ),
         } : {})}
