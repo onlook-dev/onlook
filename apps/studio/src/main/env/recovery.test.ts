@@ -1,7 +1,7 @@
 import { chmodSync, existsSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterAll, afterEach, describe, expect, it } from 'bun:test';
+import { afterAll, afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { manualClock, until } from '@studio/fixtures';
 import { peekLinesForTesting, recordLinesForTesting, resetLogForTesting } from '../log/index.js';
 import { captureShellEnv, githubCliEnv, isShellEnvFallback, refreshUserEnv, resetUserEnvForTests, userEnv, userEnvSync } from './shell-env.js';
@@ -13,14 +13,20 @@ import { activeLocale, setLocale, t } from '@studio/i18n';
 import { isMac } from './platform.js';
 
 const inherited = { ...process.env };
+const realPlatform = Object.getOwnPropertyDescriptor(process, 'platform')!;
 const made: string[] = [];
 const inheritedLocale = activeLocale();
+
+beforeEach(() => {
+  Object.defineProperty(process, 'platform', { ...realPlatform, value: 'darwin' });
+});
 
 afterAll(() => {
   for (const directory of made) rmSync(directory, { recursive: true, force: true });
 });
 
 afterEach(() => {
+  Object.defineProperty(process, 'platform', realPlatform);
   for (const key of ['SHELL', 'PATH', 'STUDIO_STATE_ROOT', 'STUDIO_GH_BIN']) {
     if (inherited[key] === undefined) delete process.env[key];
     else process.env[key] = inherited[key];
@@ -47,6 +53,28 @@ function shell(directory: string, name: string, preamble: string): string {
 }
 
 describe('shell environment recovery', () => {
+  for (const platform of ['linux', 'win32'] as const) {
+    it(`does not retry or extend the GitHub environment on ${platform}`, async () => {
+      Object.defineProperty(process, 'platform', { ...realPlatform, value: platform });
+      fixture();
+      process.env['SHELL'] = '/test/shell';
+      process.env['PATH'] = '/usr/bin:/bin';
+      let now = 0;
+      let captures = 0;
+      resetUserEnvForTests(async () => {
+        captures += 1;
+        return undefined;
+      }, () => now);
+      const shared = await userEnv();
+      expect(await githubCliEnv()).toBe(shared);
+      now = 86_400_000;
+      expect(await githubCliEnv()).toBe(shared);
+      expect(captures).toBe(platform === 'win32' ? 0 : 1);
+      expect(shared['PATH']).toBe('/usr/bin:/bin');
+      expect(userEnvSync()).toBe(shared);
+    });
+  }
+
   it('keeps the shared environment and other tools unchanged after capture failure', async () => {
     const directory = fixture();
     process.env['SHELL'] = '/test/shell';
