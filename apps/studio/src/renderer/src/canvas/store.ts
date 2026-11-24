@@ -296,7 +296,7 @@ export interface CanvasState
   closedSectionIds: CanvasNodeId[];
 
   /** Sequenced: the same link clicked twice is two requests, and an effect keyed on the id alone drops the second (ONL-1995). */
-  flyTo: { id: string; seq: number; reveal?: boolean } | null;
+  flyTo: { id: string; seq: number; reveal?: boolean; panOnly?: true } | null;
   /** A fit the canvas owes: what a document opens with, placed at once, and the first object onto an empty page, flown to. A label or a picture the user placed never raises it (ONL-2486). */
   fitRequest: { seq: number; animate?: true } | null;
   /** The opening fit is spent by the first document, whether or not it had anything to fit, so a resync never re-places the camera (ONL-2486). */

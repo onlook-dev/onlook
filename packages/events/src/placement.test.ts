@@ -9,7 +9,6 @@ import {
   PLACEMENT_GAP,
   VERTICAL_PLACEMENT_GAP,
   type Rect,
-  type ViewRect,
 } from './placement.js';
 
 const size = { width: 200, height: 100 };
@@ -35,9 +34,9 @@ describe('nextPosition — the tiling default', () => {
   });
 });
 
-describe('placeNearSource — with no view', () => {
+describe('placeNearSource — rightward placement', () => {
   it('lands immediately right of the source — same row, one gap past its width — and does not clamp', () => {
-    expect(placeNearSource({ x: 9000, y: -4000 }, size, [])).toEqual({
+    expect(placeNearSource({ x: 9000, y: -4000, ...size }, size, [])).toEqual({
       x: 9000 + SLOT,
       y: -4000,
     });
@@ -45,46 +44,20 @@ describe('placeNearSource — with no view', () => {
 
   it('walks past a run of occupied slots', () => {
     const taken = [1, 2, 3].map((n) => ({ x: SLOT * n, y: 0 }));
-    expect(placeNearSource({ x: 0, y: 0 }, size, taken)).toEqual({
+    expect(placeNearSource({ x: 0, y: 0, ...size }, size, taken)).toEqual({
       x: SLOT * 4,
       y: 0,
     });
   });
 
   it('treats a sub-pixel difference as the same position', () => {
-    expect(placeNearSource({ x: 0, y: 0 }, size, [{ x: SLOT + 0.5, y: 0 }]))
+    expect(placeNearSource({ x: 0, y: 0, ...size }, size, [{ x: SLOT + 0.5, y: 0 }]))
       .toEqual({ x: SLOT * 2, y: 0 });
   });
-});
 
-describe('placeNearSource — the view clamp, which only the renderer supplies', () => {
-  const view: ViewRect = { x: 0, y: 0, width: 1000, height: 600 };
-
-  it('pulls a placement that would land outside back into the view', () => {
-    expect(placeNearSource({ x: 980, y: 580 }, size, [], view)).toEqual({
-      x: 1000 - size.width,
-      y: 600 - size.height,
-    });
-  });
-
-  it('keeps the top-left corner visible for a frame larger than the view', () => {
-    expect(placeNearSource({ x: 900, y: 500 }, { width: 2000, height: 1200 }, [], view)).toEqual({
-      x: 0,
-      y: 0,
-    });
-  });
-
-  it('cascades back left when pinned against the view edge', () => {
-    const pinned = { x: 1000 - size.width, y: 600 - size.height };
-    expect(placeNearSource({ x: 980, y: 580 }, size, [pinned], view)).toEqual({
-      x: pinned.x - SLOT,
-      y: pinned.y,
-    });
-  });
-
-  it('lands occupied rather than looping when every candidate is taken', () => {
-    const tiny: ViewRect = { x: 0, y: 0, width: size.width, height: size.height };
-    expect(placeNearSource({ x: 0, y: 0 }, size, [{ x: 0, y: 0 }], tiny)).toEqual({ x: 0, y: 0 });
+  it('uses the source width when the new frame has a different size', () => {
+    expect(placeNearSource({ x: 900, y: 700, width: 2000 }, size, []))
+      .toEqual({ x: 3000, y: 700 });
   });
 });
 

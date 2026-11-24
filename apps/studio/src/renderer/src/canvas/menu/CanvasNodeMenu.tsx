@@ -7,7 +7,7 @@ import { ContextMenu } from '@astryxdesign/core/ContextMenu';
 import { Divider } from '@astryxdesign/core/Divider';
 import { DropdownMenuItem } from '@astryxdesign/core/DropdownMenu';
 import { Icon } from '@astryxdesign/core/Icon';
-import type { CodeMapping, CanvasNodeId, CanvasPageId, ViewRect } from '@studio/events';
+import type { CodeMapping, CanvasNodeId, CanvasPageId } from '@studio/events';
 import { t } from '@studio/i18n';
 import { ForwardIcon } from '../../icons/glyphs.js';
 import { Submenu } from '../../menu/Submenu.jsx';
@@ -27,9 +27,6 @@ import {
   type CanvasMenuVerb,
 } from './items.js';
 
-/** The flow rect a duplicate is placed inside; a panel row, outside React Flow, has none. */
-type ReadViewRect = () => ViewRect | undefined;
-
 /** The selected element's mapping, held beside the anchor rects (ONL-2563). */
 function selectedMapping(): CodeMapping | null {
   const state = useCanvasStore.getState();
@@ -40,7 +37,6 @@ function selectedMapping(): CodeMapping | null {
 function runVerb(
   verb: CanvasMenuVerb,
   selection: CanvasMenuSelection,
-  view: ViewRect | undefined,
 ): void {
   if (verb === 'open-element' || verb === 'open-component') {
     if (!useSettingsStore.getState().experimentalCodePanel) return;
@@ -59,7 +55,7 @@ function runVerb(
   const store = useCanvasStore.getState();
   switch (verb) {
     case 'duplicate':
-      store.duplicateSelectedFrame(view);
+      store.duplicateSelectedFrame();
       return;
     case 'restore-aspect-ratio':
       store.restoreImageAspectRatio(target.id);
@@ -115,11 +111,9 @@ function moveToPage(selection: CanvasMenuSelection, pageId: CanvasPageId): void 
 function CanvasNodeMenuItems({
   nodeId,
   isMenuOpen,
-  readViewRect,
 }: {
   nodeId: CanvasNodeId;
   isMenuOpen: boolean;
-  readViewRect?: ReadViewRect;
 }): React.JSX.Element | null {
   const codeEnabled = useSettingsStore((state) => state.experimentalCodePanel);
   const isCodeVisible = useCanvasStore(isCodePanelVisible);
@@ -179,7 +173,7 @@ function CanvasNodeMenuItems({
                 ? {}
                 : { endContent: <MenuKeyHint keys={KEY_HINTS[item.verb] ?? ''} /> })}
               onClick={() => {
-                runVerb(item.verb, selection, readViewRect?.());
+                runVerb(item.verb, selection);
               }}
             />
           )}
@@ -191,7 +185,6 @@ function CanvasNodeMenuItems({
 
 export interface CanvasNodeMenuProps {
   nodeId: CanvasNodeId;
-  readViewRect?: ReadViewRect;
   /** The canvas zoom the trigger is drawn at; a Designs row sits outside the flow and passes none. */
   readZoom?: () => number;
   /** The right-click target. */
@@ -201,7 +194,6 @@ export interface CanvasNodeMenuProps {
 /** One menu of verbs for any node kind, reachable from the canvas and from the Designs row (ONL-2486). */
 export function CanvasNodeMenu({
   nodeId,
-  readViewRect,
   readZoom,
   children,
 }: CanvasNodeMenuProps): React.JSX.Element {
@@ -255,7 +247,6 @@ export function CanvasNodeMenu({
         <CanvasNodeMenuItems
           nodeId={nodeId}
           isMenuOpen={isMenuOpen}
-          {...(readViewRect ? { readViewRect } : {})}
         />
       }
       menuWidth={200}
