@@ -28,17 +28,17 @@ function Guide({ view = 'prompts', query: initialQuery = '', isInline = true }: 
   );
 }
 
-function story(id: string, title: string, note: string, render: () => React.ReactNode): Story {
+function story(id: string, title: string, note: string, render: Story['render']): Story {
   return { id: `tips-gallery-${id}`, title, note, render };
 }
 
-function CodeHotkeys(): React.JSX.Element {
+function CodeHotkeys({ isInline }: { isInline: boolean }): React.JSX.Element {
   useEffect(() => {
     const previous = useSettingsStore.getState().experimentalCodePanel;
     useSettingsStore.setState({ experimentalCodePanel: true });
     return () => { useSettingsStore.setState({ experimentalCodePanel: previous }); };
   }, []);
-  return <Guide view="hotkeys" isInline={false} />;
+  return <Guide view="hotkeys" isInline={isInline} />;
 }
 
 const CATEGORIES: Category[] = [
@@ -47,8 +47,8 @@ const CATEGORIES: Category[] = [
     title: 'The Tips guide (ONL-2468)',
     stories: [
       story('prompts', 'Prompts', 'click a card to zoom into its detail; ← → step', () => <Guide />),
-      story('hotkeys', 'Hotkeys', 'grouped, two columns', () => <Guide view="hotkeys" />),
-      { ...story('hotkeys-code', 'Hotkeys with Code', 'all shortcut groups fit in two columns', () => <CodeHotkeys />), wide: true },
+      { ...story('hotkeys', 'Hotkeys', 'grouped, two columns', (context) => <Guide view="hotkeys" isInline={!context?.isIsolated} />), wide: true },
+      { ...story('hotkeys-code', 'Hotkeys with Code', 'all shortcut groups fit in two columns', (context) => <CodeHotkeys isInline={!context?.isIsolated} />), wide: true },
       story('empty', 'No match', 'a search with no prompt behind it', () => <Guide query="zebra" />),
     ],
   },
