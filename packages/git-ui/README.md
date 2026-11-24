@@ -1,6 +1,6 @@
 # @studio/git-ui
 
-Astryx components for git status: the pill at chrome and card size, the card's status row, and the pill's dropdown and tooltip. Each renders from `GitPillState` or `GitCardStateId`, plus strings and callbacks.
+Astryx components for git status: the pill at chrome, card and preview size, the card's status row, and the pill's dropdown and tooltip. Preview pills show a status label without interactive controls, with or without a pull request. Each renders from `GitPillState` or `GitCardStateId`, plus strings and callbacks.
 
 ## Rules
 

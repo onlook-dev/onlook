@@ -18,24 +18,16 @@ const STRIP = new Map([
 ]);
 
 function admitted(hoveredId: string | undefined, over: Partial<Parameters<typeof previewTab>[0]> = {}): string | undefined {
-  return previewTab({ hoveredId, tabs: STRIP, activeTabId: 'active', isBlocked: false, ...over });
+  return previewTab({ hoveredId, tabs: STRIP, isBlocked: false, ...over });
 }
 
 describe('which hovered tab opens a preview', () => {
-  it('opens none for the active tab', () => {
-    expect(admitted('active')).toBeUndefined();
+  it('opens one for the active tab', () => {
+    expect(admitted('active')).toBe('active');
   });
 
   it('opens one for a tab that is not active', () => {
     expect(admitted('other')).toBe('other');
-  });
-
-  it('closes it once the hovered tab becomes active', () => {
-    expect(admitted('other', { activeTabId: 'other' })).toBeUndefined();
-  });
-
-  it('opens one for every strip tab while the active tab is off the strip', () => {
-    expect(admitted('active', { activeTabId: 'projects' })).toBe('active');
   });
 
   it('rejects a removed hovered id while another tab remains', () => {
