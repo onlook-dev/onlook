@@ -551,6 +551,18 @@ export function ChatPanel({
   composerRootRef,
   composerLayer,
 }: ChatPanelProps): ReactNode {
+  const composerInput = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const input = composerInput.current;
+    if (!input || !isPlaceholderShimmering) return;
+    let revision = 0;
+    const observer = new MutationObserver(() => {
+      const placeholder = input.querySelector<HTMLElement>(':scope > div[aria-hidden="true"]');
+      if (placeholder) placeholder.style.setProperty('--chat-placeholder-mask-angle', `${++revision}deg`);
+    });
+    observer.observe(input, { childList: true, characterData: true, subtree: true });
+    return () => observer.disconnect();
+  }, [isPlaceholderShimmering]);
   const walk = useRef<ComposerWalk | undefined>(undefined);
   const recallEntry = useRef<{ stepsBack: number; hadAttachments: boolean; report?: ChatPanelProps['onRecallAction'] } | undefined>(undefined);
   const finishRecall = useCallback((nextAction: PromptRecallNextAction): void => {
@@ -956,6 +968,7 @@ export function ChatPanel({
           data-perf-surface="chat_panel"
           input={
             <ChatComposerInput
+              ref={composerInput}
               style={COMPOSER_EDITABLE}
               handleRef={composerHandleRef}
               onFiles={onComposerFiles}

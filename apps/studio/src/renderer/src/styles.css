@@ -1648,7 +1648,7 @@ button[data-testid='new-project-menu']:hover:not(:disabled),
 }
 .chat-composer-shimmer .astryx-chat-composer-input > div[aria-hidden='true']:first-child {
   color: transparent;
-  mask-image: linear-gradient(white, white);
+  mask-image: linear-gradient(var(--chat-placeholder-mask-angle, 0deg), white, white);
   -webkit-mask-clip: text;
   mask-clip: text;
 }

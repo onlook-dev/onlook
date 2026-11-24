@@ -15,6 +15,58 @@ const { appDir, mainEntry: BUILD_MAIN } = studioPaths(repoRoot);
 
 export type Target = 'build' | 'packaged';
 
+export async function checkPlaceholderPixels(app: ElectronApplication, page: Page, width: number) {
+  const placeholder = page.locator('.chat-composer-shimmer .astryx-chat-composer-input > div[aria-hidden="true"]').first();
+  const original = await placeholder.elementHandle();
+  if (!original) throw new Error('Placeholder is not attached');
+  const previousStyle = await placeholder.locator('..').getAttribute('style');
+  const oldText = 'WWWW WWWW WWWW WWWW WWWW WWWW WWWW WWWW';
+  const newText = 'IIII IIII IIII IIII IIII IIII IIII IIII';
+  const animationTime = () => placeholder.evaluate(element => Number(element.getAnimations({ subtree: true })[0]?.currentTime));
+  const freezeSweep = () => placeholder.evaluate(element => {
+    for (const animation of element.getAnimations({ subtree: true })) { animation.pause(); animation.currentTime = 1200; }
+  });
+  await placeholder.locator('..').evaluate((element, size) => { (element as HTMLElement).style.width = `${size}px`; }, width);
+  const capture = async () => {
+    const box = await placeholder.boundingBox();
+    if (!box) throw new Error('Placeholder is not visible');
+    return app.evaluate(async ({ webContents }, { url, box }) => {
+      const host = webContents.getAllWebContents().find(contents => contents.getURL() === url)!;
+      const image = await host.capturePage({ x: Math.floor(box.x), y: Math.floor(box.y), width: Math.ceil(box.width), height: Math.ceil(box.height) });
+      const pixels = image.toBitmap();
+      const ink: number[] = [];
+      for (let offset = 0; offset < pixels.length; offset += 4) ink.push(Math.max(pixels[offset]!, pixels[offset + 1]!, pixels[offset + 2]!) > 60 ? 1 : 0);
+      return ink;
+    }, { url: page.url(), box });
+  };
+  try {
+    await placeholder.evaluate(element => { element.replaceWith(element.cloneNode(true)); });
+    await placeholder.evaluate((element, text) => { element.textContent = text; }, oldText);
+    await placeholder.evaluate(element => { element.replaceWith(element.cloneNode(true)); });
+    await page.waitForTimeout(500);
+    await capture();
+    const before = await animationTime();
+    await placeholder.evaluate((element, text) => { element.textContent = text; }, newText);
+    await page.waitForTimeout(500);
+    const advanced = await animationTime() > before;
+    await freezeSweep();
+    const actual = await capture();
+    const wrapped = await placeholder.evaluate(element => element.getBoundingClientRect().height > parseFloat(getComputedStyle(element).lineHeight) * 1.5);
+    await placeholder.evaluate(element => { element.replaceWith(element.cloneNode(true)); });
+    await page.waitForTimeout(100);
+    await freezeSweep();
+    const expected = await capture();
+    const changed = actual.reduce((total, pixel, index) => total + Number(pixel !== expected[index]), 0);
+    const ink = expected.reduce((total, pixel) => total + pixel, 0);
+    return { matches: advanced && actual.length === expected.length && ink > 20 && changed / ink < 0.02, changed, ink, wrapped, advanced };
+  } finally {
+    await placeholder.evaluate((element, original) => { element.replaceWith(original); }, original);
+    await placeholder.locator('..').evaluate((element, style) => { if (style === null) element.removeAttribute('style'); else element.setAttribute('style', style); }, previousStyle);
+    await placeholder.evaluate(element => { for (const animation of element.getAnimations({ subtree: true })) animation.play(); });
+    await original.dispose();
+  }
+}
+
 export async function measureIdlePaint(app: ElectronApplication, page: Page, durationMs = 10_000) {
   const hostId = await app.evaluate(({ webContents }, url) => webContents.getAllWebContents().find(contents => contents.getURL() === url)!.getOSProcessId(), page.url());
   await app.evaluate(async ({ contentTracing }) => contentTracing.startRecording({ included_categories: ['devtools.timeline', 'disabled-by-default-devtools.timeline.frame'] }));
