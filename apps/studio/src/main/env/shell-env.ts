@@ -10,6 +10,8 @@ const logger = log('env');
 /** Per `CAPTURE_ARGV` rung; a wedged shell would otherwise be an app that never opens a window. */
 const CAPTURE_TIMEOUT_MS = 5_000;
 const CAPTURE_RETRY_MS = 30_000;
+const MAX_CAPTURE_RETRY_MS = 300_000;
+const MAX_CAPTURE_RETRIES = 5;
 
 const MAX_BUFFER = 8 * 1024 * 1024;
 
@@ -165,8 +167,14 @@ let settled: Env | undefined;
 let generation = 0;
 let captureUserEnv = captureShellEnv;
 let envNow = () => performance.now();
-let retryAt: number | undefined;
-const fallbackEnvs = new WeakSet<Env>();
+const fallbackEnvs = new WeakMap<Env, number>();
+let githubRecovery: {
+  base: Env;
+  env: Env;
+  retryAt: number;
+  attempts: number;
+  pending?: Promise<void>;
+} | undefined;
 
 export function isShellEnvFallback(env: Env): boolean {
   return fallbackEnvs.has(env);
@@ -174,7 +182,6 @@ export function isShellEnvFallback(env: Env): boolean {
 
 /** Memoised as the promise: a value would let early spawns race ahead of the capture. */
 export function userEnv(): Promise<Env> {
-  if (retryAt !== undefined && envNow() >= retryAt) return refreshUserEnv();
   const capturingGeneration = generation;
   pending ??= (async () => {
     const shell = loginShell();
@@ -187,26 +194,46 @@ export function userEnv(): Promise<Env> {
     // Inherited first: Electron's runtime vars and `STUDIO_*` survive under what the shell does not mention.
     const env = captured ? mergeEnv(inherited, captured) : inherited;
     if (shell && !captured) {
-      fallbackEnvs.add(env);
-      if (isMac()) {
-        env['PATH'] = [...new Set([
-          ...(env['PATH'] ?? '').split(':').filter(Boolean), '/opt/homebrew/bin', '/usr/local/bin',
-        ])].join(':');
-      }
+      fallbackEnvs.set(env, envNow());
     }
     if (generation === capturingGeneration) {
       settled = env;
-      retryAt = shell && !captured ? envNow() + CAPTURE_RETRY_MS : undefined;
     }
     return env;
   })();
   return pending;
 }
 
+export async function githubCliEnv(): Promise<Env> {
+  const base = await userEnv();
+  const failedAt = fallbackEnvs.get(base);
+  if (!isMac() || failedAt === undefined || base !== settled) return base;
+  if (githubRecovery?.base !== base) {
+    const env = mergeEnv(base);
+    env['PATH'] = [...new Set([
+      ...(env['PATH'] ?? '').split(':').filter(Boolean), '/opt/homebrew/bin', '/usr/local/bin',
+    ])].join(':');
+    fallbackEnvs.set(env, failedAt);
+    githubRecovery = { base, env, retryAt: failedAt + CAPTURE_RETRY_MS, attempts: 0 };
+  }
+  const recovery = githubRecovery;
+  const shell = loginShell();
+  if (shell && isShellEnvFallback(recovery.env) && !recovery.pending
+    && recovery.attempts < MAX_CAPTURE_RETRIES && envNow() >= recovery.retryAt) {
+    recovery.attempts += 1;
+    recovery.pending = (async () => {
+      const captured = await captureUserEnv({ shell }).catch(() => undefined);
+      if (captured) recovery.env = mergeEnv(base, captured);
+      recovery.retryAt = envNow() + Math.min(CAPTURE_RETRY_MS * 2 ** recovery.attempts, MAX_CAPTURE_RETRY_MS);
+      recovery.pending = undefined;
+    })();
+  }
+  return recovery.env;
+}
+
 export function refreshUserEnv(): Promise<Env> {
   generation += 1;
   pending = undefined;
-  retryAt = undefined;
   return userEnv();
 }
 
@@ -229,5 +256,5 @@ export function resetUserEnvForTests(
   settled = undefined;
   captureUserEnv = capture;
   envNow = now;
-  retryAt = undefined;
+  githubRecovery = undefined;
 }

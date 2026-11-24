@@ -1,6 +1,6 @@
 import type { ChildProcess } from 'node:child_process';
 import { type ChildOptions, envWithout, leadsOwnGroup, signalGroup, startChild } from './child.js';
-import { type Env, isShellEnvFallback, mergeEnv, userEnv } from './shell-env.js';
+import { type Env, mergeEnv, userEnv } from './shell-env.js';
 import { executableCommand } from './windows.js';
 import { windowsJobCommand } from './windows-job.js';
 import { hostExecutable, hostSearchPath } from './executable.js';
@@ -44,12 +44,11 @@ export async function runCli(
     signalGroup: typeof signalGroup;
   } = { spawn: startChild, signalGroup },
 ): Promise<CliResult> {
-  const baseEnv = await userEnv();
-  const env = envWithout(mergeEnv(baseEnv, options.env), options.unset ?? []);
+  const env = envWithout(mergeEnv(await userEnv(), options.env), options.unset ?? []);
   env['PATH'] = hostSearchPath(cwd, env);
   const executable = hostExecutable(bin, cwd, env);
   if (executable === undefined) {
-    return { ok: false, out: '', err: 'Host executable not found in trusted PATH', timedOut: false, missing: !isShellEnvFallback(baseEnv), exitCode: null };
+    return { ok: false, out: '', err: 'Host executable not found in trusted PATH', timedOut: false, missing: true, exitCode: null };
   }
   const graceMs = options.killGraceMs ?? KILL_GRACE_MS;
   const maxBuffer = options.maxBuffer ?? MAX_BUFFER;
