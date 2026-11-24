@@ -33,7 +33,7 @@ export async function checkPlaceholderPixels(app: ElectronApplication, page: Pag
     if (!box) throw new Error('Placeholder is not visible');
     return app.evaluate(async ({ webContents }, { url, box }) => {
       const host = webContents.getAllWebContents().find(contents => contents.getURL() === url)!;
-      const image = await host.capturePage({ x: Math.floor(box.x), y: Math.floor(box.y), width: Math.ceil(box.width), height: Math.ceil(box.height) });
+      const image = await host.capturePage({ x: Math.floor(box.x), y: Math.floor(box.y), width: Math.ceil(box.width), height: Math.ceil(box.height) }, { stayHidden: true });
       const pixels = image.toBitmap();
       const ink: number[] = [];
       for (let offset = 0; offset < pixels.length; offset += 4) ink.push(Math.max(pixels[offset]!, pixels[offset + 1]!, pixels[offset + 2]!) > 60 ? 1 : 0);

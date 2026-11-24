@@ -4,15 +4,21 @@ import { checkPlaceholderPixels, closeStudio, createProjectWithoutStart, editorP
 
 test('idle Tips and composer animations do not repaint and respect Reduce Motion', async () => {
   test.setTimeout(60_000);
-  const app = await launchStudio('build', { STUDIO_WORKSPACE_ROOT: makeWorkspaceRoot(), STUDIO_AGENT_PROBE: 'ok' });
+  const app = await launchStudio('build', { STUDIO_WORKSPACE_ROOT: makeWorkspaceRoot(), STUDIO_AGENT_PROBE: 'ok', STUDIO_AGENT_VERIFY: 'ok' });
   try {
     const page = await editorPage(app);
     await createProjectWithoutStart(page, makeSourceCheckout().path);
+    await expect(page.locator('.astryx-chat-composer-input [contenteditable="true"]')).toHaveAttribute('contenteditable', 'true');
+    await expect(page.locator('.astryx-chat-composer-input')).toHaveCSS('opacity', '1');
     await page.locator('.tips-pill-light').first().waitFor({ state: 'attached' });
     await page.locator('.chat-composer-shimmer').waitFor({ state: 'attached' });
     const headed = process.env['STUDIO_E2E_HEADED'] === '1';
     expect(await app.evaluate(({ BaseWindow }) => BaseWindow.getAllWindows()[0]!.isVisible())).toBe(headed);
-    await page.waitForTimeout(2000);
+    await expect.poll(() => page.locator('.tips-pill-light').first().evaluate(element => {
+      const animation = element.getAnimations()[0];
+      const timing = animation?.effect?.getTiming();
+      return timing !== undefined && Number(animation?.currentTime) >= Number(timing.delay) + Number(timing.duration);
+    }), { timeout: 15_000 }).toBe(true);
     const animationTime = () => page.evaluate(() => document.getAnimations().filter(animation => ['tips-lap', 'chat-composer-placeholder-sweep'].includes((animation as CSSAnimation).animationName)).map(animation => Number(animation.currentTime)));
     const before = await animationTime();
     expect(before.length).toBe(3);
@@ -36,16 +42,22 @@ test('idle Tips and composer animations do not repaint and respect Reduce Motion
 });
 
 test('shimmering placeholder repaints changed text, including wrapped text', async () => {
-  const app = await launchStudio('build', { STUDIO_WORKSPACE_ROOT: makeWorkspaceRoot(), STUDIO_AGENT_PROBE: 'ok' });
+  const app = await launchStudio('build', { STUDIO_WORKSPACE_ROOT: makeWorkspaceRoot(), STUDIO_AGENT_PROBE: 'ok', STUDIO_AGENT_VERIFY: 'ok' });
   try {
     const page = await editorPage(app);
     await createProjectWithoutStart(page, makeSourceCheckout().path);
+    await expect(page.locator('.astryx-chat-composer-input [contenteditable="true"]')).toHaveAttribute('contenteditable', 'true');
+    await expect(page.locator('.astryx-chat-composer-input')).toHaveCSS('opacity', '1');
     await page.locator('.chat-composer-shimmer').waitFor({ state: 'attached' });
+    const headed = process.env['STUDIO_E2E_HEADED'] === '1';
+    expect(await app.evaluate(({ BaseWindow }) => BaseWindow.getAllWindows()[0]!.isVisible())).toBe(headed);
     for (const width of [480, 100]) {
       const result = await checkPlaceholderPixels(app, page, width);
-      expect(result.wrapped).toBe(width === 100);
-      expect(result.matches, JSON.stringify(result)).toBe(true);
+      console.log(JSON.stringify({ width, ...result }));
+      expect.soft(result.wrapped).toBe(width === 100);
+      expect.soft(result.matches, JSON.stringify({ width, ...result })).toBe(true);
     }
+    expect(await app.evaluate(({ BaseWindow }) => BaseWindow.getAllWindows()[0]!.isVisible())).toBe(headed);
     await page.waitForTimeout(500);
     expect((await measureIdlePaint(app, page, 4000)).paintedFrames).toBe(0);
   } finally {
