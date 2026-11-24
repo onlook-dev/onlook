@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { renameSync } from 'node:fs';
+import { open } from 'node:fs/promises';
 import type { CanvasDoc, CanvasDocId } from '@studio/events';
 import { removeAtomicFile } from '../fs-atomic.js';
 import { canWriteStateFile, decodeStateFile, readStateFile, writeStateFile } from '../state/file.js';
@@ -71,8 +72,28 @@ function migrateDoc(data: unknown, fromVersion: number, docId: CanvasDocId): Can
 
 export function readExistingCanvasDoc(docId: CanvasDocId): CanvasDoc {
   const saved = readDocumentFile(docId);
+  return existingCanvasDoc(saved, docId);
+}
+
+function existingCanvasDoc(saved: ReturnType<typeof readStateFile>, docId: CanvasDocId): CanvasDoc {
   if (saved.kind !== 'data') throw new Error('document is absent or belongs to a newer build');
   return saved.version === CANVAS_SCHEMA_VERSION ? checkDoc(saved.data, docId) : migrateDoc(saved.data, saved.version, docId);
+}
+
+export async function readSmallExistingCanvasDoc(docId: CanvasDocId): Promise<CanvasDoc> {
+  const file = await open(canvasDocPath(docId), 'r');
+  try {
+    const buffer = Buffer.alloc(65_537);
+    const { bytesRead } = await file.read(buffer, 0, buffer.length, 0);
+    if (bytesRead > 65_536) throw new Error('canvas is too large to prepare in the background');
+    const saved = decodeStateFile(JSON.parse(buffer.toString('utf8', 0, bytesRead)) as unknown, CANVAS_SCHEMA_VERSION);
+    if (saved.kind === 'data' && decodeStateFile(saved.data, CANVAS_SCHEMA_VERSION, { inline: true, versionKey: 'schemaVersion' }).kind === 'future') {
+      throw new Error('document belongs to a newer build');
+    }
+    return existingCanvasDoc(saved, docId);
+  } finally {
+    await file.close();
+  }
 }
 
 /** Set aside, never deleted: the bytes are the evidence. */

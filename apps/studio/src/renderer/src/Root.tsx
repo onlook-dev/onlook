@@ -35,6 +35,7 @@ import { BlendedWindowBar } from './topbar/slots.js';
 import { WindowFrame } from './topbar/WindowFrame.js';
 import {
   beginCreate,
+  activateRestoredProject,
   closeProject,
   createPrimed,
   followCreate,
@@ -71,14 +72,15 @@ export function Root(): React.JSX.Element {
   );
   useSurface('screen', screenSurface(screen.kind));
   /** `failed` sends a scaffold home; `stale` leaves the screen to the newer run (ONL-2593). */
-  const prepareAssigned = useCallback(async (workspacePath: string): Promise<Screen | 'failed' | 'stale'> => {
-    const opened = await openProject(workspacePath);
+  const prepareAssigned = useCallback(async (workspacePath: string, background = false): Promise<Screen | 'failed' | 'stale'> => {
+    const opened = await openProject(workspacePath, background);
     if (opened.kind === 'ready') return { kind: 'editor', restored: opened.workspace };
     return opened.kind === 'failed' ? 'failed' : 'stale';
   }, []);
 
-  const openAssigned = useCallback(async (workspacePath: string): Promise<void> => {
-    const next = await prepareAssigned(workspacePath);
+  const openAssigned = useCallback(async (workspacePath: string, background = false): Promise<void> => {
+    if (!background) await activateRestoredProject(workspacePath);
+    const next = await prepareAssigned(workspacePath, background);
     if (next === 'stale') return;
     /* The scaffold has no exit: an unopenable assignment would leave dead rails forever (ONL-2318). Only off the scaffold: an assignment must not land over a gate this view already committed. */
     setScreen((current) => (current.kind === 'parked' ? (next === 'failed' ? { kind: 'projects' } : next) : current));
@@ -242,7 +244,7 @@ export function Root(): React.JSX.Element {
         setScreen((current) => (current.kind === 'parked' ? { kind: 'projects' } : current));
         return;
       }
-      void openAssigned(assignment.workspacePath);
+      void openAssigned(assignment.workspacePath, assignment.restoring === true);
     };
     /* Registered synchronously: a tab mid-cut is assigned nothing (`assignment.ts`), and a listener attached after the read would miss its push. */
     const unsubscribeAssigned = studio().onTabAssigned(applyAssignment);

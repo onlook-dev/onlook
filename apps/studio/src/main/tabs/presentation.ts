@@ -1,6 +1,8 @@
-import type { WebContents, WebContentsView } from 'electron';
+import { app, type WebContents, type WebContentsView } from 'electron';
 import { IPC_EMIT, IPC_SEND, type ChromeSlotsPush, type TabAssignment } from '@studio/events';
 import type { TabFreeze } from '../canvas/capture-view.js';
+import { readSmallExistingCanvasDoc } from '../canvas/fs-backend.js';
+import { knownCanvasDocId } from '../canvas/registry.js';
 import { onView, onceView } from '../ipc/bridge.js';
 import { showTelemetryRenderer } from '../telemetry/index.js';
 import { projectCreations } from '../workspace/create-project.js';
@@ -13,6 +15,7 @@ import { createTabPaintGate, TAB_FIRST_PAINT_TIMEOUT_MS, TAB_PAINT_TIMEOUT_MS, T
 import { awaitsFirstPaint, PresentationMachine, type PresentationEvent, type Verdict } from './presentation-machine.js';
 import { PREWARM_GAP_MS, PREWARM_READY_TIMEOUT_MS, prewarmQueue } from './prewarm.js';
 import { presentationStep } from './reveal.js';
+import { restoreCanvasEligibleAcrossAllPages, restoreWithinBudget } from './restore-budget.js';
 import { send } from './send.js';
 import { SlotBook } from './slot-book.js';
 import type { Owned, Tab } from './tab.js';
@@ -93,6 +96,10 @@ export class TabPresentation {
   private deadlineTimer: ReturnType<typeof setTimeout> | undefined;
   private readonly watches = new WeakMap<Tab, WatchRig>();
   private readonly warms = new WeakMap<Tab, WarmRig>();
+  private restoring: { tab: Tab; contents: WebContents; baselineKb: number } | undefined;
+  private restoreTimer: ReturnType<typeof setTimeout> | undefined;
+  private restoreAttempted = false;
+  private restoreGeneration = 0;
 
   constructor(book: TabBook, window: TabWindow, views: TabViewPool, tabsChanged: () => void) {
     this.book = book;
@@ -512,19 +519,22 @@ export class TabPresentation {
 
   private assignmentFor(tab: Tab): TabAssignment | null {
     const workspace = tab.workspacePath === undefined ? undefined : knownProject(tab.workspacePath);
-    return assignmentFor({
+    const assignment = assignmentFor({
       tabId: tab.id,
       ...(tab.workspacePath === undefined ? {} : { workspacePath: tab.workspacePath }),
       hasCreation: projectCreations.stateFor(tab.id) !== undefined,
       ...(workspace === undefined ? {} : { repoIdentity: workspace.repoIdentity }),
     });
+    return assignment?.purpose === 'project' && this.restoring?.tab === tab
+      ? { ...assignment, restoring: true }
+      : assignment;
   }
 
   /** The pull half: a parked view asks at mount, so nothing depends on a push arriving before its listener exists. */
   assignmentFrom(sender: WebContents): TabAssignment | null {
     const tab = this.book.tabFor(sender);
-    // ⚠️ `null` is "not yet": a Tab warmed in the background was built, not picked, and answering here would open its project — the backend a restored Tab starts only on its first activation (ONL-2208, ONL-3153).
-    if (tab === undefined || tab.warming !== undefined) return null;
+    // `null` is "not yet": only the canvas admitted by the memory guard opens before selection.
+    if (tab === undefined || (tab.warming !== undefined && this.restoring?.tab !== tab)) return null;
     return this.assignmentFor(tab);
   }
 
@@ -570,9 +580,14 @@ export class TabPresentation {
         };
       }),
     );
+    const restoreCandidates = [...queue];
     const next = (): void => {
       const id = queue.shift();
-      if (id === undefined || this.window.quitting || this.window.window.isDestroyed()) return;
+      if (this.window.quitting || this.window.window.isDestroyed()) return;
+      if (id === undefined) {
+        void this.restoreOne(restoreCandidates);
+        return;
+      }
       const tab = this.book.tabById(id);
       if (tab === undefined || tab.view !== undefined) {
         next();
@@ -621,6 +636,69 @@ export class TabPresentation {
     unrefTimer(next, PREWARM_GAP_MS);
   }
 
+  private memoryKb(): number {
+    try {
+      const metrics = app.getAppMetrics();
+      if (metrics.length === 0 || metrics.some((metric) => !Number.isFinite(metric.memory.workingSetSize) || metric.memory.workingSetSize <= 0)) return 0;
+      return metrics.reduce((total, metric) => total + metric.memory.workingSetSize, 0);
+    } catch {
+      return 0;
+    }
+  }
+
+  private async restoreOne(ids: readonly string[]): Promise<void> {
+    if (this.restoreAttempted) return;
+    this.restoreAttempted = true;
+    const generation = ++this.restoreGeneration;
+    for (const id of ids) {
+      const tab = this.book.tabById(id);
+      if (tab?.workspacePath === undefined || tab.warming?.phase !== 'primed' || this.book.selectedId === id || tab.view === undefined || tab.view.webContents.isDestroyed()) continue;
+      const contents = tab.view.webContents;
+      try {
+        const docId = knownCanvasDocId(tab.workspacePath);
+        if (docId === undefined || !restoreCanvasEligibleAcrossAllPages(await readSmallExistingCanvasDoc(docId))) continue;
+      } catch {
+        continue;
+      }
+      if (generation !== this.restoreGeneration) return;
+      if (this.window.quitting || this.window.window.isDestroyed() || this.book.tabById(id) !== tab || this.book.selectedId === id || tab.view?.webContents !== contents || contents.isDestroyed() || tab.warming?.phase !== 'primed') continue;
+      const baselineKb = this.memoryKb();
+      if (!restoreWithinBudget(baselineKb, baselineKb)) return;
+      this.restoring = { tab, contents, baselineKb };
+      this.assign(tab);
+      const check = (): void => {
+        const restoring = this.restoring;
+        if (restoring === undefined) return;
+        if (this.window.quitting || this.window.window.isDestroyed() || this.book.tabById(id) !== tab || tab.view?.webContents !== restoring.contents || restoring.contents.isDestroyed()) {
+          this.cancelRestoration();
+          return;
+        }
+        if (!restoreWithinBudget(restoring.baselineKb, this.memoryKb())) {
+          this.cancelRestoration();
+          this.views.teardown(id);
+          return;
+        }
+        this.restoreTimer = unrefTimer(check, 1_000);
+      };
+      this.restoreTimer = unrefTimer(check, 1_000);
+      return;
+    }
+  }
+
+  cancelRestoration(): void {
+    this.restoreGeneration += 1;
+    clearTimeout(this.restoreTimer);
+    this.restoreTimer = undefined;
+    this.restoring = undefined;
+  }
+
+  promoteRestored(tab: Tab): boolean {
+    if (this.restoring?.tab !== tab) return false;
+    this.cancelRestoration();
+    this.assign(tab);
+    return true;
+  }
+
   /** The tab's last picture laid over it, taking its input, until the returned call (ONL-3031). */
   async freezeTab(contentsId: number): Promise<TabFreeze> {
     const view = this.book.tabForViewId(contentsId)?.view;
@@ -655,6 +733,7 @@ export class TabPresentation {
 
   /** The Tab's view is about to be discarded: nothing kept for showing it outlives it. */
   viewDiscarded(tab: Tab): void {
+    if (this.restoring?.tab === tab) this.cancelRestoration();
     this.endWatch(tab);
     this.forgetWarm(tab);
     this.forgetShown(tab.id);

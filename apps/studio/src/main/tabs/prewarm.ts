@@ -1,4 +1,4 @@
-/** ⚠️ The RENDERER only. A restored Tab still starts no backend until its first activation (ONL-2208, ONL-3153). */
+/** The renderer-shell limit. Preparing a canvas afterward has its own single-tab memory guard. */
 export const PREWARM_LIMIT = 3;
 
 /** One renderer at a time: three built at once compete with the window the user is already looking at. */

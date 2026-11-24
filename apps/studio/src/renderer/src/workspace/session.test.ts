@@ -3,6 +3,7 @@ import type { OpenProjectResult, ProjectCreateState, WorkspaceCreated } from '@s
 import { deferred, type Deferred } from '../testing/bridge.js';
 import {
   abandonProject,
+  activateRestoredProject,
   beginCreate,
   closeProject,
   createPrimed,
@@ -42,6 +43,7 @@ function rig() {
   const opens: { path: string; answer: Deferred<OpenProjectResult> }[] = [];
   const primes: Deferred<void>[] = [];
   const locations: { path: string; answer: Deferred<void> }[] = [];
+  const restores: { path: string; answer: Deferred<void> }[] = [];
   const resyncs: Deferred<void>[] = [];
   const announces: { path: string; devUrl?: string; answer: Deferred<void> }[] = [];
   installProjectSession(
@@ -80,6 +82,13 @@ function rig() {
           locations.push({ path, answer });
           return answer.promise;
         },
+        locationRestore: (location) => {
+          const path = location.kind === 'project' ? (location.workspacePath ?? location.repoIdentity) : location.kind;
+          steps.push(`restore ${path}`);
+          const answer = deferred<void>();
+          restores.push({ path, answer });
+          return answer.promise;
+        },
         notifyProjectSelected: ({ path, devUrl }) => {
           steps.push(`announce ${path}`);
           const answer = deferred<void>();
@@ -89,7 +98,7 @@ function rig() {
       }),
     },
   );
-  return { steps, opens, primes, locations, resyncs, announces };
+  return { steps, opens, primes, locations, restores, resyncs, announces };
 }
 
 const phase = () => useWorkspaceStore.getState().session;
@@ -107,18 +116,20 @@ beforeEach(() => {
 });
 
 /** Opens and lands `workspace` with every answer given at once. */
-async function settleOpen(workspace: WorkspaceCreated): Promise<void> {
-  const opened = openProject(workspace.workspacePath);
+async function settleOpen(workspace: WorkspaceCreated, background = false): Promise<void> {
+  const opened = openProject(workspace.workspacePath, background);
   main.opens.at(-1)!.answer.settle(held(workspace));
   await turn();
   main.primes.at(-1)!.settle();
   expect(await opened).toEqual({ kind: 'ready', workspace });
   const landed = landProject(workspace);
-  main.locations.at(-1)!.answer.settle();
+  (background ? main.restores : main.locations).at(-1)!.answer.settle();
   await turn();
   main.resyncs.at(-1)!.settle();
-  await turn();
-  main.announces.at(-1)!.answer.settle();
+  if (!background) {
+    await turn();
+    main.announces.at(-1)!.answer.settle();
+  }
   await landed;
 }
 
@@ -349,6 +360,208 @@ describe('landing', () => {
     await first;
     await landProject(A);
     expect(main.locations).toHaveLength(1);
+  });
+});
+
+describe('restoring a background project', () => {
+  it('opens and lands its canvas without selecting the project or announcing it', async () => {
+    await settleOpen(A, true);
+    expect(main.steps).toEqual([
+      'ask main /ws/a',
+      'clear frames',
+      'clear code',
+      'seed 0.5',
+      'prime',
+      'show /ws/a',
+      'restore /ws/a',
+      'resync',
+    ]);
+    expect(main.restores.map((restore) => restore.path)).toEqual([A.workspacePath]);
+    expect(main.locations).toEqual([]);
+    expect(main.announces).toEqual([]);
+    expect(useWorkspaceStore.getState().workspace).toBe(A);
+    expect(phase()).toEqual({ kind: 'open', workspacePath: A.workspacePath });
+    expect(covered()).toBe(false);
+  });
+
+  it('waits for the restored location before resyncing, and for the canvas before lowering the cover', async () => {
+    const opened = openProject(A.workspacePath, true);
+    main.opens[0]!.answer.settle(held(A));
+    await turn();
+    main.primes[0]!.settle();
+    await opened;
+    const landed = landProject(A);
+    expect(main.restores).toHaveLength(1);
+    expect(main.resyncs).toEqual([]);
+    expect(covered()).toBe(true);
+    main.restores[0]!.answer.settle();
+    await turn();
+    expect(main.resyncs).toHaveLength(1);
+    expect(covered()).toBe(true);
+    main.resyncs[0]!.settle();
+    await landed;
+    expect(covered()).toBe(false);
+    expect(main.locations).toEqual([]);
+    expect(main.announces).toEqual([]);
+  });
+
+  it('activation after landing selects and announces once without reopening or remounting', async () => {
+    await settleOpen(A, true);
+    main.steps.length = 0;
+    const activated = activateRestoredProject(A.workspacePath);
+    await activateRestoredProject(A.workspacePath);
+    expect(main.steps).toEqual(['location /ws/a']);
+    expect(main.announces).toEqual([]);
+    main.locations[0]!.answer.settle();
+    await turn();
+    expect(main.announces).toHaveLength(1);
+    expect(main.announces[0]!.devUrl).toBe('http://localhost:5180/');
+    main.announces[0]!.answer.settle();
+    await activated;
+    await activateRestoredProject(A.workspacePath);
+    await landProject(A);
+    expect(main.steps).toEqual(['location /ws/a', 'announce /ws/a']);
+    expect(main.opens).toHaveLength(1);
+    expect(main.primes).toHaveLength(1);
+    expect(main.restores).toHaveLength(1);
+    expect(main.resyncs).toHaveLength(1);
+    expect(main.locations).toHaveLength(1);
+    expect(main.announces).toHaveLength(1);
+    expect(useWorkspaceStore.getState().workspace).toBe(A);
+    expect(phase()).toEqual({ kind: 'open', workspacePath: A.workspacePath });
+  });
+
+  it('activation for another project leaves the restore available for its own activation', async () => {
+    await settleOpen(A, true);
+    main.steps.length = 0;
+    await activateRestoredProject(B.workspacePath);
+    expect(main.steps).toEqual([]);
+    const activated = activateRestoredProject(A.workspacePath);
+    main.locations[0]!.answer.settle();
+    await turn();
+    main.announces[0]!.answer.settle();
+    await activated;
+    expect(main.steps).toEqual(['location /ws/a', 'announce /ws/a']);
+  });
+
+  it.each(['opening', 'priming', 'ready'] as const)('activation while %s promotes the normal landing', async (stage) => {
+    const opened = openProject(A.workspacePath, true);
+    if (stage === 'opening') await activateRestoredProject(A.workspacePath);
+    main.opens[0]!.answer.settle(held(A));
+    await turn();
+    if (stage === 'priming') await activateRestoredProject(A.workspacePath);
+    main.primes[0]!.settle();
+    expect(await opened).toEqual({ kind: 'ready', workspace: A });
+    if (stage === 'ready') await activateRestoredProject(A.workspacePath);
+    expect(main.locations).toEqual([]);
+    const landed = landProject(A);
+    expect(main.restores).toEqual([]);
+    main.locations[0]!.answer.settle();
+    await turn();
+    main.resyncs[0]!.settle();
+    await turn();
+    main.announces[0]!.answer.settle();
+    await landed;
+    expect(main.opens).toHaveLength(1);
+    expect(main.locations).toHaveLength(1);
+    expect(main.resyncs).toHaveLength(1);
+    expect(main.announces.map((announce) => announce.path)).toEqual([A.workspacePath]);
+    expect(phase()).toEqual({ kind: 'open', workspacePath: A.workspacePath });
+  });
+
+  it.each(['restoring', 'resyncing'] as const)('activation while %s promotes the existing landing', async (stage) => {
+    const opened = openProject(A.workspacePath, true);
+    main.opens[0]!.answer.settle(held(A));
+    await turn();
+    main.primes[0]!.settle();
+    await opened;
+    const landed = landProject(A);
+    if (stage === 'restoring') await activateRestoredProject(A.workspacePath);
+    main.restores[0]!.answer.settle();
+    await turn();
+    if (stage === 'resyncing') await activateRestoredProject(A.workspacePath);
+    expect(main.locations).toEqual([]);
+    expect(main.announces).toEqual([]);
+    main.resyncs[0]!.settle();
+    await turn();
+    expect(main.locations).toHaveLength(1);
+    expect(main.announces).toEqual([]);
+    main.locations[0]!.answer.settle();
+    await turn();
+    main.announces[0]!.answer.settle();
+    await landed;
+    await activateRestoredProject(A.workspacePath);
+    expect(main.opens).toHaveLength(1);
+    expect(main.primes).toHaveLength(1);
+    expect(main.restores).toHaveLength(1);
+    expect(main.resyncs).toHaveLength(1);
+    expect(main.locations).toHaveLength(1);
+    expect(main.announces).toHaveLength(1);
+    expect(covered()).toBe(false);
+  });
+
+  it.each(['close', 'abandon'] as const)('a %s during restoration prevents late resync and announcements', async (action) => {
+    const opened = openProject(A.workspacePath, true);
+    main.opens[0]!.answer.settle(held(A));
+    await turn();
+    main.primes[0]!.settle();
+    await opened;
+    const landed = landProject(A);
+    await activateRestoredProject(A.workspacePath);
+    if (action === 'close') closeProject();
+    else abandonProject();
+    main.restores[0]!.answer.settle();
+    await landed;
+    expect(main.resyncs).toEqual([]);
+    expect(main.locations).toEqual([]);
+    expect(main.announces).toEqual([]);
+    expect(phase()).toEqual(action === 'close'
+      ? { kind: 'opening', covered: true, workspacePath: A.workspacePath }
+      : { kind: 'closing' });
+  });
+
+  it.each(['close', 'abandon'] as const)('a %s during the promoted resync prevents late selection and announcements', async (action) => {
+    const opened = openProject(A.workspacePath, true);
+    main.opens[0]!.answer.settle(held(A));
+    await turn();
+    main.primes[0]!.settle();
+    await opened;
+    const landed = landProject(A);
+    main.restores[0]!.answer.settle();
+    await turn();
+    await activateRestoredProject(A.workspacePath);
+    if (action === 'close') closeProject();
+    else abandonProject();
+    main.resyncs[0]!.settle();
+    await landed;
+    expect(main.locations).toEqual([]);
+    expect(main.announces).toEqual([]);
+    expect(phase()).toEqual(action === 'close'
+      ? { kind: 'opening', covered: true, workspacePath: A.workspacePath }
+      : { kind: 'closing' });
+  });
+
+  it.each(['close', 'abandon'] as const)('a %s during activation prevents a late announcement', async (action) => {
+    await settleOpen(A, true);
+    const activated = activateRestoredProject(A.workspacePath);
+    if (action === 'close') closeProject();
+    else abandonProject();
+    main.locations[0]!.answer.settle();
+    await activated;
+    expect(main.locations).toHaveLength(1);
+    expect(main.announces).toEqual([]);
+    expect(phase()).toEqual({ kind: action === 'close' ? 'none' : 'closing' });
+  });
+
+  it.each(['close', 'abandon'] as const)('a %s before activation refuses late selection and announcements', async (action) => {
+    await settleOpen(A, true);
+    if (action === 'close') closeProject();
+    else abandonProject();
+    const activated = activateRestoredProject(A.workspacePath);
+    expect(main.locations).toEqual([]);
+    await activated;
+    expect(main.announces).toEqual([]);
+    expect(phase()).toEqual({ kind: action === 'close' ? 'none' : 'closing' });
   });
 });
 

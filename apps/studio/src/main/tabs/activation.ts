@@ -95,7 +95,7 @@ export class TabActivation {
     // After the reveal, which reads the warm's phase to decide whether this view has a frame to show; the press is still what ends the warm.
     this.presentation.forgetWarm(tab);
     this.port.followSettingsRequest(leavingId);
-    if (needsTelling({ wasCold, tookSpare, wasWarmedCold: wasWarmed, isCreating: projectCreations.inFlight(tab.id) })) {
+    if (!this.presentation.promoteRestored(tab) && needsTelling({ wasCold, tookSpare, wasWarmedCold: wasWarmed, isCreating: projectCreations.inFlight(tab.id) })) {
       this.presentation.assign(tab);
     }
     // The acknowledgement lands in the RECORD: hiding the dot in the renderer alone brings it back on the next switch away (ONL-2364).
