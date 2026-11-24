@@ -1,4 +1,4 @@
-import { HARNESS_IDS } from '@studio/events';
+import { isHarnessId } from '@studio/events';
 import { setupFailureContext } from './setup-failure.js';
 
 const projectFailures = new Map<string, Record<string, unknown>>();
@@ -13,7 +13,7 @@ export function failureContext(event: string, properties: object, preview: { cau
   if ((event === 'project_created' || event === 'project_setup_started' || event === 'project_setup_completed') && project !== undefined) projectFailures.delete(project);
   const isFailure = ['project_creation_failed', 'project_setup_failed', 'project_folder_refused', 'dead_end_shown'].includes(event);
   if (!isFailure) return {};
-  const harness = HARNESS_IDS.find((candidate) => candidate === values['harness']);
+  const harness = isHarnessId(values['harness']) ? values['harness'] : undefined;
   const setup = event === 'dead_end_shown' && values['state'] === 'setup_failed' && known(values['error_class']) === undefined ? setupFailureContext(harness) : undefined;
   const saved = event === 'dead_end_shown' && harness === undefined && project !== undefined ? projectFailures.get(project) : undefined;
   const errorClass = known(values['error_class']) ?? setup?.error_class ?? saved?.['error_class'];

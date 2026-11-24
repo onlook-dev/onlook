@@ -101,7 +101,7 @@ export function SetupDialogHost({ harness, entryPoint, onClose, onSwitchHarness 
   const mapped = mappedSetupFor(harness, { claude, claudeSettled, codex, code, codexSignInAttempted, inFlight }, setupStrings().setup);
   const failed = ['fallback', 'cannot-connect', 'setup-failed', 'wont-start', 'out-of-date'].includes(mapped.state.state);
   const terminal = failed || mapped.state.state === 'signed-in' || mapped.state.state === 'connected';
-  useSurface('setup', failed ? 'error_state' : 'setup', failed ? 'setup_failed' : undefined, 'unknown', undefined, undefined, harness);
+  useSurface('setup', failed ? 'error_state' : 'setup', failed ? 'setup_failed' : undefined, { harness });
   useEffect(() => {
     if (terminal) return;
     sendTelemetry({ event: 'agent_setup_opened', properties: { provider: harness, entry_point: entryPoint } });

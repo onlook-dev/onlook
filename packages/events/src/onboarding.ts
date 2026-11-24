@@ -7,8 +7,10 @@ export interface OnboardingState {
   harness?: HarnessId;
 }
 
+export const ONBOARDING_RESUME_STEPS = ['role', 'found', 'agent', 'import'] as const;
+
 export interface OnboardingProgress {
-  resumeAt: 'role' | 'found' | 'agent' | 'import';
+  resumeAt: (typeof ONBOARDING_RESUME_STEPS)[number];
   harness?: HarnessId;
 }
 

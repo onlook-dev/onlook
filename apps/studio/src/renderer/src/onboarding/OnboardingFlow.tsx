@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import type { HarnessId, OnboardingImportChoice, OnboardingScreen, SurveyAnswer } from '@studio/events';
+import type { HarnessId, OnboardingImportChoice, OnboardingProgress, OnboardingScreen, SurveyAnswer } from '@studio/events';
 
 import { ConnectStep } from '../agent-setup/ConnectStep.js';
 import { harnessToRecord } from '../agent-setup/gate.js';
@@ -23,7 +23,7 @@ import { createOnboardingWalk } from './walk.js';
 
 // Commits nothing: project state committed mid-flow flips the window bar to connected under an onboarding screen.
 
-type OnboardingStep = 'role' | 'found' | 'agent' | 'import';
+type OnboardingStep = OnboardingProgress['resumeAt'];
 type Step = OnboardingStep;
 
 function reportPassed(screen: Exclude<OnboardingScreen, 'import'>): void;

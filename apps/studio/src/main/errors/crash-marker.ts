@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { eraseStateFile, readStateFile, writeStateFile } from '../state/file.js';
 import { stateRoot } from '../state/root.js';
 import { readSwitch } from '../env/dev-switches.js';
-import { ONBOARDING_SCREENS } from '@studio/events';
+import { ONBOARDING_SCREENS, isRecord } from '@studio/events';
 
 const CONTEXT_EVENTS = ['onboarding_screen_shown', 'workspace_creation_flow', 'agent_setup_step', 'project_creation_failed', 'project_setup_failed', 'project_created', 'project_folder_refused', 'dead_end_shown'] as const;
 
@@ -40,7 +40,7 @@ function readMarker(): RunningMarker | undefined {
 }
 
 function readContext(value: unknown): RunningContext | undefined {
-  if (value === null || typeof value !== 'object') return;
+  if (!isRecord(value)) return;
   const context: RunningContext = {};
   if ('last_event' in value && CONTEXT_EVENTS.includes(value.last_event as (typeof CONTEXT_EVENTS)[number])) context.last_event = value.last_event as RunningContext['last_event'];
   if ('last_screen' in value && ONBOARDING_SCREENS.includes(value.last_screen as (typeof ONBOARDING_SCREENS)[number])) context.last_screen = value.last_screen as RunningContext['last_screen'];
@@ -56,6 +56,7 @@ export function updateRunningContext(event: string, properties: object): void {
   if (event === 'onboarding_screen_shown' && 'screen' in properties && ONBOARDING_SCREENS.includes(properties.screen as (typeof ONBOARDING_SCREENS)[number])) context.last_screen = properties.screen as RunningContext['last_screen'];
   if (event === 'workspace_creation_flow' && 'outcome' in properties && 'step' in properties) context.during_workspace_creation = properties.outcome === 'started' || (properties.outcome === 'success' && properties.step === 'created');
   if (event === 'project_created' || event === 'project_creation_failed') context.during_workspace_creation = false;
+  if (context.last_event === marker.context?.last_event && context.last_screen === marker.context?.last_screen && context.during_workspace_creation === marker.context?.during_workspace_creation) return;
   try {
     writeStateFile(runningMarkerPath(), 1, { ...marker, context });
   } catch {

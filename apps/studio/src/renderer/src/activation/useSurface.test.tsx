@@ -14,7 +14,7 @@ it('sends the shown preview cover through the renderer telemetry bridge', async 
   document.body.appendChild(container);
   const root = createRoot(container);
   function Surface({ cover }: { cover: 'nothing' | 'mixed' }) {
-    useSurface('canvas', 'error_state', 'preview_failed', 'unknown', cover, cover === 'nothing' ? 4100 : undefined);
+    useSurface('canvas', 'error_state', 'preview_failed', { cover, server_port: cover === 'nothing' ? 4100 : undefined });
     return null;
   }
   try {

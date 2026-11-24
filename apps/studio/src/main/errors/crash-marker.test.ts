@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'bun:test';
@@ -25,6 +25,17 @@ afterAll(() => {
 });
 
 describe('the marker', () => {
+  it('does not rewrite an unchanged crash checkpoint', () => {
+    claimRunningMarker(FIRST_LAUNCH, '2.0.0');
+    updateRunningContext('agent_setup_step', {});
+    const earlier = new Date('2020-01-01T00:00:00Z');
+    utimesSync(runningMarkerPath(), earlier, earlier);
+    updateRunningContext('agent_setup_step', {});
+    expect(statSync(runningMarkerPath()).mtimeMs).toBe(earlier.getTime());
+    updateRunningContext('onboarding_screen_shown', { screen: 'import' });
+    expect(statSync(runningMarkerPath()).mtimeMs).toBeGreaterThan(earlier.getTime());
+  });
+
   it('keeps the last screen and project creation checkpoint across an unclean restart', () => {
     claimRunningMarker(FIRST_LAUNCH, '2.0.0');
     updateRunningContext('onboarding_screen_shown', { screen: 'import' });
