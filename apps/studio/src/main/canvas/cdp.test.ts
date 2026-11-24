@@ -364,6 +364,24 @@ function hostedBy(guest: FakeGuest, log: string[]): () => void {
 }
 
 describe('a capture that moves the view', () => {
+  it('captures the settled size when an off-screen frame resizes while its view is being revealed', async () => {
+    const log: string[] = [];
+    const phone = { width: 390, height: 844, ratio: 1 };
+    const guest = fakeGuest({
+      isolated: async () => log.includes('move') ? phone : { width: 800, height: 600, ratio: 1 },
+      capture: async () => fakeImage('iVBORw0KGgo=', false, phone),
+    });
+    const unseat = hostedBy(guest, log);
+    try {
+      expect(await captureGuest(addressable(guest))).toEqual({ ok: true, pngBase64: 'iVBORw0KGgo=' });
+      expect(guest.captureRects.at(-1)).toEqual({ x: 0, y: 0, width: 390, height: 844 });
+      expect(log.filter(step => step === 'restore')).toHaveLength(2);
+      expect(log.filter(step => step === 'unfreeze')).toHaveLength(2);
+    } finally {
+      unseat();
+    }
+  });
+
   it('reads the page before the freeze and after it lifts, so only the shot runs under the moved view (ONL-3031)', async () => {
     const log: string[] = [];
     const guest = fakeGuest({
@@ -595,12 +613,57 @@ describe('capture', () => {
     });
   }
 
-  it('refuses a viewport changing during capture instead of comparing with a stale size', async () => {
+  it('refuses a viewport that keeps changing after one retry instead of comparing with a stale size', async () => {
     let reads = 0;
-    const guest = fakeGuest({ isolated: async () => ({ width: ++reads === 1 ? 800 : 900, height: 600, ratio: 1 }) });
+    const guest = fakeGuest({ isolated: async () => ({ width: ++reads % 2 === 1 ? 800 : 900, height: 600, ratio: 1 }) });
     const result = await captureGuest(addressable(guest));
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toContain('FRAME_VIEWPORT_CHANGED');
+    expect(guest.captureRects).toHaveLength(2);
+    expect(guest.isolatedReads).toBe(4);
+  });
+
+  it('discards the old-size image and returns only the complete image from the settled viewport', async () => {
+    let reads = 0;
+    const oldImage = fakeImage('b2xk', false, { width: 800, height: 600 });
+    const settledImage = fakeImage('bmV3', false, { width: 390, height: 844 });
+    const guest = fakeGuest({
+      isolated: async () => ++reads === 1 ? { width: 800, height: 600, ratio: 1 } : { width: 390, height: 844, ratio: 1 },
+      capture: async () => reads === 1 ? oldImage : settledImage,
+    });
+    expect(await captureGuest(addressable(guest))).toEqual({ ok: true, pngBase64: 'bmV3' });
+    expect(oldImage.pngReads).toBe(0);
+    expect(settledImage.pngReads).toBe(1);
+    expect(guest.captureRects).toEqual([
+      { x: 0, y: 0, width: 800, height: 600 },
+      { x: 0, y: 0, width: 390, height: 844 },
+    ]);
+  });
+
+  it('still refuses a partial image after the resize settles', async () => {
+    let reads = 0;
+    const partial = fakeImage('b2xk', false, { width: 800, height: 600 });
+    const guest = fakeGuest({
+      isolated: async () => ({ width: ++reads === 1 ? 800 : 900, height: 600, ratio: 1 }),
+      capture: async () => partial,
+    });
+    const result = await captureGuest(addressable(guest));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toContain('FRAME_NOT_VISIBLE');
+    expect(guest.captureRects).toHaveLength(2);
+    expect(partial.pngReads).toBe(0);
+  });
+
+  it('captures at the new display scale after it settles', async () => {
+    let reads = 0;
+    const image = fakeImage('bmV3', false, { width: 1600, height: 1200 });
+    const guest = fakeGuest({
+      isolated: async () => ({ width: 800, height: 600, ratio: ++reads === 1 ? 1 : 2 }),
+      capture: async () => image,
+    });
+    expect(await captureGuest(addressable(guest))).toEqual({ ok: true, pngBase64: 'bmV3' });
+    expect(image.pngReads).toBe(1);
+    expect(guest.captureRects).toHaveLength(2);
   });
 
   it('never returns an image of a page that navigated away during capture', async () => {
@@ -613,6 +676,7 @@ describe('capture', () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toContain('FRAME_PAGE_CHANGED');
     expect(image.pngReads).toBe(0);
+    expect(guest.captureRects).toHaveLength(1);
   });
 
   for (const ratio of [1.25, 1.5, 2]) {
@@ -641,12 +705,13 @@ describe('capture', () => {
     expect(guest.captureRects).toEqual([{ x: 0, y: 0, width: 800, height: 600 }]);
   });
 
-  it('refuses a device-scale change during capture', async () => {
+  it('refuses a device scale that keeps changing after one retry', async () => {
     let reads = 0;
-    const guest = fakeGuest({ isolated: async () => ({ width: 800, height: 600, ratio: ++reads === 1 ? 1 : 2 }) });
+    const guest = fakeGuest({ isolated: async () => ({ width: 800, height: 600, ratio: ++reads % 2 === 1 ? 1 : 2 }) });
     const result = await captureGuest(addressable(guest));
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toContain('FRAME_VIEWPORT_CHANGED');
+    expect(guest.captureRects).toHaveLength(2);
   });
 });
 

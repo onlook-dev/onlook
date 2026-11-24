@@ -653,12 +653,21 @@ export function perfWindowOverride(): number | undefined {
   return Number.isSafeInteger(value) && value >= 1_000 ? value : undefined;
 }
 
+let previewDiagnosticsRestorer: ((cwd: string, port: number) => void) | undefined;
+
+export function setPreviewDiagnosticsRestorer(restore: ((cwd: string, port: number) => void) | undefined): void {
+  previewDiagnosticsRestorer = restore;
+}
+
 export function capture<N extends TelemetryEventName>(
   event: N,
   properties: TelemetryProperties<N>,
   workspacePath?: string,
 ): boolean {
   if (!isEnabled()) return false;
+  if (event === 'dead_end_shown' && 'state' in properties && properties.state === 'preview_failed' && workspacePath !== undefined && 'server_port' in properties && typeof properties.server_port === 'number') {
+    previewDiagnosticsRestorer?.(workspacePath, properties.server_port);
+  }
   enqueue(event, { ...envelope(), ...previewFailureDiagnostics(event, properties, workspacePath), ...properties });
   return true;
 }
@@ -982,6 +991,7 @@ export function peekQueueForTesting(): readonly QueuedEvent[] {
 }
 
 export function resetTelemetryForTesting(): void {
+  previewDiagnosticsRestorer = undefined;
   resetPreviewDiagnostics();
   consentAbort.abort();
   consentAbort = new AbortController();

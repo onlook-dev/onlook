@@ -1,4 +1,9 @@
 {
+  "projects.open.title": "Could not open project",
+  "projects.open.unknown": "This project is no longer available in Projects. Open another project instead.",
+  "projects.open.missing": "This project’s folder could not be found. Check that its drive is connected, then try again.",
+  "projects.open.removing": "This project is being removed. Open another project instead.",
+  "projects.open.failed": "Onlook could not open this project. Try again. If it still won’t open, restart Onlook.",
   "projects.badge.beta": "Beta",
   "projects.badge.beta.tooltip": "Check for updates",
   "projects.card.menu": "Project options",

@@ -1,12 +1,15 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import type { AppLike } from './index.js';
-import { notePreviewDiagnostics } from './preview-diagnostics.js';
+import { notePreviewDiagnostics, resetPreviewDiagnostics } from './preview-diagnostics.js';
+import { createServerEntry, moveServerEntryPort, recordPortMeasurement, resetServerBookCache } from '../server/book.js';
+import { rememberProject, resetWorkspaceCache } from '../workspace/store.js';
+import { restoreProjectPreviewDiagnostics } from '../workspace/preview-diagnostics.js';
 
 const { resetIdentityCache } = await import('../identity/store.js');
-const { initTelemetry, peekQueueForTesting, resetTelemetryForTesting, setAppForTesting } =
+const { capture, initTelemetry, peekQueueForTesting, resetTelemetryForTesting, setAppForTesting, setPreviewDiagnosticsRestorer } =
   await import('./index.js');
 const { recordPreviewSettlement, resetPreviewLatchForTesting } =
   await import('./preview.js');
@@ -31,6 +34,7 @@ const originalRoot = process.env['STUDIO_STATE_ROOT'];
 
 beforeEach(() => {
   resetTelemetryForTesting();
+  setPreviewDiagnosticsRestorer(restoreProjectPreviewDiagnostics);
   resetPreviewLatchForTesting();
   resetIdentityCache();
   process.env['STUDIO_STATE_ROOT'] = makeRoot('state');
@@ -65,6 +69,61 @@ const workspaceTelemetry = { project_id: 'p1', workspace_instance_id: 'instance-
 const otherWorkspaceTelemetry = { project_id: 'p2', workspace_instance_id: 'instance-2' };
 
 describe('recordPreviewSettlement', () => {
+  for (const { origin, wasLive } of [{ origin: 'blank', wasLive: true }, { origin: 'imported', wasLive: true }, { origin: 'imported', wasLive: false }] as const) {
+    it(`restores reopened preview diagnostics after a restart for ${origin}, previously live: ${wasLive}`, () => {
+      const previousRoot = process.env['STUDIO_WORKSPACE_ROOT'];
+      const root = makeRoot('saved-project');
+      process.env['STUDIO_WORKSPACE_ROOT'] = root;
+      resetWorkspaceCache();
+      resetServerBookCache();
+      const folder = join(root, 'project');
+      mkdirSync(folder);
+      writeFileSync(join(folder, 'package.json'), JSON.stringify({ dependencies: { vite: '1.0.0' }, packageManager: 'pnpm@10.0.0' }));
+      const serverFolder = join(folder, 'app');
+      mkdirSync(serverFolder);
+      writeFileSync(join(serverFolder, 'package.json'), JSON.stringify({ dependencies: { next: '1.0.0' } }));
+      try {
+        rememberProject({
+          workspacePath: folder, workspaceName: 'example', branchName: 'example', baseBranch: 'main',
+          sourceRepoName: 'example', sourcePath: folder, sourceRepoRoot: folder,
+          repoIdentity: 'example', copiedEnvFiles: [], origin,
+        });
+        const entry = createServerEntry(folder, { folder: serverFolder, port: 4100, ownership: 'agent-started' });
+        if (wasLive) recordPortMeasurement(folder, entry.id, 4100, 'live');
+        recordPortMeasurement(folder, entry.id, 4100, 'dead');
+        createServerEntry(folder, { folder, port: 4300, ownership: 'agent-started' });
+        notePreviewDiagnostics(folder, { expected_port: 4100, actual_port: wasLive ? 4100 : null, was_live: wasLive, cause: wasLive ? 'server_down' : 'not_started', framework: 'Next.js', package_manager: 'pnpm', project_source: origin === 'blank' ? 'template' : 'imported' });
+        resetPreviewDiagnostics();
+        resetWorkspaceCache();
+        resetServerBookCache();
+
+        capture('dead_end_shown', { state: 'preview_failed', cover: 'mixed' }, folder);
+        expect(peekQueueForTesting().at(-1)?.properties).toMatchObject({ cause: 'unknown', expected_port: null, actual_port: null, was_live: false });
+        capture('dead_end_shown', { state: 'preview_failed', cover: 'dead', error_class: 'port_unreachable', server_port: 4100 }, folder);
+        expect(peekQueueForTesting().at(-1)?.properties).toMatchObject({
+          cause: wasLive ? 'server_down' : 'not_started', server_port: 4100, expected_port: 4100, actual_port: wasLive ? 4100 : null,
+          was_live: wasLive, framework: 'Next.js', package_manager: 'pnpm', project_source: origin === 'blank' ? 'template' : 'imported',
+          process_exited: null, exit_code: null, install_succeeded: null,
+        });
+        notePreviewDiagnostics(folder, { expected_port: 4100, cause: 'process_exited', exit_code: 23 });
+        capture('dead_end_shown', { state: 'preview_failed', server_port: 4100 }, folder);
+        expect(peekQueueForTesting().at(-1)?.properties).toMatchObject({ cause: 'process_exited', exit_code: 23 });
+        capture('dead_end_shown', { state: 'preview_failed', server_port: 4200 }, folder);
+        expect(peekQueueForTesting().at(-1)?.properties).toMatchObject({ cause: 'unknown', expected_port: null, actual_port: null, was_live: false });
+        moveServerEntryPort(folder, entry.id, { from: 4100, to: 4400 });
+        resetPreviewDiagnostics();
+        resetServerBookCache();
+        capture('dead_end_shown', { state: 'preview_failed', server_port: 4100 }, folder);
+        expect(peekQueueForTesting().at(-1)?.properties).toMatchObject({ cause: 'unknown', expected_port: null, actual_port: null, was_live: false });
+      } finally {
+        if (previousRoot === undefined) delete process.env['STUDIO_WORKSPACE_ROOT'];
+        else process.env['STUDIO_WORKSPACE_ROOT'] = previousRoot;
+        resetWorkspaceCache();
+        resetServerBookCache();
+      }
+    });
+  }
+
   it('ships the measured startup cause on an unreachable preview', () => {
     notePreviewDiagnostics('preview-project', { cause: 'process_exited', expected_port: 4100, exit_code: 23, process_exited: true });
     recordPreviewSettlement({ workspaceTelemetry, workspacePath: 'preview-project', state: 'unreachable', elapsedMs: 9000 });
