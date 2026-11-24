@@ -78,6 +78,7 @@ import { closeInlineChatCarrying } from '../canvas/useInlineElementChat.js';
 import { t } from '@studio/i18n';
 import { ignoreRefusal } from '../refusal.js';
 import { isBlankWorkspace, sessionCovered, telemetryProjectFields, useWorkspaceStore } from '../workspace/store.js';
+import { chooseProjectSource } from '../workspace/sourceFolder.js';
 
 import { useAgentSession } from './useAgentSession.js';
 import { canStartSignIn, isSetAsideable, SignInNotice } from '@studio/onboarding-ui';
@@ -925,6 +926,9 @@ export function ChatRegion(): React.JSX.Element {
   const narration = setupNarration(narrationState, {
     onRetry: () => {
       studio().tabsCreateRetry();
+    },
+    onChooseFolder: () => {
+      void chooseProjectSource('setup-failure').catch(ignoreRefusal('chat', 'choose project folder'));
     },
     onDismiss: () => {
       studio().tabsCreateDismiss();
