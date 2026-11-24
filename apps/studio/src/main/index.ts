@@ -57,7 +57,8 @@ import { registerGithubImportHandlers } from './github-import/index.js';
 import { initAutoUpdater, registerUpdaterHandlers } from './updater/index.js';
 import { offerMoveToApplications } from './updater/location.js';
 import { beginTurnSeenQuit } from './telemetry/turn-seen.js';
-import { beginTelemetryQuit, capture, correlation, noteAppShown, prepareTelemetry, receiveWebAttribution, shutdownTelemetry } from './telemetry/index.js';
+import { beginTelemetryQuit, capture, correlation, noteAppShown, prepareTelemetry, receiveWebAttribution, setPreviewDiagnosticsRestorer, shutdownTelemetry } from './telemetry/index.js';
+import { restoreProjectPreviewDiagnostics } from './workspace/preview-diagnostics.js';
 import { registerAttributionLinks } from './telemetry/attribution-links.js';
 import { checkSetupAbandoned } from './telemetry/setup-step.js';
 import { installProcessHooks } from './errors/index.js';
@@ -281,6 +282,7 @@ void app.whenReady().then(() => {
   // Flags before telemetry: activation reads `web-attribution-link` to decide a retained handoff, and an unprimed read answers from the baked default whatever Cloud targets (ONL-3080).
   primeFlags(flag);
   chooseLocale();
+  setPreviewDiagnosticsRestorer(restoreProjectPreviewDiagnostics);
   prepareTelemetry();
   registerLogHandlers((receive) => on(IPC_SEND.logLine, (_event, payload) => receive(payload)));
   installProcessHooks();

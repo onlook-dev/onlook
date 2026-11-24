@@ -1,4 +1,4 @@
-import { mkdirSync, rmSync } from 'node:fs';
+import { mkdirSync, realpathSync, rmSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { afterAll, describe, expect, it } from 'bun:test';
 import { frameServerCover, type ProjectSetupSnapshot, type ServerBookState, type ServerEntryState } from '@studio/events';
@@ -19,7 +19,7 @@ import {
   type StarterControl,
 } from './index.js';
 import type { ListenerIdentity } from './owner.js';
-import { noteServerStart, observeServerStop, serverWasStopped } from './user-stop.js';
+import { noteServerStart, noteServerStop, observeServerStop, serverWasStopped } from './user-stop.js';
 
 afterAll(() => {
   restoreWorkspaceRoot();
@@ -98,6 +98,40 @@ function lastFor(addressed: Addressed[], worktree: string): ServerBookState | un
 }
 
 describe('saved setup direct controls', () => {
+  it('does not attribute a different endpoint dying to an earlier Stop', async () => {
+    const world = makeWorld('independent-stop-diagnostics');
+    const folder = join(world.worktree, 'api');
+    mkdirSync(folder);
+    const machine = { listeners: new Map([[49002, { pid: 30202, cwd: folder }]]) };
+    const changes: Parameters<NonNullable<ServerHostDeps['onFrameState']>>[0][] = [];
+    const { host } = makeHost(world, machine, { onFrameState: change => { changes.push(change); } });
+    try {
+      noteServerStop(world.worktree, [world.worktree], [49001]);
+      await host.openProject(world.worktree);
+      await host.report(world.worktree, folder, 49002, { project_id: 'project', workspace_instance_id: 'instance' });
+      await waitFor(() => changes.some(change => change.state === 'live'), 'live endpoint');
+      machine.listeners.clear();
+      await waitFor(() => changes.some(change => change.state === 'unreachable'), 'dead endpoint');
+      const change = changes.find(value => value.state === 'unreachable')!;
+      expect(change).toMatchObject({ port: 49002, folder: realpathSync(folder), wasLive: true });
+      expect(serverWasStopped(world.worktree, [{ folder: change.folder, port: change.port! }])).toBe(false);
+    } finally { noteServerStart(world.worktree); host.dispose(); }
+  });
+
+  it('keeps the monitored folder and port when a never-live server becomes unreachable', async () => {
+    const world = makeWorld('failed-endpoint');
+    const folder = join(world.worktree, 'app');
+    mkdirSync(folder);
+    const changes: Parameters<NonNullable<ServerHostDeps['onFrameState']>>[0][] = [];
+    const { host } = makeHost(world, { listeners: new Map() }, { onFrameState: change => { changes.push(change); } });
+    try {
+      await host.openProject(world.worktree);
+      await host.report(world.worktree, folder, 49001, { project_id: 'project', workspace_instance_id: 'instance' });
+      await waitFor(() => changes.some(change => change.state === 'unreachable'), 'unreachable endpoint');
+      expect(changes.find(change => change.state === 'unreachable')).toMatchObject({ folder: realpathSync(folder), port: 49001, worktreePath: world.worktree, wasLive: false });
+    } finally { host.dispose(); }
+  });
+
   it('records user Stop and interrupts before signaling an agent-owned listener, then Start clears the intent', async () => {
     const world = makeWorld('stop-before-exit');
     const order: string[] = [];
