@@ -34,6 +34,8 @@ import { sendStudioPrompt, startAgentSession } from '../agent-host/index.js';
 import { resolveCreateFrameOps } from '../canvas/authors.js';
 import { applyCanvasOps, type CanvasAuthorResult } from '../canvas/index.js';
 import { autoInstall, type InstallOutcome } from '../install/index.js';
+import { recordProjectPreviewDiagnostics } from './preview-diagnostics.js';
+import { previewDiagnostics } from '../telemetry/preview-diagnostics.js';
 import { refreshUserEnv } from '../env/shell-env.js';
 import { serverHost, type AwaitRunningOutcome } from '../server/index.js';
 import { sendToRenderer } from '../tabs/broadcast.js';
@@ -159,6 +161,7 @@ export async function createProject(
   ): Promise<ProjectCreateState> => {
     // Recorded before the diagnosis: a cancel landing while the machine is checked must not erase a failure that happened.
     deps.capture('project_setup_failed', {
+      ...(errorClass === 'dev_server_failed' ? previewDiagnostics(context.workspace?.workspacePath) : {}),
       ...(context.repoIdentity === undefined ? {} : workspaceTelemetryProperties(context.repoIdentity)),
       stage: phase,
       duration_ms: Date.now() - startedAt,
@@ -195,6 +198,7 @@ export async function createProject(
   if (token.canceled) return settle({ kind: 'canceled' });
 
   const cwd = workspace.workspacePath;
+  recordProjectPreviewDiagnostics(cwd, { project_source: 'imported' }, true);
   const context: FailContext = {
     sourceRepoName: workspace.sourceRepoName,
     workspace,
@@ -229,6 +233,7 @@ export async function createProject(
     }
     if (token.canceled || installed.outcome === 'canceled') return settle({ kind: 'canceled' });
     if (installed.outcome === 'failed') return fail('installing', installed.detail, context);
+    recordProjectPreviewDiagnostics(cwd, { install_succeeded: installed.outcome === 'installed' ? true : null });
   }
 
   const forced = forcedFailureAt('starting');
@@ -271,10 +276,14 @@ export async function createProject(
       sent = await deps.sendStartIntent(cwd, detected.context);
     }
   } catch (err) {
+    recordProjectPreviewDiagnostics(cwd, { cause: 'start_request_failed' });
     return fail('starting', String(err), context);
   }
   if (token.canceled) return settle({ kind: 'canceled' });
-  if (!sent) return fail('starting', t('project.create.detail.noSession'), context);
+  if (!sent) {
+    recordProjectPreviewDiagnostics(cwd, { cause: 'start_request_failed' });
+    return fail('starting', t('project.create.detail.noSession'), context);
+  }
 
   const started = await outcome;
   if (started.kind === 'canceled') return settle({ kind: 'canceled' });
@@ -285,15 +294,18 @@ export async function createProject(
     return fail('starting', t('project.create.detail.agentStopped'), context, 'agent_turn_stopped');
   }
   if (started.kind === 'turn-ended') {
+    recordProjectPreviewDiagnostics(cwd, { cause: 'start_turn_no_report' });
     return fail('starting', t('project.create.detail.noServer'), context);
   }
 
+  recordProjectPreviewDiagnostics(cwd, { expected_port: started.port, reported_port: started.port });
   const running = await Promise.race([
     deps.awaitRunning(cwd, started.port, deps.runningBoundMs ?? RUNNING_BOUND_MS),
     token.whenCanceled.then(() => 'canceled' as const),
   ]);
   if (running === 'canceled' || token.canceled) return settle({ kind: 'canceled' });
   if (running !== 'running') {
+    recordProjectPreviewDiagnostics(cwd, { cause: 'readiness_timeout' });
     return fail(
       'starting',
       `The agent reported port ${String(started.port)}, but nothing answered there.`,
