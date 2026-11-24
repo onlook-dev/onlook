@@ -129,6 +129,20 @@ describe('service failure switching (ONL-2958, ONL-2612)', () => {
       chevronIcon={() => <span />} {...overrides} />);
   }
 
+  it('places sign-in above the composer without covering the input', () => {
+    const markup = renderFailure({ connection: { status: 'unauthenticated', harness: 'claude' }, signInSlot: <div>Sign in</div> });
+    expect(markup).toContain('data-testid="chat-sign-in-slot"');
+    expect(markup.indexOf('data-testid="chat-sign-in-slot"')).toBeLessThan(markup.indexOf('data-testid="chat-composer-box"'));
+    expect(markup).not.toContain('data-testid="chat-composer-scrim"');
+    expect(markup).toContain('data-testid="chat-composer"');
+  });
+
+  it('removes the sign-in notice when it is set aside', () => {
+    const markup = renderFailure({ connection: { status: 'unauthenticated', harness: 'claude' }, signInSlot: <div>Sign in</div>, isSignInSetAside: true });
+    expect(markup).not.toContain('data-testid="chat-sign-in-slot"');
+    expect(markup).toContain('data-testid="chat-composer"');
+  });
+
   it('renders the alternative before Retry', () => {
     const markup = renderFailure();
     expect(markup).toContain('Use ChatGPT');

@@ -38,8 +38,9 @@ export function SignInNotice({ state, strings, glyphs, onAction, browsers, isBus
     return (
       <NoticeCard {...common} title={title} body={body}>
         <NoticeButtons
+          layout="stacked"
           {...(notNow === undefined ? {} : { dismiss: notNow })}
-          primary={<ClaudeSignInButton browsers={browsers} strings={strings} {...signInLabel(state)} size="sm" isDisabled={isBusy} onSignIn={(browserId) => onAction?.('sign-in', browserId)} testId="sign-in-action-sign-in" />}
+          primary={<ClaudeSignInButton browsers={browsers} strings={strings} {...signInLabel(state)} size="sm" width="100%" isDisabled={isBusy} onSignIn={(browserId) => onAction?.('sign-in', browserId)} testId="sign-in-action-sign-in" />}
         />
       </NoticeCard>
     );
@@ -57,6 +58,7 @@ export function SignInNotice({ state, strings, glyphs, onAction, browsers, isBus
         }
       >
         <NoticeButtons
+          layout="stacked"
           {...(notNow === undefined ? {} : { dismiss: notNow })}
           primary={<Button label={strings.action.cancel} variant="secondary" size="sm" onClick={() => onAction?.('cancel')} data-testid="sign-in-action-cancel" />}
         />

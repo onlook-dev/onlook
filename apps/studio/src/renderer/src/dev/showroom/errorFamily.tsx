@@ -142,7 +142,7 @@ function ComposerActions(): React.JSX.Element {
 }
 
 /** The Right Rail as ChatRegion composes it, on one moment of a failing turn (ONL-2973). */
-function ErrorFamilyRail({ which }: { which: Moment }): React.JSX.Element {
+function ErrorFamilyRail({ which, width = REGION.end, hasBrowserChoices = false }: { which: Moment; width?: number; hasBrowserChoices?: boolean }): React.JSX.Element {
   const [dismissed, setDismissed] = useState<ReadonlySet<string>>(() => new Set(which === 'usage-limit-not-now' ? ['x1'] : []));
   const [isSetAside, setSetAside] = useState(which === 'sign-in-not-now');
   const now = Date.now();
@@ -155,12 +155,12 @@ function ErrorFamilyRail({ which }: { which: Moment }): React.JSX.Element {
   const connection: AgentConnection = signIn === undefined ? { status: 'ok', harness } : { status: 'unauthenticated', harness: 'claude' };
   const ui = onboardingUiStrings();
   const signInSlot = signIn === undefined ? undefined
-    : <SignInNotice state={signIn} strings={ui} glyphs={CARD_GLYPHS} onAction={noop} {...(failedTurn ? { onNotNow: () => setSetAside(true) } : {})} />;
+    : <SignInNotice state={signIn} strings={ui} glyphs={CARD_GLYPHS} onAction={noop} {...(hasBrowserChoices ? { browsers: [{ id: 'preview', name: 'Chromium Developer Preview', isDefault: true }, { id: 'safari', name: 'Safari', isDefault: false }] } : {})} {...(failedTurn ? { onNotNow: () => setSetAside(true) } : {})} />;
   const pending = signIn?.state === 'signing-in' ? t('onboarding.setup.claude.signingIn.title') : undefined;
   return (
     <div
       data-testid="error-family-rail"
-      style={{ width: REGION.end, height: 640, display: 'flex', background: 'var(--studio-ground)', position: 'relative' }}
+      style={{ width, height: 640, display: 'flex', background: 'var(--studio-ground)', position: 'relative' }}
     >
       <ChatPanelFrame harness={harness} onNewChat={noop}>
         <ChatPanel {...chatPanelProps({
@@ -239,5 +239,8 @@ const MOMENTS: readonly { id: Moment; title: string }[] = [
 export const ERROR_FAMILY_CATEGORY: Gallery['categories'][number] = {
   id: 'error-family',
   title: 'A failing turn, as one line',
-  stories: MOMENTS.map(({ id, title }) => ({ id: `error-family-${id}`, title, render: () => <ErrorFamilyRail which={id} /> })),
+  stories: [
+    ...MOMENTS.map(({ id, title }) => ({ id: `error-family-${id}`, title, render: () => <ErrorFamilyRail which={id} /> })),
+    ...[320, 480].map((width) => ({ id: `error-family-sign-in-${width}`, title: `Sign-in with browser choices at ${width}px`, render: () => <ErrorFamilyRail which="sign-in" width={width} hasBrowserChoices /> })),
+  ],
 };
