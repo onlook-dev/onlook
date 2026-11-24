@@ -54,6 +54,7 @@ function choosePrompt(prompt: TipPrompt, key: StringKey): void {
 }
 
 export function TipsDialog(): React.JSX.Element {
+  const codeEnabled = useSettingsStore((state) => state.experimentalCodePanel);
   const isOpen = useTipsStore((s) => s.isOpen);
   const view = useTipsStore((s) => s.view);
   const tab = useTipsStore((s) => s.tab);
@@ -66,6 +67,7 @@ export function TipsDialog(): React.JSX.Element {
       tab={tab}
       query={query}
       detail={detail}
+      codeEnabled={codeEnabled}
       onClose={closeTips}
       onView={setTipsView}
       onTab={setTipsTab}
@@ -77,6 +79,7 @@ export function TipsDialog(): React.JSX.Element {
 }
 
 export interface TipsDialogViewProps {
+  codeEnabled: boolean;
   isOpen: boolean;
   view: TipsView;
   tab: PromptTab;
@@ -99,6 +102,7 @@ function filterPrompts(prompts: readonly TipPrompt[], query: string): TipPrompt[
 }
 
 export function TipsDialogView({
+  codeEnabled,
   isOpen,
   view,
   tab,
@@ -135,7 +139,6 @@ export function TipsDialogView({
 
   const prompts = filterPrompts(promptsFor(tab), query);
   const order = prompts.map((p) => p.id);
-  const codeEnabled = useSettingsStore((state) => state.experimentalCodePanel);
   const hotkeys = filterHotkeys(shownHotkeys(HOTKEYS, { codeEnabled }), query);
 
   const findTile = (id: PromptId): HTMLElement | null =>
