@@ -1,4 +1,9 @@
 {
+  "projects.open.title": "プロジェクトを開けませんでした",
+  "projects.open.unknown": "このプロジェクトは「プロジェクト」一覧で利用できなくなりました。別のプロジェクトを開いてください。",
+  "projects.open.missing": "このプロジェクトのフォルダーが見つかりませんでした。ドライブが接続されていることを確認して、もう一度お試しください。",
+  "projects.open.removing": "このプロジェクトは削除中です。別のプロジェクトを開いてください。",
+  "projects.open.failed": "Onlook でこのプロジェクトを開けませんでした。もう一度お試しください。それでも開けない場合は、Onlook を再起動してください。",
   "projects.badge.beta": "ベータ",
   "projects.badge.beta.tooltip": "アップデートを確認",
   "projects.card.menu": "プロジェクトのオプション",

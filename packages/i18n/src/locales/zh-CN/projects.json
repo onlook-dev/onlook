@@ -1,4 +1,9 @@
 {
+  "projects.open.title": "无法打开项目",
+  "projects.open.unknown": "此项目已不在“项目”列表中。请打开其他项目。",
+  "projects.open.missing": "找不到此项目的文件夹。请检查磁盘是否已连接，然后重试。",
+  "projects.open.removing": "此项目正在移除。请打开其他项目。",
+  "projects.open.failed": "Onlook 无法打开此项目。请重试。如果仍然无法打开，请重启 Onlook。",
   "projects.badge.beta": "Beta",
   "projects.badge.beta.tooltip": "检查更新",
   "projects.card.menu": "项目选项",
