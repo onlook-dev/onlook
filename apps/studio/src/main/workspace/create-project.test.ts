@@ -681,6 +681,7 @@ describe('the cut going wrong', () => {
     { step: 'copy_files', cause: 'ignored_files' },
     { step: 'copy_files', cause: 'folder_unavailable' },
     { step: 'git_init', cause: 'permission_denied' },
+    { step: 'git_init', cause: 'git_not_found' },
     { step: 'git_config', cause: 'disk_full' },
     { step: 'git_add', cause: 'git_failed' },
     { step: 'git_commit', cause: 'git_timed_out' },
