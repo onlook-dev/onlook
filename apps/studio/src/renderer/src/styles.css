@@ -1643,22 +1643,33 @@ button[data-testid='new-project-menu']:hover:not(:disabled),
 
 /* The empty-canvas placeholder shimmers; the library draws it as the input's first, aria-hidden child (ONL-2744). */
 @keyframes chat-composer-placeholder-sweep {
-  from { background-position: 100% 0; }
-  to { background-position: -100% 0; }
+  from { translate: 0 0; }
+  to { translate: calc(100% / 3) 0; }
 }
 .chat-composer-shimmer .astryx-chat-composer-input > div[aria-hidden='true']:first-child {
   color: transparent;
+  mask-image: linear-gradient(white, white);
+  -webkit-mask-clip: text;
+  mask-clip: text;
+}
+.chat-composer-shimmer .astryx-chat-composer-input > div[aria-hidden='true']:first-child::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 -300%;
+  width: 600%;
   background-image: linear-gradient(90deg, var(--color-text-disabled) 35%, var(--color-text-secondary) 50%, var(--color-text-disabled) 65%);
-  background-size: 200% 100%;
-  background-clip: text;
-  -webkit-background-clip: text;
+  background-size: calc(100% / 3) 100%;
   animation: chat-composer-placeholder-sweep 2.4s linear infinite;
+  will-change: transform;
+  pointer-events: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .chat-composer-shimmer .astryx-chat-composer-input > div[aria-hidden='true']:first-child {
-    animation: none;
     color: var(--color-text-disabled);
-    background: none;
+    mask-image: none;
+  }
+  .chat-composer-shimmer .astryx-chat-composer-input > div[aria-hidden='true']:first-child::after {
+    display: none;
   }
 }
 /* Opens the way the "+" menu does: up from its trigger, at the "+" menu's own timing and curve (ONL-3193). */
