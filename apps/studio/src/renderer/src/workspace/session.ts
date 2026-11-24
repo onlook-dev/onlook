@@ -4,6 +4,7 @@ import {
   type CanvasCamera,
   type CanvasPageId,
   type ProjectCreateState,
+  type OpenProjectResult,
   type StudioBridge,
   type WorkspaceCreated,
 } from '@studio/events';
@@ -34,7 +35,7 @@ interface SessionPorts extends SessionSurfaces {
 export type Opened =
   | { kind: 'ready'; workspace: WorkspaceCreated }
   /** Main refused or a step threw; the phase is back where a new open can start. */
-  | { kind: 'failed' }
+  | { kind: 'failed'; reason?: Extract<OpenProjectResult, { ok: false }>['reason'] }
   /** A newer open, a close, or the same project already open: nothing was touched after it lost. */
   | { kind: 'superseded' };
 
@@ -88,10 +89,10 @@ function settled(): SessionPhase {
   return held === null ? { kind: 'none' } : { kind: 'open', workspacePath: held.workspacePath };
 }
 
-function fail(run: number): Opened {
+function fail(run: number, reason?: Extract<OpenProjectResult, { ok: false }>['reason']): Opened {
   if (!isCurrent(run)) return { kind: 'superseded' };
   store.setState({ session: settled() });
-  return { kind: 'failed' };
+  return { kind: 'failed', ...(reason === undefined ? {} : { reason }) };
 }
 
 /** The one order: the previous project's frames and code, the camera, the panel widths. */
@@ -122,7 +123,7 @@ export function openProject(workspacePath: string): Promise<Opened> {
   return track(run, workspacePath, async () => {
     const answer = await seated().bridge().openProject({ workspacePath });
     if (!isCurrent(run)) return { kind: 'superseded' };
-    if (!answer.ok) return fail(run);
+    if (!answer.ok) return fail(run, answer.reason);
     if (!(await prepare(run, { camera: answer.camera, pageId: answer.currentPageId }))) return { kind: 'superseded' };
     return { kind: 'ready', workspace: answer.workspace };
   });

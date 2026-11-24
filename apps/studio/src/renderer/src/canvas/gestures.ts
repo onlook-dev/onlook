@@ -1,5 +1,5 @@
 import type { NodeChange } from '@xyflow/react';
-import { sectionMembersOnPage, withSectionContentsOnPage, type CanvasNode, type CanvasNodeId, type CanvasOp, type ViewRect } from '@studio/events';
+import { sectionMembersOnPage, withSectionContentsOnPage, type CanvasNode, type CanvasNodeId, type CanvasOp } from '@studio/events';
 import type { StateCreator } from 'zustand';
 import { telemetryProjectFields } from '../workspace/store.js';
 import { composable, composition, nextOrder, recomposed } from './compose.js';
@@ -41,7 +41,6 @@ export interface GestureFields {
     ids: CanvasNodeId[];
     members: ReadonlySet<CanvasNodeId>;
     settled: Partial<Record<CanvasNodeId, { x: number; y: number }>>;
-    view?: ViewRect;
     isCancelled: boolean;
   } | null;
 
@@ -65,7 +64,7 @@ export interface GestureFields {
 export interface GestureActions {
   beginSectionDrag: (id: string) => void;
   endSectionDrag: () => void;
-  beginDuplicateDrag: (id: string, view?: ViewRect) => void;
+  beginDuplicateDrag: (id: string) => void;
   cancelDuplicateDrag: () => void;
   /** Not redundant with the settle: React Flow emits no `dragging: false` when nothing moved, and a lingering record turns the next plain drag into a mint. */
   endDuplicateDrag: () => void;
@@ -335,7 +334,7 @@ export function resetGesturesForTests(): void {
 }
 
 export const createGestureActions: StateCreator<CanvasState, [], [], GestureActions> = (set, get) => ({
-  beginDuplicateDrag: (id, view) => {
+  beginDuplicateDrag: (id) => {
     const state = get();
     if (!state.doc?.nodes[id]) return;
     const selected = state.selectedNodeIds.includes(id)
@@ -347,7 +346,6 @@ export const createGestureActions: StateCreator<CanvasState, [], [], GestureActi
         ids,
         members: new Set(ids),
         settled: {},
-        ...(view ? { view } : {}),
         isCancelled: false,
       },
     });
@@ -728,7 +726,7 @@ export const createGestureActions: StateCreator<CanvasState, [], [], GestureActi
     if (drag.ids.length === 1) {
       const id = drag.ids[0];
       const position = id ? drag.settled[id] : undefined;
-      if (id && position) get().duplicateFrame(id, drag.view, position);
+      if (id && position) get().duplicateFrame(id, position);
       set({ duplicateDrag: null });
       return;
     }

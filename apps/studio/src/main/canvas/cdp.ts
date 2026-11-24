@@ -355,7 +355,7 @@ async function readGuestViewport(guest: WebContents): Promise<Viewport> {
   return { width: value.width, height: value.height, ratio: value.ratio, zoom };
 }
 
-async function captureRevealedGuest(deps: GuestCommandDeps): Promise<FrameCaptureResult> {
+async function captureRevealedGuest(deps: GuestCommandDeps, retryResize = true): Promise<FrameCaptureResult> {
   const found = resolveLiveGuest(deps.webContentsId, deps.frameId, deps.guests ?? REAL_GUESTS, deps.artifactId);
   if (!found.ok) return { ok: false, reason: found.reason };
   const guest = found.guest;
@@ -401,6 +401,7 @@ async function captureRevealedGuest(deps: GuestCommandDeps): Promise<FrameCaptur
   }
   if (current.width !== viewport.width || current.height !== viewport.height ||
     current.ratio !== viewport.ratio || current.zoom !== viewport.zoom) {
+    if (retryResize) return captureRevealedGuest(deps, false);
     return { ok: false, reason: 'FRAME_VIEWPORT_CHANGED: the frame size or display scale changed during capture. Wait for it to settle, then retry capture_frame.' };
   }
   const image = outcome.value;
