@@ -45,6 +45,24 @@ export async function checkPlaceholderPixels(app: ElectronApplication, page: Pag
     await placeholder.evaluate(element => { element.replaceWith(element.cloneNode(true)); });
     await page.waitForTimeout(500);
     await capture();
+    for (let restart = 0; restart < 2; restart += 1) {
+      await page.evaluate(async () => {
+        const { doc } = await window.studio.canvasSnapshot();
+        if (!doc) throw new Error('No canvas');
+        window.studio.canvasOp({ docId: doc.docId, op: { type: 'create', node: {
+          id: 'placeholder-restart', kind: 'text', pageId: Object.values(doc.pages)[0]!.id, name: 'Note',
+          x: 0, y: 0, width: 100, height: 30, order: 0, content: { text: 'Note', size: 'small' },
+        } } });
+      });
+      await page.locator('.chat-composer-shimmer').waitFor({ state: 'detached' });
+      await page.evaluate(async () => {
+        const { doc } = await window.studio.canvasSnapshot();
+        if (!doc) throw new Error('No canvas');
+        window.studio.canvasOp({ docId: doc.docId, op: { type: 'remove', id: 'placeholder-restart' } });
+      });
+      await page.locator('.chat-composer-shimmer').waitFor({ state: 'attached' });
+      if (restart === 0) await placeholder.evaluate((element, text) => { element.textContent = text; }, oldText);
+    }
     const before = await animationTime();
     await placeholder.evaluate((element, text) => { element.textContent = text; }, newText);
     await page.waitForTimeout(500);

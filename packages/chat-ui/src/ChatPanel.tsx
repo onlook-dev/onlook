@@ -552,13 +552,13 @@ export function ChatPanel({
   composerLayer,
 }: ChatPanelProps): ReactNode {
   const composerInput = useRef<HTMLDivElement>(null);
+  const placeholderMaskRevision = useRef(0);
   useEffect(() => {
     const input = composerInput.current;
     if (!input || !isPlaceholderShimmering) return;
-    let revision = 0;
     const observer = new MutationObserver(() => {
       const placeholder = input.querySelector<HTMLElement>(':scope > div[aria-hidden="true"]');
-      if (placeholder) placeholder.style.setProperty('--chat-placeholder-mask-angle', `${++revision}deg`);
+      if (placeholder) placeholder.style.setProperty('--chat-placeholder-mask-angle', `${++placeholderMaskRevision.current}deg`);
     });
     observer.observe(input, { childList: true, characterData: true, subtree: true });
     return () => observer.disconnect();

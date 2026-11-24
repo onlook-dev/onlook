@@ -46,6 +46,8 @@ test('shimmering placeholder repaints changed text, including wrapped text', asy
       expect(result.wrapped).toBe(width === 100);
       expect(result.matches, JSON.stringify(result)).toBe(true);
     }
+    await page.waitForTimeout(500);
+    expect((await measureIdlePaint(app, page, 4000)).paintedFrames).toBe(0);
   } finally {
     await closeStudio(app);
     cleanupTempFixtures();
