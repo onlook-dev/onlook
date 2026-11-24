@@ -25,13 +25,22 @@ afterAll(() => {
 });
 
 describe('the marker', () => {
-  it('keeps creation active after registration until the first preview settles', () => {
+  it('clears creation when registration finishes without starting a preview', () => {
     claimRunningMarker(FIRST_LAUNCH, '2.0.0');
     updateRunningContext('workspace_creation_flow', { step: 'started', outcome: 'started' });
     updateRunningContext('workspace_creation_flow', { step: 'created', outcome: 'success' });
     updateRunningContext('project_created', {});
-    expect(readRunningContext()?.during_workspace_creation).toBe(true);
-    updateRunningContext('workspace_creation_flow', { step: 'preview', outcome: 'success' });
+    expect(readRunningContext()?.during_workspace_creation).toBe(false);
+    expect(claimRunningMarker(SECOND_LAUNCH, '2.0.1')?.context?.during_workspace_creation).toBe(false);
+  });
+
+  it('clears creation when the user abandons setup', () => {
+    claimRunningMarker(FIRST_LAUNCH, '2.0.0');
+    updateRunningContext('workspace_creation_flow', { step: 'started', outcome: 'started' });
+    updateRunningContext('onboarding_screen_shown', { screen: 'agent' });
+    expect(readRunningContext()?.during_workspace_creation).toBe(false);
+    updateRunningContext('workspace_creation_flow', { step: 'started', outcome: 'started' });
+    updateRunningContext('project_creation_failed', { reason: 'canceled' });
     expect(readRunningContext()?.during_workspace_creation).toBe(false);
   });
 

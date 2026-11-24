@@ -32,6 +32,12 @@ export function pinnedHarness(): HarnessId | undefined {
 
 let cache: PersistedState | undefined;
 let sealed = false;
+let recoveringCrash = false;
+
+export function prepareOnboardingRecovery(crashed: boolean): void {
+  cache = undefined;
+  recoveringCrash = crashed;
+}
 
 function load(): PersistedState {
   if (cache) return cache;
@@ -39,6 +45,7 @@ function load(): PersistedState {
     const file = readStateFile(statePath(), 1);
     const parsed = file.kind === 'data' ? file.data : undefined;
     cache = typeof parsed === 'object' && parsed !== null ? (parsed as PersistedState) : {};
+    if (!recoveringCrash && cache.completedAt === undefined) cache = {};
   } catch {
     // Absent or unreadable both mean no record; the flow shows again.
     cache = {};
@@ -99,6 +106,7 @@ export function completeOnboarding(completion: OnboardingCompletion = {}): void 
 export function resetOnboardingCache(): void {
   cache = undefined;
   sealed = false;
+  recoveringCrash = false;
 }
 
 // Seals as well as deletes: the renderer outlives the quit teardown, and a late

@@ -49,7 +49,8 @@ it('setup fallback and its dead end keep the same scrubbed cause for the correct
   capture('dead_end_shown', { state: 'setup_failed', error_class: 'unknown', harness: 'claude' });
   const events = peekQueueForTesting();
   const deadEnd = events.find(({ event }) => event === 'dead_end_shown');
-  expect(deadEnd?.properties).toMatchObject({ harness: 'claude', error_class: 'spawn_eacces', exit_code: 5, stderr_class: 'spawn_eacces', failure_cause: 'spawn_eacces' });
+  expect(deadEnd?.properties).toMatchObject({ harness: 'claude', error_class: 'spawn_eacces', exit_code: 5, failure_cause: 'spawn_eacces' });
+  expect(events.every(({ properties }) => !('stderr_class' in properties))).toBe(true);
   expect(JSON.stringify(events)).not.toContain('private');
   recordAgentSetupStep('claude', 'sign_in_started');
   capture('dead_end_shown', { state: 'setup_failed', error_class: 'unknown', harness: 'claude' });

@@ -53,9 +53,12 @@ export function updateRunningContext(event: string, properties: object): void {
   const marker = readMarker();
   if (marker === undefined) return;
   const context: RunningContext = { ...marker.context, last_event: event as (typeof CONTEXT_EVENTS)[number] };
-  if (event === 'onboarding_screen_shown' && 'screen' in properties && ONBOARDING_SCREENS.includes(properties.screen as (typeof ONBOARDING_SCREENS)[number])) context.last_screen = properties.screen as RunningContext['last_screen'];
-  if (event === 'workspace_creation_flow' && 'outcome' in properties && 'step' in properties) context.during_workspace_creation = properties.outcome === 'started' || (properties.outcome === 'success' && properties.step === 'created');
-  if (event === 'project_creation_failed' || event === 'project_setup_failed' || event === 'project_folder_refused') context.during_workspace_creation = false;
+  if (event === 'onboarding_screen_shown' && 'screen' in properties && ONBOARDING_SCREENS.includes(properties.screen as (typeof ONBOARDING_SCREENS)[number])) {
+    context.last_screen = properties.screen as RunningContext['last_screen'];
+    context.during_workspace_creation = false;
+  }
+  if (event === 'workspace_creation_flow' && 'outcome' in properties) context.during_workspace_creation = properties.outcome === 'started';
+  if (event === 'project_created' || event === 'project_creation_failed' || event === 'project_setup_failed' || event === 'project_folder_refused') context.during_workspace_creation = false;
   if (context.last_event === marker.context?.last_event && context.last_screen === marker.context?.last_screen && context.during_workspace_creation === marker.context?.during_workspace_creation) return;
   try {
     writeStateFile(runningMarkerPath(), 1, { ...marker, context });

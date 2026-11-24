@@ -283,12 +283,12 @@ export interface TelemetryEventMap {
   };
 
   crash_detected: {
-    previous_launch_id?: string;
+    previous_launch_id: string;
     app_version: string | null;
     reporter_app_version: string;
-    process_type?: 'main' | 'renderer' | 'gpu' | 'utility' | 'other';
+    process_type?: 'main';
     exit_code?: number | null;
-    reason?: 'unclean_exit' | 'crashed' | 'oom' | 'integrity-failure';
+    reason?: 'unclean_exit';
     last_event?: string;
     last_screen?: string;
     during_workspace_creation?: boolean;
@@ -917,7 +917,6 @@ export interface TelemetryEventMap {
     provider: 'claude' | 'codex';
     harness?: HarnessId;
     error_class?: AgentSetupErrorClass;
-    stderr_class?: AgentSetupErrorClass;
     exit_code?: number | null;
     step:
       | 'opened'

@@ -9,7 +9,6 @@ export interface SetupFailureInput {
 }
 export interface SetupFailureDiagnostics {
   error_class: AgentSetupErrorClass;
-  stderr_class: AgentSetupErrorClass;
   exit_code: number | null;
 }
 
@@ -35,7 +34,7 @@ export function classifySetupFailure(input: SetupFailureInput): SetupFailureDiag
   const record = isRecord(input.error) ? input.error : undefined;
   const text = [input.detail, input.outcome, typeof input.error === 'string' ? input.error : undefined, typeof record?.['code'] === 'string' ? record['code'] : undefined, typeof record?.['message'] === 'string' ? record['message'] : undefined].filter(Boolean).join(' ').replaceAll('_', '-');
   const errorClass = FAILURE_PATTERNS.find(([pattern]) => pattern.test(text))?.[1] ?? 'setup_failed';
-  return { error_class: errorClass, stderr_class: errorClass, exit_code: Number.isSafeInteger(input.exitCode) ? input.exitCode! : null };
+  return { error_class: errorClass, exit_code: Number.isSafeInteger(input.exitCode) ? input.exitCode! : null };
 }
 
 const failures: Partial<Record<HarnessId, SetupFailureDiagnostics>> = {};

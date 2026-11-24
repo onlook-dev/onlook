@@ -61,13 +61,13 @@ import { registerGithubImportHandlers } from './github-import/index.js';
 import { initAutoUpdater, registerUpdaterHandlers } from './updater/index.js';
 import { offerMoveToApplications } from './updater/location.js';
 import { beginTurnSeenQuit } from './telemetry/turn-seen.js';
-import { beginTelemetryQuit, capture, correlation, noteAppShown, prepareTelemetry, receiveWebAttribution, setCrashContextRecorder, setPreviewDiagnosticsRestorer, shutdownTelemetry } from './telemetry/index.js';
+import { beginTelemetryQuit, capture, checkLaunchEnvironment, correlation, noteAppShown, prepareTelemetry, receiveWebAttribution, setCrashContextRecorder, setPreviewDiagnosticsRestorer, shutdownTelemetry } from './telemetry/index.js';
 import { restoreProjectPreviewDiagnostics } from './workspace/preview-diagnostics.js';
 import { registerAttributionLinks } from './telemetry/attribution-links.js';
 import { checkSetupAbandoned } from './telemetry/setup-step.js';
 import { installProcessHooks, setProcessCrashContextReader } from './errors/index.js';
 import { installProcessCrashHooks } from './errors/processes.js';
-import { checkEnvironment } from './telemetry/environment.js';
+import { prepareOnboardingRecovery } from './onboarding/state.js';
 import { registerDevErrorHook } from './errors/dev-hook.js';
 import { claimRunningMarker, clearRunningMarker, ownsRunningMarker, readRunningContext, updateRunningContext } from './errors/crash-marker.js';
 import { pruneCrashDumps } from './errors/crash-dumps.js';
@@ -291,12 +291,12 @@ void app.whenReady().then(() => {
   setPreviewDiagnosticsRestorer(restoreProjectPreviewDiagnostics);
   setCrashContextRecorder(updateRunningContext);
   prepareTelemetry();
-  void checkEnvironment({
+  void checkLaunchEnvironment({
     platform: hostPlatform(), release: release(), arch: process.arch,
     env: userEnv,
     resolves: (bin, env) => hostExecutable(bin, tmpdir(), env) !== undefined,
     run: (bin, args, env) => runCli(bin, tmpdir(), args, { env, timeoutMs: 5_000, maxBuffer: 16_384 }),
-  }).then((context) => capture('environment_checked', context)).catch((error: unknown) => bootLog.warn('environment checks failed', { error }));
+  }).catch((error: unknown) => bootLog.warn('environment checks failed', { error }));
   registerLogHandlers((receive) => on(IPC_SEND.logLine, (_event, payload) => receive(payload)));
   installProcessHooks();
   setProcessCrashContextReader(readRunningContext);
@@ -311,6 +311,7 @@ void app.whenReady().then(() => {
   const ids = correlation();
   if (ids !== undefined && ownsRunningMarker()) {
     const previous = claimRunningMarker(ids.launchId, app.getVersion());
+    prepareOnboardingRecovery(previous !== undefined);
     if (previous !== undefined) {
       bootLog.warn('the previous launch did not quit cleanly', { previous_launch_id: previous.launchId });
       capture('crash_detected', {

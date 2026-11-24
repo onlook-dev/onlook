@@ -30,7 +30,10 @@ export interface EnvironmentReaders {
 }
 
 function version(result: EnvironmentProbe): string | null {
-  return result.ok ? /^(?:git version |v)?(\d+\.\d+\.\d+(?:\.windows\.\d+)?)\s*$/.exec(result.out.trim())?.[1] ?? null : null;
+  if (!result.ok) return null;
+  const output = result.out.replace(/\r?\n$/, '');
+  if (/[\r\n]/.test(output)) return null;
+  return /^(?:git version |v)?(\d+\.\d+\.\d+(?:\.windows\.\d+)?)(?: \(Apple Git-\d+(?:\.\d+)*\))?$/.exec(output)?.[1] ?? null;
 }
 
 function registryFlag(result: EnvironmentProbe): boolean | null {
@@ -46,8 +49,12 @@ export async function readEnvironment(readers: EnvironmentReaders): Promise<Envi
     try { return await readers.run(bin, args, env); }
     catch { return { ok: false, out: '' }; }
   };
+  const gitProbe = async (): Promise<EnvironmentProbe> => {
+    if (readers.platform === 'darwin' && !(await run('xcode-select', ['-p'])).ok) return { ok: false, out: '' };
+    return run('git', ['--version']);
+  };
   const [git, node, npm, developer, longPaths] = await Promise.all([
-    run('git', ['--version']),
+    gitProbe(),
     run('node', ['--version']),
     run('npm', ['--version']),
     windows ? run(systemExecutable('reg.exe'), ['query', 'HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock', '/v', 'AllowDevelopmentWithoutDevLicense']) : undefined,
@@ -69,16 +76,4 @@ export async function readEnvironment(readers: EnvironmentReaders): Promise<Envi
     developer_mode: developer === undefined ? null : registryFlag(developer),
     long_paths_enabled: longPaths === undefined ? null : registryFlag(longPaths),
   };
-}
-
-let checking: Promise<EnvironmentDiagnostics> | undefined;
-let snapshot: EnvironmentDiagnostics | undefined;
-
-export function environmentContext(): Partial<EnvironmentDiagnostics> {
-  return snapshot ?? {};
-}
-
-export function checkEnvironment(readers: EnvironmentReaders): Promise<EnvironmentDiagnostics> {
-  checking ??= readEnvironment(readers).then((result) => { snapshot = result; return result; });
-  return checking;
 }

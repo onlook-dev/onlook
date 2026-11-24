@@ -11,6 +11,7 @@ const {
   adoptSessionId,
   capture,
   captureDurable,
+  checkLaunchEnvironment,
   correlation,
   currentSessionId,
   currentTelemetryConfig,
@@ -60,9 +61,10 @@ function fakeApp(userData: string): AppLike {
   };
 }
 
+const ANALYTICS_KEY = 'STUDIO_POSTHOG_KEY';
 const ENV_KEYS = [
   'STUDIO_STATE_ROOT',
-  'STUDIO_POSTHOG_KEY',
+  ANALYTICS_KEY,
   'STUDIO_POSTHOG_HOST',
   'STUDIO_TELEMETRY',
   'MAIN_VITE_POSTHOG_KEY',
@@ -605,6 +607,41 @@ it('keeps legacy plain install ids and writes new ids in an envelope', () => {
 });
 
 describe('super properties', () => {
+  it.each(['no-key', 'switch-off', 'analytics-off'])('environment subprocesses are skipped when analytics is %s', async (mode) => {
+    if (mode !== 'no-key') process.env[ANALYTICS_KEY] = 'phc_test';
+    if (mode === 'switch-off') process.env['STUDIO_TELEMETRY'] = '0';
+    if (mode === 'analytics-off') setAnalyticsEnabled(false);
+    prepareTelemetry();
+    const unexpected = (): never => { throw new Error('Environment diagnostics must not read the machine'); };
+    await checkLaunchEnvironment({ platform: 'darwin', release: '25.1.0', arch: 'arm64', env: unexpected, resolves: unexpected, run: unexpected });
+    expect(peekQueueForTesting()).toEqual([]);
+  });
+
+  it('environment fields are emitted once and never attached to other events', async () => {
+    process.env[ANALYTICS_KEY] = 'phc_test';
+    initTelemetry();
+    let probes = 0;
+    const readers = { platform: 'linux' as const, release: '6.1.0', arch: 'x64', env: async () => ({ PATH: '/usr/bin' }), resolves: () => false, run: async () => { probes += 1; return { ok: false, out: '' }; } };
+    setAnalyticsEnabled(false);
+    await checkLaunchEnvironment(readers);
+    expect(probes).toBe(0);
+    setAnalyticsEnabled(true);
+    await checkLaunchEnvironment(readers);
+    await checkLaunchEnvironment(readers);
+    expect(probes).toBe(3);
+    capture('frame_tool_armed', {});
+    capture('project_folder_refused', { reason: 'no-base-ref', entry_point: 'onboarding' });
+    const events = peekQueueForTesting();
+    expect(events.filter(({ event }) => event === 'environment_checked')).toHaveLength(1);
+    const diagnostics = events.find(({ event }) => event === 'environment_checked')!;
+    expect(diagnostics.properties).toMatchObject({ git_present: false, node_present: false, path_entry_count: 1 });
+    for (const event of events.filter(({ event }) => event !== 'environment_checked')) {
+      for (const key of ['git_present', 'git_version', 'git_source', 'node_present', 'node_version', 'npm_present', 'path_entry_count', 'git_on_path', 'node_on_path', 'shell', 'windows_build', 'developer_mode', 'long_paths_enabled']) {
+        expect(event.properties).not.toHaveProperty(key);
+      }
+    }
+  });
+
   it('includes cached machine properties on every event without the raw CPU model', () => {
     process.env['STUDIO_POSTHOG_KEY'] = 'phc_test';
     const model = 'Apple M4 Max';
@@ -701,8 +738,9 @@ describe('super properties', () => {
     }
     for (const event of events) {
       expect(event.properties['platform']).not.toBe(process.platform);
-      expect(event.properties['os']).toBe(event.properties['$os']);
-      expect(event.properties['os_version']).toBeString();
+      expect(event.properties).not.toHaveProperty('git_present');
+      expect(event.properties).not.toHaveProperty('path_entry_count');
+      expect(event.properties).not.toHaveProperty('os_version');
     }
   });
 });

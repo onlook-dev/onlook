@@ -8,6 +8,7 @@ export const resolveWorkspaceTelemetryId: typeof Telemetry.resolveWorkspaceTelem
 export const headlessTelemetryAllowed: typeof Telemetry.headlessTelemetryAllowed = () => false;
 export const correlation: typeof Telemetry.correlation = () => undefined;
 export const prepareTelemetry: typeof Telemetry.prepareTelemetry = () => {};
+export const checkLaunchEnvironment: typeof Telemetry.checkLaunchEnvironment = async () => {};
 export const noteAppShown: typeof Telemetry.noteAppShown = () => {};
 export const initTelemetry: typeof Telemetry.initTelemetry = () => {};
 export const receiveWebAttribution: typeof Telemetry.receiveWebAttribution = () => {};

@@ -10,7 +10,7 @@ test('setup failures retain a cause and exit code without sending stderr', () =>
     ['turn-provider-refused', 'provider_refused'], ['turn-signed-out', 'not_logged_in'], ['exited', 'process_exited'],
   ] as const) {
     const diagnostics = classifySetupFailure({ error, exitCode: 9 });
-    expect(diagnostics).toEqual({ error_class: expected, stderr_class: expected, exit_code: 9 });
+    expect(diagnostics).toEqual({ error_class: expected, exit_code: 9 });
     expect(JSON.stringify(diagnostics)).not.toContain('private');
   }
   expect(classifySetupFailure({ error: { code: 'EACCES', message: 'private' } }).error_class).toBe('spawn_eacces');

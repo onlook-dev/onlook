@@ -4,7 +4,7 @@
 
 import { createHash, randomUUID } from 'node:crypto';
 import os from 'node:os';
-import { environmentContext } from './environment.js';
+import { readEnvironment, type EnvironmentReaders } from './environment.js';
 import { failureContext, resetFailureContext } from './failure-context.js';
 import { configureLogExport, log, setLogCorrelation } from '../log/index.js';
 import { batchGrant, enforceCap, pendingBatches, readBatch, removeBatch, resetOutboxForTesting, writeBatch, type OutboxEvent } from './outbox.js';
@@ -667,6 +667,14 @@ export function setCrashContextRecorder(record: typeof crashContextRecorder): vo
   crashContextRecorder = record;
 }
 
+let launchEnvironmentCheck: Promise<void> | undefined;
+
+export function checkLaunchEnvironment(readers: EnvironmentReaders): Promise<void> {
+  if (!isEnabled()) return Promise.resolve();
+  launchEnvironmentCheck ??= readEnvironment(readers).then((context) => { capture('environment_checked', context); });
+  return launchEnvironmentCheck;
+}
+
 export function capture<N extends TelemetryEventName>(
   event: N,
   properties: TelemetryProperties<N>,
@@ -692,9 +700,6 @@ function featureProperties(): Record<`$feature/${string}`, boolean> {
 function envelope(): Record<string, unknown> {
   return {
     ...superProperties,
-    os: superProperties?.$os,
-    os_version: os.release(),
-    ...environmentContext(),
     ...featureProperties(),
     ...(sessionId === undefined ? {} : { $session_id: sessionId }),
     ...(hasPerson ? {} : { $process_person_profile: false }),
@@ -1005,6 +1010,7 @@ export function peekQueueForTesting(): readonly QueuedEvent[] {
 }
 
 export function resetTelemetryForTesting(): void {
+  launchEnvironmentCheck = undefined;
   crashContextRecorder = undefined;
   resetFailureContext();
   previewDiagnosticsRestorer = undefined;

@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'bun:test';
 import { cleanupTempFixtures, makeStateRoot } from '@studio/fixtures';
 
-const { chosenHarness, clearOnboarded, completeOnboarding, readOnboardingState, resetOnboardingCache, saveOnboardingProgress } =
+const { chosenHarness, clearOnboarded, completeOnboarding, readOnboardingState, resetOnboardingCache, saveOnboardingProgress, prepareOnboardingRecovery } =
   await import('./state.js');
 const { resetSettingsCache, settingsHarness } = await import('../settings/state.js');
 
@@ -37,15 +37,30 @@ it('resumes the first project after a crash without repeating surveys or losing 
   useOwnStateRoot('onboarding-restart');
   saveOnboardingProgress({ resumeAt: 'found' });
   resetOnboardingCache();
+  prepareOnboardingRecovery(true);
   expect(readOnboardingState()).toEqual({ hasOnboarded: false, resumeAt: 'found' });
   saveOnboardingProgress({ resumeAt: 'agent' });
   saveOnboardingProgress({ resumeAt: 'import', harness: 'codex' });
   resetOnboardingCache();
+  prepareOnboardingRecovery(true);
   expect(readOnboardingState()).toEqual({ hasOnboarded: false, resumeAt: 'import', harness: 'codex' });
   expect(settingsHarness()).toBeUndefined();
   completeOnboarding({ harness: 'codex' });
   resetOnboardingCache();
   expect(readOnboardingState()).toEqual({ hasOnboarded: true, harness: 'codex' });
+});
+
+it('a normal quit starts incomplete onboarding without a saved step or agent choice', () => {
+  useOwnStateRoot('onboarding-clean-restart');
+  saveOnboardingProgress({ resumeAt: 'import', harness: 'codex' });
+  resetOnboardingCache();
+  prepareOnboardingRecovery(false);
+  expect(readOnboardingState()).toEqual({ hasOnboarded: false });
+  expect(chosenHarness()).toBeUndefined();
+  saveOnboardingProgress({ resumeAt: 'found' });
+  resetOnboardingCache();
+  prepareOnboardingRecovery(true);
+  expect(readOnboardingState()).toEqual({ hasOnboarded: false, resumeAt: 'found' });
 });
 
 it('rejects malformed and late onboarding checkpoints and respects forced runs', () => {

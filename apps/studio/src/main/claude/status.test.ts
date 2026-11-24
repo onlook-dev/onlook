@@ -37,9 +37,9 @@ describe('claudeAuthStatus', () => {
   it('an unexecutable bundled runtime is not a sign-in failure', async () => {
     for (const code of ['EACCES', 'ENOEXEC', 'ENOTDIR']) {
       const errorClass = code === 'EACCES' ? 'spawn_eacces' : code === 'ENOTDIR' ? 'path_not_found' : 'runtime_missing';
-      expect(await status(answer({ err: `spawn /bundled/claude ${code}` })).verdict).toEqual({ status: 'failed', detail: 'spawn', diagnostics: { error_class: errorClass, stderr_class: errorClass, exit_code: null } });
+      expect(await status(answer({ err: `spawn /bundled/claude ${code}` })).verdict).toEqual({ status: 'failed', detail: 'spawn', diagnostics: { error_class: errorClass, exit_code: null } });
     }
-    expect(await status(answer({ err: 'EACCES: permission denied, open /config/settings.json' })).verdict).toEqual({ status: 'failed', detail: 'exited', diagnostics: { error_class: 'spawn_eacces', stderr_class: 'spawn_eacces', exit_code: null } });
+    expect(await status(answer({ err: 'EACCES: permission denied, open /config/settings.json' })).verdict).toEqual({ status: 'failed', detail: 'exited', diagnostics: { error_class: 'spawn_eacces', exit_code: null } });
   });
   it('runs auth status --json on the binary with the hang guard and the scrub list', async () => {
     const { verdict, calls } = status(answer({ ok: true, exitCode: 0, out: JSON.stringify(SIGNED_IN) }));
@@ -81,30 +81,30 @@ describe('claudeAuthStatus', () => {
   });
 
   it('any other exit is failed as exited, JSON or not', async () => {
-    expect(await status(answer({ exitCode: 2 })).verdict).toEqual({ status: 'failed', detail: 'exited', diagnostics: { error_class: 'process_exited', stderr_class: 'process_exited', exit_code: 2 } });
+    expect(await status(answer({ exitCode: 2 })).verdict).toEqual({ status: 'failed', detail: 'exited', diagnostics: { error_class: 'process_exited', exit_code: 2 } });
     expect(await status(answer({ exitCode: 2, out: JSON.stringify(SIGNED_IN) })).verdict).toEqual({
       status: 'failed',
       detail: 'exited',
-      diagnostics: { error_class: 'process_exited', stderr_class: 'process_exited', exit_code: 2 },
+      diagnostics: { error_class: 'process_exited', exit_code: 2 },
     });
   });
 
   it('exit 0 with empty or unparsable stdout is failed as exited', async () => {
-    expect(await status(answer({ ok: true, exitCode: 0, out: '' })).verdict).toEqual({ status: 'failed', detail: 'exited', diagnostics: { error_class: 'process_exited', stderr_class: 'process_exited', exit_code: 0 } });
+    expect(await status(answer({ ok: true, exitCode: 0, out: '' })).verdict).toEqual({ status: 'failed', detail: 'exited', diagnostics: { error_class: 'process_exited', exit_code: 0 } });
     expect(await status(answer({ ok: true, exitCode: 0, out: 'not json' })).verdict).toEqual({
       status: 'failed',
       detail: 'exited',
-      diagnostics: { error_class: 'process_exited', stderr_class: 'process_exited', exit_code: 0 },
+      diagnostics: { error_class: 'process_exited', exit_code: 0 },
     });
   });
 
   it('a missing binary is failed as spawn', async () => {
     const { verdict } = status(answer({ missing: true, err: 'spawn ENOENT' }));
-    expect(await verdict).toEqual({ status: 'failed', detail: 'spawn', diagnostics: { error_class: 'path_not_found', stderr_class: 'path_not_found', exit_code: null } });
+    expect(await verdict).toEqual({ status: 'failed', detail: 'spawn', diagnostics: { error_class: 'path_not_found', exit_code: null } });
   });
 
   it('the hang guard firing is failed as did-not-answer, never signed-out', async () => {
     const { verdict } = status(answer({ timedOut: true, exitCode: null }));
-    expect(await verdict).toEqual({ status: 'failed', detail: 'did-not-answer', diagnostics: { error_class: 'sign_in_timeout', stderr_class: 'sign_in_timeout', exit_code: null } });
+    expect(await verdict).toEqual({ status: 'failed', detail: 'did-not-answer', diagnostics: { error_class: 'sign_in_timeout', exit_code: null } });
   });
 });

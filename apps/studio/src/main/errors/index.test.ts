@@ -97,8 +97,9 @@ it('GPU and utility crashes carry their native reason and code without inventing
   const nativeExceptions = events.filter(({ event }) => event === '$exception');
   expect(nativeExceptions).toHaveLength(2);
   expect(nativeExceptions.map(({ properties }) => properties['process_type'])).toEqual(['gpu', 'utility']);
-  const crashes = events.filter(({ event }) => event === 'crash_detected');
-  expect(crashes.map(({ properties }) => [properties['process_type'], properties['reason'], properties['exit_code']])).toEqual([['gpu', 'crashed', -1073741819], ['utility', 'oom', 1]]);
+  expect(events.filter(({ event }) => event === 'crash_detected')).toEqual([]);
+  expect(nativeExceptions.map(({ properties }) => [properties['reason'], properties['exit_code']])).toEqual([['crashed', -1073741819], ['oom', 1]]);
+  expect(events.filter(({ event }) => event === 'process_gone').map(({ properties }) => [properties['process_class'], properties['reason'], properties['exit_code']])).toEqual([['gpu', 'crashed', -1073741819], ['utility', 'oom', 1]]);
   for (const exception of nativeExceptions) {
     const list = exception.properties['$exception_list'] as Record<string, unknown>[];
     expect(list).toHaveLength(1);
@@ -113,8 +114,10 @@ it('live child crashes include the current screen and active creation checkpoint
   updateRunningContext('workspace_creation_flow', { step: 'started', outcome: 'started' });
   setProcessCrashContextReader(readRunningContext);
   await recordProcessExit({ process_class: 'utility', reason: 'crashed', exit_code: 3 });
-  const reports = postedEvents.filter(({ event }) => event === '$exception' || event === 'crash_detected');
-  expect(reports).toHaveLength(2);
+  const events = [...postedEvents, ...peekQueueForTesting()];
+  expect(events.filter(({ event }) => event === 'crash_detected')).toEqual([]);
+  const reports = events.filter(({ event }) => event === '$exception');
+  expect(reports).toHaveLength(1);
   for (const report of reports) expect(report.properties).toMatchObject({ last_event: 'workspace_creation_flow', last_screen: 'import', during_workspace_creation: true });
 });
 
@@ -128,8 +131,10 @@ it('process crash hooks observe startup exits before performance sampling and in
   target.emit('child-process-gone', {}, { type: 'Utility', reason: 'oom', exitCode: 1 });
   target.emit('render-process-gone', {}, { id: 99, getType: () => 'window' }, { reason: 'crashed', exitCode: 2 });
   await flush();
-  const events = [...postedEvents, ...peekQueueForTesting()].filter(({ event }) => event === 'process_gone');
-  expect(events.map(({ properties }) => properties['process_class'])).toEqual(['gpu', 'utility', 'tab']);
+  const events = [...postedEvents, ...peekQueueForTesting()];
+  expect(events.filter(({ event }) => event === 'crash_detected')).toEqual([]);
+  expect(events.filter(({ event }) => event === 'process_gone').map(({ properties }) => properties['process_class'])).toEqual(['gpu', 'utility', 'tab']);
+  expect(events.filter(({ event }) => event === '$exception').map(({ properties }) => [properties['$exception_type'], properties['process_type']])).toEqual([['NativeProcessCrash', 'gpu'], ['NativeProcessCrash', 'utility'], ['NativeProcessCrash', 'renderer']]);
 });
 
 it('intentional child termination and a user app crash are not Onlook exceptions', () => {
@@ -137,6 +142,7 @@ it('intentional child termination and a user app crash are not Onlook exceptions
   recordProcessExit({ process_class: 'frame', reason: 'crashed', exit_code: 1 });
   recordProcessExit({ process_class: 'dev_server', reason: 'crashed', exit_code: 1 });
   expect(exceptions()).toEqual([]);
+  expect(peekQueueForTesting().filter(({ event }) => event === 'crash_detected')).toEqual([]);
   expect(peekQueueForTesting().filter(({ event }) => event === 'process_gone')).toHaveLength(3);
 });
 

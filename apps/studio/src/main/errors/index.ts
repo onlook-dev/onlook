@@ -1,6 +1,6 @@
 import { failureOwner, scrubException, type ScrubbedException, type ProcessGone } from '@studio/events';
 import { FILE_ONLY_KEYS, log, scrubFields, type LogFields } from '../log/index.js';
-import { capture, captureException, correlation, flush } from '../telemetry/index.js';
+import { capture, captureException, flush } from '../telemetry/index.js';
 import type { RunningMarker } from './crash-marker.js';
 
 export type ErrorOwner = 'ours' | 'environment' | 'user_app' | 'expected';
@@ -61,9 +61,7 @@ export function recordProcessExit(details: ProcessGone): Promise<void> | undefin
   if (details.reason !== 'crashed' && details.reason !== 'oom' && details.reason !== 'integrity-failure') return;
   if (details.process_class === 'frame' || details.process_class === 'dev_server') return;
   const processType = details.process_class === 'tab' || details.process_class === 'band' ? 'renderer' : details.process_class === 'gpu' || details.process_class === 'utility' ? details.process_class : 'other';
-  const version = correlation()?.appVersion ?? null;
   const context = crashContextReader?.();
-  capture('crash_detected', { app_version: version, reporter_app_version: version ?? 'unknown', process_type: processType, reason: details.reason, exit_code: details.exit_code, ...context });
   captureError({ type: 'NativeProcessCrash', value: `${processType}: ${details.reason} (${details.exit_code})` }, { owner: 'ours', subsystem: 'process', process_type: processType, ...details, ...context });
   return flush();
 }
