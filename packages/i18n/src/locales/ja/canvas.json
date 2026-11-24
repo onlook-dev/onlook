@@ -93,7 +93,7 @@
   "canvas.empty.question.mark": "?",
   "canvas.empty.failed.setup.title": "セットアップが完了しませんでした",
   "canvas.empty.failed.preview.title": "プレビューが実行されていません",
-  "canvas.empty.failed.body": "もう一度試すには、チャットで「再試行」をクリックしてください",
+  "canvas.empty.failed.body": "次の手順はチャットで確認してください",
   "canvas.setupFailure.install.body": "インストールコマンドがエラーで止まりました。エージェントが原因を調べ、修正するか、何が問題になっているかを伝えることができます。",
   "canvas.setupFailure.start.body": "起動コマンドがエラーで止まりました。エージェントが原因を調べ、修正するか、何が問題になっているかを伝えることができます。",
   "canvas.setupFailure.ready.body": "起動コマンドは実行されましたが、アプリが応答しませんでした。エージェントが原因を調べ、修正するか、何が問題になっているかを伝えることができます。",

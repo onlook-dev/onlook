@@ -1161,7 +1161,7 @@ export class AgentSession {
         if (ended !== undefined) {
           const stopReason = this.interrupting ? 'interrupted' : 'provider_error';
           const retries = retryTelemetry(this.log.events, HARNESSES.claude.countsRetryAttempts, this.retryEventsFrom);
-          this.log.push({ type: 'turn.ended', turnId: ended.turnId, stopReason, filesChanged: ended.filesChanged });
+          this.log.push({ type: 'turn.ended', turnId: ended.turnId, stopReason, isError: !this.interrupting, filesChanged: ended.filesChanged });
           this.opts.onTurnEnded?.({
             ...ended, stopReason, origin: this.turnOrigin,
             retryAttempts: retries.retry_observed_count,
