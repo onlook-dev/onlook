@@ -5,6 +5,12 @@ import { join } from 'node:path';
 import { createUpdateRecovery } from './recovery.js';
 
 describe('update authorization recovery on disk', () => {
+  it('restores a far-future refused release without changing its version', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'update-recovery-future-'));
+    const root = () => directory;
+    createUpdateRecovery('1.2.2', root).onRefusedVersionChange('9999.0.0');
+    expect(createUpdateRecovery('1.2.2', root).refusedVersion).toBe('9999.0.0');
+  });
   it('keeps the refused release paused across relaunch and clears the saved pause after recovery', () => {
     const directory = mkdtempSync(join(tmpdir(), 'update-recovery-'));
     const root = () => directory;

@@ -1,10 +1,14 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { EventEmitter } from 'node:events';
 import { setImmediate as settle } from 'node:timers/promises';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import type { AppUpdater } from 'electron-updater';
 import type { UpdateState } from '@studio/events';
 import { UpdateMachine } from './machine.js';
 import { createUpdateSession } from './session.js';
+import { createUpdateRecovery } from './recovery.js';
 
 class UpdateFixture extends EventEmitter {
   autoDownload = true;
@@ -195,8 +199,6 @@ describe('the real updater event sequence', () => {
     test.updater.emit('error', new Error('OSStatus error -60005.'));
     expect(saved).toEqual(['1.2.4']);
     await test.session.check();
-    test.updater.version = '1.2.3';
-    await test.session.check();
     expect(test.updater.downloads).toEqual(['1.2.4']);
     expect(test.updater.autoInstallOnAppQuit).toBe(false);
     expect(test.machine.current().message).toBe('UPDATE_AUTHORIZATION_DENIED');
@@ -230,6 +232,53 @@ describe('the real updater event sequence', () => {
     await test.session.check();
     expect(test.machine.current().message).toBe('UPDATE_AUTHORIZATION_DENIED');
     expect(test.updater.downloads).toEqual([]);
+  });
+
+  it.each(['1.2.4', '9999.0.0'])('tries an offered release below refused version %s after relaunch', async (refusedVersion) => {
+    const directory = mkdtempSync(join(tmpdir(), 'update-rollback-'));
+    const root = () => directory;
+    createUpdateRecovery('1.2.2', root).onRefusedVersionChange(refusedVersion);
+    const test = fixture(true, undefined, createUpdateRecovery('1.2.2', root));
+    await test.download();
+    expect(test.updater.downloads).toEqual(['1.2.3']);
+    expect(test.machine.current()).toEqual({ status: 'downloaded', version: '1.2.3' });
+  });
+
+  it('clears the saved pause when a requested check finds no update', async () => {
+    const saved: Array<string | null> = [];
+    const test = fixture(true, undefined, { refusedVersion: '1.2.3', onRefusedVersionChange: (version) => { saved.push(version); } });
+    test.updater.hasNothingNewer = true;
+    await test.session.check(true);
+    expect(saved).toEqual([null]);
+    expect(test.machine.current()).toEqual({ status: 'up-to-date', requested: true });
+    expect(test.updater.autoInstallOnAppQuit).toBe(true);
+    test.updater.hasNothingNewer = false;
+    await test.download();
+    expect(test.updater.downloads).toEqual(['1.2.3']);
+  });
+
+  it('clears the pause when a requested check adopts a background check with no update', async () => {
+    const saved: Array<string | null> = [];
+    const test = fixture(true, undefined, { refusedVersion: '1.2.3', onRefusedVersionChange: (version) => { saved.push(version); } });
+    test.updater.hasNothingNewer = true;
+    test.updater.pauseCheck = true;
+    const check = test.session.check();
+    await settle();
+    await test.session.check(true);
+    test.updater.finishCheck?.();
+    await check;
+    expect(saved).toEqual([null]);
+    expect(test.machine.current()).toEqual({ status: 'up-to-date', requested: true });
+    expect(test.updater.downloads).toEqual([]);
+  });
+
+  it('clears a requested pause from a no-update result even without an updater event', async () => {
+    const saved: Array<string | null> = [];
+    const test = fixture(true, undefined, { refusedVersion: '1.2.3', onRefusedVersionChange: (version) => { saved.push(version); } });
+    test.updater.checkForUpdates = async () => ({ isUpdateAvailable: false, updateInfo: { version: '1.2.2' } });
+    await test.session.check(true);
+    expect(saved).toEqual([null]);
+    expect(test.machine.current()).toEqual({ status: 'up-to-date', requested: true });
   });
 
   it('does not pause automatic retries when an administrator prompt is canceled', async () => {

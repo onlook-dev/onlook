@@ -8,7 +8,7 @@ const AUTHORIZATION_CODE = /\bOSStatus(?: error)?\s+(-6000[56])\b/i;
 
 export function updateAuthorizationDenied(error: unknown): boolean {
   if (error !== null && typeof error === 'object' && 'code' in error && (error.code === -60005 || error.code === '-60005')) return true;
-  return /(?<![\d-])-60005(?!\d)/.test(messageOf(error));
+  return /(?:^|[\s(])(?:OSStatus(?: error)?\s+|Code\s*=\s*)-60005(?=$|[\s)"',;:]|\.(?=$|[\s)]))/i.test(messageOf(error));
 }
 
 export function updateHttpStatus(error: unknown): number | undefined {

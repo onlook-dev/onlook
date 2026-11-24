@@ -63,11 +63,23 @@ it('classifies native authorization errors and download HTTP statuses without hi
 it('matches authorization refusal by code without relying on localized wording', () => {
   expect(updateAuthorizationDenied(Object.assign(new Error('Authorization failed'), { code: -60005 }))).toBe(true);
   expect(updateAuthorizationDenied(Object.assign(new Error('Authorization failed'), { code: '-60005' }))).toBe(true);
-  expect(updateAuthorizationDenied(new Error('操作を完了できませんでした。(-60005)'))).toBe(true);
+  expect(updateAuthorizationDenied(new Error('操作を完了できませんでした。(OSStatus -60005)'))).toBe(true);
+  expect(updateAuthorizationDenied(new Error('Error Domain=NSOSStatusErrorDomain Code=-60005 "操作を完了できませんでした。"'))).toBe(true);
   expect(updateAuthorizationDenied(new Error('Error -600050'))).toBe(false);
   expect(updateAuthorizationDenied(new Error('Error -160005'))).toBe(false);
   expect(updateAuthorizationDenied(new Error('OSStatus error -60006.'))).toBe(false);
   expect(updateAuthorizationDenied(new Error('Administrator password refused'))).toBe(false);
+});
+
+it.each([
+  'Cannot replace /Applications/build-60005.app',
+  'Cannot replace /Applications/OSStatus error -60005.app',
+  'Cannot replace /Applications/Code=-60005.zip',
+  'Error -60005',
+  'Error Code=-600050',
+  'OSStatus error -600050',
+])('does not infer authorization refusal from unrelated message %s', (message) => {
+  expect(updateAuthorizationDenied(new Error(message))).toBe(false);
 });
 
 describe('failure reporting', () => {

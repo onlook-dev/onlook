@@ -34,7 +34,7 @@ export function createUpdateSession(
     refusedVersion = version;
     recovery.onRefusedVersionChange?.(version);
   };
-  const canAttempt = (version: string): boolean => checkRequested || !refusedVersion || gt(version, refusedVersion);
+  const canAttempt = (version: string): boolean => checkRequested || version !== refusedVersion;
   const reported = new WeakSet<Error>();
   const failure = (error: Error): void => {
     if (lifetime.signal.aborted) return;
@@ -60,6 +60,10 @@ export function createUpdateSession(
     if (canAttempt(info.version)) machine.available(info.version);
   };
   const upToDate = (): void => {
+    if (checkRequested && refusedVersion) {
+      pauseAuthorization(null);
+      updater.autoInstallOnAppQuit = true;
+    }
     if (!refusedVersion || checkRequested) machine.upToDate();
   };
   const progress = (info: { percent: number }): void => machine.downloading(Math.round(info.percent));
@@ -126,6 +130,7 @@ export function createUpdateSession(
       try {
         const result = await retryServerErrors(() => updater.checkForUpdates());
         if (lifetime.signal.aborted) return;
+        if (result && !result.isUpdateAvailable && checkRequested && refusedVersion) upToDate();
         if (result?.isUpdateAvailable && canAttempt(result.updateInfo.version) && (!stagedVersion || gt(result.updateInfo.version, stagedVersion))) {
           attemptedVersion = result.updateInfo.version;
           updater.autoInstallOnAppQuit = true;
