@@ -1,6 +1,7 @@
 import { codeImageMediaType, IMAGE_MAX_BYTES, type CodeReadRequest, type CodeReadResult } from '@studio/events';
 import type { ImageIngestSource } from './ingest.js';
 import { rasterBytes } from './rasterBytes.js';
+import { ignoreRefusal } from '../../refusal.js';
 
 export const PROJECT_IMAGE_DRAG_TYPE = 'application/x-onlook-project-image';
 
@@ -21,8 +22,8 @@ export function projectImageDrag(data: string): ProjectImageDrag | null {
 }
 
 /** Read only at drop, through the same scoped bridge as opening a file. */
-export async function projectImageSource(path: string, read: (request: CodeReadRequest) => Promise<CodeReadResult>): Promise<ImageIngestSource> {
-  const answer = await read({ path }).catch(() => undefined);
+export async function projectImageSource(path: string, read: (request: CodeReadRequest) => Promise<CodeReadResult>, onRefusal: (error: unknown) => void = ignoreRefusal('canvas', 'codeRead')): Promise<ImageIngestSource> {
+  const answer = await read({ path }).catch((error: unknown) => { onRefusal(error); return undefined; });
   return {
     name: path.split('/').at(-1) ?? path,
     size: answer?.ok === true ? answer.snapshot.size : answer?.code === 'too-large' ? IMAGE_MAX_BYTES + 1 : 0,

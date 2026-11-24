@@ -65,9 +65,12 @@ describe('createImageCache', () => {
     expect(calls()).toBe(1);
   });
 
-  it('a rejecting fetcher degrades to the placeholder, never a throw', async () => {
-    const cache = createImageCache(() => Promise.reject(new Error('ipc down')));
+  it('a rejecting fetcher degrades to the placeholder, never a throw, and reports the refusal', async () => {
+    const failure = new Error('ipc down');
+    const refused: unknown[] = [];
+    const cache = createImageCache(() => Promise.reject(failure), (error) => refused.push(error));
     expect(await cache.resolve(REF)).toBeNull();
+    expect(refused).toEqual([failure]);
   });
 
   it('hands a settled url back without waiting, so a remount draws it on its first render', async () => {

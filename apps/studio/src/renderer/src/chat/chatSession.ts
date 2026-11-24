@@ -332,7 +332,7 @@ export function createChatSession(commit: (state: ChatSessionState) => void): Ch
       const restoreRevision = revision;
       void studio()
         .draftState({ cwd: workspacePath })
-        .catch(() => EMPTY_COMPOSER_DRAFT)
+        .catch((error: unknown) => { ignoreRefusal('chat', 'draftState')(error); return EMPTY_COMPOSER_DRAFT; })
         .then(async (stored) => {
           const artifacts = await restoreArtifactReferences(stored.artifacts ?? [], (artifactId) => studio().artifactRead({ artifactId }));
           if (restoreRun !== run) return;

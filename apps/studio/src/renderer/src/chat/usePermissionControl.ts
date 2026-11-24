@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { AgentCommandAcceptance, PermissionMode } from '@studio/events';
+import { ignoreRefusal } from '../refusal.js';
 import { permissionModeControls, type ComposerPermissionControl } from './composerControls.js';
 
 export function usePermissionControl({ mode, offered, sessionKey, setMode }: {
@@ -31,7 +32,7 @@ export function usePermissionControl({ mode, offered, sessionKey, setMode }: {
       setPending({ mode: next, request, confirmed: false });
       writes.current = writes.current.then(async () => {
         if (generation.current !== owner) return;
-        const acceptance = await setMode(next).catch(() => ({ accepted: false }));
+        const acceptance = await setMode(next).catch((error: unknown) => { ignoreRefusal('chat', 'setPermissionMode')(error); return { accepted: false }; });
         if (generation.current !== owner || latest.current !== request) return;
         setPending((choice) => {
           if (choice?.request !== request) return choice;

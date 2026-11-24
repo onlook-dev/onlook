@@ -8,6 +8,7 @@ import { MENU_SURFACE, MenuKeyHint } from '../../menu/surface.js';
 import { tabShortcutGlyph } from '../../shortcuts/glyphs.js';
 
 import { PlusIcon } from '../../icons/glyphs.js';
+import { ignoreRefusal } from '../../refusal.js';
 import { t } from '@studio/i18n';
 import { Tab, type StudioTab } from './Tab.js';
 import { useTabDrag } from './useTabDrag.js';
@@ -262,7 +263,7 @@ export function TabStrip({
   useEffect(() => {
     if (onPreview === undefined) return;
     for (const id of ids) {
-      void onPreview(id).then((preview) => previewCache.current.set(id, preview), () => undefined);
+      void onPreview(id).then((preview) => previewCache.current.set(id, preview), ignoreRefusal('chrome', 'tabPreview'));
     }
   }, [ids, activeTabId, onPreview]);
   useEffect(() => {
@@ -282,7 +283,7 @@ export function TabStrip({
     const cached = previewCache.current.get(previewTarget);
     void grown.then(() => { if (isCurrent) place(cached ?? {}); });
     const requested = onPreview?.(previewTarget) ?? Promise.resolve({});
-    void Promise.all([requested.catch(() => cached ?? {}), grown]).then(([fresh]) => {
+    void Promise.all([requested.catch((error: unknown) => { ignoreRefusal('chrome', 'tabPreview')(error); return cached ?? {}; }), grown]).then(([fresh]) => {
       previewCache.current.set(previewTarget, fresh);
       if (isCurrent) place(fresh);
     }, () => undefined);
