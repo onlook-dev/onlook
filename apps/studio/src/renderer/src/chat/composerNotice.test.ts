@@ -104,12 +104,14 @@ function signedOut({ failed = true, setAside = false, lineDisabled = false } = {
 
 const beforeComposer = (markup: string): string => markup.slice(0, markup.indexOf('data-testid="chat-composer-dropzone"'));
 
-describe('a signed-out turn asks for sign-in on the composer (ONL-2973)', () => {
-  it('lays the sign-in over the composer alone, with Not now, and leaves a line where the turn stopped', () => {
+describe('a signed-out turn asks for sign-in above the composer', () => {
+  it('places sign-in above the input, with Not now, and leaves a line where the turn stopped', () => {
     const markup = signedOut();
-    expect(composerBox(markup)).toContain('data-testid="chat-composer-scrim"');
-    expect(composerBox(markup)).toContain('data-testid="chat-sign-in-card"');
-    expect(composerBox(markup)).toContain('data-testid="chat-sign-in-not-now"');
+    const aboveInput = markup.slice(0, markup.indexOf('data-testid="chat-composer-box"'));
+    expect(markup).not.toContain('data-testid="chat-composer-scrim"');
+    expect(aboveInput).toContain('data-testid="chat-sign-in-card"');
+    expect(aboveInput).toContain('data-testid="chat-sign-in-not-now"');
+    expect(composerBox(markup)).not.toContain('data-testid="chat-sign-in-card"');
     expect(beforeComposer(markup)).toContain('data-testid="chat-error-line-sign-in"');
     expect(beforeComposer(markup)).not.toContain('chat-sign-in-card');
   });
@@ -123,7 +125,7 @@ describe('a signed-out turn asks for sign-in on the composer (ONL-2973)', () => 
 
   it('signed out with no failed turn has no Not now and no line', () => {
     const markup = signedOut({ failed: false });
-    expect(composerBox(markup)).toContain('data-testid="chat-sign-in-card"');
+    expect(markup.slice(0, markup.indexOf('data-testid="chat-composer-box"'))).toContain('data-testid="chat-sign-in-card"');
     expect(markup).not.toContain('chat-sign-in-not-now');
     expect(markup).not.toContain('chat-error-line-sign-in');
   });

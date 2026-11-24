@@ -79,7 +79,7 @@ import type { FailureContext } from './failureRow.js';
 import { FADE, ONE_LINE } from './oneLineFade.js';
 import { useOverflows } from './useOverflows.js';
 import { failedTurnFacts, failureLine, type FailedTurnFacts, type FailureLineAction, type FailureLineView, type NoticeAction } from './failureLine.js';
-import { ComposerNotice, ComposerNoticeFrame, type ComposerNoticeButton } from './ComposerNotice.js';
+import { ComposerNotice, type ComposerNoticeButton } from './ComposerNotice.js';
 import type { ChatStrings } from './strings.js';
 import { around } from './fill.js';
 import {
@@ -919,6 +919,9 @@ export function ChatPanel({
             {typeof composerSlots.aboveComposer === 'function' ? composerSlots.aboveComposer({ isComposerHeld, isQuestionOpen }) : composerSlots.aboveComposer}
           </HStack>
         ) : null}
+        {signInNotice ? (
+          <div style={{ padding: 'var(--spacing-3)', paddingBlockEnd: 0 }} data-testid="chat-sign-in-slot" data-placement={signInPlacement}>{signInSlot}</div>
+        ) : null}
         <div data-testid="chat-composer-box" style={{ position: 'relative' }}>
         <ChatComposer
           {...(composerRootRef ? { ref: composerRootRef } : {})}
@@ -1101,11 +1104,6 @@ export function ChatPanel({
           // empty slot suppresses Astryx's default without duplicating it.
           sendButton={<></>}
         />
-        {signInNotice ? (
-          <ComposerNoticeFrame>
-            <div style={{ width: '100%' }} data-testid="chat-sign-in-slot" data-placement={signInPlacement}>{signInSlot}</div>
-          </ComposerNoticeFrame>
-        ) : null}
         {standingNotice === undefined || signInNotice ? null : (
           <ComposerNotice
             testId="chat-error-notice"

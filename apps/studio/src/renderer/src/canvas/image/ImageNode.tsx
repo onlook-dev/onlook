@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useReactFlow, useStore as useFlowStore, type NodeProps } from '@xyflow/react';
+import { useStore as useFlowStore, type NodeProps } from '@xyflow/react';
 import { Center } from '@astryxdesign/core/Center';
 import { Text } from '@astryxdesign/core/Text';
 
@@ -15,7 +15,6 @@ import {
   type ImageFlowNode,
 } from '../model.js';
 import { NodeResizeHandles } from '../NodeResizeHandles.jsx';
-import { windowViewRect } from '../placement.js';
 import { drawnImageBox, isLoneSelectedNode, useCanvasStore } from '../store.js';
 
 /** Selection's own emphasis weight. */
@@ -149,7 +148,6 @@ export function ImageNode({
   const zoom = useFlowStore((state) => state.transform[2]);
   const isHovered = useCanvasStore((state) => state.hoveredNodeId === id);
   const isArmed = useCanvasStore((state) => isLoneSelectedNode(state, id));
-  const { screenToFlowPosition } = useReactFlow();
   const read = useImageRead(data.imageId);
   // Bounds from the settled size: from the live box they ratchet mid-gesture, and they rebind the control's drag.
   const settledWidth = useCanvasStore((state) => state.doc?.nodes[id]?.width);
@@ -165,7 +163,6 @@ export function ImageNode({
   return (
     <CanvasNodeMenu
       nodeId={id}
-      readViewRect={() => windowViewRect(screenToFlowPosition, window)}
       readZoom={() => zoom}
     >
       {/* Sized in px: Astryx's right-click wrapper hugs its content, so a `height: 100%` child collapses inside it. */}

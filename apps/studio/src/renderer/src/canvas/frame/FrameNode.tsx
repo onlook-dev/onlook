@@ -27,7 +27,6 @@ import {
   type FrameNode as FrameNodeType,
 } from '../model.js';
 import { CanvasNodeMenu } from '../menu/CanvasNodeMenu.jsx';
-import { windowViewRect } from '../placement.js';
 import { FrameRing } from './FrameRing.jsx';
 import { focusedFrameId } from '../elementPicking.js';
 import { armedNodeId, isFrameShielded, useCanvasStore } from '../store.js';
@@ -122,7 +121,7 @@ export function FrameNode({
     const record = shownInlineChat(state, id);
     return record === null ? undefined : state.elementAnchorRects[record.anchorId];
   });
-  const { getViewport, screenToFlowPosition } = useReactFlow();
+  const { getViewport } = useReactFlow();
   const needsZoom = selected || isArmed || inlineChat !== null || data.health !== 'live' || data.serverCover !== undefined;
   const zoom = useFlowStore((state) => needsZoom ? state.transform[2] : 1);
   const isNodeChat = inlineChat?.anchor === 'node';
@@ -357,7 +356,6 @@ export function FrameNode({
     <>
       <CanvasNodeMenu
         nodeId={id}
-        readViewRect={() => windowViewRect(screenToFlowPosition, window)}
         readZoom={() => getViewport().zoom}
       >
       {/* Sized in px: Astryx's right-click wrapper hugs its content, so a `height: 100%` child collapses inside it. */}

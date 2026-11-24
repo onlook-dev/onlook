@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import type { CanvasCamera, CanvasZoomAction } from '@studio/events';
-import type { CameraControls } from './camera.js';
+import { cameraRevealingNode, type CameraControls } from './camera.js';
+import type { PanelCover } from './panelCover.js';
 import type { CanvasFlowNode } from './model.js';
 import { setCanvasCenterSource, setCanvasZoomSource } from './gestures.js';
 import { useCanvasStore } from './store.js';
@@ -49,7 +50,8 @@ function revealZoom(zoom: number, pane: { width: number; height: number }, width
 
 export function useCanvasCameraSync(options: {
   nodes: readonly CanvasFlowNode[];
-  flyTo: { id: string; seq: number; reveal?: boolean } | null;
+  flyTo: { id: string; seq: number; reveal?: boolean; panOnly?: true } | null;
+  cover: PanelCover;
   fitRequest: { seq: number; animate?: true } | null;
   viewportRequest: { camera: CanvasCamera; seq: number } | null;
   getViewport: () => { x: number; y: number; zoom: number };
@@ -63,6 +65,7 @@ export function useCanvasCameraSync(options: {
   const {
     nodes,
     flyTo,
+    cover: { start: coverStart, end: coverEnd },
     fitRequest,
     viewportRequest,
     getViewport,
@@ -107,6 +110,18 @@ export function useCanvasCameraSync(options: {
   useEffect(() => {
     const center = canvasFlyToCenter(flyTo, nodes);
     if (!center) return;
+    if (flyTo?.panOnly === true) {
+      const target = nodes.find((candidate) => candidate.id === flyTo.id);
+      const pane = document.querySelector('.react-flow')?.getBoundingClientRect();
+      if (!target || !pane) return;
+      const current = getViewport();
+      const next = cameraRevealingNode(current, {
+        ...target.position, width: target.width ?? 0, height: target.height ?? 0,
+      }, pane, { start: coverStart, end: coverEnd });
+      if (next.x !== current.x || next.y !== current.y) void setViewport(next, { duration: 0 });
+      useCanvasStore.getState().noteFlownTo();
+      return;
+    }
     const zoom = getViewport().zoom;
     const node = flyTo?.reveal === true ? nodes.find((candidate) => candidate.id === flyTo.id) : undefined;
     const pane = node === undefined ? null : document.querySelector('.react-flow')?.getBoundingClientRect();
@@ -115,7 +130,7 @@ export function useCanvasCameraSync(options: {
       duration: FLY_MS,
     });
     useCanvasStore.getState().noteFlownTo();
-  }, [flyTo, nodes, setCenter, getViewport]);
+  }, [flyTo, nodes, setCenter, getViewport, setViewport, coverStart, coverEnd]);
 
   useEffect(
     () =>

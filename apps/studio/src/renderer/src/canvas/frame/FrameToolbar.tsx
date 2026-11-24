@@ -1,6 +1,5 @@
 import { memo, useState, type RefObject } from 'react';
 import type { WebviewTag } from 'electron';
-import { useReactFlow } from '@xyflow/react';
 import { Icon } from '@astryxdesign/core/Icon';
 import { IconButton } from '@astryxdesign/core/IconButton';
 import { HStack } from '@astryxdesign/core/Layout';
@@ -14,7 +13,6 @@ import { MENU_SURFACE, MenuKeyHint } from '../../menu/surface.js';
 import { shortcutGlyph } from '../../shortcuts/glyphs.js';
 import { displayUrl, normalizeDevUrl } from '@studio/events';
 import type { FrameNodeData } from '../model.js';
-import { windowViewRect } from '../placement.js';
 import { useCanvasStore } from '../store.js';
 import { FRAME_PRESETS, presetDimensions } from './presets.js';
 import { leadingControlSurplus } from './geometry.js';
@@ -84,7 +82,6 @@ export const FrameToolbar = memo(function FrameToolbar({
   const duplicateFrame = useCanvasStore((state) => state.duplicateFrame);
   const openInNewFrame = useCanvasStore((state) => state.openInNewFrame);
   const beginRename = useCanvasStore((state) => state.beginRename);
-  const { screenToFlowPosition } = useReactFlow();
 
   const [draft, setDraft] = useState<string | undefined>(undefined);
   const [isPointerOver, setIsPointerOver] = useState(false);
@@ -125,7 +122,7 @@ export const FrameToolbar = memo(function FrameToolbar({
     if (draft === undefined) return;
     const url = normalizeDevUrl(draft);
     if (url === null) return;
-    openInNewFrame(frameId, url, windowViewRect(screenToFlowPosition, window));
+    openInNewFrame(frameId, url);
     setDraft(undefined);
   }
 
@@ -399,7 +396,7 @@ export const FrameToolbar = memo(function FrameToolbar({
               label={t('frame.menu.duplicate')}
               endContent={<MenuKeyHint keys={shortcutGlyph('canvas.duplicate-frame')} />}
               onClick={() => {
-                duplicateFrame(frameId, windowViewRect(screenToFlowPosition, window));
+                duplicateFrame(frameId);
               }}
             />
             <DropdownMenuItem
