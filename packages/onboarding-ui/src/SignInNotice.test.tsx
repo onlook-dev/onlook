@@ -20,4 +20,14 @@ describe('sign-in notice actions', () => {
     const markup = renderToStaticMarkup(<SignInNotice state={CLAUDE_SETUP_FIXTURES['signing-in']} strings={STUB_STRINGS} glyphs={TEST_CARD_GLYPHS} onNotNow={() => {}} />);
     expect(markup.indexOf('data-testid="sign-in-action-cancel"')).toBeLessThan(markup.indexOf('data-testid="chat-sign-in-not-now"'));
   });
+
+  test('allows long browser names to wrap when sign-in falls back', () => {
+    const markup = renderToStaticMarkup(<SignInNotice
+      state={CLAUDE_SETUP_FIXTURES.fallback} strings={STUB_STRINGS} glyphs={TEST_CARD_GLYPHS}
+      browsers={[{ id: 'preview', name: 'Chromium Developer Preview', isDefault: true }, { id: 'other', name: 'Other', isDefault: false }]}
+    />);
+    expect(markup).toContain('Chromium Developer Preview');
+    expect(markup).toContain('white-space:normal');
+    expect(markup).toContain('data-testid="sign-in-action-check-again"');
+  });
 });

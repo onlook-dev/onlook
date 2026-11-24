@@ -242,5 +242,6 @@ export const ERROR_FAMILY_CATEGORY: Gallery['categories'][number] = {
   stories: [
     ...MOMENTS.map(({ id, title }) => ({ id: `error-family-${id}`, title, render: () => <ErrorFamilyRail which={id} /> })),
     ...[320, 480].map((width) => ({ id: `error-family-sign-in-${width}`, title: `Sign-in with browser choices at ${width}px`, render: () => <ErrorFamilyRail which="sign-in" width={width} hasBrowserChoices /> })),
+    { id: 'error-family-sign-in-fallback-320', title: 'Sign-in recovery with browser choices', render: () => <ErrorFamilyRail which="sign-in-fallback" width={320} hasBrowserChoices /> },
   ],
 };

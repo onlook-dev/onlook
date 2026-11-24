@@ -220,10 +220,10 @@ const CHAT_ACTION: Partial<Record<SetupStateId, SetupAction>> = {
 function chatButton(state: SetupState, strings: OnboardingUiStrings, onAction?: (action: SetupAction, browserId?: string) => void, browsers?: readonly ClaudeBrowser[], isBusy?: boolean): ReactNode {
   if (state.state === 'fallback' && state.harness === 'claude') {
     return (
-      <HStack gap={2} align="center">
-        <ClaudeSignInButton browsers={browsers} strings={strings} size="sm" variant="secondary" isDisabled={isBusy} onSignIn={(browserId) => onAction?.('sign-in', browserId)} testId="sign-in-action-sign-in" />
+      <VStack gap={2} width="100%">
+        <ClaudeSignInButton browsers={browsers} strings={strings} size="sm" width="100%" variant="secondary" isDisabled={isBusy} onSignIn={(browserId) => onAction?.('sign-in', browserId)} testId="sign-in-action-sign-in" />
         <Button label={strings.action['check-again']} variant="primary" size="sm" isDisabled={isBusy} onClick={() => onAction?.('check-again')} data-testid="sign-in-action-check-again" />
-      </HStack>
+      </VStack>
     );
   }
   const action = CHAT_ACTION[state.state];
