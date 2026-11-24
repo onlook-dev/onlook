@@ -15,6 +15,99 @@ const { appDir, mainEntry: BUILD_MAIN } = studioPaths(repoRoot);
 
 export type Target = 'build' | 'packaged';
 
+export async function checkPlaceholderPixels(app: ElectronApplication, page: Page, width: number) {
+  const placeholder = page.locator('.chat-composer-shimmer .astryx-chat-composer-input > div[aria-hidden="true"]').first();
+  const original = await placeholder.elementHandle();
+  if (!original) throw new Error('Placeholder is not attached');
+  const previousStyle = await placeholder.locator('..').getAttribute('style');
+  const oldText = 'WWWW WWWW WWWW WWWW WWWW WWWW WWWW WWWW';
+  const newText = 'IIII IIII IIII IIII IIII IIII IIII IIII';
+  const animationTime = () => placeholder.evaluate(element => Number(element.getAnimations({ subtree: true })[0]?.currentTime));
+  const freezeSweep = () => placeholder.evaluate(async element => {
+    for (const animation of element.getAnimations({ subtree: true })) { animation.pause(); animation.currentTime = 1200; }
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+  });
+  await placeholder.locator('..').evaluate((element, size) => { (element as HTMLElement).style.width = `${size}px`; }, width);
+  const capture = async () => {
+    const box = await placeholder.boundingBox();
+    if (!box) throw new Error('Placeholder is not visible');
+    return app.evaluate(async ({ webContents }, { url, box }) => {
+      const host = webContents.getAllWebContents().find(contents => contents.getURL() === url)!;
+      const image = await host.capturePage({ x: Math.floor(box.x), y: Math.floor(box.y), width: Math.ceil(box.width), height: Math.ceil(box.height) }, { stayHidden: true });
+      const pixels = image.toBitmap();
+      const ink: number[] = [];
+      for (let offset = 0; offset < pixels.length; offset += 4) ink.push(Math.max(pixels[offset]!, pixels[offset + 1]!, pixels[offset + 2]!) > 60 ? 1 : 0);
+      return ink;
+    }, { url: page.url(), box });
+  };
+  try {
+    await placeholder.evaluate(element => { element.replaceWith(element.cloneNode(true)); });
+    await placeholder.evaluate((element, text) => { element.textContent = text; }, oldText);
+    await placeholder.evaluate(element => { element.replaceWith(element.cloneNode(true)); });
+    await page.waitForTimeout(500);
+    await capture();
+    for (let restart = 0; restart < 2; restart += 1) {
+      await page.evaluate(async () => {
+        const { doc } = await window.studio.canvasSnapshot();
+        if (!doc) throw new Error('No canvas');
+        window.studio.canvasOp({ docId: doc.docId, op: { type: 'create', node: {
+          id: 'placeholder-restart', kind: 'text', pageId: Object.values(doc.pages)[0]!.id, name: 'Note',
+          x: 0, y: 0, width: 100, height: 30, order: 0, content: { text: 'Note', size: 'small' },
+        } } });
+      });
+      await page.locator('.chat-composer-shimmer').waitFor({ state: 'detached' });
+      await page.evaluate(async () => {
+        const { doc } = await window.studio.canvasSnapshot();
+        if (!doc) throw new Error('No canvas');
+        window.studio.canvasOp({ docId: doc.docId, op: { type: 'remove', id: 'placeholder-restart' } });
+      });
+      await page.locator('.chat-composer-shimmer').waitFor({ state: 'attached' });
+      if (restart === 0) await placeholder.evaluate((element, text) => { element.textContent = text; }, oldText);
+    }
+    const before = await animationTime();
+    await placeholder.evaluate((element, text) => { element.textContent = text; }, newText);
+    await page.waitForTimeout(500);
+    const advanced = await animationTime() > before;
+    await freezeSweep();
+    const actual = await capture();
+    const wrapped = await placeholder.evaluate(element => element.getBoundingClientRect().height > parseFloat(getComputedStyle(element).lineHeight) * 1.5);
+    await placeholder.evaluate(element => { element.replaceWith(element.cloneNode(true)); });
+    await page.waitForTimeout(100);
+    await freezeSweep();
+    const expected = await capture();
+    const changed = actual.reduce((total, pixel, index) => total + Number(pixel !== expected[index]), 0);
+    const ink = expected.reduce((total, pixel) => total + pixel, 0);
+    return { matches: advanced && actual.length === expected.length && ink > 20 && changed / ink < 0.02, changed, ink, wrapped, advanced };
+  } finally {
+    await placeholder.evaluate((element, original) => { element.replaceWith(original); }, original);
+    await placeholder.locator('..').evaluate((element, style) => { if (style === null) element.removeAttribute('style'); else element.setAttribute('style', style); }, previousStyle);
+    await placeholder.evaluate(element => { for (const animation of element.getAnimations({ subtree: true })) animation.play(); });
+    await original.dispose();
+  }
+}
+
+export async function measureIdlePaint(app: ElectronApplication, page: Page, durationMs = 10_000) {
+  const hostId = await app.evaluate(({ webContents }, url) => webContents.getAllWebContents().find(contents => contents.getURL() === url)!.getOSProcessId(), page.url());
+  await app.evaluate(async ({ contentTracing }) => contentTracing.startRecording({ included_categories: ['devtools.timeline', 'disabled-by-default-devtools.timeline.frame'] }));
+  const path = join(tmpdir(), `idle-paint-${crypto.randomUUID()}.json`);
+  try {
+    await page.waitForTimeout(durationMs);
+  } finally {
+    await app.evaluate(async ({ contentTracing }, output) => contentTracing.stopRecording(output), path);
+  }
+  const { traceEvents } = JSON.parse(readFileSync(path, 'utf8')) as { traceEvents: Array<{ name: string; pid: number; tid: number; ts: number }> };
+  const frames = new Set<string>();
+  const currentFrames = new Map<number, number>();
+  let paints = 0;
+  for (const event of traceEvents.filter(event => event.pid === hostId).sort((left, right) => left.ts - right.ts)) {
+    if (event.name === 'BeginMainThreadFrame') currentFrames.set(event.tid, event.ts);
+    if (event.name !== 'Paint') continue;
+    paints += 1;
+    frames.add(`${event.tid}:${currentFrames.get(event.tid) ?? event.ts}`);
+  }
+  return { paints, paintedFrames: frames.size, paintedFramesPerSecond: frames.size / (durationMs / 1000) };
+}
+
 export function agentSnapshot(page: Page): Promise<AgentSnapshot> {
   return page.evaluate(() => globalThis.studio.agentSnapshot());
 }
