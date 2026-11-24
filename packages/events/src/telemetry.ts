@@ -430,7 +430,7 @@ export type ActivationErrorClass = (typeof ACTIVATION_ERROR_CLASSES)[number];
 export const PREVIEW_COVERS = ['non-started', 'dead', 'users-own', 'occupied', 'container', 'nothing', 'page-failed', 'mixed'] as const;
 export interface ActivationSurfaceReport {
   surface: ActivationSurface;
-  dead_end?: { state: ActivationDeadEnd; error_class: ActivationErrorClass; cover?: (typeof PREVIEW_COVERS)[number] };
+  dead_end?: { state: ActivationDeadEnd; error_class: ActivationErrorClass; cover?: (typeof PREVIEW_COVERS)[number]; server_port?: number };
 }
 
 /** `agent` is main's stamp at the tool; the renderer's own maps exclude it, as the label and picture maps do (ONL-2488). */

@@ -912,12 +912,13 @@ export function beginTelemetryQuit(): void {
   surfaceFrozen = true;
 }
 
-export function recordDeadEndShown(state: DeadEndState, errorClass?: DeadEndErrorClass, projectId?: string, context: { cover?: NonNullable<ActivationSurfaceReport['dead_end']>['cover']; workspacePath?: string } = {}): void {
+export function recordDeadEndShown(state: DeadEndState, errorClass?: DeadEndErrorClass, projectId?: string, context: { cover?: NonNullable<ActivationSurfaceReport['dead_end']>['cover']; server_port?: number; workspacePath?: string } = {}): void {
   capture('dead_end_shown', {
     state,
     ...(errorClass === undefined ? {} : { error_class: errorClass }),
     ...(projectId === undefined ? {} : { project_id: projectId }),
     ...(context.cover === undefined ? {} : { cover: context.cover }),
+    ...(context.server_port === undefined ? {} : { server_port: context.server_port }),
   }, context.workspacePath);
 }
 
@@ -927,7 +928,7 @@ function rendererProjectId(renderer: number): string | undefined {
 }
 
 function sameDeadEnd(left: ShownDeadEnd | undefined, right: ShownDeadEnd): boolean {
-  return left?.state === right.state && left.error_class === right.error_class && left.project_id === right.project_id && left.cover === right.cover;
+  return left?.state === right.state && left.error_class === right.error_class && left.project_id === right.project_id && left.cover === right.cover && left.server_port === right.server_port;
 }
 
 /** Sent when what the tab shows differs from what it last showed the person; bringing the tab back alone sends nothing (ONL-3260). */
@@ -937,7 +938,7 @@ function showSurface(renderer: number, report: ActivationSurfaceReport): void {
   const shown = shownDeadEnds.get(renderer);
   shownDeadEnds.set(renderer, deadEnd);
   if (deadEnd === undefined || sameDeadEnd(shown, deadEnd)) return;
-  recordDeadEndShown(deadEnd.state, deadEnd.error_class, deadEnd.project_id, { cover: deadEnd.cover, workspacePath: workspaceOfRenderer(renderer) });
+  recordDeadEndShown(deadEnd.state, deadEnd.error_class, deadEnd.project_id, { cover: deadEnd.cover, server_port: deadEnd.server_port, workspacePath: workspaceOfRenderer(renderer) });
 }
 
 export function recordActivationSurface(renderer: number, report: ActivationSurfaceReport): void {

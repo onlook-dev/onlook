@@ -1134,6 +1134,7 @@ export interface TelemetryEventMap {
   /** Fired when the visible tab shows a dead end other than the one it last showed, such as "Your app didn't start" or every frame under a server cover (ONL-2686, ONL-3260). */
   dead_end_shown: Partial<PreviewDiagnostics> & {
     state: DeadEndState;
+    server_port?: number;
     cover?: NonNullable<import('@studio/events').ActivationSurfaceReport['dead_end']>['cover'];
     error_class?: DeadEndErrorClass;
     project_id?: string;

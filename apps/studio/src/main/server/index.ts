@@ -754,11 +754,11 @@ export function registerServerBook(options: { starter?: StarterControl } = {}): 
     }),
     onFrameState: (change) => {
       const previous = previewDiagnostics(change.worktreePath);
-      const endpoint = previous.expected_port === change.port ? previous : newPreviewAttempt();
+      const endpoint = change.port === undefined ? newPreviewAttempt() : previewDiagnostics(change.worktreePath, change.port);
       recordProjectPreviewDiagnostics(change.worktreePath, {
         ...endpoint,
         was_live: previous.was_live || change.state === 'live',
-        ...(change.port === undefined ? {} : { expected_port: change.port }),
+        ...(change.port === undefined ? {} : { expected_port: endpoint.expected_port ?? change.port }),
         ...(change.state === 'live' ? { was_live: true, actual_port: change.port ?? null, cause: 'unknown' as const } : {}),
         ...(change.state === 'unreachable' ? { cause: change.port !== undefined && serverWasStopped(change.worktreePath, [{ folder: change.folder, port: change.port }]) ? 'user_stop' as const : endpoint.cause !== 'unknown' ? endpoint.cause : change.wasLive ? 'server_down' as const : 'not_started' as const } : {}),
       });

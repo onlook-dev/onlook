@@ -28,18 +28,37 @@ const EMPTY_DIAGNOSTICS: PreviewDiagnostics = {
 };
 
 const diagnostics = new Map<string, PreviewDiagnostics>();
+const endpoints = new Map<string, Map<number, PreviewDiagnostics>>();
 
 export function notePreviewDiagnostics(workspacePath: string, patch: Partial<PreviewDiagnostics>): void {
   const key = canonicalPath(workspacePath);
-  diagnostics.set(key, { ...EMPTY_DIAGNOSTICS, ...diagnostics.get(key), ...patch });
+  const previous = previewDiagnostics(workspacePath);
+  const baseline = patch.expected_port === undefined ? previous : patch.expected_port === null ? EMPTY_DIAGNOSTICS : previewDiagnostics(workspacePath, patch.expected_port);
+  const next = { ...baseline, ...patch };
+  next.framework = next.framework === 'unknown' ? previous.framework : next.framework;
+  next.package_manager = next.package_manager === 'unknown' ? previous.package_manager : next.package_manager;
+  next.project_source = next.project_source === 'unknown' ? previous.project_source : next.project_source;
+  if (patch.install_succeeded === undefined && next.install_succeeded === null) next.install_succeeded = previous.install_succeeded;
+  if (patch.expected_port === null && previous.expected_port !== null) endpoints.get(key)?.delete(previous.expected_port);
+  diagnostics.set(key, next);
+  if (next.expected_port !== null) {
+    let ports = endpoints.get(key);
+    if (ports === undefined) { ports = new Map(); endpoints.set(key, ports); }
+    ports.set(next.expected_port, next);
+  }
 }
 
-export function previewDiagnostics(workspacePath?: string): PreviewDiagnostics {
-  return { ...EMPTY_DIAGNOSTICS, ...(workspacePath === undefined ? undefined : diagnostics.get(canonicalPath(workspacePath))) };
+export function previewDiagnostics(workspacePath?: string, port?: number): PreviewDiagnostics {
+  const key = workspacePath === undefined ? undefined : canonicalPath(workspacePath);
+  const project = key === undefined ? undefined : diagnostics.get(key);
+  const ports = key === undefined ? undefined : endpoints.get(key);
+  const endpoint = port === undefined ? project : ports?.get(port) ?? [...(ports?.values() ?? [])].find(candidate => candidate.actual_port === port);
+  return { ...EMPTY_DIAGNOSTICS, ...endpoint, ...(project === undefined ? {} : { framework: project.framework, package_manager: project.package_manager, project_source: project.project_source }) };
 }
 
 export function resetPreviewDiagnostics(): void {
   diagnostics.clear();
+  endpoints.clear();
 }
 
 export function newPreviewAttempt(): PreviewDiagnostics {
@@ -64,6 +83,7 @@ export function reportedPreviewPort(output: string): number | null {
 export function previewFailureDiagnostics(event: string, properties: object, workspacePath?: string): Partial<PreviewDiagnostics> {
   const values = properties as Record<string, unknown>;
   if (event === 'dead_end_shown' && values['state'] === 'preview_failed') {
+    if (typeof values['server_port'] === 'number') return previewDiagnostics(workspacePath, values['server_port']);
     const project = previewDiagnostics(workspacePath);
     return {
       ...EMPTY_DIAGNOSTICS,

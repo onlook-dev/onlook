@@ -37,6 +37,43 @@ it('does not attribute an unaddressed canvas cover to a different endpoint in th
   }
 });
 
+it('attributes a single-server canvas cover to its measured endpoint rather than the latest server', () => {
+  notePreviewDiagnostics('one', { cause: 'process_exited', expected_port: 4100, actual_port: 4101, reported_port: 4101, exit_code: 17 });
+  notePreviewDiagnostics('one', { ...newPreviewAttempt(), cause: 'user_stop', expected_port: 4200 });
+  expect(previewFailureDiagnostics('dead_end_shown', { state: 'preview_failed', cover: 'dead', server_port: 4100 }, 'one')).toMatchObject({
+    cause: 'process_exited', expected_port: 4100, actual_port: 4101, reported_port: 4101, exit_code: 17,
+  });
+  expect(previewFailureDiagnostics('dead_end_shown', { state: 'preview_failed', cover: 'dead', server_port: 4300 }, 'one')).toMatchObject({ cause: 'unknown', expected_port: null });
+  expect(previewFailureDiagnostics('dead_end_shown', { state: 'preview_failed', cover: 'dead', server_port: 4101 }, 'one')).toMatchObject({ cause: 'process_exited', expected_port: 4100, actual_port: 4101 });
+});
+
+it('keeps detected project metadata when an endpoint changes state or starts a new attempt', () => {
+  notePreviewDiagnostics('one', { framework: 'Vite', package_manager: 'pnpm', project_source: 'imported', expected_port: 4100 });
+  notePreviewDiagnostics('one', { ...newPreviewAttempt(), expected_port: 4200, cause: 'not_started' });
+  expect(previewDiagnostics('one')).toMatchObject({ framework: 'Vite', package_manager: 'pnpm', project_source: 'imported', expected_port: 4200, cause: 'not_started' });
+});
+
+it('merges process updates with their own endpoint rather than the latest Project endpoint', () => {
+  notePreviewDiagnostics('one', { install_succeeded: true });
+  notePreviewDiagnostics('one', { expected_port: 4100, actual_port: 4101, framework: 'Vite' });
+  notePreviewDiagnostics('one', { expected_port: 4200, actual_port: 4201 });
+  notePreviewDiagnostics('one', { expected_port: 4100, cause: 'process_exited', exit_code: 17 });
+  expect(previewDiagnostics('one', 4100)).toMatchObject({ actual_port: 4101, cause: 'process_exited', exit_code: 17, install_succeeded: true });
+  expect(previewDiagnostics('one', 4200)).toMatchObject({ actual_port: 4201, cause: 'unknown', exit_code: null });
+  expect(previewDiagnostics('one', 4300)).toMatchObject({ actual_port: null, cause: 'unknown', framework: 'Vite' });
+});
+
+it('clears attempted endpoint failures and aliases without erasing another server', () => {
+  notePreviewDiagnostics('one', { expected_port: 4100, actual_port: 4101, cause: 'process_exited', exit_code: 17 });
+  notePreviewDiagnostics('one', { expected_port: 4200, actual_port: 4201, cause: 'user_stop' });
+  notePreviewDiagnostics('one', newPreviewAttempt());
+  for (const port of [4200, 4201]) expect(previewDiagnostics('one', port)).toMatchObject({ expected_port: null, actual_port: null, cause: 'unknown', exit_code: null });
+  expect(previewDiagnostics('one', 4101)).toMatchObject({ expected_port: 4100, cause: 'process_exited', exit_code: 17 });
+  notePreviewDiagnostics('one', { ...newPreviewAttempt(), expected_port: 4100 });
+  expect(previewDiagnostics('one', 4101)).toMatchObject({ expected_port: null, actual_port: null, cause: 'unknown', exit_code: null });
+  expect(previewDiagnostics('one', 4100)).toMatchObject({ expected_port: 4100, actual_port: null, cause: 'unknown', exit_code: null });
+});
+
 it('records only valid advertised loopback ports, not URLs or untrusted hostnames', () => {
   expect(reportedPreviewPort('Local: http://localhost:5174/\n')).toBe(5174);
   expect(reportedPreviewPort('http://127.0.0.1:3001\nhttp://[::1]:3002/')).toBe(3002);

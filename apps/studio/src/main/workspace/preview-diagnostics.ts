@@ -4,10 +4,12 @@ import { newPreviewAttempt, notePreviewDiagnostics, previewDiagnostics, type Pre
 
 export function recordProjectPreviewDiagnostics(cwd: string, patch: Partial<PreviewDiagnostics>, reset = false): void {
   const record = knownProject(cwd);
+  const tools = previewProjectTools(cwd);
   notePreviewDiagnostics(cwd, {
     ...(reset ? { ...newPreviewAttempt(), was_live: previewDiagnostics(cwd).was_live } : {}),
-    ...(record === undefined ? {} : { project_source: workspaceOrigin(record) === 'blank' ? 'template' as const : 'imported' as const }),
-    ...previewProjectTools(cwd),
     ...patch,
+    ...(record === undefined ? {} : { project_source: workspaceOrigin(record) === 'blank' ? 'template' as const : 'imported' as const }),
+    ...(tools.framework === 'unknown' ? {} : { framework: tools.framework }),
+    ...(tools.package_manager === 'unknown' ? {} : { package_manager: tools.package_manager }),
   });
 }
