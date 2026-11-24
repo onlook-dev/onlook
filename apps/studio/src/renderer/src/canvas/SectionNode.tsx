@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useReactFlow, useStore as useFlowStore, type NodeProps } from '@xyflow/react';
+import { useStore as useFlowStore, type NodeProps } from '@xyflow/react';
 import { t } from '@studio/i18n';
 import { RenameField } from '../sidebar/RenameField.jsx';
 import { NodeResizeHandles } from './NodeResizeHandles.jsx';
@@ -7,7 +7,6 @@ import { CanvasNodeMenu } from './menu/CanvasNodeMenu.jsx';
 import { canvasNodeLabelText } from '../nodeLabel.js';
 import type { SectionFlowNode } from './model.js';
 import { frameRingScale } from './frame/geometry.js';
-import { windowViewRect } from './placement.js';
 import { isLoneSelectedNode, useCanvasStore } from './store.js';
 import './canvas.css';
 
@@ -29,14 +28,13 @@ function SectionSurface({ name, isSelected, zoom = 1 }: {
 
 export function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>): React.JSX.Element {
   const zoom = useFlowStore((state) => state.transform[2]);
-  const { screenToFlowPosition } = useReactFlow();
   const isArmed = useCanvasStore((state) => isLoneSelectedNode(state, id));
   const drawnWidth = useCanvasStore((state) => state.gesture[id]?.width ?? state.doc?.nodes[id]?.width);
   const drawnHeight = useCanvasStore((state) => state.gesture[id]?.height ?? state.doc?.nodes[id]?.height);
   const [isRenaming, setIsRenaming] = useState(false);
   const name = canvasNodeLabelText({ kind: 'section', name: data.name.trim() }, t);
   return (
-    <CanvasNodeMenu nodeId={id} readViewRect={() => windowViewRect(screenToFlowPosition, window)} readZoom={() => zoom}>
+    <CanvasNodeMenu nodeId={id} readZoom={() => zoom}>
       <div data-testid="canvas-section" style={{ position: 'relative', width: drawnWidth, height: drawnHeight, pointerEvents: 'none' }}>
         <SectionSurface name={name} isSelected={selected} zoom={zoom} />
         <div className="canvas-section-title" style={{

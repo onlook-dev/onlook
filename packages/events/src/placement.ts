@@ -77,32 +77,17 @@ export function nextPosition(
 }
 
 export function placeNearSource(
-  source: { x: number; y: number },
+  source: { x: number; y: number; width: number },
   size: { width: number; height: number },
   occupied: readonly { x: number; y: number }[],
-  view?: ViewRect,
 ): { x: number; y: number } {
-  const clamp = (p: { x: number; y: number }): { x: number; y: number } => {
-    if (!view) return p;
-    const maxX = view.x + view.width - size.width;
-    const maxY = view.y + view.height - size.height;
-    return {
-      x: maxX >= view.x ? Math.min(Math.max(p.x, view.x), maxX) : view.x,
-      y: maxY >= view.y ? Math.min(Math.max(p.y, view.y), maxY) : view.y,
-    };
-  };
   const isTaken = (p: { x: number; y: number }): boolean =>
     occupied.some((o) => Math.abs(o.x - p.x) < 1 && Math.abs(o.y - p.y) < 1);
 
-  let candidate = clamp({ x: source.x + size.width + PLACEMENT_GAP, y: source.y });
-  let step = size.width + PLACEMENT_GAP;
+  let candidate = { x: source.x + source.width + PLACEMENT_GAP, y: source.y };
+  const step = size.width + PLACEMENT_GAP;
   for (let tries = 0; isTaken(candidate) && tries <= occupied.length; tries += 1) {
-    const next = clamp({ x: candidate.x + step, y: candidate.y });
-    if (next.x === candidate.x) {
-      step = -step;
-    } else {
-      candidate = next;
-    }
+    candidate = { x: candidate.x + step, y: candidate.y };
   }
   return candidate;
 }

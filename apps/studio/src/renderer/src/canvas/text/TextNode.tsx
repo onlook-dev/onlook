@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
-  useReactFlow,
   useStore as useFlowStore,
   ViewportPortal,
   type NodeProps,
@@ -18,7 +17,6 @@ import { frameRingScale } from '../frame/geometry.js';
 import { CanvasNodeMenu } from '../menu/CanvasNodeMenu.jsx';
 import type { TextFlowNode } from '../model.js';
 import { NodeResizeHandles } from '../NodeResizeHandles.jsx';
-import { windowViewRect } from '../placement.js';
 import { drawnTextBox, isLoneSelectedNode, useCanvasStore } from '../store.js';
 import {
   caretText,
@@ -288,12 +286,10 @@ export function TextNode({
   const isResizePending = useCanvasStore((state) => state.resizeInFlightId === id || state.gesture[id]?.isSettling === true);
   // The caret edits the stored string, never the drawn one: committing the truncation would delete the rest (ONL-2486).
   const text = editedText ?? data.text;
-  const { screenToFlowPosition } = useReactFlow();
   const { measureHeight, ...editing } = useTextEditing({ id, text, size: data.size, isEditing, wrapWidth, layoutText, isResizePending });
   return (
     <CanvasNodeMenu
       nodeId={id}
-      readViewRect={() => windowViewRect(screenToFlowPosition, window)}
       readZoom={() => zoom}
     >
       {/* Sized in px: Astryx's right-click wrapper hugs its content, so a `height: 100%` child collapses inside it. */}

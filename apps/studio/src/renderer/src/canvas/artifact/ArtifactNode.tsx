@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type RefObject } from 'react';
 import type { WebviewTag } from 'electron';
 import { useShallow } from 'zustand/react/shallow';
-import { useReactFlow, useStore as useFlowStore, ViewportPortal, type NodeProps } from '@xyflow/react';
+import { useStore as useFlowStore, ViewportPortal, type NodeProps } from '@xyflow/react';
 import { Button } from '@astryxdesign/core/Button';
 import { Center } from '@astryxdesign/core/Center';
 import { Text } from '@astryxdesign/core/Text';
@@ -32,7 +32,6 @@ import {
   type ArtifactFlowNode,
 } from '../model.js';
 import { NodeResizeHandles } from '../NodeResizeHandles.jsx';
-import { windowViewRect } from '../placement.js';
 import { armedNodeId, drawnImageBox, isFrameShielded, useCanvasStore } from '../store.js';
 import { forgetArtifact, peekArtifact, resolveArtifact, servesPage, subscribeArtifact } from './artifactCache.js';
 import { artifactPreviewDemand, previewRequestFor } from './previewDemand.js';
@@ -337,7 +336,6 @@ export function ArtifactNode({
   const isFocused = fieldFocused || elementFocused;
   const isArmed = useCanvasStore((state) => armedNodeId(state) === id);
   const removeFrame = useCanvasStore((state) => state.removeFrame);
-  const { screenToFlowPosition } = useReactFlow();
   const read = useArtifactRead(data.artifactId, data.pagePath);
   const webviewRef = useRef<WebviewTag>(null);
   const [hoverRect, setHoverRect] = useState<AnchorRect | null>(null);
@@ -411,7 +409,6 @@ export function ArtifactNode({
   return (
     <><CanvasNodeMenu
       nodeId={id}
-      readViewRect={() => windowViewRect(screenToFlowPosition, window)}
       readZoom={() => zoom}
     >
       <div

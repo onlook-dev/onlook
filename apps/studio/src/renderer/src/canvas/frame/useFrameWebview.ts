@@ -50,9 +50,12 @@ export function useFrameWebview(
   // Electron reuses `webContents` ids, so an id naming a destroyed guest reaches an unrelated page.
   useEffect(() => {
     const element = ref.current;
-    if (!element) return;
+    if (!element) {
+      patchFrame(frameId, { canGoBack: false, canGoForward: false });
+      return;
+    }
 
-    patchFrame(frameId, { health: 'loading' });
+    patchFrame(frameId, { health: 'loading', canGoBack: false, canGoForward: false });
 
     const onReady = (): void => {
       try {
@@ -272,6 +275,6 @@ export function useFrameWebview(
       element.removeEventListener('page-title-updated', onTitle);
       element.removeEventListener('render-process-gone', onGone);
     };
-  }, [frameId, ref, patchFrame, mountNonce]);
+  }, [frameId, ref, patchFrame, mountNonce, hasGuest]);
 
 }

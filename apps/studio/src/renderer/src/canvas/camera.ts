@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useReactFlow, useStoreApi } from '@xyflow/react';
 
-import type { PanelsState } from '@studio/events';
+import type { PanelsState, Rect } from '@studio/events';
 
 import { REGION } from '../layout.js';
 import { usePanelsStore } from '../panels/store.js';
@@ -11,6 +11,7 @@ import { leftOverlayWidth, type LeftPanelView } from '../rail/leftPanel.js';
 import type { CanvasFlowNode } from './model.js';
 import { pageOpenCamera } from './mountFit.js';
 import { useCanvasStore } from './store.js';
+import type { PanelCover } from './panelCover.js';
 
 // The canvas places itself only for what a document opens with, and for a frame arriving on an empty one; `mountFit.ts` holds both rules (ONL-2486).
 const FIT_MARGIN = 48;
@@ -46,6 +47,33 @@ export interface Camera {
   x: number;
   y: number;
   zoom: number;
+}
+
+export function cameraRevealingNode(
+  camera: Camera,
+  node: Rect,
+  pane: { width: number; height: number },
+  cover: PanelCover,
+): Camera {
+  const shift = (start: number, size: number, min: number, max: number): number => {
+    if (max <= min) return 0;
+    const end = start + size;
+    if (size > max - min) {
+      if (start > min) return min - start;
+      if (end < max) return max - end;
+    } else {
+      if (start < min) return min - start;
+      if (end > max) return max - end;
+    }
+    return 0;
+  };
+  return {
+    ...camera,
+    x: camera.x + shift(camera.x + node.x * camera.zoom, node.width * camera.zoom,
+      cover.start + FIT_MARGIN, pane.width - cover.end - FIT_MARGIN),
+    y: camera.y + shift(camera.y + node.y * camera.zoom, node.height * camera.zoom,
+      REGION.topBar + REGION.modeBand + FIT_MARGIN, pane.height - FIT_MARGIN),
+  };
 }
 
 // The full cover delta preserves the frame's left-edge clearance (ONL-2563).

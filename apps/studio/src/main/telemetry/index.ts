@@ -19,6 +19,7 @@ import { markMergeCompleted, readIdentity, readMergeCompleted } from '../identit
 import { knownProject } from '../workspace/store.js';
 import { bindWebAttribution, legacyWebIdOnDisk, markAttributionQueued, parseAttribution, readWebAttribution, retainAttribution, FIRST_TOUCH_PROPERTIES } from './attribution.js';
 import { cpuFamily, underRosetta } from './hardware.js';
+import { previewFailureDiagnostics, resetPreviewDiagnostics } from './preview-diagnostics.js';
 import { isSourceBuild } from './build.js';
 import { flagOn, flagSnapshot } from '../flags/index.js';
 import { activeLocale } from '@studio/i18n';
@@ -652,12 +653,22 @@ export function perfWindowOverride(): number | undefined {
   return Number.isSafeInteger(value) && value >= 1_000 ? value : undefined;
 }
 
+let previewDiagnosticsRestorer: ((cwd: string, port: number) => void) | undefined;
+
+export function setPreviewDiagnosticsRestorer(restore: ((cwd: string, port: number) => void) | undefined): void {
+  previewDiagnosticsRestorer = restore;
+}
+
 export function capture<N extends TelemetryEventName>(
   event: N,
   properties: TelemetryProperties<N>,
+  workspacePath?: string,
 ): boolean {
   if (!isEnabled()) return false;
-  enqueue(event, { ...envelope(), ...properties });
+  if (event === 'dead_end_shown' && 'state' in properties && properties.state === 'preview_failed' && workspacePath !== undefined && 'server_port' in properties && typeof properties.server_port === 'number') {
+    previewDiagnosticsRestorer?.(workspacePath, properties.server_port);
+  }
+  enqueue(event, { ...envelope(), ...previewFailureDiagnostics(event, properties, workspacePath), ...properties });
   return true;
 }
 
@@ -910,12 +921,14 @@ export function beginTelemetryQuit(): void {
   surfaceFrozen = true;
 }
 
-export function recordDeadEndShown(state: DeadEndState, errorClass?: DeadEndErrorClass, projectId?: string): void {
+export function recordDeadEndShown(state: DeadEndState, errorClass?: DeadEndErrorClass, projectId?: string, context: { cover?: NonNullable<ActivationSurfaceReport['dead_end']>['cover']; server_port?: number; workspacePath?: string } = {}): void {
   capture('dead_end_shown', {
     state,
     ...(errorClass === undefined ? {} : { error_class: errorClass }),
     ...(projectId === undefined ? {} : { project_id: projectId }),
-  });
+    ...(context.cover === undefined ? {} : { cover: context.cover }),
+    ...(context.server_port === undefined ? {} : { server_port: context.server_port }),
+  }, context.workspacePath);
 }
 
 function rendererProjectId(renderer: number): string | undefined {
@@ -924,7 +937,7 @@ function rendererProjectId(renderer: number): string | undefined {
 }
 
 function sameDeadEnd(left: ShownDeadEnd | undefined, right: ShownDeadEnd): boolean {
-  return left?.state === right.state && left.error_class === right.error_class && left.project_id === right.project_id;
+  return left?.state === right.state && left.error_class === right.error_class && left.project_id === right.project_id && left.cover === right.cover && left.server_port === right.server_port;
 }
 
 /** Sent when what the tab shows differs from what it last showed the person; bringing the tab back alone sends nothing (ONL-3260). */
@@ -934,7 +947,7 @@ function showSurface(renderer: number, report: ActivationSurfaceReport): void {
   const shown = shownDeadEnds.get(renderer);
   shownDeadEnds.set(renderer, deadEnd);
   if (deadEnd === undefined || sameDeadEnd(shown, deadEnd)) return;
-  recordDeadEndShown(deadEnd.state, deadEnd.error_class, deadEnd.project_id);
+  recordDeadEndShown(deadEnd.state, deadEnd.error_class, deadEnd.project_id, { cover: deadEnd.cover, server_port: deadEnd.server_port, workspacePath: workspaceOfRenderer(renderer) });
 }
 
 export function recordActivationSurface(renderer: number, report: ActivationSurfaceReport): void {
@@ -978,6 +991,8 @@ export function peekQueueForTesting(): readonly QueuedEvent[] {
 }
 
 export function resetTelemetryForTesting(): void {
+  previewDiagnosticsRestorer = undefined;
+  resetPreviewDiagnostics();
   consentAbort.abort();
   consentAbort = new AbortController();
   liveIdentity = undefined;

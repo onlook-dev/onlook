@@ -19,6 +19,7 @@ export const launchIsFirst: typeof Telemetry.launchIsFirst = () => undefined;
 export const currentTelemetryConfig: typeof Telemetry.currentTelemetryConfig = () => ({ enabled: false });
 export const perfWindowOverride: typeof Telemetry.perfWindowOverride = () => undefined;
 export const capture: typeof Telemetry.capture = () => false;
+export const setPreviewDiagnosticsRestorer: typeof Telemetry.setPreviewDiagnosticsRestorer = () => {};
 export const captureException: typeof Telemetry.captureException = () => {};
 export const recordProjectRenamed: typeof Telemetry.recordProjectRenamed = () => {};
 export const recordAgentCost: typeof Telemetry.recordAgentCost = () => {};

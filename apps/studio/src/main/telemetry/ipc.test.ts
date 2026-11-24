@@ -6,7 +6,8 @@ import { EventEmitter } from 'node:events';
 import { fromMainFrame, seatedTabs } from '../tabs/test-support.js';
 import { observeTabHealth } from '../tabs/observe-health.js';
 import type { TabHealth } from '../tabs/health.js';
-import { beginTelemetryQuit, showTelemetryRenderer, shutdownTelemetry, workspaceTelemetryProperties } from './index.js';
+import { beginTelemetryQuit, showTelemetryRenderer, shutdownTelemetry, workspaceTelemetryProperties, setTelemetryRendererWorkspace } from './index.js';
+import { notePreviewDiagnostics, resetPreviewDiagnostics } from './preview-diagnostics.js';
 import { abandonSetupForRenderer, checkSetupAbandoned, resetSetupTelemetryForTesting } from './setup-step.js';
 import { CANVAS_PAN_COUNTS, CHAT_TYPING_COUNTS, IPC_SEND, SLOW_INTERACTION_COUNTS, type RendererTelemetryEvent, type WorkspaceCreated } from '@studio/events';
 import { cleanupTempFixtures, makeWorkspaceRoot } from '@studio/fixtures';
@@ -85,6 +86,25 @@ describe('activation telemetry boundary (ONL-2686)', () => {
   });
 
   const deadEnds = () => peekQueueForTesting().filter((row) => row.event === 'dead_end_shown');
+
+  it('carries a validated common server port into dead-end diagnostics and rejects invalid ports', () => {
+    setTelemetryRendererWorkspace(() => 'sample-workspace');
+    notePreviewDiagnostics('sample-workspace', { expected_port: 4100, actual_port: 4101, cause: 'process_exited', exit_code: 17 });
+    showTelemetryRenderer(1);
+    try {
+      const report = { event: 'activation_surface', properties: { surface: 'error_state', dead_end: { state: 'preview_failed', error_class: 'port_unreachable', cover: 'dead', server_port: 4100 } } } as const;
+      for (const server_port of [0, 65536, 1.5, '4100', null]) receiveRendererTelemetry({ ...report, properties: { ...report.properties, dead_end: { ...report.properties.dead_end, server_port } } } as unknown as RendererTelemetryEvent, 1);
+      expect(deadEnds()).toHaveLength(0);
+      receiveRendererTelemetry(report, 1);
+      expect(deadEnds().at(-1)?.properties).toMatchObject({ cause: 'process_exited', expected_port: 4100, actual_port: 4101, exit_code: 17, cover: 'dead' });
+      receiveRendererTelemetry({ ...report, properties: { ...report.properties, dead_end: { ...report.properties.dead_end, server_port: 4200 } } }, 1);
+      expect(deadEnds()).toHaveLength(2);
+      expect(deadEnds().at(-1)?.properties).toMatchObject({ cause: 'unknown', expected_port: null });
+    } finally {
+      setTelemetryRendererWorkspace(() => undefined);
+      resetPreviewDiagnostics();
+    }
+  });
 
   it('records only enumerated connector actions without server names or addresses', () => {
     receiveRendererTelemetry({ event: 'connector_action', properties: { action: 'open-plug', name: 'private server', url: 'https://private.local' } } as unknown as RendererTelemetryEvent, 1);

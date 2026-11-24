@@ -47,6 +47,7 @@ import type {
 } from '@studio/events';
 import type { Locale } from '@studio/i18n/locale';
 import type { GitStateReason } from './git-state.js';
+import type { PreviewDiagnostics } from './preview-diagnostics.js';
 
 /** An enum, not the message: the message is a shell command, which names a directory. */
 export type SetupErrorClass =
@@ -363,7 +364,7 @@ export interface TelemetryEventMap {
   };
 
   /** Setup details stay local: tool output can contain arbitrary repo names and contents. */
-  project_setup_failed: {
+  project_setup_failed: Partial<PreviewDiagnostics> & {
     failure_step?: CopyFailure['step'];
     failure_cause?: CopyFailure['cause'];
     project_id?: string;
@@ -373,13 +374,17 @@ export interface TelemetryEventMap {
     entry_point?: 'onboarding' | 'projects' | 'switcher';
   };
 
-  project_setup_run_completed: {
+  project_setup_run_completed: Partial<PreviewDiagnostics> & {
     project_id?: string;
     action: 'start' | 'stop' | 'restart';
     ok: boolean;
     duration_ms: number;
     failure_stage?: 'prepare' | 'install' | 'start' | 'ready' | 'stop';
     failure_reason?: SetupRunFailureReason;
+  };
+
+  dev_server_exited: Partial<PreviewDiagnostics> & {
+    project_id?: string;
   };
 
   project_setup_installation_checked: {
@@ -418,7 +423,7 @@ export interface TelemetryEventMap {
   };
 
   /** `error_message` only through `scrubMessage`. */
-  preview_ready: {
+  preview_ready: Partial<PreviewDiagnostics> & {
     project_id: string;
     outcome: 'success' | 'failure';
     duration_ms: number;
@@ -542,7 +547,7 @@ export interface TelemetryEventMap {
     moved_distance: number;
   };
 
-  frame_state_changed: {
+  frame_state_changed: Partial<PreviewDiagnostics> & {
     project_id: string;
     state: 'loading' | 'live' | 'unreachable';
     elapsed_ms?: number;
@@ -1127,8 +1132,10 @@ export interface TelemetryEventMap {
   };
 
   /** Fired when the visible tab shows a dead end other than the one it last showed, such as "Your app didn't start" or every frame under a server cover (ONL-2686, ONL-3260). */
-  dead_end_shown: {
+  dead_end_shown: Partial<PreviewDiagnostics> & {
     state: DeadEndState;
+    server_port?: number;
+    cover?: NonNullable<import('@studio/events').ActivationSurfaceReport['dead_end']>['cover'];
     error_class?: DeadEndErrorClass;
     project_id?: string;
   };
