@@ -102,6 +102,7 @@ export async function withCaptureView<T>(
   if (port === undefined) return { value: await timed() };
   const release = await enter(port.id);
   const began = deps.now();
+  const capturedBefore = facts?.captureMs ?? 0;
   nextRequestId += 1;
   const requestId = nextRequestId;
   let sentMove = false;
@@ -158,8 +159,8 @@ export async function withCaptureView<T>(
       attempts += 1;
     }
     if (facts) {
-      facts.paintMs = Math.round(deps.now() - painting);
-      facts.attempts = attempts;
+      facts.paintMs = (facts.paintMs ?? 0) + Math.round(deps.now() - painting);
+      facts.attempts = (facts.attempts ?? 0) + attempts;
     }
     if (value === STALLED) {
       if (facts) facts.stalledStep = 'capture';
@@ -173,8 +174,8 @@ export async function withCaptureView<T>(
       if (facts) facts.restore = restored?.state === 'kept' ? 'kept' : restored === null ? 'silent' : 'restored';
     }
     unfreeze?.();
-    if (facts) facts.freezeMs = unfreeze === undefined ? 0 : Math.round(deps.now() - frozeAt);
-    if (facts) facts.revealMs = Math.round(deps.now() - began - (facts.captureMs ?? 0));
+    if (facts) facts.freezeMs = (facts.freezeMs ?? 0) + (unfreeze === undefined ? 0 : Math.round(deps.now() - frozeAt));
+    if (facts) facts.revealMs += Math.round(deps.now() - began - ((facts.captureMs ?? 0) - capturedBefore));
     release();
   }
 }
