@@ -3,10 +3,10 @@ import { Text } from '@astryxdesign/core/Text';
 import { WINDOW_BAR_HEIGHT, type TabPreview } from '@studio/events';
 
 import { GitStatusPill } from '@studio/git-ui';
+import { derivePillState, restOf } from '@studio/git-ui/derive';
 import { GIT_PILL_GLYPHS, GIT_STATUS_STRINGS } from '../../git-status/presentation.js';
 import { t } from '@studio/i18n';
 import { PILL_OVERLAY } from '../../projects/ProjectCard.js';
-import { gitCardPropsFor } from '../../projects/gitCardProps.js';
 import { relativeTime } from '../../projects/relativeTime.js';
 import { useChromeExpansion } from '../expansion.js';
 import { LAYER } from '../../overlay/layers.js';
@@ -93,7 +93,7 @@ export function TabPreviewCard({ name, preview, left, top = WINDOW_BAR_HEIGHT + 
   }, [expansion, top]);
   const status = editedLine(preview.editedAt, now);
   const [failedSrc, setFailedSrc] = useState<string>();
-  const gitPill = preview.git === undefined ? undefined : gitCardPropsFor(preview.git.row, preview.git.defaults, false).gitPill;
+  const gitPill = preview.git === undefined ? undefined : restOf(derivePillState(preview.git.row, preview.git.defaults));
   const src = preview.previewUrl !== undefined && preview.previewUrl !== failedSrc ? preview.previewUrl : undefined;
   return (
     <div ref={cardRef} role="presentation" data-testid="tab-preview-card" style={{ ...CARD, left, top }}>
@@ -103,7 +103,7 @@ export function TabPreviewCard({ name, preview, left, top = WINDOW_BAR_HEIGHT + 
         )}
         {gitPill === undefined ? null : (
           <span aria-hidden="true" className="tab-preview-pill" style={PREVIEW_PILL_OVERLAY}>
-            <GitStatusPill state={gitPill} strings={GIT_STATUS_STRINGS} glyphs={GIT_PILL_GLYPHS} scale="card" testId="tab-preview-git-pill" />
+            <GitStatusPill state={gitPill} strings={GIT_STATUS_STRINGS} glyphs={GIT_PILL_GLYPHS} scale="preview" testId="tab-preview-git-pill" />
           </span>
         )}
       </div>
