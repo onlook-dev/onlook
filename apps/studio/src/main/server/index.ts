@@ -12,7 +12,7 @@ import {
   type ServerPortMeasurement,
   type ServerState,
 } from '@studio/events';
-import { createReverifyMoveAuthor, createServerPortFollow } from '../canvas/authors.js';
+import { createReverifyMoveAuthor, createServerPortFollow, type PortMoveOutcome } from '../canvas/authors.js';
 import { applyCanvasOps } from '../canvas/index.js';
 import { capture, resolveWorkspaceTelemetryProperties } from '../telemetry/index.js';
 import type { WorkspaceTelemetryProperties } from '../telemetry/events.js';
@@ -73,6 +73,7 @@ type Measured = Extract<ServerPortMeasurement, 'live' | 'dead' | 'stranger'>;
 interface PortReading {
   measured: Measured;
   listener?: PortListener;
+  studioOwned?: boolean;
 }
 
 export interface StarterControl {
@@ -94,7 +95,12 @@ export interface ServerHostDeps {
   isBlankProject?: (worktreePath: string) => boolean;
   /** `worktreePath` must reach the author's own `apply()`: an unbound apply writes into the forward document (ONL-2226). */
   createPortFollow(worktreePath: string): { observed(state: ServerState): void };
-  authorPortMove(fromPort: number, toPort: number, worktreePath: string): void | Promise<void>;
+  /** Only `refused` says the frames stayed where they were; anything else reads as moved. */
+  authorPortMove(
+    fromPort: number,
+    toPort: number,
+    worktreePath: string,
+  ): void | PortMoveOutcome | Promise<void | PortMoveOutcome>;
   attributionRoots(worktreePath: string): AttributionRoots;
   probe?: (port: number) => Promise<boolean>;
   identify?: IdentifyListener;
@@ -270,14 +276,16 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
     }
   }
 
-  async function measure(port: number, folder: string): Promise<PortReading> {
+  async function measure(port: number, folder: string, worktreePath: string): Promise<PortReading> {
     const answered = await probe(port);
     if (!answered) return { measured: 'dead' };
     const identity = await identify(port).catch((): undefined => undefined);
     if (verifiesFor(identity, folder) !== 'foreign') return { measured: 'live' };
-    return isContainerRuntime(identity?.command)
-      ? { measured: 'stranger', listener: 'container' }
-      : { measured: 'stranger' };
+    if (isContainerRuntime(identity?.command)) return { measured: 'stranger', listener: 'container' };
+    return {
+      measured: 'stranger',
+      studioOwned: attributeCwd(identity?.cwd, deps.attributionRoots(worktreePath)) === 'agent-started',
+    };
   }
 
   function seatFor(worktreePath: string, seats: SeatsByEntry, entry: ServerBookEntry): Seat {
@@ -368,23 +376,38 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
             : attributeCwd(folder, deps.attributionRoots(worktreePath)),
         });
       } else {
+        const measurements = new Map(
+          await Promise.all(
+            known.ports.map(async (claimed) =>
+              [claimed.port, await measure(claimed.port, known.folder, worktreePath)] as const),
+          ),
+        );
+        // What was just measured, before any await: a claim left with a stale `live` covers nothing (ONL-3287).
+        for (const [port, measurement] of measurements) {
+          recordPortMeasurement(worktreePath, known.id, port, measurement.measured, measurement.listener);
+        }
         const reading = discriminatePortReport(
           known.ports.map((p) => p.port),
           reported,
-          new Map(
-            await Promise.all(
-              known.ports.map(
-                async (p) => [p.port, (await measure(p.port, known.folder)).measured] as const,
-              ),
-            ),
-          ),
+          new Map([...measurements].map(([port, measurement]) => [port, measurement.measured])),
         );
         if (reading.kind === 'extend') {
           extendServerEntry(worktreePath, known.id, reported);
         } else if (reading.kind === 'move') {
-          moveServerEntryPort(worktreePath, known.id, { from: reading.deadPort, to: reported });
-          if (reading.pairedMeasurement === 'dead') {
-            await deps.authorPortMove(reading.deadPort, reported, worktreePath);
+          const move = (): void =>
+            moveServerEntryPort(worktreePath, known.id, { from: reading.deadPort, to: reported });
+          if (measurements.get(reading.deadPort)?.studioOwned === true) {
+            // Frames leave before the entry stops claiming the old port: another Project answers
+            // there, and an unclaimed port mounts that Project's page (ONL-3287).
+            if ((await deps.authorPortMove(reading.deadPort, reported, worktreePath)) !== 'refused') {
+              move();
+            }
+            // A refused move leaves the frames on the old port, and the entry claiming it, so they stay covered.
+          } else {
+            move();
+            if (reading.pairedMeasurement === 'dead') {
+              await deps.authorPortMove(reading.deadPort, reported, worktreePath);
+            }
           }
         }
         entry = entryForFolder(worktreePath, folder) ?? known;
@@ -438,7 +461,7 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
             try {
               let livePort: number | undefined;
               for (const claimed of entry.ports) {
-                const reading = await measure(claimed.port, entry.folder);
+                const reading = await measure(claimed.port, entry.folder, worktreePath);
                 if (workspaces.get(worktreePath) !== seats) return;
                 recordPortMeasurement(
                   worktreePath,

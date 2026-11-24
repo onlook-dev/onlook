@@ -5,6 +5,7 @@ import { afterAll, afterEach, describe, expect, it } from 'bun:test';
 import type { WebContents } from 'electron';
 import {
   IPC_EMIT,
+  type CopyFailure,
   type ProjectCreateState,
   type WorkspaceCreated,
   type WorkspaceCreateResult,
@@ -675,6 +676,97 @@ describe('refusals — the isolation ladder is an answer, not an error', () => {
 });
 
 describe('the cut going wrong', () => {
+  const copyFailures: CopyFailure[] = [
+    { step: 'claim', cause: 'copy_in_progress' },
+    { step: 'copy_files', cause: 'ignored_files' },
+    { step: 'copy_files', cause: 'folder_unavailable' },
+    { step: 'git_init', cause: 'permission_denied' },
+    { step: 'git_config', cause: 'disk_full' },
+    { step: 'git_add', cause: 'git_failed' },
+    { step: 'git_commit', cause: 'git_timed_out' },
+    { step: 'worktree_cut', cause: 'unknown' },
+  ];
+
+  for (const copyFailure of copyFailures) {
+    it(`propagates ${copyFailure.step}/${copyFailure.cause} without raw telemetry or machine diagnosis`, async () => {
+      const sourcePath = '/somewhere/moonfern-source';
+      const detail = "fatal: /somewhere/moonfern-private/.env on branch 'fixture/silver-badger': opaque-git-output";
+      let diagnoses = 0;
+      const recorder = makeRecorder({
+        fabricate: async () => ({ ok: false, reason: 'create-failed', detail, copyFailure }),
+        diagnoseFailure: async () => {
+          diagnoses += 1;
+          return 'unrelated machine diagnosis';
+        },
+      });
+
+      const state = await createProject({ sourcePath, entryPoint: 'projects' }, recorder.deps);
+
+      expect(state).toEqual({ kind: 'failed', sourceRepoName: 'moonfern-source', phase: 'copying', detail, copyFailure });
+      expect(recorder.states.at(-1)).toEqual(state);
+      expect(diagnoses).toBe(0);
+      expect(recorder.registered).toEqual([]);
+      expect(recorder.installed).toEqual([]);
+      expect(recorder.sessions).toEqual([]);
+      expect(recorder.captured).toEqual([{
+        event: 'project_setup_failed',
+        properties: {
+          project_id: expect.stringMatching(/^[0-9a-f]{16}$/),
+          workspace_instance_id: expect.stringMatching(/^[0-9a-f]{16}$/),
+          stage: 'copying',
+          duration_ms: expect.any(Number),
+          error_class: copyFailure.cause === 'git_timed_out' ? 'timeout' : 'clone_failed',
+          failure_step: copyFailure.step,
+          failure_cause: copyFailure.cause,
+        },
+      }]);
+      const captured = JSON.stringify(recorder.captured);
+      for (const privateValue of [sourcePath, 'moonfern-private', '.env', 'fixture/silver-badger', 'opaque-git-output']) {
+        expect(captured).not.toContain(privateValue);
+      }
+    });
+  }
+
+  it('logs structured copy enums without raw details in either log lane', async () => {
+    const savedRoot = process.env['STUDIO_STATE_ROOT'];
+    const savedFetch = globalThis.fetch;
+    const bodies: string[] = [];
+    process.env['STUDIO_STATE_ROOT'] = makeStateRoot({ name: 'moonfern-copy-log' });
+    resetLogForTesting();
+    recordLinesForTesting();
+    configureLogExport({ key: 'phc_test', host: 'https://ingest.example.test' });
+    globalThis.fetch = ((_url: string, init: RequestInit) => {
+      bodies.push(String(init.body));
+      return Promise.resolve(new Response('{}'));
+    }) as typeof fetch;
+    try {
+      const detail = "fatal: /somewhere/moonfern-private/.env on branch 'fixture/silver-badger': opaque-git-output";
+      const copyFailure: CopyFailure = { step: 'git_add', cause: 'permission_denied' };
+      const recorder = makeRecorder({ fabricate: async () => ({ ok: false, reason: 'create-failed', detail, copyFailure }) });
+
+      await createProject({ sourcePath: '/somewhere/moonfern-source', entryPoint: 'projects' }, recorder.deps);
+
+      expect(peekLinesForTesting().filter((line) => line.msg === 'project copy failed')).toEqual([
+        expect.objectContaining({ subsystem: 'workspace', level: 'warn', failure_step: 'git_add', failure_cause: 'permission_denied' }),
+      ]);
+      await flushLog();
+      expect(bodies).toHaveLength(1);
+      expect(bodies[0]).toContain('project copy failed');
+      expect(bodies[0]).toContain('permission_denied');
+      expect(bodies[0]).toContain('git_add');
+      for (const payload of [JSON.stringify(peekLinesForTesting()), ...bodies]) {
+        for (const privateValue of ['moonfern-source', 'moonfern-private', '.env', 'fixture/silver-badger', 'opaque-git-output']) {
+          expect(payload).not.toContain(privateValue);
+        }
+      }
+    } finally {
+      globalThis.fetch = savedFetch;
+      resetLogForTesting();
+      if (savedRoot === undefined) delete process.env['STUDIO_STATE_ROOT'];
+      else process.env['STUDIO_STATE_ROOT'] = savedRoot;
+    }
+  });
+
   it('keeps session startup failure output in the local log, never the PostHog export', async () => {
     const savedRoot = process.env['STUDIO_STATE_ROOT'];
     const savedFetch = globalThis.fetch;
@@ -829,6 +921,41 @@ describe('the stages inside the project failing (ONL-2179)', () => {
     expect(failed.workspace).toBeDefined();
     expect(recorder.framed).toEqual([]);
     expect(recorder.calls).not.toContain('awaitRunning');
+    expect(recorder.captured.find((entry) => entry.event === 'project_setup_failed')?.properties).toMatchObject({
+      stage: 'starting', error_class: 'dev_server_failed',
+    });
+  });
+
+  it('a failed Start turn names the agent and records an agent failure', async () => {
+    const recorder = makeRecorder({}, { start: { kind: 'turn-failed' } });
+
+    const state = await createProject({ sourcePath: '/somewhere/agent-fails', entryPoint: 'projects' }, recorder.deps);
+
+    const failed = expectKind(state, 'failed');
+    expect(failed.phase).toBe('starting');
+    expect(failed.detail).toBe('The Onlook Agent ran into an error while starting your app.');
+    expect(failed.workspace).toBeDefined();
+    expect(recorder.framed).toEqual([]);
+    expect(recorder.calls).not.toContain('awaitRunning');
+    expect(recorder.captured.find((entry) => entry.event === 'project_setup_failed')?.properties).toMatchObject({
+      stage: 'starting', error_class: 'agent_turn_failed',
+    });
+  });
+
+  it('a Start turn that is over with no verdict names the agent and records a stopped turn (ONL-3343)', async () => {
+    const recorder = makeRecorder({}, { start: { kind: 'turn-stopped' } });
+
+    const state = await createProject({ sourcePath: '/somewhere/agent-stops', entryPoint: 'projects' }, recorder.deps);
+
+    const failed = expectKind(state, 'failed');
+    expect(failed.phase).toBe('starting');
+    expect(failed.detail).toBe('The Onlook Agent stopped before your app started.');
+    expect(failed.workspace).toBeDefined();
+    expect(recorder.framed).toEqual([]);
+    expect(recorder.calls).not.toContain('awaitRunning');
+    expect(recorder.captured.find((entry) => entry.event === 'project_setup_failed')?.properties).toMatchObject({
+      stage: 'starting', error_class: 'agent_turn_stopped',
+    });
   });
 
   it('a session that took no intent answers failed at starting', async () => {
@@ -1303,7 +1430,7 @@ describe('Retry re-enters at the failed stage, after its cleanup (ONL-2179)', ()
     await winnerCut;
     const lost = expectKind(await creations.start('tab-2', { sourcePath: folder.path, entryPoint: 'projects' }, loser.deps), 'failed');
     expect(lost.phase).toBe('copying');
-    expect(lost.detail).toContain('already being made');
+    expect(lost.copyFailure).toEqual({ step: 'claim', cause: 'copy_in_progress' });
     releaseWinner();
     const won = expectKind(await winning, 'live');
     if (!winnerPlan) throw new Error('the winner never cut');

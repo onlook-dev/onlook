@@ -1,4 +1,4 @@
-import type { MachineFailureCause } from '@studio/events';
+import type { CopyFailure, MachineFailureCause } from '@studio/events';
 import { StarterFailure, type StarterFailureCause } from '../starter/failure.js';
 import type { BlankCreationCause, BlankCreationStep } from '../telemetry/events.js';
 import type { GitResult } from './git.js';
@@ -64,4 +64,15 @@ export function thrownFailure(step: BlankCreationStep, error: unknown): BlankCre
   const code = systemErrorCode(error);
   if (code === undefined) return { failure_step: step, failure_cause: 'unknown' };
   return { failure_step: step, failure_cause: cause === 'unknown' ? 'system_error' : cause, system_error: code };
+}
+
+export function copyGitFailure(step: CopyFailure['step'], result: GitResult): CopyFailure {
+  const cause = gitFailureCause(result);
+  return { step, cause: result.timedOut ? 'git_timed_out' : cause === 'disk_full' || cause === 'permission_denied' ? cause : 'git_failed' };
+}
+
+export function copyThrownFailure(step: CopyFailure['step'], error: unknown): CopyFailure {
+  const cause = thrownCause(error);
+  const code = systemErrorCode(error);
+  return { step, cause: cause === 'disk_full' || cause === 'permission_denied' ? cause : code === 'ENOENT' || code === 'ENOTDIR' ? 'folder_unavailable' : 'unknown' };
 }
