@@ -54,7 +54,7 @@ export const TIPS_RULES = `
 .tips-primary:hover { background: #e6e6e6; }
 .tips-primary:active { transform: scale(.98); }
 .tips-primary:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-.tips-keys { flex: 1; overflow-y: auto; padding: 8px 24px 12px; scrollbar-width: thin; }
+.tips-keys { flex: 1; overflow-y: auto; padding: 8px 24px; scrollbar-width: thin; }
 .tips-key-columns { columns: 2; column-gap: 40px; }
 .tips-key-group { break-inside: avoid; margin: 0 0 20px; padding-top: 8px; }
 .tips-key-group h3 { font-size: 12px; font-weight: 500; color: var(--panel-ink-3); margin: 0 0 4px; }
