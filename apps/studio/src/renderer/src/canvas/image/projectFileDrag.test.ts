@@ -42,6 +42,15 @@ describe('a project image dragged from Files', () => {
     expect(outcome.refusal?.reason).toBe('too-large');
   });
 
+  it('reports a refused read and answers it as an empty source', async () => {
+    const failure = new Error('bridge refused');
+    const refused: unknown[] = [];
+    const source = await projectImageSource('public/photo.png', () => Promise.reject(failure), (error) => refused.push(error));
+    expect(refused).toEqual([failure]);
+    expect(source.size).toBe(0);
+    await expect(source.bytes()).rejects.toThrow('Image read refused');
+  });
+
   it('turns failed or non-image reads into an unreadable gesture', async () => {
     const source = await projectImageSource('../outside.png', async () => ({ ok: false, code: 'out-of-scope' }));
     const outcome = await ingestImageFiles([source], { at: { x: 0, y: 0 }, fallbackName: 'image' }, {

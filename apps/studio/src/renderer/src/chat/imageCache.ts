@@ -1,5 +1,6 @@
 import type { ImageBytes } from '@studio/events';
 import { studio } from '../bridge.js';
+import { ignoreRefusal } from '../refusal.js';
 
 export function imageBytesToObjectUrl(stored: ImageBytes): string {
   return URL.createObjectURL(
@@ -26,6 +27,7 @@ export interface ImageCache {
 
 export function createImageCache(
   fetchBytes: (req: { id: string }) => Promise<ImageBytes | null>,
+  onRefusal: (error: unknown) => void = ignoreRefusal('chat', 'imageBytes'),
 ): ImageCache {
   const entries = new Map<string, Promise<string | null>>();
   const settled = new Map<string, string | null>();
@@ -37,7 +39,10 @@ export function createImageCache(
       const entry = fetchBytes({ id: ref.id })
         .then((stored) => (stored ? imageBytesToObjectUrl(stored) : null))
         // A failed fetch and an absent image are the same `null` to the caller.
-        .catch(() => null)
+        .catch((error: unknown) => {
+          onRefusal(error);
+          return null;
+        })
         .then((url) => {
           settled.set(ref.id, url);
           return url;

@@ -166,17 +166,17 @@ export function Root(): React.JSX.Element {
     // Per-read catches: an unanswered read strands the app in `pending`, the one state with no recovery.
     const auth = studio()
       .authState()
-      .catch(() => ({ identity: null }));
+      .catch((error: unknown) => { ignoreRefusal('login', 'authState')(error); return { identity: null }; });
     const onboarding = studio()
       .onboardingState()
-      .catch(() => ({ hasOnboarded: false }));
+      .catch((error: unknown) => { ignoreRefusal('onboarding', 'onboardingState')(error); return { hasOnboarded: false }; });
     const location = studio()
       .locationState()
-      .catch((): LaunchLocation => ({ kind: 'projects' }));
+      .catch((error: unknown): LaunchLocation => { ignoreRefusal('tabs', 'locationState')(error); return { kind: 'projects' }; });
     /* A read as well as the subscription, so a reload lands on the phase the creation is in (ONL-2244). */
     const creating = studio()
       .tabCreateState()
-      .catch((): ProjectCreateState | null => null);
+      .catch((error: unknown): ProjectCreateState | null => { ignoreRefusal('tabs', 'tabCreateState')(error); return null; });
     void Promise.all([auth, onboarding, location, creating]).then(
       async ([, onboardingState, launch, createState]) => {
         if (!isActive) return;
@@ -247,7 +247,7 @@ export function Root(): React.JSX.Element {
     /* Registered synchronously: a tab mid-cut is assigned nothing (`assignment.ts`), and a listener attached after the read would miss its push. */
     const unsubscribeAssigned = studio().onTabAssigned(applyAssignment);
     if (BIRTH_PURPOSE === 'parked') {
-      void Promise.all([studio().tabAssignment().catch(() => null), creating]).then(([assignment, createState]) => {
+      void Promise.all([studio().tabAssignment().catch((error: unknown) => { ignoreRefusal('tabs', 'tabAssignment')(error); return null; }), creating]).then(([assignment, createState]) => {
         if (!isActive) return;
         const taken = parkedAssignment(assignment, createState);
         if (taken !== null) applyAssignment(taken);

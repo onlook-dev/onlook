@@ -11,6 +11,7 @@ import { agentSetupStrings } from './strings.js';
 import { useSurface } from '../activation/useSurface.js';
 import { sendTelemetry } from '../canvas/telemetry.js';
 import { studio } from '../bridge.js';
+import { ignoreRefusal } from '../refusal.js';
 import { useModal } from '../overlay/modalStack.js';
 
 export interface SetupStrings {
@@ -36,11 +37,11 @@ export function makeSetupController(
     harness,
     entryPoint,
     actions: () => useAgentSetupStore.getState(),
-    readClipboardText: () => studio().readClipboardText().then((result) => result.text, () => ''),
+    readClipboardText: () => studio().readClipboardText().then((result) => result.text, (error: unknown) => { ignoreRefusal('agent-setup', 'readClipboardText')(error); return ''; }),
     writeClipboardText: (text) => {
-      void navigator.clipboard.writeText(text).catch(() => undefined);
+      void navigator.clipboard.writeText(text).catch(ignoreRefusal('agent-setup', 'copy text'));
     },
-    openTerminal: () => studio().openTerminal().catch(() => undefined),
+    openTerminal: () => studio().openTerminal().catch(ignoreRefusal('agent-setup', 'openTerminal')),
     plan: () => useAgentSetupStore.getState().claude.plan,
     onClose,
     ...(onSwitchHarness === undefined ? {} : { onSwitchHarness }),

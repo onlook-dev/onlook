@@ -27,6 +27,7 @@ import { appendEvents, applyGapFill, emptyBuffer, resetBuffer, type EventBuffer 
 import { NO_LIVE_ERRORS, recordLiveError, type LiveErrors } from './limitCopy.js';
 import { log } from '../log.js';
 import { studio } from '../bridge.js';
+import { ignoreRefusal } from '../refusal.js';
 
 const chatLog = log('chat');
 
@@ -240,7 +241,8 @@ export function useAgentSession(expectedCwd?: string): AgentSessionHandle {
       .then((snapshot) => {
         setBuffer((previous) => applyGapFill(previous, agentSessionId, snapshot.events));
       })
-      .catch(() => {
+      .catch((error: unknown) => {
+        ignoreRefusal('chat', 'agentSnapshot')(error);
         setBuffer((previous) => applyGapFill(previous, agentSessionId, []));
       })
       .finally(() => {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChromeExtent } from '@studio/events';
+import { ignoreRefusal } from '../refusal.js';
 
 /** Clears both band tooltips: the git one wraps at the theme's 240px cap (ONL-2485). */
 const TOOLTIP_STRIP: ChromeExtent = { kind: 'strip', height: 160 };
@@ -64,7 +65,7 @@ function sync(): Promise<void> {
     await viewportReaches(height);
   });
   // A failed grow degrades to a clipped layer, not a dead control.
-  queue = queue.catch(() => undefined);
+  queue = queue.catch(ignoreRefusal('chrome', 'expandChrome'));
   return queue;
 }
 
