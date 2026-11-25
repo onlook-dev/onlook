@@ -100,7 +100,7 @@ export interface CreateBlankRequest {
 export type BlankCreateResult =
   | { ok: true; workspace: WorkspaceCreated }
   /** `explanation` is what the machine checks say the person can do about it, beside whatever the failing step reported. */
-  | { ok: false; stage: BlankCreateStage; canceled: boolean; detail?: string; explanation?: string };
+  | { ok: false; stage: BlankCreateStage; canceled: boolean; detail?: string; explanation?: string; cause?: 'git_not_found' };
 
 export type ProjectCreatePhase = 'planning' | 'copying' | 'installing' | 'starting';
 
