@@ -112,6 +112,21 @@ describe('confirmed tab lifecycle suspension (ONL-2894)', () => {
     expect(subject.protocol.listenerCount('detach')).toBe(0);
   });
 
+  it('thaws a shell joined after the creation event without waiting for navigation', async () => {
+    const subject = rig();
+    try {
+      await transitionPageLifecycle(subject.contents, 'frozen', subject.isolated);
+      checkPageProcessSharing();
+      subject.share();
+      const deadline = Date.now() + 1500;
+      while (subject.protocol.isAttached() && Date.now() < deadline) await Bun.sleep(20);
+      expect(subject.protocol.isAttached()).toBe(false);
+      expect(subject.calls).toContain('Debugger.disable');
+    } finally {
+      if (subject.protocol.isAttached()) await transitionPageLifecycle(subject.contents, 'active', subject.isolated);
+    }
+  });
+
   it('thaws only the shell that lost isolation', async () => {
     const joined = rig();
     const alone = rig();
@@ -135,7 +150,7 @@ describe('confirmed tab lifecycle suspension (ONL-2894)', () => {
     subject.calls.length = 0;
     subject.share();
     checkPageProcessSharing();
-    await settle();
+    await Bun.sleep(300);
     expect(subject.calls).toEqual([]);
     expect(subject.protocol.isAttached()).toBe(true);
     expect(subject.protocol.listenerCount('detach')).toBe(0);

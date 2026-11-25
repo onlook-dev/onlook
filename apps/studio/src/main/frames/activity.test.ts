@@ -111,6 +111,7 @@ describe('native Frame lifecycle', () => {
     test.debuggerPort.detach();
     test.debuggerPort.attach();
     expect(await activity.setIdle(true)).toEqual({ paused: false });
+    await Bun.sleep(300);
     expect(test.attached()).toBe(true);
     expect(test.frozen()).toBe(false);
     expect(test.commands).toEqual(['Debugger.enable', 'Animation:0', 'Debugger.pause', 'Runtime.evaluate']);
@@ -162,6 +163,28 @@ describe('native Frame lifecycle', () => {
     expect(test.activity.snapshot()).toEqual({ paused: false });
     expect(test.frozen()).toBe(false);
     expect(test.attached()).toBe(false);
+  });
+
+  it('wakes a renderer joined after the creation event without waiting for navigation', async () => {
+    const test = nativeRig();
+    const newborn = nativeRig(0);
+    test.registry.push(newborn.guest);
+    try {
+      await test.activity.setIdle(true);
+      checkFrameProcessSharing();
+      const commands = [...test.commands];
+      await Bun.sleep(300);
+      expect(test.frozen()).toBe(true);
+      expect(test.commands).toEqual(commands);
+      newborn.frames[0]!.osProcessId = 123;
+      const deadline = Date.now() + 1500;
+      while (test.frozen() && Date.now() < deadline) await Bun.sleep(20);
+      expect(test.frozen()).toBe(false);
+      expect(test.attached()).toBe(false);
+      expect(test.activity.snapshot()).toEqual({ paused: false });
+    } finally {
+      await test.activity.setIdle(false);
+    }
   });
 
   it('wakes a shared renderer immediately even during a camera gesture', async () => {

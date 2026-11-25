@@ -2,6 +2,7 @@ import type { WebContents } from 'electron';
 import electron from 'electron';
 import type { FrameIdleResult } from '@studio/events';
 import { canvasPicture } from '../images/canvas-picture.js';
+import { watchRendererSharing } from './sharing.js';
 
 export interface ActivityGuest {
   isDestroyed(): boolean;
@@ -108,15 +109,16 @@ export function activityFor(guest: WebContents, allGuests: () => WebContents[] =
   const existing = activities.get(guest);
   if (existing) return existing;
   let ownsDebugger = false;
+  let stopWatching = (): void => {};
   const isCapturing = (): boolean => {
     const host = guest.hostWebContents;
     return guest.isBeingCaptured() && !(host && !host.isDestroyed() && host.isBeingCaptured());
   };
   const isolated = (): boolean => {
     if (guest.isDestroyed() || isCapturing()) return false;
-    const pid = guest.getOSProcessId();
-    if (pid <= 0) return false;
     try {
+      const pid = guest.getOSProcessId();
+      if (pid <= 0) return false;
       const ownFrames = new Set(guest.mainFrame.framesInSubtree.map((frame) => frame.frameTreeNodeId));
       return allGuests().every((contents) => contents === guest || contents.isDestroyed() ||
         contents.mainFrame.framesInSubtree.every((frame) => frame.detached || ownFrames.has(frame.frameTreeNodeId) || frame.osProcessId !== pid));
@@ -125,6 +127,7 @@ export function activityFor(guest: WebContents, allGuests: () => WebContents[] =
     }
   };
   const detach = (): void => {
+    stopWatching();
     if (!ownsDebugger) return;
     ownsDebugger = false;
     if (!guest.isDestroyed() && guest.debugger.isAttached()) guest.debugger.detach();
@@ -182,6 +185,9 @@ export function activityFor(guest: WebContents, allGuests: () => WebContents[] =
           guest.debugger.removeListener('detach', detached);
         }
         if (!ownsDebugger || guest.isDestroyed() || !isolated()) throw new Error('Frame renderer is shared or unavailable');
+        stopWatching = watchRendererSharing(() => {
+          if (!isolated()) void activity.refresh().catch(() => {});
+        });
       } catch (error) {
         if (!guest.isDestroyed() && ownsDebugger && guest.debugger.isAttached()) {
           await within(guest.debugger.sendCommand('Debugger.disable'), 1500).catch(() => {});
@@ -197,12 +203,14 @@ export function activityFor(guest: WebContents, allGuests: () => WebContents[] =
   monitoredActivities.add(monitored);
   guest.debugger.on('detach', () => {
     if (!ownsDebugger) return;
+    stopWatching();
     ownsDebugger = false;
     void activity.refresh().catch(() => {});
   });
   guest.on('did-start-loading', () => { void activity.refresh().catch(() => {}); });
   guest.on('did-stop-loading', () => { void activity.refresh().catch(() => {}); });
   guest.on('destroyed', () => {
+    stopWatching();
     monitoredActivities.delete(monitored);
     void activity.refresh().catch(() => {});
   });

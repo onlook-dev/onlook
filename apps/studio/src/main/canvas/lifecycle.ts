@@ -1,10 +1,12 @@
 import type { WebContents } from 'electron';
+import { watchRendererSharing } from '../frames/sharing.js';
 
 interface Attachment {
   owned: boolean;
   /** Transitions holding this attachment, each of which rechecks isolation itself. */
   holders: number;
   thawing?: Promise<void>;
+  stopWatching?: () => void;
   detached(): void;
 }
 
@@ -19,6 +21,7 @@ const pausedPages = new WeakMap<WebContents, Attachment>();
 const suspensions = new Set<Suspension>();
 
 function forget(attachment: Attachment): void {
+  attachment.stopWatching?.();
   for (const entry of suspensions) if (entry.attachment === attachment) suspensions.delete(entry);
 }
 
@@ -136,7 +139,11 @@ export async function transitionPageLifecycle(contents: WebContents, state: 'fro
     }
     if (!owns() || !isolated()) throw new Error('Tab renderer is shared or unavailable');
     pausedPages.set(contents, attachment);
-    suspensions.add({ contents, attachment, isolated, thaw });
+    const suspension = { contents, attachment, isolated, thaw };
+    suspensions.add(suspension);
+    attachment.stopWatching = watchRendererSharing(() => {
+      if (attachment.holders === 0 && !stillAlone(suspension)) void thaw();
+    });
   } catch (error) {
     await thaw();
     throw error;
