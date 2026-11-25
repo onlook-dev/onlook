@@ -90,6 +90,7 @@ export async function chooseAdapter(deps: ChooseAdapterDeps = {}): Promise<Adapt
 
 // Every static `server.mjs` a released build scaffolded; a project keeps its copy after the template moves on.
 export const RETIRED_STATIC_SERVER_SHA256: ReadonlySet<string> = new Set([
+  '34fbb7a25868cf27a143d01a9315d7b9322750f618dc42a335406d59620a60f4',
   'a549b39309d0f49aab38b737a72d131e714917dc93e16d4d2cb82ecba83fbed6',
   '361df85d703824d3095765c3de754a59222343fbcbd42b871c5f35c4b9862399',
 ]);

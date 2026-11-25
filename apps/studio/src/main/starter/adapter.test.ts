@@ -38,7 +38,7 @@ describe('isStudioServerFile', () => {
   });
   test('the static server template changed: projects scaffolded with the old one stop being recognised until its hash joins RETIRED_STATIC_SERVER_SHA256 and its bytes join fixtures/', () => {
     const current = createHash('sha256').update(STATIC_FILES[STARTER_SERVER_FILE] ?? '').digest('hex');
-    expect(current).toBe('34fbb7a25868cf27a143d01a9315d7b9322750f618dc42a335406d59620a60f4');
+    expect(current).toBe('bf9e64899210e688599948b0914623043e4cb0cb17149000c6adf9ba0ba026d4');
   });
 });
 

@@ -11,6 +11,7 @@ import { RELOAD_CLIENT_HTML, RELOAD_PATH, STATIC_FILES, writeStaticServer } from
 import { freePort, get, getWithHost, nodeFork as forkWith } from './pty-harness.js';
 import { STARTER_SERVER_FILE, writeScaffold } from './scaffold.js';
 import { createWorkActivity } from '../background-work/activity.js';
+import { startChild } from '../env/child.js';
 
 // Canonical: `running()` returns keys, compared to the paths spawned here.
 const workDir = realpathSync.native(mkdtempSync(join(tmpdir(), 'starter-runner-')));
@@ -397,6 +398,39 @@ describe('starter runner against a real child', () => {
 });
 
 describe('server.mjs heartbeat backstop', () => {
+  it('stops serving after its parent exits even when no more heartbeats can arrive', async () => {
+    const dir = scaffoldDir('orphan-backstop');
+    const port = await freePort();
+    const supervisor = startChild(process.execPath, ['--input-type=module', '-e', `
+      import { fork } from 'node:child_process';
+      const child = fork(process.argv[1], [], { execArgv: [], stdio: ['ignore', 'pipe', 'ignore', 'ipc'] });
+      child.once('spawn', () => {
+        console.log('child pid ' + child.pid);
+        child.send({ type: 'heartbeat', windowMs: 100 });
+      });
+      child.stdout.pipe(process.stdout);
+    `, join(dir, STARTER_SERVER_FILE)], { cwd: dir, env: { ...process.env, PORT: String(port) }, stdio: ['ignore', 'pipe', 'pipe'] });
+    let output = '';
+    supervisor.stdout?.on('data', (chunk: Buffer) => { output += chunk.toString(); });
+    try {
+      await until('the supervised preview to listen', () => output.includes('starter ready'));
+      assert.equal((await get(port, '/')).status, 200);
+      const exited = new Promise<void>((resolve) => { supervisor.once('exit', () => resolve()); });
+      supervisor.kill('SIGKILL');
+      await exited;
+      await until('the orphan preview to close its port', async () => {
+        try { await get(port, '/'); return false; }
+        catch { return true; }
+      }, 3000);
+    } finally {
+      supervisor.kill('SIGKILL');
+      const childPid = /child pid (\d+)/.exec(output)?.[1];
+      if (childPid !== undefined) {
+        try { process.kill(Number(childPid), 'SIGKILL'); } catch {}
+      }
+    }
+  });
+
   async function bareChild(name: string): Promise<{ child: StarterChildLike; port: number }> {
     const dir = scaffoldDir(name);
     const port = await freePort();
@@ -415,12 +449,15 @@ describe('server.mjs heartbeat backstop', () => {
     return { child, port };
   }
 
-  it('exits once heartbeats stop for the window', async () => {
-    const { child } = await bareChild('backstop');
+  it('serves the preview across missed heartbeat windows while its parent is alive', async () => {
+    const { child, port } = await bareChild('backstop');
     child.postMessage({ type: 'heartbeat', windowMs: 300 });
     const pid = child.pid;
+    await sleep(1000);
     assert.equal(alive(pid), true);
-    await until('the child to exit after the window', () => !alive(pid), 3_000);
+    assert.equal((await get(port, '/')).status, 200);
+    child.kill();
+    await until('the child to exit', () => !alive(pid));
   });
 
   it('stays up while heartbeats continue past the window', async () => {
