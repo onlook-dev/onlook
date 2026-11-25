@@ -17,6 +17,7 @@ class UpdateFixture extends EventEmitter {
   stagedVersion: string | undefined;
   downloads: string[] = [];
   installs: string[] = [];
+  installArguments: Array<[boolean?, boolean?]> = [];
   failCheck = false;
   failDownload = false;
   hasNothingNewer = false;
@@ -53,11 +54,18 @@ class UpdateFixture extends EventEmitter {
     });
     return [];
   };
-  quitAndInstall = () => { this.installs.push(this.stagedVersion ?? 'missing'); };
+  quitAndInstall = (...args: [boolean?, boolean?]) => {
+    this.installArguments.push(args);
+    this.installs.push(this.stagedVersion ?? 'missing');
+  };
 }
 
 const sessions: Array<ReturnType<typeof createUpdateSession>> = [];
-afterEach(() => { for (const session of sessions.splice(0)) session.dispose(); });
+const realPlatform = Object.getOwnPropertyDescriptor(process, 'platform')!;
+afterEach(() => {
+  for (const session of sessions.splice(0)) session.dispose();
+  Object.defineProperty(process, 'platform', realPlatform);
+});
 
 function fixture(native = true, wait?: (delay: number, signal: AbortSignal) => Promise<void>, recovery: Parameters<typeof createUpdateSession>[5] = {}) {
   const seen: UpdateState[] = [];
@@ -77,6 +85,29 @@ function fixture(native = true, wait?: (delay: number, signal: AbortSignal) => P
 }
 
 describe('the real updater event sequence', () => {
+  for (const platform of ['win32', 'darwin', 'linux'] as const) {
+    it(`restarts with ${platform === 'win32' ? 'silent installation and relaunch' : 'unchanged installer defaults'} on ${platform}`, async () => {
+      Object.defineProperty(process, 'platform', { ...realPlatform, value: platform });
+      const test = fixture(platform === 'darwin');
+      await test.download();
+      expect(test.updater.autoInstallOnAppQuit).toBe(true);
+      expect(test.updater.installArguments).toEqual([]);
+
+      test.session.restart();
+      await settle();
+      test.updater.finishDownload?.();
+      await settle();
+      if (platform === 'darwin') {
+        expect(test.updater.installArguments).toEqual([]);
+        test.nativeUpdater.emit('update-downloaded');
+      }
+
+      expect(test.updater.installArguments).toEqual([platform === 'win32' ? [true, true] : []]);
+      expect(test.updater.installs).toEqual(['1.2.3']);
+      expect(test.updater.autoInstallOnAppQuit).toBe(true);
+    });
+  }
+
   for (const status of [403, 404, 500, 503]) {
     it(`reports download HTTP ${status} once after bounded retries`, async () => {
       const delays: number[] = [];
