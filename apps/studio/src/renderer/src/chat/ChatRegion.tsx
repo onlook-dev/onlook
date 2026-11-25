@@ -84,7 +84,7 @@ import { useAgentSession } from './useAgentSession.js';
 import { canStartSignIn, isSetAsideable, SignInNotice } from '@studio/onboarding-ui';
 import { CARD_GLYPHS } from '../agent-setup/glyphs.js';
 import { mappedSetupFor } from '../agent-setup/dialog.js';
-import { makeSetupController, SetupDialogHost, setupStrings } from '../agent-setup/SetupDialogHost.js';
+import { makeSetupController, SetupDialogHost, setupStrings, useTerminalFailureToast } from '../agent-setup/SetupDialogHost.js';
 import { accountLink, openAccountLink } from '../agents/accountLinks.js';
 import { isClaudeConnected, isCodexConnected } from '../agents/mapping.js';
 import { useAgentSetupStore } from '../agent-setup/store.js';
@@ -1123,7 +1123,8 @@ export function ChatRegion(): React.JSX.Element {
     ? setupCodex.status === 'signing-in' ? 'signInCodex' : activeConnectionRemedy
     : undefined;
   // Not disposed with the chat: dispose cancels on a singleton host and would kill a sign-in mid-completion on a project switch.
-  const [signInController] = useState(() => makeSetupController('claude', 'editor', () => undefined));
+  const terminalFailed = useTerminalFailureToast();
+  const [signInController] = useState(() => makeSetupController('claude', 'editor', () => undefined, terminalFailed));
   const signInState = mappedSetupFor(
     'claude',
     {

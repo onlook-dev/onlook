@@ -20,6 +20,7 @@ import { ConnectStep, ConnectStepView, type ConnectFacts } from '../../agent-set
 import { CARD_GLYPHS, TILE_GLYPHS } from '../../agent-setup/glyphs.js';
 import { chatGptSetupState, claudeSetupState } from '../../agents/mapping.js';
 import { agentSetupStrings } from '../../agent-setup/strings.js';
+import { useTerminalFailureToast } from '../../agent-setup/SetupDialogHost.js';
 import type { ClaudeTurnFacts, ClaudeVerificationDetail } from '@studio/events';
 import { seedAgentSetupForShowroom } from '../../agent-setup/store.js';
 import { onboardingUiStrings } from '../../onboarding/uiStrings.js';
@@ -34,6 +35,24 @@ import { Panel } from './chat.js';
 import { Focused, noop, type Category, type Gallery, type Story } from './Showroom.js';
 
 const STRINGS = onboardingUiStrings();
+
+function TerminalFailureStill({ harness }: { harness: HarnessId }): React.JSX.Element {
+  const terminalFailed = useTerminalFailureToast();
+  const isTargeted = window.location.hash.split(/[/:]/).pop() === `terminal-failure-${harness}`;
+  useLayoutEffect(() => { if (isTargeted) terminalFailed(); }, [isTargeted, terminalFailed]);
+  const state: SetupState = { harness, state: 'fallback', command: harness === 'claude' ? CLAUDE_LOGIN_COMMAND : 'codex login' };
+  return <SetupDialog state={state} isOpen isInline={!isTargeted} onOpenChange={noop} onAction={noop} strings={STRINGS} glyphs={CARD_GLYPHS} />;
+}
+
+const terminalFailure: Category = {
+  id: 'terminal-failure',
+  title: 'Terminal launch recovery',
+  stories: (['claude', 'codex'] as const).map(harness => ({
+    id: `terminal-failure-${harness}`,
+    title: `${harness} · terminal unavailable`,
+    render: () => <TerminalFailureStill harness={harness} />,
+  })),
+};
 
 const BROWSERS = [{ id: 'default', name: 'Safari', isDefault: true }, { id: 'chrome', name: 'Google Chrome', isDefault: false }];
 
@@ -461,5 +480,5 @@ export const ONBOARDING_UI_GALLERY: Gallery = {
   id: 'onboarding-ui',
   title: 'Onboarding',
   subtitle: 'packages/onboarding-ui on the board’s fixtures; strings through the catalog',
-  categories: [firstRun, rows, tiles, connect, dialogs, chat, browsers, failedChecks, failedCheckAliases, chatGptStartup],
+  categories: [firstRun, rows, tiles, connect, dialogs, chat, browsers, failedChecks, failedCheckAliases, chatGptStartup, terminalFailure],
 };

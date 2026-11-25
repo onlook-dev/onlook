@@ -171,6 +171,7 @@
   "onboarding.setup.action.openPageAgain": "重新打开页面",
   "onboarding.setup.action.done": "完成",
   "onboarding.setup.action.openTerminal": "打开终端",
+  "onboarding.setup.terminalOpenFailed": "无法打开终端。请手动打开终端应用，粘贴登录命令，然后按 Enter 键。",
   "onboarding.setup.action.paste": "粘贴",
   "onboarding.setup.action.copy": "拷贝",
   "onboarding.chat.signIn.claude": "登录 Claude，继续在 Onlook 中设计",

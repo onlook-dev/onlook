@@ -171,6 +171,7 @@
   "onboarding.setup.action.openPageAgain": "ページを再度開く",
   "onboarding.setup.action.done": "完了",
   "onboarding.setup.action.openTerminal": "ターミナルを開く",
+  "onboarding.setup.terminalOpenFailed": "ターミナルを開けませんでした。ターミナルアプリを開き、サインインコマンドを貼り付けて、Enter キーを押してください。",
   "onboarding.setup.action.paste": "貼り付け",
   "onboarding.setup.action.copy": "コピー",
   "onboarding.chat.signIn.claude": "Onlook でデザインを続けるには、Claude にサインインしてください",

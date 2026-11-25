@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useToast } from '@astryxdesign/core/Toast';
+import { t } from '@studio/i18n';
 import type { HarnessId, SetupEntryPoint } from '@studio/events';
 import { SetupDialog, type OnboardingUiStrings } from '@studio/onboarding-ui';
 import type { SetupAction, SetupState } from '@studio/onboarding-ui/state';
@@ -25,11 +27,19 @@ export function setupStrings(): SetupStrings {
   return strings;
 }
 
+export function useTerminalFailureToast(): () => void {
+  const showToast = useToast();
+  return useCallback(() => {
+    showToast({ body: t('onboarding.setup.terminalOpenFailed'), type: 'error', uniqueID: 'terminal-open-failed' });
+  }, [showToast]);
+}
+
 /** Shared by the dialog and the chat's sign-in card so the two agree on the funnel's entry point (ONL-2187). */
 export function makeSetupController(
   harness: HarnessId,
   entryPoint: SetupEntryPoint,
   onClose: () => void,
+  onTerminalFailed: () => void,
   onSwitchHarness?: () => void,
 ): SetupDialogController {
   return new SetupDialogController({
@@ -40,7 +50,8 @@ export function makeSetupController(
     writeClipboardText: (text) => {
       void navigator.clipboard.writeText(text).catch(() => undefined);
     },
-    openTerminal: () => studio().openTerminal().catch(() => undefined),
+    openTerminal: () => studio().openTerminal(),
+    terminalFailed: onTerminalFailed,
     plan: () => useAgentSetupStore.getState().claude.plan,
     onClose,
     ...(onSwitchHarness === undefined ? {} : { onSwitchHarness }),
@@ -92,6 +103,7 @@ export interface SetupDialogHostProps {
 
 /** Mount keyed by harness: the controller is built once per mount. */
 export function SetupDialogHost({ harness, entryPoint, onClose, onSwitchHarness }: SetupDialogHostProps): React.JSX.Element {
+  const terminalFailed = useTerminalFailureToast();
   const claude = useAgentSetupStore((s) => s.claude);
   const claudeSettled = useAgentSetupStore((s) => s.claudeSettled);
   const codex = useAgentSetupStore((s) => s.codex);
@@ -114,7 +126,7 @@ export function SetupDialogHost({ harness, entryPoint, onClose, onSwitchHarness 
     onSwitchRef.current = onSwitchHarness;
   });
   const [controller] = useState(() =>
-    makeSetupController(harness, entryPoint, () => onCloseRef.current(), onSwitchHarness === undefined ? undefined : () => onSwitchRef.current?.()),
+    makeSetupController(harness, entryPoint, () => onCloseRef.current(), terminalFailed, onSwitchHarness === undefined ? undefined : () => onSwitchRef.current?.()),
   );
 
   useEffect(() => {

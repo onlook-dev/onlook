@@ -10,6 +10,81 @@ import { terminateWindowsTree } from '../env/windows.js';
 import { checkHealth, resolveCodex } from '../agent-host/appserver/resolve.js';
 import { inspectWindowsProcess, windowsProcesses } from './windows.js';
 import { identifyListener, isAlive, verifiesFor } from './owner.js';
+import { openWindowsTerminal } from '../terminal.js';
+import { APP_ENV, runChildOutput } from '../env/child.js';
+import { systemExecutable } from '../env/platform.js';
+
+test('Windows Open Terminal opens a console that accepts a pasted command', { skip: process.platform !== 'win32', timeout: 60_000 }, async () => {
+  const root = await fixtureDirectory('terminal-');
+  const resultPath = join(root, 'input.txt');
+  const powershell = systemExecutable('WindowsPowerShell/v1.0/powershell.exe');
+  const prompts = async (): Promise<number[]> => {
+    const { stdout } = await runChildOutput(powershell, ['-NoProfile', '-NonInteractive', '-Command', "@(Get-CimInstance Win32_Process -Filter \"Name = 'cmd.exe'\" | Where-Object { $_.CommandLine -match '/d /k$' } | ForEach-Object { $_.ProcessId }) -join ','"], { env: APP_ENV, timeout: 15_000, windowsHide: true });
+    return stdout.trim().split(',').filter(Boolean).map(Number);
+  };
+  const before = new Set(await prompts());
+  let promptPid: number | undefined;
+  try {
+    await openWindowsTerminal();
+    const deadline = Date.now() + 15_000;
+    while (Date.now() < deadline && promptPid === undefined) {
+      promptPid = (await prompts()).find((pid) => !before.has(pid));
+      if (promptPid === undefined) await delay(50);
+    }
+    assert.ok(promptPid, 'Open Terminal must leave a new Command Prompt running');
+    const input = Buffer.from(`echo terminal-ready>"${resultPath}"\r`, 'utf16le').toString('base64');
+    const script = `
+Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public class ConsoleInput {
+  [StructLayout(LayoutKind.Explicit, CharSet = CharSet.Unicode, Size = 20)]
+  public struct Record {
+    [FieldOffset(0)] public short Type;
+    [FieldOffset(4)] public int Down;
+    [FieldOffset(8)] public short Repeat;
+    [FieldOffset(10)] public short Key;
+    [FieldOffset(14)] public char Character;
+  }
+  [DllImport("kernel32.dll")] public static extern bool FreeConsole();
+  [DllImport("kernel32.dll", SetLastError = true)] public static extern bool AttachConsole(uint pid);
+  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] public static extern IntPtr CreateFile(string name, uint access, uint share, IntPtr security, uint creation, uint flags, IntPtr template);
+  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] public static extern bool WriteConsoleInputW(IntPtr handle, Record[] records, uint count, out uint written);
+  [DllImport("kernel32.dll")] public static extern IntPtr GetConsoleWindow();
+  [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr window);
+  [DllImport("kernel32.dll")] public static extern bool CloseHandle(IntPtr handle);
+}
+'@
+[ConsoleInput]::FreeConsole() | Out-Null
+if (![ConsoleInput]::AttachConsole(${promptPid})) { throw 'Command Prompt has no console' }
+if (![ConsoleInput]::IsWindowVisible([ConsoleInput]::GetConsoleWindow())) { throw 'Command Prompt console is hidden' }
+$handle = [ConsoleInput]::CreateFile('CONIN$', 0x40000000, 3, [IntPtr]::Zero, 3, 0, [IntPtr]::Zero)
+try {
+  $text = [Text.Encoding]::Unicode.GetString([Convert]::FromBase64String('${input}'))
+  foreach ($character in $text.ToCharArray()) {
+    $record = New-Object ConsoleInput+Record
+    $record.Type = 1; $record.Down = 1; $record.Repeat = 1; $record.Character = $character
+    if ($character -eq [char]13) { $record.Key = 13 }
+    [uint32]$written = 0
+    if (![ConsoleInput]::WriteConsoleInputW($handle, @($record), 1, [ref]$written) -or $written -ne 1) { throw 'Console rejected input' }
+  }
+} finally { [ConsoleInput]::CloseHandle($handle) | Out-Null; [ConsoleInput]::FreeConsole() | Out-Null }
+`;
+    await runChildOutput(powershell, ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')], { env: APP_ENV, timeout: 15_000, windowsHide: true });
+    let result = '';
+    const inputDeadline = Date.now() + 10_000;
+    while (Date.now() < inputDeadline && result === '') {
+      try { result = await readFile(resultPath, 'utf8'); } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+      }
+      if (result === '') await delay(50);
+    }
+    assert.equal(result.trim(), 'terminal-ready');
+  } finally {
+    await stopFixture(promptPid);
+    await rm(root, { recursive: true, force: true });
+  }
+});
 
 async function fixtureDirectory(prefix: string): Promise<string> {
   const scratch = join(process.cwd(), '.scratch', 'tmp');
