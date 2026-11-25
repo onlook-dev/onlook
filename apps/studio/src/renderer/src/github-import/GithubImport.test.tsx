@@ -9,6 +9,15 @@ const noop = (): void => {};
 const props = { onCommand: noop, onClose: noop, onOpen: noop, entryPoint: 'projects' as const };
 const repository = { id: 1, fullName: 'team/repo', private: true, defaultBranch: 'main', canPull: true, canPush: true, archived: false };
 const CONNECTED = { ...EMPTY_GITHUB, connection: { status: 'connected' as const, scopes: [], expiresAt: null } };
+const DISCONNECTED = { ...EMPTY_GITHUB, connection: { status: 'disconnected' as const } };
+
+test('the initial import and Settings dialogs show Checking without Connect GitHub', () => {
+  for (const view of [<GithubImportView {...props} state={EMPTY_GITHUB} />, <GithubSettingsView {...props} state={EMPTY_GITHUB} />]) {
+    const html = renderToStaticMarkup(view);
+    expect(html).toContain('Checking');
+    expect(html).not.toContain(t('github.connect'));
+  }
+});
 
 test('a listed repository lights Clone immediately, before selection IPC or destination checks finish', () => {
   const command = { kind: 'select' as const, repositoryId: 1 };
@@ -50,7 +59,7 @@ test('a clone rejected after receiving credentials keeps its repository and offe
 });
 
 test('a fresh connection offers one next step without recovery actions', () => {
-  const html = renderToStaticMarkup(<GithubImportView {...props} state={EMPTY_GITHUB} onFolder={noop} />);
+  const html = renderToStaticMarkup(<GithubImportView {...props} state={DISCONNECTED} onFolder={noop} />);
   expect(html).toContain(t('github.connect'));
   expect(html).toContain(t('github.connect.body'));
   expect(html).toContain(t('github.folder'));
@@ -68,7 +77,7 @@ test('connecting replaces Connect GitHub with Check again', () => {
 });
 
 test('returning without a connection offers retry and contextual access review', () => {
-  const html = renderToStaticMarkup(<GithubImportView {...props} state={{ ...EMPTY_GITHUB, connectionAttempted: true }} />);
+  const html = renderToStaticMarkup(<GithubImportView {...props} state={{ ...DISCONNECTED, connectionAttempted: true }} />);
   expect(html).toContain(t('github.noConnection'));
   expect(html).toContain(t('github.connect'));
   expect(html).toContain(t('github.check'));
@@ -97,7 +106,7 @@ test('approval recovery only appears when access is denied', () => {
 });
 
 test('waiting shows one explanation and does not ask for acknowledgement again', () => {
-  const html = renderToStaticMarkup(<GithubImportView {...props} state={{ ...EMPTY_GITHUB, connectionAttempted: true, waitingForApproval: true }} />);
+  const html = renderToStaticMarkup(<GithubImportView {...props} state={{ ...DISCONNECTED, connectionAttempted: true, waitingForApproval: true }} />);
   expect(html).toContain(t('github.waiting.body'));
   expect(html).toContain(t('github.check'));
   expect(html).not.toContain(t('github.waiting'));

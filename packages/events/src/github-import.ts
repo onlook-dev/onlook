@@ -41,7 +41,7 @@ export type GithubImportCommand =
 
 export interface GithubImportState {
   enabled: boolean;
-  connection: GithubConnection | { status: 'connecting' };
+  connection: GithubConnection | { status: 'checking' | 'connecting' };
   repositories: GithubRepository[];
   repositoryId?: number;
   branches: string[];

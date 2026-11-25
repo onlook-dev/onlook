@@ -57,6 +57,7 @@ interface ConnectionPrompt {
 
 /** Where the person stands with GitHub, and what they can press about it; one answer for both dialogs. */
 function connectionPrompt(state: GithubImportState, entryPoint: GithubEntryPoint): ConnectionPrompt {
+  if (state.connection.status === 'checking') return { message: 'github.checking', alert: false, extras: [] };
   const connecting = state.connection.status === 'connecting';
   const failed = state.connection.status === 'unavailable' || state.connection.status === 'not_found' || state.connection.status === 'invalid_request';
   const forbidden = state.connection.status === 'forbidden';
@@ -267,8 +268,8 @@ export function GithubSettings(): React.JSX.Element | null {
   if (!enabled) return null;
   return <>
     <SettingsSection label={t('github.settings')} testId="github-settings">
-      <SettingsRow label={t('github.name')} description={t(state.connection.status === 'connected' ? 'github.connected' : state.connection.status === 'reconnect' ? 'github.reconnect.body' : 'github.connect.body')}
-        control={<Button label={t(state.connection.status === 'connected' ? 'github.manage' : state.connection.status === 'reconnect' ? 'github.reconnect' : 'github.connect')} variant="secondary"
+      <SettingsRow label={t('github.name')} description={t(state.connection.status === 'checking' ? 'github.checking' : state.connection.status === 'connected' ? 'github.connected' : state.connection.status === 'reconnect' ? 'github.reconnect.body' : 'github.connect.body')}
+        control={<Button label={t(state.connection.status === 'checking' ? 'github.checking' : state.connection.status === 'connected' ? 'github.manage' : state.connection.status === 'reconnect' ? 'github.reconnect' : 'github.connect')} variant="secondary" isDisabled={state.connection.status === 'checking'}
           onClick={() => { void primeGithub(); setOpen(true); }} />} />
     </SettingsSection>
     <Dialog isOpen={open} onOpenChange={(value) => { if (!value) { dismissGithub(); setOpen(false); } }}

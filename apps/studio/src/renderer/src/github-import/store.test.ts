@@ -13,6 +13,25 @@ const connected: GithubImportState = {
 let stop: (() => void) | undefined;
 let calls: GithubImportCommand[];
 
+test('startup stays checking until the first status answer connects', async () => {
+  const answer = deferred<GithubImportState>();
+  useGithubImport.setState({ state: EMPTY_GITHUB });
+  installBridge({ githubImport: () => answer.promise });
+  const status = githubCommand({ kind: 'status' });
+  await tick(0);
+  expect(useGithubImport.getState().state.connection.status).toBe('checking');
+  answer.settle(connected);
+  await status;
+  expect(useGithubImport.getState().state.connection.status).toBe('connected');
+});
+
+test('a rejected first status request leaves Checking with an unavailable result', async () => {
+  useGithubImport.setState({ state: { ...EMPTY_GITHUB, enabled: true } });
+  installBridge({ githubImport: async () => { throw new Error('Offline'); } });
+  await githubCommand({ kind: 'status' });
+  expect(useGithubImport.getState().state.connection.status).toBe('unavailable');
+});
+
 beforeEach(() => {
   jest.useFakeTimers();
   seedFlags({ sections: false, connectors: false, githubImport: true });
@@ -327,7 +346,7 @@ test('an unfinished connection keeps checking after a disconnected answer until 
     githubImport: async (command) => {
       calls.push(command);
       if (command.kind === 'start') return { ...EMPTY_GITHUB, enabled: true, connectionAttempted: true, connection: { status: 'connecting' } };
-      return approved ? connected : { ...EMPTY_GITHUB, enabled: true, connectionAttempted: true };
+      return approved ? connected : { ...EMPTY_GITHUB, enabled: true, connectionAttempted: true, connection: { status: 'disconnected' } };
     },
     onAuthChanged: () => () => {},
   });

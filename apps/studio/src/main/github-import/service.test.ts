@@ -36,6 +36,41 @@ function deferred<Value>() {
 }
 
 describe('GitHub import boundary', () => {
+  test('the first connection check stays checking until its result arrives', async () => {
+    const flow = fixture();
+    expect((await flow.service.command({ kind: 'begin', entryPoint: 'settings' })).connection.status).toBe('checking');
+    const result = deferred<Awaited<ReturnType<GithubBackend['status']>>>();
+    flow.backend.status = () => result.promise;
+    const checking = flow.service.command({ kind: 'status' });
+    expect((await flow.service.command({ kind: 'cancel' })).connection.status).toBe('checking');
+    result.resolve({ status: 'connected', scopes: [], expiresAt: null });
+    expect((await checking).connection.status).toBe('connected');
+  });
+
+  test('a failed first status check settles instead of staying Checking', async () => {
+    const flow = fixture();
+    flow.backend.status = async () => { throw new Error('Offline'); };
+    expect((await flow.service.command({ kind: 'status' })).connection).toEqual({ status: 'unavailable', reason: 'provider_unavailable' });
+  });
+
+  for (const operation of ['clone', 'branches'] as const) {
+    for (const status of ['forbidden', 'not_found', 'disconnected'] as const) test(`${operation} repository failure ${status} leaves the account connected`, async () => {
+      const flow = fixture();
+      const selected = await flow.select();
+      flow.backend.credential = async () => ({ status });
+      await flow.service.command(operation === 'clone'
+        ? { kind: 'clone', repositoryId: REPO.id, branch: 'design', entryPoint: 'projects' }
+        : { kind: 'branches', repositoryId: REPO.id });
+      await Bun.sleep(0);
+      const failed = await flow.service.command({ kind: 'cancel' });
+      expect(failed.phase).toBe('failed');
+      expect(failed.failure).toBe('access');
+      expect(failed.connection).toEqual(selected.connection);
+      expect(failed.repositoryId).toBe(REPO.id);
+      expect(failed.repositories).toEqual(selected.repositories);
+    });
+  }
+
   for (const ending of ['dismiss', 'cancel', 'dispose'] as const) test(`an active Projects creation is abandoned once on ${ending} without a connection attempt`, async () => {
     const steps: string[] = [];
     const flow = fixture({ creationEvent: (step) => { steps.push(step); } });

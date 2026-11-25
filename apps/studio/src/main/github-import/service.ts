@@ -22,7 +22,7 @@ export function listedRepository(listing: GithubRepository): GithubRepository | 
 }
 
 const githubOff = (): GithubImportState => ({
-  enabled: false, connection: { status: 'disconnected' }, repositories: [], branches: [], phase: 'idle', progress: 0,
+  enabled: false, connection: { status: 'checking' }, repositories: [], branches: [], phase: 'idle', progress: 0,
 });
 
 export interface GithubImportDeps {
@@ -264,7 +264,7 @@ export function createGithubImport(deps: GithubImportDeps) {
         if (selection === undefined || selection.repository.id !== command.repositoryId) { phase = previous; return snapshot(); }
         const credential = await backend.credential(selection.repository.fullName, 'clone');
         if (!ownsLoading()) return active() ? snapshot() : githubOff();
-        if (credential.status !== 'ready') { context = { ...context, connection: credential }; phase = { kind: 'failed', selection, failure: 'access' }; return snapshot(); }
+        if (credential.status !== 'ready') { phase = { kind: 'failed', selection, failure: 'access' }; return snapshot(); }
         if (!validCredential(credential, selection.repository.fullName)) throw new Error('Invalid credential');
         const branches = await (deps.branches ?? listRemoteBranches)(credential);
         if (!ownsLoading()) return active() ? snapshot() : githubOff();
@@ -303,8 +303,7 @@ export function createGithubImport(deps: GithubImportDeps) {
           try {
             const credential = await backend.credential(repo.fullName, 'clone');
             if (!ownsClone() || signal.aborted) outcome = 'cancelled';
-            else if (credential.status !== 'ready') context = { ...context, connection: credential };
-            else {
+            else if (credential.status === 'ready') {
               const result = await (deps.clone ?? cloneRepository)({ credential, repository: repo.fullName, branch: command.branch, parent: cloning.destination, signal,
                 progress: (progress) => { if (ownsClone()) cloning.progress = Math.max(cloning.progress, progress); },
               });
@@ -327,7 +326,7 @@ export function createGithubImport(deps: GithubImportDeps) {
       if (ownsLoading()) {
         const previous = loading.previous;
         phase = { kind: 'failed', failure: 'network', selection: 'selection' in previous ? previous.selection : undefined };
-        context = { ...context, connection: context.connection.status === 'connecting' ? { status: 'unavailable', reason: 'provider_unavailable' } : context.connection };
+        context = { ...context, connection: context.connection.status === 'connecting' || (command.kind === 'status' && context.connection.status === 'checking') ? { status: 'unavailable', reason: 'provider_unavailable' } : context.connection };
       }
     } finally { if (phase === loading) phase = loading.previous; }
     return active() ? snapshot() : githubOff();

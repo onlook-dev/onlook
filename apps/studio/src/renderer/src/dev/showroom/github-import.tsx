@@ -14,14 +14,15 @@ import { Focused, noop, type Gallery } from './Showroom.js';
 const repository = { id: 1, fullName: 'github/docs', private: true, defaultBranch: 'main', archived: false, canPull: true, canPush: true };
 const CONNECTED: GithubImportState = { ...EMPTY_GITHUB, enabled: true, connection: { status: 'connected', scopes: ['repo'], expiresAt: null }, repositories: [repository, ...['octocat/Hello-World', 'acme-design/checkout-flow', 'acme-design/design-system', 'yuki-tanaka/portfolio', 'acme-design/mobile-app'].map((fullName, index) => ({ ...repository, id: index + 2, fullName }))] };
 const SELECTED: GithubImportState = { ...CONNECTED, repositoryId: 1, branches: ['main', 'design-refresh'], destination: '/Documents', destinationChoice: 'documents' };
-const STATES = ['connect', 'connecting', 'no-connection', 'waiting', 'reconnect', 'missing-scopes', 'forbidden', 'unavailable', 'unavailable-after-connect', 'rate-limited', 'token-lifetime', 'not-found', 'invalid-request', 'disabled', 'list', 'selected', 'archived', 'local', 'blocked-sso', 'blocked-approval', 'slow', 'empty', 'refreshing', 'connect-pending', 'clone-pending', 'list-hover', 'list-focus', 'existing', 'cloning', 'network', 'access', 'credential-failed', 'disk', 'empty-repo', 'cancelled', 'destination', 'existing-failed', 'cleanup', 'unknown', 'hover', 'focus'] as const;
-const SURFACES = ['sources', 'sources-off', 'card', 'card-busy', 'onboarding', 'projects', 'projects-hover', 'projects-focus', 'settings', 'settings-lapsed', 'settings-connected', 'settings-disconnected', 'settings-connecting', 'settings-error'] as const;
+const STATES = ['checking', 'connect', 'connecting', 'no-connection', 'waiting', 'reconnect', 'missing-scopes', 'forbidden', 'unavailable', 'unavailable-after-connect', 'rate-limited', 'token-lifetime', 'not-found', 'invalid-request', 'disabled', 'list', 'selected', 'archived', 'local', 'blocked-sso', 'blocked-approval', 'slow', 'empty', 'refreshing', 'connect-pending', 'clone-pending', 'list-hover', 'list-focus', 'existing', 'cloning', 'network', 'access', 'credential-failed', 'disk', 'empty-repo', 'cancelled', 'destination', 'existing-failed', 'cleanup', 'unknown', 'hover', 'focus'] as const;
+const SURFACES = ['sources', 'sources-off', 'card', 'card-busy', 'onboarding', 'projects', 'projects-hover', 'projects-focus', 'settings', 'settings-checking', 'settings-dialog-checking', 'settings-lapsed', 'settings-connected', 'settings-disconnected', 'settings-connecting', 'settings-error'] as const;
 
 function stateFor(name: typeof STATES[number]): GithubImportState {
-  if (name === 'connect' || name === 'focus' || name === 'hover' || name === 'connect-pending') return { ...EMPTY_GITHUB, enabled: true };
+  if (name === 'checking') return { ...EMPTY_GITHUB, enabled: true };
+  if (name === 'connect' || name === 'focus' || name === 'hover' || name === 'connect-pending') return { ...EMPTY_GITHUB, enabled: true, connection: { status: 'disconnected' } };
   if (name === 'connecting') return { ...EMPTY_GITHUB, enabled: true, connectionAttempted: true, connection: { status: 'connecting' } };
-  if (name === 'no-connection') return { ...EMPTY_GITHUB, enabled: true, connectionAttempted: true };
-  if (name === 'waiting') return { ...EMPTY_GITHUB, enabled: true, connectionAttempted: true, waitingForApproval: true };
+  if (name === 'no-connection') return { ...EMPTY_GITHUB, enabled: true, connectionAttempted: true, connection: { status: 'disconnected' } };
+  if (name === 'waiting') return { ...EMPTY_GITHUB, enabled: true, connectionAttempted: true, waitingForApproval: true, connection: { status: 'disconnected' } };
   if (name === 'reconnect' || name === 'missing-scopes') return { ...EMPTY_GITHUB, enabled: true, connection: { status: 'reconnect', reason: name === 'reconnect' ? 'expired' : 'missing_scopes' } };
   if (name === 'forbidden') return { ...EMPTY_GITHUB, enabled: true, connection: { status: 'forbidden' } };
   if (name === 'unavailable' || name === 'rate-limited' || name === 'token-lifetime') return { ...EMPTY_GITHUB, enabled: true, connection: { status: 'unavailable', reason: name === 'rate-limited' ? 'rate_limited' : name === 'token-lifetime' ? 'token_lifetime' : 'provider_unavailable' } };
@@ -65,20 +66,20 @@ function SurfaceStory({ name }: { name: typeof SURFACES[number] }): React.JSX.El
   useLayoutEffect(() => {
     seedFlags({ sections: false, connectors: false, githubImport: name !== 'sources-off' });
     seedCapabilities({ github: true });
-    useGithubImport.setState({ state: name === 'settings-lapsed' ? stateFor('reconnect') : CONNECTED });
+    useGithubImport.setState({ state: name === 'settings-checking' ? stateFor('checking') : name === 'settings-lapsed' ? stateFor('reconnect') : CONNECTED });
     if (name === 'sources' || name === 'sources-off') root.current?.querySelector<HTMLButtonElement>('[data-testid="add-codebase"]')?.click();
   }, [name]);
   if (name === 'onboarding') return <div style={{ width: 840 }}><ImportSourceChooser onOpen={noop} /></div>;
   /* Settings keeps the dialog it had before the picker grew: the library's chrome at 520px (ONL-3182). */
-  if (name.startsWith('settings-') && name !== 'settings-lapsed') {
-    const state = name === 'settings-connected' ? stateFor('list') : name === 'settings-connecting' ? stateFor('connecting') : name === 'settings-error' ? stateFor('rate-limited') : stateFor('no-connection');
+  if (name.startsWith('settings-') && name !== 'settings-lapsed' && name !== 'settings-checking') {
+    const state = name === 'settings-dialog-checking' ? stateFor('checking') : name === 'settings-connected' ? stateFor('list') : name === 'settings-connecting' ? stateFor('connecting') : name === 'settings-error' ? stateFor('rate-limited') : stateFor('no-connection');
     return <div style={{ width: SETTINGS_FLOW_WIDTH + 80, padding: 20 }}>
       <Dialog isInline isOpen onOpenChange={noop} purpose="form" width={SETTINGS_FLOW_WIDTH} maxHeight={SETTINGS_FLOW_HEIGHT} style={{ height: SETTINGS_FLOW_HEIGHT }} aria-label={t('github.name')}>
         <GithubSettingsView state={state} onCommand={noop} onClose={noop} />
       </Dialog>
     </div>;
   }
-  if (name === 'settings' || name === 'settings-lapsed') return <div style={{ width: 560, padding: 24 }}><GithubSettings /></div>;
+  if (name === 'settings' || name === 'settings-lapsed' || name === 'settings-checking') return <div style={{ width: 560, padding: 24 }}><GithubSettings /></div>;
   /* The same door as a card, which is how the first-run step stands it beside Start from scratch. */
   if (name === 'card' || name === 'card-busy') return <div style={{ width: 300, height: 170, padding: 24, display: 'flex' }}>
     <AddCodebase entryPoint="onboarding" presentation="card" isBusy={name === 'card-busy'} onFolder={noop} onOpen={noop} />

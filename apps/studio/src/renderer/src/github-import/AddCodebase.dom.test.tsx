@@ -10,13 +10,13 @@ import { deferred, installBridge } from '../testing/bridge.js';
 import { FolderIcon } from '../icons/glyphs.js';
 import { SidebarRow, SIDEBAR_ROW_HEIGHT } from '../projects/SidebarRow.js';
 import { AddCodebase } from './AddCodebase.js';
-import { GithubImportFlow } from './GithubImport.js';
+import { GithubImportFlow, GithubSettings } from './GithubImport.js';
 import { EMPTY_GITHUB, githubCommand, useGithubImport } from './store.js';
 
 let root: Root | undefined;
 let container: HTMLDivElement | undefined;
 
-const disconnected = { ...EMPTY_GITHUB, enabled: true };
+const disconnected = { ...EMPTY_GITHUB, enabled: true, connection: { status: 'disconnected' as const } };
 
 async function mount(bridge: Parameters<typeof installBridge>[0], canOpen = true): Promise<void> {
   seedFlags({ sections: false, connectors: false, githubImport: true });
@@ -72,11 +72,29 @@ test('the repository choice opens a modal and focus moves in once preparation en
   expect(source).not.toBeNull();
   await act(async () => { source!.click(); });
   expect(dialog()).not.toBeNull();
-  const connect = dialog()!.querySelector<HTMLButtonElement>('[data-testid="github-import-connect"] button');
-  expect(connect?.disabled).toBe(true);
+  expect(dialog()!.textContent).toContain(t('github.checking'));
+  expect(dialog()!.querySelector('[data-testid="github-import-connect"] button')).toBeNull();
   await act(async () => { beginning.settle(disconnected); });
+  const connect = dialog()!.querySelector<HTMLButtonElement>('[data-testid="github-import-connect"] button');
   expect(connect?.disabled).toBe(false);
   expect(document.activeElement).toBe(connect);
+});
+
+test('Settings shows Checking without Connect GitHub until the first answer arrives', async () => {
+  const answer = deferred<GithubImportState>();
+  await mount({ githubImport: () => answer.promise });
+  await act(async () => { root!.render(<GithubSettings />); });
+  const row = document.querySelector('[data-testid="github-settings"]')!;
+  expect(row.textContent).toContain(t('github.checking'));
+  expect(row.textContent).not.toContain(t('github.connect'));
+  expect(row.querySelector<HTMLButtonElement>('button')?.disabled).toBe(true);
+  const checking = githubCommand({ kind: 'status' });
+  await act(async () => {
+    answer.settle({ ...EMPTY_GITHUB, enabled: true, connection: { status: 'connected', scopes: [], expiresAt: null } });
+    await checking;
+  });
+  expect(row.textContent).toContain(t('github.manage'));
+  expect(row.textContent).not.toContain(t('github.connect'));
 });
 
 test('Back closes the modal without reopening the choices and ignores preparation that finishes later', async () => {

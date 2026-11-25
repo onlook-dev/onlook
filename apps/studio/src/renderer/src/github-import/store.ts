@@ -5,7 +5,7 @@ import { flagEnabled } from '../flags/store.js';
 import { studio } from '../bridge.js';
 
 export const EMPTY_GITHUB: GithubImportState = {
-  enabled: false, connection: { status: 'disconnected' }, repositories: [], branches: [], phase: 'idle', progress: 0,
+  enabled: false, connection: { status: 'checking' }, repositories: [], branches: [], phase: 'idle', progress: 0,
 };
 
 export const useGithubImport = create<{
@@ -105,7 +105,7 @@ async function performCommand(command: GithubImportCommand, owner: Dispatch): Pr
     }
     return owner === dispatch ? state : EMPTY_GITHUB;
   } catch {
-    if (command.kind === 'status' && owner === dispatch && useGithubImport.getState().state.enabled) return useGithubImport.getState().state;
+    if (command.kind === 'status' && owner === dispatch && useGithubImport.getState().state.enabled && useGithubImport.getState().state.connection.status !== 'checking') return useGithubImport.getState().state;
     const state: GithubImportState = command.kind === 'select'
       ? { ...useGithubImport.getState().state, phase: 'failed', failure: 'network', branches: [] }
       : { ...EMPTY_GITHUB, enabled: true, connection: { status: 'unavailable', reason: 'provider_unavailable' } };
