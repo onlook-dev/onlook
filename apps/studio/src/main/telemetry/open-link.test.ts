@@ -346,11 +346,13 @@ describe('app_opened_from_link telemetry event', () => {
     expect(openLinkEvents()).toHaveLength(2);
   });
 
-  it('deduplicates link_id across startup and running links without consuming the cap', async () => {
+  it('deduplicates link_id across startup and running links, even after flushing, without consuming the cap', async () => {
     const linkId = '550e8400-e29b-41d4-a716-446655440000';
     receiveOpenLink({ link_id: linkId, utm_source: 'first' }, 'cold');
     receiveOpenLink({ link_id: linkId, utm_source: 'duplicate' }, 'cold');
     initTelemetry();
+    await flush();
+    expect(openLinkEvents()).toHaveLength(1);
     receiveOpenLink({ link_id: linkId.toUpperCase() }, 'warm');
     for (let index = 0; index < 15; index++) receiveOpenLink({ utm_source: `other_${index}` }, 'warm');
     await flush();
