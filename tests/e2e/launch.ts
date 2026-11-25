@@ -15,7 +15,7 @@ const { appDir, mainEntry: BUILD_MAIN } = studioPaths(repoRoot);
 
 export type Target = 'build' | 'packaged';
 
-export function probeStarterExit(application: ElectronApplication, scratch: string, termination: 'exit' | 'kill' = 'exit') {
+export function probeStarterExit(application: ElectronApplication, scratch: string, termination: 'exit' | 'external-kill' = 'exit') {
   const modulePath = join(scratch, 'child.cjs');
   writeFileSync(modulePath, `
     process.parentPort.on('message', () => process.exit(3));
@@ -40,7 +40,7 @@ export function probeStarterExit(application: ElectronApplication, scratch: stri
       app.on('child-process-gone', gone);
       child.once('message', (message: { parentPid: number }) => {
         sameParent = message.parentPid === process.pid;
-        if (input.termination === 'kill') child.kill();
+        if (input.termination === 'external-kill') process.kill(child.pid!, 'SIGKILL');
         else child.postMessage({ exit: true });
       });
     });

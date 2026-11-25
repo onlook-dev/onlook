@@ -11,7 +11,7 @@ test('Electron identifies a forked starter through details.name', async () => {
     expect(actual.name).toBe('studio-starter:exit-contract');
     expect(actual.sameParent).toBe(true);
     expect([3, 768]).toContain(actual.exitCode);
-    const killed = await probeStarterExit(application, scratch, 'kill');
+    const killed = await probeStarterExit(application, scratch, 'external-kill');
     expect(killed.name).toBe('studio-starter:exit-contract');
     expect(killed.sameParent).toBe(true);
     expect(killed.reason).toBe('killed');
