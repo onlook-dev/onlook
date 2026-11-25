@@ -8,8 +8,14 @@ export const TIER_RANK: Record<Tier, number> = {
   unsigned: 0,
 };
 
-// The degrade to signed-unnotarized needs a person reading the banner; an unwatched release passes --require-notarized.
-// Unsigned reads to the recipient as "damaged, move to Trash" with no bypass, while every command exits 0.
+export function signingGuidance(tier: Tier): string {
+  switch (tier) {
+    case 'notarized': return 'Developer ID signed and notarized by Apple.';
+    case 'signed-unnotarized': return 'macOS may block opening this app.\nFor an app you trust, see System Settings > Privacy & Security.';
+    case 'unsigned': return 'Ad-hoc signed for use on your own Mac, not as a trusted download.\nIf macOS blocks it, see the Privacy & Security guidance in SOURCE_BUILD.md.';
+  }
+}
+
 export function minimumTier(requireNotarized: boolean): Tier {
   return requireNotarized ? 'notarized' : 'signed-unnotarized';
 }

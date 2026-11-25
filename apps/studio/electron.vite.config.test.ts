@@ -1,6 +1,7 @@
 import { expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { createRequire } from 'node:module';
 import { build, type InlineConfig, type Rollup } from 'vite';
 import { parse } from 'yaml';
 import studioConfig, { createStudioConfig, type StudioConfigOptions } from './electron.vite.config.js';
@@ -148,4 +149,84 @@ test('Studio source workflow selects the local provider even with ambient cloud 
   expect(config.main?.define?.['import.meta.env.MAIN_VITE_ONLOOK_CLOUD']).toBe('"false"');
   expect(Object.keys(config.main?.define ?? {}).filter((key) => /WORKOS|CLOUD_URL/.test(key))).toEqual([]);
   expect(JSON.stringify(config.main?.define)).not.toContain('ignored');
+});
+
+test('the account initializer bundles providers with only required exports without mixing static and dynamic imports', async () => {
+  for (const provider of ['local', 'provider-fake', 'required-exports-only']) {
+    const providerEntry = join(root, `apps/studio/src/main/cloud/${provider}.ts`);
+    const config = created({ providerEntry });
+    for (const mixedImports of [true, false]) {
+      const warnings: Rollup.RollupLog[] = [];
+      await build({
+        configFile: false, envFile: false, logLevel: 'silent', resolve: config.main?.resolve, define: config.main?.define,
+        plugins: [{
+          name: 'mixed-provider-import-control',
+          resolveId(id) {
+            if (id === 'mixed-provider-import-control') return '\0mixed-provider-import-control';
+            if (provider === 'required-exports-only' && id === providerEntry) return providerEntry;
+          },
+          load(id) {
+            if (id === '\0mixed-provider-import-control') return 'export { identity } from "@onlook/cloud-provider"; export async function create(options) { return (await import("@onlook/cloud-provider")).createOnlookClient(options); }';
+            if (provider === 'required-exports-only' && id === providerEntry) return 'export const identity = { prepareSession() { return null; } }; export function createOnlookClient() { return {}; }';
+          },
+        }],
+        build: { ssr: true, write: false, minify: false, rollupOptions: {
+          input: mixedImports ? 'mixed-provider-import-control' : join(root, 'apps/studio/src/main/cloud/index.ts'),
+          external: (id, importer) => importer !== undefined && id !== '@onlook/cloud-provider' && id !== providerEntry,
+          onwarn(warning) { warnings.push(warning); },
+          output: { format: 'es' },
+        } },
+      });
+      expect(warnings.some((warning) => warning.message.includes('dynamically imported') && warning.message.includes('statically imported'))).toBe(mixedImports);
+    }
+  }
+});
+
+test('all build targets correct only the misleading annotations in zod prose', async () => {
+  const config = created();
+  const require = createRequire(import.meta.url);
+  const core = join(dirname(require.resolve('zod/package.json')), 'v4/core');
+  for (const module of ['util', 'regexes']) {
+    const input = join(core, `${module}.js`);
+    expect(readFileSync(input, 'utf8')).toContain('`@__PURE__`');
+    const warnings: Rollup.RollupLog[] = [];
+    await build({
+      configFile: false, envFile: false, logLevel: 'silent',
+      build: { ssr: true, write: false, minify: false, rollupOptions: {
+        input,
+        onwarn(warning) { warnings.push(warning); },
+        output: { format: 'es' },
+      } },
+    });
+    expect(warnings.some((warning) => warning.code === 'INVALID_ANNOTATION')).toBe(true);
+  }
+  for (const surface of ['main', 'preload', 'renderer'] as const) {
+    const plugins = (config[surface]?.plugins ?? []).flat().filter((plugin) => (plugin as { name?: string } | null)?.name === 'zod-prose-annotation');
+    expect(plugins).toHaveLength(1);
+    const warnings: Rollup.RollupLog[] = [];
+    await build({
+      configFile: false, envFile: false, logLevel: 'silent', plugins,
+      build: { ssr: true, write: false, minify: false, rollupOptions: {
+        input: [join(core, 'util.js'), join(core, 'regexes.js')],
+        onwarn(warning) { warnings.push(warning); },
+        output: { format: 'es' },
+      } },
+    });
+    expect(warnings.filter((warning) => warning.code === 'INVALID_ANNOTATION')).toEqual([]);
+    const plugin = plugins[0] as { transform: (code: string, id: string) => { code: string } | null };
+    const prose = '// Wrapped in a `@__PURE__` IIFE: explanation\nexport const value = /* @__PURE__ */ makeValue();';
+    for (const extension of ['js', 'cjs']) {
+      const transformed = plugin.transform(prose, `/fixture/node_modules/zod/v4/core/util.${extension}`);
+      expect(transformed?.code).toContain('/* @__PURE__ */ makeValue()');
+      expect(transformed?.code).not.toContain('`@__PURE__`');
+      const regexProse = '/** esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable */\nexport const value = /* @__PURE__ */ makeValue();';
+      const regexTransformed = plugin.transform(regexProse, `/fixture/node_modules/zod/v4/core/regexes.${extension}`);
+      expect(regexTransformed?.code).toContain('/* @__PURE__ */ makeValue()');
+      expect(regexTransformed?.code).not.toContain('`@__PURE__`');
+    }
+    expect(plugin.transform(prose, '/fixture/src/util.js')).toBeNull();
+    expect(plugin.transform(prose, '/fixture/node_modules/other/util.js')).toBeNull();
+    expect(plugin.transform(prose, '/fixture/node_modules/zod/v4/core/schemas.js')).toBeNull();
+    expect(plugin.transform('export const value = /* @__PURE__ */ makeValue();', '/fixture/node_modules/zod/v4/core/util.js')).toBeNull();
+  }
 });

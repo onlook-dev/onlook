@@ -10,7 +10,7 @@
   "main": "./out/main/index.js",
   "scripts": {
     "//postinstall": "Electron ships no postinstall hook, so a fresh clone has no Electron without this. `install-app-deps` is the electron-rebuild escape hatch \u2014 normally a no-op, but where a future native module gets rebuilt against Electron's ABI.",
-    "postinstall": "install-electron && electron-builder install-app-deps",
+    "postinstall": "bun --no-env-file ../../scripts/install-app-deps.ts",
     "dev": "electron-vite dev",
     "//dev:lab": "The app's chrome on localhost:5273 (or the next free port; `LAB_PORT` overrides), in a browser \u2014 no Electron, `window.studio` faked (src/renderer/lab/). A design lab: anything that would touch a repo, a shell or a real agent is inert. NOT 3000, which belongs to the user's own dev server and the proof fixture.",
     "dev:lab": "vite --config vite.lab.config.ts",

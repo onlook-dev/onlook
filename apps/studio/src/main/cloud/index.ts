@@ -1,5 +1,5 @@
 import { handle } from '../ipc/bridge.js';
-import { identity as cloudIdentity } from '@onlook/cloud-provider';
+import { identity as cloudIdentity, createOnlookClient as createProviderOnlookClient } from '@onlook/cloud-provider';
 import { FOUND_US_QUESTION, IPC_EMIT, ROLE_QUESTION, isRoleOption, IPC_INVOKE, SIGN_IN_FAILURE_CODES, isFoundUsOption, type OnlookSignInMethod, type OnlookState, type SignInFailureCode, type StudioIdentity, type SurveyAnswer } from '@studio/events';
 import { everyRenderer } from '../window/host.js';
 import { broadcastToRenderers } from '../tabs/broadcast.js';
@@ -261,7 +261,7 @@ async function initializeCloud(): Promise<void> {
   let installed: OnlookClient | undefined;
   const started: (() => void)[] = [];
   try {
-    const provider = proofProvider() ?? await import('@onlook/cloud-provider');
+    const createClient = proofProvider()?.createOnlookClient ?? await Promise.resolve(createProviderOnlookClient);
     if (disposed) return;
     const prepared = providerIdentity().prepareSession();
     if (prepared === null) return;
@@ -271,7 +271,7 @@ async function initializeCloud(): Promise<void> {
       onIdentity: completeBrowserSignIn,
       onSignInFailure: noteProviderFailure,
     };
-    installed = provider.createOnlookClient(options);
+    installed = createClient(options);
     client = installed;
     // Set once a client exists: earlier, a throw from the line above latches a failed install for the launch; later, a retry would leak this client's listeners (ONL-2950).
     initialized = true;
