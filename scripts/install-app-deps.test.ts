@@ -214,3 +214,27 @@ test.each(['electron', 'rebuild'] as const)('default bun install buffers progres
     await install.captured;
   }
 }, 30_000);
+
+test.each(['SIGINT', 'SIGTERM'] as const)('the install CLI forwards %s to its running child and stops before rebuilding', async (signal) => {
+  const fixture = installFixture();
+  const binary = join(fixture.root, 'install-electron');
+  copyFileSync(join(fixture.root, 'packages/install-tools/fake.cjs'), binary);
+  const child = Bun.spawn([process.execPath, '--no-env-file', join(fixture.root, 'scripts/install-app-deps.ts')], {
+    cwd: fixture.studio,
+    env: { ...process.env, PATH: `${fixture.root}${delimiter}${process.env.PATH ?? ''}` },
+    stdout: 'pipe', stderr: 'pipe',
+  });
+  const output = new Response(child.stderr).text();
+  try {
+    await waitUntil(() => existsSync(join(fixture.root, 'electron.started')));
+    child.kill(signal);
+    expect(await child.exited).toBe(signal === 'SIGINT' ? 130 : 143);
+    expect(await output).toContain(`failed (exit ${signal === 'SIGINT' ? 130 : 143})`);
+    expect(existsSync(join(fixture.root, 'rebuild.started'))).toBe(false);
+  } finally {
+    writeFileSync(join(fixture.root, 'electron.release'), '');
+    child.kill();
+    await child.exited;
+    await output;
+  }
+}, 15_000);

@@ -83,6 +83,52 @@ test('a reused plugin forgets dependencies from the preceding build', async () =
   expect(JSON.parse(String(inventory.source)).map((entry: { name: string }) => entry.name)).toEqual(['first']);
 });
 
+test('a reused plugin recovers after a failed nested build without retaining its dependencies', async () => {
+  const { root } = fixture();
+  const notices = thirdPartyPlugin(root);
+  writeFileSync(join(root, 'second.js'), 'export const broken = ;');
+  await expect(bundle(root, notices, ['first', 'second'])).rejects.toThrow(/expected|unexpected/i);
+  const { output, warnings } = await bundle(root, notices, ['starter']);
+  expect(warnings.filter((warning) => warning.code === 'FILE_NAME_CONFLICT')).toEqual([]);
+  const inventory = output.find((asset) => asset.fileName === 'third-party.json');
+  if (inventory?.type !== 'asset') throw new Error('Inventory missing');
+  expect(JSON.parse(String(inventory.source)).map((entry: { name: string }) => entry.name)).toEqual(['starter']);
+});
+
+test('watch rebuilds replace the dependency inventory instead of accumulating old entries', async () => {
+  const { root } = fixture();
+  const inventories: string[][] = [];
+  const errors: unknown[] = [];
+  const watcher = await build({
+    root, configFile: false, envFile: false, logLevel: 'silent',
+    plugins: [thirdPartyPlugin(root), {
+      name: 'inventory-observer',
+      generateBundle(_options, output) {
+        const inventory = output['third-party.json'];
+        if (inventory?.type !== 'asset') throw new Error('Inventory missing');
+        inventories.push(JSON.parse(String(inventory.source)).map((entry: { name: string }) => entry.name));
+      },
+    }],
+    build: { ssr: true, write: false, minify: false, watch: {}, rollupOptions: { input: join(root, 'first.js') } },
+  }) as Rollup.RollupWatcher;
+  watcher.on('event', (event) => { if (event.code === 'ERROR') errors.push(event.error); });
+  const waitForInventory = async (count: number) => {
+    const deadline = Date.now() + 5000;
+    while (inventories.length < count && errors.length === 0 && Date.now() < deadline) await Bun.sleep(20);
+    expect(errors).toEqual([]);
+    expect(inventories.length).toBe(count);
+  };
+  try {
+    await waitForInventory(1);
+    expect(inventories[0]).toEqual(['first']);
+    writeFileSync(join(root, 'first.js'), "export { value } from './node_modules/second/index.js';");
+    await waitForInventory(2);
+    expect(inventories[1]).toEqual(['second']);
+  } finally {
+    await watcher.close();
+  }
+}, 15_000);
+
 test('an uncovered dependency in a later isolated entry still fails the build', async () => {
   const { root, entries } = fixture();
   writeFileSync(join(root, 'compliance/dependencies.json'), JSON.stringify(entries.filter((entry) => entry.name !== 'second')));

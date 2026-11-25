@@ -8,6 +8,10 @@ export const TIER_RANK: Record<Tier, number> = {
   unsigned: 0,
 };
 
+export function assessesGatekeeper(tier: Tier, officialBuild: boolean): boolean {
+  return officialBuild || tier !== 'unsigned';
+}
+
 export function signingGuidance(tier: Tier): string {
   switch (tier) {
     case 'notarized': return 'Developer ID signed and notarized by Apple.';

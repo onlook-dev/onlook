@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { meetsMinimum, signingGuidance } from './tier.js';
+import { assessesGatekeeper, meetsMinimum, signingGuidance, type Tier } from './tier.js';
+
+it.each(['unsigned', 'signed-unnotarized', 'notarized'] as const)('always assesses official %s builds and signed source builds', (tier: Tier) => {
+  expect(assessesGatekeeper(tier, true)).toBe(true);
+  expect(assessesGatekeeper(tier, false)).toBe(tier !== 'unsigned');
+});
 
 it('unsigned builds explain local use without claiming the app is damaged', () => {
   const guidance = signingGuidance('unsigned');

@@ -18,7 +18,7 @@ import { banner, bold, dim, green, red, yellow } from './ansi.js';
 import { packagedArchProblems } from './app-arch.js';
 import { assertMacSigningIdentity } from './mac-signing.js';
 import { artifactNames, MAC_ARCHES, packagedAppPath, type MacArch } from './release-targets.js';
-import { meetsMinimum, minimumTier, signingGuidance, TIER_RANK, type Tier } from './tier.js';
+import { assessesGatekeeper, meetsMinimum, minimumTier, signingGuidance, TIER_RANK, type Tier } from './tier.js';
 import { builderReleaseArgs, releaseOptions } from './release-channel.js';
 import { commitCount, stamp } from './version.js';
 import { packageMac, stapleAndValidate, validateStapledTicket } from './mac-notarization.js';
@@ -542,17 +542,18 @@ if (officialBuild && intendedTier !== 'unsigned') {
 
 let observedTier: Tier = 'unsigned';
 
-// Read off the .app: electron-builder 26 leaves the .dmg unsigned, so assessing it reports UNSIGNED for a shippable build.
-// spctl exits non-zero for a signed-unnotarized app; the `source=` line carries the verdict, not the status.
-const spctl = capture('spctl', ['-a', '-t', 'exec', '-vv', packagedApp]);
-const assessment = `${(spctl.stdout ?? '').trim()} ${(spctl.stderr ?? '').trim()}`.trim();
+if (assessesGatekeeper(intendedTier, officialBuild)) {
+  const spctl = capture('spctl', ['-a', '-t', 'exec', '-vv', packagedApp]);
+  const assessment = `${(spctl.stdout ?? '').trim()} ${(spctl.stderr ?? '').trim()}`.trim();
 
-if (/source=Notarized Developer ID/.test(assessment)) observedTier = 'notarized';
-else if (/source=Unnotarized Developer ID/.test(assessment)) observedTier = 'signed-unnotarized';
-else if (/origin=Developer ID Application/.test(assessment)) observedTier = 'signed-unnotarized';
-else observedTier = 'unsigned';
+  if (/source=Notarized Developer ID/.test(assessment)) observedTier = 'notarized';
+  else if (/source=Unnotarized Developer ID/.test(assessment)) observedTier = 'signed-unnotarized';
+  else if (/origin=Developer ID Application/.test(assessment)) observedTier = 'signed-unnotarized';
 
-console.log(`  gatekeeper (the app) .... ${dim(assessment.replace(/\n/g, ' | '))}`);
+  console.log(`  gatekeeper (the app) .... ${dim(assessment.replace(/\n/g, ' | '))}`);
+} else {
+  console.log(`  gatekeeper (the app) .... ${dim('not applicable (ad-hoc signed local build)')}`);
+}
 
 const stapled = observedTier !== 'unsigned' && await validateStapledTicket(packagedApp).then(() => true, () => false);
 if (observedTier === 'notarized' && !stapled) observedTier = 'signed-unnotarized';
@@ -602,6 +603,7 @@ if (dmg && !dirOnly && !windowTidied) {
 }
 
 verdict.push('', bold('Artifacts'));
+if (dirOnly) verdict.push(`  ${packagedApp.replace(repoRoot + '/', '')}`);
 if (dmg) verdict.push(`  ${dmg.replace(repoRoot + '/', '')}  ${dim(mb(dmg))}   ${dim('← install')}`);
 if (zip) verdict.push(`  ${zip.replace(repoRoot + '/', '')}  ${dim(mb(zip))}   ${dim(officialBuild ? '← updater' : '← app archive')}`);
 if (feed) verdict.push(`  ${feed.replace(repoRoot + '/', '')}          ${dim('← updater feed')}`);
