@@ -1124,7 +1124,7 @@ export function ChatRegion(): React.JSX.Element {
     : undefined;
   // Not disposed with the chat: dispose cancels on a singleton host and would kill a sign-in mid-completion on a project switch.
   const terminalFailed = useTerminalFailureToast();
-  const [signInController] = useState(() => makeSetupController('claude', 'editor', () => undefined, terminalFailed));
+  const [signInController] = useState(() => makeSetupController({ harness: 'claude', entryPoint: 'editor', onClose: () => undefined, terminalFailed }));
   const signInState = mappedSetupFor(
     'claude',
     {

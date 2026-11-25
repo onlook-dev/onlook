@@ -5,7 +5,7 @@ import type { HarnessId, SetupEntryPoint } from '@studio/events';
 import { SetupDialog, type OnboardingUiStrings } from '@studio/onboarding-ui';
 import type { SetupAction, SetupState } from '@studio/onboarding-ui/state';
 import { onboardingUiStrings } from '../onboarding/uiStrings.js';
-import { dialogPurposeFor, disabledActionsFor, mappedSetupFor, SetupDialogController, type SetupDialogFacts } from './dialog.js';
+import { dialogPurposeFor, disabledActionsFor, mappedSetupFor, SetupDialogController, type SetupDialogFacts, type SetupDialogDeps } from './dialog.js';
 import { CARD_GLYPHS } from './glyphs.js';
 import type { AgentSetupStrings } from '../agents/mapping.js';
 import { useAgentSetupStore } from './store.js';
@@ -35,13 +35,7 @@ export function useTerminalFailureToast(): () => void {
 }
 
 /** Shared by the dialog and the chat's sign-in card so the two agree on the funnel's entry point (ONL-2187). */
-export function makeSetupController(
-  harness: HarnessId,
-  entryPoint: SetupEntryPoint,
-  onClose: () => void,
-  onTerminalFailed: () => void,
-  onSwitchHarness?: () => void,
-): SetupDialogController {
+export function makeSetupController({ harness, entryPoint, onClose, terminalFailed, onSwitchHarness }: Pick<SetupDialogDeps, 'harness' | 'entryPoint' | 'onClose' | 'terminalFailed' | 'onSwitchHarness'>): SetupDialogController {
   return new SetupDialogController({
     harness,
     entryPoint,
@@ -51,7 +45,7 @@ export function makeSetupController(
       void navigator.clipboard.writeText(text).catch(() => undefined);
     },
     openTerminal: () => studio().openTerminal(),
-    terminalFailed: onTerminalFailed,
+    terminalFailed,
     plan: () => useAgentSetupStore.getState().claude.plan,
     onClose,
     ...(onSwitchHarness === undefined ? {} : { onSwitchHarness }),
@@ -65,12 +59,13 @@ export interface SetupDialogViewProps {
   onAction: (action: SetupAction, state: SetupState, browserId?: string) => void;
   onCodeChange?: (code: string) => void;
   onOpenChange: (isOpen: boolean) => void;
+  actionError?: string;
   offersOtherAgent?: boolean;
   isInline?: boolean;
   now?: number;
 }
 
-export function SetupDialogView({ harness, facts, strings, onAction, onCodeChange, onOpenChange, offersOtherAgent = true, isInline = false, now = Date.now() }: SetupDialogViewProps): React.JSX.Element {
+export function SetupDialogView({ harness, facts, strings, onAction, onCodeChange, onOpenChange, actionError, offersOtherAgent = true, isInline = false, now = Date.now() }: SetupDialogViewProps): React.JSX.Element {
   const mapped = mappedSetupFor(harness, facts, strings.setup, now);
   useModal(!isInline);
   return (
@@ -86,6 +81,7 @@ export function SetupDialogView({ harness, facts, strings, onAction, onCodeChang
       purpose={dialogPurposeFor(mapped.state)}
       disabledActions={disabledActionsFor(mapped.state, facts, now)}
       isBusy={mapped.busy}
+      {...(actionError === undefined ? {} : { actionError })}
       offersOtherAgent={offersOtherAgent}
       isInline={isInline}
       testId={`onboarding-dialog-${harness}`}
@@ -103,7 +99,7 @@ export interface SetupDialogHostProps {
 
 /** Mount keyed by harness: the controller is built once per mount. */
 export function SetupDialogHost({ harness, entryPoint, onClose, onSwitchHarness }: SetupDialogHostProps): React.JSX.Element {
-  const terminalFailed = useTerminalFailureToast();
+  const [terminalError, setTerminalError] = useState(false);
   const claude = useAgentSetupStore((s) => s.claude);
   const claudeSettled = useAgentSetupStore((s) => s.claudeSettled);
   const codex = useAgentSetupStore((s) => s.codex);
@@ -126,7 +122,13 @@ export function SetupDialogHost({ harness, entryPoint, onClose, onSwitchHarness 
     onSwitchRef.current = onSwitchHarness;
   });
   const [controller] = useState(() =>
-    makeSetupController(harness, entryPoint, () => onCloseRef.current(), terminalFailed, onSwitchHarness === undefined ? undefined : () => onSwitchRef.current?.()),
+    makeSetupController({
+      harness,
+      entryPoint,
+      onClose: () => onCloseRef.current(),
+      terminalFailed: () => setTerminalError(true),
+      ...(onSwitchHarness === undefined ? {} : { onSwitchHarness: () => onSwitchRef.current?.() }),
+    }),
   );
 
   useEffect(() => {
@@ -141,7 +143,11 @@ export function SetupDialogHost({ harness, entryPoint, onClose, onSwitchHarness 
       harness={harness}
       facts={{ claude, claudeSettled, codex, code, codexSignInAttempted, inFlight }}
       strings={setupStrings()}
-      onAction={(action, state, browserId) => void controller.act(action, state, browserId)}
+      onAction={(action, state, browserId) => {
+        if (action === 'open-terminal') setTerminalError(false);
+        void controller.act(action, state, browserId);
+      }}
+      {...(terminalError && mapped.state.state === 'fallback' ? { actionError: t('onboarding.setup.terminalOpenFailed') } : {})}
       onCodeChange={(code) => useAgentSetupStore.getState().typeCode(code)}
       onOpenChange={(isOpen) => controller.onOpenChange(isOpen)}
       offersOtherAgent={onSwitchHarness !== undefined}

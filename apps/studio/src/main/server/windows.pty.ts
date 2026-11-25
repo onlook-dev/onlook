@@ -2,6 +2,7 @@ import { strict as assert } from 'node:assert';
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { test } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { canonicalPath } from '../lib/canonical-path.js';
@@ -10,7 +11,7 @@ import { terminateWindowsTree } from '../env/windows.js';
 import { checkHealth, resolveCodex } from '../agent-host/appserver/resolve.js';
 import { inspectWindowsProcess, windowsProcesses } from './windows.js';
 import { identifyListener, isAlive, verifiesFor } from './owner.js';
-import { openWindowsTerminal } from '../terminal.js';
+import { windowsJobCommand } from '../env/windows-job.js';
 import { APP_ENV, runChildOutput } from '../env/child.js';
 import { systemExecutable } from '../env/platform.js';
 
@@ -22,10 +23,16 @@ test('Windows Open Terminal opens a console that accepts a pasted command', { sk
     const { stdout } = await runChildOutput(powershell, ['-NoProfile', '-NonInteractive', '-Command', "@(Get-CimInstance Win32_Process -Filter \"Name = 'cmd.exe'\" | Where-Object { $_.CommandLine -match '/d /k$' } | ForEach-Object { $_.ProcessId }) -join ','"], { env: APP_ENV, timeout: 15_000, windowsHide: true });
     return stdout.trim().split(',').filter(Boolean).map(Number);
   };
-  const before = new Set(await prompts());
+  let launcher: ChildProcessWithoutNullStreams | undefined;
   let promptPid: number | undefined;
   try {
-    await openWindowsTerminal();
+    const before = new Set(await prompts());
+    const entry = join(root, 'open-terminal.mjs');
+    const terminalModule = pathToFileURL(join(process.cwd(), 'apps/studio/src/main/terminal.ts')).href;
+    await writeFile(entry, `import { openWindowsTerminal } from ${JSON.stringify(terminalModule)}; await openWindowsTerminal(); process.stdout.write('ready\\n'); process.stdin.resume();`);
+    const command = windowsJobCommand(process.execPath, ['--import', join(process.cwd(), 'tests/apparatus/node-ts-resolve.ts'), entry]);
+    launcher = spawn(command.bin, command.args, { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
+    assert.equal(await firstLine(launcher), 'ready');
     const deadline = Date.now() + 15_000;
     while (Date.now() < deadline && promptPid === undefined) {
       promptPid = (await prompts()).find((pid) => !before.has(pid));
@@ -81,8 +88,7 @@ try {
     }
     assert.equal(result.trim(), 'terminal-ready');
   } finally {
-    await stopFixture(promptPid);
-    await rm(root, { recursive: true, force: true });
+    try { await stopFixture(launcher?.pid); } finally { await rm(root, { recursive: true, force: true }); }
   }
 });
 
