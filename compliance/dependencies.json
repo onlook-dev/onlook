@@ -1,11 +1,11 @@
 [
   {
     "name": "@anthropic-ai/claude-agent-sdk-darwin-arm64",
-    "version": "0.3.322",
+    "version": "0.3.329",
     "license": "SEE LICENSE IN LICENSE.md",
     "flag": "custom-or-compound-review",
     "textStatus": "preserved",
-    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-darwin-arm64/0.3.322",
+    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-darwin-arm64/0.3.329",
     "texts": [
       {
         "file": "LICENSE.md",
@@ -22,11 +22,11 @@
   },
   {
     "name": "@anthropic-ai/claude-agent-sdk-darwin-x64",
-    "version": "0.3.322",
+    "version": "0.3.329",
     "license": "SEE LICENSE IN LICENSE.md",
     "flag": "custom-or-compound-review",
-    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-darwin-x64/0.3.322",
-    "licenseSource": "https://unpkg.com/@anthropic-ai/claude-agent-sdk-darwin-x64@0.3.322/LICENSE.md",
+    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-darwin-x64/0.3.329",
+    "licenseSource": "https://unpkg.com/@anthropic-ai/claude-agent-sdk-darwin-x64@0.3.329/LICENSE.md",
     "texts": [
       {
         "file": "LICENSE.md",
@@ -35,18 +35,18 @@
     ],
     "textStatus": "preserved",
     "evidence": "05246b0a81e4c66f70ba29226b47b577323e92ce050c6e6ab792b7d91d797a38",
-    "integrity": "sha512-rTvLS9G1OzjMIaSXrJglQtmRtVcaRmMbJQC+ND02+atCA463ac7Ty/Wc6tyzBGk8zFFGKWnfAhKtLZTNg91eMg==",
+    "integrity": "sha512-nYtGrz5oe/SK8jMKr/JArzrjEBtTqLWlRBlGu6QLXBoXd4PB5Fdj+Nh7Idnf+LD8OwWz1fqXj8zt0HTIUMSvYA==",
     "surfaces": [
       "platform-sdk"
     ]
   },
   {
     "name": "@anthropic-ai/claude-agent-sdk-linux-arm64-musl",
-    "version": "0.3.322",
+    "version": "0.3.329",
     "license": "SEE LICENSE IN LICENSE.md",
     "flag": "custom-or-compound-review",
-    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-linux-arm64-musl/0.3.322",
-    "licenseSource": "https://unpkg.com/@anthropic-ai/claude-agent-sdk-linux-arm64-musl@0.3.322/LICENSE.md",
+    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-linux-arm64-musl/0.3.329",
+    "licenseSource": "https://unpkg.com/@anthropic-ai/claude-agent-sdk-linux-arm64-musl@0.3.329/LICENSE.md",
     "texts": [
       {
         "file": "LICENSE.md",
@@ -55,18 +55,18 @@
     ],
     "textStatus": "preserved",
     "evidence": "05246b0a81e4c66f70ba29226b47b577323e92ce050c6e6ab792b7d91d797a38",
-    "integrity": "sha512-zvgvVA/Mxpu1QttICZ1DGDlmgGo62HdVgKg6WbDGDQ3dgxtRC/kpCIepjtGEL8O1iO5NRxQ4mv8okLwCFcyrLQ==",
+    "integrity": "sha512-aOf1nA8roGApMzfL/aoEMBDGi11ZKtNV7mvp6OmaU0pgC24qECBeSUdsUuQBu9Z97kf5PDCh12JhkeHVDK+4JA==",
     "surfaces": [
       "platform-sdk"
     ]
   },
   {
     "name": "@anthropic-ai/claude-agent-sdk-linux-arm64",
-    "version": "0.3.322",
+    "version": "0.3.329",
     "license": "SEE LICENSE IN LICENSE.md",
     "flag": "custom-or-compound-review",
-    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-linux-arm64/0.3.322",
-    "licenseSource": "https://unpkg.com/@anthropic-ai/claude-agent-sdk-linux-arm64@0.3.322/LICENSE.md",
+    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-linux-arm64/0.3.329",
+    "licenseSource": "https://unpkg.com/@anthropic-ai/claude-agent-sdk-linux-arm64@0.3.329/LICENSE.md",
     "texts": [
       {
         "file": "LICENSE.md",
@@ -75,18 +75,18 @@
     ],
     "textStatus": "preserved",
     "evidence": "05246b0a81e4c66f70ba29226b47b577323e92ce050c6e6ab792b7d91d797a38",
-    "integrity": "sha512-H1v33+MxB5JMPlnJLZffiOQ+6muxyA7tgHPyYQ+So4TH7uRhaPcjv2X03CUo5U9gXleO6u+X8ngNNDRFtfUaSg==",
+    "integrity": "sha512-QvIfyMfjiYU2wkMfQ+tXTSwK76pXh/xSgdAFuqcPOiM3qgfi1kImcCIy/0wUnm9HGn0GZLXu7x0/lBu/PNHxVg==",
     "surfaces": [
       "platform-sdk"
     ]
   },
   {
     "name": "@anthropic-ai/claude-agent-sdk-linux-x64-musl",
-    "version": "0.3.322",
+    "version": "0.3.329",
     "license": "SEE LICENSE IN LICENSE.md",
     "flag": "custom-or-compound-review",
-    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-linux-x64-musl/0.3.322",
-    "licenseSource": "https://unpkg.com/@anthropic-ai/claude-agent-sdk-linux-x64-musl@0.3.322/LICENSE.md",
+    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-linux-x64-musl/0.3.329",
+    "licenseSource": "https://unpkg.com/@anthropic-ai/claude-agent-sdk-linux-x64-musl@0.3.329/LICENSE.md",
     "texts": [
       {
         "file": "LICENSE.md",
@@ -95,18 +95,18 @@
     ],
     "textStatus": "preserved",
     "evidence": "05246b0a81e4c66f70ba29226b47b577323e92ce050c6e6ab792b7d91d797a38",
-    "integrity": "sha512-jprUZMcQ3XcpoxwKRQ0fi3qAM1zYcytmNGhlD0gWDknbbSu8di5jLU7231ihJrCr4gbbtDu3FiFUd6w9EBEjfw==",
+    "integrity": "sha512-0j1Pu/egb7tbZk570MOd9vUVSlHvxnoA9ccDMdrAFqFGq3qb20IdHf4AvXuo9sbksKFXTx9oeEsvD4iFrL+wlA==",
     "surfaces": [
       "platform-sdk"
     ]
   },
   {
     "name": "@anthropic-ai/claude-agent-sdk-linux-x64",
-    "version": "0.3.322",
+    "version": "0.3.329",
     "license": "SEE LICENSE IN LICENSE.md",
     "flag": "custom-or-compound-review",
-    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-linux-x64/0.3.322",
-    "licenseSource": "https://unpkg.com/@anthropic-ai/claude-agent-sdk-linux-x64@0.3.322/LICENSE.md",
+    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-linux-x64/0.3.329",
+    "licenseSource": "https://unpkg.com/@anthropic-ai/claude-agent-sdk-linux-x64@0.3.329/LICENSE.md",
     "texts": [
       {
         "file": "LICENSE.md",
@@ -115,18 +115,18 @@
     ],
     "textStatus": "preserved",
     "evidence": "05246b0a81e4c66f70ba29226b47b577323e92ce050c6e6ab792b7d91d797a38",
-    "integrity": "sha512-M/i7uV5wQf1kvjiPJr2KF5PeA9BpftUpMTtwE+DpQ0Tj+scthQXSMsEhDvau/Rh/MfFOc+UHED4tltignmA5+Q==",
+    "integrity": "sha512-TKHcN+kOwG1Q6meOhKu9ZCJPUsXRL4dgx07R1BPgm0vREPpsSxaET5w7LuCs4pLIQgATJdqj6hjWtejDhVszNA==",
     "surfaces": [
       "platform-sdk"
     ]
   },
   {
     "name": "@anthropic-ai/claude-agent-sdk-win32-arm64",
-    "version": "0.3.322",
+    "version": "0.3.329",
     "license": "SEE LICENSE IN LICENSE.md",
     "flag": "custom-or-compound-review",
-    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-win32-arm64/0.3.322",
-    "licenseSource": "https://unpkg.com/@anthropic-ai/claude-agent-sdk-win32-arm64@0.3.322/LICENSE.md",
+    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-win32-arm64/0.3.329",
+    "licenseSource": "https://unpkg.com/@anthropic-ai/claude-agent-sdk-win32-arm64@0.3.329/LICENSE.md",
     "texts": [
       {
         "file": "LICENSE.md",
@@ -135,18 +135,18 @@
     ],
     "textStatus": "preserved",
     "evidence": "05246b0a81e4c66f70ba29226b47b577323e92ce050c6e6ab792b7d91d797a38",
-    "integrity": "sha512-o5sPmBKT4NOglODC45wSTFmjD1AQIboC9NdGFQFOTa8kMF3bok+YqpB0DF81RmMDf3iR5tieonZvOXdYm1TDjQ==",
+    "integrity": "sha512-lv4VKGQnTWIVToeWNrpekWIzYeTAQtOzDGXsU7krUizvJl3X0J/KiqEUB1Yi/F9VcYs3Aiu81RWtKdATLM5nkA==",
     "surfaces": [
       "platform-sdk"
     ]
   },
   {
     "name": "@anthropic-ai/claude-agent-sdk-win32-x64",
-    "version": "0.3.322",
+    "version": "0.3.329",
     "license": "SEE LICENSE IN LICENSE.md",
     "flag": "custom-or-compound-review",
-    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-win32-x64/0.3.322",
-    "licenseSource": "https://unpkg.com/@anthropic-ai/claude-agent-sdk-win32-x64@0.3.322/LICENSE.md",
+    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-win32-x64/0.3.329",
+    "licenseSource": "https://unpkg.com/@anthropic-ai/claude-agent-sdk-win32-x64@0.3.329/LICENSE.md",
     "texts": [
       {
         "file": "LICENSE.md",
@@ -155,18 +155,18 @@
     ],
     "textStatus": "preserved",
     "evidence": "05246b0a81e4c66f70ba29226b47b577323e92ce050c6e6ab792b7d91d797a38",
-    "integrity": "sha512-gONOkYx76of3p73opgWAT9gqpV7PRL8+az3vKoWXLc4xaDW6vhZF7fixpCnLDeUmPWxjXhnQxf30WGpKneTzNw==",
+    "integrity": "sha512-Pyn2sQciPirZk9OVh6EshSra84OBk11kJyTXgDv/v5PbHU2n2I+BbBYWkTeHpWeLlfRI61LWkFHtqs9cYOLOkg==",
     "surfaces": [
       "platform-sdk"
     ]
   },
   {
     "name": "@anthropic-ai/claude-agent-sdk",
-    "version": "0.3.322",
+    "version": "0.3.329",
     "license": "SEE LICENSE IN README.md",
     "flag": "custom-or-compound-review",
     "textStatus": "preserved",
-    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk/0.3.322",
+    "source": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk/0.3.329",
     "texts": [
       {
         "file": "LICENSE.md",
@@ -174,10 +174,10 @@
       },
       {
         "file": "README.md",
-        "text": "# Claude Agent SDK\n\n![](https://img.shields.io/badge/Node.js-18.14%2B-brightgreen?style=flat-square) [![npm]](https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk)\n\n[npm]: https://img.shields.io/npm/v/@anthropic-ai/claude-agent-sdk.svg?style=flat-square\n\nThe Claude Agent SDK enables you to programmatically build AI agents with Claude Code's capabilities. Create autonomous agents that can understand codebases, edit files, run commands, and execute complex workflows.\n\n**Learn more in the [official documentation](https://platform.claude.com/docs/en/agent-sdk/overview)**.\n\n## Get started\n\nInstall the Claude Agent SDK:\n\n```sh\nnpm install @anthropic-ai/claude-agent-sdk\n```\n\n## The `/core` entry (for apps that bundle the SDK)\n\n`@anthropic-ai/claude-agent-sdk/core` exports the same `query()`, `startup()`, `prewarm()`, `tool()`, `createSdkMcpServer()`, `renameSession()`/`tagSession()`/`deleteSession()`, `resolveSettings()`/`filterEscalatingDefaultMode()` and runtime constants as the root entry, and nothing else — no session listing/reading/import helpers — so its eagerly loaded code is about a quarter of the root's; the settings resolver behind `resolveSettings()` and the code behind the three session mutations load on first call. Unlike the root entry it does **not** inline the SDK's peer dependencies: `zod` (^4, as declared in this package's `peerDependencies`) and `@modelcontextprotocol/sdk` (^1.29) are imported from your install — specifically the `zod/v4` subpath, plus `zod/v3` when the settings resolver loads — which is what you want when your bundler already carries them. (zod 3.25+, which carries the v4 engine under `zod/v4`, also works in practice, but ^4 is the supported range.) Import from **either** the root **or** `/core` in a given process, not both — they are separate bundles, and mixing them loads two copies of the SDK's classes and state. Its types require TypeScript 5.0+.\n\n## Compiled binaries (`bun build --compile`)\n\nWhen bundling your application into a single executable with `bun build --compile`, the SDK cannot resolve the native CLI binary at runtime — `require.resolve` doesn't work from inside the compiled `$bunfs` (or `B:\\~BUN\\...` on Windows) virtual filesystem.\n\nEmbed the platform-specific binary as a file asset, extract it to a real path, and pass it explicitly:\n\n```js\nimport binPath from '@anthropic-ai/claude-agent-sdk-darwin-arm64/claude' with { type: 'file' }\nimport { extractFromBunfs } from '@anthropic-ai/claude-agent-sdk/extract'\nimport { query } from '@anthropic-ai/claude-agent-sdk'\n\nconst cliPath = extractFromBunfs(binPath)\n\nfor await (const message of query({\n  prompt: '…',\n  options: { pathToClaudeCodeExecutable: cliPath },\n})) { /* … */ }\n```\n\nEach compiled executable embeds one platform's binary, matching your `--target`. Cross-compiling requires installing the non-matching platform package (e.g. `npm install @anthropic-ai/claude-agent-sdk-linux-x64 --force`). On Windows the binary subpath is `/claude.exe` (e.g. `@anthropic-ai/claude-agent-sdk-win32-x64/claude.exe`).\n\n## Migrating from the Claude Code SDK\n\nThe Claude Code SDK is now the Claude Agent SDK. Please check out the [migration guide](https://platform.claude.com/docs/en/agent-sdk/migration-guide) for details on breaking changes.\n\n## Reporting Bugs\n\nWe welcome your feedback. File a [GitHub issue](https://github.com/anthropics/claude-agent-sdk-typescript/issues) to report bugs or request features.\n\n## Connect on Discord\n\nJoin the [Claude Developers Discord](https://anthropic.com/discord) to connect with other developers building with the Claude Agent SDK. Get help, share feedback, and discuss your projects with the community.\n\n## Data collection, usage, and retention\n\nWhen you use the Claude Agent SDK, we collect feedback, which includes usage data (such as code acceptance or rejections), associated conversation data, and user feedback submitted via the /bug command.\n\n### How we use your data\n\nSee our [data usage policies](https://code.claude.com/docs/en/data-usage).\n\n### Privacy safeguards\n\nWe have implemented several safeguards to protect your data, including limited retention periods for sensitive information and restricted access to user session data.\n\nFor full details, please review our [Commercial Terms of Service](https://www.anthropic.com/legal/commercial-terms) and [Privacy Policy](https://www.anthropic.com/legal/privacy).\n\n"
+        "text": "# Claude Agent SDK\n\n![](https://img.shields.io/badge/Node.js-18.14%2B-brightgreen?style=flat-square) [![npm]](https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk)\n\n[npm]: https://img.shields.io/npm/v/@anthropic-ai/claude-agent-sdk.svg?style=flat-square\n\nThe Claude Agent SDK enables you to programmatically build AI agents with Claude Code's capabilities. Create autonomous agents that can understand codebases, edit files, run commands, and execute complex workflows.\n\n**Learn more in the [official documentation](https://platform.claude.com/docs/en/agent-sdk/overview)**.\n\n## Get started\n\nInstall the Claude Agent SDK:\n\n```sh\nnpm install @anthropic-ai/claude-agent-sdk\n```\n\n## The `/core` entry (for apps that bundle the SDK)\n\n`@anthropic-ai/claude-agent-sdk/core` exports the same `query()`, `startup()`, `prewarm()`, `tool()`, `createSdkMcpServer()`, `getSessionInfo()`, `renameSession()`/`tagSession()`/`archiveSession()`/`unarchiveSession()`/`deleteSession()`, `resolveSettings()`/`filterEscalatingDefaultMode()`/`matchDeniedModels()` and runtime constants as the root entry, and nothing else — no other session listing/reading/import helpers — so its eagerly loaded code is about a quarter of the root's; the settings resolver behind `resolveSettings()`, the matcher behind `matchDeniedModels()` and the code behind `getSessionInfo()` and the session mutations load on first call. Unlike the root entry it does **not** inline the SDK's peer dependencies: `zod` (^4, as declared in this package's `peerDependencies`) and `@modelcontextprotocol/sdk` (^1.29) are imported from your install — specifically the `zod/v4` subpath, plus `zod/v3` when the settings resolver loads — which is what you want when your bundler already carries them. (zod 3.25+, which carries the v4 engine under `zod/v4`, also works in practice, but ^4 is the supported range.) Import from **either** the root **or** `/core` in a given process, not both — they are separate bundles, and mixing them loads two copies of the SDK's classes and state. Its types require TypeScript 5.0+.\n\n## Compiled binaries (`bun build --compile`)\n\nWhen bundling your application into a single executable with `bun build --compile`, the SDK cannot resolve the native CLI binary at runtime — `require.resolve` doesn't work from inside the compiled `$bunfs` (or `B:\\~BUN\\...` on Windows) virtual filesystem.\n\nEmbed the platform-specific binary as a file asset, extract it to a real path, and pass it explicitly:\n\n```js\nimport binPath from '@anthropic-ai/claude-agent-sdk-darwin-arm64/claude' with { type: 'file' }\nimport { extractFromBunfs } from '@anthropic-ai/claude-agent-sdk/extract'\nimport { query } from '@anthropic-ai/claude-agent-sdk'\n\nconst cliPath = extractFromBunfs(binPath)\n\nfor await (const message of query({\n  prompt: '…',\n  options: { pathToClaudeCodeExecutable: cliPath },\n})) { /* … */ }\n```\n\nEach compiled executable embeds one platform's binary, matching your `--target`. Cross-compiling requires installing the non-matching platform package (e.g. `npm install @anthropic-ai/claude-agent-sdk-linux-x64 --force`). On Windows the binary subpath is `/claude.exe` (e.g. `@anthropic-ai/claude-agent-sdk-win32-x64/claude.exe`).\n\n## Migrating from the Claude Code SDK\n\nThe Claude Code SDK is now the Claude Agent SDK. Please check out the [migration guide](https://platform.claude.com/docs/en/agent-sdk/migration-guide) for details on breaking changes.\n\n## Reporting Bugs\n\nWe welcome your feedback. File a [GitHub issue](https://github.com/anthropics/claude-agent-sdk-typescript/issues) to report bugs or request features.\n\n## Connect on Discord\n\nJoin the [Claude Developers Discord](https://anthropic.com/discord) to connect with other developers building with the Claude Agent SDK. Get help, share feedback, and discuss your projects with the community.\n\n## Data collection, usage, and retention\n\nWhen you use the Claude Agent SDK, we collect feedback, which includes usage data (such as code acceptance or rejections), associated conversation data, and user feedback submitted via the /bug command.\n\n### How we use your data\n\nSee our [data usage policies](https://code.claude.com/docs/en/data-usage).\n\n### Privacy safeguards\n\nWe have implemented several safeguards to protect your data, including limited retention periods for sensitive information and restricted access to user session data.\n\nFor full details, please review our [Commercial Terms of Service](https://www.anthropic.com/legal/commercial-terms) and [Privacy Policy](https://www.anthropic.com/legal/privacy).\n\n"
       }
     ],
-    "evidence": "04770be363de9d171e8e7f2b31b214fffd5f03dcb08fb472bf584c566fc6698d",
+    "evidence": "4471e549f5ab3172a502d04c8cd1b185281c35b34c821f9a967af17c7b2ec164",
     "surfaces": [
       "main",
       "preload",

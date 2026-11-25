@@ -13,6 +13,11 @@ function render(snapshot: ProjectSetupSnapshot | null, ask: AskState = 'idle', i
 }
 
 describe('the read-only project setup surface', () => {
+  it('explains an automatic port change in one sentence', () => {
+    const snapshot = { ...setupSnapshot('running'), portMoves: [{ from: 48001, to: 4700 }] };
+    expect(render(snapshot)).toContain(t('projectSetup.portMoved', snapshot.portMoves[0]!));
+  });
+
   it('renders without a browser or preload, including the loading and empty states', () => {
     expect(render(null)).toContain(t('projectSetup.loading'));
     expect(render({ saved: null, verified: null, state: 'idle', failure: null })).toContain(t('projectSetup.empty'));

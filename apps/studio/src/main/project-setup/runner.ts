@@ -8,6 +8,7 @@ import { userEnv } from '../env/shell-env.js';
 import { log } from '../log/index.js';
 import { identifyListener, isAlive, verifiesFor, type IdentifyListener, type ListenerIdentity } from '../server/owner.js';
 import { probePort } from '../server/probe.js';
+import { pickStarterPort } from '../starter/port.js';
 import type { SetupRunFailureReason, TelemetryProperties } from '../telemetry/events.js';
 import { previewStderrTail, reportedPreviewPort, type PreviewDiagnostics } from '../telemetry/preview-diagnostics.js';
 import { previewProjectTools } from '../workspace/preview-tools.js';
@@ -72,6 +73,7 @@ export interface ProjectSetupDeps {
   diagnostics?: (cwd: string, measurement: Partial<PreviewDiagnostics>, reset?: boolean) => void;
   serverExited?: (cwd: string) => void;
   report: (cwd: string, folder: string, port: number, signal: AbortSignal) => Promise<void>;
+  movePort?: (cwd: string, from: number, to: number, signal: AbortSignal) => Promise<() => Promise<void>>;
   installTimeoutMs?: number;
   readyTimeoutMs?: number;
   stopGraceMs?: number;
@@ -119,6 +121,8 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
   const handles = new Map<string, Set<ProcessHandle>>();
   const phases = new Map<string, RunPhase>();
   const reconnected = new Map<string, Set<ReconnectedEndpoint>>();
+  const reservedPorts = new Map<number, ActiveRun>();
+  const portMoves = new Map<string, NonNullable<ProjectSetupSnapshot['portMoves']>>();
   const sameListener = (endpoint: ReconnectedEndpoint, identity: ListenerIdentity | undefined): boolean =>
     identity?.pid === endpoint.pid && identity.cwd !== undefined && canonicalPath(identity.cwd) === endpoint.listenerFolder && verifiesFor(identity, endpoint.folder) === 'ours';
   const cancellations = new Map<string, number>();
@@ -136,7 +140,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
     const record = store.read(cwd);
     const phase = phases.get(cwd);
     const failure = phase?.state === 'failed' ? phase.failure : retainedFailures.get(cwd) ?? record.failure;
-    return structuredClone(snapshotOf({ ...record, failure }, phase?.state));
+    return structuredClone({ ...snapshotOf({ ...record, failure }, phase?.state), ...(portMoves.has(cwd) ? { portMoves: portMoves.get(cwd) } : {}) });
   };
   const publish = (cwd: string, phase: RunPhase): void => {
     phases.set(cwd, phase);
@@ -222,7 +226,18 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
     return termination.promise;
   };
   const execute = async (cwd: string, run: ActiveRun, ids: string[] | undefined): Promise<ProjectSetupResult> => {
-    const { version, controller } = run;
+    const { controller } = run;
+    const originalVersion = run.version;
+    let version = originalVersion;
+    let failureVersion = originalVersion;
+    const moves: NonNullable<ProjectSetupSnapshot['portMoves']> = [];
+    const undoMoves: (() => Promise<void>)[] = [];
+    let committed = false;
+    portMoves.delete(cwd);
+    for (const server of version.definition.servers) {
+      if (ids !== undefined && !ids.includes(server.id)) continue;
+      if (!reservedPorts.has(server.port)) reservedPorts.set(server.port, run);
+    }
     const started = Date.now();
     const launched = new Set<ProcessHandle>();
     const live = handles.get(cwd) ?? new Set<ProcessHandle>();
@@ -260,7 +275,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
       measureFailure(handle, code);
       const server = handle?.server ?? currentServer;
       const failure: ProjectSetupFailure = {
-        revision: version.revision, stage, command: redactSetupOutput(command, env), reason: redactSetupOutput(reason, env),
+        revision: failureVersion.revision, stage, command: redactSetupOutput(command, env), reason: redactSetupOutput(reason, env),
         outputTail: redactSetupOutput(handle?.output ?? '', env), elapsedMs: Date.now() - started,
         ...(server ? { serverId: server.id } : {}),
         ...(handle?.exit?.code !== null && handle?.exit?.code !== undefined ? { exitCode: handle.exit.code } : {}),
@@ -275,7 +290,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
       validatePaths(cwd, version.definition);
       const shellPath = (deps.shell ?? setupShell)(cwd, env);
       if (shellPath === undefined) throw new Error(t('projectSetup.failure.shellMissing'));
-      const requested = version.definition.servers.filter((server) => ids === undefined || ids.includes(server.id));
+      let requested = version.definition.servers.filter((server) => ids === undefined || ids.includes(server.id));
       const requestedHandles = new Map<string, ProcessHandle>();
       const requestedEndpoints = new Map<string, ReconnectedEndpoint>();
       if (requested.length === 0 || ids?.some((id) => !version.definition.servers.some((server) => server.id === id))) throw new Error(t('projectSetup.failure.unknownServer'));
@@ -311,20 +326,39 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
       measure({ install_succeeded: true });
       publishRun(cwd, run, 'starting');
       for (const server of requested) {
+        if (!server.start.includes('{{port}}') || [...live].some((handle) => handle.server?.id === server.id && !handle.exit && !handle.error)) continue;
+        const folder = containedPath(cwd, server.cwd);
+        if (!await probe(server.port) || await ownershipOf(server.port, folder, controller.signal) !== 'foreign') continue;
+        check();
+        const port = await pickStarterPort(undefined, async (candidate) => {
+          check();
+          if (reservedPorts.has(candidate) || version.definition.servers.some((saved) => saved.port === candidate)) return false;
+          reservedPorts.set(candidate, run);
+          if (!await probe(candidate)) return true;
+          reservedPorts.delete(candidate);
+          return false;
+        }).catch(() => { throw new Error(t('projectSetup.failure.occupiedPort', { port: server.port })); });
+        check();
+        moves.push({ from: server.port, to: port });
+        for (const endpoint of endpoints) if (endpoint.server.id === server.id) endpoints.delete(endpoint);
+        version = versionDefinition({ ...version.definition, servers: version.definition.servers.map((saved) => saved.id === server.id ? { ...saved, port } : saved) });
+      }
+      requested = version.definition.servers.filter((server) => ids === undefined || ids.includes(server.id));
+      for (const server of requested) {
         stage = 'start';
         currentHandle = undefined;
         currentServer = server;
         check();
         const folder = containedPath(cwd, server.cwd);
         measure({ ...previewProjectTools(folder), expected_port: server.port, actual_port: null, reported_port: null, port_occupied: null, port_owner: null });
-        command = `${version.definition.prepare}\ncd ${quote(folder)}\n${server.start}`;
+        command = `${version.definition.prepare}\ncd ${quote(folder)}\n${server.start.replaceAll('{{port}}', String(server.port))}`;
         const owned = ownedForServer([...live, ...endpoints], cwd, server, version.definition.servers);
         if (owned.length > 1) throw new Error(t('projectSetup.failure.ambiguousServer'));
         const existing = owned.find((handle): handle is ProcessHandle => 'child' in handle && !handle.exit && !handle.error);
         if (existing) {
           currentHandle = existing;
           if (existing.termination.state !== 'live') throw new Error(t('projectSetup.failure.processGroupAlive'));
-          if (existing.version.revision !== version.revision) throw new Error(t('projectSetup.failure.changedSetup'));
+          if (existing.version.revision !== originalVersion.revision) throw new Error(t('projectSetup.failure.changedSetup'));
           if (existing.server?.port !== server.port || existing.server.start !== server.start || existing.server.cwd !== server.cwd) throw new Error(t('projectSetup.failure.changedServer'));
           if (!await probe(server.port)) throw new Error(t('projectSetup.failure.unverifiedListener'));
           const ownership = await ownershipOf(server.port, folder, controller.signal);
@@ -332,7 +366,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
           if (ownership === 'unknown') { failureReason = 'listener_unseen'; throw new Error(t('projectSetup.failure.listenerUnseen', { port: server.port })); }
           if (ownership !== 'ours') { failureReason = 'listener_foreign'; throw new Error(t('projectSetup.failure.unverifiedListener')); }
           check();
-          await untilAborted(deps.report(cwd, folder, server.port, controller.signal), controller.signal);
+          if (moves.length === 0) await untilAborted(deps.report(cwd, folder, server.port, controller.signal), controller.signal);
           check();
           if (existing.exit || existing.error) fail('start', command, existing.error ?? t('projectSetup.failure.earlyExit'), existing);
           requestedHandles.set(server.id, existing);
@@ -347,7 +381,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
         if (remembered) {
           if (!await probe(remembered.server.port)) endpoints.delete(remembered);
           else {
-            if (remembered.version.revision !== version.revision) throw new Error(t('projectSetup.failure.changedSetup'));
+            if (remembered.version.revision !== originalVersion.revision) throw new Error(t('projectSetup.failure.changedSetup'));
             if (remembered.server.port !== server.port || remembered.server.start !== server.start || remembered.server.cwd !== server.cwd) throw new Error(t('projectSetup.failure.changedServer'));
           }
           check();
@@ -360,12 +394,12 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
           if (ownership === 'unknown') fail('ready', command, t('projectSetup.failure.listenerUnseen', { port: server.port }), undefined, 'listener_unseen');
           if (ownership !== 'ours') fail('ready', command, t('projectSetup.failure.occupiedPort', { port: server.port }), undefined, 'port_occupied');
           const endpoint: ReconnectedEndpoint = {
-            server, folder: canonicalPath(folder), version, safeCommand: redactSetupOutput(server.start, env), pid: identity!.pid, listenerFolder: canonicalPath(identity!.cwd!),
+            server, folder: canonicalPath(folder), version: originalVersion, safeCommand: redactSetupOutput(server.start, env), pid: identity!.pid, listenerFolder: canonicalPath(identity!.cwd!),
           };
           if (remembered) endpoints.delete(remembered);
           endpoints.add(endpoint);
           requestedEndpoints.set(server.id, endpoint);
-          await untilAborted(deps.report(cwd, folder, server.port, controller.signal), controller.signal);
+          if (moves.length === 0) await untilAborted(deps.report(cwd, folder, server.port, controller.signal), controller.signal);
           check();
           continue;
         }
@@ -396,29 +430,68 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
         }
         if (!ready) fail('ready', command, t('projectSetup.failure.readinessTimeout'), handle, 'readiness_timeout');
         check();
-        await untilAborted(deps.report(cwd, folder, server.port, controller.signal), controller.signal);
+        if (moves.length === 0) await untilAborted(deps.report(cwd, folder, server.port, controller.signal), controller.signal);
         check();
         if (handle.exit || handle.error) fail('start', command, handle.error ?? t('projectSetup.failure.earlyExit'), handle);
         requestedHandles.set(server.id, handle);
       }
-      for (const endpoint of requestedEndpoints.values()) {
+      const checkReady = async (): Promise<void> => {
+        for (const endpoint of requestedEndpoints.values()) {
+          check();
+          currentServer = endpoint.server;
+          currentHandle = undefined;
+          command = endpoint.safeCommand;
+          stage = 'ready';
+          if (!endpoints.has(endpoint) || !await probe(endpoint.server.port)) fail('ready', command, t('projectSetup.failure.earlyExit'));
+          const identity = await identityOf(endpoint.server.port, endpoint.folder, controller.signal);
+          check();
+          const ownership = verifiesFor(identity, endpoint.folder);
+          if (ownership === 'unknown') fail('ready', command, t('projectSetup.failure.listenerUnseen', { port: endpoint.server.port }), undefined, 'listener_unseen');
+          if (!sameListener(endpoint, identity)) fail('ready', command, t('projectSetup.failure.unverifiedListener'), undefined, ownership === 'foreign' ? 'listener_foreign' : undefined);
+          if (!await probe(endpoint.server.port)) fail('ready', command, t('projectSetup.failure.earlyExit'));
+          check();
+        }
+        for (const handle of requestedHandles.values()) {
+          check();
+          if (!live.has(handle) || handle.exit || handle.error || handle.termination.state !== 'live') fail('start', handle.safeCommand, handle.error ?? t('projectSetup.failure.earlyExit'), handle);
+        }
+      };
+      await checkReady();
+      if (moves.length > 0) {
+        for (const move of moves) {
+          check();
+          if (store.read(cwd).saved?.revision !== originalVersion.revision) throw new Error(t('projectSetup.failure.staleRevision'));
+          if (!deps.movePort) throw new Error(t('projectSetup.failure.hostUnavailable'));
+          undoMoves.push(await deps.movePort(cwd, move.from, move.to, controller.signal));
+        }
         check();
-        currentServer = endpoint.server;
-        currentHandle = undefined;
-        command = endpoint.safeCommand;
-        stage = 'ready';
-        if (!endpoints.has(endpoint) || !await probe(endpoint.server.port)) fail('ready', command, t('projectSetup.failure.earlyExit'));
-        const identity = await identityOf(endpoint.server.port, endpoint.folder, controller.signal);
-        check();
-        const ownership = verifiesFor(identity, endpoint.folder);
-        if (ownership === 'unknown') fail('ready', command, t('projectSetup.failure.listenerUnseen', { port: endpoint.server.port }), undefined, 'listener_unseen');
-        if (!sameListener(endpoint, identity)) fail('ready', command, t('projectSetup.failure.unverifiedListener'), undefined, ownership === 'foreign' ? 'listener_foreign' : undefined);
-        if (!await probe(endpoint.server.port)) fail('ready', command, t('projectSetup.failure.earlyExit'));
-        check();
-      }
-      for (const handle of requestedHandles.values()) {
-        check();
-        if (!live.has(handle) || handle.exit || handle.error || handle.termination.state !== 'live') fail('start', handle.safeCommand, handle.error ?? t('projectSetup.failure.earlyExit'), handle);
+        if (store.read(cwd).saved?.revision !== originalVersion.revision) throw new Error(t('projectSetup.failure.staleRevision'));
+        const record = store.read(cwd);
+        const previousFailure = retainedFailures.get(cwd) ?? record.failure;
+        const failure = previousFailure?.revision === originalVersion.revision ? { ...previousFailure, revision: version.revision } : previousFailure;
+        store.write(cwd, { ...record, saved: version, failure });
+        committed = true;
+        failureVersion = version;
+        if (failure && retainedFailures.has(cwd)) retainedFailures.set(cwd, failure);
+        for (const endpoint of [...live, ...endpoints]) {
+          if (endpoint.version.revision === originalVersion.revision) endpoint.version = version;
+        }
+        for (const server of requested) {
+          check();
+          currentServer = server;
+          currentHandle = requestedHandles.get(server.id);
+          command = server.start.replaceAll('{{port}}', String(server.port));
+          stage = 'ready';
+          const folder = containedPath(cwd, server.cwd);
+          await untilAborted(deps.report(cwd, folder, server.port, controller.signal), controller.signal);
+          check();
+          const endpoint = requestedEndpoints.get(server.id);
+          const identity = await identityOf(server.port, folder, controller.signal);
+          if (verifiesFor(identity, folder) !== 'ours' || (endpoint && !sameListener(endpoint, identity))) fail('ready', server.start, t('projectSetup.failure.unverifiedListener'));
+          const handle = requestedHandles.get(server.id);
+          if (handle?.exit || handle?.error) fail('start', handle.safeCommand, handle.error ?? t('projectSetup.failure.earlyExit'), handle);
+        }
+        await checkReady();
       }
       const allReady = version.definition.servers.every((server) => requestedEndpoints.has(server.id) || [...live].some((handle) => handle.server?.id === server.id && handle.version.revision === version.revision && !handle.exit && !handle.error && handle.termination.state === 'live'));
       const record = store.read(cwd);
@@ -426,6 +499,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
       const complete = allReady && requested.length === version.definition.servers.length;
       const failure = complete || !previousFailure?.serverId || requested.some((server) => server.id === previousFailure.serverId) ? null : previousFailure;
       store.write(cwd, { ...record, ...(allReady && failure === null ? { verified: version } : {}), failure });
+      if (moves.length > 0) portMoves.set(cwd, moves);
       if (failure === null) retainedFailures.delete(cwd);
       publish(cwd, failure ? { state: 'failed', failure } : { state: 'running' });
       for (const handle of launched) {
@@ -433,7 +507,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
           if (!live.has(handle) || handle.termination.state !== 'live' || !handle.server) return;
           measureFailure(handle);
           recordMeasurement(() => deps.serverExited?.(cwd));
-          const failure: ProjectSetupFailure = { revision: version.revision, stage: 'start', serverId: handle.server.id, command: redactSetupOutput(handle.server.start, env), reason: t('projectSetup.failure.unexpectedExit'), outputTail: redactSetupOutput(handle.output, env), elapsedMs: Date.now() - started, ...(handle.exit?.code === null || handle.exit?.code === undefined ? {} : { exitCode: handle.exit.code }), ...(handle.exit?.signal ? { signal: handle.exit.signal } : {}) };
+          const failure: ProjectSetupFailure = { revision: handle.version.revision, stage: 'start', serverId: handle.server.id, command: redactSetupOutput(handle.server.start, env), reason: t('projectSetup.failure.unexpectedExit'), outputTail: redactSetupOutput(handle.output, env), elapsedMs: Date.now() - started, ...(handle.exit?.code === null || handle.exit?.code === undefined ? {} : { exitCode: handle.exit.code }), ...(handle.exit?.signal ? { signal: handle.exit.signal } : {}) };
           const recordExit = (failure: ProjectSetupFailure): void => {
             const pending = pendingRun(phases.get(cwd));
             if (pending && runCovers(pending, failure.serverId)) retainFailure(cwd, failure);
@@ -448,6 +522,10 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
       }
       return result(cwd);
     } catch (error) {
+      for (const undo of committed ? [] : undoMoves.toReversed()) {
+        try { await undo(); }
+        catch { logger.error('frame port rollback failed'); }
+      }
       if (!controller.signal.aborted && !measuredFailure) measureFailure(currentHandle);
       const reported = reportedPreviewPort((failureHandle ?? currentHandle)?.output ?? '');
       if (!controller.signal.aborted && currentServer && reported !== null && reported !== currentServer.port) {
@@ -461,17 +539,19 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
       const cleanup = await Promise.allSettled([...launched].map(async (handle) => { await terminate(handle); live.delete(handle); }));
       const terminationFailure = cleanup.find((entry) => entry.status === 'rejected');
       if (terminationFailure?.status === 'rejected') {
-        const reason = t('projectSetup.failure.stopTermination', { reason: String(terminationFailure.reason) });
-        recordFailure(cwd, { revision: version.revision, stage: 'stop', command: redactSetupOutput(command, env), reason, outputTail: '', elapsedMs: Date.now() - started });
+        const reason = t('projectSetup.failure.stopListener');
+        recordFailure(cwd, { revision: failureVersion.revision, stage: 'stop', command: redactSetupOutput(command, env), reason, outputTail: '', elapsedMs: Date.now() - started });
         return result(cwd, reason);
       }
       if (controller.signal.aborted) return result(cwd, t('projectSetup.failure.canceled'));
       if (failureHandle) await Promise.race([failureHandle.closed, delay(500)]);
-      const failure = error && typeof error === 'object' && 'stage' in error ? { ...error as ProjectSetupFailure, outputTail: redactSetupOutput(failureHandle?.output ?? (error as ProjectSetupFailure).outputTail, env) } : { revision: version.revision, stage, command: redactSetupOutput(command, env), reason: redactSetupOutput(error instanceof Error ? error.message : String(error), env), outputTail: redactSetupOutput(currentHandle?.output ?? '', env), elapsedMs: Date.now() - started, ...(currentServer ? { serverId: currentServer.id } : {}) };
+      const failure = error && typeof error === 'object' && 'stage' in error ? { ...error as ProjectSetupFailure, outputTail: redactSetupOutput(failureHandle?.output ?? (error as ProjectSetupFailure).outputTail, env) } : { revision: failureVersion.revision, stage, command: redactSetupOutput(command, env), reason: redactSetupOutput(error instanceof Error ? error.message : String(error), env), outputTail: redactSetupOutput(currentHandle?.output ?? '', env), elapsedMs: Date.now() - started, ...(currentServer ? { serverId: currentServer.id } : {}) };
       recordFailure(cwd, failure);
       const failed = result(cwd, failure.reason);
       if (failureReason) failureReasons.set(failed, failureReason);
       return failed;
+    } finally {
+      for (const [port, owner] of reservedPorts) if (owner === run) reservedPorts.delete(port);
     }
   };
   const terminateReconnected = async (endpoint: ReconnectedEndpoint): Promise<void> => {
@@ -529,7 +609,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
       const terminationFailure = cleanup.find((entry) => entry.status === 'rejected');
       if (terminationFailure?.status === 'rejected') {
         const handle = selected[cleanup.indexOf(terminationFailure)]!;
-        const reason = t('projectSetup.failure.stopTermination', { reason: String(terminationFailure.reason) });
+        const reason = t('projectSetup.failure.stopListener');
         return settleFailure({ revision: handle.version.revision, stage: 'stop', ...(handle.server ? { serverId: handle.server.id } : {}), command: handle.safeCommand, reason, outputTail: '', elapsedMs: 0 });
       }
       /** A group that outlived an earlier termination is never one of `selected`: a selected one either left `live` or rejected above. */
@@ -549,12 +629,13 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
         if (!('child' in handle)) reconnected.get(cwd)?.delete(handle);
       }
       const running = [...live ?? []].find((handle) => handle.server && !handle.exit && !handle.error && handle.termination.state === 'live') ?? [...reconnected.get(cwd) ?? []][0];
+      if (!running) portMoves.delete(cwd);
       settle(running ? { state: 'running' } : { state: 'idle' });
       return result(cwd);
-    }).catch((error: unknown) => {
+    }).catch(() => {
       const owner = observed ?? selected[0];
       const version = owner?.version ?? pending?.version ?? store.read(cwd).saved;
-      const reason = t('projectSetup.failure.stopTermination', { reason: String(error) });
+      const reason = t('projectSetup.failure.stopListener');
       if (version) return settleFailure({ revision: version.revision, stage: 'stop', ...(owner?.server ? { serverId: owner.server.id } : {}), command: owner?.safeCommand ?? '', reason, outputTail: '', elapsedMs: 0 });
       settle({ state: 'idle' });
       return result(cwd, reason);
@@ -670,6 +751,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
       store.forget(cwd);
       phases.delete(cwd);
       retainedFailures.delete(cwd);
+      portMoves.delete(cwd);
       handles.delete(cwd);
       reconnected.delete(cwd);
     },

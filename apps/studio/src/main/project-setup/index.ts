@@ -1,6 +1,7 @@
 import { handle } from '../ipc/bridge.js';
 import { IPC_EMIT, IPC_INVOKE, type ProjectSetupSnapshot, type ProjectSetupAskResult } from '@studio/events';
 import { applyCanvasOps } from '../canvas/index.js';
+import { createSetupPortMove } from './frames.js';
 import { serverHost } from '../server/index.js';
 import { views, workspaceOf } from '../tabs/views.js';
 import { registeredProject } from '../workspace/store.js';
@@ -24,6 +25,7 @@ function initialize(): void {
     installationChecked: (cwd, reused) => capture('project_setup_installation_checked', { ...resolveWorkspaceTelemetryProperties(cwd), reused }),
     diagnostics: recordProjectPreviewDiagnostics,
     serverExited: (cwd) => capture('dev_server_exited', { ...resolveWorkspaceTelemetryProperties(cwd) }, cwd),
+    movePort: createSetupPortMove(applyCanvasOps),
     report: createProjectSetupReport({
       host: serverHost,
       telemetryProperties: resolveWorkspaceTelemetryProperties,
