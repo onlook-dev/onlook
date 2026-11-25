@@ -321,7 +321,7 @@ describe('app_opened_from_link telemetry event', () => {
     expect(openLinkEvents()).toHaveLength(0);
   });
 
-  it('respects missing PostHog key (no key = no-op)', async () => {
+  it('respects missing analytics key (no key = no-op)', async () => {
     delete process.env['STUDIO_POSTHOG_KEY'];
     initTelemetry();
     receiveOpenLink({ utm_source: 'website' }, 'warm');
