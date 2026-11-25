@@ -76,6 +76,7 @@ export function useRailMenu({
           data-testid={testId}
           style={{
             ...MENU_PANEL,
+            pointerEvents: 'auto',
             ...(clearance === undefined
               ? {}
               : {
