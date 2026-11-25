@@ -12,6 +12,7 @@ export const checkLaunchEnvironment: typeof Telemetry.checkLaunchEnvironment = a
 export const noteAppShown: typeof Telemetry.noteAppShown = () => {};
 export const initTelemetry: typeof Telemetry.initTelemetry = () => {};
 export const receiveWebAttribution: typeof Telemetry.receiveWebAttribution = () => {};
+export const receiveOpenLink: typeof Telemetry.receiveOpenLink = () => {};
 export const adoptSessionId: typeof Telemetry.adoptSessionId = () => {};
 export const currentSessionId: typeof Telemetry.currentSessionId = () => undefined;
 export const identifyPerson: typeof Telemetry.identifyPerson = () => {};
