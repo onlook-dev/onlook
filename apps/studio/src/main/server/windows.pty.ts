@@ -30,7 +30,8 @@ test('Windows Open Terminal opens a console that accepts a pasted command', { sk
     const entry = join(root, 'open-terminal.mjs');
     const terminalModule = pathToFileURL(join(process.cwd(), 'apps/studio/src/main/terminal.ts')).href;
     await writeFile(entry, `import { openWindowsTerminal } from ${JSON.stringify(terminalModule)}; await openWindowsTerminal(); process.stdout.write('ready\\n'); process.stdin.resume();`);
-    const command = windowsJobCommand(process.execPath, ['--import', join(process.cwd(), 'tests/apparatus/node-ts-resolve.ts'), entry]);
+    const resolver = pathToFileURL(join(process.cwd(), 'tests/apparatus/node-ts-resolve.ts')).href;
+    const command = windowsJobCommand(process.execPath, ['--import', resolver, entry]);
     launcher = spawn(command.bin, command.args, { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
     assert.equal(await firstLine(launcher), 'ready');
     const deadline = Date.now() + 15_000;
@@ -101,6 +102,8 @@ async function fixtureDirectory(prefix: string): Promise<string> {
 function firstLine(child: ChildProcessWithoutNullStreams): Promise<string> {
   return new Promise((resolve, reject) => {
     let output = '';
+    let errors = '';
+    const onStderr = (chunk: Buffer): void => { errors = `${errors}${String(chunk)}`.slice(-8_192); };
     const onData = (chunk: Buffer): void => {
       output += String(chunk);
       const end = output.indexOf('\n');
@@ -108,18 +111,23 @@ function firstLine(child: ChildProcessWithoutNullStreams): Promise<string> {
       cleanup();
       resolve(output.slice(0, end).trim());
     };
-    const onExit = (): void => { cleanup(); reject(new Error('fixture exited before reporting readiness')); };
+    const onClose = (code: number | null, signal: NodeJS.Signals | null): void => {
+      cleanup();
+      reject(new Error(`fixture exited before reporting readiness (code ${code}, signal ${signal}): ${errors.trim()}`));
+    };
     const onError = (error: Error): void => { cleanup(); reject(error); };
     const cleanup = (): void => {
       clearTimeout(timer);
       child.stdout.off('data', onData);
+      child.stderr.off('data', onStderr);
       child.off('error', onError);
-      child.off('exit', onExit);
+      child.off('close', onClose);
     };
     const timer = setTimeout(() => { cleanup(); reject(new Error('fixture readiness timed out')); }, 15_000);
     child.stdout.on('data', onData);
+    child.stderr.on('data', onStderr);
     child.once('error', onError);
-    child.once('exit', onExit);
+    child.once('close', onClose);
   });
 }
 
