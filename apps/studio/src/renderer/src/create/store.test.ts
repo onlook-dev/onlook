@@ -118,6 +118,20 @@ it('requests a new tab without replacing the originating project and keeps that 
 });
 
 describe('startBlankCreate', () => {
+  it('preserves the missing-Git cause and refuses retry until the failure is dismissed', async () => {
+    const bridge = fakeBridge();
+    bridge.install();
+    startBlankCreate('projects', () => {});
+    await bridge.resolve({ ok: false, stage: 'setting-up', canceled: false, cause: 'git_not_found' });
+    expect(status()).toEqual({ kind: 'failed', stage: 'setting-up', cause: 'git_not_found' });
+    retryBlankCreate();
+    expect(bridge.invokes()).toHaveLength(1);
+    dismissBlankCreate();
+    startBlankCreate('projects', () => {});
+    expect(bridge.invokes()).toHaveLength(2);
+    await bridge.resolve({ ok: true, workspace: WORKSPACE });
+    expect(status()).toEqual({ kind: 'idle' });
+  });
   it('invokes once and mirrors the first stage immediately', () => {
     const bridge = fakeBridge();
     bridge.install();
