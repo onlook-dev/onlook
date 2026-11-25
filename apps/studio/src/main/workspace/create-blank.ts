@@ -116,6 +116,9 @@ export async function createBlankProject(
         logger.error('blank rollback incomplete', { system_error: systemErrorCode(err) });
         detail = detail === undefined ? `rollback: ${String(err)}` : `${detail}; rollback: ${String(err)}`;
       }
+      if (!canceled && failure?.failure_cause === 'git_not_found') {
+        return { ok: false, stage, canceled, cause: 'git_not_found' };
+      }
       // The reading from before the rollback: a cancel landing during the diagnosis would otherwise answer a real failure as canceled, with its explanation dropped (ONL-3111).
       const explained = canceled ? {} : await diagnosed();
       return { ok: false, stage, canceled, ...(detail === undefined ? {} : { detail }), ...explained };
