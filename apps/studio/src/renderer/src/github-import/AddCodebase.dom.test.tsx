@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from 'bun:test';
+import { afterEach, expect, jest, test } from 'bun:test';
 import { takeComplaints } from '../testing/dom.js';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -11,7 +11,7 @@ import { FolderIcon } from '../icons/glyphs.js';
 import { SidebarRow, SIDEBAR_ROW_HEIGHT } from '../projects/SidebarRow.js';
 import { AddCodebase } from './AddCodebase.js';
 import { GithubImportFlow, GithubSettings } from './GithubImport.js';
-import { EMPTY_GITHUB, githubCommand, useGithubImport } from './store.js';
+import { EMPTY_GITHUB, GITHUB_STATUS_TIMEOUT_MS, githubCommand, useGithubImport } from './store.js';
 
 let root: Root | undefined;
 let container: HTMLDivElement | undefined;
@@ -96,6 +96,40 @@ test('Settings shows Checking without Connect GitHub until the first answer arri
   });
   expect(row.textContent).toContain(t('github.manage'));
   expect(row.textContent).not.toContain(t('github.connect'));
+});
+
+test('Settings settles to a pressable Connect GitHub when no account is available', async () => {
+  await mount({ githubImport: async () => ({ ...disconnected, enabled: false }) });
+  await act(async () => {
+    root!.render(<GithubSettings />);
+    await githubCommand({ kind: 'status' });
+  });
+  const row = document.querySelector('[data-testid="github-settings"]')!;
+  const connect = row.querySelector<HTMLButtonElement>('button')!;
+  expect(connect.textContent).toBe(t('github.connect'));
+  expect(connect.disabled).toBe(false);
+  expect(row.textContent).not.toContain(t('github.checking'));
+});
+
+test('Settings replaces an unanswered initial check with a pressable Try again', async () => {
+  await mount({ githubImport: () => new Promise(() => {}) });
+  await act(async () => { root!.render(<GithubSettings />); });
+  jest.useFakeTimers();
+  try {
+    let checking!: Promise<GithubImportState>;
+    await act(async () => { checking = githubCommand({ kind: 'status' }); });
+    const row = document.querySelector('[data-testid="github-settings"]')!;
+    expect(row.querySelector<HTMLButtonElement>('button')!.disabled).toBe(true);
+    await act(async () => {
+      jest.advanceTimersByTime(GITHUB_STATUS_TIMEOUT_MS);
+      await checking;
+    });
+    const retry = row.querySelector<HTMLButtonElement>('button')!;
+    expect(row.textContent).toContain(t('github.unavailable'));
+    expect(row.textContent).not.toContain(t('github.checking'));
+    expect(retry.textContent).toBe(t('github.tryAgain'));
+    expect(retry.disabled).toBe(false);
+  } finally { jest.useRealTimers(); }
 });
 
 test('Settings offers a working Try again action after the first check fails', async () => {
