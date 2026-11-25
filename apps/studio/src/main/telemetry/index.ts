@@ -36,6 +36,7 @@ import type {
 } from './events.js';
 import { hostPlatform } from '../env/platform.js';
 import { devSwitches } from '../env/dev-switches.js';
+import type { OpenLinkParams } from './attribution-links.js';
 
 const DEFAULT_HOST = 'https://us.i.posthog.com';
 const logger = log('telemetry');
@@ -368,11 +369,13 @@ function activateTelemetry(): void {
     if (analyticsWithdrawn()) {
       for (const path of pendingBatches()) removeBatch(path);
     }
+    pendingOpenLinks = [];
     return;
   }
 
   apiKey = resolveKey();
   if (!isEnabled()) {
+    pendingOpenLinks = [];
     logger.info('no key — analytics is a no-op; set MAIN_VITE_POSTHOG_KEY in .env to enable');
     return;
   }
@@ -392,6 +395,7 @@ function activateTelemetry(): void {
   superProperties = buildSuperProperties(launchId!);
 
   applyWebAttribution();
+  drainPendingOpenLinks();
 
   logger.info('on', { host });
 
@@ -437,6 +441,23 @@ function applyWebAttribution(): void {
   void drain.send();
 }
 
+const OPEN_LINK_QUEUE_CAP = 16;
+let pendingOpenLinks: { params: OpenLinkParams; launch: 'cold' | 'warm' }[] = [];
+
+export function receiveOpenLink(params: OpenLinkParams, launch: 'cold' | 'warm'): void {
+  if (!isEnabled()) {
+    if (pendingOpenLinks.length < OPEN_LINK_QUEUE_CAP) pendingOpenLinks.push({ params, launch });
+    return;
+  }
+  capture('app_opened_from_link', { ...params, launch });
+}
+
+function drainPendingOpenLinks(): void {
+  const links = pendingOpenLinks;
+  pendingOpenLinks = [];
+  for (const { params, launch } of links) capture('app_opened_from_link', { ...params, launch });
+}
+
 export type BootOutcome = 'reported' | 'timeout' | 'renderer-gone';
 
 // Once per launch: `ready-to-show` fires again for every window the dock reopens.
@@ -470,6 +491,7 @@ export function refreshTelemetryConsent(): void {
   flushTimer = undefined;
   configureLogExport(undefined);
   queue = [];
+  pendingOpenLinks = [];
   // A grant resolved before the move authorizes nothing written after it (ONL-2904).
   grantForLaunch = undefined;
   for (const path of pendingBatches()) removeBatch(path);
@@ -1056,4 +1078,5 @@ export function resetTelemetryForTesting(): void {
   surfaces.clear();
   shownDeadEnds.clear();
   workspaceOfRenderer = () => undefined;
+  pendingOpenLinks = [];
 }

@@ -61,7 +61,7 @@ import { registerGithubImportHandlers } from './github-import/index.js';
 import { initAutoUpdater, registerUpdaterHandlers } from './updater/index.js';
 import { offerMoveToApplications } from './updater/location.js';
 import { beginTurnSeenQuit } from './telemetry/turn-seen.js';
-import { beginTelemetryQuit, capture, checkLaunchEnvironment, correlation, noteAppShown, prepareTelemetry, receiveWebAttribution, setCrashContextRecorder, setPreviewDiagnosticsRestorer, shutdownTelemetry } from './telemetry/index.js';
+import { beginTelemetryQuit, capture, checkLaunchEnvironment, correlation, noteAppShown, prepareTelemetry, receiveOpenLink, receiveWebAttribution, setCrashContextRecorder, setPreviewDiagnosticsRestorer, shutdownTelemetry } from './telemetry/index.js';
 import { restoreProjectPreviewDiagnostics } from './workspace/preview-diagnostics.js';
 import { registerAttributionLinks } from './telemetry/attribution-links.js';
 import { checkSetupAbandoned } from './telemetry/setup-step.js';
@@ -126,7 +126,7 @@ const hasSingleInstanceLock =
 if (!hasSingleInstanceLock) {
   app.quit();
 } else {
-  if (capabilities().links) registerAttributionLinks(app, receiveWebAttribution);
+  if (capabilities().links) registerAttributionLinks(app, receiveWebAttribution, receiveOpenLink);
   app.on('second-instance', () => {
     presentPrimaryWindow();
   });
