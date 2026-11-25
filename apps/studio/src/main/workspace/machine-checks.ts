@@ -83,3 +83,9 @@ export async function runMachineChecks(deps: MachineCheckDeps): Promise<MachineC
     return { id, status: 'failed', cause };
   }));
 }
+
+export function checksForBlankProject(checks: MachineCheck[]): MachineCheck[] {
+  return checks.map((check) => check.id === 'git' && check.status === 'failed' &&
+    (check.cause === 'git_not_found' || check.cause === 'developer_tools_missing')
+    ? { id: 'git', status: 'not-required' } : check);
+}

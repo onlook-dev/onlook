@@ -1,4 +1,7 @@
 {
+  "gitStatus.label.no-git": "尚未设置 Git",
+  "gitStatus.card.no-git": "尚未设置 Git",
+  "gitStatus.tooltip.no-git": "没有 Git 历史记录也可以继续设计。发布或连接 GitHub 时才需要 Git。",
   "gitStatus.label.no-access": "无权限",
   "gitStatus.label.connect-github": "连接 GitHub",
   "gitStatus.label.local-only": "仅本地",

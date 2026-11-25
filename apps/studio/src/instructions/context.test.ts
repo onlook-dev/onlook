@@ -22,6 +22,18 @@ const workspace: WelcomeProject = {
   baseBranch: 'main',
 };
 
+it('keeps history-free projects editable and asks for Git only after an explicit publishing or GitHub request', () => {
+  for (const harness of ['claude', 'codex'] as const) {
+    const text = briefing(workspace, { harness, history: 'none' });
+    expect(text).toContain('Editing and the preview do not require Git');
+    expect(text).toContain('unless the user asks to publish or connect GitHub');
+    expect(text).toContain('Never install developer tools without their permission');
+    expect(text).not.toContain('This is a git worktree');
+    expect(text).not.toContain('on branch');
+    expect(briefing(workspace, { harness })).toContain('This is a git worktree');
+  }
+});
+
 describe('structured project file removal', () => {
   for (const harness of ['claude', 'codex'] as const) {
     it(`requires ${harness} to use the owned deletion tool rather than shell removal`, () => {

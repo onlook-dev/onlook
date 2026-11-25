@@ -1,4 +1,5 @@
 {
+  "machine.ready.gitOptional": "空白项目不需要此工具，没有历史记录也可以继续设计。",
   "machine.title": "检查这台电脑",
   "machine.subtitle": "创建第一个项目前，Onlook 需要这台电脑准备好几样东西。",
   "machine.name.git": "开发者工具",

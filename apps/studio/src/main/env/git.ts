@@ -1,5 +1,7 @@
 import { type CliResult, type RunCliOptions, runCli } from './cli.js';
-import { hostSshPath, isWindows, nullDevice } from './platform.js';
+import { hostSshPath, isMac, isWindows, nullDevice } from './platform.js';
+import { gitExecutable } from './git-available.js';
+import { mergeEnv, userEnv } from './shell-env.js';
 
 export type GitResult = CliResult;
 
@@ -11,9 +13,18 @@ export interface RunGitOptions extends RunCliOptions {
   config: readonly string[];
 }
 
-export function runGit(cwd: string, args: readonly string[], options: RunGitOptions): Promise<GitResult> {
+export async function runGit(cwd: string, args: readonly string[], options: RunGitOptions, dependencies: {
+  isMac: typeof isMac;
+  gitExecutable: typeof gitExecutable;
+  userEnv: typeof userEnv;
+  runCli: typeof runCli;
+} = { isMac, gitExecutable, userEnv, runCli }): Promise<GitResult> {
+  const executable = dependencies.isMac() ? await dependencies.gitExecutable(cwd, mergeEnv(await dependencies.userEnv(), options.env)) : 'git';
+  if (executable === undefined) {
+    return { ok: false, out: '', err: 'Git is unavailable without developer tools.', timedOut: false, missing: true, exitCode: null };
+  }
   const { config, ...rest } = options;
-  return runCli('git', cwd, [...config.flatMap((setting) => ['-c', setting]), ...args], rest);
+  return dependencies.runCli(executable, cwd, [...config.flatMap((setting) => ['-c', setting]), ...args], rest);
 }
 
 function noRepositoryPrograms(): string[] {

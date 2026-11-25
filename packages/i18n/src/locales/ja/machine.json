@@ -1,4 +1,5 @@
 {
+  "machine.ready.gitOptional": "空のプロジェクトには不要です。履歴がなくてもデザインを続けられます。",
   "machine.title": "コンピューターを確認",
   "machine.subtitle": "最初のプロジェクトを始める前に、Onlook にはこのコンピューターでいくつか必要なものがあります。",
   "machine.name.git": "開発者ツール",

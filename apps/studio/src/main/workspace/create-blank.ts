@@ -21,7 +21,7 @@ import { serverHost, type AwaitRunningOutcome, type StarterControl } from '../se
 import { starterHost } from '../starter/index.js';
 import type { BlankCreationStep, TelemetryEventName, TelemetryProperties, WorkspaceTelemetryProperties } from '../telemetry/events.js';
 import { capture, workspaceTelemetryProperties } from '../telemetry/index.js';
-import { claimBlankBucket, clearBlankMarker, constructBlankPlan, initBlankSource, rollbackBlank } from './blank.js';
+import { blankWithoutHistory, claimBlankBucket, clearBlankMarker, constructBlankPlan, initBlankSource, rollbackBlank } from './blank.js';
 import { createCancelToken, type CancelToken } from './cancel.js';
 import { type BlankCreationFailure, gitFailure, systemErrorCode, thrownFailure } from './creation-failure.js';
 import { createWorkspaceFromPlan } from './index.js';
@@ -132,7 +132,11 @@ export async function createBlankProject(
 
     step = 'worktree_cut';
     let cutFailure: BlankCreationFailure | undefined;
-    const created = await createWorkspaceFromPlan(constructBlankPlan(claim), (result) => {
+    const plan = constructBlankPlan(claim);
+    const created = inited.history === 'none' ? {
+      ok: true as const,
+      workspace: blankWithoutHistory(claim),
+    } : await createWorkspaceFromPlan(plan, (result) => {
       cutFailure = gitFailure('worktree_cut', result);
     });
     if (!created.ok) return await abort(created.detail, cutFailure);

@@ -2,8 +2,10 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'bun:test';
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import type { RunCliOptions } from './cli.js';
+import { gitExecutable } from './git-available.js';
 import { runGit, untrustedCloneGitConfig, USER_GIT_CONFIG, worktreeGitConfig } from './git.js';
-import { resetUserEnvForTests } from './shell-env.js';
+import { resetUserEnvForTests, type Env } from './shell-env.js';
 
 const realPlatform = Object.getOwnPropertyDescriptor(process, 'platform')!;
 
@@ -60,6 +62,65 @@ describe('the hardening settings', () => {
     worktreeGitConfig().push('filter.lfs.clean=');
     expect(worktreeGitConfig()).not.toContain('filter.lfs.clean=');
     expect(USER_GIT_CONFIG).toEqual([]);
+  });
+});
+
+describe('runGit Apple tools gate', () => {
+  function fixture(executable: string, tools: string | undefined) {
+    const launches: { executable: string; cwd: string; args: string[]; options: RunCliOptions }[] = [];
+    const selections: { cwd: string; env: Env | undefined }[] = [];
+    const result = { ok: true, out: 'selected Git', err: '', timedOut: false, missing: false, exitCode: 0 };
+    const dependencies: NonNullable<Parameters<typeof runGit>[3]> = {
+      isMac: () => true,
+      userEnv: async () => ({ PATH: '/trusted/bin:/usr/bin', LANG: 'en_US.UTF-8' }),
+      gitExecutable: async (cwd, env) => {
+        selections.push({ cwd, env });
+        return gitExecutable(cwd, env, {
+          platform: 'darwin', resolve: () => executable,
+          realpath: (path) => path === '/trusted/bin/git' ? '/usr/bin/git' : path,
+          selectedTools: async () => tools,
+          exists: (path) => path === '/tools/usr/bin/git',
+        });
+      },
+      runCli: async (selected, cwd, args, options) => {
+        launches.push({ executable: selected, cwd, args, options });
+        return result;
+      },
+    };
+    return { dependencies, launches, selections, result };
+  }
+
+  it.each(['/usr/bin/git', '/bin/git', '/trusted/bin/git'])('never launches %s when developer tools are absent', async (executable) => {
+    const { dependencies, launches } = fixture(executable, undefined);
+    expect(await runGit('/project', ['status'], { config: USER_GIT_CONFIG, timeoutMs: 3_000 }, dependencies)).toEqual({
+      ok: false, out: '', err: 'Git is unavailable without developer tools.', timedOut: false, missing: true, exitCode: null,
+    });
+    expect(launches).toEqual([]);
+  });
+
+  it.each(['/usr/bin/git', '/bin/git', '/trusted/bin/git'])('replaces %s with exactly the selected executable and preserves launch options', async (executable) => {
+    const { dependencies, launches, selections, result } = fixture(executable, '/tools');
+    const env = { PATH: '/override/bin:/usr/bin', GIT_PAGER: 'cat' };
+    const signal = new AbortController().signal;
+    const onStderr = () => {};
+    const options = { timeoutMs: 5_000, env, stdin: 'input', signal, onStderr, unset: ['GIT_TRACE'], killGraceMs: 100, maxBuffer: 1_024 };
+    expect(await runGit('/project', ['status', '--porcelain'], {
+      ...options, config: ['core.fsmonitor=false', 'gc.auto=0'],
+    }, dependencies)).toBe(result);
+    expect(selections).toEqual([{ cwd: '/project', env: { ...env, LANG: 'en_US.UTF-8' } }]);
+    expect(launches).toEqual([{
+      executable: '/tools/usr/bin/git', cwd: '/project',
+      args: ['-c', 'core.fsmonitor=false', '-c', 'gc.auto=0', 'status', '--porcelain'],
+      options,
+    }]);
+  });
+
+  it('keeps custom Git and the user configuration unchanged', async () => {
+    const { dependencies, launches } = fixture('/custom/bin/git', undefined);
+    await runGit('/project', ['--version'], { config: USER_GIT_CONFIG, timeoutMs: 3_000 }, dependencies);
+    expect(launches).toEqual([{
+      executable: '/custom/bin/git', cwd: '/project', args: ['--version'], options: { timeoutMs: 3_000 },
+    }]);
   });
 });
 

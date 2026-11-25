@@ -76,7 +76,7 @@ export function pickFor(
 }
 
 export function drawsPill(row: GitSnapshotRow | undefined): boolean {
-  return row === undefined || row.measurement.gitInstalled;
+  return row === undefined || row.measurement.history === 'none' || row.measurement.gitInstalled;
 }
 
 export function isPressable(state: GitPillState, canSubmit: boolean): boolean {
@@ -102,6 +102,7 @@ function measuredBranch(measurement: GitMeasurement): string | undefined {
 export function tooltipFor(row: GitSnapshotRow | undefined): readonly string[] | undefined {
   if (row === undefined) return undefined;
   const { measurement } = row;
+  if (measurement.history === 'none') return [t('gitStatus.tooltip.no-git')];
   const branch = measuredBranch(measurement);
   if (branch === undefined) return undefined;
   return [

@@ -10,7 +10,8 @@ const copy = async (): Promise<boolean> => true;
 /** The window the prototype's frames were captured at, so a still lays over one without rescaling (ONL-3111). */
 const PROTOTYPE_FRAME = { width: 1233, height: 730 };
 
-function Still({ cause, failures, platform = 'mac', pending = false, unanswered = false, inconclusive = false, acting, answered, unconfirmedIds, stalled, detail, fixedFolder = false, notice, focus = false, split = false, proto = false, agents }: {
+function Still({ cause, failures, platform = 'mac', pending = false, unanswered = false, inconclusive = false, acting, answered, unconfirmedIds, stalled, detail, fixedFolder = false, notice, focus = false, split = false, proto = false, agents, optionalGit = false }: {
+  optionalGit?: boolean;
   cause?: MachineFailureCause;
   failures?: Partial<Record<MachineCheckId, MachineFailureCause>>;
   platform?: MachineSnapshot['platform'];
@@ -35,6 +36,7 @@ function Still({ cause, failures, platform = 'mac', pending = false, unanswered 
   const failed = failures ?? (cause === undefined ? {} : { [id]: cause });
   const settled: MachineCheck[] = inconclusive ? MACHINE_CHECK_IDS.map((checkId) => ({ id: checkId, status: 'inconclusive' }))
     : passed.map((check) => {
+      if (optionalGit && check.id === 'git') return { id: 'git', status: 'not-required' };
       const failure = failed[check.id];
       if (failure !== undefined) return { id: check.id, status: 'failed', cause: failure };
       return unconfirmedIds?.includes(check.id) === true ? { id: check.id, status: 'inconclusive' } : check;
@@ -61,6 +63,7 @@ function Still({ cause, failures, platform = 'mac', pending = false, unanswered 
 export const MACHINE_GALLERY: Gallery = {
   id: 'machine', title: 'Check your computer', categories: [
     { id: 'list', title: 'The four checks', stories: [
+      { id: 'optional-git', title: 'Blank projects need no Git', wide: true, render: () => <Still optionalGit /> },
       { id: 'pending', title: 'Every check starts at once', wide: true, render: () => <Still pending /> },
       { id: 'landing', title: 'Checks land one by one', wide: true, render: () => <Still pending answered={['git', 'workspace']} /> },
       { id: 'passed', title: 'All four ready, Continue lights up', wide: true, render: () => <Still /> },

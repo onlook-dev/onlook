@@ -7,7 +7,7 @@ export type MachineFailureCause =
   | 'git_config_invalid' | 'git_failed'
   | 'disk_full' | 'permission_denied' | 'workspace_not_writable' | 'no_free_port' | 'helper_failed';
 export type MachineCheck =
-  | { id: MachineCheckId; status: 'passed' | 'inconclusive' }
+  | { id: MachineCheckId; status: 'passed' | 'inconclusive' | 'not-required' }
   | { id: MachineCheckId; status: 'failed'; cause: MachineFailureCause };
 export interface MachineSnapshot {
   checks: MachineCheck[];

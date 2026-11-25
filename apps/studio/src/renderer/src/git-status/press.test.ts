@@ -11,6 +11,14 @@ import { actionFor, drawsPill, isPressable, pickFor, promptKeyFor, tooltipFor } 
 const READY_OPEN = PILL_FIXTURES['ready-to-merge'] as Extract<GitPillState, { id: 'ready-to-merge' }>;
 const READY_MERGE: Extract<GitPillState, { id: 'ready-to-merge' }> = { ...READY_OPEN, dropdownDefault: 'merge' };
 
+it('shows a history-free project without offering to install Git', () => {
+  const historyFree = row(MEASUREMENT_FIXTURES['no-git']);
+  expect(drawsPill(historyFree)).toBe(true);
+  expect(tooltipFor(historyFree)).toEqual([t('gitStatus.tooltip.no-git')]);
+  expect(actionFor({ id: 'no-git' }, true)).toEqual({ kind: 'none' });
+  expect(drawsPill(row(MEASUREMENT_FIXTURES['first-paint']))).toBe(false);
+});
+
 describe('actionFor', () => {
   it('opens the browser on Ready to Merge / Open in browser, ignoring canSubmit', () => {
     expect(actionFor(READY_OPEN, false)).toEqual({ kind: 'open-browser', url: READY_OPEN.pr.url });

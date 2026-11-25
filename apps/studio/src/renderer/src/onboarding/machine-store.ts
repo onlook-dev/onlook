@@ -29,7 +29,7 @@ export function machineCreationBlocked(): boolean {
 }
 
 export function machineNeedsAttention(state: MachineState): boolean {
-  return state.notice === 'machine.unavailable' || state.snapshot.checks.some((check) => check.status !== 'passed');
+  return state.notice === 'machine.unavailable' || state.snapshot.checks.some((check) => check.status !== 'passed' && check.status !== 'not-required');
 }
 
 /** The opening run: every row is waiting, so the whole list reads as checking. Off, nothing is asked of main at all (ONL-3111). */

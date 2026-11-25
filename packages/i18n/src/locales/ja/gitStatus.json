@@ -1,4 +1,7 @@
 {
+  "gitStatus.label.no-git": "Git 未設定",
+  "gitStatus.card.no-git": "Git 未設定",
+  "gitStatus.tooltip.no-git": "Git の履歴がなくてもデザインを続けられます。公開や GitHub への接続には Git が必要です。",
   "gitStatus.label.no-access": "アクセス権なし",
   "gitStatus.label.connect-github": "GitHub に接続",
   "gitStatus.label.local-only": "ローカルのみ",

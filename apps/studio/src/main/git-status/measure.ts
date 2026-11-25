@@ -1,6 +1,8 @@
 import type { GitHead, GitMeasuredPullRequest, GitMeasurement, GitOriginKind, GitPrState } from '@studio/events';
 import { type Env, userEnv } from '../env/shell-env.js';
 import { defaultRemote, git } from '../workspace/git.js';
+import { projectHasNoHistory } from '../workspace/store.js';
+import { gitAvailable } from '../env/git-available.js';
 import { ghReader } from './github/gh-reader.js';
 import type { GitHubReader } from './github/reader.js';
 import { runGit, USER_GIT_CONFIG } from '../env/git.js';
@@ -76,6 +78,9 @@ export async function measure(
   options: MeasureOptions,
   deps: MeasureDeps = {},
 ): Promise<MeasureOutcome> {
+  if (projectHasNoHistory(worktree)) {
+    return { measurement: { ...emptyMeasurement(options.baseBranch, await gitAvailable(worktree)), history: 'none' }, fetched: undefined };
+  }
   const { measurement, fetched, remote } = await measureGit(worktree, options);
   const m = await probeGithub(measurement, deps.reader ?? ghReader(worktree));
   const base = m.pr?.baseRefName;

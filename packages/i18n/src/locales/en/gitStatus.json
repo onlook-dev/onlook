@@ -1,4 +1,7 @@
 {
+  "gitStatus.label.no-git": "No Git yet",
+  "gitStatus.card.no-git": "No Git yet",
+  "gitStatus.tooltip.no-git": "You can keep designing without Git history. Git is needed to publish or connect GitHub.",
   "gitStatus.label.no-access": "No Access",
   "gitStatus.label.connect-github": "Connect GitHub",
   "gitStatus.label.local-only": "Local Only",

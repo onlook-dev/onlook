@@ -1,7 +1,8 @@
-import { existsSync } from 'node:fs';
+import { existsSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { git } from '../workspace/git.js';
 import { STARTER_SERVER_FILE } from './scaffold.js';
+import { projectHasNoHistory } from '../workspace/store.js';
 
 export const STUDIO_SYSTEM_AUTHOR = {
   name: 'Onlook',
@@ -24,6 +25,10 @@ export function systemAuthorArgs(): string[] {
 
 export async function removeStarterServerFile(worktree: string): Promise<void> {
   if (!existsSync(join(worktree, STARTER_SERVER_FILE))) return;
+  if (projectHasNoHistory(worktree)) {
+    unlinkSync(join(worktree, STARTER_SERVER_FILE));
+    return;
+  }
   // `-f`: the agent may have edited the file since the scaffold commit (ONL-2152).
   const rm = await git(worktree, ['rm', '--quiet', '-f', STARTER_SERVER_FILE]);
   if (!rm.ok) throw new Error(`git rm ${STARTER_SERVER_FILE} failed: ${rm.err}`);

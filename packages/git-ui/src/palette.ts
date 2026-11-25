@@ -23,6 +23,7 @@ export const PRIMARY = {
 } as const;
 
 export const PILL_FAMILY: Record<GitPillStateId, Family | 'primary' | 'outline'> = {
+  'no-git': 'neutral',
   'no-access': 'neutral',
   'connect-github': 'neutral',
   'local-only': 'neutral',
@@ -41,6 +42,7 @@ export const PILL_FAMILY: Record<GitPillStateId, Family | 'primary' | 'outline'>
 };
 
 export const CARD_FAMILY: Record<Exclude<GitCardStateId, 'none'>, Family> = {
+  'no-git': 'neutral',
   'checks-failed': 'error',
   conflicts: 'error',
   'checks-running': 'neutral',

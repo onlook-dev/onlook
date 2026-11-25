@@ -75,6 +75,7 @@ export function machineRows(state: MachineState): MachineRow[] {
       return { id, name, line: unanswered ? 'machine.unconfirmed.line' : READY[id], phase: unanswered ? 'unconfirmed' : 'checking', recovery: undefined };
     }
     if (result.status !== 'failed') {
+      if (result.status === 'not-required') return { id, name, line: 'machine.ready.gitOptional', phase: 'ready', recovery: undefined };
       const ready = result.status === 'passed';
       return { id, name, line: ready ? READY[id] : 'machine.unconfirmed.line', phase: ready ? 'ready' : 'unconfirmed', recovery: undefined };
     }
