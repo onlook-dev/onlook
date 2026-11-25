@@ -10,7 +10,7 @@ function validSignature(path: string) {
 describe('Windows update signatures', () => {
   for (const apostrophe of ["'", '\u2018', '\u2019', '\u201a', '\u201b']) {
     it(`verifies an update in a profile path containing U+${apostrophe.charCodeAt(0).toString(16).toUpperCase()}`, async () => {
-      const path = `C:\\Users\\Design${apostrophe}s Profile\\AppData\\Local\\onlook-updater\\pending\\update.exe`;
+      const path = `C:\\Profiles\\Test${apostrophe}Profile\\AppData\\Local\\onlook-updater\\pending\\update.exe`;
       let calls = 0;
       const verify = createWindowsSignatureVerifier(async (executable, args, options) => {
         calls++;
@@ -29,7 +29,7 @@ describe('Windows update signatures', () => {
     });
   }
 
-  const path = 'C:\\Users\\Designer\\AppData\\Local\\onlook-updater\\pending\\update.exe';
+  const path = 'C:\\Profiles\\Test Profile\\AppData\\Local\\onlook-updater\\pending\\update.exe';
   const verifyResult = (data: unknown, publishers = [publisher]) =>
     createWindowsSignatureVerifier(async () => ({ stdout: JSON.stringify(data), stderr: '' }))(publishers, path);
 
