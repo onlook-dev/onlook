@@ -23,6 +23,8 @@ export interface BlankCreateFailedDialogProps {
 export function BlankCreateFailedDialog({ failure, isInline, onRetry, onClose }: BlankCreateFailedDialogProps): React.JSX.Element {
   const titleId = useId();
   const stageId = useId();
+  const gitMissing = failure?.cause === 'git_not_found';
+  const explanation = gitMissing ? t('machine.failure.git_not_found') : failure?.explanation;
 
   return (
     <FailureDialog
@@ -41,17 +43,19 @@ export function BlankCreateFailedDialog({ failure, isInline, onRetry, onClose }:
           descriptionId={stageId}
           data-testid="blank-create-failed"
           data-stage={failure.stage}
-          {...(failure.explanation === undefined ? {} : { explanation: failure.explanation })}
+          {...(explanation === undefined ? {} : { explanation })}
           explanationTestId="blank-create-explanation"
-          {...(failure.detail === undefined ? {} : { detail: failure.detail })}
+          {...(gitMissing || failure.detail === undefined ? {} : { detail: failure.detail })}
           actions={
             <>
-              <Button
-                label={t('blank.create.retry')}
-                variant="secondary"
-                data-testid="blank-create-retry"
-                onClick={onRetry}
-              />
+              {gitMissing ? null : (
+                <Button
+                  label={t('blank.create.retry')}
+                  variant="secondary"
+                  data-testid="blank-create-retry"
+                  onClick={onRetry}
+                />
+              )}
               <Button
                 label={t('workspace.refused.dismiss')}
                 variant="primary"

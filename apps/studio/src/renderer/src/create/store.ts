@@ -8,7 +8,7 @@ export type BlankCreateStatus =
   | { kind: 'idle' }
   | { kind: 'creating'; stage: BlankCreateStage }
   | { kind: 'canceling'; stage: BlankCreateStage }
-  | { kind: 'failed'; stage: BlankCreateStage; detail?: string; explanation?: string };
+  | { kind: 'failed'; stage: BlankCreateStage; detail?: string; explanation?: string; cause?: 'git_not_found' };
 
 interface BlankCreateStore {
   status: BlankCreateStatus;
@@ -59,6 +59,7 @@ export function startBlankCreate(entryPoint: BlankEntryPoint, land: BlankLanding
         stage: result.stage,
         ...(result.detail === undefined ? {} : { detail: result.detail }),
         ...(result.explanation === undefined ? {} : { explanation: result.explanation }),
+        ...(result.cause === undefined ? {} : { cause: result.cause }),
       });
     })
     .catch((error: unknown) => {
@@ -83,7 +84,7 @@ export function cancelBlankCreate(): void {
 
 export function retryBlankCreate(): void {
   const store = useBlankCreateStore.getState();
-  if (store.status.kind !== 'failed' || inFlight === null) return;
+  if (store.status.kind !== 'failed' || store.status.cause === 'git_not_found' || inFlight === null) return;
   store.set({ kind: 'idle' });
   startBlankCreate(inFlight.entryPoint, inFlight.land, inFlight.openInNewTab);
 }
