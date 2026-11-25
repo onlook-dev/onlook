@@ -456,7 +456,7 @@ export function GitStatusPill({
   if (scale === 'card' && !pr) return null;
   /* Queued takes the body whatever the state derives: the word says Take Back, so the press must take back. */
   const action = !isChrome ? undefined : showsQueued ? onAction : bodyAction(state, onAction, onOpenPr);
-  const shownFailure = isWorking || showsQueued ? undefined : failure;
+  const shownFailure = !isWorking && !showsQueued && (state.id === 'create-pr' || state.id === 'push') ? failure : undefined;
   const label = shownFailure?.label ?? labelFor(state, strings, isBodyHovered, action !== undefined, showsQueued);
   const revealDropdown = isChrome ? dropdown ?? lastDropdownRef.current : undefined;
   const current = currentOptionOf(state);
