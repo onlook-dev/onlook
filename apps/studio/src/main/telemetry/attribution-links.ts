@@ -80,7 +80,7 @@ export function attributionParams(raw: string): URLSearchParams | undefined {
 }
 
 export function registerAttributionLinks(
-  app: Pick<Electron.App, 'on' | 'isPackaged' | 'setAsDefaultProtocolClient'>,
+  app: Pick<Electron.App, 'on' | 'isReady' | 'isPackaged' | 'setAsDefaultProtocolClient'>,
   receiveAttribution: (params: URLSearchParams) => void,
   receiveOpen: (params: OpenLinkParams, launch: 'cold' | 'warm') => void,
   argv: readonly string[] = process.argv,
@@ -96,7 +96,7 @@ export function registerAttributionLinks(
     if (result === undefined) return;
     event.preventDefault();
     if (result.kind === 'attribution') receiveAttribution(result.params);
-    else receiveOpen(result.params, 'warm');
+    else receiveOpen(result.params, app.isReady() ? 'warm' : 'cold');
   });
   app.on('second-instance', (_event, args) => {
     for (const arg of args) receiveUrl(arg, 'warm');
