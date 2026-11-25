@@ -27,6 +27,7 @@ export interface RunCliOptions {
   clock?: DeadlineClock;
   signal?: AbortSignal;
   env?: Env;
+  searchPath?: string;
   /** Names removed from the child's environment after every layer is applied — `env` alone cannot unset a key the login shell exports. */
   unset?: readonly string[];
   killGraceMs?: number;
@@ -46,7 +47,8 @@ export async function runCli(
 ): Promise<CliResult> {
   const env = envWithout(mergeEnv(await userEnv(), options.env), options.unset ?? []);
   env['PATH'] = hostSearchPath(cwd, env);
-  const executable = hostExecutable(bin, cwd, env);
+  const lookupEnv = options.searchPath === undefined ? env : { ...env, PATH: hostSearchPath(cwd, { PATH: options.searchPath }) };
+  const executable = hostExecutable(bin, cwd, lookupEnv);
   if (executable === undefined) {
     return { ok: false, out: '', err: 'Host executable not found in trusted PATH', timedOut: false, missing: true, exitCode: null };
   }

@@ -29,7 +29,7 @@ describe('Git availability without executing Git', () => {
   });
 
   it('requires the selected developer directory to contain Git', async () => {
-    const deps = { platform: 'darwin' as const, resolve: () => '/usr/bin/git', realpath: (path: string) => path, selectedTools: async () => '/tools', exists: (path: string) => path === '/tools/usr/bin/git' };
+    const deps = { platform: 'darwin' as const, resolve: (_cwd: string, env: { PATH?: string }) => env.PATH === '/tools/usr/bin' ? '/tools/usr/bin/git' : '/usr/bin/git', realpath: (path: string) => path, selectedTools: async () => '/tools', exists: (path: string) => path === '/tools/usr/bin/git' };
     expect(await gitAvailable('/project', {}, deps)).toBe(true);
     expect(await gitExecutable('/project', {}, deps)).toBe('/tools/usr/bin/git');
     expect(await gitAvailable('/project', {}, { ...deps, exists: () => false })).toBe(false);
@@ -39,7 +39,7 @@ describe('Git availability without executing Git', () => {
   it.each(['/usr/bin/git', '/bin/git'])('checks tools for an alias to %s without executing Git', async (target) => {
     const deps = {
       platform: 'darwin' as const,
-      resolve: () => '/trusted/bin/git',
+      resolve: (_cwd: string, env: { PATH?: string }) => env.PATH === '/tools/usr/bin' ? '/tools/usr/bin/git' : '/trusted/bin/git',
       realpath: (path: string) => path === '/trusted/bin/git' ? target : path,
       selectedTools: async (): Promise<string | undefined> => undefined,
       exists: (path: string) => path === '/tools/usr/bin/git',
@@ -65,6 +65,17 @@ describe('Git availability without executing Git', () => {
       selectedTools: async () => { throw new Error('must not ask for tools'); },
       exists: () => true,
     })).toBeUndefined();
+  });
+
+  it('requires safe lookup to identify exactly the selected Git', async () => {
+    for (const resolved of [undefined, '/other/bin/git']) {
+      expect(await gitExecutable('/project', {}, {
+        platform: 'darwin',
+        resolve: (_cwd, env) => env['PATH'] === '/tools/usr/bin' ? resolved : '/usr/bin/git',
+        realpath: (path) => path,
+        selectedTools: async () => '/tools', exists: () => true,
+      })).toBeUndefined();
+    }
   });
 
   it('rejects selected tools that point back to the Apple stub or cannot be canonicalized', async () => {

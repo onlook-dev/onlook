@@ -1,7 +1,7 @@
 import { existsSync, realpathSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { runCli } from './cli.js';
-import { hostExecutable } from './executable.js';
+import { hostExecutable, hostSearchPath } from './executable.js';
 import { hostPlatform } from './platform.js';
 import { userEnv, type Env } from './shell-env.js';
 
@@ -15,7 +15,7 @@ interface GitAvailabilityReaders {
 
 const readers: GitAvailabilityReaders = {
   platform: hostPlatform(),
-  resolve: (cwd, env) => hostExecutable('git', cwd, env),
+  resolve: (cwd, env) => hostExecutable('git', cwd, { ...env, PATH: hostSearchPath(cwd, env) }),
   realpath: realpathSync,
   selectedTools: selectedDeveloperTools,
   exists: existsSync,
@@ -52,7 +52,10 @@ export async function gitExecutable(cwd: string, env?: Env, deps: GitAvailabilit
     const selectedGit = join(selected, 'usr/bin/git');
     if (!deps.exists(selectedGit)) return undefined;
     const selectedExecutable = deps.realpath(selectedGit);
-    return selectedExecutable !== '/usr/bin/git' && selectedExecutable !== '/bin/git' ? selectedExecutable : undefined;
+    if (selectedExecutable === '/usr/bin/git' || selectedExecutable === '/bin/git') return undefined;
+    const lookupEnv = { ...environment, PATH: dirname(selectedGit) };
+    const resolved = deps.resolve(cwd, lookupEnv);
+    return resolved !== undefined && deps.realpath(resolved) === selectedExecutable ? selectedGit : undefined;
   } catch {
     return undefined;
   }

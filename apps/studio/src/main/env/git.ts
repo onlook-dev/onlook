@@ -1,4 +1,7 @@
+import { dirname } from 'node:path';
 import { type CliResult, type RunCliOptions, runCli } from './cli.js';
+import { envWithout } from './child.js';
+import { hostExecutable, hostSearchPath } from './executable.js';
 import { hostSshPath, isMac, isWindows, nullDevice } from './platform.js';
 import { gitExecutable } from './git-available.js';
 import { mergeEnv, userEnv } from './shell-env.js';
@@ -16,15 +19,22 @@ export interface RunGitOptions extends RunCliOptions {
 export async function runGit(cwd: string, args: readonly string[], options: RunGitOptions, dependencies: {
   isMac: typeof isMac;
   gitExecutable: typeof gitExecutable;
+  hostExecutable: typeof hostExecutable;
   userEnv: typeof userEnv;
   runCli: typeof runCli;
-} = { isMac, gitExecutable, userEnv, runCli }): Promise<GitResult> {
-  const executable = dependencies.isMac() ? await dependencies.gitExecutable(cwd, mergeEnv(await dependencies.userEnv(), options.env)) : 'git';
-  if (executable === undefined) {
-    return { ok: false, out: '', err: 'Git is unavailable without developer tools.', timedOut: false, missing: true, exitCode: null };
-  }
+} = { isMac, gitExecutable, hostExecutable, userEnv, runCli }): Promise<GitResult> {
   const { config, ...rest } = options;
-  return dependencies.runCli(executable, cwd, [...config.flatMap((setting) => ['-c', setting]), ...args], rest);
+  if (dependencies.isMac()) {
+    const environment = envWithout(mergeEnv(await dependencies.userEnv(), options.env), options.unset ?? []);
+    const lookupEnv = options.searchPath === undefined ? environment : { ...environment, PATH: options.searchPath };
+    const executable = await dependencies.gitExecutable(cwd, lookupEnv);
+    if (executable === undefined) {
+      return { ok: false, out: '', err: 'Git is unavailable without developer tools.', timedOut: false, missing: true, exitCode: null };
+    }
+    const original = dependencies.hostExecutable('git', cwd, { ...lookupEnv, PATH: hostSearchPath(cwd, lookupEnv) });
+    if (executable !== original) rest.searchPath = dirname(executable);
+  }
+  return dependencies.runCli('git', cwd, [...config.flatMap((setting) => ['-c', setting]), ...args], rest);
 }
 
 function noRepositoryPrograms(): string[] {

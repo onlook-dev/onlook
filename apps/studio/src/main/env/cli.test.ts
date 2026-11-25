@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { ChildProcess } from 'node:child_process';
@@ -31,6 +31,43 @@ afterAll(() => {
 function sh(script: string, options: { timeoutMs?: number; killGraceMs?: number; maxBuffer?: number; clock?: DeadlineClock } = {}) {
   return runCli(SH, cwd, ['-c', script], { timeoutMs: options.timeoutMs ?? BOUND_MS, killGraceMs: GRACE_MS, ...options });
 }
+
+describe.skipIf(process.platform === 'win32')('lookup-only searchPath', () => {
+  it.each(['selected', 'missing', 'empty', 'project'])('%s never falls back to the child PATH', async (scenario) => {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'studio-cli-lookup-')));
+    try {
+      const host = join(root, 'host');
+      const selected = join(root, 'selected');
+      mkdirSync(host);
+      mkdirSync(selected);
+      const command = 'studio-lookup-test';
+      for (const directory of [host, ...(scenario === 'selected' ? [selected] : [])]) {
+        writeFileSync(join(directory, command), '#!/bin/sh\nexit 0\n');
+        chmodSync(join(directory, command), 0o755);
+      }
+      const env = { PATH: host, Path: host, LOOKUP_TEST: 'unchanged' };
+      const searchPath = scenario === 'empty' ? '' : scenario === 'project' ? cwd : selected;
+      const launches: { bin: string; env: unknown }[] = [];
+      const result = await runCli(command, cwd, [], { timeoutMs: BOUND_MS, env, searchPath }, {
+        spawn: (bin, _args, options) => {
+          launches.push({ bin, env: options.env });
+          throw new Error('spawn intercepted');
+        },
+        signalGroup: () => {},
+      });
+      if (scenario === 'selected') {
+        expect(launches).toHaveLength(1);
+        expect(launches[0]?.bin).toBe(join(selected, command));
+        expect(launches[0]?.env).toMatchObject(env);
+      } else {
+        expect(result.missing).toBe(true);
+        expect(launches).toEqual([]);
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
 
 function exists(pid: number): boolean {
   try {
