@@ -384,7 +384,7 @@ describe('website attribution link-only wire behavior', () => {
 it('attribution and auth callbacks remain independent across all delivery channels', () => {
   const app = Object.assign(new EventEmitter(), { isPackaged: true, setAsDefaultProtocolClient: () => true });
   const received: string[] = [];
-  registerAttributionLinks(app as unknown as Parameters<typeof registerAttributionLinks>[0], (payload) => { received.push(payload.get('ph_id')!); }, ['app', 'onlook://auth/callback?code=secret&state=auth', 'onlook://attribution?ph_id=cold', 'onlook://web-link?ph_id=cold-link']);
+  registerAttributionLinks(app as unknown as Parameters<typeof registerAttributionLinks>[0], (payload) => { received.push(payload.get('ph_id')!); }, () => {}, ['app', 'onlook://auth/callback?code=secret&state=auth', 'onlook://attribution?ph_id=cold', 'onlook://web-link?ph_id=cold-link']);
   let prevented = 0;
   app.emit('open-url', { preventDefault: () => { prevented += 1; } }, 'onlook://auth/callback?code=secret&state=auth');
   expect(prevented).toBe(0);
