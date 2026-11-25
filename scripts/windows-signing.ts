@@ -14,8 +14,9 @@ export function windowsSigning(env: NodeJS.ProcessEnv): { unsigned: boolean; win
         endpoint: env['ONLOOK_AZURE_SIGN_ENDPOINT'],
         codeSigningAccountName: env['ONLOOK_AZURE_SIGN_ACCOUNT'],
         certificateProfileName: env['ONLOOK_AZURE_SIGN_PROFILE'],
-        publisherName: 'On Off, Inc',
+        publisherName: WINDOWS_PUBLISHER_NAME,
       },
     },
   };
 }
+export const WINDOWS_PUBLISHER_NAME = 'On Off, Inc.';

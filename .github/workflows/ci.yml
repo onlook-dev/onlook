@@ -38,6 +38,8 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Real Windows runtime checks
         run: bun run test:windows
+      - name: Windows update signature checks
+        run: bun test scripts/packaging.test.ts scripts/windows-update-signature.test.ts
       - name: Package unsigned Windows installer
         if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.package) }}
         env:

@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { windowsSigning } from './windows-signing.js';
+import { assertWindowsUpdateSignature } from './windows-update-signature.js';
 import { artifactNames, feedNames, feedProblems } from './release-targets.js';
 import { packagedWindowsProblems } from './windows-arch.js';
 import { builderReleaseArgs, releaseOptions } from './release-channel.js';
@@ -48,6 +49,9 @@ if (!args.includes('--dir')) {
   }
   const feedProblemsFound = officialBuild ? feedProblems(readFileSync(join(release, feedNames('win', channel)[0]!), 'utf8'), productName, version, 'win') : [];
   if (feedProblemsFound.length) throw new Error(feedProblemsFound.join('\n'));
+  if (officialBuild && !signing.unsigned) {
+    assertWindowsUpdateSignature(join(release, 'win-unpacked'), join(release, artifactNames(productName, version, 'win')[0]!));
+  }
 }
 writeFileSync(join(release, 'signing-win.txt'), signing.unsigned ? 'unsigned' : 'signed');
 console.log('Windows cut complete. Nothing was uploaded or published.');

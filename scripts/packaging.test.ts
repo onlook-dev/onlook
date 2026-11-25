@@ -2,7 +2,32 @@ import { expect, test } from 'bun:test';
 import { join } from 'node:path';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { windowsSigning } from './windows-signing.js';
+
+const SIGNED_ENV = { AZURE_TENANT_ID: 'tenant', AZURE_CLIENT_ID: 'client', AZURE_CLIENT_SECRET: 'fixture', ONLOOK_AZURE_SIGN_ENDPOINT: 'https://example.test', ONLOOK_AZURE_SIGN_ACCOUNT: 'account', ONLOOK_AZURE_SIGN_PROFILE: 'profile' };
+
+test('the Windows updater accepts the certificate common name and rejects the old spelling', () => {
+  const script = `
+    const { createRequire } = require('node:module');
+    const appRequire = createRequire(process.argv[1]);
+    const childProcess = require('node:child_process');
+    childProcess.execFile = (...args) => args.at(-1)(null, JSON.stringify({
+      Status: 0, Path: 'update.exe', SignerCertificate: { Subject: 'CN="On Off, Inc.", O="On Off, Inc.", C=US' }
+    }), '');
+    const { verifySignature } = appRequire('electron-updater/out/windowsExecutableCodeSignatureVerifier.js');
+    const logger = { info() {}, warn() {}, error() {} };
+    Promise.all(JSON.parse(process.argv[2]).map(name => verifySignature([name], 'update.exe', logger)))
+      .then(results => process.stdout.write(JSON.stringify(results)));
+  `;
+  const signing = windowsSigning(SIGNED_ENV);
+  const publisher = (signing.win['azureSignOptions'] as { publisherName: string }).publisherName;
+  const result = spawnSync('node', ['-e', script, join(import.meta.dirname, '../apps/studio/package.json'), JSON.stringify([publisher, 'On Off, Inc'])], { encoding: 'utf8' });
+  expect(result.status).toBe(0);
+  const results = JSON.parse(result.stdout) as (string | null)[];
+  expect(results[0]).toBeNull();
+  expect(results[1]).toContain('publisherNames: On Off, Inc,');
+});
 
 test('both Windows signing modes and the shared Mac configuration satisfy the pinned builder schema', async () => {
   const appRequire = createRequire(join(import.meta.dirname, '../apps/studio/package.json'));
@@ -10,8 +35,7 @@ test('both Windows signing modes and the shared Mac configuration satisfy the pi
   const { validateConfiguration } = builderRequire('app-builder-lib/out/util/config/config.js');
   const { load } = builderRequire('js-yaml');
   const config = load(readFileSync(join(import.meta.dirname, '../apps/studio/electron-builder.yml'), 'utf8'));
-  const signed = { AZURE_TENANT_ID: 'tenant', AZURE_CLIENT_ID: 'client', AZURE_CLIENT_SECRET: 'fixture', ONLOOK_AZURE_SIGN_ENDPOINT: 'https://example.test', ONLOOK_AZURE_SIGN_ACCOUNT: 'account', ONLOOK_AZURE_SIGN_PROFILE: 'profile' };
-  for (const env of [signed, { ONLOOK_WINDOWS_ALLOW_UNSIGNED: '1' }]) {
+  for (const env of [SIGNED_ENV, { ONLOOK_WINDOWS_ALLOW_UNSIGNED: '1' }]) {
     const signing = windowsSigning(env);
     await validateConfiguration({ ...config, win: { ...config.win, ...signing.win }, forceCodeSigning: signing.forceCodeSigning }, { isEnabled: false });
   }
