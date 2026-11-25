@@ -4,10 +4,11 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { openLinkParams, parseDeepLink, registerAttributionLinks, type OpenLinkParams } from './attribution-links.js';
-import { flush, initTelemetry, receiveOpenLink, resetTelemetryForTesting, setAppForTesting } from './index.js';
+import { flush, initTelemetry, receiveOpenLink, refreshTelemetryConsent, resetTelemetryForTesting, setAppForTesting } from './index.js';
 import { resetIdentityCache } from '../identity/store.js';
 import { resetFlagsForTesting } from '../flags/index.js';
 import type { OutboxEvent } from './outbox.js';
+import { pendingBatches } from './outbox.js';
 
 const ENV_KEYS = ['STUDIO_STATE_ROOT', 'STUDIO_POSTHOG_KEY', 'STUDIO_POSTHOG_HOST', 'STUDIO_TELEMETRY', 'AGENT_HEADLESS', 'STUDIO_TELEMETRY_HEADLESS', 'STUDIO_FLAGS', 'MAIN_VITE_FLAG_DEFAULTS'] as const;
 const originalEnv = new Map(ENV_KEYS.map((key) => [key, process.env[key]]));
@@ -196,6 +197,26 @@ describe('parseDeepLink', () => {
 });
 
 describe('registerAttributionLinks with open links', () => {
+  it('records macOS open-url as cold before ready and warm after ready without argv', async () => {
+    let ready = false;
+    const app = Object.assign(new EventEmitter(), { isReady: () => ready, isPackaged: true, setAsDefaultProtocolClient: () => true });
+    registerAttributionLinks(
+      app as unknown as Parameters<typeof registerAttributionLinks>[0],
+      () => {},
+      receiveOpenLink,
+      ['app'],
+    );
+    app.emit('open-url', { preventDefault: () => {} }, 'onlook://open?utm_source=cold');
+    ready = true;
+    initTelemetry();
+    app.emit('open-url', { preventDefault: () => {} }, 'onlook://open?utm_source=warm');
+    await flush();
+    expect(openLinkEvents().map((event) => ({ source: event.properties.utm_source, launch: event.properties.launch }))).toEqual([
+      { source: 'cold', launch: 'cold' },
+      { source: 'warm', launch: 'warm' },
+    ]);
+  });
+
   it('delivers cold open links from argv', () => {
     const app = Object.assign(new EventEmitter(), { isPackaged: true, setAsDefaultProtocolClient: () => true });
     const opens: { params: OpenLinkParams; launch: 'cold' | 'warm' }[] = [];
@@ -209,7 +230,7 @@ describe('registerAttributionLinks with open links', () => {
   });
 
   it('delivers warm open links from open-url', () => {
-    const app = Object.assign(new EventEmitter(), { isPackaged: true, setAsDefaultProtocolClient: () => true });
+    const app = Object.assign(new EventEmitter(), { isReady: () => true, isPackaged: true, setAsDefaultProtocolClient: () => true });
     const opens: { params: OpenLinkParams; launch: 'cold' | 'warm' }[] = [];
     let prevented = 0;
     registerAttributionLinks(
@@ -235,7 +256,7 @@ describe('registerAttributionLinks with open links', () => {
   });
 
   it('routes attribution and open links to their respective callbacks', () => {
-    const app = Object.assign(new EventEmitter(), { isPackaged: true, setAsDefaultProtocolClient: () => true });
+    const app = Object.assign(new EventEmitter(), { isReady: () => true, isPackaged: true, setAsDefaultProtocolClient: () => true });
     const attributions: string[] = [];
     const opens: OpenLinkParams[] = [];
     registerAttributionLinks(
@@ -267,6 +288,78 @@ describe('registerAttributionLinks with open links', () => {
 });
 
 describe('app_opened_from_link telemetry event', () => {
+  it('caps a burst of 4,000 running links at 16 and leaves no disk backlog after sending', async () => {
+    initTelemetry();
+    const app = Object.assign(new EventEmitter(), { isReady: () => true, isPackaged: true, setAsDefaultProtocolClient: () => true });
+    const attributions: string[] = [];
+    registerAttributionLinks(
+      app as unknown as Parameters<typeof registerAttributionLinks>[0],
+      (params) => { attributions.push(params.get('ph_id')!); },
+      receiveOpenLink,
+      ['app'],
+    );
+    for (let index = 0; index < 4_000; index++) {
+      app.emit('open-url', { preventDefault: () => {} }, `onlook://open?utm_source=link_${index}`);
+    }
+    app.emit('open-url', { preventDefault: () => {} }, 'onlook://attribution?ph_id=after_cap');
+    app.emit('open-url', { preventDefault: () => {} }, 'onlook://web-link?ph_id=after_cap');
+    await flush();
+    expect(openLinkEvents()).toHaveLength(16);
+    expect(openLinkEvents().at(-1)?.properties.utm_source).toBe('link_15');
+    expect(pendingBatches()).toHaveLength(0);
+    expect(attributions).toEqual(['after_cap', 'after_cap']);
+    sent = [];
+    receiveOpenLink({ utm_source: 'after_flush' }, 'warm');
+    await flush();
+    expect(openLinkEvents()).toHaveLength(0);
+    expect(pendingBatches()).toHaveLength(0);
+  });
+
+  it('shares one cap across startup and running links', async () => {
+    for (let index = 0; index < 8; index++) receiveOpenLink({ utm_source: `cold_${index}` }, 'cold');
+    initTelemetry();
+    for (let index = 0; index < 32; index++) receiveOpenLink({ utm_source: `warm_${index}` }, 'warm');
+    await flush();
+    expect(openLinkEvents()).toHaveLength(16);
+    expect(openLinkEvents().filter((event) => event.properties.launch === 'cold')).toHaveLength(8);
+  });
+
+  it('does not reset the launch cap when consent is refreshed', async () => {
+    initTelemetry();
+    for (let index = 0; index < 16; index++) receiveOpenLink({}, 'warm');
+    await flush();
+    refreshTelemetryConsent();
+    receiveOpenLink({}, 'warm');
+    await flush();
+    expect(openLinkEvents()).toHaveLength(16);
+  });
+
+  it('allows the same link_id again on a new launch', async () => {
+    const params = { link_id: '550e8400-e29b-41d4-a716-446655440000' };
+    initTelemetry();
+    receiveOpenLink(params, 'cold');
+    await flush();
+    resetTelemetryForTesting();
+    initTelemetry();
+    receiveOpenLink(params, 'cold');
+    await flush();
+    expect(openLinkEvents()).toHaveLength(2);
+  });
+
+  it('deduplicates link_id across startup and running links without consuming the cap', async () => {
+    const linkId = '550e8400-e29b-41d4-a716-446655440000';
+    receiveOpenLink({ link_id: linkId, utm_source: 'first' }, 'cold');
+    receiveOpenLink({ link_id: linkId, utm_source: 'duplicate' }, 'cold');
+    initTelemetry();
+    receiveOpenLink({ link_id: linkId.toUpperCase() }, 'warm');
+    for (let index = 0; index < 15; index++) receiveOpenLink({ utm_source: `other_${index}` }, 'warm');
+    await flush();
+    expect(openLinkEvents()).toHaveLength(16);
+    expect(openLinkEvents().filter((event) => event.properties.link_id !== undefined)).toMatchObject([
+      { properties: { link_id: linkId, utm_source: 'first', launch: 'cold' } },
+    ]);
+  });
+
   it('fires once per received link with UTM properties', async () => {
     initTelemetry();
     receiveOpenLink({ utm_source: 'website', utm_campaign: 'launch' }, 'warm');

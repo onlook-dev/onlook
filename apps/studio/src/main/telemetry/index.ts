@@ -441,12 +441,20 @@ function applyWebAttribution(): void {
   void drain.send();
 }
 
-const OPEN_LINK_QUEUE_CAP = 16;
+const OPEN_LINK_LAUNCH_CAP = 16;
+let openLinkCount = 0;
+const seenOpenLinkIds = new Set<string>();
 let pendingOpenLinks: { params: OpenLinkParams; launch: 'cold' | 'warm' }[] = [];
 
 export function receiveOpenLink(params: OpenLinkParams, launch: 'cold' | 'warm'): void {
+  if (openLinkCount >= OPEN_LINK_LAUNCH_CAP) return;
+  if (prepared && !isEnabled()) return;
+  const linkId = params.link_id?.toLowerCase();
+  if (linkId !== undefined && seenOpenLinkIds.has(linkId)) return;
+  openLinkCount += 1;
+  if (linkId !== undefined) seenOpenLinkIds.add(linkId);
   if (!isEnabled()) {
-    if (pendingOpenLinks.length < OPEN_LINK_QUEUE_CAP) pendingOpenLinks.push({ params, launch });
+    pendingOpenLinks.push({ params, launch });
     return;
   }
   capture('app_opened_from_link', { ...params, launch });
@@ -1079,4 +1087,6 @@ export function resetTelemetryForTesting(): void {
   shownDeadEnds.clear();
   workspaceOfRenderer = () => undefined;
   pendingOpenLinks = [];
+  openLinkCount = 0;
+  seenOpenLinkIds.clear();
 }
