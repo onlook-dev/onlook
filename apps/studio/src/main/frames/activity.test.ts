@@ -13,6 +13,7 @@ function nativeRig(pid = 123, size = { width: 800, height: 600 }) {
   let hostCaptured = false;
   let confirmPause = true;
   let deferred: { state: string; work: Promise<void> } | undefined;
+  let captures = 0;
   const commands: string[] = [];
   const debuggerPort = Object.assign(new EventEmitter(), {
     isAttached: () => attached,
@@ -40,7 +41,7 @@ function nativeRig(pid = 123, size = { width: 800, height: 600 }) {
     hostWebContents: { isDestroyed: () => false, isBeingCaptured: () => hostCaptured },
     getOSProcessId: () => pid,
     mainFrame: { framesInSubtree: frames },
-    capturePage: async () => image,
+    capturePage: async () => { captures += 1; return image; },
     debugger: debuggerPort,
   }) as unknown as WebContents;
   const registry = [guest];
@@ -48,12 +49,18 @@ function nativeRig(pid = 123, size = { width: 800, height: 600 }) {
   return {
     guest, debuggerPort, commands, activity, registry, frames,
     attached: () => attached,
+    captures: () => captures,
     resized: () => resized,
     frozen: () => frozen,
     fail: () => { failFreeze = true; },
     capture: () => { captured = true; },
     recordWindow: () => { captured = true; hostCaptured = true; },
     unconfirmed: () => { confirmPause = false; },
+    hold: (state: string) => {
+      let finish: () => void = () => {};
+      deferred = { state, work: new Promise<void>((resolve) => { finish = resolve; }) };
+      return finish;
+    },
     defer: (state: string) => {
       let reject: (error: Error) => void = () => {};
       const work = new Promise<void>((_resolve, fail) => { reject = fail; });
@@ -198,6 +205,27 @@ describe('native Frame lifecycle', () => {
     await test.activity.setIdle(true, true);
     expect(test.frozen()).toBe(false);
     expect(test.activity.snapshot()).toEqual({ paused: false });
+  });
+
+  it('coalesces sharing checks while a renderer is still waking', async () => {
+    const test = nativeRig();
+    await test.activity.setIdle(true);
+    const finish = test.hold('Debugger.disable');
+    test.registry.push(nativeRig().guest);
+    try {
+      const deadline = Date.now() + 1500;
+      while (!test.commands.includes('Debugger.disable') && Date.now() < deadline) await Bun.sleep(20);
+      expect(test.commands).toContain('Debugger.disable');
+      await Bun.sleep(600);
+      finish();
+      while (test.activity.snapshot().paused && Date.now() < deadline) await Bun.sleep(20);
+      await Bun.sleep(20);
+      expect(test.activity.snapshot()).toEqual({ paused: false });
+      expect(test.captures()).toBe(2);
+    } finally {
+      finish();
+      await test.activity.setIdle(false);
+    }
   });
 
   it('cleans up if sharing appears while pause confirmation is pending', async () => {

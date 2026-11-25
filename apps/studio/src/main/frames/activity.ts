@@ -185,8 +185,11 @@ export function activityFor(guest: WebContents, allGuests: () => WebContents[] =
           guest.debugger.removeListener('detach', detached);
         }
         if (!ownsDebugger || guest.isDestroyed() || !isolated()) throw new Error('Frame renderer is shared or unavailable');
+        let waking = false;
         stopWatching = watchRendererSharing(() => {
-          if (!isolated()) void activity.refresh().catch(() => {});
+          if (waking || isolated()) return;
+          waking = true;
+          void activity.refresh().catch(() => {}).finally(() => { waking = false; });
         });
       } catch (error) {
         if (!guest.isDestroyed() && ownsDebugger && guest.debugger.isAttached()) {
