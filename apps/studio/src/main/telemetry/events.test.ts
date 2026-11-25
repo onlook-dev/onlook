@@ -136,6 +136,7 @@ const PROSE_SHAPES = [
 const PROSE_PERMITTED: Record<string, string> = {
   error_message: 'a diagnostic, through `scrubMessage`',
   'report_submitted.message': 'the report the user asked to send (ONL-2350)',
+  'app_opened_from_link.utm_content': 'a standard UTM tag, capped at 200 printable ASCII chars (ONL-3364)',
 };
 
 // Measures and enumerated ids, spelled out: anything else a prose-shaped name declares could be prose, an alias of `string` included.
@@ -329,8 +330,8 @@ describe('what a registered event is allowed to declare (ONL-2486, ONL-2488, ONL
     ]);
   });
 
-  it('permits prose in exactly two properties, so a third carve-out cannot be added silently (ONL-2350)', () => {
-    expect(Object.keys(PROSE_PERMITTED)).toEqual(['error_message', 'report_submitted.message']);
+  it('permits prose in exactly three properties, so a fourth carve-out cannot be added silently (ONL-2350)', () => {
+    expect(Object.keys(PROSE_PERMITTED)).toEqual(['error_message', 'report_submitted.message', 'app_opened_from_link.utm_content']);
   });
 
   it('moves the two maps together: each event declares the same properties on both sides, bar the id main derives', () => {

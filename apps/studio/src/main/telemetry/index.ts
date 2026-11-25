@@ -36,6 +36,7 @@ import type {
 } from './events.js';
 import { hostPlatform } from '../env/platform.js';
 import { devSwitches } from '../env/dev-switches.js';
+import type { OpenLinkParams } from './attribution-links.js';
 
 const DEFAULT_HOST = 'https://us.i.posthog.com';
 const logger = log('telemetry');
@@ -392,6 +393,7 @@ function activateTelemetry(): void {
   superProperties = buildSuperProperties(launchId!);
 
   applyWebAttribution();
+  drainPendingOpenLinks();
 
   logger.info('on', { host });
 
@@ -435,6 +437,23 @@ function applyWebAttribution(): void {
   const drain = drainQueue();
   if (drain === undefined) return;
   void drain.send();
+}
+
+let pendingOpenLinks: { params: OpenLinkParams; launch: 'cold' | 'warm' }[] = [];
+
+export function receiveOpenLink(params: OpenLinkParams, launch: 'cold' | 'warm'): void {
+  if (!isEnabled()) {
+    pendingOpenLinks.push({ params, launch });
+    return;
+  }
+  capture('app_opened_from_link', { ...params, launch });
+}
+
+function drainPendingOpenLinks(): void {
+  if (pendingOpenLinks.length === 0) return;
+  const links = pendingOpenLinks;
+  pendingOpenLinks = [];
+  for (const { params, launch } of links) capture('app_opened_from_link', { ...params, launch });
 }
 
 export type BootOutcome = 'reported' | 'timeout' | 'renderer-gone';
@@ -1056,4 +1075,5 @@ export function resetTelemetryForTesting(): void {
   surfaces.clear();
   shownDeadEnds.clear();
   workspaceOfRenderer = () => undefined;
+  pendingOpenLinks = [];
 }
