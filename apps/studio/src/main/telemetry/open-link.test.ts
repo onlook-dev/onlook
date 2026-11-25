@@ -123,6 +123,23 @@ describe('openLinkParams validator', () => {
   it('skips empty values without rejecting', () => {
     expect(openLinkParams(new URLSearchParams({ utm_source: '', utm_medium: 'cta' }))).toEqual({ utm_medium: 'cta' });
   });
+
+  it('rejects unicode values that survive percent decoding', () => {
+    expect(openLinkParams(new URLSearchParams({ utm_source: '\u2713' }))).toBeUndefined();
+    expect(openLinkParams(new URLSearchParams({ utm_source: '\u00e9' }))).toBeUndefined();
+    expect(openLinkParams(new URLSearchParams({ utm_campaign: '\ud83d\ude00' }))).toBeUndefined();
+  });
+
+  it('rejects CRLF injection attempts', () => {
+    expect(openLinkParams(new URLSearchParams({ utm_source: 'ok\r\nHeader: injected' }))).toBeUndefined();
+    expect(openLinkParams(new URLSearchParams({ utm_source: 'ok\rcarriage' }))).toBeUndefined();
+    expect(openLinkParams(new URLSearchParams({ utm_source: 'ok\nline' }))).toBeUndefined();
+  });
+
+  it('allows javascript: as a plain string value since it is never evaluated', () => {
+    const result = openLinkParams(new URLSearchParams({ utm_source: 'javascript:alert(1)' }));
+    expect(result).toEqual({ utm_source: 'javascript:alert(1)' });
+  });
 });
 
 describe('parseDeepLink', () => {
@@ -165,6 +182,16 @@ describe('parseDeepLink', () => {
 
   it('rejects non-onlook protocols', () => {
     expect(parseDeepLink('https://open?utm_source=website')).toBeUndefined();
+  });
+
+  it('accepts a trailing slash, as Windows may pass onlook://open/?...', () => {
+    const result = parseDeepLink('onlook://open/?utm_source=website&stage=open_page');
+    expect(result).toEqual({ kind: 'open', params: { utm_source: 'website', stage: 'open_page' } });
+  });
+
+  it('accepts onlook://open with no query params at all', () => {
+    expect(parseDeepLink('onlook://open')).toEqual({ kind: 'open', params: {} });
+    expect(parseDeepLink('onlook://open/')).toEqual({ kind: 'open', params: {} });
   });
 });
 
@@ -309,5 +336,56 @@ describe('app_opened_from_link telemetry event', () => {
     const events = openLinkEvents();
     expect(events).toHaveLength(1);
     expect(events[0]!.properties['$process_person_profile']).toBe(false);
+  });
+
+  it('pre-init queue drains exactly once; a second init does not replay', async () => {
+    receiveOpenLink({ utm_source: 'queued' }, 'cold');
+    initTelemetry();
+    await flush();
+    expect(openLinkEvents()).toHaveLength(1);
+    sent = [];
+    resetTelemetryForTesting();
+    for (const key of ENV_KEYS) delete process.env[key];
+    process.env['STUDIO_STATE_ROOT'] = state;
+    process.env['STUDIO_POSTHOG_KEY'] = 'phc_test';
+    process.env['STUDIO_POSTHOG_HOST'] = 'https://collector.invalid';
+    setAppForTesting({ getPath: () => userData, getVersion: () => '0.0.0-test', getLocale: () => 'en-US', isPackaged: false });
+    initTelemetry();
+    await flush();
+    expect(openLinkEvents()).toHaveLength(0);
+  });
+
+  it('pre-init queue is bounded and silently drops excess links', async () => {
+    for (let i = 0; i < 20; i++) receiveOpenLink({ utm_source: `link_${i}` }, 'cold');
+    initTelemetry();
+    await flush();
+    expect(openLinkEvents()).toHaveLength(16);
+  });
+
+  it('pre-init queue is cleared when telemetry is disabled, not drained later', async () => {
+    receiveOpenLink({ utm_source: 'early' }, 'cold');
+    process.env['STUDIO_TELEMETRY'] = '0';
+    initTelemetry();
+    await flush();
+    expect(openLinkEvents()).toHaveLength(0);
+    sent = [];
+    delete process.env['STUDIO_TELEMETRY'];
+    resetTelemetryForTesting();
+    for (const key of ENV_KEYS) delete process.env[key];
+    process.env['STUDIO_STATE_ROOT'] = state;
+    process.env['STUDIO_POSTHOG_KEY'] = 'phc_test';
+    process.env['STUDIO_POSTHOG_HOST'] = 'https://collector.invalid';
+    setAppForTesting({ getPath: () => userData, getVersion: () => '0.0.0-test', getLocale: () => 'en-US', isPackaged: false });
+    initTelemetry();
+    await flush();
+    expect(openLinkEvents()).toHaveLength(0);
+  });
+
+  it('headless launches do not fire the event', async () => {
+    process.env['AGENT_HEADLESS'] = '1';
+    initTelemetry();
+    receiveOpenLink({ utm_source: 'website' }, 'warm');
+    await flush();
+    expect(openLinkEvents()).toHaveLength(0);
   });
 });
