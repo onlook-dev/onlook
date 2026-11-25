@@ -596,44 +596,48 @@ export class TabPresentation {
       const pass = (): void => {
         unrefTimer(next, PREWARM_GAP_MS);
       };
-      const warmed = this.warm(tab, true);
-      const contents = warmed.view?.webContents;
-      if (contents === undefined) {
-        pass();
-        return;
-      }
-      logger.info('warming a restored tab in the background', { tab_id: warmed.id });
-      const run = this.machine.nextRun();
-      // ⚠️ The frame is the point: a hidden view rasterizes nothing until something asks, and
-      // without this the press that selects this Tab pays for its first frame itself (ONL-3153).
-      const gate = createTabPaintGate({
-        contents,
-        painted: () => {
-          const holdsTurn = warmed.warming?.turn === 'held';
-          if (this.dispatch({ type: 'warm-primed', tab: warmed, run }) === 'moved' && holdsTurn) pass();
-        },
-        // Nobody is watching this Tab, so a frame that never comes ends its turn and reports nothing.
-        failed: () => {
-          if (this.dispatch({ type: 'warm-overdue', tab: warmed, run }) === 'moved') pass();
-        },
-        timeoutMs: PREWARM_READY_TIMEOUT_MS,
-      });
-      this.dispatch({ type: 'warm-started', tab: warmed, run });
-      this.warms.set(warmed, { stop: gate.cancel, pass });
-      onceView(contents, IPC_SEND.uiReady, () => {
-        if (this.dispatch({ type: 'warm-ready', tab: warmed, run }) === 'moved') gate.request();
-      });
-      // A Tab closed before it was ever pressed reports nothing; the rest of the queue does not wait it out.
-      contents.once('destroyed', () => {
-        const rig = this.warms.get(warmed);
-        const holdsTurn = warmed.warming?.turn === 'held';
-        if (this.dispatch({ type: 'warm-view-gone', tab: warmed, run }) !== 'moved' || rig === undefined) return;
-        this.warms.delete(warmed);
-        rig.stop();
-        if (holdsTurn) rig.pass();
-      });
+      this.warmRestoredTab(tab, pass);
     };
     unrefTimer(next, PREWARM_GAP_MS);
+  }
+
+  private warmRestoredTab(tab: Tab, pass: () => void): void {
+    const warmed = this.warm(tab, true);
+    const contents = warmed.view?.webContents;
+    if (contents === undefined) {
+      pass();
+      return;
+    }
+    logger.info('warming a restored tab in the background', { tab_id: warmed.id });
+    const run = this.machine.nextRun();
+    // ⚠️ The frame is the point: a hidden view rasterizes nothing until something asks, and
+    // without this the press that selects this Tab pays for its first frame itself (ONL-3153).
+    const gate = createTabPaintGate({
+      contents,
+      painted: () => {
+        const holdsTurn = warmed.warming?.turn === 'held';
+        if (this.dispatch({ type: 'warm-primed', tab: warmed, run }) === 'moved' && holdsTurn) pass();
+      },
+      // Nobody is watching this Tab, so a frame that never comes ends its turn and reports nothing.
+      failed: () => {
+        if (this.dispatch({ type: 'warm-overdue', tab: warmed, run }) === 'moved') pass();
+      },
+      timeoutMs: PREWARM_READY_TIMEOUT_MS,
+    });
+    this.dispatch({ type: 'warm-started', tab: warmed, run });
+    this.warms.set(warmed, { stop: gate.cancel, pass });
+    onceView(contents, IPC_SEND.uiReady, () => {
+      if (this.dispatch({ type: 'warm-ready', tab: warmed, run }) === 'moved') gate.request();
+    });
+    // A Tab closed before it was ever pressed reports nothing; the rest of the queue does not wait it out.
+    contents.once('destroyed', () => {
+      const rig = this.warms.get(warmed);
+      const holdsTurn = warmed.warming?.turn === 'held';
+      if (this.dispatch({ type: 'warm-view-gone', tab: warmed, run }) !== 'moved' || rig === undefined) return;
+      this.warms.delete(warmed);
+      rig.stop();
+      if (holdsTurn) rig.pass();
+    });
   }
 
   private memoryKb(): number {
@@ -676,6 +680,7 @@ export class TabPresentation {
         if (!restoreWithinBudget(restoring.baselineKb, this.memoryKb())) {
           this.cancelRestoration();
           this.views.teardown(id);
+          if (tab.view === undefined) this.warmRestoredTab(tab, () => {});
           return;
         }
         this.restoreTimer = unrefTimer(check, 1_000);

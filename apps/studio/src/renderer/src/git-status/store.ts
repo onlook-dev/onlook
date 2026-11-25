@@ -15,6 +15,7 @@ import { ignoreRefusal } from '../refusal.js';
 import { type GitPillState, type GitPillStateId } from '@studio/git-ui/state';
 import type { GitDropdownOption } from '@studio/git-ui';
 import { studio } from '../bridge.js';
+import { useOnScreenStore } from '../tips/onScreen.js';
 
 export type GitPillAction = GitPillStateId | GitDropdownOption;
 
@@ -83,7 +84,7 @@ let shownStateId: string | undefined;
 let defaultsGeneration = 0;
 
 function emitShownIfChanged(): void {
-  if (openWorktree === undefined) return;
+  if (openWorktree === undefined || !useOnScreenStore.getState().isOnScreen) return;
   const { rows, defaults } = useGitStatusStore.getState();
   const row = rows[openWorktree];
   if (row === undefined) return;
@@ -102,6 +103,7 @@ export function noteOpenWorktree(worktreePath: string | undefined): void {
 }
 
 let unwatchOpenWorktree: (() => void) | undefined;
+let unwatchOnScreen: (() => void) | undefined;
 
 export function watchOpenWorktree(
   subscribe: (listener: (path: string | undefined) => void) => () => void,
@@ -109,6 +111,7 @@ export function watchOpenWorktree(
 ): void {
   noteOpenWorktree(current);
   unwatchOpenWorktree ??= subscribe(noteOpenWorktree);
+  unwatchOnScreen ??= useOnScreenStore.subscribe(emitShownIfChanged);
 }
 
 function emitClicked(worktreePath: string, state: GitPillStateId, action: GitPillAction): void {
@@ -283,5 +286,7 @@ export function resetGitStatusPrimeForTests(): void {
   defaultsGeneration = 0;
   unwatchOpenWorktree?.();
   unwatchOpenWorktree = undefined;
+  unwatchOnScreen?.();
+  unwatchOnScreen = undefined;
   useGitStatusStore.setState({ rows: {}, defaults: GIT_PILL_SHIPPED_DEFAULTS, working: {}, held: {} });
 }

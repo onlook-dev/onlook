@@ -1,8 +1,9 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { EventEmitter } from 'node:events';
 import { join } from 'node:path';
 import { app, type WebContentsView } from 'electron';
 import { afterAll, afterEach, beforeEach, describe, expect, it, jest, mock } from 'bun:test';
-import { IPC_EMIT, type CanvasDoc, type TabAssignment } from '@studio/events';
+import { IPC_EMIT, IPC_SEND, type CanvasDoc, type TabAssignment } from '@studio/events';
 import { cleanupTempFixtures, makeStateRoot, makeWorkspaceRoot, restoreWorkspaceRoot } from '@studio/fixtures';
 import { emptyCanvasDoc } from '../canvas/document.js';
 import { canvasDocPath, createFsDocumentStore } from '../canvas/fs-backend.js';
@@ -11,7 +12,8 @@ import { rememberProject, resetWorkspaceCache } from '../workspace/store.js';
 import type { WarmPhase } from './presentation-machine.js';
 import type { TabPresentation } from './presentation.js';
 import type { Tab } from './tab.js';
-import { seatedTabs } from './test-support.js';
+import { fromMainFrame, seatedTabs } from './test-support.js';
+import { TabViewPool } from './view-pool.js';
 
 interface RestorationSeam {
   restoreOne(ids: readonly string[]): Promise<void>;
@@ -291,6 +293,49 @@ describe('bounded background Project restoration', () => {
     expect(rig.memoryKb).toHaveBeenCalledTimes(1);
     expect(rig.teardown).not.toHaveBeenCalled();
     expect(rig.newView).not.toHaveBeenCalled();
+  });
+
+  it('replaces over-budget preparation with a painted, unassigned shell for the first selection', async () => {
+    const rig = restorationHost();
+    const restored = await savedTab(rig, 'restored');
+    const contents = Object.assign(new EventEmitter(), {
+      id: 28_999, ipc: new EventEmitter(), isDestroyed: () => false,
+      capturePage: mock(async () => ({ isEmpty: () => false })),
+      loadFile: mock(async () => {}), loadURL: mock(async () => {}), send: mock(),
+    });
+    const shell = { webContents: contents, setVisible: mock() } as unknown as WebContentsView;
+    const views = rig.host.pieces.views as TabViewPool;
+    const destroy = mock();
+    views.destroyView = destroy;
+    views.adopt = (tab, view) => { (tab as RestoredTab).view = view; };
+    views.newView = mock(() => shell);
+    views.teardown = TabViewPool.prototype.teardown.bind(views);
+    await rig.seam.restoreOne(['restored']);
+    rig.memoryKb.mockReturnValue(1_151);
+
+    jest.advanceTimersByTime(1_000);
+
+    expect(destroy).toHaveBeenCalledWith(restored.view);
+    expect(restored.tab.view).toBe(shell);
+    expect(shell.setVisible).toHaveBeenCalledWith(false);
+    expect(contents.loadFile).toHaveBeenCalledTimes(1);
+    expect(contents.loadFile.mock.calls[0]).toEqual(expect.arrayContaining([
+      expect.objectContaining({ query: expect.objectContaining({ purpose: 'parked' }) }),
+    ]));
+    expect(rig.presentation.assignmentFrom(contents as unknown as Electron.WebContents)).toBeNull();
+    contents.ipc.emit(IPC_SEND.uiReady, fromMainFrame(contents));
+    await Promise.resolve();
+    expect(restored.tab.warming?.phase).toBe('primed');
+    expect(contents.capturePage).toHaveBeenCalledTimes(1);
+    expect(rig.presentation.warm(restored.tab as Tab)).toBe(restored.tab as Tab);
+    expect(views.newView).toHaveBeenCalledTimes(1);
+    expect(rig.presentation.promoteRestored(restored.tab as Tab)).toBe(false);
+    rig.presentation.assign(restored.tab as Tab);
+    expect(contents.send).toHaveBeenCalledWith(IPC_EMIT.tabsAssigned, restored.assignment);
+    await rig.seam.restoreOne(['restored']);
+    jest.advanceTimersByTime(10_000);
+    expect(rig.memoryKb).toHaveBeenCalledTimes(2);
+    expect(views.newView).toHaveBeenCalledTimes(1);
   });
 
   it('polls from the original baseline, allows exactly 15%, and tears down only the still-unselected restoration above it', async () => {
