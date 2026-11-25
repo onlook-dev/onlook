@@ -1,7 +1,8 @@
 import { peekLinesForTesting, recordLinesForTesting, resetLogForTesting } from '../log/index.js';
 import { existsSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterAll, describe, expect, it } from 'bun:test';
+import { afterAll, describe, expect, it, spyOn } from 'bun:test';
+import * as workspaceGit from './git.js';
 import type { BlankCreateStage, WorkspaceCreated } from '@studio/events';
 import {
   bucketsIn,
@@ -105,6 +106,26 @@ function expectNoPathIn(root: string, recorder: Recorder): void {
 }
 
 describe('the full sequence, offline and keyless', () => {
+  it('explains missing Git without raw output or machine checks and records its cause', async () => {
+    const root = useOwnWorkspaceRoot('git-missing');
+    const recorder = makeRecorder({ diagnoseFailure: async () => { throw new Error('must not diagnose known missing Git'); } });
+    const run = spyOn(workspaceGit, 'git').mockResolvedValue({
+      ok: false, out: '', err: 'Host executable not found in trusted PATH', timedOut: false, missing: true, exitCode: null,
+    });
+    try {
+      const result = await createBlankProject({ entryPoint: 'projects' }, recorder.deps);
+      expect(result).toEqual({
+        ok: false, stage: 'setting-up', canceled: false, cause: 'git_not_found',
+      });
+      expect(recorder.captured[1]?.properties).toMatchObject({ failure_step: 'git_init', failure_cause: 'git_not_found' });
+      expect(recorder.announced).toEqual([]);
+      expect(recorder.calls).not.toContain('spawn');
+      expect(bucketsIn(root)).toEqual([]);
+      expectNoPathIn(root, recorder);
+    } finally {
+      run.mockRestore();
+    }
+  });
   it('does not diagnose a canceled create as a machine failure', async () => {
     useOwnWorkspaceRoot('canceled-machine-diagnosis');
     let diagnoses = 0;
