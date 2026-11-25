@@ -12,7 +12,7 @@ import type {
   StudioEvent,
 } from '@studio/events';
 import { GIT_PILL_SHIPPED_DEFAULTS } from '@studio/events';
-import { MEASUREMENT_FIXTURES, row } from '@studio/git-ui/measurement-fixtures';
+import { MEASUREMENT_FIXTURES, measurement, row } from '@studio/git-ui/measurement-fixtures';
 import type { GitPillState } from '@studio/git-ui/state';
 import {
   noteBrowserOpen,
@@ -706,6 +706,37 @@ describe('telemetry emitters', () => {
       expect(useGitStatusStore.getState().failures[WT]).toBeUndefined();
     });
   }
+
+  it('takes a reason off the button once the work it asked for arrives', () => {
+    bridge.broadcast(change(openRow(at(0))));
+    void useGitStatusStore.getState().click(WT, 'create-pr', 'Create a pull request');
+    const clickedAt = useGitStatusStore.getState().working[WT]!.clickedAt;
+    toolResult('No commits between main and feature', 'gh pr create', WT, clickedAt + 1);
+    const settledAt = new Date(clickedAt + 1_000).toISOString();
+    bridge.broadcast(change(row(measurement({ ahead: 0, dirty: false }), { measuredAt: settledAt, trigger: 'turn-end' })));
+    expect(useGitStatusStore.getState().failures[WT]).toBe('no-changes');
+
+    const unchanged = new Date(clickedAt + 2_000).toISOString();
+    bridge.broadcast(change(row(measurement({ ahead: 0, dirty: false }), { measuredAt: unchanged, trigger: 'interval' })));
+    expect(useGitStatusStore.getState().failures[WT]).toBe('no-changes');
+
+    const committed = new Date(clickedAt + 3_000).toISOString();
+    bridge.broadcast(change(row(measurement({ ahead: 1, dirty: false }), { measuredAt: committed, trigger: 'interval' })));
+    expect(useGitStatusStore.getState().failures[WT]).toBeUndefined();
+    expect(outcomes()).toHaveLength(1);
+  });
+
+  it('keeps a reason a later comparison cannot disprove', () => {
+    bridge.broadcast(change(openRow(at(0))));
+    void useGitStatusStore.getState().click(WT, 'create-pr', 'Create a pull request');
+    const clickedAt = useGitStatusStore.getState().working[WT]!.clickedAt;
+    toolResult('! [rejected] feature -> feature (non-fast-forward)', 'gh pr create', WT, clickedAt + 1);
+    bridge.broadcast(change(turnEndRow(afterClick(1_000))));
+    expect(useGitStatusStore.getState().failures[WT]).toBe('push-refused');
+    const later = new Date(clickedAt + 2_000).toISOString();
+    bridge.broadcast(change(row(measurement({ ahead: 4, dirty: true }), { measuredAt: later, trigger: 'interval' })));
+    expect(useGitStatusStore.getState().failures[WT]).toBe('push-refused');
+  });
 
   it('does not turn a recovered tool error into a failed PR', () => {
     bridge.broadcast(change(openRow(at(0))));

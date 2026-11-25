@@ -17,7 +17,7 @@ import { ignoreRefusal } from '../refusal.js';
 import { type GitPillState, type GitPillStateId } from '@studio/git-ui/state';
 import type { GitDropdownOption } from '@studio/git-ui';
 import { studio } from '../bridge.js';
-import { classifyPrFailure, prFailureFor } from './failure.js';
+import { classifyPrFailure, prFailureFor, prFailureMark, retiresPrFailure, type PrFailureMark } from './failure.js';
 
 export type GitPillAction = GitPillStateId | GitDropdownOption;
 
@@ -86,6 +86,7 @@ let openWorktree: string | undefined;
 let shownStateId: string | undefined;
 let defaultsGeneration = 0;
 const prFailures = new WeakMap<WorkingEntry, GitPrFailure>();
+const failureMarks = new Map<string, PrFailureMark>();
 const prTools = new WeakMap<WorkingEntry, Map<string, string>>();
 const reconcilingPrs = new Map<string, { entry: WorkingEntry; timer: ReturnType<typeof setTimeout> }>();
 const queuedPrs = new Map<string, { entry: WorkingEntry; text: string }>();
@@ -101,6 +102,7 @@ function finishReconciliation(worktreePath: string, report: boolean): void {
   const { rows, defaults } = useGitStatusStore.getState();
   const row = rows[worktreePath];
   const failure = row?.measurement.pr === undefined ? 'unknown' : undefined;
+  failureMarks.delete(worktreePath);
   useGitStatusStore.setState((state) => ({ failures: failure === undefined ? without(state.failures, worktreePath) : { ...state.failures, [worktreePath]: failure } }));
   emitOutcome(worktreePath, pending.entry, row === undefined ? pending.entry.fromState : derivePillState(row, defaults).id, failure === undefined ? 'advanced' : 'unchanged', failure);
 }
@@ -187,11 +189,14 @@ const useGitStatusStore = create<GitStatusStore>()((set, get) => ({
     const waiting = held[worktreePath];
     // The turn the press waited on has ended, so the pen has had its say about it either way.
     const ranOut = waiting !== undefined && settles(row, { clickedAt: waiting.heldAt });
+    const retired = failure === undefined && retiresPrFailure(row, get().failures[worktreePath], failureMarks.get(worktreePath));
+    if (failure !== undefined) failureMarks.set(worktreePath, prFailureMark(row));
+    else if (retired) failureMarks.delete(worktreePath);
     set((state) => ({
       rows: { ...state.rows, [worktreePath]: row },
       working: finished ? without(state.working, worktreePath) : state.working,
       held: ranOut ? without(state.held, worktreePath) : state.held,
-      failures: failure !== undefined ? { ...state.failures, [worktreePath]: failure } : row.measurement.pr !== undefined ? without(state.failures, worktreePath) : state.failures,
+      failures: failure !== undefined ? { ...state.failures, [worktreePath]: failure } : retired ? without(state.failures, worktreePath) : state.failures,
     }));
     if (settled && entry !== undefined) {
       const toState = derivePillState(row, defaults).id;
@@ -228,6 +233,7 @@ const useGitStatusStore = create<GitStatusStore>()((set, get) => ({
 
     const fromState = derivePillState(get().rows[worktreePath], get().defaults).id;
     queuedPrs.delete(worktreePath);
+    failureMarks.delete(worktreePath);
     finishReconciliation(worktreePath, true);
     const entry: WorkingEntry = { clickedAt: Date.now(), action, fromState };
     if (action === 'create-pr') prPrompts.set(entry, text);
@@ -322,6 +328,7 @@ export function resetGitStatusPrimeForTests(): void {
   shownStateId = undefined;
   defaultsGeneration = 0;
   queuedPrs.clear();
+  failureMarks.clear();
   for (const path of reconcilingPrs.keys()) finishReconciliation(path, false);
   unwatchOpenWorktree?.();
   unwatchOpenWorktree = undefined;

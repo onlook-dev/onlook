@@ -15,3 +15,26 @@ export function prFailureFor(row: GitSnapshotRow, observed: GitPrFailure | undef
   if (!row.stale && !measured.partial && measured.baseExists && !measured.dirty && measured.ahead === 0) return 'no-changes';
   return 'unknown';
 }
+
+/** What a reason was judged against, so the button can tell the next step being done from how things already were. */
+export interface PrFailureMark {
+  ahead: number;
+  dirty: boolean;
+  ghAuthed: boolean;
+}
+
+export function prFailureMark(row: GitSnapshotRow): PrFailureMark {
+  const { ahead, dirty, ghAuthed } = row.measurement;
+  return { ahead, dirty, ghAuthed };
+}
+
+/** A reason outlives its attempt, so it comes off the button once the step it asked for is done. */
+export function retiresPrFailure(row: GitSnapshotRow, failure: GitPrFailure | undefined, mark: PrFailureMark | undefined): boolean {
+  if (failure === undefined) return false;
+  const measured = row.measurement;
+  if (measured.pr !== undefined) return true;
+  if (mark === undefined || row.stale || measured.partial) return false;
+  if (failure === 'no-changes') return measured.ahead > mark.ahead || (measured.dirty && !mark.dirty);
+  if (failure === 'sign-in') return measured.ghAuthed && !mark.ghAuthed;
+  return false;
+}
