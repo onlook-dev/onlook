@@ -87,14 +87,16 @@ describe('pickStarterPort', () => {
   });
 });
 
-function backstop() {
+function backstop(parentPid?: string) {
   const parentPort = new EventEmitter();
-  let timeout: (() => void) | undefined;
+  const timers = new Map<number, () => void>();
+  let timerId = 0;
   let parentError: string | undefined;
   const exits: number[] = [];
   const probes: number[] = [];
   const windows: number[] = [];
   const child = {
+    env: parentPid === undefined ? {} : { STARTER_PARENT_PID: parentPid },
     ppid: 1234,
     parentPort,
     kill(pid: number, signal: number) {
@@ -106,12 +108,23 @@ function backstop() {
   };
   runInNewContext(STARTER_BACKSTOP_JS, {
     process: child,
-    setTimeout(callback: () => void, windowMs: number) { timeout = callback; windows.push(windowMs); return callback; },
-    clearTimeout() {},
+    setTimeout(callback: () => void, windowMs: number) {
+      timerId += 1;
+      timers.set(timerId, callback);
+      windows.push(windowMs);
+      return timerId;
+    },
+    clearTimeout(handle: number) { timers.delete(handle); },
   });
   return {
     child, exits, probes, windows,
-    expire() { timeout?.(); },
+    expire() {
+      const next = timers.entries().next().value;
+      if (next === undefined) return;
+      timers.delete(next[0]);
+      next[1]();
+    },
+    pendingTimers() { return timers.size; },
     failProbe(code: string) { parentError = code; },
     heartbeat(windowMs: number) { parentPort.emit('message', { data: { type: 'heartbeat', windowMs } }); },
   };
@@ -122,6 +135,7 @@ it('keeps the preview alive when main misses repeated heartbeat windows', () => 
   guard.heartbeat(5000);
   guard.expire();
   guard.expire();
+  expect(guard.pendingTimers()).toBe(1);
   expect(guard.exits).toEqual([]);
   expect(guard.probes).toEqual([1234, 1234]);
   expect(guard.windows).toEqual([15000, 5000, 5000, 5000]);
@@ -131,6 +145,7 @@ it('keeps the preview alive before the first heartbeat and accepts a later backg
   const guard = backstop();
   guard.expire();
   guard.heartbeat(50_000);
+  expect(guard.pendingTimers()).toBe(1);
   expect(guard.exits).toEqual([]);
   expect(guard.probes).toEqual([1234]);
   expect(guard.windows).toEqual([15000, 15000, 50_000]);
@@ -142,6 +157,15 @@ it('reaps the preview only after the original parent no longer exists', () => {
   guard.failProbe('ESRCH');
   guard.expire();
   expect(guard.probes).toEqual([1234]);
+  expect(guard.exits).toEqual([3]);
+  expect(guard.pendingTimers()).toBe(0);
+});
+
+it('uses the main PID supplied at fork even if its parent changed before startup', () => {
+  const guard = backstop('5678');
+  guard.failProbe('ESRCH');
+  guard.expire();
+  expect(guard.probes).toEqual([5678]);
   expect(guard.exits).toEqual([3]);
 });
 

@@ -18,7 +18,7 @@ export const STARTER_BACKSTOP_JS = `const parentPort =
     ? { on: (_event, listener) => process.on('message', (data) => listener({ data })) }
     : undefined);
 if (parentPort) {
-  const parentPid = process.ppid;
+  const parentPid = Number(process.env.STARTER_PARENT_PID ?? process.ppid);
   let deadline;
   const arm = (windowMs) => {
     clearTimeout(deadline);

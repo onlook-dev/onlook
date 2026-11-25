@@ -38,7 +38,7 @@ describe('isStudioServerFile', () => {
   });
   test('the static server template changed: projects scaffolded with the old one stop being recognised until its hash joins RETIRED_STATIC_SERVER_SHA256 and its bytes join fixtures/', () => {
     const current = createHash('sha256').update(STATIC_FILES[STARTER_SERVER_FILE] ?? '').digest('hex');
-    expect(current).toBe('bf9e64899210e688599948b0914623043e4cb0cb17149000c6adf9ba0ba026d4');
+    expect(current).toBe('93ed2b44f712dfea4aeba94c6b4ea23242222f36a6525e49c22b1810848b711c');
   });
 });
 
@@ -141,6 +141,29 @@ describe('adapterForWorktree', () => {
     const path = writeStaticServer(copy);
     expect(path).toBe(join(copy, STARTER_SERVER_FILE));
     expect(readFileSync(path, 'utf8')).toBe(STATIC_FILES[STARTER_SERVER_FILE]!);
+  });
+
+  test('an untouched older React starter is recognised and upgraded before restarting', () => {
+    const worktree = join(dir, 'retired-react');
+    mkdirSync(worktree);
+    const retired = readFileSync(join(import.meta.dir, 'fixtures/react-server-2026-11-25.mjs.txt'), 'utf8');
+    expect(isStudioServerFile(retired)).toBe(true);
+    expect(isStudioServerFile(`${retired}\n`)).toBe(false);
+    writeScaffold(worktree, { ...reactFiles(), [STARTER_SERVER_FILE]: retired });
+    const modulePath = starterModulePath(worktree, () => '/studio/copy/server.mjs');
+    expect(modulePath).toBe(join(worktree, STARTER_SERVER_FILE));
+    expect(readFileSync(modulePath, 'utf8')).toBe(reactFiles()[STARTER_SERVER_FILE]!);
+  });
+
+  test('React starter upgrades leave user edits untouched', () => {
+    const worktree = join(dir, 'edited-react');
+    mkdirSync(worktree);
+    const retired = readFileSync(join(import.meta.dir, 'fixtures/react-server-2026-11-25.mjs.txt'), 'utf8');
+    const edited = `${retired}\n`;
+    writeScaffold(worktree, { ...reactFiles(), [STARTER_SERVER_FILE]: edited });
+    expect(isStudioServerFile(edited)).toBe(false);
+    starterModulePath(worktree, () => '/studio/copy/server.mjs');
+    expect(readFileSync(join(worktree, STARTER_SERVER_FILE), 'utf8')).toBe(edited);
   });
 
   test('a static project mid-conversion to Vite is still static', () => {

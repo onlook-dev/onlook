@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { accessSync, constants, existsSync, statSync } from 'node:fs';
+import { accessSync, constants, existsSync, readFileSync, statSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 import { userEnv } from '../env/shell-env.js';
 import type { PackageManager } from '../install/detect.js';
@@ -8,6 +8,7 @@ import { STATIC_ADAPTER } from './adapters/static.js';
 import { STARTER_SERVER_FILE } from './scaffold.js';
 import { runChildOutput } from '../env/child.js';
 import { devSwitches } from '../env/dev-switches.js';
+import { writeAtomicFile } from '../fs-atomic.js';
 
 type StarterAdapterId = 'static' | 'react';
 
@@ -95,10 +96,15 @@ export const RETIRED_STATIC_SERVER_SHA256: ReadonlySet<string> = new Set([
   '361df85d703824d3095765c3de754a59222343fbcbd42b871c5f35c4b9862399',
 ]);
 
+const RETIRED_REACT_SERVER_SHA256: ReadonlySet<string> = new Set([
+  '0190e2c4d9af0e264cb54e311fae015b8684ed0eba92c6097e34218991032636',
+]);
+
 // Byte-identical or not Studio's: the host starts a starter unattended, outside any agent-turn approval.
 export function isStudioServerFile(content: string): boolean {
   if (Object.values(ADAPTERS).some((adapter) => adapter.files()[STARTER_SERVER_FILE] === content)) return true;
-  return RETIRED_STATIC_SERVER_SHA256.has(createHash('sha256').update(content).digest('hex'));
+  const hash = createHash('sha256').update(content).digest('hex');
+  return RETIRED_STATIC_SERVER_SHA256.has(hash) || RETIRED_REACT_SERVER_SHA256.has(hash);
 }
 
 export function adapterForWorktree(worktree: string): StarterAdapter | undefined {
@@ -109,7 +115,14 @@ export function adapterForWorktree(worktree: string): StarterAdapter | undefined
 
 // The react server resolves `vite` from its own location, so it runs from the worktree.
 export function starterModulePath(worktree: string, staticServer: () => string): string {
-  return adapterForWorktree(worktree) === STATIC_ADAPTER ? staticServer() : join(worktree, STARTER_SERVER_FILE);
+  const adapter = adapterForWorktree(worktree);
+  if (adapter === STATIC_ADAPTER) return staticServer();
+  const modulePath = join(worktree, STARTER_SERVER_FILE);
+  if (adapter === REACT_ADAPTER) {
+    const hash = createHash('sha256').update(readFileSync(modulePath, 'utf8')).digest('hex');
+    if (RETIRED_REACT_SERVER_SHA256.has(hash)) writeAtomicFile(modulePath, REACT_ADAPTER.files()[STARTER_SERVER_FILE]!);
+  }
+  return modulePath;
 }
 
 export function starterBriefingFor(worktree: string, port: number): string {
