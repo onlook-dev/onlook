@@ -331,6 +331,19 @@ for (const oldGuestState of ['ready', 'failed-old-port'] as const) {
   });
 }
 
+it('replaces a retired same-origin system undo binding with a ready guest', () => {
+  const test = fixture();
+  const node: BrowserNode = { ...browser(), content: { homeUrl: 'http://localhost:4700/about' } };
+  const guest = test.bind(node, node.content.homeUrl);
+  const moved: BrowserNode = { ...node, content: { homeUrl: 'http://localhost:4700/' } };
+  test.bindings.committed(docHolding(node), docHolding(moved), { type: 'set-home-url', id: node.id, homeUrl: moved.content.homeUrl }, 'system');
+  expect(test.bindings.readiness(test.owner, 'doc', moved, guest.id)).toBe('retired');
+  expect(test.bindings.guest(test.owner, 'doc', moved)).toBeUndefined();
+  const replacement = test.bind(moved, moved.content.homeUrl);
+  expect(test.bindings.readiness(test.owner, 'doc', moved, replacement.id)).toBe('ready');
+  expect(test.bindings.guest(test.owner, 'doc', moved)).toBe(replacement);
+});
+
 for (const stage of ['lease-issued', 'prepared', 'birth-loaded', 'pending', 'issued', 'started'] as const) {
   it(`retires outstanding old-port attachment work after a system home move (${stage})`, () => {
     const test = fixture();

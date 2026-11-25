@@ -7601,6 +7601,17 @@ describe('a port move landing on a frame whose server died (ONL-2568)', () => {
 });
 
 describe('a moved address that arrives through a resync (ONL-2568)', () => {
+  it('re-seats a live guest after a same-origin system undo arrives through a gap', async () => {
+    const wire = await connect(docOf([browserNode('a', { content: { homeUrl: 'http://localhost:3000/about' } })], 1));
+    useCanvasStore.getState().patchFrame('a', { currentUrl: 'http://localhost:3000/about', health: 'live' });
+    wire.answerSnapshotsWith(docOf([browserNode('a', { content: { homeUrl: 'http://localhost:3000/' } })], 4));
+    fakeUpdate(entryOf(4, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:3000/' }, 'system'));
+    await settled();
+    expect(frameNodes()[0]?.data.currentUrl).toBe('http://localhost:3000/');
+    expect(frameNodes()[0]?.data.guestEpoch).toBe(1);
+    expect(targets()).toEqual([undefined]);
+  });
+
   for (const superseding of ['second-frame', 'general-resync', 'unrelated-update'] as const) {
     it(`keeps every trusted system move when its resync overlaps ${superseding}`, async () => {
       const frames = (port: number) => ['a', 'b'].map((id) => browserNode(id, { content: { homeUrl: `http://localhost:${port}/${id}` } }));

@@ -66,9 +66,10 @@ export function resyncCanvas(): Promise<void> {
         const targetBeforeSnapshot = targetsBeforeSnapshot.get(move.frameId);
         const state = useCanvasStore.getState();
         const node = doc.nodes[move.frameId];
-        const target = state.overlay[move.frameId]?.target;
-        if (node?.kind === 'browser' && node.content.homeUrl === move.homeUrl && targetBeforeSnapshot === move.targetAtGap &&
-          target !== undefined && target !== targetBeforeSnapshot && target.url === move.homeUrl) {
+        if (node?.kind !== 'browser' || node.content.homeUrl !== move.homeUrl || targetBeforeSnapshot !== move.targetAtGap) continue;
+        if (state.overlay[move.frameId]?.target === targetBeforeSnapshot) state.retargetFrame(move.homeUrl, move.frameId);
+        const target = useCanvasStore.getState().overlay[move.frameId]?.target;
+        if (target !== undefined && target.url === move.homeUrl) {
           state.notePortFollow(move.frameId, move.homeUrl);
           state.noteAddressAccepted(move.frameId, move.homeUrl);
           state.rehomeDeadFrame(move.frameId, move.homeUrl, target);
