@@ -1,0 +1,73 @@
+import { describe, expect, it } from 'bun:test';
+import { createWindowsSignatureVerifier } from './signature.js';
+
+const publisher = 'CN=Example Software, O=Example Software, C=US';
+
+function validSignature(path: string) {
+  return { Status: 0, Path: path, SignerCertificate: { Subject: publisher } };
+}
+
+describe('Windows update signatures', () => {
+  for (const apostrophe of ["'", '\u2018', '\u2019', '\u201a', '\u201b']) {
+    it(`verifies an update in a profile path containing U+${apostrophe.charCodeAt(0).toString(16).toUpperCase()}`, async () => {
+      const path = `C:\\Users\\Design${apostrophe}s Profile\\AppData\\Local\\onlook-updater\\pending\\update.exe`;
+      let calls = 0;
+      const verify = createWindowsSignatureVerifier(async (executable, args, options) => {
+        calls++;
+        expect(executable.replaceAll('\\', '/')).toEndWith('/System32/WindowsPowerShell/v1.0/powershell.exe');
+        expect(options.shell).toBe(false);
+        expect(options.timeout).toBe(20_000);
+        expect(options.encoding).toBe('utf8');
+        expect(options.env?.['PSModulePath']).toBe('');
+        expect(options.env?.['ONLOOK_UPDATE_FILE']).toBe(path);
+        expect(args.join(' ')).not.toContain(path);
+        expect(args.at(-1)).toContain('-LiteralPath $env:ONLOOK_UPDATE_FILE');
+        return { stdout: JSON.stringify(validSignature(path)), stderr: '' };
+      });
+      expect(await verify([publisher], path)).toBeNull();
+      expect(calls).toBe(1);
+    });
+  }
+
+  const path = 'C:\\Users\\Designer\\AppData\\Local\\onlook-updater\\pending\\update.exe';
+  const verifyResult = (data: unknown, publishers = [publisher]) =>
+    createWindowsSignatureVerifier(async () => ({ stdout: JSON.stringify(data), stderr: '' }))(publishers, path);
+
+  it('accepts any configured publisher and preserves full distinguished-name matching', async () => {
+    expect(await verifyResult(validSignature(path), ['CN=Other, O=Other', publisher])).toBeNull();
+    expect(await verifyResult(validSignature(path), ['CN=Example Software, O=Example Software'])).toBeNull();
+    expect(await verifyResult(validSignature(path), ['CN=Example Software, O=Other'])).not.toBeNull();
+  });
+
+  it('preserves common-name matching for publishers without a distinguished name', async () => {
+    expect(await verifyResult(validSignature(path), ['Example Software'])).toBeNull();
+    expect(await verifyResult(validSignature(path), ['Other Software'])).not.toBeNull();
+    expect(await verifyResult(validSignature(path), [])).not.toBeNull();
+  });
+
+  it('rejects unsigned and invalid signatures even when the publisher matches', async () => {
+    for (const Status of [1, 2, 3, 4, 5, 6, '0', undefined]) {
+      expect(await verifyResult({ ...validSignature(path), Status })).not.toBeNull();
+    }
+  });
+
+  it('rejects a signature for another file or without a file path', async () => {
+    expect(await verifyResult(validSignature('C:\\Other\\update.exe'))).not.toBeNull();
+    expect(await verifyResult({ ...validSignature(path), Path: undefined })).not.toBeNull();
+    expect(await verifyResult(validSignature(path.replaceAll('\\', '/')))).toBeNull();
+  });
+
+  it('rejects a missing signer or subject', async () => {
+    expect(await verifyResult({ ...validSignature(path), SignerCertificate: null })).not.toBeNull();
+    expect(await verifyResult({ ...validSignature(path), SignerCertificate: {} })).not.toBeNull();
+  });
+
+  it('rejects command errors, stderr and malformed responses', async () => {
+    const failed = createWindowsSignatureVerifier(async () => { throw new Error('PowerShell failed'); });
+    await expect(failed([publisher], path)).rejects.toThrow('PowerShell failed');
+    const withStderr = createWindowsSignatureVerifier(async () => ({ stdout: JSON.stringify(validSignature(path)), stderr: 'failed' }));
+    await expect(withStderr([publisher], path)).rejects.toThrow();
+    const malformed = createWindowsSignatureVerifier(async () => ({ stdout: 'not JSON', stderr: '' }));
+    await expect(malformed([publisher], path)).rejects.toThrow();
+  });
+});
