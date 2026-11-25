@@ -1,12 +1,13 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'bun:test';
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { delimiter, dirname, join } from 'node:path';
 import { runCli, type RunCliOptions } from './cli.js';
-import { hostExecutable, hostSearchPath } from './executable.js';
+import { pathExecutable } from './executable.js';
 import { gitExecutable } from './git-available.js';
 import { runGit, untrustedCloneGitConfig, USER_GIT_CONFIG, worktreeGitConfig } from './git.js';
 import { resetUserEnvForTests, type Env } from './shell-env.js';
+import { executableCommand } from './windows.js';
 
 const realPlatform = Object.getOwnPropertyDescriptor(process, 'platform')!;
 
@@ -67,18 +68,26 @@ describe('the hardening settings', () => {
 });
 
 describe('runGit Apple tools gate', () => {
+  it('does not let project launch options select the Git executable', async () => {
+    const { dependencies, selections } = fixture('/custom/bin/git', undefined);
+    await runGit('/project', ['status'], {
+      config: USER_GIT_CONFIG, timeoutMs: 3_000,
+      env: { PATH: '/project/bin', DEVELOPER_DIR: '/project/tools' },
+      unset: ['PATH'],
+    }, dependencies);
+    expect(selections.map((selection) => selection.env)).toEqual([{ PATH: '/trusted/bin:/usr/bin', LANG: 'en_US.UTF-8' }]);
+  });
+
   function fixture(executable: string, tools: string | undefined) {
     const launches: { executable: string; cwd: string; args: string[]; options: RunCliOptions }[] = [];
-    const selections: { cwd: string; env: Env | undefined }[] = [];
+    const selections: { env: Env | undefined }[] = [];
     const result = { ok: true, out: 'selected Git', err: '', timedOut: false, missing: false, exitCode: 0 };
     const dependencies: NonNullable<Parameters<typeof runGit>[3]> = {
-      isMac: () => true,
-      hostExecutable: () => executable,
       userEnv: async () => ({ PATH: '/trusted/bin:/usr/bin', LANG: 'en_US.UTF-8' }),
-      gitExecutable: async (cwd, env) => {
-        selections.push({ cwd, env });
-        return gitExecutable(cwd, env, {
-          platform: 'darwin', resolve: (_cwd, lookupEnv) => lookupEnv['PATH'] === '/tools/usr/bin' ? '/tools/usr/bin/git' : executable,
+      gitExecutable: async (env) => {
+        selections.push({ env });
+        return gitExecutable(env, {
+          platform: 'darwin', resolve: (lookupEnv) => lookupEnv['PATH'] === '/tools/usr/bin' ? '/tools/usr/bin/git' : executable,
           realpath: (path) => path === '/trusted/bin/git' ? '/usr/bin/git' : path,
           selectedTools: async () => tools,
           exists: (path) => path === '/tools/usr/bin/git',
@@ -100,7 +109,7 @@ describe('runGit Apple tools gate', () => {
     expect(launches).toEqual([]);
   });
 
-  it.each(['/usr/bin/git', '/bin/git', '/trusted/bin/git'])('replaces %s through lookup only and preserves launch options', async (executable) => {
+  it.each(['/usr/bin/git', '/bin/git', '/trusted/bin/git'])('replaces %s with an absolute executable and preserves launch options', async (executable) => {
     const { dependencies, launches, selections, result } = fixture(executable, '/tools');
     const env = { PATH: '/override/bin:/usr/bin', GIT_PAGER: 'cat' };
     const signal = new AbortController().signal;
@@ -109,11 +118,11 @@ describe('runGit Apple tools gate', () => {
     expect(await runGit('/project', ['status', '--porcelain'], {
       ...options, config: ['core.fsmonitor=false', 'gc.auto=0'],
     }, dependencies)).toBe(result);
-    expect(selections).toEqual([{ cwd: '/project', env: { ...env, LANG: 'en_US.UTF-8' } }]);
+    expect(selections).toEqual([{ env: { PATH: '/trusted/bin:/usr/bin', LANG: 'en_US.UTF-8' } }]);
     expect(launches).toEqual([{
-      executable: 'git', cwd: '/project',
+      executable: '/tools/usr/bin/git', cwd: '/project',
       args: ['-c', 'core.fsmonitor=false', '-c', 'gc.auto=0', 'status', '--porcelain'],
-      options: { ...options, searchPath: '/tools/usr/bin' },
+      options,
     }]);
   });
 
@@ -121,26 +130,52 @@ describe('runGit Apple tools gate', () => {
     const { dependencies, launches } = fixture('/custom/bin/git', undefined);
     await runGit('/project', ['--version'], { config: USER_GIT_CONFIG, timeoutMs: 3_000 }, dependencies);
     expect(launches).toEqual([{
-      executable: 'git', cwd: '/project', args: ['--version'], options: { timeoutMs: 3_000 },
+      executable: '/custom/bin/git', cwd: '/project', args: ['--version'], options: { timeoutMs: 3_000 },
     }]);
   });
 
-  it('applies unset before selecting developer tools', async () => {
+  it('does not apply project overrides or unset to executable discovery', async () => {
     const { dependencies, selections } = fixture('/usr/bin/git', undefined);
     dependencies.userEnv = async () => ({ PATH: '/usr/bin', DEVELOPER_DIR: '/inherited' });
     await runGit('/project', ['status'], {
       config: USER_GIT_CONFIG, timeoutMs: 3_000, env: { DEVELOPER_DIR: '/override' }, unset: ['DEVELOPER_DIR', 'PATH'],
     }, dependencies);
-    expect(selections).toEqual([{ cwd: '/project', env: {} }]);
+    expect(selections).toEqual([{ env: { PATH: '/usr/bin', DEVELOPER_DIR: '/inherited' } }]);
   });
 });
 
-describe.skipIf(process.platform === 'win32')('selected Git uses the real safe lookup without spawning a process', () => {
-  it.each(['selected', 'renamed target', 'project directory', 'directory alias', 'executable alias', 'nonexecutable', 'directory', 'missing', 'removed after selection', 'custom alias'])(
+describe('native Windows Git selection', () => {
+  it.each(['cmd', 'bat'])('skips a git.%s shim and keeps native argv literal', async (extension) => {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'studio-native-git-')));
+    try {
+      Object.defineProperty(process, 'platform', { ...realPlatform, value: 'win32' });
+      const shim = join(root, 'shim');
+      const native = join(root, 'native');
+      mkdirSync(shim);
+      mkdirSync(native);
+      const batch = join(shim, `git.${extension}`);
+      const executable = join(native, 'git.exe');
+      for (const path of [batch, executable]) {
+        writeFileSync(path, 'fixture');
+        chmodSync(path, 0o755);
+      }
+      expect(await gitExecutable({ PATH: shim })).toBeUndefined();
+      const selected = await gitExecutable({ PATH: [shim, native].join(delimiter) });
+      expect(selected).toBe(executable);
+      const args = ['status', '--', '100% draft.txt', 'literal & $(text)'];
+      expect(executableCommand(selected!, args, 'win32')).toEqual({ bin: executable, args });
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe.skipIf(process.platform === 'win32')('selected Git uses only the user toolchain without spawning a process', () => {
+  it.each(['selected', 'renamed target', 'project PATH override', 'project developer tools override', 'nonexecutable', 'directory', 'missing', 'removed after selection', 'custom alias'])(
     '%s', async (scenario) => {
       const root = realpathSync(mkdtempSync(join(tmpdir(), 'studio-selected-git-')));
       const project = join(root, 'project');
-      const tools = scenario === 'project directory' ? join(project, 'tools') : join(root, 'tools');
+      const tools = join(root, 'tools');
       const selected = join(tools, 'usr/bin/git');
       const host = join(root, 'host');
       const launches: { bin: string; args: string[]; env: unknown; shell: unknown }[] = [];
@@ -153,15 +188,7 @@ describe.skipIf(process.platform === 'win32')('selected Git uses the real safe l
           chmodSync(path, 0o755);
         };
         executable(join(host, 'git'));
-        if (scenario === 'directory alias') {
-          mkdirSync(join(project, 'bin'));
-          executable(join(project, 'bin/git'));
-          rmSync(dirname(selected), { recursive: true });
-          symlinkSync(join(project, 'bin'), dirname(selected));
-        } else if (scenario === 'executable alias') {
-          executable(join(project, 'payload'));
-          symlinkSync(join(project, 'payload'), selected);
-        } else if (scenario === 'renamed target' || scenario === 'custom alias') {
+        if (scenario === 'renamed target' || scenario === 'custom alias') {
           executable(join(root, 'renamed-git'));
           symlinkSync(join(root, 'renamed-git'), selected);
         } else if (scenario === 'directory') {
@@ -173,16 +200,11 @@ describe.skipIf(process.platform === 'win32')('selected Git uses the real safe l
         const env = { PATH: `${host}:/usr/bin:/bin`, GIT_PAGER: 'cat', DEVELOPER_DIR: tools };
         if (scenario === 'custom alias') env.PATH = `${dirname(selected)}:${env.PATH}`;
         resetUserEnvForTests(async () => env);
-        const resolve = (cwd: string, environment: Env) => hostExecutable('git', cwd, {
-          ...environment, PATH: hostSearchPath(cwd, environment),
-        });
         const dependencies: NonNullable<Parameters<typeof runGit>[3]> = {
-          isMac: () => true,
           userEnv: async () => env,
-          hostExecutable: () => scenario === 'custom alias' ? selected : '/usr/bin/git',
-          gitExecutable: async (cwd, environment) => gitExecutable(cwd, environment, {
+          gitExecutable: async (environment) => gitExecutable(environment, {
             platform: 'darwin',
-            resolve: (directory, lookup) => lookup['PATH'] === env.PATH && scenario !== 'custom alias' ? '/usr/bin/git' : resolve(directory, lookup),
+            resolve: (lookup) => lookup['PATH'] === env.PATH && scenario !== 'custom alias' ? '/usr/bin/git' : pathExecutable('git', lookup),
             realpath: (path) => path === '/usr/bin/git' ? path : realpathSync(path),
             exists: existsSync,
             selectedTools: async () => {
@@ -194,6 +216,7 @@ describe.skipIf(process.platform === 'win32')('selected Git uses the real safe l
             if (scenario === 'removed after selection') rmSync(selected);
             return runCli(bin, cwd, args, options, {
               spawn: (command, argv, childOptions) => {
+                if (!existsSync(command)) throw Object.assign(new Error('missing'), { code: 'ENOENT' });
                 launches.push({ bin: command, args: argv, env: childOptions.env, shell: childOptions.shell });
                 throw new Error('spawn intercepted');
               },
@@ -201,13 +224,19 @@ describe.skipIf(process.platform === 'win32')('selected Git uses the real safe l
             });
           },
         };
-        const args = ['status', '--', 'space ; $(not-a-command)'];
+        const projectTools = join(project, 'tools/usr/bin');
+        mkdirSync(projectTools, { recursive: true });
+        executable(join(projectTools, 'git'));
+        const override: Env = scenario === 'project PATH override' ? { PATH: projectTools }
+          : scenario === 'project developer tools override' ? { DEVELOPER_DIR: join(project, 'tools') } : {};
+        const args = ['status', '--', 'space ; $(not-a-command)', '"quoted"\n& literal'];
         const result = await runGit(project, args, {
-          config: ['core.fsmonitor=false', 'gc.auto=0'], timeoutMs: 3_000,
+          config: ['core.fsmonitor=false', 'gc.auto=0'], timeoutMs: 3_000, env: override,
         }, dependencies);
-        if (['selected', 'renamed target', 'custom alias'].includes(scenario)) {
+        if (['selected', 'renamed target', 'custom alias', 'project PATH override', 'project developer tools override'].includes(scenario)) {
+          const childEnv = { ...env, ...override, ...(scenario === 'project PATH override' ? { PATH: '' } : {}) };
           expect(launches).toEqual([{
-            bin: selected, args: ['-c', 'core.fsmonitor=false', '-c', 'gc.auto=0', ...args], env: expect.objectContaining(env), shell: undefined,
+            bin: selected, args: ['-c', 'core.fsmonitor=false', '-c', 'gc.auto=0', ...args], env: expect.objectContaining(childEnv), shell: false,
           }]);
         } else {
           expect(result.missing).toBe(true);
@@ -248,5 +277,25 @@ describe.skipIf(process.platform === 'win32')('runGit', () => {
   it('adds nothing when the call names the user configuration', async () => {
     await runGit(project, ['--version'], { config: USER_GIT_CONFIG, timeoutMs: 5_000 });
     expect(readFileSync(record, 'utf8').trim().split('\n')).toEqual(['--version']);
+  });
+
+  it('uses the same user Git from different projects despite project tool overrides', async () => {
+    const other = join(root, 'other');
+    const localBin = join(project, 'bin');
+    const marker = join(root, 'unexpected');
+    mkdirSync(other);
+    mkdirSync(localBin);
+    writeFileSync(join(localBin, 'git'), `#!/bin/sh\nprintf bad > '${marker}'\n`);
+    chmodSync(join(localBin, 'git'), 0o755);
+    const args = ['status', '--', `literal ; $(touch '${marker}')`];
+    for (const cwd of [project, other]) {
+      const result = await runGit(cwd, args, {
+        config: USER_GIT_CONFIG, timeoutMs: 5_000,
+        env: { PATH: localBin, DEVELOPER_DIR: localBin, GIT_PAGER: 'trusted' }, unset: ['PATH'],
+      });
+      expect(result).toMatchObject({ ok: true, out: 'trusted' });
+      expect(readFileSync(record, 'utf8').trim().split('\n')).toEqual(args);
+      expect(existsSync(marker)).toBe(false);
+    }
   });
 });

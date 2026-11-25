@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'bun:test';
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { delimiter, join } from 'node:path';
-import { hostExecutable } from './executable.js';
+import { hostExecutable, pathExecutable } from './executable.js';
 import { runCli } from './cli.js';
 
 const roots: string[] = [];
@@ -22,6 +22,16 @@ function fixture() {
 }
 
 describe('host executable security', () => {
+  it('resolves a user toolchain without consulting a project or relative PATH entries', () => {
+    const { trusted } = fixture();
+    const binary = join(trusted, 'git');
+    writeFileSync(binary, '#!/bin/sh\nexit 0\n');
+    chmodSync(binary, 0o755);
+    expect(pathExecutable('git', { PATH: ['', '.', 'node_modules/.bin', trusted].join(delimiter) })).toBe(binary);
+    expect(pathExecutable('git', { PATH: ['', '.', 'node_modules/.bin'].join(delimiter) })).toBeUndefined();
+    expect(pathExecutable('./git', { PATH: trusted })).toBeUndefined();
+  });
+
   it('security ignores relative PATH and project-local executable candidates', async () => {
     const { project } = fixture();
     const PATH = ['', '.', 'node_modules/.bin', project].join(delimiter);

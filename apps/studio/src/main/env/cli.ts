@@ -27,7 +27,6 @@ export interface RunCliOptions {
   clock?: DeadlineClock;
   signal?: AbortSignal;
   env?: Env;
-  searchPath?: string;
   /** Names removed from the child's environment after every layer is applied — `env` alone cannot unset a key the login shell exports. */
   unset?: readonly string[];
   killGraceMs?: number;
@@ -47,8 +46,7 @@ export async function runCli(
 ): Promise<CliResult> {
   const env = envWithout(mergeEnv(await userEnv(), options.env), options.unset ?? []);
   env['PATH'] = hostSearchPath(cwd, env);
-  const lookupEnv = options.searchPath === undefined ? env : { ...env, PATH: hostSearchPath(cwd, { PATH: options.searchPath }) };
-  const executable = hostExecutable(bin, cwd, lookupEnv);
+  const executable = hostExecutable(bin, cwd, env);
   if (executable === undefined) {
     return { ok: false, out: '', err: 'Host executable not found in trusted PATH', timedOut: false, missing: true, exitCode: null };
   }
@@ -63,6 +61,7 @@ export async function runCli(
       child = dependencies.spawn(command.bin, command.args, {
         cwd,
         env,
+        shell: false,
         detached: leadsOwnGroup(),
         stdio: [options.stdin === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe'],
         windowsHide: true,

@@ -113,7 +113,7 @@ export async function initBlankSource(
   claim: BlankClaim,
   adapter: StarterAdapter,
   manager?: ManagerChoice,
-  available: () => Promise<boolean> = () => gitAvailable(claim.bucket.source),
+  available: () => Promise<boolean> = () => gitAvailable(),
 ): Promise<{ ok: true; history?: 'none' } | { ok: false; detail: string; failure: BlankCreationFailure }> {
   const { source } = claim.bucket;
   if (!await available()) {

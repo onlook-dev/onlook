@@ -79,7 +79,7 @@ export async function measure(
   deps: MeasureDeps = {},
 ): Promise<MeasureOutcome> {
   if (projectHasNoHistory(worktree)) {
-    return { measurement: { ...emptyMeasurement(options.baseBranch, await gitAvailable(worktree)), history: 'none' }, fetched: undefined };
+    return { measurement: { ...emptyMeasurement(options.baseBranch, await gitAvailable()), history: 'none' }, fetched: undefined };
   }
   const { measurement, fetched, remote } = await measureGit(worktree, options);
   const m = await probeGithub(measurement, deps.reader ?? ghReader(worktree));
