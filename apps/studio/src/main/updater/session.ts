@@ -6,6 +6,7 @@ import { log } from '../log/index.js';
 import { reportUpdateFailure, updateAuthorizationDenied, updateHttpStatus, type UpdateFailureStage } from './check.js';
 import type { UpdateMachine } from './machine.js';
 import { capture } from '../telemetry/index.js';
+import { isWindows } from '../env/platform.js';
 
 const logger = log('updater');
 
@@ -157,7 +158,8 @@ export function createUpdateSession(
       if (!busy && !machine.isStaging()) void session.check();
       machine.restart(() => {
         try {
-          updater.quitAndInstall();
+          if (isWindows()) updater.quitAndInstall(true, true);
+          else updater.quitAndInstall();
         } catch (error) {
           failure(error instanceof Error ? error : new Error(String(error)));
         }
