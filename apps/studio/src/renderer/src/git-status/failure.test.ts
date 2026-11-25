@@ -14,7 +14,9 @@ describe('Create PR failure reasons', () => {
   });
   for (const [output, expected] of [
     ['No commits between main and feature', 'no-changes'],
-    ['nothing to commit, working tree clean', 'no-changes'],
+    ['No commits between main and feature/saml-settings', 'no-changes'],
+    ['! [rejected] feature/saml-settings -> feature/saml-settings (non-fast-forward)', 'push-refused'],
+    ['nothing to commit, working tree clean', undefined],
     ['! [rejected] feature -> feature (non-fast-forward)', 'push-refused'],
     ['remote: Permission to repository denied.\nfatal: unable to access remote', 'push-refused'],
     ['remote: The organization has enabled SAML SSO. Authorize your token.', 'org-approval'],

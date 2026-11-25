@@ -21,11 +21,13 @@ const HINT = 'Wait for the turn';
 const noop = (): void => undefined;
 
 describe('Create PR recovery', () => {
-  for (const label of ['No Changes to Publish', 'Push Refused', 'GitHub Approval Needed', 'GitHub Sign-In Needed', 'PR Not Created']) {
+  for (const label of ['No Changes to Publish', 'Push Refused', 'GitHub Approval Needed', 'GitHub Sign-In Needed', 'PR Status Unavailable']) {
     test(`shows ${label} in the button`, () => {
-      const markup = renderToStaticMarkup(<GitStatusPill state={PILL_FIXTURES['create-pr']} strings={STUB_STRINGS} glyphs={GLYPHS} failure={{ label, nextStep: 'Check access, then try Create PR again.' }} onAction={noop} />);
+      const markup = renderToStaticMarkup(<GitStatusPill state={PILL_FIXTURES['create-pr']} strings={STUB_STRINGS} glyphs={GLYPHS} failure={{ label, nextStep: 'Check access, then try Create PR again.' }} isTooltipOpen tooltip={FACTS} onAction={noop} />);
       expect(markup).toContain(`aria-label="${label}"`);
       expect(markup).toContain('data-failure="true"');
+      expect(markup).toContain('Check access, then try Create PR again.');
+      expect(markup).not.toContain(FACTS[0]!);
     });
   }
   test('keeps working and queued labels ahead of an earlier failure', () => {

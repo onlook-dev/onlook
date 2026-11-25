@@ -7,7 +7,7 @@
   "gitStatus.failure.org-approval.nextStep": "Authorize GitHub CLI for your organization’s SSO or ask an organization admin to approve access, then try Create PR again.",
   "gitStatus.failure.sign-in": "GitHub Sign-In Needed",
   "gitStatus.failure.sign-in.nextStep": "Ask the agent to help you sign in to GitHub CLI, then try Create PR again.",
-  "gitStatus.failure.unknown": "PR Not Created",
+  "gitStatus.failure.unknown": "PR Status Unavailable",
   "gitStatus.failure.unknown.nextStep": "Check Project Chat for details, then ask the agent to try Create PR again.",
   "gitStatus.label.no-access": "No Access",
   "gitStatus.label.connect-github": "Connect GitHub",
