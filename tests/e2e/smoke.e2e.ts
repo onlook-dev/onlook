@@ -71,6 +71,32 @@ async function alphaWindow(): Promise<Page> {
   return editorPage(alphaApp);
 }
 
+test('Help menu rows accept mouse clicks with the left panel collapsed', async () => {
+  const window = await editorWindow();
+  const band = await chromePage(editorApp);
+  await band.getByTestId('topbar-rail-left').click();
+  try {
+    await expect(window.getByTestId(TESTID.canvasHelp)).toBeVisible();
+    await window.getByTestId(TESTID.canvasHelp).click();
+    const rows = window.getByTestId(TESTID.helpMenuItem);
+    await expect(rows.first()).toBeVisible();
+    const hitTests = await rows.evaluateAll((items) => items.map((item) => {
+      const bounds = item.getBoundingClientRect();
+      return {
+        pointerEvents: getComputedStyle(item).pointerEvents,
+        takesPointer: item.contains(document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2)),
+      };
+    }));
+    expect(hitTests).toEqual(hitTests.map(() => ({ pointerEvents: 'auto', takesPointer: true })));
+    await rows.filter({ hasText: 'Keyboard shortcuts' }).click();
+    await expect(window.getByTestId(TESTID.tipsDialog)).toHaveAttribute('data-view', 'hotkeys');
+    await expect(window.getByTestId(TESTID.helpMenu)).not.toBeVisible();
+    await window.keyboard.press('Escape');
+  } finally {
+    await band.getByTestId('topbar-rail-left').click();
+  }
+});
+
 /* This build carries the shipping defaults; the case below it opens one with `STUDIO_FLAGS=sections` (ONL-2661). */
 test('the blank Canvas menu pastes, and offers no Section while the flag is off', async () => {
   const window = await editorWindow();
