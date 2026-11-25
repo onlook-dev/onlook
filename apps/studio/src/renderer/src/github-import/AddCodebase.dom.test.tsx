@@ -86,6 +86,7 @@ test('Settings shows Checking without Connect GitHub until the first answer arri
   await act(async () => { root!.render(<GithubSettings />); });
   const row = document.querySelector('[data-testid="github-settings"]')!;
   expect(row.textContent).toContain(t('github.checking'));
+  expect(row.textContent?.split(t('github.checking')).length).toBe(2);
   expect(row.textContent).not.toContain(t('github.connect'));
   expect(row.querySelector<HTMLButtonElement>('button')?.disabled).toBe(true);
   const checking = githubCommand({ kind: 'status' });
@@ -95,6 +96,43 @@ test('Settings shows Checking without Connect GitHub until the first answer arri
   });
   expect(row.textContent).toContain(t('github.manage'));
   expect(row.textContent).not.toContain(t('github.connect'));
+});
+
+test('Settings offers a working Try again action after the first check fails', async () => {
+  const commands: GithubImportCommand[] = [];
+  await mount({ githubImport: async (command) => {
+    commands.push(command);
+    return { ...EMPTY_GITHUB, enabled: true, connection: { status: 'connected', scopes: [], expiresAt: null } };
+  } });
+  await act(async () => {
+    useGithubImport.setState({ state: { ...EMPTY_GITHUB, enabled: true, connection: { status: 'unavailable', reason: 'provider_unavailable' } } });
+    root!.render(<GithubSettings />);
+  });
+  const row = document.querySelector('[data-testid="github-settings"]')!;
+  expect(row.textContent).toContain(t('github.unavailable'));
+  const retry = row.querySelector<HTMLButtonElement>('button')!;
+  expect(retry.textContent).toBe(t('github.tryAgain'));
+  expect(retry.disabled).toBe(false);
+  await act(async () => { retry.click(); });
+  expect(commands.some((command) => command.kind === 'status')).toBe(true);
+  expect(row.textContent).toContain(t('github.manage'));
+});
+
+for (const entryPoint of ['projects', 'settings'] as const) test(`${entryPoint} dialog retries an unavailable first check`, async () => {
+  const commands: GithubImportCommand[] = [];
+  await mount({ githubImport: async (command) => {
+    commands.push(command);
+    return { ...EMPTY_GITHUB, enabled: true, connection: { status: 'connected', scopes: [], expiresAt: null } };
+  } });
+  await act(async () => {
+    useGithubImport.setState({ state: { ...EMPTY_GITHUB, enabled: true, connection: { status: 'unavailable', reason: 'provider_unavailable' } } });
+    root!.render(<GithubImportFlow entryPoint={entryPoint} onClose={() => {}} onOpen={() => {}} />);
+  });
+  const retry = [...container!.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === t('github.tryAgain'))!;
+  expect(retry.disabled).toBe(false);
+  await act(async () => { retry.click(); });
+  expect(commands.some((command) => command.kind === 'status')).toBe(true);
+  expect(container!.textContent).not.toContain(t('github.unavailable'));
 });
 
 test('Back closes the modal without reopening the choices and ignores preparation that finishes later', async () => {

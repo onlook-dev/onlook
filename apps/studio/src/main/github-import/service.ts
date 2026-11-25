@@ -6,6 +6,7 @@ import { cloneRepository } from './clone.js';
 
 /** A clone past this is not stuck, it is big; the view says so rather than leaving the bar to explain itself. */
 export const SLOW_CLONE_MS = 8000;
+export const GITHUB_STATUS_TIMEOUT_MS = 8000;
 
 const FULL_NAME = /^[^/\s]{1,100}\/[^/\s]{1,100}$/;
 
@@ -20,10 +21,6 @@ export function listedRepository(listing: GithubRepository): GithubRepository | 
     archived: listing.archived === true, canPull: true, canPush: listing.canPush === true,
   };
 }
-
-const githubOff = (): GithubImportState => ({
-  enabled: false, connection: { status: 'checking' }, repositories: [], branches: [], phase: 'idle', progress: 0,
-});
 
 export interface GithubImportDeps {
   enabled(): boolean;
@@ -61,6 +58,9 @@ type ConnectionAttempt = { kind: 'none' | 'finished' }
   | { kind: 'active'; entryPoint: GithubEntryPoint; outcome: 'connected' | 'waiting' | 'no_connection' };
 
 export function createGithubImport(deps: GithubImportDeps) {
+  const githubOff = (): GithubImportState => ({
+    enabled: false, connection: { status: deps.subject() === undefined ? 'disconnected' : 'checking' }, repositories: [], branches: [], phase: 'idle', progress: 0,
+  });
   let context: Pick<GithubImportState, 'enabled' | 'connection' | 'repositories' | 'destination' | 'destinationChoice'> = githubOff();
   let phase: ImportPhase = { kind: 'idle' };
   let account: string | undefined;
@@ -94,9 +94,9 @@ export function createGithubImport(deps: GithubImportDeps) {
     abandonCreation();
     generation += 1;
     work?.controller.abort();
+    account = deps.subject();
     context = githubOff();
     phase = { kind: 'idle' };
-    account = deps.subject();
     attempt = { kind: 'none' };
     approval = 'none';
   }
@@ -196,11 +196,15 @@ export function createGithubImport(deps: GithubImportDeps) {
     const loading: Extract<ImportPhase, { kind: 'loading' }> = { kind: 'loading', previous: phase.kind === 'loading' ? phase.previous : phase };
     phase = loading;
     const ownsLoading = (): boolean => active() && phase === loading;
+    let statusTimer: ReturnType<typeof setTimeout> | undefined;
     try {
       if (command.kind === 'access') {
         await deps.open('https://github.com/settings/connections/applications');
       } else if (command.kind === 'status') {
-        const connection = await backend.status();
+        const deadline = new Promise<never>((_resolve, reject) => {
+          statusTimer = setTimeout(() => reject(new Error('GitHub status timed out')), GITHUB_STATUS_TIMEOUT_MS);
+        });
+        const connection = await Promise.race([backend.status(), deadline]);
         if (!ownsLoading()) return active() ? snapshot() : githubOff();
         context = { ...context, connection };
         if (connection.status === 'connected') approval = 'none';
@@ -328,7 +332,10 @@ export function createGithubImport(deps: GithubImportDeps) {
         phase = { kind: 'failed', failure: 'network', selection: 'selection' in previous ? previous.selection : undefined };
         context = { ...context, connection: context.connection.status === 'connecting' || (command.kind === 'status' && context.connection.status === 'checking') ? { status: 'unavailable', reason: 'provider_unavailable' } : context.connection };
       }
-    } finally { if (phase === loading) phase = loading.previous; }
+    } finally {
+      if (statusTimer !== undefined) clearTimeout(statusTimer);
+      if (phase === loading) phase = loading.previous;
+    }
     return active() ? snapshot() : githubOff();
   }
   return { command, dispose() { finish('dismiss'); reset(); } };

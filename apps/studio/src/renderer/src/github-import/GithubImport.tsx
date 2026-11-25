@@ -75,7 +75,7 @@ function connectionPrompt(state: GithubImportState, entryPoint: GithubEntryPoint
   };
   if (connecting || (waiting && state.connectionAttempted === true)) action = { label: 'github.check', command: { kind: 'status' } };
   else if (forbidden) action = { label: 'github.access', command: { kind: 'access' } };
-  else if (failed) action = state.connectionAttempted === true ? { label: 'github.check', command: { kind: 'status' } } : undefined;
+  else if (failed) action = { label: 'github.tryAgain', command: { kind: 'status' } };
   const extras: ConnectionPrompt['extras'] = [];
   if (state.connectionAttempted === true && !connecting && !waiting && !failed && !forbidden) extras.push({ label: 'github.check', command: { kind: 'status' } });
   if (state.connectionAttempted === true && state.connection.status === 'disconnected' && !waiting) extras.push({ label: 'github.access', command: { kind: 'access' } });
@@ -261,17 +261,22 @@ export function GithubImportFlow({ entryPoint, onClose, onFolder, onOpen }: Omit
     onClose={leave} {...(onFolder ? { onFolder: () => { gone.current = true; leaveForFolder(onFolder); } } : {})} onOpen={onOpen} />;
 }
 
+export function GithubSettingsSection({ state, onManage }: { state: GithubImportState; onManage(): void }): React.JSX.Element {
+  const status = state.connection.status;
+  const unavailable = status === 'unavailable' || status === 'not_found' || status === 'invalid_request';
+  return <SettingsSection label={t('github.settings')} testId="github-settings">
+    <SettingsRow label={t('github.name')} description={status === 'checking' ? undefined : t(status === 'connected' ? 'github.connected' : status === 'reconnect' ? 'github.reconnect.body' : unavailable ? connectionPrompt(state, 'settings').message : 'github.connect.body')}
+      control={<Button label={t(status === 'checking' ? 'github.checking' : status === 'connected' ? 'github.manage' : status === 'reconnect' ? 'github.reconnect' : unavailable ? 'github.tryAgain' : 'github.connect')} variant="secondary" isDisabled={status === 'checking'} onClick={onManage} />} />
+  </SettingsSection>;
+}
+
 export function GithubSettings(): React.JSX.Element | null {
   const enabled = useFlag('githubImport') && capable('github');
   const state = useGithubImport((store) => store.state);
   const [open, setOpen] = useState(false);
   if (!enabled) return null;
   return <>
-    <SettingsSection label={t('github.settings')} testId="github-settings">
-      <SettingsRow label={t('github.name')} description={t(state.connection.status === 'checking' ? 'github.checking' : state.connection.status === 'connected' ? 'github.connected' : state.connection.status === 'reconnect' ? 'github.reconnect.body' : 'github.connect.body')}
-        control={<Button label={t(state.connection.status === 'checking' ? 'github.checking' : state.connection.status === 'connected' ? 'github.manage' : state.connection.status === 'reconnect' ? 'github.reconnect' : 'github.connect')} variant="secondary" isDisabled={state.connection.status === 'checking'}
-          onClick={() => { void primeGithub(); setOpen(true); }} />} />
-    </SettingsSection>
+    <GithubSettingsSection state={state} onManage={() => { void primeGithub(false); setOpen(true); }} />
     <Dialog isOpen={open} onOpenChange={(value) => { if (!value) { dismissGithub(); setOpen(false); } }}
       purpose="form" width={SETTINGS_FLOW_WIDTH} maxHeight={SETTINGS_FLOW_HEIGHT} style={{ height: SETTINGS_FLOW_HEIGHT }} data-testid="github-settings-dialog">
       {open && <GithubImportFlow entryPoint="settings" onClose={() => setOpen(false)} onOpen={() => setOpen(false)} />}

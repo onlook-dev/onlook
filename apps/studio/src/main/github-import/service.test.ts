@@ -1,7 +1,7 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, jest, test } from 'bun:test';
 import type { GithubImportCommand, GithubRepository } from '@studio/events';
 import type { GithubBackend } from './backend.js';
-import { createGithubImport, listedRepository, SLOW_CLONE_MS, type GithubImportDeps } from './service.js';
+import { createGithubImport, GITHUB_STATUS_TIMEOUT_MS, listedRepository, SLOW_CLONE_MS, type GithubImportDeps } from './service.js';
 
 const REPO: GithubRepository = { id: 42, fullName: 'private-team/private-repo', private: true, defaultBranch: 'design', archived: false, canPull: true, canPush: true };
 
@@ -51,6 +51,120 @@ describe('GitHub import boundary', () => {
     const flow = fixture();
     flow.backend.status = async () => { throw new Error('Offline'); };
     expect((await flow.service.command({ kind: 'status' })).connection).toEqual({ status: 'unavailable', reason: 'provider_unavailable' });
+  });
+
+  test('a never-resolving first status check times out and releases loading for retry', async () => {
+    jest.useFakeTimers();
+    try {
+      const flow = fixture();
+      const status = flow.backend.status;
+      flow.backend.status = () => new Promise(() => {});
+      const pending = flow.service.command({ kind: 'status' });
+      jest.advanceTimersByTime(GITHUB_STATUS_TIMEOUT_MS - 1);
+      const checking = await flow.service.command({ kind: 'cancel' });
+      expect(checking.connection.status).toBe('checking');
+      expect(checking.phase).toBe('loading');
+      jest.advanceTimersByTime(1);
+      const expired = await pending;
+      expect(expired.connection).toEqual({ status: 'unavailable', reason: 'provider_unavailable' });
+      expect(expired.phase).toBe('failed');
+      expect(jest.getTimerCount()).toBe(0);
+      flow.backend.status = status;
+      const retried = await flow.service.command({ kind: 'status' });
+      expect(retried.connection.status).toBe('connected');
+      expect(retried.phase).not.toBe('loading');
+      expect(jest.getTimerCount()).toBe(0);
+      jest.advanceTimersByTime(GITHUB_STATUS_TIMEOUT_MS);
+      expect((await flow.service.command({ kind: 'cancel' })).connection.status).toBe('connected');
+    } finally { jest.useRealTimers(); }
+  });
+
+  for (const settlement of ['resolve', 'reject'] as const) {
+    for (const timing of ['during', 'after'] as const) test(`a timed-out status ${settlement} ${timing} retry cannot change its state`, async () => {
+      jest.useFakeTimers();
+      try {
+        const flow = fixture();
+        const first = deferred<Awaited<ReturnType<GithubBackend['status']>>>();
+        const retry = deferred<Awaited<ReturnType<GithubBackend['status']>>>();
+        flow.backend.status = () => first.promise;
+        const pending = flow.service.command({ kind: 'status' });
+        jest.advanceTimersByTime(GITHUB_STATUS_TIMEOUT_MS);
+        expect((await pending).connection.status).toBe('unavailable');
+        flow.backend.status = () => retry.promise;
+        const retried = flow.service.command({ kind: 'status' });
+        const settleFirst = () => {
+          if (settlement === 'resolve') first.resolve({ status: 'disconnected' });
+          else first.reject(new Error('Offline'));
+        };
+        if (timing === 'during') {
+          settleFirst();
+          await first.promise.catch(() => undefined);
+          const loading = await flow.service.command({ kind: 'cancel' });
+          expect(loading.connection.status).toBe('unavailable');
+          expect(loading.phase).toBe('loading');
+        }
+        retry.resolve({ status: 'connected', scopes: [], expiresAt: null });
+        expect((await retried).connection.status).toBe('connected');
+        if (timing === 'after') {
+          settleFirst();
+          await first.promise.catch(() => undefined);
+        }
+        const settled = await flow.service.command({ kind: 'cancel' });
+        expect(settled.connection.status).toBe('connected');
+        expect(settled.phase).not.toBe('loading');
+      } finally { jest.useRealTimers(); }
+    });
+  }
+
+  test('a timed-out recheck preserves the connected account and repository selection', async () => {
+    jest.useFakeTimers();
+    try {
+      const flow = fixture();
+      const selected = await flow.select();
+      const late = deferred<Awaited<ReturnType<GithubBackend['status']>>>();
+      flow.backend.status = () => late.promise;
+      const pending = flow.service.command({ kind: 'status' });
+      jest.advanceTimersByTime(GITHUB_STATUS_TIMEOUT_MS);
+      const timedOut = await pending;
+      expect(timedOut.connection).toEqual(selected.connection);
+      expect(timedOut.repositories).toEqual(selected.repositories);
+      expect(timedOut.repositoryId).toBe(selected.repositoryId);
+      expect(timedOut.branches).toEqual(selected.branches);
+      expect(timedOut.phase).not.toBe('loading');
+      late.resolve({ status: 'disconnected' });
+      await late.promise;
+      expect((await flow.service.command({ kind: 'cancel' })).connection).toEqual(selected.connection);
+    } finally { jest.useRealTimers(); }
+  });
+
+  test('without a verified subject begin and status are disconnected without backend effects', async () => {
+    const flow = fixture({ subject: () => undefined });
+    for (const command of [{ kind: 'begin', entryPoint: 'settings' }, { kind: 'status' }] as const) {
+      const state = await flow.service.command(command);
+      expect(state.connection.status).toBe('disconnected');
+      expect(state.phase).toBe('idle');
+      expect(state.enabled).toBe(false);
+    }
+    expect(flow.calls).toEqual([]);
+    expect(flow.events).toEqual([]);
+  });
+
+  test('losing the verified subject clears state and ignores a pending status result', async () => {
+    const flow = fixture();
+    await flow.select();
+    const result = deferred<Awaited<ReturnType<GithubBackend['status']>>>();
+    flow.backend.status = () => result.promise;
+    const pending = flow.service.command({ kind: 'status' });
+    flow.signOut();
+    const signedOut = await flow.service.command({ kind: 'status' });
+    expect(signedOut.connection.status).toBe('disconnected');
+    expect(signedOut.repositories).toEqual([]);
+    expect(signedOut.repositoryId).toBeUndefined();
+    expect(signedOut.phase).toBe('idle');
+    result.resolve({ status: 'connected', scopes: [], expiresAt: null });
+    const settled = await pending;
+    expect(settled.connection.status).toBe('disconnected');
+    expect(settled.enabled).toBe(false);
   });
 
   for (const operation of ['clone', 'branches'] as const) {

@@ -8,6 +8,8 @@ export const EMPTY_GITHUB: GithubImportState = {
   enabled: false, connection: { status: 'checking' }, repositories: [], branches: [], phase: 'idle', progress: 0,
 };
 
+export const GITHUB_STATUS_TIMEOUT_MS = 10_000;
+
 export const useGithubImport = create<{
   state: GithubImportState;
   pendingCommands: GithubImportCommand[];
@@ -91,8 +93,14 @@ export function githubCommand(command: GithubImportCommand, background = command
 async function performCommand(command: GithubImportCommand, owner: Dispatch): Promise<GithubImportState> {
   if (owner !== dispatch) return EMPTY_GITHUB;
   if (!githubOffered()) return EMPTY_GITHUB;
+  let timeout: ReturnType<typeof setTimeout> | undefined;
   try {
-    const state = await studio().githubImport(command);
+    const request = studio().githubImport(command);
+    const status = useGithubImport.getState().state.connection.status;
+    const needsDeadline = command.kind === 'status' && (status === 'checking' || status === 'unavailable' || status === 'not_found' || status === 'invalid_request');
+    const state = await (needsDeadline ? Promise.race([request, new Promise<never>((_resolve, reject) => {
+      timeout = setTimeout(() => reject(new Error('GitHub status timed out')), GITHUB_STATUS_TIMEOUT_MS);
+    })]) : request);
     if (owner === dispatch) {
       if (command.kind === 'start') connection = state.connection.status === 'connecting' ? 'waiting' : 'idle';
       if (state.connection.status === 'connected' || command.kind === 'begin' || command.kind === 'cancel' || (command.kind === 'leave' && command.next !== 'waiting')) connection = 'idle';
@@ -111,6 +119,8 @@ async function performCommand(command: GithubImportCommand, owner: Dispatch): Pr
       : { ...EMPTY_GITHUB, enabled: true, connection: { status: 'unavailable', reason: 'provider_unavailable' } };
     if (owner === dispatch) useGithubImport.setState({ state });
     return owner === dispatch ? state : EMPTY_GITHUB;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

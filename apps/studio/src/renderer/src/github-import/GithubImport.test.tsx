@@ -90,7 +90,7 @@ test('unavailable explains the problem once and preserves the folder exit', () =
     const html = renderToStaticMarkup(<GithubImportView {...props} onFolder={noop} state={{ ...EMPTY_GITHUB, connectionAttempted, connection: { status: 'unavailable', reason: 'provider_unavailable' } }} />);
     expect(html).toContain(t('github.unavailable'));
     expect(html).toContain(t('github.folder'));
-    expect(html.includes(t('github.check'))).toBe(connectionAttempted);
+    expect(html).toContain(t('github.tryAgain'));
     expect(html).not.toContain(t('github.connect'));
     expect(html).not.toContain(t('github.access'));
   }
@@ -123,7 +123,7 @@ test('other connection failures do not look like a fresh connection', () => {
   for (const status of ['not_found', 'invalid_request'] as const) {
     const html = renderToStaticMarkup(<GithubImportView {...props} state={{ ...EMPTY_GITHUB, connectionAttempted: true, connection: { status } }} />);
     expect(html).toContain(t('github.connectionFailed'));
-    expect(html).toContain(t('github.check'));
+    expect(html).toContain(t('github.tryAgain'));
     expect(html).not.toContain(t('github.connect'));
     expect(html).not.toContain(t('github.access'));
   }

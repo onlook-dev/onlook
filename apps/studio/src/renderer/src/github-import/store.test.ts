@@ -4,7 +4,7 @@ import type { GithubImportCommand, GithubImportState } from '@studio/events';
 import { seedCapabilities } from '../capabilities.js';
 import { seedFlags } from '../flags/store.js';
 import { deferred, installBridge } from '../testing/bridge.js';
-import { cloningNow, EMPTY_GITHUB, githubCommand, useGithubImport, watchGithub } from './store.js';
+import { cloningNow, EMPTY_GITHUB, GITHUB_STATUS_TIMEOUT_MS, githubCommand, useGithubImport, watchGithub } from './store.js';
 
 const connected: GithubImportState = {
   ...EMPTY_GITHUB, enabled: true, connection: { status: 'connected', scopes: ['repo'], expiresAt: null },
@@ -30,6 +30,24 @@ test('a rejected first status request leaves Checking with an unavailable result
   installBridge({ githubImport: async () => { throw new Error('Offline'); } });
   await githubCommand({ kind: 'status' });
   expect(useGithubImport.getState().state.connection.status).toBe('unavailable');
+});
+
+test('an unanswered first status request times out, releases retry, and ignores a late answer', async () => {
+  const answer = deferred<GithubImportState>();
+  useGithubImport.setState({ state: EMPTY_GITHUB });
+  installBridge({ githubImport: () => answer.promise });
+  const status = githubCommand({ kind: 'status' });
+  await tick(0);
+  await tick(GITHUB_STATUS_TIMEOUT_MS - 1);
+  expect(useGithubImport.getState().state.connection.status).toBe('checking');
+  await tick(1);
+  expect((await status).connection.status).toBe('unavailable');
+  installBridge({ githubImport: async () => connected });
+  expect((await githubCommand({ kind: 'status' }, false)).connection.status).toBe('connected');
+  expect(useGithubImport.getState().pendingCommands).toEqual([]);
+  answer.settle({ ...EMPTY_GITHUB, connection: { status: 'disconnected' } });
+  await tick(0);
+  expect(useGithubImport.getState().state.connection.status).toBe('connected');
 });
 
 beforeEach(() => {
@@ -259,7 +277,7 @@ test('a connected repository list stays idle for twenty seconds even with an old
 
 test('a slow approval check does not queue more polls and resumes only after its answer', async () => {
   const answer = deferred<GithubImportState>();
-  const waiting: GithubImportState = { ...EMPTY_GITHUB, enabled: true, waitingForApproval: true };
+  const waiting: GithubImportState = { ...EMPTY_GITHUB, enabled: true, waitingForApproval: true, connection: { status: 'disconnected' } };
   useGithubImport.setState({ state: waiting });
   installBridge({
     githubImport: (command) => { calls.push(command); return answer.promise; },

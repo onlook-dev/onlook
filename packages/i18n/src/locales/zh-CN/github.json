@@ -1,6 +1,7 @@
 {
   "github.name": "GitHub",
   "github.checking": "正在检查…",
+  "github.tryAgain": "重试",
   "github.import": "从 GitHub 导入",
   "github.archived": "已归档",
   "github.archived.body": "{repository} 已在 GitHub 上归档。可以克隆并进行设计，但无法推送更改。",
