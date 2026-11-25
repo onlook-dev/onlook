@@ -162,6 +162,8 @@ export const CODE_BY_CODEX_ERROR: Readonly<Record<string, SessionErrorCode | nul
   badRequest: 'api_error',
   unauthorized: 'unauthenticated',
   cyberPolicy: null,
+  bioPolicy: null,
+  inferenceHookDenied: null,
   misalignmentPolicyViolation: null,
   tooManyDenials: null,
   threadRollbackFailed: null,
