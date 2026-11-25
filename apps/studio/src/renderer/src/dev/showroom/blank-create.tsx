@@ -26,6 +26,13 @@ export const BLANK_CREATE_GALLERY: Gallery = {
       id: 'failed',
       title: 'Setup stopped',
       stories: [
+        story('git-missing', 'Git isn’t installed', 'explains the prerequisite without raw output or retry', { stage: 'setting-up', cause: 'git_not_found' }),
+        {
+          id: 'blank-create-git-missing-focus',
+          title: 'Dismiss, in keyboard focus',
+          note: 'the missing-Git dialog keeps a keyboard-accessible way out',
+          render: () => <Focused selector="[data-testid='blank-create-dismiss']"><Card failure={{ stage: 'setting-up', cause: 'git_not_found' }} /></Focused>,
+        },
         story('starting', 'Starting', 'the starter never came up, and quoted itself', STARTER),
         story('no-detail', 'Nothing to quote', 'the card with the error block absent', { stage: 'setting-up' }),
         story('machine', 'What the computer needs', 'the checks name the cause a later create failed on (ONL-3111)', { stage: 'setting-up', explanation: t('machine.failure.developer_tools_missing'), detail: 'fatal: xcode-select: note: No developer tools were found' }),
