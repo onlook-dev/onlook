@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import type { ProjectSetupSnapshot } from '@studio/events';
+import { t } from '@studio/i18n';
 import { PANEL_HREF, PANEL_RULES } from '../../panel/panelStyles.js';
 import { ProjectSetupBody } from '../../project-setup/ProjectSetupPanel.js';
 import type { AskState } from '../../project-setup/store.js';
@@ -19,6 +20,8 @@ const PROJECT_SETUP_SHOWROOM_SNAPSHOT: ProjectSetupSnapshot = {
 };
 
 export const PROJECT_SETUP_VERIFIED: ProjectSetupSnapshot = { ...PROJECT_SETUP_SHOWROOM_SNAPSHOT, verified: SAVED };
+
+const MOVED = { ...SAVED, definition: { ...SAVED.definition, servers: [{ id: 'web', cwd: 'apps/web', start: 'pnpm dev --port {{port}}', port: 4720 }] } };
 
 export const PROJECT_SETUP_FAILED: ProjectSetupSnapshot = {
   ...PROJECT_SETUP_SHOWROOM_SNAPSHOT,
@@ -75,6 +78,9 @@ const STATES: { id: string; snapshot: ProjectSetupSnapshot | null; ask?: AskStat
   { id: 'long-script', snapshot: LONG, note: 'A bun monorepo: five prepare lines, five input chips, a 110-character start command, two servers.' },
   { id: 'long-script-running', snapshot: { ...LONG, verified: LONG.saved, state: 'running' }, note: 'Every step reached, so the stepper is all lit and the footer stops instead of starting.' },
   { id: 'error', snapshot: PROJECT_SETUP_FAILED },
+  { id: 'port-moved', snapshot: { saved: MOVED, verified: MOVED, failure: null, state: 'running', portMoves: [{ from: 4710, to: 4720 }] } },
+  { id: 'port-occupied', snapshot: { ...PROJECT_SETUP_FAILED, failure: { revision: SAVED.revision, serverId: 'web', stage: 'ready', command: SAVED.definition.servers[0]!.start, reason: t('projectSetup.failure.occupiedPort', { port: 3000 }), outputTail: '', elapsedMs: 1250 } } },
+  { id: 'port-move-failed', snapshot: { ...PROJECT_SETUP_FAILED, failure: { revision: SAVED.revision, serverId: 'web', stage: 'ready', command: MOVED.definition.servers[0]!.start, reason: t('projectSetup.failure.portMove', { port: 4720 }), outputTail: '', elapsedMs: 1250 } } },
   { id: 'repair-focus', snapshot: PROJECT_SETUP_FAILED },
   { id: 'repair-sending', snapshot: PROJECT_SETUP_FAILED, ask: 'sending' },
   { id: 'repair-sent', snapshot: PROJECT_SETUP_FAILED, ask: 'sent' },
