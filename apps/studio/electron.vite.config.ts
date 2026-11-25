@@ -9,6 +9,10 @@ import { FLAGS, RETIRED_FLAGS } from '../../packages/events/src/flags.js';
 import { thirdPartyPlugin } from './build/third-party.mjs';
 import { REACT_PINS } from './src/main/starter/adapters/react.js';
 
+/**
+ * A compile-time constant: a packaged .app ships no git to shell out to (ONL-1964).
+ * `unknown` rather than a throw — a source-tarball build has no git and is still valid.
+ */
 function commitSha(): string {
   const result = spawnSync('git', ['rev-parse', '--short', 'HEAD'], {
     encoding: 'utf8',
@@ -140,6 +144,12 @@ function studioConfig(options: StudioConfigOptions, env: Record<string, string |
       },
     },
   },
+  /**
+   * `cjs` for the whole target: the `guest` webview preload is sandboxed and cannot
+   * be ESM, and electron-vite's preload validator throws on more than one output
+   * format per target (ONL-1779). Flipping it moves the `.cjs` preload paths in
+   * `main/index.ts` and `main/frames/index.ts` with it.
+   */
   preload: {
     plugins: [thirdPartyPlugin(envDir, REACT_PINS), zodProseAnnotationPlugin()],
     envDir,

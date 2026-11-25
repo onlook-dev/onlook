@@ -543,6 +543,8 @@ if (officialBuild && intendedTier !== 'unsigned') {
 let observedTier: Tier = 'unsigned';
 
 if (assessesGatekeeper(intendedTier, officialBuild)) {
+  // Read off the .app: electron-builder 26 leaves the .dmg unsigned, so assessing it reports UNSIGNED for a shippable build.
+  // spctl exits non-zero for a signed-unnotarized app; the `source=` line carries the verdict, not the status.
   const spctl = capture('spctl', ['-a', '-t', 'exec', '-vv', packagedApp]);
   const assessment = `${(spctl.stdout ?? '').trim()} ${(spctl.stderr ?? '').trim()}`.trim();
 
@@ -576,7 +578,7 @@ if (TIER_RANK[observedTier] < TIER_RANK[minimumObservedTier]) minimumObservedTie
 const verdict: string[] = [
   officialBuild ? `${bold('SIGNING TIER:')} ${tierColor(bold(observedTier.toUpperCase()))}` : `${bold('Onlook Source built:')} ${bold(arch)} · ${stampedVersion ?? appManifest.version}`,
   '',
-  ...signingGuidance(observedTier).split('\n'),
+  ...signingGuidance(observedTier, officialBuild).split('\n'),
 ];
 
 // `--dir` produces no installer, so there is no tier to hold it to.

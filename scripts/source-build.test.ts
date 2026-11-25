@@ -57,6 +57,7 @@ test('local Mac cuts explain expected unsigned output without release credential
   expect(script).not.toContain('Do not send this');
   expect(script).toContain("observedTier !== 'unsigned' && await validateStapledTicket(packagedApp)");
   expect(script).toContain('stampedVersion ?? appManifest.version');
+  expect(script).toContain('signingGuidance(observedTier, officialBuild)');
 });
 
 test('local ad-hoc builds skip inapplicable Gatekeeper checks and list their app bundles', () => {

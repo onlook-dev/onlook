@@ -12,7 +12,14 @@ export function assessesGatekeeper(tier: Tier, officialBuild: boolean): boolean 
   return officialBuild || tier !== 'unsigned';
 }
 
-export function signingGuidance(tier: Tier): string {
+export function signingGuidance(tier: Tier, officialBuild: boolean): string {
+  if (officialBuild) {
+    switch (tier) {
+      case 'notarized': return 'Recipient double-clicks, drags to Applications, opens. No dialog.';
+      case 'signed-unnotarized': return 'Recipient must do the "Open Anyway" dance:\n  System Settings > Privacy & Security > Open Anyway.';
+      case 'unsigned': return 'Recipient sees "damaged, move to Trash". There is no bypass. Do not send this.';
+    }
+  }
   switch (tier) {
     case 'notarized': return 'Developer ID signed and notarized by Apple.';
     case 'signed-unnotarized': return 'macOS may block opening this app.\nFor an app you trust, see System Settings > Privacy & Security.';

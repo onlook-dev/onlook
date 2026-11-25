@@ -24,14 +24,14 @@ Use that path only if that SDK is installed; otherwise install compatible Xcode 
 ```sh
 git clone https://github.com/onlook-dev/onlook.git
 cd onlook
-bun install --frozen-lockfile --cpu='*' --verbose
+bun install --frozen-lockfile --cpu='*'
 bun run build
 bun dev
 ```
 
 The install includes both Mac architectures for packaging. The build needs no keys; leave `STUDIO_CLOUD_BUILD` unset. Every checkout, including a Git worktree, needs its own dependency install.
 
-Installing Electron and rebuilding native dependencies can take several minutes, especially on a slow connection. Keep `--verbose` to see download details and progress while those steps run; without it, Bun buffers their output until they finish.
+Installing Electron and rebuilding native dependencies can take several minutes, especially on a slow connection. The install reports progress for those steps. For troubleshooting, add `--verbose` to the install command for detailed output.
 
 On first launch, choose whether to share usage data. Either choice continues to setup, where you connect Claude Code or Codex and create a Project. You can change the choice later in Settings.
 
