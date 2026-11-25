@@ -58,7 +58,7 @@ apps/studio/src/main/telemetry/index.test.ts → workos 5
 apps/studio/src/main/telemetry/index.ts → posthog 13
 apps/studio/src/main/telemetry/index.ts → workos 1
 apps/studio/src/main/telemetry/ipc.test.ts → posthog 52
-apps/studio/src/main/telemetry/open-link.test.ts → posthog 6
+apps/studio/src/main/telemetry/open-link.test.ts → posthog 10
 apps/studio/src/main/telemetry/outbox.test.ts → posthog 4
 apps/studio/src/main/telemetry/outbox.ts → posthog 1
 apps/studio/src/main/telemetry/preview.test.ts → posthog 4
