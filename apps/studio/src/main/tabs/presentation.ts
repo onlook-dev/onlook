@@ -679,7 +679,7 @@ export class TabPresentation {
         }
         if (!restoreWithinBudget(restoring.baselineKb, this.memoryKb())) {
           this.cancelRestoration();
-          this.views.teardown(id);
+          this.views.teardown(id, { keepProject: true });
           if (tab.view === undefined) this.warmRestoredTab(tab, () => {});
           return;
         }

@@ -144,7 +144,7 @@ describe('restoration reads Electron process memory', () => {
 
     expect(metrics).toHaveBeenCalledTimes(3);
     expect(rig.teardown).toHaveBeenCalledTimes(1);
-    expect(rig.teardown).toHaveBeenCalledWith(restored.tab.id);
+    expect(rig.teardown).toHaveBeenCalledWith(restored.tab.id, { keepProject: true });
     expect(rig.presentation.promoteRestored(restored.tab as Tab)).toBe(false);
     jest.advanceTimersByTime(10_000);
 
@@ -188,7 +188,7 @@ describe('restoration reads Electron process memory', () => {
 
     expect(metrics).toHaveBeenCalledTimes(2);
     expect(rig.teardown).toHaveBeenCalledTimes(1);
-    expect(rig.teardown).toHaveBeenCalledWith(restored.tab.id);
+    expect(rig.teardown).toHaveBeenCalledWith(restored.tab.id, { keepProject: true });
     expect(rig.presentation.promoteRestored(restored.tab as Tab)).toBe(false);
     metrics.mockReturnValue(processMetrics(400, 600));
     jest.advanceTimersByTime(10_000);
@@ -306,6 +306,8 @@ describe('bounded background Project restoration', () => {
     const shell = { webContents: contents, setVisible: mock() } as unknown as WebContentsView;
     const views = rig.host.pieces.views as TabViewPool;
     const destroy = mock();
+    const retire = mock();
+    rig.host.retire = retire;
     views.destroyView = destroy;
     views.adopt = (tab, view) => { (tab as RestoredTab).view = view; };
     views.newView = mock(() => shell);
@@ -316,6 +318,7 @@ describe('bounded background Project restoration', () => {
     jest.advanceTimersByTime(1_000);
 
     expect(destroy).toHaveBeenCalledWith(restored.view);
+    expect(retire).not.toHaveBeenCalled();
     expect(restored.tab.view).toBe(shell);
     expect(shell.setVisible).toHaveBeenCalledWith(false);
     expect(contents.loadFile).toHaveBeenCalledTimes(1);
@@ -355,7 +358,7 @@ describe('bounded background Project restoration', () => {
     rig.memoryKb.mockReturnValue(1_151);
     jest.advanceTimersByTime(1_000);
     expect(rig.teardown).toHaveBeenCalledTimes(1);
-    expect(rig.teardown).toHaveBeenCalledWith(restored.tab.id);
+    expect(rig.teardown).toHaveBeenCalledWith(restored.tab.id, { keepProject: true });
     expect(rig.host.activeId).toBe(other.tab.id);
     expect(other.contents.send).not.toHaveBeenCalled();
     expect(rig.presentation.promoteRestored(restored.tab as Tab)).toBe(false);
@@ -377,7 +380,7 @@ describe('bounded background Project restoration', () => {
     jest.advanceTimersByTime(10_000);
 
     expect(rig.teardown).toHaveBeenCalledTimes(1);
-    expect(rig.teardown).toHaveBeenCalledWith(restored.tab.id);
+    expect(rig.teardown).toHaveBeenCalledWith(restored.tab.id, { keepProject: true });
     expect(rig.memoryKb).toHaveBeenCalledTimes(2);
     expect(rig.presentation.promoteRestored(restored.tab as Tab)).toBe(false);
     expect(rig.newView).not.toHaveBeenCalled();
@@ -504,7 +507,7 @@ describe('restoration cancellation and promotion', () => {
     rig.memoryKb.mockReturnValue(200_000);
     jest.advanceTimersByTime(1_000);
 
-    expect(rig.teardown).toHaveBeenCalledWith(restored.tab.id);
+    expect(rig.teardown).toHaveBeenCalledWith(restored.tab.id, { keepProject: true });
     expect(other.contents.send).not.toHaveBeenCalled();
     expect(rig.newView).not.toHaveBeenCalled();
   });

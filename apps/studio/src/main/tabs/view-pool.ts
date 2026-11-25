@@ -225,7 +225,7 @@ export class TabViewPool {
     return idle.sleep();
   }
 
-  teardown(id: string): void {
+  teardown(id: string, { keepProject = false }: { keepProject?: boolean } = {}): void {
     const tab = this.book.tabById(id);
     if (tab?.view === undefined || this.book.selectedId === id || this.port.shownId() === id) return;
     // Refused here as well as in the sweep: this is the destructive verb, and work in flight outranks the clock.
@@ -236,7 +236,7 @@ export class TabViewPool {
     this.release(tab);
     this.port.viewDiscarded(tab);
     this.destroyView(view);
-    if (tab.workspacePath !== undefined && !this.book.heldByAnotherTab(tab.workspacePath, id)) {
+    if (!keepProject && tab.workspacePath !== undefined && !this.book.heldByAnotherTab(tab.workspacePath, id)) {
       this.port.retire(tab.workspacePath);
     }
     this.port.tabsChanged();
