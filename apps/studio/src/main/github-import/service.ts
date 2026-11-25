@@ -6,7 +6,6 @@ import { cloneRepository } from './clone.js';
 
 /** A clone past this is not stuck, it is big; the view says so rather than leaving the bar to explain itself. */
 export const SLOW_CLONE_MS = 8000;
-export const GITHUB_STATUS_TIMEOUT_MS = 8000;
 
 const FULL_NAME = /^[^/\s]{1,100}\/[^/\s]{1,100}$/;
 
@@ -26,6 +25,7 @@ export interface GithubImportDeps {
   enabled(): boolean;
   backend(): GithubBackend | undefined;
   subject(): string | undefined;
+  session?(): unknown;
   open(url: string): Promise<void>;
   parent(choice: 'onlook' | 'documents' | 'choose'): Promise<string | undefined>;
   existing(repository: GithubRepository): string | undefined;
@@ -64,6 +64,9 @@ export function createGithubImport(deps: GithubImportDeps) {
   let context: Pick<GithubImportState, 'enabled' | 'connection' | 'repositories' | 'destination' | 'destinationChoice'> = githubOff();
   let phase: ImportPhase = { kind: 'idle' };
   let account: string | undefined;
+  let session: unknown;
+  let statusRequest: Promise<GithubImportState> | undefined;
+  let accountGeneration = 0;
   let generation = 0;
   let work: { controller: AbortController; running: Promise<void> } | undefined;
   let attempt: ConnectionAttempt = { kind: 'none' };
@@ -93,8 +96,11 @@ export function createGithubImport(deps: GithubImportDeps) {
   function reset(): void {
     abandonCreation();
     generation += 1;
+    accountGeneration += 1;
+    statusRequest = undefined;
     work?.controller.abort();
     account = deps.subject();
+    session = deps.session?.();
     context = githubOff();
     phase = { kind: 'idle' };
     attempt = { kind: 'none' };
@@ -115,10 +121,41 @@ export function createGithubImport(deps: GithubImportDeps) {
 
   async function command(command: GithubImportCommand): Promise<GithubImportState> {
     if (!deps.enabled() || deps.subject() === undefined) { reset(); return snapshot(); }
-    if (account !== deps.subject()) reset();
+    if (account !== deps.subject() || session !== deps.session?.()) reset();
     context = { ...context, enabled: true };
     const epoch = generation;
     const active = (): boolean => generation === epoch && account === deps.subject() && deps.enabled();
+    if (command.kind === 'status' && (phase.kind === 'cloning' || (statusRequest !== undefined && (phase.kind === 'done' || phase.kind === 'failed')))) return snapshot();
+    if (command.kind === 'status') {
+      if (statusRequest !== undefined) return statusRequest;
+      const owner = accountGeneration;
+      const current = (): boolean => owner === accountGeneration && account === deps.subject() && session === deps.session?.() && deps.enabled();
+      const request = (async (): Promise<GithubImportState> => {
+        try {
+          const backend = deps.backend();
+          const connection = backend === undefined ? { status: 'unavailable' as const, reason: 'not_configured' as const } : await backend.status();
+          if (!current()) return githubOff();
+          context = { ...context, connection };
+          if (connection.status === 'connected') {
+            approval = 'none';
+            if (attempt.kind === 'active') attempt.outcome = 'connected';
+          } else {
+            const settled = phase.kind === 'loading' ? phase.previous : phase;
+            const failedSelection = settled.kind === 'failed' && settled.failure === 'access' && settled.selection !== undefined;
+            if (!failedSelection) {
+              context = { ...context, repositories: [] };
+              if (phase.kind === 'ready') phase = { kind: 'idle' };
+            }
+          }
+        } catch {
+          if (current() && context.connection.status === 'checking') context = { ...context, connection: { status: 'unavailable', reason: 'provider_unavailable' } };
+        }
+        return current() ? snapshot() : githubOff();
+      })();
+      statusRequest = request;
+      void request.finally(() => { if (statusRequest === request) statusRequest = undefined; });
+      return request;
+    }
     if (command.kind === 'begin') {
       finish('dismiss');
       abandonCreation();
@@ -196,21 +233,9 @@ export function createGithubImport(deps: GithubImportDeps) {
     const loading: Extract<ImportPhase, { kind: 'loading' }> = { kind: 'loading', previous: phase.kind === 'loading' ? phase.previous : phase };
     phase = loading;
     const ownsLoading = (): boolean => active() && phase === loading;
-    let statusTimer: ReturnType<typeof setTimeout> | undefined;
     try {
       if (command.kind === 'access') {
         await deps.open('https://github.com/settings/connections/applications');
-      } else if (command.kind === 'status') {
-        const deadline = new Promise<never>((_resolve, reject) => {
-          statusTimer = setTimeout(() => reject(new Error('GitHub status timed out')), GITHUB_STATUS_TIMEOUT_MS);
-        });
-        const connection = await Promise.race([backend.status(), deadline]);
-        if (!ownsLoading()) return active() ? snapshot() : githubOff();
-        context = { ...context, connection };
-        if (connection.status === 'connected') approval = 'none';
-        if (connection.status === 'connected' && attempt.kind === 'active') attempt.outcome = 'connected';
-        const failedSelection = loading.previous.kind === 'failed' && loading.previous.failure === 'access' && loading.previous.selection !== undefined;
-        if (connection.status !== 'connected' && !failedSelection) { context = { ...context, repositories: [] }; phase = { kind: 'idle' }; }
       } else if (command.kind === 'start') {
         finish('retry');
         attempt = { kind: 'active', entryPoint: command.entryPoint, outcome: 'no_connection' };
@@ -330,10 +355,9 @@ export function createGithubImport(deps: GithubImportDeps) {
       if (ownsLoading()) {
         const previous = loading.previous;
         phase = { kind: 'failed', failure: 'network', selection: 'selection' in previous ? previous.selection : undefined };
-        context = { ...context, connection: context.connection.status === 'connecting' || (command.kind === 'status' && context.connection.status === 'checking') ? { status: 'unavailable', reason: 'provider_unavailable' } : context.connection };
+        context = { ...context, connection: context.connection.status === 'connecting' ? { status: 'unavailable', reason: 'provider_unavailable' } : context.connection };
       }
     } finally {
-      if (statusTimer !== undefined) clearTimeout(statusTimer);
       if (phase === loading) phase = loading.previous;
     }
     return active() ? snapshot() : githubOff();

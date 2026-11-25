@@ -2,7 +2,7 @@ import { afterEach, expect, jest, test } from 'bun:test';
 import { takeComplaints } from '../testing/dom.js';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import type { GithubImportCommand, GithubImportState } from '@studio/events';
+import type { GithubConnection, GithubImportCommand, GithubImportState } from '@studio/events';
 import { seedCapabilities } from '../capabilities.js';
 import { seedFlags } from '../flags/store.js';
 import { t } from '@studio/i18n';
@@ -112,7 +112,8 @@ test('Settings settles to a pressable Connect GitHub when no account is availabl
 });
 
 test('Settings replaces an unanswered initial check with a pressable Try again', async () => {
-  await mount({ githubImport: () => new Promise(() => {}) });
+  const answer = deferred<GithubImportState>();
+  await mount({ githubImport: () => answer.promise });
   await act(async () => { root!.render(<GithubSettings />); });
   jest.useFakeTimers();
   try {
@@ -129,6 +130,33 @@ test('Settings replaces an unanswered initial check with a pressable Try again',
     expect(row.textContent).not.toContain(t('github.checking'));
     expect(retry.textContent).toBe(t('github.tryAgain'));
     expect(retry.disabled).toBe(false);
+    await act(async () => { answer.settle(disconnected); });
+  } finally { jest.useRealTimers(); }
+});
+
+for (const connection of [{ status: 'connected', scopes: [], expiresAt: null }, { status: 'disconnected' }, { status: 'reconnect', reason: 'expired' }] satisfies GithubConnection[]) test(`Settings applies a late ${connection.status} answer after both waiting deadlines`, async () => {
+  const answer = deferred<GithubImportState>();
+  const state: GithubImportState = { ...disconnected, connection };
+  let calls = 0;
+  await mount({ githubImport: (command) => {
+    if (command.kind !== 'status') return Promise.resolve(state);
+    calls += 1;
+    return answer.promise;
+  } });
+  jest.useFakeTimers();
+  try {
+    let checking!: Promise<GithubImportState>;
+    await act(async () => { root!.render(<GithubSettings />); checking = githubCommand({ kind: 'status' }); });
+    await act(async () => { jest.advanceTimersByTime(GITHUB_STATUS_TIMEOUT_MS); await checking; });
+    const row = document.querySelector('[data-testid="github-settings"]')!;
+    await act(async () => { row.querySelector<HTMLButtonElement>('button')!.click(); });
+    await act(async () => { jest.advanceTimersByTime(GITHUB_STATUS_TIMEOUT_MS); });
+    expect(calls).toBe(1);
+    expect(row.querySelector<HTMLButtonElement>('button')!.textContent).toBe(t('github.tryAgain'));
+    await act(async () => { answer.settle(state); });
+    expect(row.querySelector<HTMLButtonElement>('button')!.textContent).toBe(t(connection.status === 'connected' ? 'github.manage' : connection.status === 'reconnect' ? 'github.reconnect' : 'github.connect'));
+    expect(row.textContent).not.toContain(t('github.unavailable'));
+    expect(document.querySelector('[data-testid="github-import-flow"]')!.textContent).not.toContain(t('github.unavailable'));
   } finally { jest.useRealTimers(); }
 });
 

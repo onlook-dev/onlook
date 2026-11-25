@@ -32,22 +32,95 @@ test('a rejected first status request leaves Checking with an unavailable result
   expect(useGithubImport.getState().state.connection.status).toBe('unavailable');
 });
 
-test('an unanswered first status request times out, releases retry, and ignores a late answer', async () => {
+for (const state of [connected, { ...EMPTY_GITHUB, enabled: true, connection: { status: 'disconnected' as const } }, { ...EMPTY_GITHUB, enabled: true, connection: { status: 'reconnect' as const, reason: 'expired' as const } }]) {
+for (const retry of [false, true]) test(`a late ${state.connection.status} answer applies ${retry ? 'after Try again' : 'without retry'}`, async () => {
   const answer = deferred<GithubImportState>();
   useGithubImport.setState({ state: EMPTY_GITHUB });
-  installBridge({ githubImport: () => answer.promise });
+  let requests = 0;
+  installBridge({ githubImport: (command) => {
+    if (command.kind !== 'status') return Promise.resolve(state);
+    requests += 1;
+    return answer.promise;
+  } });
   const status = githubCommand({ kind: 'status' });
   await tick(0);
   await tick(GITHUB_STATUS_TIMEOUT_MS - 1);
   expect(useGithubImport.getState().state.connection.status).toBe('checking');
   await tick(1);
   expect((await status).connection.status).toBe('unavailable');
-  installBridge({ githubImport: async () => connected });
-  expect((await githubCommand({ kind: 'status' }, false)).connection.status).toBe('connected');
+  const retried = retry ? githubCommand({ kind: 'status' }, false) : undefined;
+  await tick(0);
+  if (retry) {
+    await tick(GITHUB_STATUS_TIMEOUT_MS);
+    expect((await retried)?.connection.status).toBe('unavailable');
+  }
+  expect(requests).toBe(1);
   expect(useGithubImport.getState().pendingCommands).toEqual([]);
-  answer.settle({ ...EMPTY_GITHUB, connection: { status: 'disconnected' } });
+  answer.settle(state);
+  await tick(0);
+  expect(useGithubImport.getState().state.connection).toEqual(state.connection);
+});
+}
+
+test('an unanswered status offers retry without starting another request', async () => {
+  useGithubImport.setState({ state: EMPTY_GITHUB });
+  const answer = deferred<GithubImportState>();
+  let requests = 0;
+  installBridge({ githubImport: () => { requests += 1; return answer.promise; } });
+  const pending = githubCommand({ kind: 'status' });
+  await tick(0);
+  await tick(GITHUB_STATUS_TIMEOUT_MS);
+  expect((await pending).connection.status).toBe('unavailable');
+  const retry = githubCommand({ kind: 'status' }, false);
+  await tick(0);
+  await tick(GITHUB_STATUS_TIMEOUT_MS);
+  expect((await retry).connection.status).toBe('unavailable');
+  expect(requests).toBe(1);
+  expect(useGithubImport.getState().pendingCommands).toEqual([]);
+  answer.settle({ ...EMPTY_GITHUB, enabled: true, connection: { status: 'disconnected' } });
+  await tick(0);
+});
+
+for (const status of ['disconnected', 'reconnect', 'connected'] as const) test(`a stalled ${status} recheck releases queued connection actions at the deadline`, async () => {
+  const answer = deferred<GithubImportState>();
+  const state: GithubImportState = { ...connected, connection: status === 'connected' ? connected.connection : status === 'reconnect' ? { status, reason: 'expired' } : { status } };
+  useGithubImport.setState({ state });
+  installBridge({ githubImport: (command) => {
+    calls.push(command);
+    return command.kind === 'status' ? answer.promise : Promise.resolve(command.kind === 'repositories' ? connected : { ...state, connection: { status: 'connecting' } });
+  } });
+  const checking = githubCommand({ kind: 'status' });
+  const starting = githubCommand({ kind: 'start', entryPoint: 'settings' });
+  await tick(0);
+  expect(calls.map((command) => command.kind)).toEqual(['status']);
+  await tick(GITHUB_STATUS_TIMEOUT_MS);
+  expect((await checking).connection.status).toBe(status);
+  expect((await starting).connection.status).toBe('connecting');
+  expect(calls.map((command) => command.kind)).toEqual(['status', 'start']);
+  answer.settle(connected);
   await tick(0);
   expect(useGithubImport.getState().state.connection.status).toBe('connected');
+});
+
+test('an older sign-in cannot publish a late answer after the account changes', async () => {
+  useGithubImport.setState({ state: EMPTY_GITHUB });
+  const answer = deferred<GithubImportState>();
+  let authChanged = (): void => {};
+  installBridge({
+    githubImport: () => answer.promise,
+    onAuthChanged: (listener) => { authChanged = () => listener({ email: 'next@onlook.test', source: 'manual' }); return () => {}; },
+  });
+  stop = watchGithub();
+  const pending = githubCommand({ kind: 'status' });
+  await tick(0);
+  await tick(GITHUB_STATUS_TIMEOUT_MS);
+  await pending;
+  installBridge({ githubImport: async () => ({ ...EMPTY_GITHUB, connection: { status: 'disconnected' } }) });
+  authChanged();
+  await tick(0);
+  answer.settle(connected);
+  await tick(0);
+  expect(useGithubImport.getState().state.connection.status).toBe('disconnected');
 });
 
 beforeEach(() => {
