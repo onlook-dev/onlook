@@ -24,12 +24,10 @@ interface SystemMove {
   targetAtGap: FrameOverlay['target'];
 }
 
+const pendingSystemMoves = new Map<string, SystemMove>();
+
 /** Resolves once the answer has landed or been superseded, so a caller may await the seed. */
 export function resyncCanvas(): Promise<void> {
-  return resyncCanvasWithSystemMove();
-}
-
-function resyncCanvasWithSystemMove(move?: SystemMove): Promise<void> {
   const wire = canvasTransport();
   if (!wire) {
     // No answer will ever land to lower the latch.
@@ -44,12 +42,16 @@ function resyncCanvasWithSystemMove(move?: SystemMove): Promise<void> {
       endCanvasSwitch();
       if (epoch !== resyncEpoch) return undefined;
       const previous = useCanvasStore.getState().doc;
-      const targetBeforeSnapshot = move === undefined ? undefined : useCanvasStore.getState().overlay[move.frameId]?.target;
-      const preserveTargetFor = move !== undefined && targetBeforeSnapshot !== move.targetAtGap ? move.frameId : undefined;
+      const moves = [...pendingSystemMoves.values()].filter((move) => move.docId === previous?.docId && move.docId === doc?.docId);
+      const targetsBeforeSnapshot = new Map(moves.map((move) => [move.frameId, useCanvasStore.getState().overlay[move.frameId]?.target]));
+      const preserveTargets = new Set(moves.filter((move) => targetsBeforeSnapshot.get(move.frameId) !== move.targetAtGap).map((move) => move.frameId));
+      for (const [frameId, move] of pendingSystemMoves) {
+        if (move.docId !== doc?.docId || doc.revision >= move.revision) pendingSystemMoves.delete(frameId);
+      }
       if (doc !== null && previous?.docId === doc.docId) {
         for (const node of Object.values(doc.nodes)) {
           const before = previous.nodes[node.id];
-          if (node.id !== preserveTargetFor && node.kind === 'browser' && before?.kind === 'browser' &&
+          if (!preserveTargets.has(node.id) && node.kind === 'browser' && before?.kind === 'browser' &&
             before.content.pendingHomeUrl !== undefined && node.content.pendingHomeUrl === undefined) {
             useCanvasStore.getState().rehomeDeadFrame(node.id, node.content.homeUrl);
           }
@@ -58,8 +60,10 @@ function resyncCanvasWithSystemMove(move?: SystemMove): Promise<void> {
       useCanvasStore.getState().replaceDoc(doc);
       useCanvasStore.getState().applyFrameQuotes(quotes ?? NO_FRAME_QUOTES);
       // The snapshot carries a moved address without the op that carried it (ONL-2568).
-      useCanvasStore.getState().reaimMovedFrames(previous, preserveTargetFor);
-      if (move !== undefined && previous?.docId === move.docId && doc?.docId === move.docId && doc.revision >= move.revision) {
+      useCanvasStore.getState().reaimMovedFrames(previous, preserveTargets);
+      for (const move of moves) {
+        if (doc === null || doc.revision < move.revision) continue;
+        const targetBeforeSnapshot = targetsBeforeSnapshot.get(move.frameId);
         const state = useCanvasStore.getState();
         const node = doc.nodes[move.frameId];
         const target = state.overlay[move.frameId]?.target;
@@ -124,13 +128,14 @@ function onUpdate(update: CanvasUpdate): void {
   if (outcome.kind === 'stale') return;
   if (outcome.kind === 'gap') {
     const op = update.entry.op;
-    void resyncCanvasWithSystemMove(update.entry.author === 'system' && op.type === 'set-home-url' ? {
+    if (update.entry.author === 'system' && op.type === 'set-home-url') pendingSystemMoves.set(op.id, {
       docId: update.docId,
       revision: update.entry.revision,
       frameId: op.id,
       homeUrl: op.homeUrl,
       targetAtGap: state.overlay[op.id]?.target,
-    } : undefined);
+    });
+    void resyncCanvas();
     return;
   }
   const binding = update.entry.op;
@@ -202,6 +207,7 @@ export function connectCanvas(transport?: CanvasTransport): () => void {
     offStore();
     forgetFrameFacts();
     reportedDrops.clear();
+    pendingSystemMoves.clear();
     resyncEpoch += 1;
     if (canvasTransport() === wire) seatCanvasTransport(null);
   };

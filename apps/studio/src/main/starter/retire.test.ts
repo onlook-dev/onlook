@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'bun:test';
 import { cleanupTempFixtures, gitOutput, makeGitRepo } from '@studio/fixtures';
@@ -22,6 +22,15 @@ function retiredRepo(message = RETIRE_COMMIT_MESSAGE, author = 'Onlook'): string
 }
 
 describe('restoreRetiredStarterServerFile', () => {
+  it('does not recreate a recovered copy the user removed, even on a later launch', async () => {
+    const path = retiredRepo();
+    await restoreRetiredStarterServerFile(path);
+    expect(readFileSync(join(path, STARTER_SERVER_FILE), 'utf8')).toBe(content);
+    rmSync(join(path, STARTER_SERVER_FILE));
+    await restoreRetiredStarterServerFile(path);
+    expect(existsSync(join(path, STARTER_SERVER_FILE))).toBe(false);
+  });
+
   it('recovers the exact retired file without changing history or unrelated staged work', async () => {
     const path = retiredRepo();
     const head = gitOutput(path, ['rev-parse', 'HEAD']);
@@ -114,5 +123,18 @@ describe('restoreRetiredStarterServerFile', () => {
       return result;
     } });
     expect(existsSync(join(path, STARTER_SERVER_FILE))).toBe(false);
+  });
+
+  it('retries recovery after the exclusive copy fails', async () => {
+    const path = retiredRepo();
+    await expect(restoreRetiredStarterServerFile(path, { run: async (cwd, args) => {
+      const result = await git(cwd, args);
+      const worktree = args.find((argument) => argument.startsWith('--work-tree='));
+      if (args.includes('restore') && worktree !== undefined) rmSync(join(worktree.slice('--work-tree='.length), STARTER_SERVER_FILE));
+      return result;
+    } })).rejects.toMatchObject({ code: 'ENOENT' });
+    expect(existsSync(join(path, STARTER_SERVER_FILE))).toBe(false);
+    await restoreRetiredStarterServerFile(path);
+    expect(readFileSync(join(path, STARTER_SERVER_FILE), 'utf8')).toBe(content);
   });
 });

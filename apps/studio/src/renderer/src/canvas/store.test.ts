@@ -7601,6 +7601,22 @@ describe('a port move landing on a frame whose server died (ONL-2568)', () => {
 });
 
 describe('a moved address that arrives through a resync (ONL-2568)', () => {
+  for (const superseding of ['second-frame', 'general-resync', 'unrelated-update'] as const) {
+    it(`keeps every trusted system move when its resync overlaps ${superseding}`, async () => {
+      const frames = (port: number) => ['a', 'b'].map((id) => browserNode(id, { content: { homeUrl: `http://localhost:${port}/${id}` } }));
+      const wire = await connect(docOf(frames(3000), 1));
+      for (const id of ['a', 'b']) useCanvasStore.getState().patchFrame(id, { health: 'live' });
+      wire.answerSnapshotsWith(docOf(frames(4000), 5));
+      fakeUpdate(entryOf(3, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:4000/a' }, 'system'));
+      if (superseding === 'second-frame') fakeUpdate(entryOf(4, { type: 'set-home-url', id: 'b', homeUrl: 'http://localhost:4000/b' }, 'system'));
+      else if (superseding === 'unrelated-update') fakeUpdate(entryOf(4, { type: 'rename', id: 'b', name: 'Details' }, 'user'));
+      else await resyncCanvas();
+      await settled();
+      expect(useCanvasStore.getState().overlay.a?.guestEpoch).toBe(1);
+      if (superseding === 'second-frame') expect(useCanvasStore.getState().overlay.b?.guestEpoch).toBe(1);
+    });
+  }
+
   for (const currentUrl of ['https://accounts.example.test/authorize', 'http://localhost:3001/settings']) {
     it(`keeps live navigation to ${currentUrl} when the stored home did not move`, async () => {
       const doc = docOf([browserNode('a', { content: { homeUrl: 'http://localhost:3000/' } })], 1);

@@ -11,6 +11,27 @@ afterAll(cleanupTempFixtures);
 const definition = { prepare: '', install: { script: '', inputs: [], outputs: [] }, servers: [{ id: 'web', cwd: '.', start: 'sleep 10', port: 48001 }] };
 
 describe('setup runner failures and state', () => {
+  it('does not recover a retired server file for a setup that uses its own server', async () => {
+    const project = makeGitRepo({ name: 'independent-server', remote: false }).path;
+    writeFileSync(join(project, 'server.mjs'), 'export const ready = true;\n');
+    gitOutput(project, ['add', 'server.mjs']);
+    gitOutput(project, ['commit', '--quiet', '-m', 'Add site server']);
+    gitOutput(project, ['rm', '--quiet', 'server.mjs']);
+    gitOutput(project, ['-c', 'user.name=Onlook', '-c', 'user.email=studio@noreply.onlook.com', 'commit', '--quiet', '-m', 'chore: retire the starter page server']);
+    const root = makeDirWithFiles({});
+    for (let launch = 0; launch < 2; launch += 1) {
+      const service = createProjectSetupService({
+        state: createSetupState(() => root), env: async () => process.env, probe: async () => true,
+        identify: async () => ({ pid: process.pid, cwd: project }), report: async () => undefined,
+      });
+      try {
+        if (launch === 0) service.save(project, definition, null);
+        expect((await service.run(project, { action: 'start' })).ok).toBe(true);
+        expect(existsSync(join(project, 'server.mjs'))).toBe(false);
+      } finally { await service.dispose(); }
+    }
+  });
+
   it('stops a reconnected own app with one SIGTERM and returns to idle', async () => {
     const project = makeDirWithFiles({});
     const root = makeDirWithFiles({});

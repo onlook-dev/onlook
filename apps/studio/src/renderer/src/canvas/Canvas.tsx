@@ -491,7 +491,7 @@ export function Canvas({
   const emptyState = useEmptyCanvasState({ hasLiveServer, hasNodes: hasNodes && !isOnlyInspiration });
   const holdsForInspiration = isOnlyInspiration && (emptyState.kind === 'ideas' || emptyState.kind === 'quiet');
   const agentFailed = useSetupTurnStore((state) => state.agentFailed);
-  const centre = canvasCentre({ progress: setupProgress, snapshot: projectSetup, agentFailed, hasNodes, isBlankProject, isCreateFailed: paintedCreate?.kind === 'failed', isFootOn });
+  const centre = canvasCentre({ progress: setupProgress, snapshot: projectSetup, agentFailed, hasNodes, isCreateFailed: paintedCreate?.kind === 'failed', isFootOn });
   const copyStartedAt = useProjectCreateStore((state) => state.copyStartedAt);
   const activationFrames = frameFlowNodes(nodes);
   const activationFailed = emptyState.kind === 'failed' && nodes.length === 0 && !chromeHidden;

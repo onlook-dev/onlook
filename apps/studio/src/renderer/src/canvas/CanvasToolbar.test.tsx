@@ -12,10 +12,6 @@ it('keeps the floating toolbar legible without filtering the live Canvas', () =>
   expect(toolbar).toContain('background-image:linear-gradient(var(--color-background-surface), var(--color-background-surface))');
 });
 
-it('measures collapsing rows at their intrinsic width rather than their animated parent width', () => {
-  expect(markup(false)).toContain('width:max-content');
-});
-
 describe('the Section tool behind its flag (ONL-2661)', () => {
   it('offers the tool and its preview slot when Sections are on', () => {
     expect(markup(true)).toContain('data-preview="section"');

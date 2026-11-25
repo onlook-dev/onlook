@@ -1,4 +1,4 @@
-import { constants, copyFileSync, lstatSync, mkdtempSync, rmSync } from 'node:fs';
+import { constants, copyFileSync, lstatSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { git } from '../workspace/git.js';
@@ -33,6 +33,8 @@ export async function restoreRetiredStarterServerFile(worktree: string, options:
   if (!latest.ok) return;
   const [commit, subject, author, email] = latest.out.split('\0');
   if (!commit || subject !== RETIRE_COMMIT_MESSAGE || email !== STUDIO_SYSTEM_AUTHOR.email || (author !== STUDIO_SYSTEM_AUTHOR.name && author !== 'Onlook Studio')) return;
+  const recovered = await run(worktree, ['rev-parse', '--path-format=absolute', '--git-path', `onlook-starter-restored-${commit}`]);
+  if (!recovered.ok || lstatSync(recovered.out, { throwIfNoEntry: false }) !== undefined) return;
   const deleted = await run(worktree, ['diff-tree', '--no-commit-id', '--name-status', '-r', commit, '--', STARTER_SERVER_FILE]);
   if (!deleted.ok || deleted.out !== `D\t${STARTER_SERVER_FILE}`) return;
   const original = await run(worktree, ['ls-tree', `${commit}^`, '--', STARTER_SERVER_FILE]);
@@ -48,9 +50,18 @@ export async function restoreRetiredStarterServerFile(worktree: string, options:
     const currentHead = await run(worktree, ['rev-parse', 'HEAD']);
     if (!currentStatus.ok || currentStatus.out !== '' || !currentHead.ok || currentHead.out !== head.out || options.signal?.aborted) return;
     try {
+      writeFileSync(recovered.out, '', { flag: 'wx' });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'EEXIST') return;
+      throw error;
+    }
+    try {
       copyFileSync(output, join(worktree, STARTER_SERVER_FILE), constants.COPYFILE_EXCL);
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
+        rmSync(recovered.out);
+        throw error;
+      }
     }
   } finally {
     rmSync(directory, { recursive: true, force: true });

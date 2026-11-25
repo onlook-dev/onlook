@@ -70,7 +70,7 @@ it('shows and repairs the saved setup failure with frames on a reopened canvas',
   expect(container.innerHTML).toBe('');
 });
 
-it('keeps a blank project’s saved setup failure recoverable on the canvas with stopped frames', async () => {
+it('keeps a blank project’s saved setup failure in chat without covering stopped frames', async () => {
   let asks = 0;
   installBridge({ projectSetupAsk: async () => { asks += 1; return { ok: true }; } });
   useWorkspaceStore.setState({ workspace: { workspacePath: '/work/blank', sourceRepoName: 'blank', repoIdentity: 'blank', origin: 'blank' } as WorkspaceCreated });
@@ -89,9 +89,10 @@ it('keeps a blank project’s saved setup failure recoverable on the canvas with
     root = createRoot(container!);
     root.render(<><AppRunNotice /><SetupFailureCardSlot card={{ step: 'install', cause: 'install' }} /></>);
   });
-  expect(container.querySelector('[data-testid="setup-failure-card"]')).not.toBeNull();
-  expect(container.querySelector('[data-testid="app-run-notice"]')).toBeNull();
-  await act(async () => { container!.querySelector<HTMLButtonElement>('[data-testid="setup-failure-ask"]')!.click(); });
+  expect(container.querySelector('[data-testid="setup-failure-card"]')).toBeNull();
+  expect(container.querySelector('[data-testid="app-run-notice"]')).not.toBeNull();
+  expect(container.textContent).toContain('The command exited with code 1.');
+  await act(async () => { container!.querySelector<HTMLButtonElement>('[data-testid="app-run-notice-repair"]')!.click(); });
   expect(asks).toBe(1);
 });
 

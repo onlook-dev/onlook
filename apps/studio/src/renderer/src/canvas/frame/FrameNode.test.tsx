@@ -121,22 +121,21 @@ afterEach(async () => {
   expect(takeComplaints()).toEqual([]);
 });
 
-function Surface({ width = 640, height = 480 }: { width?: number; height?: number }) {
+function Surface({ width = 640, height = 480, withRunControl = true }: { width?: number; height?: number; withRunControl?: boolean }) {
   flowStore = useStoreApi();
   const frame = useCanvasStore((state) => state.nodes.find((node) => node.id === FRAME_ID));
   if (!frame) return null;
   if (frame?.type !== 'frame') throw new Error('missing Frame');
-  return <FrameRunIntentContext value={(intent) => reportRunIntent(intent, selectProjectSetupSnapshot(useProjectSetupStore.getState())?.saved != null, useServerStore.getState().entries, [URL_A])}>
-    <FrameNode id={FRAME_ID} type="frame" data={frame.data} selected={frame.selected ?? false} dragging={false} zIndex={0} isConnectable={false} selectable draggable deletable width={width} height={height} positionAbsoluteX={0} positionAbsoluteY={0} />
-  </FrameRunIntentContext>;
+  const node = <FrameNode id={FRAME_ID} type="frame" data={frame.data} selected={frame.selected ?? false} dragging={false} zIndex={0} isConnectable={false} selectable draggable deletable width={width} height={height} positionAbsoluteX={0} positionAbsoluteY={0} />;
+  return withRunControl ? <FrameRunIntentContext value={(intent) => reportRunIntent(intent, selectProjectSetupSnapshot(useProjectSetupStore.getState())?.saved != null, useServerStore.getState().entries, [URL_A])}>{node}</FrameRunIntentContext> : node;
 }
 
-async function mount(onCanvasClick?: () => void) {
+async function mount(onCanvasClick?: () => void, withRunControl = true) {
   const surface = document.createElement('div');
   container.appendChild(surface);
   root = createRoot(surface);
   if (onCanvasClick) container.addEventListener('click', onCanvasClick);
-  await act(async () => { root!.render(<ReactFlowProvider><Surface /></ReactFlowProvider>); });
+  await act(async () => { root!.render(<ReactFlowProvider><Surface withRunControl={withRunControl} /></ReactFlowProvider>); });
   return guests.at(-1)!;
 }
 
@@ -1014,9 +1013,9 @@ it('uses a moved server origin after rehoming a previously discarded Frame', asy
   expect(guests.at(-1)!.element.getAttribute('src')).toBe(moved);
 });
 
-it('puts working recovery controls above the Design shield when the measured server dies', async () => {
+for (const withRunControl of [true, false]) it(`puts working recovery controls above the Design shield when the measured server dies (run control: ${String(withRunControl)})`, async () => {
   let canvasClicks = 0;
-  await loaded(await mount(() => { canvasClicks += 1; }));
+  await loaded(await mount(() => { canvasClicks += 1; }, withRunControl));
   const entries = useCanvasStore.getState().serverEntries.map((entry) => ({ ...entry, status: 'stopped' as const, ports: entry.ports.map((port) => ({ ...port, measured: 'dead' as const })) }));
   const intents: unknown[] = [];
   window.studio = { ...window.studio, telemetryEvent: () => {}, serverIntent: (intent) => { intents.push(intent); } };
