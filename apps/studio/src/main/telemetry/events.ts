@@ -174,6 +174,16 @@ export interface TelemetryEventMap {
   machine_help_opened: { help: import('@studio/events').MachineHelpId; opened: boolean };
   web_attribution_candidate: WebAttributionProperties & { $process_person_profile: false };
   web_attribution_linked: WebAttributionProperties & { $process_person_profile: true };
+  app_opened_from_link: {
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    utm_content?: string;
+    utm_term?: string;
+    stage?: string;
+    link_id?: string;
+    launch: 'cold' | 'warm';
+  };
   github_connect_finished: {
     outcome: 'connected' | 'waiting' | 'no_connection';
     next_action: 'clone' | 'folder' | 'retry' | 'dismiss' | 'waiting';
