@@ -41,6 +41,45 @@ const SHELLS = new Set(['bash', 'sh', 'zsh', 'dash', 'ksh']);
 /** `git`'s own options that consume the token after them, so the subcommand is not mistaken for a value. */
 const GIT_VALUE_OPTIONS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--exec-path', '--namespace']);
 
+/** Wrapper and runner options that require a value, so the token after them is not the command. */
+const VALUE_OPTIONS: ReadonlyMap<string, ReadonlySet<string>> = new Map([
+  ['env', new Set(['-u', '-C', '-P', '--unset', '--chdir'])],
+  ['nice', new Set(['-n', '--adjustment'])],
+  ['stdbuf', new Set(['-i', '-o', '-e', '--input', '--output', '--error'])],
+  ['timeout', new Set(['-s', '-k', '--signal', '--kill-after'])],
+  [
+    'xargs',
+    new Set([
+      '-a',
+      '-d',
+      '-E',
+      '-I',
+      '-J',
+      '-L',
+      '-n',
+      '-P',
+      '-R',
+      '-S',
+      '-s',
+      '--arg-file',
+      '--delimiter',
+      '--max-args',
+      '--max-chars',
+      '--max-procs',
+      '--process-slot-var',
+    ]),
+  ],
+]);
+
+/** Whether an option leaves its value to the next token, as getopt reads `-rn 1` but not `-n1`. */
+function takesValue(options: ReadonlySet<string> | undefined, token: string): boolean {
+  if (options === undefined || !token.startsWith('-')) return false;
+  if (token.startsWith('--')) return options.has(token);
+  const letters = [...token.slice(1)];
+  const at = letters.findIndex((letter) => options.has(`-${letter}`));
+  return at !== -1 && at === letters.length - 1;
+}
+
 function basename(program: string): string {
   const slash = program.lastIndexOf('/');
   return slash === -1 ? program : program.slice(slash + 1);
@@ -184,6 +223,10 @@ function* invocationsOf(tokens: string[], depth: number): Generator<Invocation> 
     let i = 1;
     while (i < rest.length) {
       const token = rest[i] as string;
+      if (takesValue(VALUE_OPTIONS.get(program), token)) {
+        i += 2;
+        continue;
+      }
       if (token.startsWith('-') || WRAPPER_OPERAND.test(token)) {
         i++;
         continue;
@@ -210,6 +253,10 @@ function* invocationsOf(tokens: string[], depth: number): Generator<Invocation> 
     let i = 1;
     while (i < rest.length) {
       const token = rest[i] as string;
+      if (takesValue(VALUE_OPTIONS.get(program), token)) {
+        i += 2;
+        continue;
+      }
       if (token === '--' || token.startsWith('-') || RUNNER_VERBS.has(token)) {
         i++;
         continue;
