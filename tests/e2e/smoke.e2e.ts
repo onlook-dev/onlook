@@ -78,7 +78,8 @@ test('Help menu rows accept mouse clicks with the left panel collapsed', async (
   try {
     await expect(window.getByTestId(TESTID.canvasHelp)).toBeVisible();
     await window.getByTestId(TESTID.canvasHelp).click();
-    const rows = window.getByTestId(TESTID.helpMenuItem);
+    const menu = window.getByTestId(TESTID.helpMenu).filter({ visible: true });
+    const rows = menu.getByTestId(TESTID.helpMenuItem);
     await expect(rows.first()).toBeVisible();
     const hitTests = await rows.evaluateAll((items) => items.map((item) => {
       const bounds = item.getBoundingClientRect();
@@ -90,7 +91,12 @@ test('Help menu rows accept mouse clicks with the left panel collapsed', async (
     expect(hitTests).toEqual(hitTests.map(() => ({ pointerEvents: 'auto', takesPointer: true })));
     await rows.filter({ hasText: 'Keyboard shortcuts' }).click();
     await expect(window.getByTestId(TESTID.tipsDialog)).toHaveAttribute('data-view', 'hotkeys');
-    await expect(window.getByTestId(TESTID.helpMenu)).not.toBeVisible();
+    await expect(menu).not.toBeVisible();
+    await window.keyboard.press('Escape');
+    await window.getByTestId(TESTID.canvasHelp).click();
+    await rows.filter({ hasText: 'Introduction' }).click();
+    await expect(window.getByTestId(TESTID.tourDialog)).toBeVisible();
+    await expect(menu).not.toBeVisible();
     await window.keyboard.press('Escape');
   } finally {
     await band.getByTestId('topbar-rail-left').click();
