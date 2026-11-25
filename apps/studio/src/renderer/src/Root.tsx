@@ -30,7 +30,7 @@ import { SettingsDialog } from './settings/SettingsDialog.js';
 import { openSettings } from './settings/settingsDialogStore.js';
 import { primeSettings, useSettingsStore } from './settings/store.js';
 import { ConsentGate } from './telemetry/Consent.js';
-import { primeGitStatus, watchOpenWorktree } from './git-status/store.js';
+import { noteGitStatusAssignment, primeGitStatus, watchOpenWorktree } from './git-status/store.js';
 import { BlendedWindowBar } from './topbar/slots.js';
 import { WindowFrame } from './topbar/WindowFrame.js';
 import {
@@ -238,6 +238,7 @@ export function Root(): React.JSX.Element {
     /* Idempotent: the pull covers a view minted before its listener exists, the push a spare promoted later (ONL-2318). */
     const applyAssignment = (assignment: TabAssignment): void => {
       if (assignment.tabId !== TAB_ID) return;
+      noteGitStatusAssignment(assignment);
       if (assignment.purpose === 'projects') {
         setScreen((current) => (current.kind === 'parked' ? { kind: 'projects' } : current));
         return;

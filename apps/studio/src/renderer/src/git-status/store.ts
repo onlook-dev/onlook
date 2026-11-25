@@ -9,13 +9,13 @@ import {
   type GitStatusChange,
   type PenView,
   type RendererTelemetryEvent,
+  type TabAssignment,
 } from '@studio/events';
 import { derivePillState, pillStateOf as derivePillStateOf } from '@studio/git-ui/derive';
 import { ignoreRefusal } from '../refusal.js';
 import { type GitPillState, type GitPillStateId } from '@studio/git-ui/state';
 import type { GitDropdownOption } from '@studio/git-ui';
 import { studio } from '../bridge.js';
-import { useOnScreenStore } from '../tips/onScreen.js';
 
 export type GitPillAction = GitPillStateId | GitDropdownOption;
 
@@ -80,11 +80,12 @@ function sendTelemetry(event: RendererTelemetryEvent): void {
 }
 
 let openWorktree: string | undefined;
+let preparingWorktree: string | undefined;
 let shownStateId: string | undefined;
 let defaultsGeneration = 0;
 
 function emitShownIfChanged(): void {
-  if (openWorktree === undefined || !useOnScreenStore.getState().isOnScreen) return;
+  if (openWorktree === undefined || openWorktree === preparingWorktree) return;
   const { rows, defaults } = useGitStatusStore.getState();
   const row = rows[openWorktree];
   if (row === undefined) return;
@@ -102,8 +103,14 @@ export function noteOpenWorktree(worktreePath: string | undefined): void {
   emitShownIfChanged();
 }
 
+export function noteGitStatusAssignment(assignment: TabAssignment): void {
+  preparingWorktree = assignment.purpose === 'project' && assignment.restoring === true
+    ? assignment.workspacePath
+    : undefined;
+  emitShownIfChanged();
+}
+
 let unwatchOpenWorktree: (() => void) | undefined;
-let unwatchOnScreen: (() => void) | undefined;
 
 export function watchOpenWorktree(
   subscribe: (listener: (path: string | undefined) => void) => () => void,
@@ -111,7 +118,6 @@ export function watchOpenWorktree(
 ): void {
   noteOpenWorktree(current);
   unwatchOpenWorktree ??= subscribe(noteOpenWorktree);
-  unwatchOnScreen ??= useOnScreenStore.subscribe(emitShownIfChanged);
 }
 
 function emitClicked(worktreePath: string, state: GitPillStateId, action: GitPillAction): void {
@@ -282,11 +288,10 @@ export function noteNoActionPress(worktreePath: string, reason: GitPillNoActionR
 export function resetGitStatusPrimeForTests(): void {
   priming = undefined;
   openWorktree = undefined;
+  preparingWorktree = undefined;
   shownStateId = undefined;
   defaultsGeneration = 0;
   unwatchOpenWorktree?.();
   unwatchOpenWorktree = undefined;
-  unwatchOnScreen?.();
-  unwatchOnScreen = undefined;
   useGitStatusStore.setState({ rows: {}, defaults: GIT_PILL_SHIPPED_DEFAULTS, working: {}, held: {} });
 }

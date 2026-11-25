@@ -15,6 +15,7 @@ import { MEASUREMENT_FIXTURES, row } from '@studio/git-ui/measurement-fixtures';
 import type { GitPillState } from '@studio/git-ui/state';
 import { useOnScreenStore } from '../tips/onScreen.js';
 import {
+  noteGitStatusAssignment,
   noteBrowserOpen,
   noteNoActionPress,
   noteOpenWorktree,
@@ -191,8 +192,21 @@ const pill = (): GitPillState => {
 };
 
 describe('primeGitStatus', () => {
-  it('does not report a prepared background tab until it is on screen, then reports its current state once', async () => {
+  it('records selected tab state changes in an unfocused window', async () => {
     useOnScreenStore.setState({ isOnScreen: false });
+    watchOpenWorktree(() => () => {}, WT);
+    const primed = primeGitStatus();
+    await bridge.releaseReads({ [WT]: row(MEASUREMENT_FIXTURES['create-pr']) });
+    await primed;
+    bridge.broadcast(change(row(MEASUREMENT_FIXTURES['checks-running'], { measuredAt: at(1_000) })));
+    expect(bridge.telemetry.filter((event) => event.event === 'git_pill_shown')
+      .map((event) => event.properties['state'])).toEqual(['create-pr', 'checks-running']);
+  });
+
+  it('does not report a prepared background tab until selected, then reports its current state once', async () => {
+    useOnScreenStore.setState({ isOnScreen: false });
+    const assignment = { tabId: 'tab-a', purpose: 'project', workspacePath: WT, repoIdentity: 'repo-a' } as const;
+    noteGitStatusAssignment({ ...assignment, restoring: true });
     watchOpenWorktree(() => () => {}, WT);
     const primed = primeGitStatus();
     await bridge.releaseReads(
@@ -206,21 +220,51 @@ describe('primeGitStatus', () => {
     expect(pill().id).toBe('push');
     expect(shown()).toEqual([]);
 
+    bridge.broadcast(change(row(MEASUREMENT_FIXTURES['checks-running'], { measuredAt: at(1_000) })));
     useOnScreenStore.setState({ isOnScreen: true });
-    expect(shown()).toEqual(['push']);
-    useOnScreenStore.setState({ isOnScreen: true });
-    bridge.broadcast(change(row(MEASUREMENT_FIXTURES['create-pr'], { measuredAt: at(1_000) })));
-    expect(shown()).toEqual(['push']);
-
+    expect(shown()).toEqual([]);
     useOnScreenStore.setState({ isOnScreen: false });
-    useOnScreenStore.setState({ isOnScreen: true });
-    expect(shown()).toEqual(['push']);
-
-    useOnScreenStore.setState({ isOnScreen: false });
+    noteGitStatusAssignment(assignment);
+    expect(shown()).toEqual(['checks-running']);
+    noteGitStatusAssignment(assignment);
     bridge.broadcast(change(row(MEASUREMENT_FIXTURES['checks-running'], { measuredAt: at(2_000) })));
-    expect(shown()).toEqual(['push']);
     useOnScreenStore.setState({ isOnScreen: true });
-    expect(shown()).toEqual(['push', 'checks-running']);
+    expect(shown()).toEqual(['checks-running']);
+    useOnScreenStore.setState({ isOnScreen: false });
+    bridge.broadcast(change(row(MEASUREMENT_FIXTURES['ready-to-merge'], { measuredAt: at(3_000) })));
+    expect(shown()).toEqual(['checks-running', 'ready-to-merge']);
+  });
+
+  it.each([1, 3])('matches main Git pill event counts with %i tabs in an unfocused window', async (tabCount) => {
+    useOnScreenStore.setState({ isOnScreen: false });
+    const countShown = async (prepareBackground: boolean): Promise<number> => {
+      let total = 0;
+      for (let tabIndex = 0; tabIndex < tabCount; tabIndex += 1) {
+        resetGitStatusPrimeForTests();
+        bridge = fakeBridge();
+        bridge.install();
+        const assignment = { tabId: `tab-${tabIndex}`, purpose: 'project', workspacePath: WT, repoIdentity: 'repo-a' } as const;
+        const isPrepared = prepareBackground && tabIndex === 1;
+        noteGitStatusAssignment(isPrepared ? { ...assignment, restoring: true } : assignment);
+        watchOpenWorktree(() => () => {}, WT);
+        const primed = primeGitStatus();
+        const initial = tabIndex === 1 && !isPrepared ? 'checks-running' : 'create-pr';
+        await bridge.releaseReads({ [WT]: row(MEASUREMENT_FIXTURES[initial]) });
+        await primed;
+        if (tabIndex !== 1 || isPrepared) {
+          bridge.broadcast(change(row(MEASUREMENT_FIXTURES['checks-running'], { measuredAt: at(1_000) })));
+        }
+        if (isPrepared) {
+          expect(bridge.telemetry.filter((event) => event.event === 'git_pill_shown')).toHaveLength(0);
+          noteGitStatusAssignment(assignment);
+        }
+        total += bridge.telemetry.filter((event) => event.event === 'git_pill_shown').length;
+      }
+      return total;
+    };
+    const mainCount = await countShown(false);
+    expect(mainCount).toBe(tabCount === 1 ? 2 : 5);
+    expect(await countShown(true)).toBe(mainCount);
   });
 
   it('reads and subscribes once however many times it is called', async () => {
