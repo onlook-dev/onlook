@@ -11,18 +11,20 @@ test('the Windows updater accepts the certificate common name and rejects the ol
   const script = `
     const { createRequire } = require('node:module');
     const appRequire = createRequire(process.argv[1]);
+    const builderRequire = createRequire(appRequire.resolve('electron-builder'));
+    const { WindowsSignAzureManager } = builderRequire('app-builder-lib/out/codeSign/windowsSignAzureManager.js');
     const childProcess = require('node:child_process');
     childProcess.execFile = (...args) => args.at(-1)(null, JSON.stringify({
       Status: 0, Path: 'update.exe', SignerCertificate: { Subject: 'CN="On Off, Inc.", O="On Off, Inc.", C=US' }
     }), '');
     const { verifySignature } = appRequire('electron-updater/out/windowsExecutableCodeSignatureVerifier.js');
     const logger = { info() {}, warn() {}, error() {} };
-    Promise.all(JSON.parse(process.argv[2]).map(name => verifySignature([name], 'update.exe', logger)))
+    const signing = new WindowsSignAzureManager({ platformSpecificBuildOptions: JSON.parse(process.argv[2]) });
+    signing.computedPublisherName.value.then(publishers => Promise.all([publishers, ['On Off, Inc']].map(names => verifySignature(names, 'update.exe', logger))))
       .then(results => process.stdout.write(JSON.stringify(results)));
   `;
   const signing = windowsSigning(SIGNED_ENV);
-  const publisher = (signing.win['azureSignOptions'] as { publisherName: string }).publisherName;
-  const result = spawnSync('node', ['-e', script, join(import.meta.dirname, '../apps/studio/package.json'), JSON.stringify([publisher, 'On Off, Inc'])], { encoding: 'utf8' });
+  const result = spawnSync('node', ['-e', script, join(import.meta.dirname, '../apps/studio/package.json'), JSON.stringify(signing.win)], { encoding: 'utf8' });
   expect(result.status).toBe(0);
   const results = JSON.parse(result.stdout) as (string | null)[];
   expect(results[0]).toBeNull();

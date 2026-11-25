@@ -22,7 +22,7 @@ test('Windows release check accepts matching packaged metadata and a valid insta
     const inspected: string[] = [];
     assertWindowsUpdateSignature(root, 'installer.exe', (file) => {
       inspected.push(file);
-      return { status: 0, publisher: WINDOWS_PUBLISHER_NAME };
+      return { status: 0, subject: `CN="${WINDOWS_PUBLISHER_NAME}", O="Example Publisher", C=US` };
     });
     expect(inspected).toEqual(['installer.exe']);
   }
@@ -37,7 +37,7 @@ test('Windows release check rejects stale, missing, disabled and widened package
 
 test('Windows release check fails closed on an invalid, absent or mismatched installer signature', () => {
   const root = packagedApp(JSON.stringify({ publisherName: WINDOWS_PUBLISHER_NAME }));
-  for (const signature of [{ status: 0, publisher: 'On Off, Inc' }, { status: 0, publisher: 'Another Publisher' }, { status: 2, publisher: WINDOWS_PUBLISHER_NAME }, { status: 1, publisher: null }]) {
+  for (const signature of [{ status: 0, subject: 'CN="On Off, Inc"' }, { status: 0, subject: 'CN="Another Publisher"' }, { status: 2, subject: `CN="${WINDOWS_PUBLISHER_NAME}"` }, { status: 1, subject: null }]) {
     expect(() => assertWindowsUpdateSignature(root, 'installer.exe', () => signature)).toThrow('valid signature');
   }
   expect(() => assertWindowsUpdateSignature(root, 'installer.exe', () => { throw new Error('PowerShell failed'); })).toThrow('PowerShell failed');
@@ -45,10 +45,17 @@ test('Windows release check fails closed on an invalid, absent or mismatched ins
   expect(() => assertWindowsUpdateSignature(root, 'installer.exe')).toThrow();
 });
 
+test('Windows release check rejects a matching display name without a subject common name', () => {
+  const root = packagedApp(JSON.stringify({ publisherName: WINDOWS_PUBLISHER_NAME }));
+  expect(() => assertWindowsUpdateSignature(root, 'installer.exe', () => ({ status: 0, subject: `O="${WINDOWS_PUBLISHER_NAME}", C=US` }))).toThrow('valid signature');
+});
+
 test('signed Windows cuts check the staged installer before marking signing complete', () => {
   const source = readFileSync(join(import.meta.dirname, 'cut-windows.ts'), 'utf8');
   expect(source).toContain('if (officialBuild && !signing.unsigned)');
-  expect(source.indexOf('    assertWindowsUpdateSignature(')).toBeLessThan(source.indexOf("writeFileSync(join(release, 'signing-win.txt')"));
+  const inspection = source.indexOf('    assertWindowsUpdateSignature(');
+  expect(inspection).toBeGreaterThanOrEqual(0);
+  expect(inspection).toBeLessThan(source.indexOf("writeFileSync(join(release, 'signing-win.txt')"));
 });
 
 test.skipIf(process.platform !== 'win32')('Windows Authenticode inspection reads a trusted system executable and rejects unsigned input', () => {
@@ -56,9 +63,10 @@ test.skipIf(process.platform !== 'win32')('Windows Authenticode inspection reads
   expect(systemRoot).toBeDefined();
   const signature = readWindowsSignature(join(systemRoot!, 'System32/WindowsPowerShell/v1.0/powershell.exe'));
   expect(signature.status).toBe(0);
-  expect(signature.publisher).toBeString();
-  expect(signature.publisher!.length).toBeGreaterThan(0);
+  expect(signature.subject).toBeString();
+  expect(signature.subject).toContain('CN=');
   const root = packagedApp(JSON.stringify({ publisherName: WINDOWS_PUBLISHER_NAME }));
+  expect(() => assertWindowsUpdateSignature(root, join(systemRoot!, 'System32/WindowsPowerShell/v1.0/powershell.exe'))).toThrow('valid signature');
   const unsigned = join(root, "unsigned ' installer.ps1");
   writeFileSync(unsigned, "Write-Output 'unsigned'\n");
   expect(readWindowsSignature(unsigned).status).not.toBe(0);
