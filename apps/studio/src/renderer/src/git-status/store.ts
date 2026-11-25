@@ -5,6 +5,8 @@ import {
   type GitPillDefaultsPatch,
   type GitPillNoActionReason,
   type GitPillOutcome,
+  type GitPrFailure,
+  type StudioEvent,
   type GitSnapshotRow,
   type GitStatusChange,
   type PenView,
@@ -15,6 +17,7 @@ import { ignoreRefusal } from '../refusal.js';
 import { type GitPillState, type GitPillStateId } from '@studio/git-ui/state';
 import type { GitDropdownOption } from '@studio/git-ui';
 import { studio } from '../bridge.js';
+import { classifyPrFailure, prFailureFor } from './failure.js';
 
 export type GitPillAction = GitPillStateId | GitDropdownOption;
 
@@ -37,6 +40,7 @@ interface GitStatusState {
   defaults: GitPillDefaults;
   working: Record<string, WorkingEntry>;
   held: Record<string, HeldEntry>;
+  failures: Record<string, GitPrFailure>;
 }
 
 interface GitStatusStore extends GitStatusState {
@@ -81,6 +85,7 @@ function sendTelemetry(event: RendererTelemetryEvent): void {
 let openWorktree: string | undefined;
 let shownStateId: string | undefined;
 let defaultsGeneration = 0;
+const prFailures = new WeakMap<WorkingEntry, GitPrFailure>();
 
 function emitShownIfChanged(): void {
   if (openWorktree === undefined) return;
@@ -115,10 +120,10 @@ function emitClicked(worktreePath: string, state: GitPillStateId, action: GitPil
   sendTelemetry({ event: 'git_pill_clicked', properties: { worktreePath, state, action } });
 }
 
-function emitOutcome(worktreePath: string, entry: WorkingEntry, toState: GitPillStateId, outcome: GitPillOutcome): void {
+function emitOutcome(worktreePath: string, entry: WorkingEntry, toState: GitPillStateId, outcome: GitPillOutcome, failure?: GitPrFailure): void {
   sendTelemetry({
     event: 'git_pill_outcome',
-    properties: { worktreePath, from_state: entry.fromState, to_state: toState, outcome, duration_ms: Date.now() - entry.clickedAt },
+    properties: { worktreePath, from_state: entry.fromState, to_state: toState, outcome, duration_ms: Date.now() - entry.clickedAt, ...(failure === undefined ? {} : { failure_class: failure }) },
   });
 }
 
@@ -148,11 +153,14 @@ const useGitStatusStore = create<GitStatusStore>()((set, get) => ({
   defaults: GIT_PILL_SHIPPED_DEFAULTS,
   working: {},
   held: {},
+  failures: {},
 
   apply: ({ worktreePath, row }) => {
     const { working, held, defaults } = get();
     const entry = working[worktreePath];
     const settled = settles(row, entry);
+    const failed = settled && entry?.action === 'create-pr' && !row.measurement.pr;
+    const failure = failed ? prFailureFor(row, prFailures.get(entry)) : undefined;
     const waiting = held[worktreePath];
     // The turn the press waited on has ended, so the pen has had its say about it either way.
     const ranOut = waiting !== undefined && settles(row, { clickedAt: waiting.heldAt });
@@ -160,10 +168,11 @@ const useGitStatusStore = create<GitStatusStore>()((set, get) => ({
       rows: { ...state.rows, [worktreePath]: row },
       working: settled ? without(state.working, worktreePath) : state.working,
       held: ranOut ? without(state.held, worktreePath) : state.held,
+      failures: failure !== undefined ? { ...state.failures, [worktreePath]: failure } : row.measurement.pr !== undefined ? without(state.failures, worktreePath) : state.failures,
     }));
     if (settled && entry !== undefined) {
       const toState = derivePillState(row, defaults).id;
-      emitOutcome(worktreePath, entry, toState, toState === entry.fromState ? 'unchanged' : 'advanced');
+      emitOutcome(worktreePath, entry, toState, failed || toState === entry.fromState ? 'unchanged' : 'advanced', failure);
     }
     if (worktreePath === openWorktree) emitShownIfChanged();
   },
@@ -195,12 +204,13 @@ const useGitStatusStore = create<GitStatusStore>()((set, get) => ({
 
     const fromState = derivePillState(get().rows[worktreePath], get().defaults).id;
     const entry: WorkingEntry = { clickedAt: Date.now(), action, fromState };
-    set((state) => ({ working: { ...state.working, [worktreePath]: entry } }));
+    set((state) => ({ working: { ...state.working, [worktreePath]: entry }, failures: without(state.failures, worktreePath) }));
     emitClicked(worktreePath, fromState, action);
     const clear = (): void => {
       if (get().working[worktreePath] !== entry) return;
-      set((state) => ({ working: without(state.working, worktreePath) }));
-      emitOutcome(worktreePath, entry, fromState, 'refused');
+      const failure = action === 'create-pr' ? 'unknown' : undefined;
+      set((state) => ({ working: without(state.working, worktreePath), failures: failure === undefined ? state.failures : { ...state.failures, [worktreePath]: failure } }));
+      emitOutcome(worktreePath, entry, fromState, 'refused', failure);
     };
     try {
       const { accepted, held } = await studio().agentCommand({ type: 'prompt', text });
@@ -249,6 +259,7 @@ export function primeGitStatus(): Promise<void> {
     const { apply, applyAll, applyDefaults } = useGitStatusStore.getState();
 
     studio().onGitStatusChanged(apply);
+    studio().onAgentEvent(notePrToolResult);
 
     // A default chosen while the read is out moves the generation on, and the read's answer is then the older of the two.
     const asked = defaultsGeneration;
@@ -283,5 +294,15 @@ export function resetGitStatusPrimeForTests(): void {
   defaultsGeneration = 0;
   unwatchOpenWorktree?.();
   unwatchOpenWorktree = undefined;
-  useGitStatusStore.setState({ rows: {}, defaults: GIT_PILL_SHIPPED_DEFAULTS, working: {}, held: {} });
+  useGitStatusStore.setState({ rows: {}, defaults: GIT_PILL_SHIPPED_DEFAULTS, working: {}, held: {}, failures: {} });
+}
+
+export function notePrToolResult(event: StudioEvent): void {
+  if (event.type !== 'tool.end' || event.cwd === undefined) return;
+  if (event.status !== 'failed' && event.isError !== true) return;
+  const entry = useGitStatusStore.getState().working[event.cwd];
+  if (entry?.action !== 'create-pr' || event.ts < entry.clickedAt) return;
+  const failure = classifyPrFailure(`${event.errorMessage ?? ''}\n${event.result ?? ''}`);
+  if (failure === undefined) return;
+  prFailures.set(entry, failure);
 }

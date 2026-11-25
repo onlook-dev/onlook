@@ -30,6 +30,7 @@ export interface GitStatusPillProps {
   glyphs: GitPillGlyphs;
   scale?: GitPillScale;
   tooltip?: readonly string[];
+  failure?: { label: string; nextStep: string };
   isTooltipOpen?: boolean;
   onTooltipOpenChange?: (isOpen: boolean) => void;
   /** Awaited before the menu is placed, so a host too short for it can make room first (ONL-2206). */
@@ -409,6 +410,7 @@ export function GitStatusPill({
   glyphs,
   scale = 'chrome',
   tooltip,
+  failure,
   isTooltipOpen,
   onTooltipOpenChange,
   onMenuOpenChange,
@@ -454,7 +456,8 @@ export function GitStatusPill({
   if (scale === 'card' && !pr) return null;
   /* Queued takes the body whatever the state derives: the word says Take Back, so the press must take back. */
   const action = !isChrome ? undefined : showsQueued ? onAction : bodyAction(state, onAction, onOpenPr);
-  const label = labelFor(state, strings, isBodyHovered, action !== undefined, showsQueued);
+  const shownFailure = isWorking || showsQueued ? undefined : failure;
+  const label = shownFailure?.label ?? labelFor(state, strings, isBodyHovered, action !== undefined, showsQueued);
   const revealDropdown = isChrome ? dropdown ?? lastDropdownRef.current : undefined;
   const current = currentOptionOf(state);
   const hasPrSegment = showsPrSegment(state);
@@ -618,7 +621,7 @@ export function GitStatusPill({
       </Tooltip>
     );
   };
-  const hoverLines = hoverLinesFor(state, tooltip, showsQueued ? strings.queuedHint : undefined);
+  const hoverLines = hoverLinesFor(state, shownFailure ? [shownFailure.nextStep] : tooltip, showsQueued ? strings.queuedHint : undefined);
   const noAccessLine = state.id === 'no-access' ? fill(strings.noAccessLine, { repo: state.repo, account: state.account }) : undefined;
 
   return (
@@ -627,6 +630,7 @@ export function GitStatusPill({
       className={className}
       data-testid={testId ?? 'git-status-pill'}
       data-git-state={state.id}
+      data-failure={shownFailure === undefined ? undefined : 'true'}
       data-git-scale={scale}
       data-stale={state.mode === 'stale' ? 'true' : undefined}
       data-working={isWorking ? 'true' : undefined}

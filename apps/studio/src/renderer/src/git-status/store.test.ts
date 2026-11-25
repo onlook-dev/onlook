@@ -17,6 +17,7 @@ import {
   noteBrowserOpen,
   noteNoActionPress,
   noteOpenWorktree,
+  notePrToolResult,
   pillStateOf,
   primeGitStatus,
   queuedActionFor,
@@ -74,6 +75,7 @@ function fakeBridge(): {
               logged.push(line);
             },
             telemetryException(): void {},
+            onAgentEvent(): () => void { return () => {}; },
             listGitStatus(): Promise<GitStatusList> {
               listCalls += 1;
               const p = new Promise<GitStatusList>((resolve, reject) => {
@@ -674,6 +676,48 @@ describe('telemetry emitters', () => {
     void useGitStatusStore.getState().click(WT, 'create-pr', 'prompt text');
     bridge.broadcast(change(turnEndRow(afterClick(1_000))));
     expect(outcomes().map((o) => o['outcome'])).toEqual(['unchanged']);
+  });
+
+  for (const [result, failure] of [
+    ['No commits between main and feature', 'no-changes'],
+    ['! [rejected] feature -> feature (non-fast-forward)', 'push-refused'],
+    ['Organization requires SAML SSO authorization', 'org-approval'],
+    ['To get started, run gh auth login', 'sign-in'],
+    ['Connection timed out', 'unknown'],
+  ] as const) {
+    it(`keeps ${failure} on the button and the existing outcome event`, () => {
+      bridge.broadcast(change(openRow(at(0))));
+      void useGitStatusStore.getState().click(WT, 'create-pr', 'Create a pull request');
+      const clickedAt = useGitStatusStore.getState().working[WT]!.clickedAt;
+      notePrToolResult({ type: 'tool.end', cwd: WT, ts: clickedAt + 1, seq: 1, eventId: 'tool-result', sessionId: 'session', toolCallId: 'create-pr', status: 'failed', result });
+      bridge.broadcast(change(turnEndRow(afterClick(1_000))));
+      expect(useGitStatusStore.getState().failures[WT]).toBe(failure);
+      expect(outcomes()).toMatchObject([{ outcome: 'unchanged', failure_class: failure }]);
+      expect(JSON.stringify(outcomes())).not.toContain(result);
+      void useGitStatusStore.getState().click(WT, 'create-pr', 'Try again');
+      expect(useGitStatusStore.getState().failures[WT]).toBeUndefined();
+    });
+  }
+
+  it('does not turn a recovered tool error into a failed PR', () => {
+    bridge.broadcast(change(openRow(at(0))));
+    void useGitStatusStore.getState().click(WT, 'create-pr', 'Create a pull request');
+    notePrToolResult({ type: 'tool.end', cwd: WT, ts: Date.now() + 1, seq: 1, eventId: 'tool-result', sessionId: 'session', toolCallId: 'create-pr', status: 'failed', result: 'gh auth login' });
+    bridge.broadcast(change(turnEndRow(afterClick(1_000), 'checks-running')));
+    expect(useGitStatusStore.getState().failures[WT]).toBeUndefined();
+    expect(outcomes()).toMatchObject([{ outcome: 'advanced' }]);
+    expect(outcomes()[0]).not.toHaveProperty('failure_class');
+  });
+
+  it('ignores old results and results from another project', () => {
+    bridge.broadcast(change(openRow(at(0))));
+    void useGitStatusStore.getState().click(WT, 'create-pr', 'Create a pull request');
+    const clickedAt = useGitStatusStore.getState().working[WT]!.clickedAt;
+    for (const [cwd, ts] of [[WT, clickedAt - 1], ['/ws/other', clickedAt + 1]] as const) {
+      notePrToolResult({ type: 'tool.end', cwd, ts, seq: 1, eventId: 'tool-result', sessionId: 'session', toolCallId: 'create-pr', status: 'failed', result: 'gh auth login' });
+    }
+    bridge.broadcast(change(turnEndRow(afterClick(1_000))));
+    expect(useGitStatusStore.getState().failures[WT]).toBe('unknown');
   });
 
   it('a refused command is a refused outcome, not a duplicate click', async () => {

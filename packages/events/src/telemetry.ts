@@ -8,6 +8,7 @@ import type { HarnessId } from './models.js';
 import type { ScrubbedFrame } from './scrub.js';
 import type { ArtifactCreateMethod } from './artifacts.js';
 import type { OnboardingImportChoice, OnboardingScreen } from './onboarding.js';
+import type { GitPrFailure } from './git-status.js';
 
 export const TIPS_OPEN_SOURCES = ['button', 'shortcut', 'help', 'pill', 'rail_tip'] as const;
 
@@ -305,6 +306,7 @@ export interface RendererTelemetryEventMap {
     from_state: string;
     to_state: string;
     outcome: GitPillOutcome;
+    failure_class?: GitPrFailure;
     duration_ms: number;
   };
 

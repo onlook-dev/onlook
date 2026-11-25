@@ -77,6 +77,7 @@ import {
   FRAME_SCROLL_METHODS,
   GIT_PILL_NO_ACTION_REASONS,
   GIT_PILL_OUTCOMES,
+  GIT_PR_FAILURES,
   IMAGE_REFUSAL_REASONS,
   INLINE_CHAT_ANCHORS,
   INLINE_DISMISS_METHODS,
@@ -689,7 +690,9 @@ export function receiveRendererTelemetry(payload: RendererTelemetryEvent, render
       if (workspaceProperties === undefined || from_state === undefined || to_state === undefined) return;
       if (!oneOf(GIT_PILL_OUTCOMES, outcome)) return;
       if (typeof duration_ms !== 'number' || !Number.isFinite(duration_ms) || duration_ms < 0) return;
-      capture('git_pill_outcome', { ...workspaceProperties, from_state, to_state, outcome, duration_ms });
+      const failure_class = payload.properties.failure_class;
+      if (failure_class !== undefined && !oneOf(GIT_PR_FAILURES, failure_class)) return;
+      capture('git_pill_outcome', { ...workspaceProperties, from_state, to_state, outcome, duration_ms, ...(failure_class === undefined ? {} : { failure_class }) });
       const export_type = EXPORT_TYPES[from_state];
       if (outcome === 'advanced' && export_type !== undefined) {
         capture('code_exported', { ...workspaceProperties, export_type, duration_ms });
