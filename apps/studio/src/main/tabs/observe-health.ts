@@ -31,7 +31,9 @@ export function observeTabHealth(contents: HealthContents, options: {
     record(
       { kind: 'render-process-gone', reason },
       { reason: 'renderer-gone', exit_reason: reason },
-      owner === undefined ? undefined : { owner, message: `tab view renderer gone: ${reason}`, fields: { exit_reason: reason, exit_code: details.exitCode } },
+      owner === undefined || reason === 'crashed' || reason === 'integrity-failure'
+        ? undefined
+        : { owner, message: `tab view renderer gone: ${reason}`, fields: { exit_reason: reason, exit_code: details.exitCode } },
     );
   });
   contents.on('did-fail-load', (_event, errorCode, _description, _url, isMainFrame) => {
