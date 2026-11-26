@@ -381,17 +381,16 @@ function deferFrameAttachments() {
   return pending;
 }
 
-it('covers a frame refused for another project before any guest mounts and recovers on its own new port', async () => {
+for (const eventOrder of ['before-reply', 'after-reply'] as const) it(`covers a frame refused for another project with the block event ${eventOrder} and recovers on its own new port`, async () => {
   seedFlags({ 'frame-covers': true });
   let blocked: Parameters<StudioBridge['onCanvasFrameBlocked']>[0] | undefined;
   window.studio = { ...window.studio, onCanvasFrameBlocked: listener => { blocked = listener; return () => { blocked = undefined; }; } };
   const pending = deferFrameAttachments();
   await mount();
   expect(guests).toHaveLength(0);
-  await act(async () => {
-    blocked!({ nodeId: FRAME_ID, url: URL_A });
-    pending[0]!.resolve(null);
-  });
+  if (eventOrder === 'before-reply') await act(async () => { blocked!({ nodeId: FRAME_ID, url: URL_A }); });
+  await act(async () => { pending[0]!.resolve(null); });
+  if (eventOrder === 'after-reply') await act(async () => { blocked!({ nodeId: FRAME_ID, url: URL_A }); });
   expect(guests).toHaveLength(0);
   expect(container.querySelector('[data-server-cover="dead"]')).not.toBeNull();
   await act(async () => {

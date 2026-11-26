@@ -8,12 +8,17 @@ export function useFrameAttachUrl(nodeId: string | undefined, url: string, insta
   const request = typeof window === 'undefined' ? undefined : studio()?.canvasFrameAttach;
   const refused = useEffectEvent((reason: 'blocked' | 'unavailable') => onRefused?.(reason));
   useEffect(() => {
-    if (!enabled) { setLease(null); return; }
     if (nodeId === undefined || request === undefined) return;
     let active = true;
     const disconnect = studio().onCanvasFrameBlocked?.((event) => {
       if (active && event.nodeId === nodeId) refused('blocked');
     });
+    return () => { active = false; disconnect?.(); };
+  }, [nodeId, request]);
+  useEffect(() => {
+    if (!enabled) { setLease(null); return; }
+    if (nodeId === undefined || request === undefined) return;
+    let active = true;
     void request({ nodeId }).then(result => {
       if (!active) return;
       if (result === null) refused('unavailable');
@@ -22,7 +27,7 @@ export function useFrameAttachUrl(nodeId: string | undefined, url: string, insta
       if (active) refused('unavailable');
       ignoreRefusal('canvas', 'canvasFrameAttach')(error);
     });
-    return () => { active = false; disconnect?.(); };
+    return () => { active = false; };
   }, [nodeId, url, key, request, enabled]);
   if (!enabled) return undefined;
   if (nodeId === undefined || request === undefined) return url;
