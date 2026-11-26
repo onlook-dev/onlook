@@ -67,24 +67,26 @@ describe('Git availability without executing Git', () => {
     })).toBe(executable);
   });
 
-  it.each([true, false])('maps the actual developer-tools probe timeout=%s to the PATH fallback only on timeout', async (timedOut) => {
-    let calls = 0;
-    const env = { PATH: '/usr/bin', DEVELOPER_DIR: `/fixture/probe-${timedOut}` };
-    const selected = await gitExecutable(env, {
-      platform: 'darwin', resolve: () => '/usr/bin/git',
-      realpath: (path) => path,
-      selectedTools: (environment) => selectedDeveloperTools(environment, async (bin, _cwd, args, options) => {
-        calls++;
-        expect(bin).toBe('/usr/bin/xcode-select');
-        expect(args).toEqual(['-p']);
-        expect(options).toMatchObject({ timeoutMs: 3_000, env });
-        return { ok: false, out: '', err: 'probe failed', timedOut, missing: false, exitCode: null };
-      }),
-      exists: () => false,
+  for (const timedOut of [true, false]) {
+    it(`maps the actual developer-tools probe timeout=${timedOut} to the PATH fallback only on timeout`, async () => {
+      let calls = 0;
+      const env = { PATH: '/usr/bin', DEVELOPER_DIR: `/fixture/probe-${timedOut}` };
+      const selected = await gitExecutable(env, {
+        platform: 'darwin', resolve: () => '/usr/bin/git',
+        realpath: (path) => path,
+        selectedTools: (environment) => selectedDeveloperTools(environment, async (bin, _cwd, args, options) => {
+          calls++;
+          expect(bin).toBe('/usr/bin/xcode-select');
+          expect(args).toEqual(['-p']);
+          expect(options).toMatchObject({ timeoutMs: 3_000, env });
+          return { ok: false, out: '', err: 'probe failed', timedOut, missing: false, exitCode: null };
+        }),
+        exists: () => false,
+      });
+      expect(calls).toBe(1);
+      expect(selected).toBe(timedOut ? '/usr/bin/git' : undefined);
     });
-    expect(calls).toBe(1);
-    expect(selected).toBe(timedOut ? '/usr/bin/git' : undefined);
-  });
+  }
 
   it('fails closed when a Mac executable cannot be canonicalized', async () => {
     expect(await gitExecutable({}, {
