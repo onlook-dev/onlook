@@ -406,6 +406,24 @@ for (const eventOrder of ['before-reply', 'after-reply'] as const) it(`covers a 
   expect(guests[0]!.element.getAttribute('src')).toBe('about:blank#studio-frame-attach=own');
 });
 
+it('keeps the measured occupied cover when an attachment block arrives after the server book', async () => {
+  seedFlags({ 'frame-covers': true });
+  let blocked: Parameters<StudioBridge['onCanvasFrameBlocked']>[0] | undefined;
+  window.studio = { ...window.studio, onCanvasFrameBlocked: listener => { blocked = listener; return () => { blocked = undefined; }; } };
+  const pending = deferFrameAttachments();
+  await mount();
+  await act(async () => {
+    const state = useCanvasStore.getState();
+    state.applyServerBook(state.serverEntries.map(entry => ({ ...entry, ports: entry.ports.map(port => ({ ...port, measured: 'stranger' as const })) })));
+  });
+  expect(container.querySelector('[data-server-cover="occupied"]')).not.toBeNull();
+  await act(async () => { blocked!({ nodeId: FRAME_ID, url: URL_A }); });
+  await act(async () => { pending[0]!.resolve(null); });
+  expect(container.querySelector('[data-server-cover="occupied"]')).not.toBeNull();
+  expect(container.querySelector('[data-server-cover="dead"]')).toBeNull();
+  expect(container.querySelector('webview')).toBeNull();
+});
+
 for (const wasLive of [false, true]) it(`rechecks a refused port after the project server book changes without moving its saved address (was live: ${String(wasLive)})`, async () => {
   seedFlags({ 'frame-covers': true });
   let blocked: Parameters<StudioBridge['onCanvasFrameBlocked']>[0] | undefined;

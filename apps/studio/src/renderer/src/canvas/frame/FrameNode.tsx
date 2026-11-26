@@ -183,7 +183,7 @@ export function FrameNode({
     setBlockedAttachment(null);
     useCanvasStore.getState().patchFrame(id, { health: 'loading' });
   }, [blockedAttachment, attachmentKey, serverEntries, id]);
-  const serverCover = blockedAttachment?.key === attachmentKey && blockedAttachment.entries === serverEntries ? 'dead' : data.serverCover;
+  const serverCover = data.serverCover ?? (blockedAttachment?.key === attachmentKey && blockedAttachment.entries === serverEntries ? 'dead' : undefined);
   const recoveryUrl = frameRecoveryUrl(data);
   const effectiveHealth = serverCover !== undefined ? 'unreachable' : data.health;
   const startUnderWay = useStartUnderWay();
