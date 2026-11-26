@@ -11,10 +11,11 @@ import { installUpdateProof } from './proof.js';
 import { UpdateMachine } from './machine.js';
 import { log } from '../log/index.js';
 import { capabilities } from '../cloud/capabilities.js';
-import { isMac } from '../env/platform.js';
+import { isMac, isWindows } from '../env/platform.js';
 import { devSwitches } from '../env/dev-switches.js';
 import { capture } from '../telemetry/index.js';
 import { createUpdateRecovery } from './recovery.js';
+import { createWindowsSignatureVerifier } from './signature.js';
 
 const logger = log('updater');
 
@@ -143,6 +144,9 @@ async function loadAutoUpdater(): Promise<AppUpdater> {
     throw new Error(
       'electron-updater exposed no autoUpdater on either the default or named export',
     );
+  }
+  if (isWindows() && 'verifyUpdateCodeSignature' in resolved) {
+    resolved.verifyUpdateCodeSignature = createWindowsSignatureVerifier();
   }
   return resolved;
 }
