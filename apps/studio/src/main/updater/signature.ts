@@ -23,6 +23,8 @@ export function createWindowsSignatureVerifier(
   windowsRelease: () => string = release,
 ): VerifyUpdateCodeSignature {
   return async (publisherNames, updateFile) => {
+    const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => name.toLowerCase() !== 'psmodulepath'));
+    env['ONLOOK_UPDATE_FILE'] = updateFile;
     const powershell = (command: string, timeout: number) => run(
       systemExecutable('cmd.exe'),
       ['/d', '/s', '/c', `chcp 65001 >NUL & "${systemExecutable('WindowsPowerShell/v1.0/powershell.exe')}" -NoProfile -NonInteractive -InputFormat None -Command "${command}"`],
@@ -31,7 +33,7 @@ export function createWindowsSignatureVerifier(
         timeout,
         shell: false,
         windowsVerbatimArguments: true,
-        env: { ...process.env, PSModulePath: '', ONLOOK_UPDATE_FILE: updateFile },
+        env,
       },
     );
     try {

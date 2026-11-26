@@ -138,19 +138,24 @@ describe('Windows update signature integration', { skip: process.platform !== 'w
     assert.ok(!upstreamPaths.includes(normalizedMarker));
 
     let calls = 0;
+    const observations: { env: NodeJS.ProcessEnv | undefined; stdout: string; stderr: string }[] = [];
     const verify = createWindowsSignatureVerifier(async (executable, args, options) => {
       calls++;
-      assert.equal(options.env?.['PSModulePath'], '');
       const startupArgs = [...args.slice(0, -1), args.at(-1)!.replace(/-Command ".*"$/, `-Command "${modulePathCommand}"`)];
       const startup = await run(executable, startupArgs, options);
-      assert.equal(startup.stderr, '');
-      const startupPaths = modulePaths(startup.stdout);
-      assert.ok(!startupPaths.includes(normalizedMarker), 'the custom module path must not reach PowerShell');
-      assert.deepEqual(startupPaths, upstreamPaths);
-      assert.notDeepEqual(startupPaths, modulePaths(inherited.stdout));
+      observations.push({ env: options.env, ...startup });
       return run(executable, args, options);
     });
-    assert.equal(await verify([publisher], signedFiles[0]!), null);
+    const result = await verify([publisher], signedFiles[0]!);
+    assert.equal(observations.length, 1);
+    const startup = observations[0]!;
+    assert.deepEqual(Object.keys(startup.env ?? {}).filter(name => name.toLowerCase() === 'psmodulepath'), []);
+    assert.equal(startup.stderr, '');
+    const startupPaths = modulePaths(startup.stdout);
+    assert.ok(!startupPaths.includes(normalizedMarker), 'the custom module path must not reach PowerShell');
+    assert.deepEqual(startupPaths, upstreamPaths);
+    assert.notDeepEqual(startupPaths, modulePaths(inherited.stdout));
+    assert.equal(result, null);
     assert.equal(calls, 1);
   });
 });

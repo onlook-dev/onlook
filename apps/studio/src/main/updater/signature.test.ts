@@ -19,7 +19,7 @@ describe('Windows update signatures', () => {
         expect(options.timeout).toBe(20_000);
         expect(options.encoding).toBe('utf8');
         expect(options.windowsVerbatimArguments).toBe(true);
-        expect(options.env?.['PSModulePath']).toBe('');
+        expect(Object.keys(options.env ?? {}).filter(name => name.toLowerCase() === 'psmodulepath')).toEqual([]);
         expect(options.env?.['ONLOOK_UPDATE_FILE']).toBe(path);
         expect(args.join(' ')).not.toContain(path);
         expect(args.at(-1)).toContain('-LiteralPath $env:ONLOOK_UPDATE_FILE');
@@ -34,6 +34,23 @@ describe('Windows update signatures', () => {
   const path = 'C:\\Profiles\\Test Profile\\AppData\\Local\\onlook-updater\\pending\\update.exe';
   const verifyResult = (data: unknown, publishers = [publisher]) =>
     createWindowsSignatureVerifier(async () => ({ stdout: JSON.stringify(data), stderr: '' }))(publishers, path);
+
+  it('removes inherited module paths regardless of environment key casing', async () => {
+    const previous = process.env['PSMODULEPATH'];
+    process.env['PSMODULEPATH'] = 'C:\\ExampleModules';
+    try {
+      let inherited: string[] = [];
+      const verify = createWindowsSignatureVerifier(async (_executable, _args, options) => {
+        inherited = Object.keys(options.env ?? {}).filter(name => name.toLowerCase() === 'psmodulepath');
+        return { stdout: JSON.stringify(validSignature(path)), stderr: '' };
+      });
+      expect(await verify([publisher], path)).toBeNull();
+      expect(inherited).toEqual([]);
+    } finally {
+      if (previous === undefined) delete process.env['PSMODULEPATH'];
+      else process.env['PSMODULEPATH'] = previous;
+    }
+  });
 
   it('accepts any configured publisher and preserves full distinguished-name matching', async () => {
     expect(await verifyResult(validSignature(path), ['CN=Other, O=Other', publisher])).toBeNull();
