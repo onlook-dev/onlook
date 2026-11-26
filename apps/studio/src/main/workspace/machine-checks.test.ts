@@ -7,7 +7,7 @@ import { runCli, type CliResult } from '../env/cli.js';
 import { StarterFailure } from '../starter/failure.js';
 import { pickStarterPort } from '../starter/port.js';
 import { git } from './git.js';
-import { checkGit, checkProjectsFolder, checksForBlankProject, runMachineChecks, type MachineCheckDeps } from './machine-checks.js';
+import { checkGit, checkProjectsFolder, runMachineChecks, type MachineCheckDeps } from './machine-checks.js';
 
 afterAll(cleanupTempFixtures);
 const success: CliResult = { ok: true, out: 'git version 2.51.0', err: '', exitCode: 0, timedOut: false, missing: false };
@@ -17,17 +17,6 @@ function deps(overrides: Partial<MachineCheckDeps> = {}): MachineCheckDeps {
 }
 
 describe('machine checks', () => {
-  it('does not require missing Git or Apple developer tools to start a blank project', () => {
-    for (const cause of ['git_not_found', 'developer_tools_missing'] as const) {
-      const checks = checksForBlankProject([{ id: 'git', status: 'failed', cause }, { id: 'workspace', status: 'passed' }]);
-      expect(checks).toEqual([{ id: 'git', status: 'not-required' }, { id: 'workspace', status: 'passed' }]);
-      expect(machineHasFailure(checks)).toBe(false);
-    }
-    const broken = [{ id: 'git' as const, status: 'failed' as const, cause: 'git_config_invalid' as const }];
-    expect(checksForBlankProject(broken)).toEqual(broken);
-    const ready = [{ id: 'git' as const, status: 'passed' as const }];
-    expect(checksForBlankProject(ready)).toEqual(ready);
-  });
   it('runs init, commit and the production worktree flags without a version gate', async () => {
     const calls: string[][] = [];
     const folders: string[] = [];

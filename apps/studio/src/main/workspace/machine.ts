@@ -12,7 +12,7 @@ import { capture } from '../telemetry/index.js';
 import { readOnboardingState } from '../onboarding/state.js';
 import { t } from '@studio/i18n';
 import { machineFailureText } from '@studio/i18n/machine';
-import { checkProjectsFolder, checksForBlankProject, machineCheckDeps, runMachineChecks } from './machine-checks.js';
+import { checkProjectsFolder, machineCheckDeps, runMachineChecks } from './machine-checks.js';
 import { workspaceRoot, projectsFolderMayChange, resetWorkspaceCache } from './store.js';
 import { chooseProjectsFolder } from './root.js';
 import { isMac, isWindows } from '../env/platform.js';
@@ -27,7 +27,7 @@ function canChooseFolder(): boolean {
 
 function checkMachine(): Promise<MachineSnapshot> {
   checking ??= (async () => ({
-    checks: checksForBlankProject(await runMachineChecks(machineCheckDeps(workspaceRoot(), () => checkHelperProcess(), (check_id) => capture('machine_check_failed', { check_id })))),
+    checks: await runMachineChecks(machineCheckDeps(workspaceRoot(), () => checkHelperProcess(), (check_id) => capture('machine_check_failed', { check_id }))),
     platform: isMac() ? 'mac' as const : isWindows() ? 'windows' as const : 'linux' as const,
     canChooseFolder: canChooseFolder(),
   }))().finally(() => { checking = undefined; });

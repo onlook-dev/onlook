@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { gitAvailable, gitExecutable, selectedDeveloperTools } from './git-available.js';
+import { gitAvailable, gitExecutable, resetSelectedDeveloperTools, selectedDeveloperTools } from './git-available.js';
 
 describe('Git availability without executing Git', () => {
   it.each(['win32', 'darwin', 'linux'] as const)('recognizes missing Git on %s without a tool prompt', async (platform) => {
@@ -68,25 +68,60 @@ describe('Git availability without executing Git', () => {
   });
 
   for (const timedOut of [true, false]) {
-    it(`maps the actual developer-tools probe timeout=${timedOut} to the PATH fallback only on timeout`, async () => {
+    it(`caches developer-tools probe timeout=${timedOut} and uses the PATH fallback only on timeout`, async () => {
       let calls = 0;
       const env = { PATH: '/usr/bin', DEVELOPER_DIR: `/fixture/probe-${timedOut}` };
-      const selected = await gitExecutable(env, {
-        platform: 'darwin', resolve: () => '/usr/bin/git',
-        realpath: (path) => path,
-        selectedTools: (environment) => selectedDeveloperTools(environment, async (bin, _cwd, args, options) => {
-          calls++;
-          expect(bin).toBe('/usr/bin/xcode-select');
-          expect(args).toEqual(['-p']);
-          expect(options).toMatchObject({ timeoutMs: 3_000, env });
-          return { ok: false, out: '', err: 'probe failed', timedOut, missing: false, exitCode: null };
-        }),
-        exists: () => false,
-      });
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const selected = await gitExecutable(env, {
+          platform: 'darwin', resolve: () => '/usr/bin/git',
+          realpath: (path) => path,
+          selectedTools: (environment) => selectedDeveloperTools(environment, async (bin, _cwd, args, options) => {
+            calls++;
+            expect(bin).toBe('/usr/bin/xcode-select');
+            expect(args).toEqual(['-p']);
+            expect(options).toMatchObject({ timeoutMs: 3_000, env });
+            return { ok: false, out: '', err: 'probe failed', timedOut, missing: false, exitCode: null };
+          }),
+          exists: () => false,
+        });
+        expect(selected).toBe(timedOut ? '/usr/bin/git' : undefined);
+      }
       expect(calls).toBe(1);
-      expect(selected).toBe(timedOut ? '/usr/bin/git' : undefined);
+    });
+
+    it(`discovers installed developer tools after explicit invalidation of cached timeout=${timedOut}`, async () => {
+      const env = { DEVELOPER_DIR: `/fixture/install-recovery-${timedOut}` };
+      let installed = false;
+      let calls = 0;
+      const run: Parameters<typeof selectedDeveloperTools>[1] = async () => {
+        calls++;
+        return { ok: installed, out: installed ? '/fixture/installed-tools' : '', err: '', timedOut: !installed && timedOut, missing: false, exitCode: null };
+      };
+      expect(await selectedDeveloperTools(env, run)).toBe(timedOut ? null : undefined);
+      installed = true;
+      expect(await selectedDeveloperTools(env, run)).toBe(timedOut ? null : undefined);
+      expect(calls).toBe(1);
+      resetSelectedDeveloperTools();
+      expect(await selectedDeveloperTools(env, run)).toBe('/fixture/installed-tools');
+      expect(calls).toBe(2);
     });
   }
+
+  it('keeps cached timeout and absent results independent across alternating developer environments', async () => {
+    const timeoutEnv = { DEVELOPER_DIR: '/fixture/independent-timeout' };
+    const absentEnv = { DEVELOPER_DIR: '/fixture/independent-absent' };
+    const calls: string[] = [];
+    const run: Parameters<typeof selectedDeveloperTools>[1] = async (_bin, _cwd, _args, options) => {
+      const developerDir = options.env?.['DEVELOPER_DIR'] ?? '';
+      calls.push(developerDir);
+      return { ok: false, out: '', err: 'probe failed', timedOut: developerDir === timeoutEnv.DEVELOPER_DIR, missing: false, exitCode: null };
+    };
+    for (let attempt = 0; attempt < 3; attempt++) {
+      expect(await selectedDeveloperTools({ ...timeoutEnv }, run)).toBeNull();
+      expect(await selectedDeveloperTools({ ...absentEnv }, run)).toBeUndefined();
+    }
+    expect(calls).toEqual([timeoutEnv.DEVELOPER_DIR, absentEnv.DEVELOPER_DIR]);
+  });
 
   it('fails closed when a Mac executable cannot be canonicalized', async () => {
     expect(await gitExecutable({}, {

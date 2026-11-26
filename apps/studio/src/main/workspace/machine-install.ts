@@ -2,6 +2,7 @@ import { tmpdir } from 'node:os';
 import type { MachineInstallResult } from '@studio/events';
 import { runCli } from '../env/cli.js';
 import { runGit, USER_GIT_CONFIG } from '../env/git.js';
+import { resetSelectedDeveloperTools } from '../env/git-available.js';
 
 export interface InstallToolsDeps {
   /** The tools are usable, not merely requested. */
@@ -44,7 +45,11 @@ export function installToolsDeps(): InstallToolsDeps {
   const run = (bin: string, args: string[]): Promise<boolean> =>
     runCli(bin, tmpdir(), args, { timeoutMs: 8_000 }).then((result) => result.ok, () => false);
   return {
-    present: async () => await run('xcode-select', ['-p']) && await runGit(tmpdir(), ['--version'], { config: USER_GIT_CONFIG, timeoutMs: 8_000 }).then((result) => result.ok, () => false),
+    present: async () => {
+      if (!await run('xcode-select', ['-p'])) return false;
+      resetSelectedDeveloperTools();
+      return await runGit(tmpdir(), ['--version'], { config: USER_GIT_CONFIG, timeoutMs: 8_000 }).then((result) => result.ok, () => false);
+    },
     installerRunning: () => run('pgrep', ['-f', INSTALLER_PROCESS]),
     request: () => run('xcode-select', ['--install']),
     wait: (ms) => new Promise((resolve) => { setTimeout(resolve, ms); }),

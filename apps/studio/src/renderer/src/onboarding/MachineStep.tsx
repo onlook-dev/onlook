@@ -9,7 +9,7 @@ import { t } from '@studio/i18n';
 import { OnboardingAccount, OnboardingDisplayHeading, OnboardingFooter, OnboardingHeading } from './OnboardingParts.js';
 import { OnboardingShell } from './OnboardingShell.js';
 import { machineDetail, machineRows, type MachineRecovery, type MachineRow, type MachineState } from './machine-rows.js';
-import { chooseMachineFolder, closeMachineDetail, copyMachineCommand, installMachineTools, openMachineDetail, openMachineHelp, recheckMachineCheck, useMachineStore } from './machine-store.js';
+import { blankMachineBlocked, chooseMachineFolder, closeMachineDetail, copyMachineCommand, installMachineTools, openMachineDetail, openMachineHelp, recheckMachineCheck, useMachineStore } from './machine-store.js';
 import { useConnectedAgents } from './agents.js';
 
 const CHECK_ICONS = { git: CodeBracketsGlyph, workspace: FolderIcon, port: WindowGlyph, helper: ConsoleIcon } as const;
@@ -34,6 +34,8 @@ const PHASE_WORDS = {
 export interface MachineStepViewProps extends MachineState {
   aside?: React.ReactNode;
   onContinue: () => void;
+  onCreateBlank?: () => void;
+  isCreatingBlank?: boolean;
   onBack?: () => void;
   onInstall: () => void;
   onChoose: () => void;
@@ -127,7 +129,7 @@ function CheckDetail({ state, agents, onCopy, onHelp, onOpenAgent }: {
 }
 
 export function MachineStepView(props: MachineStepViewProps): React.JSX.Element {
-  const { aside, onContinue, onBack, onInstall, onChoose, onFix, onCheckAgain, onCloseDetail, onCopy, onHelp, onOpenAgent, agents = [], ...state } = props;
+  const { aside, onContinue, onCreateBlank, isCreatingBlank = false, onBack, onInstall, onChoose, onFix, onCheckAgain, onCloseDetail, onCopy, onHelp, onOpenAgent, agents = [], ...state } = props;
   const detail = machineDetail(state);
   const blocked = machineHasFailure(state.snapshot.checks);
   const busy = state.action !== undefined;
@@ -150,6 +152,9 @@ export function MachineStepView(props: MachineStepViewProps): React.JSX.Element 
         )}
       </VStack>
       <VStack width="100%" gap={3} align="start" style={{ flexShrink: 0 }}>
+        {blocked && !blankMachineBlocked(state) && onCreateBlank !== undefined ? (
+          <Button label={t(isCreatingBlank ? 'blank.create.busy' : 'onboarding.import.blank')} variant="secondary" size="md" isDisabled={busy || isCreatingBlank} onClick={onCreateBlank} data-testid="onboarding-import-blank" />
+        ) : null}
         {detail !== undefined || state.notice === undefined ? null : <output><Text color="secondary">{t(state.notice)}</Text></output>}
         {detail === undefined ? (
           <OnboardingFooter hasBack={onBack !== undefined} onBack={onBack} isContinueEnabled={!blocked} onContinue={onContinue} />
@@ -166,7 +171,7 @@ export function MachineStepView(props: MachineStepViewProps): React.JSX.Element 
   );
 }
 
-export function MachineStep(props: { aside?: React.ReactNode; onContinue: () => void; onBack?: () => void }): React.JSX.Element {
+export function MachineStep(props: { aside?: React.ReactNode; onContinue: () => void; onCreateBlank?: () => void; isCreatingBlank?: boolean; onBack?: () => void }): React.JSX.Element {
   const state = useMachineStore();
   const detail = machineDetail(state);
   const agents = useConnectedAgents();

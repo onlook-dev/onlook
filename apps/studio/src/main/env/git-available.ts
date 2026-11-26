@@ -24,7 +24,11 @@ const readers: GitAvailabilityReaders = {
   exists: existsSync,
 };
 
-let selection: { key: string; pending: Promise<string | undefined | null> } | undefined;
+const selections = new Map<string, Promise<string | undefined | null>>();
+
+export function resetSelectedDeveloperTools(): void {
+  selections.clear();
+}
 
 function selectionPath(path: string): string {
   try { return realpathSync(path); } catch { return ''; }
@@ -32,13 +36,14 @@ function selectionPath(path: string): string {
 
 export async function selectedDeveloperTools(env: Env, run: typeof runCli = runCli): Promise<string | undefined | null> {
   const key = JSON.stringify([env['DEVELOPER_DIR'], selectionPath('/var/db/xcode_select_link'), selectionPath('/Applications/Xcode.app/Contents/Developer')]);
-  if (selection?.key === key) {
-    const selected = await selection.pending;
-    if (typeof selected === 'string' && existsSync(join(selected, 'usr/bin/git'))) return selected;
+  const cached = selections.get(key);
+  if (cached !== undefined) {
+    const selected = await cached;
+    if (typeof selected !== 'string' || existsSync(join(selected, 'usr/bin/git'))) return selected;
   }
   const pending = run('/usr/bin/xcode-select', homedir(), ['-p'], { timeoutMs: 3_000, env })
     .then((result) => result.timedOut ? null : result.ok ? result.out : undefined);
-  selection = { key, pending };
+  selections.set(key, pending);
   return pending;
 }
 
