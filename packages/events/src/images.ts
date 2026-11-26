@@ -104,12 +104,32 @@ export function sniffStoredImageMediaType(bytes: Uint8Array): StoredImageRef['me
   const raster = sniffMediaType(bytes);
   if (raster !== null) return raster;
   const text = new TextDecoder().decode(bytes).trimStart();
-  const prolog = /(?:<\?xml[\s\S]*?\?>|<!--[\s\S]*?-->|<!DOCTYPE\s+svg(?:[^>"']|"[^"]*"|'[^']*')*>)\s*/y;
   let cursor = 0;
   while (true) {
-    prolog.lastIndex = cursor;
-    if (!prolog.test(text)) break;
-    cursor = prolog.lastIndex;
+    while (/\s/.test(text.charAt(cursor))) cursor += 1;
+    const declaration = text.startsWith('<?xml', cursor);
+    if (declaration || text.startsWith('<!--', cursor)) {
+      const end = text.indexOf(declaration ? '?>' : '-->', cursor + (declaration ? 5 : 4));
+      if (end === -1) return null;
+      cursor = end + (declaration ? 2 : 3);
+      continue;
+    }
+    const doctype = /^<!DOCTYPE\s+svg/.exec(text.slice(cursor));
+    if (doctype === null) break;
+    let quote: string | null = null;
+    let end = cursor + doctype[0].length;
+    for (; end < text.length; end += 1) {
+      const character = text.charAt(end);
+      if (quote !== null) {
+        if (character === quote) quote = null;
+      } else if (character === '"' || character === "'") {
+        quote = character;
+      } else if (character === '>') {
+        break;
+      }
+    }
+    if (end === text.length) return null;
+    cursor = end + 1;
   }
   return /^<(?:[A-Za-z_][\w.-]*:)?svg(?=[\s/>])/.test(text.slice(cursor)) ? 'image/svg+xml' : null;
 }

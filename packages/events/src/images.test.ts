@@ -26,6 +26,11 @@ describe('stored SVG canvas assets', () => {
       `<!--${'-'.repeat(1_000_000)}`,
       `<!DOCTYPE svg "${'>'.repeat(1_000_000)}`,
       `<${'a'.repeat(1_000_000)}:svg-fake/>`,
+      '<?xml'.repeat(100_000),
+      '<!--'.repeat(100_000),
+      '<!DOCTYPE svg'.repeat(100_000),
+      `<!DOCTYPE svg"${'"<!DOCTYPE svg"'.repeat(100_000)}`,
+      `<!DOCTYPE svg'${"'<!DOCTYPE svg'".repeat(100_000)}`,
     ]) {
       expect(sniffStoredImageMediaType(new TextEncoder().encode(text))).toBeNull();
     }
