@@ -3,6 +3,7 @@ export const CLASS_MAX = 64;
 export const FRAMES_MAX = 30;
 export const FILENAME_MAX = 300;
 export const FUNCTION_MAX = 200;
+const STACK_LINE_MAX = 1000;
 
 /** A space stays in the path only when a later separator follows it; stopping at the first space leaked every later segment (ONL-2343). */
 const TAIL = String.raw`(?:[^\s"'()\]]|[ ](?=[^\s"'()\]]*[\\/]))*`;
@@ -101,6 +102,7 @@ export interface ScrubbedFrame {
 export function scrubStack(stack: string, platform: FramePlatform): ScrubbedFrame[] {
   const frames: ScrubbedFrame[] = [];
   for (const line of stack.split('\n')) {
+    if (line.length > STACK_LINE_MAX) continue;
     const match = /^\s*at\s+(?:(.+?)\s+\()?(.+?)(?::(\d+):(\d+))?\)?$/.exec(line);
     // Dropped: an unparseable line cannot be proven path-free.
     if (match === null) continue;
@@ -127,6 +129,7 @@ function isAppFrame(location: string): boolean {
 }
 
 function appFilename(location: string): string {
+  if (location.length > STACK_LINE_MAX) return REDACTED_PATH;
   const match = /(?:[\\/]out[\\/]|app\.asar[\\/])(.+?)(?::\d+:\d+)?$/.exec(location);
   return match?.[1] === undefined ? REDACTED_PATH : appUrl(match[1].replaceAll("\\", "/"));
 }

@@ -104,7 +104,14 @@ export function sniffStoredImageMediaType(bytes: Uint8Array): StoredImageRef['me
   const raster = sniffMediaType(bytes);
   if (raster !== null) return raster;
   const text = new TextDecoder().decode(bytes).trimStart();
-  return /^(?:(?:<\?xml[\s\S]*?\?>|<!--[\s\S]*?-->|<!DOCTYPE\s+svg(?:[^>"']|"[^"]*"|'[^']*')*>)\s*)*<(?:[A-Za-z_][\w.-]*:)?svg(?=[\s/>])/.test(text) ? 'image/svg+xml' : null;
+  const prolog = /(?:<\?xml[\s\S]*?\?>|<!--[\s\S]*?-->|<!DOCTYPE\s+svg(?:[^>"']|"[^"]*"|'[^']*')*>)\s*/y;
+  let cursor = 0;
+  while (true) {
+    prolog.lastIndex = cursor;
+    if (!prolog.test(text)) break;
+    cursor = prolog.lastIndex;
+  }
+  return /^<(?:[A-Za-z_][\w.-]*:)?svg(?=[\s/>])/.test(text.slice(cursor)) ? 'image/svg+xml' : null;
 }
 
 export function classifyCanvasImageBytes(bytes: Uint8Array): { ok: true; mediaType: StoredImageRef['mediaType'] } | { ok: false; reason: ImageRejectReason } {

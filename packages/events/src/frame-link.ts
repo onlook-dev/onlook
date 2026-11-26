@@ -34,7 +34,7 @@ export function frameLinkMarkdown(target: FrameLinkTarget, name: string): string
 }
 
 function escapeLinkText(name: string): string {
-  return name.replace(/([[\]])/g, '\\$1');
+  return name.replace(/([\\[\]])/g, '\\$1');
 }
 
 /** Names a worktree, not a repo: every worktree of a repo shares its identity; `workspaceName` is drawn unique (ONL-2212). */

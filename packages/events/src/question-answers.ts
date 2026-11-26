@@ -1,11 +1,11 @@
 import type { Question, QuestionAnswers } from './events.js';
 
 /** The model writes the mark in the language it is speaking, in half- or full-width brackets. */
-const RECOMMENDED_SUFFIX = /\s*[(（]\s*(?:recommended|おすすめ|オススメ|お勧め|お薦め|推奨)\s*[)）]\s*$/iu;
+const RECOMMENDED_SUFFIX = /[(（]\s*(?:recommended|おすすめ|オススメ|お勧め|お薦め|推奨)\s*[)）]\s*$/iu;
 
 /** The SDK's own tool text asks the model to mark its pick this way; nothing on screen carries the mark. */
 export function withoutRecommended(label: string): string {
-  return label.replace(RECOMMENDED_SUFFIX, '');
+  return label.replace(RECOMMENDED_SUFFIX, '').trimEnd();
 }
 
 export interface AnswerParts {

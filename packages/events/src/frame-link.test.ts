@@ -54,6 +54,15 @@ describe('what is NOT a frame link', () => {
 });
 
 describe('the markdown the agent writes', () => {
+  it('escapes backslashes before brackets and at the end of a frame name', () => {
+    expect(frameLinkMarkdown(target, 'Preview\\[draft]\\')).toBe(
+      `[Preview\\\\\\[draft\\]\\\\](${mintFrameLink(target)})`,
+    );
+    const name = '\\[]'.repeat(100_000);
+    const started = performance.now();
+    expect(frameLinkMarkdown(target, name)).toBe(`[${'\\\\\\[\\]'.repeat(100_000)}](${mintFrameLink(target)})`);
+    expect(performance.now() - started).toBeLessThan(1000);
+  });
   it('renders the frame’s NAME as the link text', () => {
     expect(frameLinkMarkdown(target, 'Storefront')).toBe(
       `[Storefront](${mintFrameLink(target)})`,
@@ -105,4 +114,3 @@ describe('a tab link names a WORKTREE, not a repo (ONL-2212)', () => {
     expect(parseTabLink('onlook://project/%E0%A4%A/workspace/one')).toBeNull();
   });
 });
-

@@ -9,6 +9,30 @@ beforeEach(() => { root = makeStateRoot({ name: 'artifact-import' }); });
 afterAll(cleanupTempFixtures);
 
 describe('import copies only local image/font dependencies without editing the source', () => {
+  it('decodes reference entities once instead of turning escaped entity text into paths', () => {
+    mkdirSync(join(root, 'styles'));
+    writeFileSync(join(root, 'styles', 'theme.css'), 'body{color:blue}');
+    for (const reference of ['styles&#38;sol;theme.css', 'styles&#x26;sol;theme.css', 'styles&amp;sol;theme.css']) {
+      writeFileSync(join(root, 'index.html'), `<link rel="stylesheet" href="${reference}">`);
+      expect(importArtifactFromProject(root, 'index.html', () => null).ok).toBe(false);
+    }
+    for (const reference of ['styles&sol;theme.css', 'styles&#47;theme.css', 'styles&#x2f;theme.css']) {
+      writeFileSync(join(root, 'index.html'), `<link rel="stylesheet" href="${reference}">`);
+      expect(importArtifactFromProject(root, 'index.html', () => null).ok).toBe(true);
+    }
+  });
+  it('handles long reference entities and near matches quickly', () => {
+    mkdirSync(join(root, 'styles'));
+    writeFileSync(join(root, 'styles', 'theme.css'), 'body{color:blue}');
+    const started = performance.now();
+    writeFileSync(join(root, 'index.html'), `<link rel="stylesheet" href="styles&#${'0'.repeat(100_000)}47;theme.css">`);
+    expect(importArtifactFromProject(root, 'index.html', () => null).ok).toBe(true);
+    for (const reference of [`styles&#x${'f'.repeat(100_000)}g;theme.css`, `styles${'&'.repeat(100_000)}theme.css`]) {
+      writeFileSync(join(root, 'index.html'), `<link rel="stylesheet" href="${reference}">`);
+      expect(importArtifactFromProject(root, 'index.html', () => null).ok).toBe(false);
+    }
+    expect(performance.now() - started).toBeLessThan(1000);
+  });
   it('owns srcset candidates and imported stylesheets as well as direct dependencies', () => {
     const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jVxkAAAAASUVORK5CYII=', 'base64');
     writeFileSync(join(root, 'index.html'), '<img srcset="small.png 1x, large.png 2x"><style>@import "theme.css";</style>');

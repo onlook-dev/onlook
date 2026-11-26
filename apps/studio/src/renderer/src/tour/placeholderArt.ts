@@ -150,6 +150,7 @@ const SCENES: Record<string, (A: number) => (u: number, v: number) => number> = 
 };
 
 function slab(cv: Cv, scene: string): void {
+  if (!Object.hasOwn(SCENES, scene)) throw new Error('Unknown slab scene');
   const { c, W, H, S } = setup(cv);
   const w = cv.width;
   const h = cv.height;
