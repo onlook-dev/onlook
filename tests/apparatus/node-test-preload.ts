@@ -1,4 +1,4 @@
-import './node-ts-resolve.ts';
+import './node-live-preload.ts';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';

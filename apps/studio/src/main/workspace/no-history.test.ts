@@ -1,11 +1,11 @@
 import { afterAll, afterEach, describe, expect, it } from 'bun:test';
-import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cleanupTempFixtures, makeWorkspaceRoot, restoreWorkspaceRoot } from '@studio/fixtures';
 import type { WorkspaceCreated } from '@studio/events';
 import { resetUserEnvForTests } from '../env/shell-env.js';
 import { STATIC_ADAPTER, STATIC_FILES } from '../starter/adapters/static.js';
-import { removeStarterServerFile } from '../starter/retire.js';
+import { restoreRetiredStarterServerFile } from '../starter/retire.js';
 import { STARTER_SERVER_FILE } from '../starter/scaffold.js';
 import { measure } from '../git-status/measure.js';
 import { resetCanvasRegistryCache } from '../canvas/registry.js';
@@ -88,13 +88,19 @@ describe('blank projects without Git', () => {
     expect(status.fetched).toBeUndefined();
   });
 
-  it('retires the starter without a commit and preserves the design files', async () => {
+  it('preserves starter and design files without calling Git for a project without history', async () => {
     const { deps } = setup();
     const result = await createBlankProject({ entryPoint: 'projects' }, deps);
     if (!result.ok) throw new Error('blank creation failed');
     const cwd = result.workspace.workspacePath;
     writeFileSync(join(cwd, STARTER_SERVER_FILE), 'starter');
-    await removeStarterServerFile(cwd);
+    let calls = 0;
+    const run = async () => { calls++; throw new Error('must not run Git'); };
+    await restoreRetiredStarterServerFile(cwd, { run });
+    expect(readFileSync(join(cwd, STARTER_SERVER_FILE), 'utf8')).toBe('starter');
+    rmSync(join(cwd, STARTER_SERVER_FILE));
+    await restoreRetiredStarterServerFile(cwd, { run });
+    expect(calls).toBe(0);
     expect(existsSync(join(cwd, STARTER_SERVER_FILE))).toBe(false);
     expect(readFileSync(join(cwd, 'index.html'), 'utf8')).toBe(STATIC_FILES['index.html']);
   });

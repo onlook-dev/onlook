@@ -1,0 +1,28 @@
+import { createServer } from 'vite';
+const PORT = Number(process.env.PORT);
+if (!Number.isInteger(PORT) || PORT <= 0) {
+  console.error('PORT must be set to the port to listen on');
+  process.exit(2);
+}
+const server = await createServer({ server: { port: PORT, strictPort: true, host: '127.0.0.1' }, logLevel: 'silent' });
+await server.listen();
+console.log('starter ready http://127.0.0.1:' + PORT);
+const parentPort =
+  process.parentPort ??
+  (typeof process.send === 'function'
+    ? { on: (_event, listener) => process.on('message', (data) => listener({ data })) }
+    : undefined);
+if (parentPort) {
+  let deadline;
+  const arm = (windowMs) => {
+    clearTimeout(deadline);
+    deadline = setTimeout(() => process.exit(3), windowMs);
+  };
+  arm(15000);
+  parentPort.on('message', (event) => {
+    const message = event.data;
+    if (message && message.type === 'heartbeat' && Number.isFinite(message.windowMs)) {
+      arm(message.windowMs);
+    }
+  });
+}

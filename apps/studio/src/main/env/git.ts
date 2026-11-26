@@ -19,7 +19,7 @@ export async function runGit(cwd: string, args: readonly string[], options: RunG
   runCli: typeof runCli;
 } = { gitExecutable, userEnv, runCli }): Promise<GitResult> {
   const { config, ...rest } = options;
-  const executable = await dependencies.gitExecutable(await dependencies.userEnv());
+  const executable = await dependencies.gitExecutable(await dependencies.userEnv(), undefined, cwd);
   if (executable === undefined) {
     return { ok: false, out: '', err: 'Git is unavailable without developer tools.', timedOut: false, missing: true, exitCode: null };
   }

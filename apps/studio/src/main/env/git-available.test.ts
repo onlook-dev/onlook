@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { gitAvailable, gitExecutable } from './git-available.js';
+import { gitAvailable, gitExecutable, selectedDeveloperTools } from './git-available.js';
 
 describe('Git availability without executing Git', () => {
   it.each(['win32', 'darwin', 'linux'] as const)('recognizes missing Git on %s without a tool prompt', async (platform) => {
@@ -56,6 +56,34 @@ describe('Git availability without executing Git', () => {
       selectedTools: async () => { throw new Error('must not ask for tools'); },
       exists: () => false,
     })).toBe('/trusted/bin/git');
+  });
+
+  it.each(['/usr/bin/git', '/bin/git', '/trusted/bin/git'])('keeps PATH Git %s when developer-tools discovery times out', async (executable) => {
+    expect(await gitExecutable({ PATH: '/trusted/bin:/usr/bin' }, {
+      platform: 'darwin', resolve: () => executable,
+      realpath: () => '/usr/bin/git',
+      selectedTools: async () => null,
+      exists: () => false,
+    })).toBe(executable);
+  });
+
+  it.each([true, false])('maps the actual developer-tools probe timeout=%s to the PATH fallback only on timeout', async (timedOut) => {
+    let calls = 0;
+    const env = { PATH: '/usr/bin', DEVELOPER_DIR: `/fixture/probe-${timedOut}` };
+    const selected = await gitExecutable(env, {
+      platform: 'darwin', resolve: () => '/usr/bin/git',
+      realpath: (path) => path,
+      selectedTools: (environment) => selectedDeveloperTools(environment, async (bin, _cwd, args, options) => {
+        calls++;
+        expect(bin).toBe('/usr/bin/xcode-select');
+        expect(args).toEqual(['-p']);
+        expect(options).toMatchObject({ timeoutMs: 3_000, env });
+        return { ok: false, out: '', err: 'probe failed', timedOut, missing: false, exitCode: null };
+      }),
+      exists: () => false,
+    });
+    expect(calls).toBe(1);
+    expect(selected).toBe(timedOut ? '/usr/bin/git' : undefined);
   });
 
   it('fails closed when a Mac executable cannot be canonicalized', async () => {

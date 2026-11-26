@@ -24,6 +24,16 @@ export function reportProjectRunIntent(
   bridge: Pick<StudioBridge, 'serverIntent'> = studio(),
 ): void {
   const intent = projectRunIntent(isEngaged, hasSavedSetup, entries, frameUrls);
+  reportRunIntent(intent, hasSavedSetup, entries, frameUrls, bridge);
+}
+
+export function reportRunIntent(
+  intent: RunIntent,
+  hasSavedSetup: boolean,
+  entries: readonly ServerEntryState[],
+  frameUrls: readonly string[],
+  bridge: Pick<StudioBridge, 'serverIntent'> = studio(),
+): void {
   const starterIds = !hasSavedSetup && intent.press === 'start' && intent.entryIds === undefined
     ? promptedEntries(entries, frameUrls).filter((entry) => entry.ownership === 'studio-started').map((entry) => entry.entryId)
     : [];

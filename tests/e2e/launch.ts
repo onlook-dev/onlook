@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -14,6 +14,38 @@ export const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const { appDir, mainEntry: BUILD_MAIN } = studioPaths(repoRoot);
 
 export type Target = 'build' | 'packaged';
+
+export function probeStarterExit(application: ElectronApplication, scratch: string, termination: 'exit' | 'external-kill' = 'exit') {
+  const modulePath = join(scratch, 'child.cjs');
+  writeFileSync(modulePath, `
+    process.parentPort.on('message', () => process.exit(3));
+    process.parentPort.postMessage({ parentPid: process.ppid });
+  `);
+  return application.evaluate(async ({ app, utilityProcess }, input) => {
+    const serviceName = 'studio-starter:exit-contract';
+    const child = utilityProcess.fork(input.modulePath, [], { serviceName });
+    let sameParent = false;
+    return new Promise<{ name: string | undefined; sameParent: boolean; exitCode: number; reason: string }>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        app.off('child-process-gone', gone);
+        child.kill();
+        reject(new Error('No starter child-process-gone event within 10 seconds'));
+      }, 10_000);
+      const gone = (_event: Electron.Event, details: Electron.Details): void => {
+        if (details.name !== serviceName && details.serviceName !== serviceName) return;
+        clearTimeout(timeout);
+        app.off('child-process-gone', gone);
+        resolve({ name: details.name, sameParent, exitCode: details.exitCode, reason: details.reason });
+      };
+      app.on('child-process-gone', gone);
+      child.once('message', (message: { parentPid: number }) => {
+        sameParent = message.parentPid === process.pid;
+        if (input.termination === 'external-kill') process.kill(child.pid!, 'SIGKILL');
+        else child.postMessage({ exit: true });
+      });
+    });
+  }, { modulePath, termination });
+}
 
 export async function checkPlaceholderPixels(app: ElectronApplication, page: Page, width: number) {
   const placeholder = page.locator('.chat-composer-shimmer .astryx-chat-composer-input > div[aria-hidden="true"]').first();

@@ -279,6 +279,33 @@ describe.skipIf(process.platform === 'win32')('runGit', () => {
     expect(readFileSync(record, 'utf8').trim().split('\n')).toEqual(['--version']);
   });
 
+  it.each(['direct', 'symlink'])('skips a project-local Git from the user PATH through a %s entry', async (entry) => {
+    const directory = realpathSync(mkdtempSync(join(tmpdir(), 'studio-project-git-')));
+    try {
+      const checkout = join(directory, 'project');
+      const local = join(checkout, 'bin');
+      const trusted = join(directory, 'trusted');
+      const alias = join(directory, 'alias');
+      mkdirSync(local, { recursive: true });
+      mkdirSync(trusted);
+      writeFileSync(join(local, 'git'), '#!/bin/sh\nprintf project\n');
+      writeFileSync(join(trusted, 'git'), '#!/bin/sh\nprintf trusted\n');
+      chmodSync(join(local, 'git'), 0o755);
+      chmodSync(join(trusted, 'git'), 0o755);
+      symlinkSync(join(local, 'git'), alias);
+      const first = entry === 'direct' ? local : directory;
+      if (entry === 'symlink') symlinkSync(alias, join(directory, 'git'));
+      const environment = { PATH: [first, trusted].join(delimiter) };
+      const result = await runGit(checkout, ['--version'], { config: USER_GIT_CONFIG, timeoutMs: 5_000 }, {
+        gitExecutable, userEnv: async () => environment, runCli,
+      });
+      expect(result).toMatchObject({ ok: true, out: 'trusted' });
+      expect(await gitExecutable({ PATH: first }, undefined, checkout)).toBeUndefined();
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
   it('uses the same user Git from different projects despite project tool overrides', async () => {
     const other = join(root, 'other');
     const localBin = join(project, 'bin');

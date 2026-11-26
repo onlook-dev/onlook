@@ -77,11 +77,12 @@ interface Rig {
   clipboard: string;
   written: string[];
   terminalOpens: number;
+  terminalFailures: number;
   switched: number;
 }
 
-function rig(harness: HarnessId, clipboard = '', options: { canSwitch?: boolean } = {}): Rig {
-  const h: Rig = { controller: undefined as unknown as SetupDialogController, closed: 0, clipboard, written: [], terminalOpens: 0, switched: 0 };
+function rig(harness: HarnessId, clipboard = '', options: { canSwitch?: boolean; terminalFails?: boolean } = {}): Rig {
+  const h: Rig = { controller: undefined as unknown as SetupDialogController, closed: 0, clipboard, written: [], terminalOpens: 0, terminalFailures: 0, switched: 0 };
   h.controller = new SetupDialogController({
     harness,
     entryPoint: 'onboarding',
@@ -92,8 +93,10 @@ function rig(harness: HarnessId, clipboard = '', options: { canSwitch?: boolean 
     },
     openTerminal: () => {
       h.terminalOpens += 1;
+      if (options.terminalFails) return Promise.reject(new Error('launcher unavailable'));
       return Promise.resolve();
     },
+    terminalFailed: () => { h.terminalFailures += 1; },
     onClose: () => {
       h.closed += 1;
     },
@@ -339,6 +342,14 @@ describe('the controller', () => {
     await h.controller.act('open-terminal', state('claude'));
     expect(h.written).toEqual([CLAUDE_LOGIN_COMMAND]);
     expect(h.terminalOpens).toBe(1);
+    expect(bridge.calls).toEqual([]);
+  });
+
+  it.each(['claude', 'codex'] as const)('a failed terminal action reports a visible remedy for %s', async (harness) => {
+    const h = rig(harness, '', { terminalFails: true });
+    await h.controller.act('open-terminal', { harness, state: 'fallback', command: 'agent login' });
+    expect(h.terminalFailures).toBe(1);
+    expect(h.closed).toBe(0);
     expect(bridge.calls).toEqual([]);
   });
 

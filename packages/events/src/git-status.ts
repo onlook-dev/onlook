@@ -4,6 +4,9 @@ export type GitRepoAccess = 'unknown' | 'granted' | 'denied';
 export type GitPrState = 'OPEN' | 'CLOSED' | 'MERGED';
 export type GitChecksRollup = 'failing' | 'pending' | 'passing' | 'none';
 
+export const GIT_PR_FAILURES = ['no-changes', 'push-refused', 'org-approval', 'sign-in', 'unknown'] as const;
+export type GitPrFailure = (typeof GIT_PR_FAILURES)[number];
+
 export interface GitMeasuredPullRequest {
   number: number;
   url: string;

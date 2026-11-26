@@ -1,6 +1,7 @@
 import { Button } from '@astryxdesign/core/Button';
 import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
 import { HStack, Layout, LayoutContent, LayoutFooter, VStack } from '@astryxdesign/core/Layout';
+import { Text } from '@astryxdesign/core/Text';
 import { GlyphSlot } from '@studio/chat-ui';
 import type { ClaudeBrowser } from '@studio/events';
 import { ClaudeSignInButton, signInLabel } from './ClaudeSignInButton.js';
@@ -24,6 +25,7 @@ export interface SetupDialogProps {
   disabledActions?: readonly SetupAction[];
   /** A detection in flight behind the drawn state: every footer action but Cancel is disabled until it lands. */
   isBusy?: boolean;
+  actionError?: string;
   /** False on a host that cannot open the other agent's setup: its card is never drawn there (ONL-2496, ONL-2903). */
   offersOtherAgent?: boolean;
   /** Showroom only: the content without the modal. */
@@ -50,6 +52,7 @@ export function SetupDialog({
   purpose = 'info',
   disabledActions,
   isBusy = false,
+  actionError,
   offersOtherAgent = true,
   isInline = false,
   testId,
@@ -86,6 +89,7 @@ export function SetupDialog({
           <LayoutContent>
             <VStack gap={4} width="100%">
               <SignInCard state={state} host="dialog" strings={strings} glyphs={glyphs} onAction={onAction} {...(onCodeChange === undefined ? {} : { onCodeChange })} />
+              {actionError ? <Text type="supporting" color="primary" role="alert" data-testid="setup-action-error">{actionError}</Text> : null}
               {other ? (
                 <OtherAgentChoice offer={other} strings={strings} glyphs={glyphs} isDisabled={isDisabled('use-other-agent')} onChoose={() => onAction?.('use-other-agent')} />
               ) : null}

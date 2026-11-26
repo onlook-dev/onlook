@@ -17,6 +17,14 @@ import {
 } from '../icons/glyphs.js';
 import { t } from '@studio/i18n';
 
+export const GIT_PR_FAILURE_STRINGS = {
+  'no-changes': { label: t('gitStatus.failure.no-changes'), nextStep: t('gitStatus.failure.no-changes.nextStep') },
+  'push-refused': { label: t('gitStatus.failure.push-refused'), nextStep: t('gitStatus.failure.push-refused.nextStep') },
+  'org-approval': { label: t('gitStatus.failure.org-approval'), nextStep: t('gitStatus.failure.org-approval.nextStep') },
+  'sign-in': { label: t('gitStatus.failure.sign-in'), nextStep: t('gitStatus.failure.sign-in.nextStep') },
+  unknown: { label: t('gitStatus.failure.unknown'), nextStep: t('gitStatus.failure.unknown.nextStep') },
+};
+
 export const GIT_STATUS_STRINGS: GitStatusStrings = {
   pillLabel: {
     'no-git': t('gitStatus.label.no-git'),

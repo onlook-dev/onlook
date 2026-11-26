@@ -13,7 +13,7 @@ import {
   RailRightClosedIcon,
   RailRightOpenIcon,
 } from '../icons/glyphs.js';
-import { GIT_PILL_GLYPHS, GIT_STATUS_STRINGS, leadingFor } from '../git-status/presentation.js';
+import { GIT_PILL_GLYPHS, GIT_PR_FAILURE_STRINGS, GIT_STATUS_STRINGS, leadingFor } from '../git-status/presentation.js';
 import { drawsPill, isPressable, tooltipFor } from '../git-status/press.js';
 import { t } from '@studio/i18n';
 import { REGION } from '../layout.js';
@@ -242,6 +242,7 @@ function ProjectedGitPill({
       <GitStatusPill
         state={state}
         strings={GIT_STATUS_STRINGS}
+        failure={git.failure === undefined ? undefined : GIT_PR_FAILURE_STRINGS[git.failure]}
         glyphs={glyphs}
         tooltip={tooltip}
         onTooltipOpenChange={hover.onOpenChange}

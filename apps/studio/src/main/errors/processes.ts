@@ -22,7 +22,7 @@ export function installProcessCrashHooks(target = electron.app): void {
   target.on('child-process-gone', (_event, details) => {
     const reason = goneReason(details.reason);
     if (reason === undefined) return;
-    const starter = details.serviceName?.startsWith(STARTER_SERVICE_PREFIX) === true;
+    const starter = details.name?.startsWith(STARTER_SERVICE_PREFIX) === true;
     if (starter && reason === 'killed') return;
     const processClass: ProcessClass = details.type === 'GPU' ? 'gpu' : starter ? 'dev_server' : details.type === 'Utility' ? 'utility' : 'other';
     void recordProcessExit({ process_class: processClass, reason, exit_code: details.exitCode });

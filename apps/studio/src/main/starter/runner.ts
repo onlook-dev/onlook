@@ -128,7 +128,7 @@ export function createStarterRunner(deps: StarterRunnerDeps): StarterRunner {
         catch { logger.warn('starter analytics callback failed'); }
       };
       measure({ project_source: 'template', expected_port: port, port_occupied: null }, true);
-      const env = { ...(await deps.env()), PORT: String(port) };
+      const env = { ...(await deps.env()), PORT: String(port), STARTER_PARENT_PID: String(process.pid) };
       const spawnedAt = Date.now();
       const child = deps.fork(modulePathFor(key), {
         cwd: key,
