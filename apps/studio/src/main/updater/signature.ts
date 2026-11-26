@@ -24,12 +24,13 @@ export function createWindowsSignatureVerifier(
 ): VerifyUpdateCodeSignature {
   return async (publisherNames, updateFile) => {
     const powershell = (command: string, timeout: number) => run(
-      systemExecutable('WindowsPowerShell/v1.0/powershell.exe'),
-      ['-NoProfile', '-NonInteractive', '-InputFormat', 'None', '-Command', command],
+      systemExecutable('cmd.exe'),
+      ['/d', '/s', '/c', `chcp 65001 >NUL & "${systemExecutable('WindowsPowerShell/v1.0/powershell.exe')}" -NoProfile -NonInteractive -InputFormat None -Command "${command}"`],
       {
         encoding: 'utf8',
         timeout,
         shell: false,
+        windowsVerbatimArguments: true,
         env: { ...process.env, PSModulePath: '', ONLOOK_UPDATE_FILE: updateFile },
       },
     );

@@ -89,23 +89,25 @@ describe('Windows update signature integration', { skip: process.platform !== 'w
     );
   });
 
-  it('runs the product command in ConstrainedLanguage without stderr', async () => {
+  it('runs both apostrophe paths in ConstrainedLanguage without stderr from a non-UTF-8 code page', async () => {
     let calls = 0;
     const verify = createWindowsSignatureVerifier(async (executable, args, options) => {
       calls++;
-      const commandIndex = args.indexOf('-Command') + 1;
-      assert.ok(commandIndex > 0);
-      assert.equal(commandIndex, args.length - 1);
-      const constrainedArgs = [...args];
-      constrainedArgs[commandIndex] = "$ExecutionContext.SessionState.LanguageMode = 'ConstrainedLanguage'; "
-        + "if ($ExecutionContext.SessionState.LanguageMode -ne 'ConstrainedLanguage') { throw 'Expected ConstrainedLanguage' }; "
-        + args[commandIndex];
+      const launch = args.at(-1)!;
+      assert.ok(launch.includes('-Command "'));
+      const constrainedLaunch = launch.replace('-Command "', '-Command "'
+        + "$ExecutionContext.SessionState.LanguageMode = 'ConstrainedLanguage'; "
+        + "if ($ExecutionContext.SessionState.LanguageMode -ne 'ConstrainedLanguage') { throw 'Expected ConstrainedLanguage' }; ");
+      const constrainedArgs = [...args.slice(0, -1), `chcp 437 >NUL & ${constrainedLaunch}`];
       const result = await run(executable, constrainedArgs, options);
       assert.equal(result.stderr, '', 'the unchanged product command must not write errors in ConstrainedLanguage');
+      const signature = JSON.parse(result.stdout.trim()) as { Path: string; SignerCertificate: { Subject: string } };
+      assert.equal(signature.Path, options.env?.['ONLOOK_UPDATE_FILE']);
+      assert.equal(signature.SignerCertificate.Subject, publisher);
       return result;
     });
-    assert.equal(await verify([publisher], signedFiles[0]!), null);
-    assert.equal(calls, 1);
+    for (const file of signedFiles) assert.equal(await verify([publisher], file), null);
+    assert.equal(calls, 2);
   });
 
   it('clears the inherited module path before startup like the upstream cmd command', async context => {
@@ -139,7 +141,8 @@ describe('Windows update signature integration', { skip: process.platform !== 'w
     const verify = createWindowsSignatureVerifier(async (executable, args, options) => {
       calls++;
       assert.equal(options.env?.['PSModulePath'], '');
-      const startup = await run(executable, [...powershellArgs, modulePathCommand], options);
+      const startupArgs = [...args.slice(0, -1), args.at(-1)!.replace(/-Command ".*"$/, `-Command "${modulePathCommand}"`)];
+      const startup = await run(executable, startupArgs, options);
       assert.equal(startup.stderr, '');
       const startupPaths = modulePaths(startup.stdout);
       assert.ok(!startupPaths.includes(normalizedMarker), 'the custom module path must not reach PowerShell');

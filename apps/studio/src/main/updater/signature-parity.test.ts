@@ -44,7 +44,7 @@ async function outcomes(scenario: Scenario) {
     },
   });
   const custom = createWindowsSignatureVerifier(async (_executable, args, options) => {
-    if (args.at(-1) === 'ConvertTo-Json test') {
+    if (args.at(-1)?.endsWith('ConvertTo-Json test"')) {
       expect(options.timeout).toBe(10_000);
       expect(options.shell).toBe(false);
       customFallbacks++;

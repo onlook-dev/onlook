@@ -14,14 +14,16 @@ describe('Windows update signatures', () => {
       let calls = 0;
       const verify = createWindowsSignatureVerifier(async (executable, args, options) => {
         calls++;
-        expect(executable.replaceAll('\\', '/')).toEndWith('/System32/WindowsPowerShell/v1.0/powershell.exe');
+        expect(executable.replaceAll('\\', '/')).toEndWith('/System32/cmd.exe');
         expect(options.shell).toBe(false);
         expect(options.timeout).toBe(20_000);
         expect(options.encoding).toBe('utf8');
+        expect(options.windowsVerbatimArguments).toBe(true);
         expect(options.env?.['PSModulePath']).toBe('');
         expect(options.env?.['ONLOOK_UPDATE_FILE']).toBe(path);
         expect(args.join(' ')).not.toContain(path);
         expect(args.at(-1)).toContain('-LiteralPath $env:ONLOOK_UPDATE_FILE');
+        expect(args.at(-1)).toStartWith('chcp 65001 >NUL & ');
         return { stdout: JSON.stringify(validSignature(path)), stderr: '' };
       });
       expect(await verify([publisher], path)).toBeNull();
@@ -64,7 +66,7 @@ describe('Windows update signatures', () => {
 
   it('rejects command errors, stderr and malformed responses', async () => {
     const failed = createWindowsSignatureVerifier(async (_executable, args) => {
-      if (args.at(-1) !== 'ConvertTo-Json test') throw new Error('PowerShell failed');
+      if (!args.at(-1)?.endsWith('ConvertTo-Json test"')) throw new Error('PowerShell failed');
       return { stdout: '"test"', stderr: '' };
     });
     await expect(failed([publisher], path)).rejects.toThrow('PowerShell failed');
