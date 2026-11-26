@@ -58,6 +58,7 @@ export interface SetupDialogDeps {
   readClipboardText: () => Promise<string>;
   writeClipboardText: (text: string) => void;
   openTerminal: () => Promise<void>;
+  terminalFailed: () => void;
   /** Defaults to `window.open`, which main hands to the browser. */
   openLink?: (url: string) => void;
   /** Read at call time: which account page fits depends on the plan the last check named. */
@@ -125,7 +126,12 @@ export class SetupDialogController {
       case 'check-again':
         return isClaude ? actions.checkClaude(this.deps.entryPoint) : actions.checkCodex();
       case 'open-terminal':
-        return this.deps.openTerminal();
+        try {
+          await this.deps.openTerminal();
+        } catch {
+          this.deps.terminalFailed();
+        }
+        return;
       case 'copy':
         if (state.state === 'fallback') this.deps.writeClipboardText(state.command);
         return;

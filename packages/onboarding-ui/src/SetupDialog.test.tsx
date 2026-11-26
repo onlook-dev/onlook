@@ -7,6 +7,12 @@ import { CLAUDE_SETUP_STATES } from './state.js';
 import { detailFromTheBag, TEST_CARD_GLYPHS as GLYPHS, noop } from './testing.js';
 
 describe('SetupDialog', () => {
+  test('an action failure is readable inside the dialog without hiding its retry', () => {
+    const html = renderToStaticMarkup(<SetupDialog state={CLAUDE_SETUP_FIXTURES.fallback} isOpen isInline onOpenChange={noop} actionError="Open a terminal app to finish signing in." strings={STUB_STRINGS} glyphs={GLYPHS} />);
+    expect(html).toContain('role="alert"');
+    expect(html).toContain('Open a terminal app to finish signing in.');
+    expect(html).toContain('setup-action-open-terminal');
+  });
   test('runtime replacement advice closes the sheet instead of offering a dead retry', () => {
     const html = renderToStaticMarkup(<SetupDialog state={{ harness: 'claude', state: 'cannot-connect', detail: '', runtimeUnavailable: true }} isOpen isInline onOpenChange={noop} strings={STUB_STRINGS} glyphs={GLYPHS} />);
     expect(html).toContain('setup-action-done');

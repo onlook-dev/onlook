@@ -4,7 +4,7 @@ import { AccountMenu, type AccountVariant } from '../../cloud/AccountMenu.js';
 import { DiscoverCard } from '../../projects/DiscoverCard.jsx';
 import { RailHelp } from '../../rail/RailHelp.js';
 import { t } from '@studio/i18n';
-import { noop, type Gallery, type Story } from './Showroom.js';
+import { isTargeted, noop, type Gallery, type Story } from './Showroom.js';
 
 interface Still {
   id: string;
@@ -34,11 +34,6 @@ const RAIL = {
   width: 48, paddingBlockEnd: 12, gap: 8, boxSizing: 'border-box',
   background: 'var(--color-background-surface)', borderInlineEnd: '0.5px solid var(--color-border)',
 } as const;
-
-/** One `popover="auto"` evicts another, so a staged menu opens only when the target names its category. */
-function isTargeted(id: string): boolean {
-  return window.location.hash.split(/[/:]/).pop() === id;
-}
 
 function MenuStill({ still }: { still: Still }): React.JSX.Element {
   const root = useRef<HTMLDivElement>(null);

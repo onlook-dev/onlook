@@ -171,6 +171,7 @@
   "onboarding.setup.action.openPageAgain": "Open the page again",
   "onboarding.setup.action.done": "Done",
   "onboarding.setup.action.openTerminal": "Open Terminal",
+  "onboarding.setup.terminalOpenFailed": "Couldn't open Terminal. Open your terminal app, paste the sign-in command, and press Enter.",
   "onboarding.setup.action.paste": "Paste",
   "onboarding.setup.action.copy": "Copy",
   "onboarding.chat.signIn.claude": "Please sign in to Claude to continue designing in Onlook",

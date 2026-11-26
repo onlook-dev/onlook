@@ -20,6 +20,7 @@ import { ConnectStep, ConnectStepView, type ConnectFacts } from '../../agent-set
 import { CARD_GLYPHS, TILE_GLYPHS } from '../../agent-setup/glyphs.js';
 import { chatGptSetupState, claudeSetupState } from '../../agents/mapping.js';
 import { agentSetupStrings } from '../../agent-setup/strings.js';
+import { useTerminalFailureToast } from '../../agent-setup/SetupDialogHost.js';
 import type { ClaudeTurnFacts, ClaudeVerificationDetail } from '@studio/events';
 import { seedAgentSetupForShowroom } from '../../agent-setup/store.js';
 import { onboardingUiStrings } from '../../onboarding/uiStrings.js';
@@ -31,9 +32,32 @@ import { LoginAside } from '../../login/LoginAside.js';
 import { t } from '@studio/i18n';
 import { CHAT_FIXTURE_STRINGS } from '../ChatFixture.js';
 import { Panel } from './chat.js';
-import { Focused, noop, type Category, type Gallery, type Story } from './Showroom.js';
+import { Focused, isTargeted, noop, type Category, type Gallery, type Story } from './Showroom.js';
 
 const STRINGS = onboardingUiStrings();
+
+function TerminalFailureStill({ harness }: { harness: HarnessId }): React.JSX.Element {
+  const targeted = isTargeted(`terminal-failure-${harness}`);
+  const state: SetupState = { harness, state: 'fallback', command: harness === 'claude' ? CLAUDE_LOGIN_COMMAND : 'codex login' };
+  return <SetupDialog state={state} isOpen isInline={!targeted} actionError={t('onboarding.setup.terminalOpenFailed')} onOpenChange={noop} onAction={noop} strings={STRINGS} glyphs={CARD_GLYPHS} />;
+}
+
+function TerminalChatFailureStill(): React.JSX.Element {
+  const terminalFailed = useTerminalFailureToast();
+  const targeted = isTargeted('terminal-failure-chat');
+  useLayoutEffect(() => { if (targeted) terminalFailed(); }, [targeted, terminalFailed]);
+  return <div style={{ width: 380 }}><SignInCard state={{ harness: 'claude', state: 'fallback', command: CLAUDE_LOGIN_COMMAND }} host="chat" strings={STRINGS} glyphs={CARD_GLYPHS} onAction={noop} /></div>;
+}
+
+const terminalFailure: Category = {
+  id: 'terminal-failure',
+  title: 'Terminal launch recovery',
+  stories: [...(['claude', 'codex'] as const).map(harness => ({
+    id: `terminal-failure-${harness}`,
+    title: `${harness} · terminal unavailable`,
+    render: () => <TerminalFailureStill harness={harness} />,
+  })), { id: 'terminal-failure-chat', title: 'Project Chat · terminal unavailable', render: () => <TerminalChatFailureStill /> }],
+};
 
 const BROWSERS = [{ id: 'default', name: 'Safari', isDefault: true }, { id: 'chrome', name: 'Google Chrome', isDefault: false }];
 
@@ -45,7 +69,7 @@ function BrowserSignInStill({ host, mode }: { host: 'chat' | 'dialog'; mode: str
   useLayoutEffect(() => {
     const actionId = host === 'chat' ? 'sign-in-action-sign-in' : 'setup-action-sign-in';
     const trigger = root.current?.querySelector<HTMLButtonElement>(`[data-testid="${actionId}"] button[aria-haspopup="menu"]`);
-    const targeted = window.location.hash.split(/[/:]/).pop() === `claude-browser-${host}-${mode}`;
+    const targeted = isTargeted(`claude-browser-${host}-${mode}`);
     if (mode === 'focus' && targeted) trigger?.focus({ preventScroll: true });
     if (mode === 'open' && targeted) trigger?.click();
   }, [host, mode]);
@@ -461,5 +485,5 @@ export const ONBOARDING_UI_GALLERY: Gallery = {
   id: 'onboarding-ui',
   title: 'Onboarding',
   subtitle: 'packages/onboarding-ui on the board’s fixtures; strings through the catalog',
-  categories: [firstRun, rows, tiles, connect, dialogs, chat, browsers, failedChecks, failedCheckAliases, chatGptStartup],
+  categories: [firstRun, rows, tiles, connect, dialogs, chat, browsers, failedChecks, failedCheckAliases, chatGptStartup, terminalFailure],
 };
