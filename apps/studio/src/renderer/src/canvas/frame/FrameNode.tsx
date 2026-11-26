@@ -154,21 +154,8 @@ export function FrameNode({
   const isChromeCompactNow = useFlowStore((state) =>
     isChromeCompact((width ?? 0) * state.transform[2]),
   );
-  const serverCover = data.serverCover;
-  const recoveryUrl = frameRecoveryUrl(data);
   const discarded = useTabFrames((state) => state.discarded);
   const discardEpoch = useTabFrames((state) => state.epoch);
-  const effectiveHealth = serverCover !== undefined ? 'unreachable' : data.health;
-  const startUnderWay = useStartUnderWay();
-  const shownFacts = { ...frameShownFacts(data), serverStarting: data.serverStarting === true || startUnderWay !== null };
-  const under = frameUnderQuote(shownFacts);
-  const coversOn = useFlag('frame-covers');
-  const older = olderCover({ serverCover, serverStarting: data.serverStarting === true, health: data.health, serverLive: data.serverLive === true, loadFailure: data.loadFailure });
-  const isDead = coversOn ? under.kind === 'load-failed' || under.kind === 'unreachable' : older.isDead;
-  const canAsk = useAgentStore(canSubmitPrompt);
-  const recoveryDetail = t(serverCover === undefined ? 'frame.health.unreachable.tooltip' : SERVER_COVER_COPY[serverCover], { url: displayUrl(recoveryUrl) });
-  const recoveryAsk = useRecoveryAsk(id);
-
   // The nonce is the webview's `key`: a remount survives a wedged renderer or dead HMR socket that `reload()` does not (ONL-1922).
   // `null` until the first refresh so `src` tracks `homeUrl`; after it the url changes only with the nonce.
   const [refresh, setRefresh] = useState<{
@@ -183,9 +170,34 @@ export function FrameNode({
   const refreshCurrent = refresh !== null && refresh.epoch === guestEpoch && refresh.discardEpoch === discardEpoch ? refresh : null;
   const mountNonce = refresh?.nonce ?? 0;
   const mountUrl = refreshCurrent?.url ?? data.homeUrl;
+  const attempt = `${mountNonce}:${guestEpoch}:${discardEpoch}`;
+  const attachmentKey = JSON.stringify([mountUrl, attempt]);
+  const [blockedAttachment, setBlockedAttachment] = useState<{ key: string; entries: ReturnType<typeof useCanvasStore.getState>['serverEntries'] } | null>(null);
+  const serverEntries = useCanvasStore((state) => blockedAttachment === null ? null : state.serverEntries);
+  const onAttachRefused = useCallback((reason: 'blocked' | 'unavailable') => {
+    if (reason === 'blocked') setBlockedAttachment({ key: attachmentKey, entries: useCanvasStore.getState().serverEntries });
+    useCanvasStore.getState().patchFrame(id, { health: 'unreachable' });
+  }, [attachmentKey, id]);
+  useEffect(() => {
+    if (blockedAttachment === null || (blockedAttachment.key === attachmentKey && blockedAttachment.entries === serverEntries)) return;
+    setBlockedAttachment(null);
+    useCanvasStore.getState().patchFrame(id, { health: 'loading' });
+  }, [blockedAttachment, attachmentKey, serverEntries, id]);
+  const serverCover = blockedAttachment?.key === attachmentKey && blockedAttachment.entries === serverEntries ? 'dead' : data.serverCover;
+  const recoveryUrl = frameRecoveryUrl(data);
+  const effectiveHealth = serverCover !== undefined ? 'unreachable' : data.health;
+  const startUnderWay = useStartUnderWay();
+  const shownFacts = { ...frameShownFacts(data), cover: serverCover, serverStarting: data.serverStarting === true || startUnderWay !== null };
+  const under = frameUnderQuote(shownFacts);
+  const coversOn = useFlag('frame-covers');
+  const older = olderCover({ serverCover, serverStarting: data.serverStarting === true, health: data.health, serverLive: data.serverLive === true, loadFailure: data.loadFailure });
+  const isDead = coversOn ? under.kind === 'load-failed' || under.kind === 'unreachable' : older.isDead;
+  const canAsk = useAgentStore(canSubmitPrompt);
+  const recoveryDetail = t(serverCover === undefined ? 'frame.health.unreachable.tooltip' : SERVER_COVER_COPY[serverCover], { url: displayUrl(recoveryUrl) });
+  const recoveryAsk = useRecoveryAsk(id);
+
   const [hasSettled, setHasSettled] = useState(data.health !== 'loading');
   if (!hasSettled && data.health !== 'loading') setHasSettled(true);
-  const attempt = `${mountNonce}:${guestEpoch}:${discardEpoch}`;
   const unreachable = data.health === 'unreachable';
   const [failedGuest, setFailedGuest] = useState({ unreachable, attempt, target: data.target });
   if (failedGuest.unreachable !== unreachable) setFailedGuest({ unreachable, attempt, target: data.target });
@@ -193,7 +205,7 @@ export function FrameNode({
   // An arriving Frame flies without its page: a heavy load mid-flight stutters the film, so the guest mounts when it lands.
   const canMountGuest = serverCover === undefined && !discarded && !isArriving;
   const hasGuest = canMountGuest && !suspended;
-  const attachUrl = useFrameAttachUrl(id, mountUrl, `${mountNonce}:${guestEpoch}:${discardEpoch}`, hasGuest);
+  const attachUrl = useFrameAttachUrl(id, mountUrl, attempt, hasGuest, onAttachRefused);
 
   const currentUrl = data.currentUrl;
   const retargetFrame = useCanvasStore((state) => state.retargetFrame);

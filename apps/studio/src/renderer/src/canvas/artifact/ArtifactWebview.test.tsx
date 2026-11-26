@@ -123,6 +123,7 @@ it('publishes a deferred leased Artifact guest and ignores a superseded page att
 it('paints the remembered page picture alone, and under a session snapshot when one exists', async () => {
   const url = 'studio-artifact://artifact-b/pages/cover.html';
   const cover = 'data:image/png;base64,last-render';
+  const attachUrl = spyOn(attach, 'useFrameAttachUrl').mockImplementation((_nodeId, target) => target);
   const effect = spyOn(React, 'useEffect').mockImplementation(() => {});
   const ref = spyOn(React, 'useRef').mockImplementation(() => ({ current: null }));
   const state = spyOn(React, 'useState').mockImplementation((value?: unknown) => [typeof value === 'function' ? value() : value, () => {}] as never);
@@ -138,12 +139,13 @@ it('paints the remembered page picture alone, and under a session snapshot when 
     const both = ArtifactWebview({ url, cover, snapshotRevision: 'v1', nodeId: 'cover-node' });
     expect(found(both, 'artifact-cover')).toBeGreaterThanOrEqual(0);
     expect(found(both, 'artifact-snapshot')).toBeGreaterThan(found(both, 'artifact-cover'));
-  } finally { effect.mockRestore(); ref.mockRestore(); state.mockRestore(); }
+  } finally { attachUrl.mockRestore(); effect.mockRestore(); ref.mockRestore(); state.mockRestore(); }
 });
 
 for (const revision of ['v1', 'v1:4']) it(`covers a remounted artifact after refresh revision ${revision} while the new guest loads`, async () => {
   const url = 'studio-artifact://artifact-a/pages/remount.html';
   await artifactSnapshots.capture(`canvas-art:${url}:v1`, () => true, async () => ({ image: 'data:image/png;base64,last-page', width: 640, height: 400 }));
+  const attachUrl = spyOn(attach, 'useFrameAttachUrl').mockImplementation((_nodeId, target) => target);
   const effect = spyOn(React, 'useEffect').mockImplementation(() => {});
   const ref = spyOn(React, 'useRef').mockImplementation(() => ({ current: null }));
   const state = spyOn(React, 'useState').mockImplementation((value?: unknown) => [typeof value === 'function' ? value() : value, () => {}] as never);
@@ -152,7 +154,7 @@ for (const revision of ['v1', 'v1:4']) it(`covers a remounted artifact after ref
     const children = React.Children.toArray(surface.props.children) as React.ReactElement<{ 'data-testid'?: string; src?: string }>[];
     const snapshot = children.find((child) => child.props['data-testid'] === 'artifact-snapshot');
     expect(snapshot?.props.src).toBe('data:image/png;base64,last-page');
-  } finally { effect.mockRestore(); ref.mockRestore(); state.mockRestore(); }
+  } finally { attachUrl.mockRestore(); effect.mockRestore(); ref.mockRestore(); state.mockRestore(); }
 });
 
 for (const initiallyReady of [true, false]) {

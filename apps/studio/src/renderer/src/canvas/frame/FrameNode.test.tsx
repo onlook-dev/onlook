@@ -105,6 +105,7 @@ beforeEach(() => {
 
 afterEach(async () => {
   await act(async () => { root?.unmount(); });
+  seedFlags();
   root = undefined;
   container.remove();
   restoreCreateElement();
@@ -379,6 +380,53 @@ function deferFrameAttachments() {
   }) };
   return pending;
 }
+
+it('covers a frame refused for another project before any guest mounts and recovers on its own new port', async () => {
+  seedFlags({ 'frame-covers': true });
+  let blocked: Parameters<StudioBridge['onCanvasFrameBlocked']>[0] | undefined;
+  window.studio = { ...window.studio, onCanvasFrameBlocked: listener => { blocked = listener; return () => { blocked = undefined; }; } };
+  const pending = deferFrameAttachments();
+  await mount();
+  expect(guests).toHaveLength(0);
+  await act(async () => {
+    blocked!({ nodeId: FRAME_ID, url: URL_A });
+    pending[0]!.resolve(null);
+  });
+  expect(guests).toHaveLength(0);
+  expect(container.querySelector('[data-server-cover="dead"]')).not.toBeNull();
+  await act(async () => {
+    const state = useCanvasStore.getState();
+    const doc = state.doc!;
+    const frame = doc.nodes[FRAME_ID] as BrowserNode;
+    state.replaceDoc({ ...doc, revision: doc.revision + 1, nodes: { ...doc.nodes, [FRAME_ID]: { ...frame, content: { homeUrl: 'http://localhost:4701/menu' } } } });
+    expect(state.rehomeDeadFrame(FRAME_ID, 'http://localhost:4701/menu')).toBe(true);
+  });
+  expect(pending).toHaveLength(2);
+  await act(async () => { pending[1]!.resolve({ url: 'about:blank#studio-frame-attach=own' }); });
+  expect(guests).toHaveLength(1);
+  expect(guests[0]!.element.getAttribute('src')).toBe('about:blank#studio-frame-attach=own');
+});
+
+it('rechecks a refused port after the project server book changes without moving its saved address', async () => {
+  seedFlags({ 'frame-covers': true });
+  let blocked: Parameters<StudioBridge['onCanvasFrameBlocked']>[0] | undefined;
+  window.studio = { ...window.studio, onCanvasFrameBlocked: listener => { blocked = listener; return () => { blocked = undefined; }; } };
+  const pending = deferFrameAttachments();
+  await mount();
+  await act(async () => {
+    blocked!({ nodeId: FRAME_ID, url: URL_A });
+    pending[0]!.resolve(null);
+  });
+  expect(container.querySelector('[data-server-cover="dead"]')).not.toBeNull();
+  await act(async () => {
+    const state = useCanvasStore.getState();
+    state.applyServerBook(state.serverEntries.map(entry => ({ ...entry, ports: entry.ports.map(port => ({ ...port })) })));
+  });
+  expect(pending).toHaveLength(2);
+  await act(async () => { pending[1]!.resolve({ url: 'about:blank#studio-frame-attach=restarted' }); });
+  expect(guests).toHaveLength(1);
+  expect(container.querySelector('[data-server-cover="dead"]')).toBeNull();
+});
 
 for (const replyOrder of ['retirement-before-echo', 'retirement-after-echo']) {
   it(`replaces a live initial redirect only after USER acceptance (${replyOrder})`, async () => {
@@ -855,7 +903,8 @@ it('mounts a leased guest after attachment and restores listeners without revivi
   }
 });
 
-for (const refusal of ['null', 'rejected'] as const) it(`mounts a usable raw-URL guest after a ${refusal} attachment response`, async () => {
+for (const refusal of ['null', 'rejected'] as const) it(`does not mount an unauthorized guest after a ${refusal} attachment response`, async () => {
+  seedFlags({ 'frame-covers': true });
   const pending = deferFrameAttachments();
   await mount();
   expect(container.querySelector('webview')).toBeNull();
@@ -864,16 +913,14 @@ for (const refusal of ['null', 'rejected'] as const) it(`mounts a usable raw-URL
     if (refusal === 'null') pending[0]!.resolve(null);
     else pending[0]!.reject(new Error('attachment refused'));
   });
-  const fallback = guests.at(-1)!;
-  expect(fallback.element.getAttribute('src')).toBe(URL_A);
-  await loaded(fallback);
-  expect(useCanvasStore.getState().overlay[FRAME_ID]?.health).toBe('live');
-  expect(fallback.messages.some((message) => message.type === 'arm')).toBe(true);
-  await act(async () => {
-    fallback.url = URL_B;
-    fallback.element.dispatchEvent(new Event('did-navigate'));
-  });
-  expect(useCanvasStore.getState().overlay[FRAME_ID]?.currentUrl).toBe(URL_B);
+  expect(guests).toHaveLength(0);
+  expect(container.querySelector('webview')).toBeNull();
+  const retry = [...container.querySelectorAll('button')].find(button => button.textContent === 'Try again');
+  expect(retry).toBeDefined();
+  await act(async () => { retry!.click(); });
+  expect(pending).toHaveLength(2);
+  await act(async () => { pending[1]!.resolve({ url: 'about:blank#studio-frame-attach=retry' }); });
+  expect(guests).toHaveLength(1);
 });
 
 it('navigates recovery to failed B after a deferred replacement lease initially loads current A', async () => {

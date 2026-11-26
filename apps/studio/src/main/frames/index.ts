@@ -21,6 +21,7 @@ import { calmOutsidePages } from './motion.js';
 import { checkPageProcessSharing } from '../canvas/lifecycle.js';
 import { createArtifactSnapshotter } from '../artifacts/canvas-snapshot.js';
 import { frameBindings } from './bindings.js';
+import { installFrameRequestGuard } from './requests.js';
 import { log } from '../log/index.js';
 import { createFramePicture, forgetFramePicture, rememberFramePicture } from './picture.js';
 import { beginCreation, creationStarted } from '../github-import/telemetry.js';
@@ -149,7 +150,7 @@ export function watchGuest(contents: Electron.WebContents, deps: GuestWatchDeps)
   contents.setWindowOpenHandler(() => ({ action: 'deny' }));
 
   // `will-attach-webview` fires once, so navigation is confined after attach too.
-  confineNavigation(contents, (url) => url.startsWith('http://') || url.startsWith('https://'), {
+  confineNavigation(contents, (url) => (url.startsWith('http://') || url.startsWith('https://')) && frameBindings.allowsNavigation(contents, url), {
     subframes: false,
   });
 }
@@ -169,6 +170,10 @@ function confineNavigation(
   contents.on('will-frame-navigate', (event) => {
     if (!options.subframes && !event.isMainFrame) return;
     gate(event, event.url, event.isMainFrame);
+  });
+  contents.on('will-redirect', (event, url, _inPlace, isMainFrame) => {
+    if (!options.subframes && !isMainFrame) return;
+    gate(event, url, isMainFrame);
   });
 }
 
@@ -221,6 +226,7 @@ export function installFramePolicies(): void {
     });
   };
   installFrameSessionPolicies(framesSession());
+  installFrameRequestGuard(framesSession(), id => electron.webContents.fromId(id), (guest, url) => frameBindings.allowsNavigation(guest, url));
   electron.app.on('web-contents-created', (_event, contents) => {
     contents.on('frame-created', checkProcessSharing);
     contents.on('did-frame-navigate', checkProcessSharing);

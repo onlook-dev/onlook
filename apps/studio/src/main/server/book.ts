@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { ServerAttribution, ServerPortMeasurement, ServerPortState } from '@studio/events';
+import { localPort } from '@studio/events';
 import { defineDomain } from '../state/store.js';
 import { normalizePath, workspaceRoot } from '../workspace/store.js';
 
@@ -42,6 +43,18 @@ export function reopenServerBookProject(worktreePath: string): void {
 
 export function serverBookEntries(worktreePath: string): ServerBookEntry[] {
   return Object.values(domain.read().projects[normalizePath(worktreePath)] ?? {});
+}
+
+export function portHeldByOtherProject(worktreePath: string, url: string): boolean {
+  const port = localPort(url);
+  if (port === null) return false;
+  const projectKey = normalizePath(worktreePath);
+  return Object.entries(domain.read().projects).some(
+    ([otherProjectKey, entries]) =>
+      Object.values(entries).some((entry) =>
+        entry.ports.some((claim) => claim.port === port && claim.measured === 'live'),
+      ) && normalizePath(otherProjectKey) !== projectKey,
+  );
 }
 
 export function entryForFolder(worktreePath: string, folder: string): ServerBookEntry | undefined {

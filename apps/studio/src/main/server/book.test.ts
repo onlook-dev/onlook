@@ -1,4 +1,4 @@
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, symlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'bun:test';
 import type { ServerPortMeasurement } from '@studio/events';
@@ -10,6 +10,7 @@ import {
   extendServerEntry,
   forgetServerBookProject,
   moveServerEntryPort,
+  portHeldByOtherProject,
   recordPortMeasurement,
   removeServerEntry,
   resetServerBookCache,
@@ -72,6 +73,136 @@ describe('the server book — recording, proven first', () => {
     expect(reread?.id).toBe(entry.id);
     expect(reread?.ports).toEqual([{ port: 4000, measured: 'live', everLive: true }]);
     expect(reread?.everMeasuredLive).toBe(true);
+  });
+});
+
+describe('portHeldByOtherProject', () => {
+  it('finds a live port in another saved project without changing either book', () => {
+    const { root, worktree } = useOwnWorkspaceRoot('other-project-port');
+    const other = join(root, 'repo', 'preview');
+    mkdirSync(other, { recursive: true });
+    const entry = createServerEntry(other, { folder: other, port: 3000, ownership: 'unknown' });
+    extendServerEntry(other, entry.id, 5173);
+    recordPortMeasurement(other, entry.id, 5173, 'live');
+    const before = serverBookEntries(other);
+
+    resetServerBookCache();
+
+    expect(portHeldByOtherProject(worktree, 'http://localhost:5173/design')).toBe(true);
+    expect(portHeldByOtherProject(worktree, 'http://localhost:3000')).toBe(false);
+    expect(portHeldByOtherProject(worktree, 'http://localhost:4000')).toBe(false);
+    expect(serverBookEntries(worktree)).toEqual([]);
+    expect(serverBookEntries(other)).toEqual(before);
+  });
+
+  it('still denies another project’s live port when this project has a stale live claim', () => {
+    const { root, worktree, folder } = useOwnWorkspaceRoot('shared-live-port');
+    const own = createServerEntry(worktree, { folder, port: 5173, ownership: 'agent-started' });
+    recordPortMeasurement(worktree, own.id, 5173, 'live');
+    expect(portHeldByOtherProject(worktree, 'http://localhost:5173')).toBe(false);
+
+    const other = join(root, 'repo', 'preview');
+    mkdirSync(other, { recursive: true });
+    const held = createServerEntry(other, { folder: other, port: 5173, ownership: 'users-own' });
+    recordPortMeasurement(other, held.id, 5173, 'live');
+
+    expect(portHeldByOtherProject(worktree, 'http://localhost:5173')).toBe(true);
+  });
+
+  it('ignores its own project under canonical, dotted, trailing-slash and symlink spellings', () => {
+    const { root, worktree, folder } = useOwnWorkspaceRoot('canonical-project-port');
+    mkdirSync(join(worktree, 'nested'), { recursive: true });
+    const alias = join(root, 'preview-link');
+    symlinkSync(worktree, alias, 'dir');
+    const entry = createServerEntry(alias, { folder, port: 5173, ownership: 'agent-started' });
+    recordPortMeasurement(alias, entry.id, 5173, 'live');
+
+    for (const spelling of [worktree, `${worktree}/nested/..`, `${worktree}/`, alias]) {
+      expect(portHeldByOtherProject(spelling, 'http://localhost:5173')).toBe(false);
+    }
+    expect(portHeldByOtherProject(join(root, 'repo', 'preview'), 'http://localhost:5173')).toBe(true);
+  });
+
+  it.each(['dead', 'stranger', 'unverified'] as const)(
+    'ignores another project’s %s port even if it was previously live',
+    (measurement) => {
+      const { root, worktree } = useOwnWorkspaceRoot(`other-project-${measurement}-port`);
+      const other = join(root, 'repo', 'preview');
+      mkdirSync(other, { recursive: true });
+      const entry = createServerEntry(other, { folder: other, port: 5173, ownership: 'agent-started' });
+      recordPortMeasurement(other, entry.id, 5173, 'live');
+      recordPortMeasurement(other, entry.id, 5173, measurement);
+
+      expect(portHeldByOtherProject(worktree, 'http://localhost:5173')).toBe(false);
+    },
+  );
+
+  it.each([
+    ['http://localhost:5173', 5173],
+    ['http://127.0.0.1:5173/design', 5173],
+    ['http://[::1]:5173', 5173],
+    ['http://0.0.0.0:5173', 5173],
+    ['http://localhost', 80],
+    ['http://127.0.0.1:80', 80],
+    ['http://[::1]/design', 80],
+    ['https://localhost', 443],
+    ['https://127.0.0.1:443', 443],
+    ['https://[::1]/design', 443],
+  ] as const)('uses localPort semantics for %s', (url, port) => {
+    const { root, worktree } = useOwnWorkspaceRoot('local-url-port');
+    const other = join(root, 'repo', 'preview');
+    mkdirSync(other, { recursive: true });
+    const entry = createServerEntry(other, { folder: other, port, ownership: 'agent-started' });
+    recordPortMeasurement(other, entry.id, port, 'live');
+
+    expect(portHeldByOtherProject(worktree, url)).toBe(true);
+  });
+
+  it('ignores absent, invalid, non-HTTP and non-loopback URLs', () => {
+    const { root, worktree } = useOwnWorkspaceRoot('ignored-url-port');
+    const other = join(root, 'repo', 'preview');
+    mkdirSync(other, { recursive: true });
+    const entry = createServerEntry(other, { folder: other, port: 5173, ownership: 'agent-started' });
+    recordPortMeasurement(other, entry.id, 5173, 'live');
+
+    for (const url of [
+      '',
+      'not a URL',
+      'localhost:5173',
+      'http://localhost:invalid',
+      'http://localhost:65536',
+      'ftp://localhost:5173',
+      'file://localhost/design',
+      'https://preview.example.test:5173',
+      'http://127.0.0.1.example.test:5173',
+      'http://192.0.2.1:5173',
+    ]) {
+      expect(portHeldByOtherProject(worktree, url)).toBe(false);
+    }
+  });
+
+  it('ignores removed entries and removed projects, including late claims', () => {
+    const { root, worktree } = useOwnWorkspaceRoot('removed-project-port');
+    const other = join(root, 'repo', 'preview');
+    mkdirSync(other, { recursive: true });
+    const entry = createServerEntry(other, { folder: other, port: 5173, ownership: 'agent-started' });
+    recordPortMeasurement(other, entry.id, 5173, 'live');
+    expect(portHeldByOtherProject(worktree, 'http://localhost:5173')).toBe(true);
+
+    removeServerEntry(other, entry.id);
+    expect(portHeldByOtherProject(worktree, 'http://localhost:5173')).toBe(false);
+
+    const replacement = createServerEntry(other, { folder: other, port: 5173, ownership: 'agent-started' });
+    recordPortMeasurement(other, replacement.id, 5173, 'live');
+    expect(portHeldByOtherProject(worktree, 'http://localhost:5173')).toBe(true);
+
+    forgetServerBookProject(`${other}/`);
+    const late = createServerEntry(other, { folder: other, port: 5173, ownership: 'agent-started' });
+    recordPortMeasurement(other, late.id, 5173, 'live');
+    expect(portHeldByOtherProject(worktree, 'http://localhost:5173')).toBe(false);
+
+    resetServerBookCache();
+    expect(portHeldByOtherProject(worktree, 'http://localhost:5173')).toBe(false);
   });
 });
 

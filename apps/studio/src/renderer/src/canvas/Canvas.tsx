@@ -22,7 +22,7 @@ import { Icon } from '@astryxdesign/core/Icon';
 import { Tooltip } from '@astryxdesign/core/Tooltip';
 import { Stack } from '@astryxdesign/core/Layout';
 import { canSubmitPrompt, useAgentStore } from '../agent/store.js';
-import { runControlPhase, usePaintedCreateState, useProjectCreateStore } from '../create/projectCreate.js';
+import { ownCreateState, runControlPhase, usePaintedCreateState, useProjectCreateStore } from '../create/projectCreate.js';
 import { useImportSetupProgress, useSetupTurnStore } from '../create/setupProgress.js';
 import { setupHidesRunControl, useInspireTipShown } from '../sidebar/footSeat.js';
 import { t } from '@studio/i18n';
@@ -484,7 +484,10 @@ export function Canvas({
   const isFootOn = useFlag('rail-foot');
   const setupProgress = useImportSetupProgress();
   const hasLiveServer = hasLiveEntry(serverEntries);
-  const isBlankProject = useWorkspaceStore((state) => isBlankWorkspace(state.workspace));
+  const workspace = useWorkspaceStore((state) => state.workspace);
+  const isBlankProject = isBlankWorkspace(workspace);
+  const create = ownCreateState(useProjectCreateStore((state) => state.state), workspace);
+  const isCreating = create?.kind === 'planning' || create?.kind === 'copying' || create?.kind === 'installing' || create?.kind === 'starting';
   const hasNodes = nodes.length > 0;
   const inspirationId = useCanvasStore((state) => state.inspiration?.frameId ?? null);
   const isOnlyInspiration = nodes.length === 1 && nodes[0]?.id === inspirationId;
@@ -876,7 +879,7 @@ export function Canvas({
             isPreview={!canAdd}
             hasFrames={nodes.some((node) => node.type === 'frame')}
             hasSectionTool={hasSections}
-            hasRunControl={startControlShown({ isOn: isStartControlOn, isBlankProject, isImportSettingUp: setupHidesRunControl(setupProgress, paintedCreate), hasBeenUp: wasAppUp || hasLiveServer })}
+            hasRunControl={startControlShown({ isOn: isStartControlOn, isBlankProject, isImportSettingUp: setupHidesRunControl(setupProgress, paintedCreate), hasBeenUp: wasAppUp || hasLiveServer, serverEntries, hasFrames: nodes.some((node) => node.type === 'frame' && node.id !== inspirationId), isCreating })}
             isRunEnabled={showsSetupPending || hasSavedSetup || canRun || hasStarter}
           />
         </Stack>
