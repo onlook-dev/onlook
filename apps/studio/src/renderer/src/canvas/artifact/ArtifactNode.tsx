@@ -212,7 +212,7 @@ export function ArtifactNodeSurface({
       >
       {state === 'resolved' && url !== undefined ? (
         /* A `<webview>`, never an iframe: the partition is what main contains it by. */
-        <ArtifactWebview key={refreshNonce} url={url} revision={revision} snapshotRevision={artifact?.updatedAt} {...(cover === undefined ? {} : { cover })} {...(onPainted === undefined ? {} : { onPainted })} webviewRef={webviewRef} nodeId={nodeId} />
+        <ArtifactWebview key={refreshNonce} url={url} revision={revision} snapshotRevision={artifact?.updatedAt} {...(cover === undefined ? {} : { cover })} {...(onPainted === undefined ? {} : { onPainted })} {...(onRefresh === undefined ? {} : { onRetry: onRefresh })} webviewRef={webviewRef} nodeId={nodeId} />
       ) : null}
 
       <FrameQuote quote={quote} isBuilding={isWorking} width={size.width} height={size.height} canvasZoom={zoom} />

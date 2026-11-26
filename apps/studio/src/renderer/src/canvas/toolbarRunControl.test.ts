@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'bun:test';
-import type { ServerEntryState } from '@studio/events';
-import { startControlShown, type StartControlFacts } from './toolbarRunControl.js';
+import type { CanvasDoc, ServerEntryState } from '@studio/events';
+import { hasSavedAppFramesOnAnyPage, startControlShown, type StartControlFacts } from './toolbarRunControl.js';
+
+it('keeps Start available when the only saved app Frame is on another Page', () => {
+  const doc: CanvasDoc = { schemaVersion: 1, docId: 'saved-project', revision: 1, pages: {
+    empty: { id: 'empty', name: 'Empty', order: 0 }, saved: { id: 'saved', name: 'Saved', order: 1 },
+  }, nodes: { app: { id: 'app', pageId: 'saved', kind: 'browser', name: 'App', x: 0, y: 0, width: 800, height: 600, order: 0, content: { homeUrl: 'http://localhost:4700/' } } } };
+  expect(startControlShown({ ...BLANK, hasFrames: hasSavedAppFramesOnAnyPage(doc, null) })).toBe(true);
+  expect(startControlShown({ ...BLANK, hasFrames: hasSavedAppFramesOnAnyPage(doc, 'app') })).toBe(false);
+  expect(hasSavedAppFramesOnAnyPage(null, null)).toBe(false);
+});
 
 const BLANK: StartControlFacts = { isOn: true, isBlankProject: true, isImportSettingUp: false, hasBeenUp: false, serverEntries: [], hasFrames: false, isCreating: false };
 const IMPORTING: StartControlFacts = { ...BLANK, isBlankProject: false, isImportSettingUp: true };

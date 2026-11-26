@@ -13,6 +13,49 @@ type Layer = React.ReactElement<{ 'data-testid'?: string; src?: string; style?: 
 const layers = (surface: React.JSX.Element): Layer[] => React.Children.toArray((surface.props as { children: React.ReactNode }).children) as Layer[];
 const found = (surface: React.JSX.Element, testId: string): number => layers(surface).findIndex((child) => child.props['data-testid'] === testId);
 
+for (const refusal of ['null', 'rejected'] as const) it(`retries an Artifact through a fresh lease after a ${refusal} attachment`, async () => {
+  const previousBridge = window.studio;
+  const idleDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'cancelIdleCallback');
+  Object.defineProperty(globalThis, 'cancelIdleCallback', { configurable: true, writable: true, value: () => {} });
+  let attempts = 0;
+  window.studio = { ...window.studio, canvasFrameAttach: async () => {
+    attempts += 1;
+    if (attempts > 1) return { url: 'about:blank#studio-frame-attach=artifact-retry' };
+    if (refusal === 'rejected') throw new Error('attachment unavailable');
+    return null;
+  } };
+  const container = document.createElement('div');
+  document.body.appendChild(container);
+  const root = createRoot(container);
+  let nonce = 0;
+  let revision = 'v1';
+  const render = () => root.render(<ArtifactWebview key={nonce} nodeId="retry-artifact" url="studio-artifact://retry-artifact/pages/index.html" revision={revision} snapshotRevision={revision} cover="data:image/png;base64,old" onRetry={() => { nonce += 1; render(); }} />);
+  try {
+    await React.act(async () => render());
+    expect(container.querySelector('webview')).toBeNull();
+    expect(container.querySelector('[data-testid="artifact-cover"]')).toBeNull();
+    expect(container.querySelector('[data-testid="artifact-attachment-unavailable"]')?.textContent).toContain('Preview unavailable');
+    await React.act(async () => { revision = 'v2'; render(); });
+    expect(attempts).toBe(1);
+    expect(container.querySelector('[data-testid="artifact-attachment-unavailable"]')?.textContent).toContain('Preview unavailable');
+    expect((container.querySelector('[data-testid="artifact-attachment-unavailable"]') as HTMLElement).style.zIndex).toBe('1');
+    const retry = [...container.querySelectorAll('button')].find(button => button.textContent === 'Retry preview');
+    expect(retry).toBeDefined();
+    expect(retry!.style.pointerEvents).toBe('auto');
+    await React.act(async () => retry!.click());
+    expect(attempts).toBe(2);
+    expect(container.querySelector('webview')?.getAttribute('src')).toBe('about:blank#studio-frame-attach=artifact-retry');
+    expect(container.querySelector('[data-testid="artifact-attachment-unavailable"]')).toBeNull();
+  } finally {
+    await React.act(async () => root.unmount());
+    container.remove();
+    window.studio = previousBridge;
+    if (idleDescriptor) Object.defineProperty(globalThis, 'cancelIdleCallback', idleDescriptor);
+    else Reflect.deleteProperty(globalThis, 'cancelIdleCallback');
+    expect(takeComplaints()).toEqual([]);
+  }
+});
+
 it('publishes a deferred leased Artifact guest and ignores a superseded page attachment', async () => {
   const previousBridge = window.studio;
   type Result = Awaited<ReturnType<StudioBridge['canvasFrameAttach']>>;

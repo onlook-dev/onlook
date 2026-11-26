@@ -1,5 +1,9 @@
 import { create } from 'zustand';
-import type { ServerEntryState } from '@studio/events';
+import type { CanvasDoc, ServerEntryState } from '@studio/events';
+
+export function hasSavedAppFramesOnAnyPage(doc: CanvasDoc | null, inspirationId: string | null): boolean {
+  return Object.values(doc?.nodes ?? {}).some(node => node.kind === 'browser' && node.id !== inspirationId);
+}
 
 export interface StartControlFacts {
   /** The `start-control` flag. */

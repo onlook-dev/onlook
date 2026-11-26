@@ -407,24 +407,29 @@ it('covers a frame refused for another project before any guest mounts and recov
   expect(guests[0]!.element.getAttribute('src')).toBe('about:blank#studio-frame-attach=own');
 });
 
-it('rechecks a refused port after the project server book changes without moving its saved address', async () => {
+for (const wasLive of [false, true]) it(`rechecks a refused port after the project server book changes without moving its saved address (was live: ${String(wasLive)})`, async () => {
   seedFlags({ 'frame-covers': true });
   let blocked: Parameters<StudioBridge['onCanvasFrameBlocked']>[0] | undefined;
   window.studio = { ...window.studio, onCanvasFrameBlocked: listener => { blocked = listener; return () => { blocked = undefined; }; } };
   const pending = deferFrameAttachments();
   await mount();
+  if (wasLive) {
+    await act(async () => { pending[0]!.resolve({ url: 'about:blank#studio-frame-attach=before-reuse' }); });
+    await loaded(guests[0]!);
+  }
   await act(async () => {
     blocked!({ nodeId: FRAME_ID, url: URL_A });
     pending[0]!.resolve(null);
   });
   expect(container.querySelector('[data-server-cover="dead"]')).not.toBeNull();
+  expect(container.querySelector('webview')).toBeNull();
   await act(async () => {
     const state = useCanvasStore.getState();
     state.applyServerBook(state.serverEntries.map(entry => ({ ...entry, ports: entry.ports.map(port => ({ ...port })) })));
   });
   expect(pending).toHaveLength(2);
   await act(async () => { pending[1]!.resolve({ url: 'about:blank#studio-frame-attach=restarted' }); });
-  expect(guests).toHaveLength(1);
+  expect(container.querySelectorAll('webview')).toHaveLength(1);
   expect(container.querySelector('[data-server-cover="dead"]')).toBeNull();
 });
 
