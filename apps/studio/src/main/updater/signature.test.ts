@@ -51,19 +51,22 @@ describe('Windows update signatures', () => {
     }
   });
 
-  it('rejects a signature for another file or without a file path', async () => {
-    expect(await verifyResult(validSignature('C:\\Other\\update.exe'))).not.toBeNull();
-    expect(await verifyResult({ ...validSignature(path), Path: undefined })).not.toBeNull();
+  it('rejects a signature for another file and accepts a missing file path like electron-updater', async () => {
+    await expect(verifyResult(validSignature('C:\\Other\\update.exe'))).rejects.toThrow();
+    expect(await verifyResult({ ...validSignature(path), Path: undefined })).toBeNull();
     expect(await verifyResult(validSignature(path.replaceAll('\\', '/')))).toBeNull();
   });
 
   it('rejects a missing signer or subject', async () => {
-    expect(await verifyResult({ ...validSignature(path), SignerCertificate: null })).not.toBeNull();
-    expect(await verifyResult({ ...validSignature(path), SignerCertificate: {} })).not.toBeNull();
+    await expect(verifyResult({ ...validSignature(path), SignerCertificate: null })).rejects.toThrow();
+    await expect(verifyResult({ ...validSignature(path), SignerCertificate: {} })).rejects.toThrow();
   });
 
   it('rejects command errors, stderr and malformed responses', async () => {
-    const failed = createWindowsSignatureVerifier(async () => { throw new Error('PowerShell failed'); });
+    const failed = createWindowsSignatureVerifier(async (_executable, args) => {
+      if (args.at(-1) !== 'ConvertTo-Json test') throw new Error('PowerShell failed');
+      return { stdout: '"test"', stderr: '' };
+    });
     await expect(failed([publisher], path)).rejects.toThrow('PowerShell failed');
     const withStderr = createWindowsSignatureVerifier(async () => ({ stdout: JSON.stringify(validSignature(path)), stderr: 'failed' }));
     await expect(withStderr([publisher], path)).rejects.toThrow();
