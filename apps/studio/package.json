@@ -59,6 +59,7 @@
     "@types/semver": "^7.7.1",
     "@vitejs/plugin-react": "^5.2.0",
     "@xyflow/react": "12.11.2",
+    "builder-util-runtime": "9.7.0",
     "electron": "43.7.7",
     "electron-builder": "26.15.3",
     "electron-vite": "^5.0.0",
