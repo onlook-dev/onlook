@@ -15,7 +15,7 @@ import {
 } from '@studio/git-ui';
 import { PILL_FIXTURES as STATES, STUB_STRINGS as STRINGS } from '@studio/git-ui/fixtures';
 import { cardStateFor } from '@studio/git-ui/derive';
-import { GIT_PILL_GLYPHS as GLYPHS, cardGlyphFor, leadingFor } from '../../git-status/presentation.js';
+import { GIT_PILL_GLYPHS as GLYPHS, GIT_PR_FAILURE_STRINGS, cardGlyphFor, leadingFor } from '../../git-status/presentation.js';
 import { PROJECT_CARD_WIDTH, ProjectCard, type ProjectCardProps } from '../../projects/ProjectCard.js';
 import { noop, type Category, type Gallery } from './Showroom.js';
 
@@ -62,6 +62,20 @@ function pillStory(id: GitPillStateId) {
 }
 
 const CATEGORIES: Category[] = [
+  {
+    id: 'failures',
+    title: 'Create PR — recovery',
+    stories: Object.entries(GIT_PR_FAILURE_STRINGS).map(([id, failure]) => ({
+      id: `git-gallery-failure-${id}`,
+      title: failure.label,
+      note: failure.nextStep,
+      render: () => (
+        <div style={{ paddingBlock: 56 }}>
+          <GitStatusPill state={STATES['create-pr']} failure={failure} strings={STRINGS} glyphs={GLYPHS} isTooltipOpen onAction={noop} onPick={noop} testId={`git-failure-${id}`} />
+        </div>
+      ),
+    })),
+  },
   {
     id: 'pill',
     title: 'The pill — cascade order',

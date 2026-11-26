@@ -62,6 +62,7 @@ export function EditorBarSlot({
     worktreePath === undefined ? undefined : state.held[worktreePath],
   );
   const pen = useAgentStore((state) => state.pen);
+  const failure = useGitStatusStore((state) => worktreePath === undefined ? undefined : state.failures[worktreePath]);
   const queuedAction = queuedActionFor(held, pen);
 
   const slots = useMemo((): ChromeSlots => {
@@ -84,12 +85,13 @@ export function EditorBarSlot({
       ...(settled && row !== undefined ? { row } : {}),
       defaults,
       isWorking: settled && working !== undefined,
+      ...(settled && failure !== undefined ? { failure } : {}),
       ...(settled && working !== undefined ? { workingAction: working.action } : {}),
       canSubmit: settled && canSubmit,
       ...(settled && queuedAction !== undefined ? { queuedAction } : {}),
     };
     return next;
-  }, [isSwitching, worktreePath, row, defaults, working, queuedAction, canSubmit, isTurnRunning, needsAttention, leftHidden, rightHidden]);
+  }, [isSwitching, worktreePath, row, defaults, working, failure, queuedAction, canSubmit, isTurnRunning, needsAttention, leftHidden, rightHidden]);
 
   useFillWindowBar(slots);
 

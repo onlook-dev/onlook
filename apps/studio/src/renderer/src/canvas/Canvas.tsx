@@ -1,4 +1,6 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
+import type { RunIntent } from '@studio/events';
+import { FrameRunIntentContext } from './frame/runIntent.js';
 import { useFrameZoomStyle } from './frame/useFrameZoomStyle.js';
 import { beginCameraMotion, endCameraMotion, noteCameraMotion, useCameraMotionLifetime } from './cameraMotion.js';
 import { useCaptureReveal } from './useCaptureReveal.js';
@@ -33,7 +35,7 @@ import { useCameraControls, useCameraFollowsLeftPanel } from './camera.js';
 import { usePanelCover, type PanelCover } from './panelCover.js';
 import { CanvasToolbar } from './CanvasToolbar.jsx';
 import { selectProjectSetupSnapshot, useProjectSetupStore } from '../project-setup/store.js';
-import { reportProjectRunIntent } from '../project-setup/runControl.js';
+import { reportProjectRunIntent, reportRunIntent } from '../project-setup/runControl.js';
 import { CANVAS_CLIPBOARD_TYPE, classifyPaste } from './clipboard/clipboard.js';
 import { ARTIFACT_PLACEMENT_TYPE, dropLibraryArtifact } from './artifact/libraryPlacement.js';
 import { EmptyCanvasSlot } from './EmptyCanvasIllustration.jsx';
@@ -700,6 +702,15 @@ export function Canvas({
     reportProjectRunIntent(isEngaged, hasSavedSetup, entries, frameUrls);
   };
 
+  const onFrameRunIntent = useCallback((intent: RunIntent): void => {
+    reportRunIntent(
+      intent,
+      selectProjectSetupSnapshot(useProjectSetupStore.getState())?.saved != null,
+      useServerStore.getState().entries,
+      framePointedUrls(useCanvasStore.getState().nodes),
+    );
+  }, []);
+
   return (
     // `data-tool` scopes the frame tool's pane cursor in styles.css.
     <CanvasPaneMenu fitAll={camera.fitAll} paste={pasteFromMenu}>
@@ -709,6 +720,7 @@ export function Canvas({
       onPointerDownCapture={onTextPlacePointerDownCapture}
       onPointerDown={onFramePointerDown}
     >
+      <FrameRunIntentContext value={onFrameRunIntent}>
       <ReactFlow
         onDragOver={(event) => {
           if (event.dataTransfer.types.includes(ARTIFACT_PLACEMENT_TYPE)) {
@@ -811,6 +823,7 @@ export function Canvas({
         <TextSizeBar />
         <SelectionDimensionBadge />
       </ReactFlow>
+      </FrameRunIntentContext>
 
       {/* Outside `<ReactFlow>`: the outline marks the whole region, and inside the viewport portal it would pan with the camera. */}
       <ImageDropOutline />

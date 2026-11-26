@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { WebviewTag } from 'electron';
 import { useShallow } from 'zustand/react/shallow';
+import { FrameRunIntentContext } from './runIntent.js';
 import {
   useReactFlow,
   useStore as useFlowStore,
@@ -95,6 +96,7 @@ export function FrameNode({
   positionAbsoluteX,
   positionAbsoluteY,
 }: NodeProps<FrameNodeType>): React.JSX.Element {
+  const reportRunIntent = useContext(FrameRunIntentContext);
   const webviewRef = useRef<WebviewTag | null>(null);
   const isHovered = useCanvasStore((state) => state.hoveredNodeId === id);
   const isFocused = useCanvasStore((state) => focusedFrameId(state) === id);
@@ -325,7 +327,9 @@ export function FrameNode({
     const match = matchServerPort(entries, recoveryUrl);
     // The recovery address decides the act, not where the guest sits: its own server is what a Start could lift (ONL-2897).
     if (serverCover !== undefined || isStartableCover(frameServerCover(entries, recoveryUrl))) {
-      studio().serverIntent({ press: 'start', ...(match === undefined ? {} : { entryIds: [match.entry.entryId] }) });
+      const intent = { press: 'start' as const, ...(match === undefined ? {} : { entryIds: [match.entry.entryId] }) };
+      if (reportRunIntent !== null) reportRunIntent(intent);
+      else studio().serverIntent(intent);
     } else {
       retargetFrame(recoveryUrl, id);
       remountGuest(recoveryUrl, false);

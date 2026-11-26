@@ -40,7 +40,7 @@ describe('the canvas centre after an import’s setup fails (ONL-2961)', () => {
     expect(canvasCentre(facts({ progress: progressAt(3, 'ready'), snapshot: failedAt('ready') }))).toEqual({ kind: 'card', card: { step: 'start', cause: 'ready' } });
   });
 
-  it('shows no card once anything is on the canvas', () => {
+  it('leaves frame controls clear after saved setup fails in any project', () => {
     expect(canvasCentre(facts({ hasNodes: true })).kind).toBe('illustration');
   });
 

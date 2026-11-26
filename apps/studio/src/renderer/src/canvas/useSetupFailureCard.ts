@@ -15,9 +15,10 @@ export function useSetupFailure() {
   const workspacePath = useWorkspaceStore((state) => state.workspace?.workspacePath);
   const ask = useSetupFailureCardStore((state) => state.ask);
   const isStreaming = useAgentStore((state) => state.isStreaming);
-  const card = setupFailureCard({ progress, snapshot, agentFailed, hasNodes }, 'chat');
+  const facts = { progress, snapshot, agentFailed, hasNodes };
+  const card = setupFailureCard(facts, 'chat');
   const isShown = card !== null && isSetupFailureCardShown({ ask, workspacePath, isStreaming, asked, failure: snapshot?.failure ?? null });
-  return { card, isShown, canvasCard: hasNodes ? null : card, workspacePath, failure: snapshot?.failure ?? null };
+  return { card, isShown, canvasCard: setupFailureCard(facts), workspacePath, failure: snapshot?.failure ?? null };
 }
 
 export function useSetupFailureCard(): { card: SetupFailureCard | null; isShown: boolean } {

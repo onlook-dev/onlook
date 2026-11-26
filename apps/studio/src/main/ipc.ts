@@ -5,7 +5,8 @@ import { COMMIT_SHA } from './build-info.js';
 import { rendererFlags } from './flags/index.js';
 import { ptyEcho } from './pty.js';
 import { log } from './log/index.js';
-import { hostPlatform } from './env/platform.js';
+import { hostPlatform, isWindows } from './env/platform.js';
+import { openWindowsTerminal } from './terminal.js';
 import { APP_ENV, startChild } from './env/child.js';
 import { devSwitches } from './env/dev-switches.js';
 
@@ -63,6 +64,7 @@ export function registerIpcHandlers(): void {
 
   // Detached so the Terminal child outlives the invoke (ONL-2186).
   handle(IPC_INVOKE.openTerminal, () => {
+    if (isWindows()) return openWindowsTerminal();
     const child = startChild('open', ['-a', 'Terminal'], { env: APP_ENV, detached: true, stdio: 'ignore' });
     child.on('error', (error) => logger.warn('could not open Terminal', { error }));
     child.unref();

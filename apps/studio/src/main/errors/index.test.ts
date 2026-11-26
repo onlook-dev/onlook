@@ -137,6 +137,21 @@ it('process crash hooks observe startup exits before performance sampling and in
   expect(events.filter(({ event }) => event === '$exception').map(({ properties }) => [properties['$exception_type'], properties['process_type']])).toEqual([['NativeProcessCrash', 'gpu'], ['NativeProcessCrash', 'utility'], ['NativeProcessCrash', 'renderer']]);
 });
 
+it('classifies a named starter exit as a dev server and ignores a killed starter', async () => {
+  const target = new EventEmitter();
+  installProcessCrashHooks(target as unknown as Parameters<typeof installProcessCrashHooks>[0]);
+  target.emit('child-process-gone', {}, { type: 'Utility', name: 'studio-starter:example', reason: 'crashed', exitCode: 3 });
+  target.emit('child-process-gone', {}, { type: 'Utility', name: 'studio-starter:example', reason: 'abnormal-exit', exitCode: 768 });
+  target.emit('child-process-gone', {}, { type: 'Utility', name: 'studio-starter:example', reason: 'killed', exitCode: 0 });
+  await flush();
+  const events = [...postedEvents, ...peekQueueForTesting()];
+  expect(events.filter(({ event }) => event === 'process_gone').map(({ properties }) => [properties['process_class'], properties['reason'], properties['exit_code']])).toEqual([
+    ['dev_server', 'crashed', 3],
+    ['dev_server', 'abnormal-exit', 768],
+  ]);
+  expect(events.filter(({ event }) => event === '$exception')).toEqual([]);
+});
+
 it('intentional child termination and a user app crash are not Onlook exceptions', () => {
   recordProcessExit({ process_class: 'tab', reason: 'killed', exit_code: 0 });
   recordProcessExit({ process_class: 'frame', reason: 'crashed', exit_code: 1 });
