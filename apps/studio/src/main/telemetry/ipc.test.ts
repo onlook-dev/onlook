@@ -951,6 +951,16 @@ describe('receiveRendererTelemetry', () => {
       for (const key of ['account', 'branch', 'repo', 'worktreePath']) expect(captured[0]!.properties).not.toHaveProperty(key);
     });
 
+    it('keeps only enumerated Create PR failure classes', () => {
+      for (const failure_class of ['no-changes', 'push-refused', 'org-approval', 'sign-in', 'unknown', 'private error output']) {
+        receiveRendererTelemetry({ event: 'git_pill_outcome', properties: {
+          worktreePath: worktree, from_state: 'create-pr', to_state: 'create-pr', outcome: 'unchanged', duration_ms: 10, failure_class,
+        } } as unknown as RendererTelemetryEvent);
+      }
+      const events = peekQueueForTesting().filter((event) => event.event === 'git_pill_outcome');
+      expect(events.map((event) => event.properties['failure_class'])).toEqual(['no-changes', 'push-refused', 'org-approval', 'sign-in', 'unknown']);
+    });
+
     it('a queued press and the take-back that ends it both reach the queue (ONL-2379)', () => {
       receiveRendererTelemetry({
         event: 'git_pill_queued',
