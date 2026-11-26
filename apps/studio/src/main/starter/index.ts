@@ -46,7 +46,7 @@ export function registerStarter(): StarterHost {
     modulePath: (worktree) => starterModulePath(worktree, () => writeStaticServer(join(stateRoot(), 'starter'))),
   });
   app.on('child-process-gone', (_event, details) => {
-    if (!details.serviceName?.startsWith(STARTER_SERVICE_PREFIX)) return;
+    if (!details.name?.startsWith(STARTER_SERVICE_PREFIX)) return;
     logger.warn('starter child gone', { reason: details.reason, exit_code: details.exitCode });
   });
   host = {

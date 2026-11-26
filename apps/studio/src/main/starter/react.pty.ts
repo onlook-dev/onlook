@@ -31,7 +31,7 @@ after(() => {
 });
 
 describe('the react starter over a real install', { skip: SKIP }, () => {
-  it('installs, answers the ready line through the runner, serves the page, refuses a foreign Host and a dotfile, and exits when heartbeats stop', { timeout: INSTALL_MS + 60_000 }, async () => {
+  it('installs, answers the ready line through the runner, serves the page, refuses a foreign Host and a dotfile, and stops with the runner', { timeout: INSTALL_MS + 60_000 }, async () => {
     const dir = join(workDir, 'project');
     writeScaffold(dir, reactFiles({ name: MANAGER! }));
     writeFileSync(join(dir, '.env'), 'SECRET=1\n');
@@ -58,6 +58,6 @@ describe('the react starter over a real install', { skip: SKIP }, () => {
     while (entry!.pid !== undefined && Date.now() - started < 5_000) {
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
-    assert.equal(entry!.pid, undefined, 'the child outlived its heartbeat window');
+    assert.equal(entry!.pid, undefined, 'the child outlived the disposed runner');
   });
 });
