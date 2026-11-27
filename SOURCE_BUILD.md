@@ -6,7 +6,7 @@ Onlook Source runs locally without an Onlook account, email address, cloud keys 
 
 - macOS on Apple silicon or Intel.
 - Xcode Command Line Tools: run `xcode-select --install` if they aren’t installed.
-- Git, Node.js 24 and Bun 1.4.2 on `PATH`. Node is needed by packaging tools even though Bun runs the build scripts.
+- Git, Node.js 24 and Bun 1.4.2 or newer on `PATH`. The repository pins 1.4.2 for reproducible checks; newer Bun versions can also build it. Node is needed by packaging tools even though Bun runs the build scripts.
 - Internet access to download dependencies and connect your coding agent.
 
 Check your tools with `git --version`, `node --version` and `bun --version`.
@@ -31,6 +31,8 @@ bun dev
 
 The install includes both Mac architectures for packaging. The build needs no keys; leave `STUDIO_CLOUD_BUILD` unset. Every checkout, including a Git worktree, needs its own dependency install.
 
+Installing Electron and rebuilding native dependencies can take several minutes, especially on a slow connection. The install reports progress for those steps. For troubleshooting, add `--verbose` to the install command for detailed output.
+
 On first launch, choose whether to share usage data. Either choice continues to setup, where you connect Claude Code or Codex and create a Project. You can change the choice later in Settings.
 
 ## Package an app
@@ -40,6 +42,10 @@ bun run build:dmg
 ```
 
 This builds both Mac architectures and creates `Onlook Source` apps, DMGs and ZIPs under `release/`. It needs no Onlook signing credentials. Without a Developer ID, the result is for your own Mac, not a trusted download for other people. To build app bundles without installers, use `bun run build:dmg --dir`.
+
+Allow about 2.3 GB for `release/` in addition to the checkout and installed dependencies. Packaging also needs temporary space, and output size varies by version. You can delete `release/` when you no longer need the packaged apps and installers.
+
+Installer filenames use the app version in `apps/studio/package.json`, which the packaging command prints. The root `package.json` version belongs to the workspace, not the app.
 
 Open the app matching your Mac:
 

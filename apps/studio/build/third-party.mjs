@@ -169,12 +169,25 @@ export function buildPackages(root, moduleFiles) {
 }
 
 export function thirdPartyPlugin(root, starterPins = {}) {
+  const packages = new Map();
+  let activeBuilds = 0;
   return {
     name: 'studio-third-party-notices',
     apply: 'build',
+    buildStart() {
+      if (activeBuilds === 0) packages.clear();
+      activeBuilds++;
+    },
+    buildEnd() {
+      activeBuilds--;
+    },
     generateBundle() {
       const watchedAssets = this.getWatchFiles().filter((path) => /\.(css|scss|sass|less|woff2?|otf|ttf|png|jpe?g|svg|webp)(\?|$)/i.test(path));
-      const entries = buildPackages(root, new Set([...this.getModuleIds(), ...watchedAssets]));
+      for (const entry of buildPackages(root, new Set([...this.getModuleIds(), ...watchedAssets]))) {
+        packages.set(`${entry.name}@${entry.version}`, entry);
+      }
+      if (activeBuilds > 0) return;
+      const entries = [...packages.values()];
       this.emitFile({ type: 'asset', fileName: 'third-party.json', source: JSON.stringify(entries, null, 2) + '\n' });
       if (process.env.STUDIO_COLLECT_NOTICES === '1') return;
       const inventory = JSON.parse(readFileSync(join(root, 'compliance/dependencies.json'), 'utf8'));

@@ -8,8 +8,25 @@ export const TIER_RANK: Record<Tier, number> = {
   unsigned: 0,
 };
 
-// The degrade to signed-unnotarized needs a person reading the banner; an unwatched release passes --require-notarized.
-// Unsigned reads to the recipient as "damaged, move to Trash" with no bypass, while every command exits 0.
+export function assessesGatekeeper(tier: Tier, officialBuild: boolean): boolean {
+  return officialBuild || tier !== 'unsigned';
+}
+
+export function signingGuidance(tier: Tier, officialBuild: boolean): string {
+  if (officialBuild) {
+    switch (tier) {
+      case 'notarized': return 'Recipient double-clicks, drags to Applications, opens. No dialog.';
+      case 'signed-unnotarized': return 'Recipient must do the "Open Anyway" dance:\n  System Settings > Privacy & Security > Open Anyway.';
+      case 'unsigned': return 'Recipient sees "damaged, move to Trash". There is no bypass. Do not send this.';
+    }
+  }
+  switch (tier) {
+    case 'notarized': return 'Developer ID signed and notarized by Apple.';
+    case 'signed-unnotarized': return 'macOS may block opening this app.\nFor an app you trust, see System Settings > Privacy & Security.';
+    case 'unsigned': return 'Ad-hoc signed for use on your own Mac, not as a trusted download.\nIf macOS blocks it, see the Privacy & Security guidance in SOURCE_BUILD.md.';
+  }
+}
+
 export function minimumTier(requireNotarized: boolean): Tier {
   return requireNotarized ? 'notarized' : 'signed-unnotarized';
 }

@@ -47,3 +47,23 @@ test('local Mac cuts sign without a key and never require or rewrite an official
   expect(script).toContain('officialBuild ? patchFeedsForDmg(');
   expect(script).toContain('if (!ok && (!dirOnly || !officialBuild))');
 });
+
+test('local Mac cuts explain expected unsigned output without release credential instructions', () => {
+  const script = read('scripts/cut-dmg.ts');
+  expect(script).toContain("officialBuild ? red('none in keychain') : dim('not needed for a local build')");
+  expect(script).toContain('if (officialBuild && notaryEnv.env === undefined && !notaryProfile)');
+  expect(script).not.toContain('~/.config/apple-notary.env');
+  expect(script).not.toContain('There is no bypass');
+  expect(script).not.toContain('Do not send this');
+  expect(script).toContain("observedTier !== 'unsigned' && await validateStapledTicket(packagedApp)");
+  expect(script).toContain('stampedVersion ?? appManifest.version');
+  expect(script).toContain('signingGuidance(observedTier, officialBuild)');
+});
+
+test('local ad-hoc builds skip inapplicable Gatekeeper checks and list their app bundles', () => {
+  const script = read('scripts/cut-dmg.ts');
+  expect(script).toContain('if (assessesGatekeeper(intendedTier, officialBuild))');
+  expect(script).toContain('not applicable (ad-hoc signed local build)');
+  expect(script).toContain("if (dirOnly) verdict.push(`  ${packagedApp.replace(repoRoot + '/', '')}`)");
+  expect(script).toContain("if (!ok && (!dirOnly || !officialBuild)) throw new Error");
+});

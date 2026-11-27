@@ -35,6 +35,20 @@ export function editionStringsPlugin(cloud: boolean) {
   };
 }
 
+function zodProseAnnotationPlugin() {
+  return {
+    name: 'zod-prose-annotation',
+    enforce: 'pre' as const,
+    transform(code: string, id: string) {
+      if (!/\/node_modules\/zod\/v4\/core\/(?:util|regexes)\.(?:js|cjs)$/.test(id.replaceAll('\\', '/'))) return null;
+      const corrected = code
+        .replace('// Wrapped in a `@__PURE__` IIFE:', '// Wrapped in an IIFE:')
+        .replace('esbuild will not drop a `@__PURE__` call whose own argument', 'esbuild will not drop a pure call whose own argument');
+      return corrected === code ? null : { code: corrected, map: null };
+    },
+  };
+}
+
 // The repo root, not this package: electron-vite's default env dir silently bakes
 // nothing from the root `.env` (GH-3).
 const envDir = resolve(import.meta.dirname, '../..');
@@ -110,7 +124,7 @@ function studioConfig(options: StudioConfigOptions, env: Record<string, string |
     },
     // Externalizes `dependencies`, bundles the rest: workspace packages are
     // devDependencies because electron-builder v26 mis-resolves `workspace:*`.
-    plugins: [externalizeDepsPlugin(), thirdPartyPlugin(envDir, REACT_PINS), editionStringsPlugin(cloud), {
+    plugins: [externalizeDepsPlugin(), thirdPartyPlugin(envDir, REACT_PINS), editionStringsPlugin(cloud), zodProseAnnotationPlugin(), {
       name: 'telemetry-build-selection',
       enforce: 'pre' as const,
       resolveId(source: string, importer: string | undefined) {
@@ -137,7 +151,7 @@ function studioConfig(options: StudioConfigOptions, env: Record<string, string |
    * `main/index.ts` and `main/frames/index.ts` with it.
    */
   preload: {
-    plugins: [thirdPartyPlugin(envDir, REACT_PINS)],
+    plugins: [thirdPartyPlugin(envDir, REACT_PINS), zodProseAnnotationPlugin()],
     envDir,
     build: {
       isolatedEntries: true,
@@ -188,7 +202,7 @@ function studioConfig(options: StudioConfigOptions, env: Record<string, string |
       exclude: ['@central-icons-react/round-outlined-radius-1-stroke-1.5'],
       include: ['@astryxdesign/core/[A-Z]*'],
     },
-    plugins: [react(), bootScript, thirdPartyPlugin(envDir, REACT_PINS), editionStringsPlugin(cloud), {
+    plugins: [react(), bootScript, thirdPartyPlugin(envDir, REACT_PINS), editionStringsPlugin(cloud), zodProseAnnotationPlugin(), {
       name: 'replay-build-selection',
       enforce: 'pre' as const,
       resolveId(source: string, importer: string | undefined) {

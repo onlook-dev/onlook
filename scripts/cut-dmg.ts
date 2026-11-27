@@ -18,7 +18,7 @@ import { banner, bold, dim, green, red, yellow } from './ansi.js';
 import { packagedArchProblems } from './app-arch.js';
 import { assertMacSigningIdentity } from './mac-signing.js';
 import { artifactNames, MAC_ARCHES, packagedAppPath, type MacArch } from './release-targets.js';
-import { meetsMinimum, minimumTier, TIER_RANK, type Tier } from './tier.js';
+import { assessesGatekeeper, meetsMinimum, minimumTier, signingGuidance, TIER_RANK, type Tier } from './tier.js';
 import { builderReleaseArgs, releaseOptions } from './release-channel.js';
 import { commitCount, stamp } from './version.js';
 import { packageMac, stapleAndValidate, validateStapledTicket } from './mac-notarization.js';
@@ -85,7 +85,6 @@ const notaryProfile =
 
 const isSet = (key: string): boolean => (process.env[key] ?? '').length > 0;
 
-// ~/.config/apple-notary.env ships every slot as FILL_ME, so set-ness alone reports absent credentials.
 const isUsable = (key: string): boolean => {
   const value = process.env[key] ?? '';
   return value.length > 0 && !value.startsWith('FILL_ME');
@@ -174,52 +173,51 @@ const intendedTier: Tier = !identity
     : 'signed-unnotarized';
 
 step('Signing preflight');
-console.log(`  Developer ID identity ... ${identity ? green(identity) : red('none in keychain')}`);
-console.log(
-  `  Notary credentials ...... ${
-    notaryEnv.env !== undefined
-      ? green(`${notaryEnv.source} — in-band notarization`)
-      : notaryProfile
-        ? green(`keychain profile "${notaryProfile}" — post-hoc notarization`)
-        : yellow(`${notaryEnv.reason}`)
-  }`,
-);
-if (notaryEnv.env === undefined && !notaryProfile) {
-  console.log(
-    dim('    Fill either ONLOOK_APPLE_API_KEY_CONTENT / _API_KEY_ID / _API_ISSUER (ASC key)'),
-  );
-  console.log(
-    dim('    or ONLOOK_APPLE_ID / ONLOOK_APPLE_NOTARY_PASSWORD / ONLOOK_APPLE_TEAM_ID'),
-  );
-  console.log(dim('    in ~/.config/apple-notary.env and open a new shell.'));
+console.log(`  Developer ID identity ... ${identity ? green(identity) : officialBuild ? red('none in keychain') : dim('not needed for a local build')}`);
+let notaryStatus: string;
+if (notaryEnv.env !== undefined) {
+  notaryStatus = green(`${notaryEnv.source} — in-band notarization`);
+} else if (notaryProfile) {
+  notaryStatus = green(`keychain profile "${notaryProfile}" — post-hoc notarization`);
+} else if (officialBuild) {
+  notaryStatus = yellow(notaryEnv.reason);
+} else {
+  notaryStatus = dim('not needed for a local build');
+}
+console.log(`  Notary credentials ...... ${notaryStatus}`);
+if (officialBuild && notaryEnv.env === undefined && !notaryProfile) {
+  console.log(dim('    To notarize, supply Apple notary credentials or use --notary-profile.'));
 }
 console.log(`  Intended tier ........... ${bold(intendedTier)}`);
+if (officialBuild) {
+  console.log(
+    `  Minimum tier ............ ${bold(minimumTier(requireNotarized))} ${dim(
+      requireNotarized
+        ? '(--require-notarized: a degraded cut aborts instead of shipping)'
+        : '(default: a notarization failure degrades and still produces a build)',
+    )}`,
+  );
+  console.log(
+    `  Update channel .......... ${bold(channel)} ${dim(
+      `(feed file ${channel}-mac.yml; baked into the build's app-update.yml)`,
+    )}`,
+  );
+} else {
+  console.log(dim('  Local source build ...... no signing credentials or update feed required'));
+}
 console.log(
-  `  Minimum tier ............ ${bold(minimumTier(requireNotarized))} ${dim(
-    requireNotarized
-      ? '(--require-notarized: a degraded cut aborts instead of shipping)'
-      : '(default: a notarization failure degrades and still produces a build)',
-  )}`,
-);
-console.log(
-  `  Update channel .......... ${bold(channel)} ${dim(
-    `(feed file ${channel}-mac.yml; baked into the build's app-update.yml)`,
-  )}`,
-);
-console.log(
-  `  Version ................. ${bold(stampedVersion ?? '(from package.json)')} ${dim(
-    stampedVersion ? '(stamped; the tree is untouched)' : '(local cut — the base, unstamped)',
+  `  Version ................. ${bold(stampedVersion ?? appManifest.version)} ${dim(
+    stampedVersion ? '(stamped; the tree is untouched)' : '(from apps/studio/package.json)',
   )}`,
 );
 
-if (intendedTier === 'unsigned') {
+if (officialBuild && intendedTier === 'unsigned') {
   banner(
     [
       red(bold('No Developer ID identity found.')),
       '',
-      'This cut will be ad-hoc signed. On macOS Sequoia and later that',
-      'reads to the recipient as "damaged, move to Trash" with no bypass.',
-      'Usable for local testing. NOT shippable to a friendly.',
+      'This build will be ad-hoc signed for local use.',
+      'Distribution requires a Developer ID and notarization.',
     ],
     red,
   );
@@ -544,21 +542,24 @@ if (officialBuild && intendedTier !== 'unsigned') {
 
 let observedTier: Tier = 'unsigned';
 
-// Read off the .app: electron-builder 26 leaves the .dmg unsigned, so assessing it reports UNSIGNED for a shippable build.
-// spctl exits non-zero for a signed-unnotarized app; the `source=` line carries the verdict, not the status.
-const spctl = capture('spctl', ['-a', '-t', 'exec', '-vv', packagedApp]);
-const assessment = `${(spctl.stdout ?? '').trim()} ${(spctl.stderr ?? '').trim()}`.trim();
+if (assessesGatekeeper(intendedTier, officialBuild)) {
+  // Read off the .app: electron-builder 26 leaves the .dmg unsigned, so assessing it reports UNSIGNED for a shippable build.
+  // spctl exits non-zero for a signed-unnotarized app; the `source=` line carries the verdict, not the status.
+  const spctl = capture('spctl', ['-a', '-t', 'exec', '-vv', packagedApp]);
+  const assessment = `${(spctl.stdout ?? '').trim()} ${(spctl.stderr ?? '').trim()}`.trim();
 
-if (/source=Notarized Developer ID/.test(assessment)) observedTier = 'notarized';
-else if (/source=Unnotarized Developer ID/.test(assessment)) observedTier = 'signed-unnotarized';
-else if (/origin=Developer ID Application/.test(assessment)) observedTier = 'signed-unnotarized';
-else observedTier = 'unsigned';
+  if (/source=Notarized Developer ID/.test(assessment)) observedTier = 'notarized';
+  else if (/source=Unnotarized Developer ID/.test(assessment)) observedTier = 'signed-unnotarized';
+  else if (/origin=Developer ID Application/.test(assessment)) observedTier = 'signed-unnotarized';
 
-console.log(`  gatekeeper (the app) .... ${dim(assessment.replace(/\n/g, ' | '))}`);
+  console.log(`  gatekeeper (the app) .... ${dim(assessment.replace(/\n/g, ' | '))}`);
+} else {
+  console.log(`  gatekeeper (the app) .... ${dim('not applicable (ad-hoc signed local build)')}`);
+}
 
-const stapled = await validateStapledTicket(packagedApp).then(() => true, () => false);
+const stapled = observedTier !== 'unsigned' && await validateStapledTicket(packagedApp).then(() => true, () => false);
 if (observedTier === 'notarized' && !stapled) observedTier = 'signed-unnotarized';
-console.log(`  stapled ticket .......... ${stapled ? green('present (validates offline)') : yellow('none')}`);
+console.log(`  stapled ticket .......... ${stapled ? green('present (validates offline)') : observedTier === 'unsigned' ? dim('not applicable (ad-hoc signed)') : yellow('none')}`);
 
 if (dmg) {
   const dmgSigned = capture('codesign', ['-dv', dmg]).status === 0;
@@ -571,20 +572,13 @@ if (dmg) {
 
 const mb = (path: string): string => `${(statSync(path).size / 1024 / 1024).toFixed(1)} MB`;
 
-const experience: Record<Tier, string> = {
-  notarized: 'Recipient double-clicks, drags to Applications, opens. No dialog.',
-  'signed-unnotarized':
-    'Recipient must do the "Open Anyway" dance:\n  System Settings > Privacy & Security > Open Anyway.',
-  unsigned: 'Recipient sees "damaged, move to Trash". There is no bypass. Do not send this.',
-};
-
-const tierColor = observedTier === 'notarized' ? green : observedTier === 'unsigned' ? red : yellow;
+const tierColor = { notarized: green, 'signed-unnotarized': yellow, unsigned: officialBuild ? red : dim }[observedTier];
 if (TIER_RANK[observedTier] < TIER_RANK[minimumObservedTier]) minimumObservedTier = observedTier;
 
 const verdict: string[] = [
-  `${bold('SIGNING TIER:')} ${tierColor(bold(observedTier.toUpperCase()))}`,
+  officialBuild ? `${bold('SIGNING TIER:')} ${tierColor(bold(observedTier.toUpperCase()))}` : `${bold('Onlook Source built:')} ${bold(arch)} · ${stampedVersion ?? appManifest.version}`,
   '',
-  ...experience[observedTier].split('\n'),
+  ...signingGuidance(observedTier, officialBuild).split('\n'),
 ];
 
 // `--dir` produces no installer, so there is no tier to hold it to.
@@ -611,8 +605,9 @@ if (dmg && !dirOnly && !windowTidied) {
 }
 
 verdict.push('', bold('Artifacts'));
+if (dirOnly) verdict.push(`  ${packagedApp.replace(repoRoot + '/', '')}`);
 if (dmg) verdict.push(`  ${dmg.replace(repoRoot + '/', '')}  ${dim(mb(dmg))}   ${dim('← install')}`);
-if (zip) verdict.push(`  ${zip.replace(repoRoot + '/', '')}  ${dim(mb(zip))}   ${dim('← updater')}`);
+if (zip) verdict.push(`  ${zip.replace(repoRoot + '/', '')}  ${dim(mb(zip))}   ${dim(officialBuild ? '← updater' : '← app archive')}`);
 if (feed) verdict.push(`  ${feed.replace(repoRoot + '/', '')}          ${dim('← updater feed')}`);
 if (!dmg && !dirOnly) verdict.push(red('  No .dmg produced.'));
 
