@@ -91,11 +91,13 @@ export async function measure(
     : { reader: deps.reader ?? ghReader(worktree), connectViaBrowser: false, via: 'cli' as const, failure: undefined };
   if (selected.connectViaBrowser) measurement.connectViaBrowser = true;
   const m = await probeGithub(measurement, selected.reader);
+  if (selected.via === 'account' && m.ghAccount !== undefined) m.connectionAccount = m.ghAccount;
   const failure = selected.failure?.();
   if (failure !== undefined) m.githubReadFailure = failure;
   if (selected.via === 'account' && (failure?.status === 'disconnected' || failure?.status === 'reconnect')) {
     m.ghAuthed = false;
     delete m.ghAccount;
+    delete m.connectionAccount;
     m.access = 'unknown';
     delete m.accessReason;
     delete m.pr;

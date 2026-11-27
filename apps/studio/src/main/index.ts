@@ -382,8 +382,7 @@ void app.whenReady().then(() => {
     onApplied: (worktreePath, row) => gitStatusCadence()?.applied(worktreePath, row),
   });
   onAccountSessionChanged(() => {
-    if (githubImportBackend()?.identity === undefined) return;
-    void gitStatus.connectionChanged().catch((error: unknown) => log('git-status').error('account refresh failed', { error }));
+    void gitStatus.refreshForConnection().catch((error: unknown) => log('git-status').error('account refresh failed', { error }));
   });
   registerGitStatusCadence({ check: (worktreePath, opts) => gitStatus.check(worktreePath, opts) });
   // Two sources: the window events stop once the app is views in a `BaseWindow`, and the app-level pair is macOS-only (ONL-2206, ONL-2222).

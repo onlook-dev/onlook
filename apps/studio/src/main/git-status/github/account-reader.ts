@@ -111,6 +111,10 @@ export function hasGithubStatusReads(backend: GithubBackend | undefined): backen
   return backend?.identity !== undefined && backend.repositoryAccess !== undefined && backend.pullRequests !== undefined;
 }
 
+export function readGithubIdentity(backend: GithubBackend & GithubReads, boundMs: number = PROVIDER_READ_DEADLINE_MS): Promise<GithubIdentity> {
+  return safely(() => backend.identity(), boundMs);
+}
+
 async function cliSignedIn(fallback: GitHubReader): Promise<boolean> {
   const present = await fallback.present();
   return present.ok && (await fallback.identity()).ok;

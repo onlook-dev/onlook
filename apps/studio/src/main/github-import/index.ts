@@ -95,7 +95,7 @@ export function registerGithubImportHandlers(): void {
       const subject = verifiedSubject(readIdentity());
       const identity = state.connection.status === 'connected' ? await backend.identity().catch(() => undefined) : undefined;
       if (subject === verifiedSubject(readIdentity()) && connectionChanged(subject, state.connection, identity)) {
-        void gitStatusHost()?.connectionChanged().catch((error: unknown) => log('git-status').error('connection refresh failed', { error }));
+        void gitStatusHost()?.refreshForConnection(identity).catch((error: unknown) => log('git-status').error('connection refresh failed', { error }));
       }
     }
     return state;

@@ -25,6 +25,8 @@ export interface GitMeasurement {
   ghInstalled: boolean;
   ghAuthed: boolean;
   ghAccount?: string;
+  /** The GitHub login the account connection reported when these facts were measured; absent when `gh` measured them. */
+  connectionAccount?: string;
   connectViaBrowser?: boolean;
   githubReadFailure?: import('./github-import.js').GithubReadFailure;
   origin: GitOriginKind;

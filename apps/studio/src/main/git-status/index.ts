@@ -15,7 +15,8 @@ import { readGitPillDefaults, writeGitPillDefaults } from './defaults.js';
 import { GH_TIMEOUT_MS } from './gh.js';
 import { emptyMeasurement, measure as realMeasure, type MeasureOutcome } from './measure.js';
 import { forgetGitStatusRow, reopenGitStatusRow, gitStatusProjectGeneration, gitStatusRowFor, listGitStatusRows, writeGitStatusRow } from './store.js';
-import type { GithubBackend } from '../github-import/backend.js';
+import type { GithubBackend, GithubIdentity } from '../github-import/backend.js';
+import { hasGithubStatusReads, readGithubIdentity } from './github/account-reader.js';
 import { log } from '../log/index.js';
 import { capture, resolveWorkspaceTelemetryProperties } from '../telemetry/index.js';
 import { gitStateProperties } from '../telemetry/git-state.js';
@@ -51,6 +52,8 @@ export interface GitStatusHost {
   check(worktreePath: string, opts: GitCheckOptions): Promise<void>;
   list(): GitStatusList;
   connectionChanged(): Promise<void>;
+  /** Re-reads every project only when the live connection is not the one the saved rows were measured for. */
+  refreshForConnection(identity?: GithubIdentity): Promise<void>;
 }
 
 interface Pending {
@@ -120,6 +123,7 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
         if (!measurement.ghAuthed) {
           measurement.ghAuthed = kept.ghAuthed;
           if (kept.ghAccount !== undefined) measurement.ghAccount = kept.ghAccount;
+          if (kept.connectionAccount !== undefined) measurement.connectionAccount = kept.connectionAccount;
         }
         // A read that failed establishes no permission, so this pass borrows none; one that is borrowed brings the reason it was measured with.
         if (measurement.access === 'unknown' && measurement.githubReadFailure === undefined) {
@@ -273,6 +277,52 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
     return known === undefined ? Promise.resolve() : enqueue(worktreePath, known.baseBranch, opts);
   };
 
+  const savedRows = (): GitSnapshotRow[] => {
+    const rows: GitSnapshotRow[] = [];
+    for (const workspace of listWorkspaces()) {
+      for (const project of workspace.projects) {
+        if (project.missing || knownProject(project.workspacePath) === undefined) continue;
+        const row = gitStatusRowFor(project.workspacePath);
+        if (row !== undefined) rows.push(row);
+      }
+    }
+    return rows;
+  };
+
+  const invalidateEveryProject = async (): Promise<void> => {
+    const checks: Promise<void>[] = [];
+    for (const workspace of listWorkspaces()) {
+      for (const project of workspace.projects) {
+        const known = knownProject(project.workspacePath);
+        if (project.missing || known === undefined) continue;
+        forgetGitStatusRow(project.workspacePath);
+        reopenGitStatusRow(project.workspacePath);
+        const row: GitSnapshotRow = {
+          invalidated: true, measurement: emptyMeasurement(known.baseBranch, true),
+          measuredAt: now().toISOString(), trigger: 'focus', stale: true,
+        };
+        writeGitStatusRow(project.workspacePath, row);
+        guarded('emit threw', () => deps.emit({ worktreePath: project.workspacePath, row }));
+        checks.push(trigger(project.workspacePath, { trigger: 'focus', fetch: false }));
+      }
+    }
+    await Promise.all(checks);
+  };
+
+  let firstObservation = true;
+
+  const connectionMoved = (identity: GithubIdentity, first: boolean): boolean => {
+    const rows = savedRows();
+    // A quit cannot leave a skeleton behind: a row still invalidated when the app starts is re-read once.
+    if (first && rows.some((row) => row.invalidated === true)) return true;
+    const measuredFor = rows.map((row) => row.measurement.connectionAccount).filter((account) => account !== undefined);
+    if (measuredFor.length === 0) return false;
+    if (identity.status === 'connected') {
+      return measuredFor.some((account) => account.toLowerCase() !== identity.account.toLowerCase());
+    }
+    return identity.status === 'disconnected' || identity.status === 'reconnect';
+  };
+
   return {
     opened: (worktreePath) => {
       const known = knownProject(worktreePath);
@@ -281,25 +331,16 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
     },
     turnEnded: (worktreePath) => trigger(worktreePath, { trigger: 'turn-end', fetch: false }),
     check: (worktreePath, opts) => trigger(worktreePath, opts),
-    connectionChanged: async () => {
-      const checks: Promise<void>[] = [];
-      for (const workspace of listWorkspaces()) {
-        for (const project of workspace.projects) {
-          const known = knownProject(project.workspacePath);
-          if (project.missing || known === undefined) continue;
-          forgetGitStatusRow(project.workspacePath);
-          reopenGitStatusRow(project.workspacePath);
-          const row: GitSnapshotRow = {
-            invalidated: true, measurement: emptyMeasurement(known.baseBranch, true),
-            measuredAt: now().toISOString(), trigger: 'focus', stale: true,
-          };
-          writeGitStatusRow(project.workspacePath, row);
-          guarded('emit threw', () => deps.emit({ worktreePath: project.workspacePath, row }));
-          checks.push(trigger(project.workspacePath, { trigger: 'focus', fetch: false }));
-        }
-      }
-      await Promise.all(checks);
+    refreshForConnection: async (live) => {
+      const backend = deps.backend?.();
+      if (!hasGithubStatusReads(backend)) return;
+      const first = firstObservation;
+      firstObservation = false;
+      const identity = live ?? await readGithubIdentity(backend);
+      if (!connectionMoved(identity, first)) return;
+      await invalidateEveryProject();
     },
+    connectionChanged: invalidateEveryProject,
     list: () => {
       const rows = listGitStatusRows();
       const list: GitStatusList = {};

@@ -129,6 +129,16 @@ describe('a provider read that never answers', () => {
   });
 });
 
+it('records the account the connection measured the status for, and nothing on the gh path', async () => {
+  const viaConnection = await measure(shared.repo, { baseBranch: 'main', fetch: false }, {
+    backend: githubBackendFixture('connected'), reader: scriptedGh({}).reader,
+  });
+  expect(viaConnection.measurement.connectionAccount).toBe('designer');
+  const viaGh = await measure(shared.repo, { baseBranch: 'main', fetch: false }, scriptedGh({}));
+  expect(viaGh.measurement.ghAccount).toBe('wrenquill');
+  expect(viaGh.measurement.connectionAccount).toBeUndefined();
+});
+
 it('a forbidden repository answer leaves access unknown instead of denying it', async () => {
   const backend = githubBackendFixture('connected', { repositoryAccess: { status: 'forbidden' } });
   const { measurement: m } = await measure(shared.repo, { baseBranch: 'main', fetch: false }, { backend, reader: scriptedGh({}).reader });

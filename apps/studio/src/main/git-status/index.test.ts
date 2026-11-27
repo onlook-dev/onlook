@@ -18,7 +18,9 @@ import { forgetProject, normalizePath, rememberProject, resetWorkspaceCache } fr
 import { readGitPillDefaults, resetGitPillDefaultsCache, writeGitPillDefaults } from './defaults.js';
 import { createGitStatusHost, type GitStatusHostDeps } from './index.js';
 import type { MeasureOutcome, MeasureOptions } from './measure.js';
-import { forgetGitStatusRow, gitStatusRowFor, reopenGitStatusRow, resetGitStatusCache } from './store.js';
+import { forgetGitStatusRow, gitStatusRowFor, reopenGitStatusRow, resetGitStatusCache, writeGitStatusRow } from './store.js';
+import { githubBackendFixture } from '../github-import/backend-fixtures.js';
+import type { GithubBackend } from '../github-import/backend.js';
 import { initTelemetry, peekQueueForTesting, resetTelemetryForTesting, setAppForTesting } from '../telemetry/index.js';
 
 const savedStateRoot = process.env['STUDIO_STATE_ROOT'];
@@ -227,6 +229,102 @@ it('reports the fresh measured denial and failed refresh through the real teleme
     if (savedKey === undefined) delete process.env['STUDIO_POSTHOG_KEY'];
     else process.env['STUDIO_POSTHOG_KEY'] = savedKey;
   }
+});
+
+describe('the connection the saved rows were measured for', () => {
+  const seeded = async (over: Partial<GitMeasurement>, backend?: GithubBackend) => {
+    const context = harness({ backend: () => backend });
+    const open = context.host.opened(worktree);
+    await settle();
+    context.calls[0]!.resolve({ measurement: facts(over), fetched: true });
+    await open;
+    return context;
+  };
+  const MEASURED_FOR_DESIGNER = { ghAccount: 'designer', connectionAccount: 'designer' };
+
+  it('re-reads nothing when the live connection names the account the rows were measured for', async () => {
+    const { host, calls } = await seeded(MEASURED_FOR_DESIGNER, githubBackendFixture('connected'));
+    await host.refreshForConnection();
+    expect(calls).toHaveLength(1);
+    expect(gitStatusRowFor(worktree)?.invalidated).toBeUndefined();
+  });
+
+  it('invalidates and re-reads every project when the live connection names another account', async () => {
+    const { host, calls, emitted } = await seeded({ ghAccount: 'someone', connectionAccount: 'someone' }, githubBackendFixture('connected'));
+    const refreshed = host.refreshForConnection();
+    await settle();
+    expect(calls).toHaveLength(2);
+    expect(emitted.at(-1)?.row.invalidated).toBe(true);
+    calls[1]!.resolve({ measurement: facts(MEASURED_FOR_DESIGNER), fetched: false });
+    await refreshed;
+    expect(gitStatusRowFor(worktree)?.measurement.connectionAccount).toBe('designer');
+  });
+
+  it('takes the identity the caller already read rather than reading it again', async () => {
+    const backend = githubBackendFixture('connected');
+    let reads = 0;
+    backend.identity = async () => { reads += 1; return { status: 'connected', account: 'designer' }; };
+    const { host, calls } = await seeded({ ghAccount: 'someone', connectionAccount: 'someone' }, backend);
+    const refreshed = host.refreshForConnection({ status: 'connected', account: 'someone-else' });
+    await settle();
+    expect(reads).toBe(0);
+    expect(calls).toHaveLength(2);
+    calls[1]!.resolve({ measurement: facts(), fetched: false });
+    await refreshed;
+  });
+
+  it('re-reads nothing when no saved row names an account', async () => {
+    const { host, calls } = await seeded({ ghAccount: 'wrenquill' }, githubBackendFixture('connected'));
+    await host.refreshForConnection();
+    expect(calls).toHaveLength(1);
+    expect(gitStatusRowFor(worktree)?.invalidated).toBeUndefined();
+  });
+
+  it('re-reads nothing with no saved rows at all', async () => {
+    const { host, calls } = harness({ backend: () => githubBackendFixture('connected') });
+    await host.refreshForConnection();
+    expect(calls).toEqual([]);
+  });
+
+  it('re-reads nothing when the identity read cannot answer', async () => {
+    const { host, calls } = await seeded(MEASURED_FOR_DESIGNER, githubBackendFixture('unavailable'));
+    await host.refreshForConnection();
+    expect(calls).toHaveLength(1);
+  });
+
+  for (const gone of [{ status: 'disconnected' }, { status: 'reconnect', reason: 'revoked' }] as const) {
+    it(`invalidates when the connection answers ${gone.status} and the rows name an account`, async () => {
+      const backend = githubBackendFixture('connected');
+      backend.identity = async () => gone;
+      const { host, calls } = await seeded(MEASURED_FOR_DESIGNER, backend);
+      const refreshed = host.refreshForConnection();
+      await settle();
+      expect(calls).toHaveLength(2);
+      calls[1]!.resolve({ measurement: facts({ ghAuthed: false }), fetched: false });
+      await refreshed;
+    });
+  }
+
+  it('re-reads a row a quit left invalidated, once, even though the account agrees', async () => {
+    const { host, calls } = await seeded(MEASURED_FOR_DESIGNER, githubBackendFixture('connected'));
+    reopenGitStatusRow(worktree);
+    writeGitStatusRow(worktree, { ...gitStatusRowFor(worktree)!, invalidated: true });
+    const refreshed = host.refreshForConnection();
+    await settle();
+    expect(calls).toHaveLength(2);
+    calls[1]!.resolve({ measurement: facts(MEASURED_FOR_DESIGNER), fetched: false });
+    await refreshed;
+    await host.refreshForConnection();
+    expect(calls).toHaveLength(2);
+  });
+
+  it('asks nothing of a provider that cannot supply status', async () => {
+    const identityOnly = { ...githubBackendFixture('connected'), repositoryAccess: undefined };
+    const { host, calls } = await seeded({ ghAccount: 'someone', connectionAccount: 'someone' }, identityOnly);
+    await host.refreshForConnection();
+    expect(calls).toHaveLength(1);
+    expect(gitStatusRowFor(worktree)?.invalidated).toBeUndefined();
+  });
 });
 
 describe('a measurement the project has moved past', () => {
@@ -726,6 +824,27 @@ describe('apply — what a row keeps', () => {
     const row = emitted[1]?.row;
     expect(row?.measurement.access).toBe('denied');
     expect(row?.measurement.accessReason).toBe('sso_required');
+  });
+
+  it('borrows the account the facts it keeps were measured for, and drops it when this pass signs in itself', async () => {
+    const { host, calls, emitted } = harness();
+    const open = host.opened(worktree);
+    await settle();
+    calls[0]?.resolve({ measurement: facts({ ghAccount: 'designer', connectionAccount: 'designer' }), fetched: true });
+    await open;
+
+    const turn = host.turnEnded(worktree);
+    await settle();
+    calls[1]?.resolve({ measurement: facts({ partial: true, ghAuthed: false, access: 'unknown' }), fetched: undefined });
+    await turn;
+    expect(emitted[1]?.row.measurement.connectionAccount).toBe('designer');
+
+    const next = host.turnEnded(worktree);
+    await settle();
+    calls[2]?.resolve({ measurement: facts({ partial: true, ghAuthed: true, ghAccount: 'wrenquill', access: 'unknown' }), fetched: undefined });
+    await next;
+    expect(emitted[2]?.row.measurement.ghAccount).toBe('wrenquill');
+    expect(emitted[2]?.row.measurement.connectionAccount).toBeUndefined();
   });
 
   it('a partial result that reached identity keeps its fresh sign-in over the stale one', async () => {
