@@ -1,5 +1,7 @@
 {
   "github.name": "GitHub",
+  "github.checking": "Checking…",
+  "github.tryAgain": "Try again",
   "github.import": "Import from GitHub",
   "github.archived": "Archived",
   "github.archived.body": "{repository} is archived on GitHub. You can clone and design, but can’t push changes.",

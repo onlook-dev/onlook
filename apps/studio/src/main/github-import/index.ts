@@ -58,6 +58,7 @@ export function registerGithubImportHandlers(): void {
         enabled: () => flagOn('github-import'),
         backend: githubBackend,
         subject: () => verifiedSubject(readIdentity()),
+        session: readIdentity,
         open: (url) => shell.openExternal(url),
         parent: async (choice) => {
           if (choice === 'onlook') return join(stateRoot(), 'github-sources');

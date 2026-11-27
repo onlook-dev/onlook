@@ -5,8 +5,10 @@ import { flagEnabled } from '../flags/store.js';
 import { studio } from '../bridge.js';
 
 export const EMPTY_GITHUB: GithubImportState = {
-  enabled: false, connection: { status: 'disconnected' }, repositories: [], branches: [], phase: 'idle', progress: 0,
+  enabled: false, connection: { status: 'checking' }, repositories: [], branches: [], phase: 'idle', progress: 0,
 };
+
+export const GITHUB_STATUS_TIMEOUT_MS = 10_000;
 
 export const useGithubImport = create<{
   state: GithubImportState;
@@ -21,6 +23,7 @@ interface Dispatch {
   queue: Promise<unknown>;
 }
 let dispatch: Dispatch = { requests: new Map(), queue: Promise.resolve() };
+let statusFlight: { request: Promise<GithubImportState>; expired: boolean } | undefined;
 /** The connection the person opened in the browser; the watcher polls only while it is unanswered. */
 let connection: 'idle' | 'waiting' = 'idle';
 
@@ -91,27 +94,58 @@ export function githubCommand(command: GithubImportCommand, background = command
 async function performCommand(command: GithubImportCommand, owner: Dispatch): Promise<GithubImportState> {
   if (owner !== dispatch) return EMPTY_GITHUB;
   if (!githubOffered()) return EMPTY_GITHUB;
+  let timeout: ReturnType<typeof setTimeout> | undefined;
   try {
-    const state = await studio().githubImport(command);
+    const trackStatus = command.kind === 'status' && useGithubImport.getState().state.phase !== 'cloning';
+    if (trackStatus && statusFlight === undefined) {
+      const flight = { request: studio().githubImport(command), expired: false };
+      statusFlight = flight;
+      void flight.request.then((state) => {
+        if (statusFlight === flight) {
+          const loadRepositories = flight.expired && state.connection.status === 'connected' && useGithubImport.getState().state.connection.status !== 'connected';
+          if (flight.expired || owner !== dispatch) {
+            applyState(owner === dispatch ? state : { ...useGithubImport.getState().state, connection: state.connection });
+          }
+          statusFlight = undefined;
+          if (loadRepositories) void githubCommand({ kind: 'repositories' }, true);
+        }
+      }, () => { if (statusFlight === flight) statusFlight = undefined; });
+    }
+    const flight = trackStatus ? statusFlight : undefined;
+    const request = flight?.request ?? studio().githubImport(command);
+    const needsDeadline = command.kind === 'status';
+    const state = await (needsDeadline ? Promise.race([request, new Promise<never>((_resolve, reject) => {
+      timeout = setTimeout(() => {
+        if (flight !== undefined) flight.expired = true;
+        reject(new Error('GitHub status timed out'));
+      }, GITHUB_STATUS_TIMEOUT_MS);
+    })]) : request);
     if (owner === dispatch) {
       if (command.kind === 'start') connection = state.connection.status === 'connecting' ? 'waiting' : 'idle';
       if (state.connection.status === 'connected' || command.kind === 'begin' || command.kind === 'cancel' || (command.kind === 'leave' && command.next !== 'waiting')) connection = 'idle';
-      const previous = useGithubImport.getState().state;
-      useGithubImport.setState({ state: {
-        ...state,
-        connection: JSON.stringify(previous.connection) === JSON.stringify(state.connection) ? previous.connection : state.connection,
-        repositories: JSON.stringify(previous.repositories) === JSON.stringify(state.repositories) ? previous.repositories : state.repositories,
-      } });
+      applyState(state);
     }
     return owner === dispatch ? state : EMPTY_GITHUB;
   } catch {
-    if (command.kind === 'status' && owner === dispatch && useGithubImport.getState().state.enabled) return useGithubImport.getState().state;
+    if (command.kind === 'status' && owner === dispatch && useGithubImport.getState().state.enabled && useGithubImport.getState().state.connection.status !== 'checking') return useGithubImport.getState().state;
     const state: GithubImportState = command.kind === 'select'
       ? { ...useGithubImport.getState().state, phase: 'failed', failure: 'network', branches: [] }
       : { ...EMPTY_GITHUB, enabled: true, connection: { status: 'unavailable', reason: 'provider_unavailable' } };
     if (owner === dispatch) useGithubImport.setState({ state });
     return owner === dispatch ? state : EMPTY_GITHUB;
+  } finally {
+    clearTimeout(timeout);
   }
+}
+
+function applyState(state: GithubImportState): void {
+  if (state.connection.status === 'connected') connection = 'idle';
+  const previous = useGithubImport.getState().state;
+  useGithubImport.setState({ state: {
+    ...state,
+    connection: JSON.stringify(previous.connection) === JSON.stringify(state.connection) ? previous.connection : state.connection,
+    repositories: JSON.stringify(previous.repositories) === JSON.stringify(state.repositories) ? previous.repositories : state.repositories,
+  } });
 }
 
 export async function primeGithub(background = true): Promise<void> {
@@ -173,6 +207,7 @@ export function watchGithub(): () => void {
   const focus = (): void => { void refresh(); };
   window.addEventListener('focus', focus);
   const stop = studio().onAuthChanged(() => {
+    statusFlight = undefined;
     retire();
     connection = 'idle';
     useGithubImport.setState({ state: EMPTY_GITHUB, pendingCommands: [], progressCommands: [] });

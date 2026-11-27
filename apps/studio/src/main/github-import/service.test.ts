@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'bun:test';
-import type { GithubImportCommand, GithubRepository } from '@studio/events';
+import { describe, expect, jest, test } from 'bun:test';
+import type { GithubConnection, GithubImportCommand, GithubRepository } from '@studio/events';
 import type { GithubBackend } from './backend.js';
 import { createGithubImport, listedRepository, SLOW_CLONE_MS, type GithubImportDeps } from './service.js';
 
@@ -36,6 +36,192 @@ function deferred<Value>() {
 }
 
 describe('GitHub import boundary', () => {
+  test('the first connection check stays checking until its result arrives', async () => {
+    const flow = fixture();
+    expect((await flow.service.command({ kind: 'begin', entryPoint: 'settings' })).connection.status).toBe('checking');
+    const result = deferred<Awaited<ReturnType<GithubBackend['status']>>>();
+    flow.backend.status = () => result.promise;
+    const checking = flow.service.command({ kind: 'status' });
+    expect((await flow.service.command({ kind: 'cancel' })).connection.status).toBe('checking');
+    result.resolve({ status: 'connected', scopes: [], expiresAt: null });
+    expect((await checking).connection.status).toBe('connected');
+  });
+
+  test('a failed first status check settles instead of staying Checking', async () => {
+    const flow = fixture();
+    flow.backend.status = async () => { throw new Error('Offline'); };
+    expect((await flow.service.command({ kind: 'status' })).connection).toEqual({ status: 'unavailable', reason: 'provider_unavailable' });
+  });
+
+  for (const connection of [{ status: 'connected', scopes: [], expiresAt: null }, { status: 'disconnected' }, { status: 'reconnect', reason: 'expired' }] satisfies GithubConnection[]) test(`a slow ${connection.status} answer settles the shared status request`, async () => {
+    jest.useFakeTimers();
+    try {
+      const flow = fixture();
+      const answer = deferred<Awaited<ReturnType<GithubBackend['status']>>>();
+      let calls = 0;
+      flow.backend.status = () => { calls += 1; return answer.promise; };
+      const pending = flow.service.command({ kind: 'status' });
+      jest.advanceTimersByTime(13_000);
+      const retry = flow.service.command({ kind: 'status' });
+      expect(calls).toBe(1);
+      answer.resolve(connection);
+      expect((await pending).connection).toEqual(connection);
+      expect((await retry).connection).toEqual(connection);
+      expect((await flow.service.command({ kind: 'cancel' })).phase).not.toBe('loading');
+    } finally { jest.useRealTimers(); }
+  });
+
+  for (const change of ['sign-out', 'switch', 'sign-in'] as const) test(`a late status from an older ${change} session is ignored`, async () => {
+    let session = {};
+    const flow = fixture({ session: () => session });
+    const answer = deferred<Awaited<ReturnType<GithubBackend['status']>>>();
+    flow.backend.status = () => answer.promise;
+    const pending = flow.service.command({ kind: 'status' });
+    if (change === 'sign-out') flow.signOut();
+    else if (change === 'switch') flow.replaceAccount();
+    else session = {};
+    flow.backend.status = async () => ({ status: 'disconnected' });
+    await flow.service.command({ kind: 'status' });
+    answer.resolve({ status: 'connected', scopes: [], expiresAt: null });
+    expect((await pending).connection.status).not.toBe('connected');
+    expect((await flow.service.command({ kind: 'cancel' })).connection.status).toBe('disconnected');
+  });
+
+  test('a pending account recheck does not block starting or managing a connection', async () => {
+    const flow = fixture();
+    const answer = deferred<Awaited<ReturnType<GithubBackend['status']>>>();
+    flow.backend.status = () => answer.promise;
+    const pending = flow.service.command({ kind: 'status' });
+    expect((await flow.service.command({ kind: 'start', entryPoint: 'settings' })).connection.status).toBe('connecting');
+    await flow.service.command({ kind: 'access' });
+    expect(flow.calls).toEqual(['start', 'browser', 'browser']);
+    answer.resolve({ status: 'connected', scopes: [], expiresAt: null });
+    expect((await pending).connection.status).toBe('connected');
+  });
+
+  test('reopening a flow reuses its pending account check and accepts the answer', async () => {
+    const flow = fixture();
+    const answer = deferred<Awaited<ReturnType<GithubBackend['status']>>>();
+    let calls = 0;
+    flow.backend.status = () => { calls += 1; return answer.promise; };
+    const first = flow.service.command({ kind: 'status' });
+    await flow.service.command({ kind: 'begin', entryPoint: 'settings' });
+    const reopened = flow.service.command({ kind: 'status' });
+    answer.resolve({ status: 'connected', scopes: [], expiresAt: null });
+    expect((await first).connection.status).toBe('connected');
+    expect((await reopened).connection.status).toBe('connected');
+    expect(calls).toBe(1);
+  });
+
+  for (const status of ['disconnected', 'reconnect'] as const) test(`clone completion stays observable before and after a late ${status} answer`, async () => {
+    const flow = fixture();
+    await flow.select();
+    const answer = deferred<Awaited<ReturnType<GithubBackend['status']>>>();
+    flow.backend.status = () => answer.promise;
+    const pending = flow.service.command({ kind: 'status' });
+    await flow.service.command({ kind: 'clone', repositoryId: REPO.id, branch: REPO.defaultBranch!, entryPoint: 'projects' });
+    for (let turn = 0; turn < 10; turn += 1) await Promise.resolve();
+    const completed = await flow.service.command({ kind: 'status' });
+    expect(completed.phase).toBe('done');
+    expect(completed.sourcePath).toBe('/chosen/source');
+    answer.resolve(status === 'disconnected' ? { status } : { status, reason: 'expired' });
+    const settled = await pending;
+    expect(settled.connection.status).toBe(status);
+    expect(settled.phase).toBe('done');
+    expect(settled.sourcePath).toBe('/chosen/source');
+  });
+
+  test('a failed clone stays observable while the account request remains pending', async () => {
+    const flow = fixture({ clone: async () => ({ ok: false, failure: 'network' }) });
+    await flow.select();
+    const answer = deferred<Awaited<ReturnType<GithubBackend['status']>>>();
+    flow.backend.status = () => answer.promise;
+    const pending = flow.service.command({ kind: 'status' });
+    await flow.service.command({ kind: 'clone', repositoryId: REPO.id, branch: REPO.defaultBranch!, entryPoint: 'projects' });
+    for (let turn = 0; turn < 10; turn += 1) await Promise.resolve();
+    const failed = await flow.service.command({ kind: 'status' });
+    expect(failed.phase).toBe('failed');
+    expect(failed.failure).toBe('network');
+    answer.resolve({ status: 'disconnected' });
+    const settled = await pending;
+    expect(settled.connection.status).toBe('disconnected');
+    expect(settled.failure).toBe('network');
+  });
+
+  test('a completed clone still permits subsequent account rechecks', async () => {
+    const flow = fixture();
+    await flow.select();
+    await flow.service.command({ kind: 'clone', repositoryId: REPO.id, branch: REPO.defaultBranch!, entryPoint: 'projects' });
+    for (let turn = 0; turn < 10; turn += 1) await Promise.resolve();
+    expect((await flow.service.command({ kind: 'cancel' })).phase).toBe('done');
+    let calls = 0;
+    flow.backend.status = async () => { calls += 1; return { status: 'disconnected' }; };
+    const checked = await flow.service.command({ kind: 'status' });
+    expect(calls).toBe(1);
+    expect(checked.connection.status).toBe('disconnected');
+    expect(checked.sourcePath).toBe('/chosen/source');
+  });
+
+  test('a new sign-in invalidates the previous answer even before another command arrives', async () => {
+    let session = {};
+    const flow = fixture({ session: () => session });
+    const answer = deferred<Awaited<ReturnType<GithubBackend['status']>>>();
+    flow.backend.status = () => answer.promise;
+    const pending = flow.service.command({ kind: 'status' });
+    session = {};
+    answer.resolve({ status: 'connected', scopes: [], expiresAt: null });
+    expect((await pending).connection.status).toBe('checking');
+    expect((await flow.service.command({ kind: 'cancel' })).connection.status).toBe('checking');
+  });
+
+  test('without a verified subject begin and status are disconnected without backend effects', async () => {
+    const flow = fixture({ subject: () => undefined });
+    for (const command of [{ kind: 'begin', entryPoint: 'settings' }, { kind: 'status' }] as const) {
+      const state = await flow.service.command(command);
+      expect(state.connection.status).toBe('disconnected');
+      expect(state.phase).toBe('idle');
+      expect(state.enabled).toBe(false);
+    }
+    expect(flow.calls).toEqual([]);
+    expect(flow.events).toEqual([]);
+  });
+
+  test('losing the verified subject clears state and ignores a pending status result', async () => {
+    const flow = fixture();
+    await flow.select();
+    const result = deferred<Awaited<ReturnType<GithubBackend['status']>>>();
+    flow.backend.status = () => result.promise;
+    const pending = flow.service.command({ kind: 'status' });
+    flow.signOut();
+    const signedOut = await flow.service.command({ kind: 'status' });
+    expect(signedOut.connection.status).toBe('disconnected');
+    expect(signedOut.repositories).toEqual([]);
+    expect(signedOut.repositoryId).toBeUndefined();
+    expect(signedOut.phase).toBe('idle');
+    result.resolve({ status: 'connected', scopes: [], expiresAt: null });
+    const settled = await pending;
+    expect(settled.connection.status).toBe('disconnected');
+    expect(settled.enabled).toBe(false);
+  });
+
+  for (const operation of ['clone', 'branches'] as const) {
+    for (const status of ['forbidden', 'not_found', 'disconnected'] as const) test(`${operation} repository failure ${status} leaves the account connected`, async () => {
+      const flow = fixture();
+      const selected = await flow.select();
+      flow.backend.credential = async () => ({ status });
+      await flow.service.command(operation === 'clone'
+        ? { kind: 'clone', repositoryId: REPO.id, branch: 'design', entryPoint: 'projects' }
+        : { kind: 'branches', repositoryId: REPO.id });
+      await Bun.sleep(0);
+      const failed = await flow.service.command({ kind: 'cancel' });
+      expect(failed.phase).toBe('failed');
+      expect(failed.failure).toBe('access');
+      expect(failed.connection).toEqual(selected.connection);
+      expect(failed.repositoryId).toBe(REPO.id);
+      expect(failed.repositories).toEqual(selected.repositories);
+    });
+  }
+
   for (const ending of ['dismiss', 'cancel', 'dispose'] as const) test(`an active Projects creation is abandoned once on ${ending} without a connection attempt`, async () => {
     const steps: string[] = [];
     const flow = fixture({ creationEvent: (step) => { steps.push(step); } });
@@ -502,7 +688,7 @@ describe('GitHub import boundary', () => {
     expect(flow.events).toEqual([]);
   });
 
-  test('open supersedes a pending network status and its late disconnected answer', async () => {
+  test('opening a repository does not discard a late account status answer', async () => {
     const status = deferred<Awaited<ReturnType<GithubBackend['status']>>>();
     const flow = fixture({ existing: () => '/registered/project' });
     await flow.select();
@@ -513,8 +699,9 @@ describe('GitHub import boundary', () => {
     expect(opened.phase).toBe('idle');
     status.resolve({ status: 'disconnected' });
     const settled = await refreshing;
-    expect(settled.existingPath).toBe('/registered/project');
-    expect(settled.connection.status).toBe('connected');
+    expect(settled.existingPath).toBeUndefined();
+    expect(settled.repositories).toEqual([]);
+    expect(settled.connection.status).toBe('disconnected');
     expect(flow.calls).not.toContain('credential');
     expect(flow.events).toEqual([]);
   });

@@ -21,14 +21,11 @@ export function listedRepository(listing: GithubRepository): GithubRepository | 
   };
 }
 
-const githubOff = (): GithubImportState => ({
-  enabled: false, connection: { status: 'disconnected' }, repositories: [], branches: [], phase: 'idle', progress: 0,
-});
-
 export interface GithubImportDeps {
   enabled(): boolean;
   backend(): GithubBackend | undefined;
   subject(): string | undefined;
+  session?(): unknown;
   open(url: string): Promise<void>;
   parent(choice: 'onlook' | 'documents' | 'choose'): Promise<string | undefined>;
   existing(repository: GithubRepository): string | undefined;
@@ -61,9 +58,15 @@ type ConnectionAttempt = { kind: 'none' | 'finished' }
   | { kind: 'active'; entryPoint: GithubEntryPoint; outcome: 'connected' | 'waiting' | 'no_connection' };
 
 export function createGithubImport(deps: GithubImportDeps) {
+  const githubOff = (): GithubImportState => ({
+    enabled: false, connection: { status: deps.subject() === undefined ? 'disconnected' : 'checking' }, repositories: [], branches: [], phase: 'idle', progress: 0,
+  });
   let context: Pick<GithubImportState, 'enabled' | 'connection' | 'repositories' | 'destination' | 'destinationChoice'> = githubOff();
   let phase: ImportPhase = { kind: 'idle' };
   let account: string | undefined;
+  let session: unknown;
+  let statusRequest: Promise<GithubImportState> | undefined;
+  let accountGeneration = 0;
   let generation = 0;
   let work: { controller: AbortController; running: Promise<void> } | undefined;
   let attempt: ConnectionAttempt = { kind: 'none' };
@@ -93,10 +96,13 @@ export function createGithubImport(deps: GithubImportDeps) {
   function reset(): void {
     abandonCreation();
     generation += 1;
+    accountGeneration += 1;
+    statusRequest = undefined;
     work?.controller.abort();
+    account = deps.subject();
+    session = deps.session?.();
     context = githubOff();
     phase = { kind: 'idle' };
-    account = deps.subject();
     attempt = { kind: 'none' };
     approval = 'none';
   }
@@ -115,10 +121,41 @@ export function createGithubImport(deps: GithubImportDeps) {
 
   async function command(command: GithubImportCommand): Promise<GithubImportState> {
     if (!deps.enabled() || deps.subject() === undefined) { reset(); return snapshot(); }
-    if (account !== deps.subject()) reset();
+    if (account !== deps.subject() || session !== deps.session?.()) reset();
     context = { ...context, enabled: true };
     const epoch = generation;
     const active = (): boolean => generation === epoch && account === deps.subject() && deps.enabled();
+    if (command.kind === 'status' && (phase.kind === 'cloning' || (statusRequest !== undefined && (phase.kind === 'done' || phase.kind === 'failed')))) return snapshot();
+    if (command.kind === 'status') {
+      if (statusRequest !== undefined) return statusRequest;
+      const owner = accountGeneration;
+      const current = (): boolean => owner === accountGeneration && account === deps.subject() && session === deps.session?.() && deps.enabled();
+      const request = (async (): Promise<GithubImportState> => {
+        try {
+          const backend = deps.backend();
+          const connection = backend === undefined ? { status: 'unavailable' as const, reason: 'not_configured' as const } : await backend.status();
+          if (!current()) return githubOff();
+          context = { ...context, connection };
+          if (connection.status === 'connected') {
+            approval = 'none';
+            if (attempt.kind === 'active') attempt.outcome = 'connected';
+          } else {
+            const settled = phase.kind === 'loading' ? phase.previous : phase;
+            const failedSelection = settled.kind === 'failed' && settled.failure === 'access' && settled.selection !== undefined;
+            if (!failedSelection) {
+              context = { ...context, repositories: [] };
+              if (phase.kind === 'ready') phase = { kind: 'idle' };
+            }
+          }
+        } catch {
+          if (current() && context.connection.status === 'checking') context = { ...context, connection: { status: 'unavailable', reason: 'provider_unavailable' } };
+        }
+        return current() ? snapshot() : githubOff();
+      })();
+      statusRequest = request;
+      void request.finally(() => { if (statusRequest === request) statusRequest = undefined; });
+      return request;
+    }
     if (command.kind === 'begin') {
       finish('dismiss');
       abandonCreation();
@@ -199,14 +236,6 @@ export function createGithubImport(deps: GithubImportDeps) {
     try {
       if (command.kind === 'access') {
         await deps.open('https://github.com/settings/connections/applications');
-      } else if (command.kind === 'status') {
-        const connection = await backend.status();
-        if (!ownsLoading()) return active() ? snapshot() : githubOff();
-        context = { ...context, connection };
-        if (connection.status === 'connected') approval = 'none';
-        if (connection.status === 'connected' && attempt.kind === 'active') attempt.outcome = 'connected';
-        const failedSelection = loading.previous.kind === 'failed' && loading.previous.failure === 'access' && loading.previous.selection !== undefined;
-        if (connection.status !== 'connected' && !failedSelection) { context = { ...context, repositories: [] }; phase = { kind: 'idle' }; }
       } else if (command.kind === 'start') {
         finish('retry');
         attempt = { kind: 'active', entryPoint: command.entryPoint, outcome: 'no_connection' };
@@ -264,7 +293,7 @@ export function createGithubImport(deps: GithubImportDeps) {
         if (selection === undefined || selection.repository.id !== command.repositoryId) { phase = previous; return snapshot(); }
         const credential = await backend.credential(selection.repository.fullName, 'clone');
         if (!ownsLoading()) return active() ? snapshot() : githubOff();
-        if (credential.status !== 'ready') { context = { ...context, connection: credential }; phase = { kind: 'failed', selection, failure: 'access' }; return snapshot(); }
+        if (credential.status !== 'ready') { phase = { kind: 'failed', selection, failure: 'access' }; return snapshot(); }
         if (!validCredential(credential, selection.repository.fullName)) throw new Error('Invalid credential');
         const branches = await (deps.branches ?? listRemoteBranches)(credential);
         if (!ownsLoading()) return active() ? snapshot() : githubOff();
@@ -303,8 +332,7 @@ export function createGithubImport(deps: GithubImportDeps) {
           try {
             const credential = await backend.credential(repo.fullName, 'clone');
             if (!ownsClone() || signal.aborted) outcome = 'cancelled';
-            else if (credential.status !== 'ready') context = { ...context, connection: credential };
-            else {
+            else if (credential.status === 'ready') {
               const result = await (deps.clone ?? cloneRepository)({ credential, repository: repo.fullName, branch: command.branch, parent: cloning.destination, signal,
                 progress: (progress) => { if (ownsClone()) cloning.progress = Math.max(cloning.progress, progress); },
               });
@@ -329,7 +357,9 @@ export function createGithubImport(deps: GithubImportDeps) {
         phase = { kind: 'failed', failure: 'network', selection: 'selection' in previous ? previous.selection : undefined };
         context = { ...context, connection: context.connection.status === 'connecting' ? { status: 'unavailable', reason: 'provider_unavailable' } : context.connection };
       }
-    } finally { if (phase === loading) phase = loading.previous; }
+    } finally {
+      if (phase === loading) phase = loading.previous;
+    }
     return active() ? snapshot() : githubOff();
   }
   return { command, dispose() { finish('dismiss'); reset(); } };

@@ -1,5 +1,7 @@
 {
   "github.name": "GitHub",
+  "github.checking": "確認中…",
+  "github.tryAgain": "再試行",
   "github.import": "GitHub からインポート",
   "github.archived": "アーカイブ済み",
   "github.archived.body": "{repository} は GitHub でアーカイブされています。クローンしてデザインできますが、変更はプッシュできません。",

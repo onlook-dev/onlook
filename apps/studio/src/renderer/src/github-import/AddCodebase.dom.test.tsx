@@ -1,8 +1,8 @@
-import { afterEach, expect, test } from 'bun:test';
+import { afterEach, expect, jest, test } from 'bun:test';
 import { takeComplaints } from '../testing/dom.js';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import type { GithubImportCommand, GithubImportState } from '@studio/events';
+import type { GithubConnection, GithubImportCommand, GithubImportState } from '@studio/events';
 import { seedCapabilities } from '../capabilities.js';
 import { seedFlags } from '../flags/store.js';
 import { t } from '@studio/i18n';
@@ -10,13 +10,13 @@ import { deferred, installBridge } from '../testing/bridge.js';
 import { FolderIcon } from '../icons/glyphs.js';
 import { SidebarRow, SIDEBAR_ROW_HEIGHT } from '../projects/SidebarRow.js';
 import { AddCodebase } from './AddCodebase.js';
-import { GithubImportFlow } from './GithubImport.js';
-import { EMPTY_GITHUB, githubCommand, useGithubImport } from './store.js';
+import { GithubImportFlow, GithubSettings } from './GithubImport.js';
+import { EMPTY_GITHUB, GITHUB_STATUS_TIMEOUT_MS, githubCommand, useGithubImport } from './store.js';
 
 let root: Root | undefined;
 let container: HTMLDivElement | undefined;
 
-const disconnected = { ...EMPTY_GITHUB, enabled: true };
+const disconnected = { ...EMPTY_GITHUB, enabled: true, connection: { status: 'disconnected' as const } };
 
 async function mount(bridge: Parameters<typeof installBridge>[0], canOpen = true): Promise<void> {
   seedFlags({ sections: false, connectors: false, githubImport: true });
@@ -72,11 +72,129 @@ test('the repository choice opens a modal and focus moves in once preparation en
   expect(source).not.toBeNull();
   await act(async () => { source!.click(); });
   expect(dialog()).not.toBeNull();
-  const connect = dialog()!.querySelector<HTMLButtonElement>('[data-testid="github-import-connect"] button');
-  expect(connect?.disabled).toBe(true);
+  expect(dialog()!.textContent).toContain(t('github.checking'));
+  expect(dialog()!.querySelector('[data-testid="github-import-connect"] button')).toBeNull();
   await act(async () => { beginning.settle(disconnected); });
+  const connect = dialog()!.querySelector<HTMLButtonElement>('[data-testid="github-import-connect"] button');
   expect(connect?.disabled).toBe(false);
   expect(document.activeElement).toBe(connect);
+});
+
+test('Settings shows Checking without Connect GitHub until the first answer arrives', async () => {
+  const answer = deferred<GithubImportState>();
+  await mount({ githubImport: () => answer.promise });
+  await act(async () => { root!.render(<GithubSettings />); });
+  const row = document.querySelector('[data-testid="github-settings"]')!;
+  expect(row.textContent).toContain(t('github.checking'));
+  expect(row.textContent?.split(t('github.checking')).length).toBe(2);
+  expect(row.textContent).not.toContain(t('github.connect'));
+  expect(row.querySelector<HTMLButtonElement>('button')?.disabled).toBe(true);
+  const checking = githubCommand({ kind: 'status' });
+  await act(async () => {
+    answer.settle({ ...EMPTY_GITHUB, enabled: true, connection: { status: 'connected', scopes: [], expiresAt: null } });
+    await checking;
+  });
+  expect(row.textContent).toContain(t('github.manage'));
+  expect(row.textContent).not.toContain(t('github.connect'));
+});
+
+test('Settings settles to a pressable Connect GitHub when no account is available', async () => {
+  await mount({ githubImport: async () => ({ ...disconnected, enabled: false }) });
+  await act(async () => {
+    root!.render(<GithubSettings />);
+    await githubCommand({ kind: 'status' });
+  });
+  const row = document.querySelector('[data-testid="github-settings"]')!;
+  const connect = row.querySelector<HTMLButtonElement>('button')!;
+  expect(connect.textContent).toBe(t('github.connect'));
+  expect(connect.disabled).toBe(false);
+  expect(row.textContent).not.toContain(t('github.checking'));
+});
+
+test('Settings replaces an unanswered initial check with a pressable Try again', async () => {
+  const answer = deferred<GithubImportState>();
+  await mount({ githubImport: () => answer.promise });
+  await act(async () => { root!.render(<GithubSettings />); });
+  jest.useFakeTimers();
+  try {
+    let checking!: Promise<GithubImportState>;
+    await act(async () => { checking = githubCommand({ kind: 'status' }); });
+    const row = document.querySelector('[data-testid="github-settings"]')!;
+    expect(row.querySelector<HTMLButtonElement>('button')!.disabled).toBe(true);
+    await act(async () => {
+      jest.advanceTimersByTime(GITHUB_STATUS_TIMEOUT_MS);
+      await checking;
+    });
+    const retry = row.querySelector<HTMLButtonElement>('button')!;
+    expect(row.textContent).toContain(t('github.unavailable'));
+    expect(row.textContent).not.toContain(t('github.checking'));
+    expect(retry.textContent).toBe(t('github.tryAgain'));
+    expect(retry.disabled).toBe(false);
+    await act(async () => { answer.settle(disconnected); });
+  } finally { jest.useRealTimers(); }
+});
+
+for (const connection of [{ status: 'connected', scopes: [], expiresAt: null }, { status: 'disconnected' }, { status: 'reconnect', reason: 'expired' }] satisfies GithubConnection[]) test(`Settings applies a late ${connection.status} answer after both waiting deadlines`, async () => {
+  const answer = deferred<GithubImportState>();
+  const state: GithubImportState = { ...disconnected, connection };
+  let calls = 0;
+  await mount({ githubImport: (command) => {
+    if (command.kind !== 'status') return Promise.resolve(state);
+    calls += 1;
+    return answer.promise;
+  } });
+  jest.useFakeTimers();
+  try {
+    let checking!: Promise<GithubImportState>;
+    await act(async () => { root!.render(<GithubSettings />); checking = githubCommand({ kind: 'status' }); });
+    await act(async () => { jest.advanceTimersByTime(GITHUB_STATUS_TIMEOUT_MS); await checking; });
+    const row = document.querySelector('[data-testid="github-settings"]')!;
+    await act(async () => { row.querySelector<HTMLButtonElement>('button')!.click(); });
+    await act(async () => { jest.advanceTimersByTime(GITHUB_STATUS_TIMEOUT_MS); });
+    expect(calls).toBe(1);
+    expect(row.querySelector<HTMLButtonElement>('button')!.textContent).toBe(t('github.tryAgain'));
+    await act(async () => { answer.settle(state); });
+    expect(row.querySelector<HTMLButtonElement>('button')!.textContent).toBe(t(connection.status === 'connected' ? 'github.manage' : connection.status === 'reconnect' ? 'github.reconnect' : 'github.connect'));
+    expect(row.textContent).not.toContain(t('github.unavailable'));
+    expect(document.querySelector('[data-testid="github-import-flow"]')!.textContent).not.toContain(t('github.unavailable'));
+  } finally { jest.useRealTimers(); }
+});
+
+test('Settings offers a working Try again action after the first check fails', async () => {
+  const commands: GithubImportCommand[] = [];
+  await mount({ githubImport: async (command) => {
+    commands.push(command);
+    return { ...EMPTY_GITHUB, enabled: true, connection: { status: 'connected', scopes: [], expiresAt: null } };
+  } });
+  await act(async () => {
+    useGithubImport.setState({ state: { ...EMPTY_GITHUB, enabled: true, connection: { status: 'unavailable', reason: 'provider_unavailable' } } });
+    root!.render(<GithubSettings />);
+  });
+  const row = document.querySelector('[data-testid="github-settings"]')!;
+  expect(row.textContent).toContain(t('github.unavailable'));
+  const retry = row.querySelector<HTMLButtonElement>('button')!;
+  expect(retry.textContent).toBe(t('github.tryAgain'));
+  expect(retry.disabled).toBe(false);
+  await act(async () => { retry.click(); });
+  expect(commands.some((command) => command.kind === 'status')).toBe(true);
+  expect(row.textContent).toContain(t('github.manage'));
+});
+
+for (const entryPoint of ['projects', 'settings'] as const) test(`${entryPoint} dialog retries an unavailable first check`, async () => {
+  const commands: GithubImportCommand[] = [];
+  await mount({ githubImport: async (command) => {
+    commands.push(command);
+    return { ...EMPTY_GITHUB, enabled: true, connection: { status: 'connected', scopes: [], expiresAt: null } };
+  } });
+  await act(async () => {
+    useGithubImport.setState({ state: { ...EMPTY_GITHUB, enabled: true, connection: { status: 'unavailable', reason: 'provider_unavailable' } } });
+    root!.render(<GithubImportFlow entryPoint={entryPoint} onClose={() => {}} onOpen={() => {}} />);
+  });
+  const retry = [...container!.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === t('github.tryAgain'))!;
+  expect(retry.disabled).toBe(false);
+  await act(async () => { retry.click(); });
+  expect(commands.some((command) => command.kind === 'status')).toBe(true);
+  expect(container!.textContent).not.toContain(t('github.unavailable'));
 });
 
 test('Back closes the modal without reopening the choices and ignores preparation that finishes later', async () => {
