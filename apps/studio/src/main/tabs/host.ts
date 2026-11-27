@@ -150,6 +150,7 @@ export class TabHost {
   }
 
   beginQuit(): void {
+    this.pieces.presentation.cancelRestoration();
     this.pieces.window.beginQuit();
     this.pieces.presentation.clearPresentDeadline();
     this.pieces.views.dispose();

@@ -30,7 +30,7 @@ import { SettingsDialog } from './settings/SettingsDialog.js';
 import { openSettings } from './settings/settingsDialogStore.js';
 import { primeSettings, useSettingsStore } from './settings/store.js';
 import { ConsentGate } from './telemetry/Consent.js';
-import { primeGitStatus, watchOpenWorktree } from './git-status/store.js';
+import { noteGitStatusAssignment, primeGitStatus, watchOpenWorktree } from './git-status/store.js';
 import { BlendedWindowBar } from './topbar/slots.js';
 import { WindowFrame } from './topbar/WindowFrame.js';
 import {
@@ -42,7 +42,7 @@ import {
   joinCreate,
   leaveProject,
   openCreated,
-  openProject,
+  openAssignedProject,
 } from './workspace/session.js';
 import { useWorkspaceStore } from './workspace/store.js';
 import { useTabNotices } from './notifications/NotificationSurfaces.js';
@@ -71,14 +71,14 @@ export function Root(): React.JSX.Element {
   );
   useSurface('screen', screenSurface(screen.kind));
   /** `failed` sends a scaffold home; `stale` leaves the screen to the newer run (ONL-2593). */
-  const prepareAssigned = useCallback(async (workspacePath: string): Promise<Screen | 'failed' | 'stale'> => {
-    const opened = await openProject(workspacePath);
+  const prepareAssigned = useCallback(async (workspacePath: string, background = false): Promise<Screen | 'failed' | 'stale'> => {
+    const opened = await openAssignedProject(workspacePath, background);
     if (opened.kind === 'ready') return { kind: 'editor', restored: opened.workspace };
     return opened.kind === 'failed' ? 'failed' : 'stale';
   }, []);
 
-  const openAssigned = useCallback(async (workspacePath: string): Promise<void> => {
-    const next = await prepareAssigned(workspacePath);
+  const openAssigned = useCallback(async (workspacePath: string, background = false): Promise<void> => {
+    const next = await prepareAssigned(workspacePath, background);
     if (next === 'stale') return;
     /* The scaffold has no exit: an unopenable assignment would leave dead rails forever (ONL-2318). Only off the scaffold: an assignment must not land over a gate this view already committed. */
     setScreen((current) => (current.kind === 'parked' ? (next === 'failed' ? { kind: 'projects' } : next) : current));
@@ -238,11 +238,12 @@ export function Root(): React.JSX.Element {
     /* Idempotent: the pull covers a view minted before its listener exists, the push a spare promoted later (ONL-2318). */
     const applyAssignment = (assignment: TabAssignment): void => {
       if (assignment.tabId !== TAB_ID) return;
+      noteGitStatusAssignment(assignment);
       if (assignment.purpose === 'projects') {
         setScreen((current) => (current.kind === 'parked' ? { kind: 'projects' } : current));
         return;
       }
-      void openAssigned(assignment.workspacePath);
+      void openAssigned(assignment.workspacePath, assignment.restoring === true);
     };
     /* Registered synchronously: a tab mid-cut is assigned nothing (`assignment.ts`), and a listener attached after the read would miss its push. */
     const unsubscribeAssigned = studio().onTabAssigned(applyAssignment);

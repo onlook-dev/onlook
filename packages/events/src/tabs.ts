@@ -30,7 +30,7 @@ export interface TabsState {
 
 export type TabAssignment =
   | { tabId: string; purpose: 'projects' }
-  | { tabId: string; purpose: 'project'; workspacePath: string; repoIdentity: string };
+  | { tabId: string; purpose: 'project'; workspacePath: string; repoIdentity: string; restoring?: true };
 
 export interface ChromeSlots {
   showFolder?: boolean;

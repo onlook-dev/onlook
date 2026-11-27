@@ -11,6 +11,7 @@ import {
   type GitStatusChange,
   type PenView,
   type RendererTelemetryEvent,
+  type TabAssignment,
 } from '@studio/events';
 import { derivePillState, pillStateOf as derivePillStateOf } from '@studio/git-ui/derive';
 import { ignoreRefusal } from '../refusal.js';
@@ -83,6 +84,7 @@ function sendTelemetry(event: RendererTelemetryEvent): void {
 }
 
 let openWorktree: string | undefined;
+let preparingWorktree: string | undefined;
 let shownStateId: string | undefined;
 let defaultsGeneration = 0;
 const prFailures = new WeakMap<WorkingEntry, GitPrFailure>();
@@ -108,7 +110,7 @@ function finishReconciliation(worktreePath: string, report: boolean): void {
 }
 
 function emitShownIfChanged(): void {
-  if (openWorktree === undefined) return;
+  if (openWorktree === undefined || openWorktree === preparingWorktree) return;
   const { rows, defaults } = useGitStatusStore.getState();
   const row = rows[openWorktree];
   if (row === undefined) return;
@@ -123,6 +125,13 @@ export function noteOpenWorktree(worktreePath: string | undefined): void {
   if (worktreePath === openWorktree) return;
   openWorktree = worktreePath;
   shownStateId = undefined;
+  emitShownIfChanged();
+}
+
+export function noteGitStatusAssignment(assignment: TabAssignment): void {
+  preparingWorktree = assignment.purpose === 'project' && assignment.restoring === true
+    ? assignment.workspacePath
+    : undefined;
   emitShownIfChanged();
 }
 
@@ -325,6 +334,7 @@ export function noteNoActionPress(worktreePath: string, reason: GitPillNoActionR
 export function resetGitStatusPrimeForTests(): void {
   priming = undefined;
   openWorktree = undefined;
+  preparingWorktree = undefined;
   shownStateId = undefined;
   defaultsGeneration = 0;
   queuedPrs.clear();

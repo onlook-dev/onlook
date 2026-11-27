@@ -19,6 +19,7 @@ import { restartProjectOnOpen } from './setup-reopen.js';
 import { projectSetupService } from '../project-setup/service.js';
 import { createKeyedQueue } from '../lib/keyed-queue.js';
 import { applyLocationTransition, projectPath } from './transition.js';
+import { prepareRestoredLocation } from './restore.js';
 import { launchLocation, setLocation } from './state.js';
 import { log } from '../log/index.js';
 
@@ -53,6 +54,16 @@ export function registerLocationHandlers(): void {
   // Per sender (ONL-2265): a back-out's projects transition runs after the abandoned one's tail.
   const inOrder = createKeyedQueue<number>();
   handle(IPC_INVOKE.locationState, (): LaunchLocation => launchLocation());
+  handle(IPC_INVOKE.locationRestore, (event, location: StudioLocation) => {
+    return prepareRestoredLocation(location, {
+      knownProject: (path) => {
+        const project = knownProject(path);
+        return project !== undefined && location.kind === 'project' && project.repoIdentity === location.repoIdentity;
+      },
+      register: (path) => registerView(event.sender, path),
+      openCanvas: (path) => inOrder.run(event.sender.id, () => openCanvasForProject(path)),
+    });
+  });
   handle(IPC_INVOKE.locationSet, (event, location: StudioLocation) => {
     if (!location || (location.kind !== 'projects' && location.kind !== 'project')) return;
     if (location.kind === 'project' && (typeof location.repoIdentity !== 'string' ||

@@ -307,6 +307,7 @@ const answers: Omit<StudioBridge, Inert> & Partial<Pick<StudioBridge, Inert>> = 
   tabCreateState: async () => null,
   tabAssignment: async () => null,
   locationSet: async () => {},
+  locationRestore: async () => {},
   tabsState: async () => ({ tabs: [], canCreate: false, isHome: true }),
 
   canvasSnapshot: async () => ({ doc: LAB_CANVAS_DOC }),

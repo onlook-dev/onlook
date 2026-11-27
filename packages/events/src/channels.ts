@@ -255,6 +255,7 @@ export const CHANNELS = {
     locationState: { name: 'location:state', from: TAB, request: none, response: of<LaunchLocation>(), tab: 'locationState' },
     /** Await it; a lost write misplaces the next launch. */
     locationSet: { name: 'location:set', from: TAB, request: one<StudioLocation>(), response: of<void>(), tab: 'locationSet' },
+    locationRestore: { name: 'location:restore', from: TAB, request: one<StudioLocation>(), response: of<void>(), tab: 'locationRestore' },
     /** Answers whether a tab for this repo is now forward; false means there is nothing to open (ONL-2212). */
     revealTab: { name: 'tabs:reveal', from: TAB, request: one<TabLinkTarget>(), response: of<boolean>(), tab: 'revealTab' },
     /** Which of the application menu's commands this build actually offers; Reset Studio is the one that can be absent (`main/reset/`). */

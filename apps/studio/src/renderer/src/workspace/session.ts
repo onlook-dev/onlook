@@ -29,7 +29,7 @@ export interface SessionSurfaces {
 
 interface SessionPorts extends SessionSurfaces {
   prime(): Promise<void>;
-  bridge(): Pick<StudioBridge, 'openProject' | 'locationSet' | 'notifyProjectSelected'>;
+  bridge(): Pick<StudioBridge, 'openProject' | 'locationSet' | 'locationRestore' | 'notifyProjectSelected'>;
 }
 
 export type Opened =
@@ -48,6 +48,7 @@ let landing: { workspacePath: string } | null = null;
 let createRun: number | undefined;
 /** The project a replacing create took the place of, put back if that create never lands (ONL-2281). */
 let outgoing: WorkspaceCreated | null = null;
+let restoringProject: string | null = null;
 
 export function installProjectSession(
   surfaces: SessionSurfaces,
@@ -115,10 +116,11 @@ function track(run: number, workspacePath: string, work: () => Promise<Opened>):
 }
 
 /** Opens a project main already holds. The caller shows the editor on `ready`; the editor's mount lands it. */
-export function openProject(workspacePath: string): Promise<Opened> {
+export function openProject(workspacePath: string, background = false): Promise<Opened> {
   const phase = store.getState().session;
   if (opening !== null && opening.workspacePath === workspacePath && isCurrent(opening.run) && isCovered(phase)) return opening.result;
   if (phase.kind === 'open' && phase.workspacePath === workspacePath) return Promise.resolve({ kind: 'superseded' });
+  restoringProject = background ? workspacePath : null;
   const run = beginCovered(workspacePath);
   return track(run, workspacePath, async () => {
     const answer = await seated().bridge().openProject({ workspacePath });
@@ -226,12 +228,19 @@ export async function landProject(workspace: WorkspaceCreated): Promise<void> {
   store.setState({ workspace });
   showProject({ path: workspacePath, name: workspaceDisplayName(workspace) });
   try {
-    await bridge().locationSet({ kind: 'project', repoIdentity: workspace.repoIdentity, workspacePath });
+    const background = restoringProject === workspacePath;
+    const location = { kind: 'project' as const, repoIdentity: workspace.repoIdentity, workspacePath };
+    if (background) await bridge().locationRestore(location);
+    else await bridge().locationSet(location);
     if (landing !== mine) return;
     await resync();
     if (!isMine()) return;
-    const devUrl = homeUrl();
-    await bridge().notifyProjectSelected({ path: workspacePath, ...(devUrl ? { devUrl } : {}) });
+    if (restoringProject !== workspacePath) {
+      if (background) await bridge().locationSet(location);
+      if (!isMine()) return;
+      const devUrl = homeUrl();
+      await bridge().notifyProjectSelected({ path: workspacePath, ...(devUrl ? { devUrl } : {}) });
+    }
   } catch (error) {
     log('connect').warn('landing failed', { error });
   } finally {
@@ -242,8 +251,28 @@ export async function landProject(workspace: WorkspaceCreated): Promise<void> {
   }
 }
 
+export async function openAssignedProject(workspacePath: string, background = false): Promise<Opened> {
+  if (!background && await activateRestoredProject(workspacePath)) return { kind: 'superseded' };
+  return openProject(workspacePath, background);
+}
+
+export async function activateRestoredProject(workspacePath: string): Promise<boolean> {
+  if (restoringProject !== workspacePath) return false;
+  restoringProject = null;
+  const workspace = store.getState().workspace;
+  if (workspace?.workspacePath !== workspacePath || landing !== null) return true;
+  const run = store.getState().run;
+  const { bridge, homeUrl } = seated();
+  await bridge().locationSet({ kind: 'project', repoIdentity: workspace.repoIdentity, workspacePath });
+  if (!isCurrent(run) || store.getState().workspace !== workspace) return true;
+  const devUrl = homeUrl();
+  await bridge().notifyProjectSelected({ path: workspacePath, ...(devUrl ? { devUrl } : {}) });
+  return true;
+}
+
 /** A close is an order: whatever is in flight goes stale and the cover comes down now (ONL-2265). */
 export function abandonProject(): void {
+  restoringProject = null;
   landing = null;
   store.setState({ run: store.getState().run + 1, session: { kind: 'closing' } });
 }
@@ -256,12 +285,14 @@ export function leaveProject(): void {
 
 /** The editor has unmounted: only now do the project's name and frames leave, or they would be seen leaving. */
 export function closeProject(): void {
+  restoringProject = null;
   landing = null;
   store.setState({ workspace: null, ...(isCovered(store.getState().session) ? {} : { session: { kind: 'none' } }) });
   seated().clearFrames();
 }
 
 export function resetProjectSessionForTests(): void {
+  restoringProject = null;
   opening = null;
   landing = null;
   createRun = undefined;

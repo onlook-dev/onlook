@@ -33,6 +33,7 @@ function rig() {
     showLoading: (tab: Tab) => { log.push(`show-loading:${tab.id}`); },
     forgetWarm: (tab: Tab) => { log.push(`forget-warm:${tab.id}`); },
     assign: (tab: Tab) => { log.push(`assign:${tab.id}`); },
+    promoteRestored: () => false,
     requestFirstPaint: (tab: Tab) => { requested.push(tab.id); },
   } as unknown as TabPresentation;
   const presence = {
