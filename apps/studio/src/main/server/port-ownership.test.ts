@@ -74,6 +74,34 @@ function expectOwner(owner: string, other: string): void {
 }
 
 describe('server host port ownership reverification', () => {
+  for (const [listenerName, projectName, allowed] of [
+    ['', 'apps/web', true],
+    ['web', 'website', false],
+    ['website', 'web', false],
+  ] as const) {
+    it(`prepares a Frame with listener folder "${listenerName || '.'}" and Project "${projectName}" only when related`, async () => {
+      const world = makeWorld(`related-${listenerName || 'root'}-${projectName.replaceAll('/', '-')}`);
+      const listenerFolder = join(world.sourceRepo, listenerName);
+      const project = join(world.sourceRepo, projectName);
+      for (const folder of [listenerFolder, project]) mkdirSync(folder, { recursive: true });
+      const host = makeHost(world, async () => ({ pid: 30303, cwd: listenerFolder }));
+      const homeUrl = 'http://localhost:3000/design';
+      try {
+        createServerEntry(listenerFolder, { folder: listenerFolder, port: 3000, ownership: 'users-own' });
+        await host.openProject(listenerFolder);
+        await waitFor(() => host.snapshotFor(listenerFolder).entries[0]?.status === 'running', 'listener verification');
+        const bindings = createFrameBindings(Date.now, {
+          allows: (_sender, url) => !portHeldByOtherProject(project, url),
+          blocked: () => {},
+        });
+        expect(bindings.prepare({ id: 300 }, {}, { src: homeUrl })).toBe(allowed);
+        expect(portHeldByOtherProject(project, homeUrl)).toBe(!allowed);
+      } finally {
+        host.dispose();
+      }
+    });
+  }
+
   it('permits a matching recorded external folder while native preparation denies an unrelated Project', () => {
     const world = makeWorld('external-entry-folder');
     const listenerCwd = join(world.sourceRepo, 'web');

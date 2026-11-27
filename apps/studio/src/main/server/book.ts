@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import type { ServerAttribution, ServerPortMeasurement, ServerPortState } from '@studio/events';
 import { localPort } from '@studio/events';
+import { canonicalPath } from '../lib/canonical-path.js';
 import { defineDomain } from '../state/store.js';
 import { normalizePath, workspaceRoot } from '../workspace/store.js';
-import { verifiesFor, type ListenerIdentity } from './owner.js';
+import { isContainedIn, type ListenerIdentity } from './owner.js';
 
 export type PortListener = NonNullable<ServerPortState['listener']>;
 
@@ -85,8 +86,14 @@ export function portHeldByOtherProject(worktreePath: string, url: string): boole
   const projectKey = normalizePath(worktreePath);
   const owner = livePortOwners.get(port);
   if (owner === undefined || owner.projectKey === projectKey) return false;
-  if (verifiesFor(owner.identity, worktreePath) === 'ours'
-    || serverBookEntries(worktreePath).some((entry) => verifiesFor(owner.identity, entry.folder) === 'ours')) return false;
+  if (owner.identity?.cwd !== undefined) {
+    const listenerFolder = canonicalPath(owner.identity.cwd);
+    const related = (folder: string): boolean => {
+      const projectFolder = canonicalPath(folder);
+      return isContainedIn(listenerFolder, projectFolder) || isContainedIn(projectFolder, listenerFolder);
+    };
+    if (related(worktreePath) || serverBookEntries(worktreePath).some((entry) => related(entry.folder))) return false;
+  }
   const entry = domain.read().projects[owner.projectKey]?.[owner.entryId];
   return entry?.ports.some((claim) => claim.port === port && claim.measured === 'live') === true;
 }
