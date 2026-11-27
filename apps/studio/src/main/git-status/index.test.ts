@@ -229,6 +229,51 @@ it('reports the fresh measured denial and failed refresh through the real teleme
   }
 });
 
+describe('a measurement the project has moved past', () => {
+  it('starts at once instead of waiting for the account it was asked to replace', async () => {
+    const { host, calls, emitted } = harness();
+    const opened = host.opened(worktree);
+    await settle();
+    expect(calls).toHaveLength(1);
+
+    const refreshed = host.connectionChanged();
+    await settle();
+    expect(calls).toHaveLength(2);
+    calls[1]!.resolve({ measurement: facts({ ghAccount: 'current-account' }), fetched: false });
+    await refreshed;
+    expect(emitted.at(-1)?.row.measurement.ghAccount).toBe('current-account');
+
+    calls[0]!.resolve({ measurement: facts({ ghAccount: 'replaced-account' }), fetched: true });
+    await opened;
+    await settle();
+    expect(emitted.at(-1)?.row.measurement.ghAccount).toBe('current-account');
+    expect(gitStatusRowFor(worktree)?.measurement.ghAccount).toBe('current-account');
+  });
+
+  it('settles without re-opening the lane or promoting what is parked behind the newer measurement', async () => {
+    const { host, calls } = harness();
+    const opened = host.opened(worktree);
+    await settle();
+    const refreshed = host.connectionChanged();
+    await settle();
+    const queued = host.turnEnded(worktree);
+    await settle();
+    expect(calls).toHaveLength(2);
+
+    calls[0]!.resolve({ measurement: facts(), fetched: true });
+    await opened;
+    await settle();
+    expect(calls).toHaveLength(2);
+
+    calls[1]!.resolve({ measurement: facts(), fetched: false });
+    await refreshed;
+    await settle();
+    expect(calls).toHaveLength(3);
+    calls[2]!.resolve({ measurement: facts(), fetched: false });
+    await queued;
+  });
+});
+
 describe('the runner — one in flight, at most one pending', () => {
   it('coalesces two turn-ends during an open into one fetch-free trailing run that both callers resolve on', async () => {
     const { host, calls, emitted } = harness();

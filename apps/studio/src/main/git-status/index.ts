@@ -63,7 +63,10 @@ interface Pending {
 
 interface Runner {
   seq: number;
+  /** Which start owns the lane; a superseded flight settles without touching it. */
+  lane: number;
   inFlight?: Promise<void>;
+  flightGeneration?: number;
   pending?: Pending;
 }
 
@@ -162,10 +165,10 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
     fetch: boolean,
     baseBranch: string | undefined,
     requestedAt: string | undefined,
+    generation: number,
   ): Flight => {
     if (baseBranch === undefined) return finished();
     const seq = ++runner.seq;
-    const generation = gitStatusProjectGeneration(worktreePath);
     const startedAt = now().toISOString();
     const measuredAt = requestedAt ?? startedAt;
     const applyIfCurrent = (outcome: MeasureOutcome | undefined): void => {
@@ -209,14 +212,20 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
     baseBranch: string | undefined,
     requestedAt?: string,
   ): Promise<void> => {
-    const { done, settled } = run(runner, worktreePath, trigger, fetch, baseBranch, requestedAt);
+    const generation = gitStatusProjectGeneration(worktreePath);
+    const lane = ++runner.lane;
+    runner.flightGeneration = generation;
+    const { done, settled } = run(runner, worktreePath, trigger, fetch, baseBranch, requestedAt, generation);
     let backstop: ReturnType<typeof setTimeout> | undefined;
     const ceiling = new Promise<void>((resolve) => {
       backstop = setTimeout(resolve, deadlineMs + backstopMs);
     });
     runner.inFlight = Promise.race([settled, ceiling]).finally(() => {
       if (backstop !== undefined) clearTimeout(backstop);
+      // A flight the lane has moved past neither frees it nor promotes what is parked behind the flight that holds it.
+      if (runner.lane !== lane) return;
       runner.inFlight = undefined;
+      runner.flightGeneration = undefined;
       const pending = runner.pending;
       if (pending === undefined) return;
       runner.pending = undefined;
@@ -236,7 +245,7 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
     const key = normalizePath(worktreePath);
     let runner = runners.get(key);
     if (runner === undefined) {
-      runner = { seq: 0 };
+      runner = { seq: 0, lane: 0 };
       runners.set(key, runner);
     }
     if (runner.inFlight === undefined) return start(runner, worktreePath, opts.trigger, opts.fetch, baseBranch);
@@ -246,6 +255,8 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
       for (const wake of runner.pending.waiters) wake();
       runner.pending = undefined;
     }
+    // The in-flight pass measured a project the generation has moved past, so its answer is already discarded: this one starts now.
+    if (runner.flightGeneration !== generation) return start(runner, worktreePath, opts.trigger, opts.fetch, baseBranch);
     const pending = (runner.pending ??= { generation, trigger: opts.trigger, fetch: false, waiters: [] });
     if (opts.trigger === 'turn-end') {
       pending.trigger = 'turn-end';
