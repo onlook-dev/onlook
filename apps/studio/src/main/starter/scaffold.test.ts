@@ -1,4 +1,6 @@
-import { describe, expect, test } from 'bun:test';
+import { EventEmitter } from 'node:events';
+import { runInNewContext } from 'node:vm';
+import { describe, expect, it, test } from 'bun:test';
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -7,7 +9,7 @@ import { outcome } from '@studio/fixtures';
 import { isFrameworkDefaultPort, pickStarterPort, STARTER_PORT_RANGE } from './port.js';
 import { REACT_PINS, reactFiles } from './adapters/react.js';
 import { STATIC_FILES } from './adapters/static.js';
-import { STARTER_SERVER_FILE, writeScaffold } from './scaffold.js';
+import { STARTER_BACKSTOP_JS, STARTER_SERVER_FILE, writeScaffold } from './scaffold.js';
 
 test("no Studio-internal path or product name reaches the user's files, from either adapter", () => {
   for (const content of [...Object.values(STATIC_FILES), ...Object.values(reactFiles({ name: 'bun', version: '1.3.14' }))]) {
@@ -83,4 +85,94 @@ describe('pickStarterPort', () => {
   test('throws when nothing in the range is free', async () => {
     expect(await outcome(pickStarterPort(undefined, async () => false))).toThrow();
   });
+});
+
+function backstop(parentPid?: string) {
+  const parentPort = new EventEmitter();
+  const timers = new Map<number, () => void>();
+  let timerId = 0;
+  let parentError: string | undefined;
+  const exits: number[] = [];
+  const probes: number[] = [];
+  const windows: number[] = [];
+  const child = {
+    env: parentPid === undefined ? {} : { STARTER_PARENT_PID: parentPid },
+    ppid: 1234,
+    parentPort,
+    kill(pid: number, signal: number) {
+      expect(signal).toBe(0);
+      probes.push(pid);
+      if (parentError) throw Object.assign(new Error('parent probe'), { code: parentError });
+    },
+    exit(code: number) { exits.push(code); },
+  };
+  runInNewContext(STARTER_BACKSTOP_JS, {
+    process: child,
+    setTimeout(callback: () => void, windowMs: number) {
+      timerId += 1;
+      timers.set(timerId, callback);
+      windows.push(windowMs);
+      return timerId;
+    },
+    clearTimeout(handle: number) { timers.delete(handle); },
+  });
+  return {
+    child, exits, probes, windows,
+    expire() {
+      const next = timers.entries().next().value;
+      if (next === undefined) return;
+      timers.delete(next[0]);
+      next[1]();
+    },
+    pendingTimers() { return timers.size; },
+    failProbe(code: string) { parentError = code; },
+    heartbeat(windowMs: number) { parentPort.emit('message', { data: { type: 'heartbeat', windowMs } }); },
+  };
+}
+
+it('keeps the preview alive when main misses repeated heartbeat windows', () => {
+  const guard = backstop();
+  guard.heartbeat(5000);
+  guard.expire();
+  guard.expire();
+  expect(guard.pendingTimers()).toBe(1);
+  expect(guard.exits).toEqual([]);
+  expect(guard.probes).toEqual([1234, 1234]);
+  expect(guard.windows).toEqual([15000, 5000, 5000, 5000]);
+});
+
+it('keeps the preview alive before the first heartbeat and accepts a later background window', () => {
+  const guard = backstop();
+  guard.expire();
+  guard.heartbeat(50_000);
+  expect(guard.pendingTimers()).toBe(1);
+  expect(guard.exits).toEqual([]);
+  expect(guard.probes).toEqual([1234]);
+  expect(guard.windows).toEqual([15000, 15000, 50_000]);
+});
+
+it('reaps the preview only after the original parent no longer exists', () => {
+  const guard = backstop();
+  guard.child.ppid = 1;
+  guard.failProbe('ESRCH');
+  guard.expire();
+  expect(guard.probes).toEqual([1234]);
+  expect(guard.exits).toEqual([3]);
+  expect(guard.pendingTimers()).toBe(0);
+});
+
+it('uses the main PID supplied at fork even if its parent changed before startup', () => {
+  const guard = backstop('5678');
+  guard.failProbe('ESRCH');
+  guard.expire();
+  expect(guard.probes).toEqual([5678]);
+  expect(guard.exits).toEqual([3]);
+});
+
+it('does not mistake a denied parent probe for a dead parent', () => {
+  const guard = backstop();
+  guard.failProbe('EPERM');
+  guard.expire();
+  expect(guard.exits).toEqual([]);
+  expect(guard.windows).toEqual([15000, 15000]);
 });

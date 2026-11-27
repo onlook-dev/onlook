@@ -30,6 +30,8 @@ import { briefing, type StarterBriefing } from '../../../instructions/context.js
 import { sessionBriefingContext } from '../briefing-context.js';
 import { t } from '@studio/i18n';
 import { userEnv } from '../../env/shell-env.js';
+import { wslProject } from '../../env/wsl.js';
+import { checkWslTools } from '../../env/wsl-tools.js';
 import { log } from '../../log/index.js';
 import type { AgentBackend, BackendState, ModelPick } from '../backend.js';
 import type { StudioToolSinks } from '../studio-tools.js';
@@ -900,8 +902,10 @@ export class AppServerSession implements AgentBackend {
   private async start(): Promise<void> {
     await this.opts.prepare?.();
     if (this.closed) return;
-    const resolved = resolveCodex(this.opts.codexRoot);
-    const health = checkHealth(resolved, this.opts.codexRoot);
+    const wsl = wslProject(this.cwd);
+    if (wsl !== undefined) await checkWslTools(this.cwd, ['codex']);
+    const resolved = wsl === undefined ? resolveCodex(this.opts.codexRoot) : { bin: 'codex', descriptor: null, via: 'explicit-binary' as const };
+    const health = wsl === undefined ? checkHealth(resolved, this.opts.codexRoot) : { ok: true, problems: [] };
     if (!health.ok || resolved === null) {
       logger.warn('start refused: codex is not usable', { problems: health.problems.join('; ') });
       this.reportError(t('chat.codex.unusable'), 'cli_missing');
@@ -909,7 +913,7 @@ export class AppServerSession implements AgentBackend {
     }
 
     const config: Record<string, string> = {
-      [`projects.${JSON.stringify(this.cwd)}.trust_level`]: '"untrusted"',
+      [`projects.${JSON.stringify(wsl?.linuxPath ?? this.cwd)}.trust_level`]: '"untrusted"',
       // Default mode gates `request_user_input` at call time behind this flag (ONL-2215).
       'features.default_mode_request_user_input': 'true',
     };
@@ -1068,7 +1072,7 @@ export class AppServerSession implements AgentBackend {
 
     const toolSpecs = this.opts.tools ? appServerToolSpecs(this.opts.tools) : [];
     const briefingText = briefing(this.opts.workspace, {
-      ...sessionBriefingContext('codex'),
+      ...sessionBriefingContext('codex', this.cwd),
       ...(this.opts.starter === undefined ? {} : { starter: this.opts.starter }),
     });
 

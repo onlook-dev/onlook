@@ -400,6 +400,7 @@ export const CHANNELS = {
     tabsCreateChanged: { name: 'tabs:createChanged', payload: of<ProjectCreateState | null>(), tab: 'onTabCreateState' },
     /** Measured by main: a renderer fetch to localhost is cross-origin from `file://` and reports "down" for an up server (ONL-1832). */
     serverState: { name: 'server:state', payload: of<ServerBookState>(), tab: 'onServerState' },
+    canvasFrameBlocked: { name: 'canvas:frame-blocked', payload: of<{ nodeId: string; url: string }>(), tab: 'onCanvasFrameBlocked' },
     /** From main: a focused guest delivers no key events to the host document (ONL-1989). */
     canvasZoom: { name: 'canvas:zoom', payload: of<CanvasZoomCommand>(), tab: 'onCanvasZoom' },
     /** Main moves the camera for a capture and puts it back; the renderer answers each step on `canvas:captureViewed` (ONL-3031). */

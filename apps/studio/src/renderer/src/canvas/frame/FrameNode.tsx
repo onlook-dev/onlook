@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { WebviewTag } from 'electron';
 import { useShallow } from 'zustand/react/shallow';
+import { FrameRunIntentContext } from './runIntent.js';
 import {
   useReactFlow,
   useStore as useFlowStore,
@@ -29,7 +30,7 @@ import {
 import { CanvasNodeMenu } from '../menu/CanvasNodeMenu.jsx';
 import { FrameRing } from './FrameRing.jsx';
 import { focusedFrameId } from '../elementPicking.js';
-import { armedNodeId, isFrameShielded, useCanvasStore } from '../store.js';
+import { armedNodeId, isFrameShielded, useCanvasStore, type CanvasMode } from '../store.js';
 import { NodeResizeHandles } from '../NodeResizeHandles.jsx';
 import { FrameQuote } from './FrameQuote.js';
 import { frameCover, isAskableCover, olderCover, type CoverAction } from './coverState.js';
@@ -58,7 +59,7 @@ import { useFrameWebview } from './useFrameWebview.js';
 import { useFrameAttachUrl } from './useFrameAttachUrl.js';
 import { bindGuestReady } from './guestReady.js';
 import { ignoreRefusal } from '../../refusal.js';
-import { isFrameReadable } from './idle.js';
+import { isFrameReadable, isFrameVisible } from './idle.js';
 import { useFrameIdle } from './useFrameIdle.js';
 import { useLatestRef } from '../../useLatestRef.js';
 import { useTabFrames } from './tabFrames.js';
@@ -95,6 +96,7 @@ export function FrameNode({
   positionAbsoluteX,
   positionAbsoluteY,
 }: NodeProps<FrameNodeType>): React.JSX.Element {
+  const reportRunIntent = useContext(FrameRunIntentContext);
   const webviewRef = useRef<WebviewTag | null>(null);
   const isHovered = useCanvasStore((state) => state.hoveredNodeId === id);
   const isFocused = useCanvasStore((state) => focusedFrameId(state) === id);
@@ -152,21 +154,8 @@ export function FrameNode({
   const isChromeCompactNow = useFlowStore((state) =>
     isChromeCompact((width ?? 0) * state.transform[2]),
   );
-  const serverCover = data.serverCover;
-  const recoveryUrl = frameRecoveryUrl(data);
   const discarded = useTabFrames((state) => state.discarded);
   const discardEpoch = useTabFrames((state) => state.epoch);
-  const effectiveHealth = serverCover !== undefined ? 'unreachable' : data.health;
-  const startUnderWay = useStartUnderWay();
-  const shownFacts = { ...frameShownFacts(data), serverStarting: data.serverStarting === true || startUnderWay !== null };
-  const under = frameUnderQuote(shownFacts);
-  const coversOn = useFlag('frame-covers');
-  const older = olderCover({ serverCover, serverStarting: data.serverStarting === true, health: data.health, serverLive: data.serverLive === true, loadFailure: data.loadFailure });
-  const isDead = coversOn ? under.kind === 'load-failed' || under.kind === 'unreachable' : older.isDead;
-  const canAsk = useAgentStore(canSubmitPrompt);
-  const recoveryDetail = t(serverCover === undefined ? 'frame.health.unreachable.tooltip' : SERVER_COVER_COPY[serverCover], { url: displayUrl(recoveryUrl) });
-  const recoveryAsk = useRecoveryAsk(id);
-
   // The nonce is the webview's `key`: a remount survives a wedged renderer or dead HMR socket that `reload()` does not (ONL-1922).
   // `null` until the first refresh so `src` tracks `homeUrl`; after it the url changes only with the nonce.
   const [refresh, setRefresh] = useState<{
@@ -181,9 +170,34 @@ export function FrameNode({
   const refreshCurrent = refresh !== null && refresh.epoch === guestEpoch && refresh.discardEpoch === discardEpoch ? refresh : null;
   const mountNonce = refresh?.nonce ?? 0;
   const mountUrl = refreshCurrent?.url ?? data.homeUrl;
+  const attempt = `${mountNonce}:${guestEpoch}:${discardEpoch}`;
+  const attachmentKey = JSON.stringify([mountUrl, attempt]);
+  const [blockedAttachment, setBlockedAttachment] = useState<{ key: string; entries: ReturnType<typeof useCanvasStore.getState>['serverEntries'] } | null>(null);
+  const serverEntries = useCanvasStore((state) => blockedAttachment === null ? null : state.serverEntries);
+  const onAttachRefused = useCallback((reason: 'blocked' | 'unavailable') => {
+    if (reason === 'blocked') setBlockedAttachment({ key: attachmentKey, entries: useCanvasStore.getState().serverEntries });
+    useCanvasStore.getState().patchFrame(id, { health: 'unreachable' });
+  }, [attachmentKey, id]);
+  useEffect(() => {
+    if (blockedAttachment === null || (blockedAttachment.key === attachmentKey && blockedAttachment.entries === serverEntries)) return;
+    setBlockedAttachment(null);
+    useCanvasStore.getState().patchFrame(id, { health: 'loading' });
+  }, [blockedAttachment, attachmentKey, serverEntries, id]);
+  const serverCover = blockedAttachment?.key === attachmentKey && blockedAttachment.entries === serverEntries ? 'occupied' : data.serverCover;
+  const recoveryUrl = frameRecoveryUrl(data);
+  const effectiveHealth = serverCover !== undefined ? 'unreachable' : data.health;
+  const startUnderWay = useStartUnderWay();
+  const shownFacts = { ...frameShownFacts(data), cover: serverCover, serverStarting: data.serverStarting === true || startUnderWay !== null };
+  const under = frameUnderQuote(shownFacts);
+  const coversOn = useFlag('frame-covers');
+  const older = olderCover({ serverCover, serverStarting: data.serverStarting === true, health: data.health, serverLive: data.serverLive === true, loadFailure: data.loadFailure });
+  const isDead = coversOn ? under.kind === 'load-failed' || under.kind === 'unreachable' : older.isDead;
+  const canAsk = useAgentStore(canSubmitPrompt);
+  const recoveryDetail = t(serverCover === undefined ? 'frame.health.unreachable.tooltip' : SERVER_COVER_COPY[serverCover], { url: displayUrl(recoveryUrl) });
+  const recoveryAsk = useRecoveryAsk(id);
+
   const [hasSettled, setHasSettled] = useState(data.health !== 'loading');
   if (!hasSettled && data.health !== 'loading') setHasSettled(true);
-  const attempt = `${mountNonce}:${guestEpoch}:${discardEpoch}`;
   const unreachable = data.health === 'unreachable';
   const [failedGuest, setFailedGuest] = useState({ unreachable, attempt, target: data.target });
   if (failedGuest.unreachable !== unreachable) setFailedGuest({ unreachable, attempt, target: data.target });
@@ -191,7 +205,7 @@ export function FrameNode({
   // An arriving Frame flies without its page: a heavy load mid-flight stutters the film, so the guest mounts when it lands.
   const canMountGuest = serverCover === undefined && !discarded && !isArriving;
   const hasGuest = canMountGuest && !suspended;
-  const attachUrl = useFrameAttachUrl(id, mountUrl, `${mountNonce}:${guestEpoch}:${discardEpoch}`, hasGuest);
+  const attachUrl = useFrameAttachUrl(id, mountUrl, attempt, hasGuest, onAttachRefused);
 
   const currentUrl = data.currentUrl;
   const retargetFrame = useCanvasStore((state) => state.retargetFrame);
@@ -238,19 +252,30 @@ export function FrameNode({
   const scroll = useFrameScroll(webviewRef, guestInstance,
     scrollbarEligible({ armed: isArmed, isScrollKeyOn, mode, exporting: isExportMode, hasGuest, health: data.health }));
   const moving = useCameraMotion((state) => state.moving);
-  const [wasReadable, setWasReadable] = useState(true);
-  const isReadable = useFlowStore((state) =>
-    isFrameReadable(
+  const staysActive = mode === 'interact' ? isFrameVisible : isFrameReadable;
+  // Each mode remembers on its own, so what Design does with a Frame never depends on a visit to Preview (ONL-3396).
+  const [wasActive, setWasActive] = useState<Record<CanvasMode, boolean>>({ design: true, interact: true });
+  const isActive = useFlowStore((state) =>
+    staysActive(
       { x: positionAbsoluteX, y: positionAbsoluteY, width: width ?? 0, height: height ?? 0 },
       { width: state.width, height: state.height, transform: state.transform },
-      wasReadable,
+      wasActive[mode],
     ),
   );
-  useEffect(() => { if (!moving) setWasReadable(isReadable); }, [moving, isReadable]);
-  const canPause = !isReadable && !pickerLive && !hasHeldElement && !isResizing &&
+  useEffect(() => {
+    if (!moving) setWasActive((previous) => previous[mode] === isActive ? previous : { ...previous, [mode]: isActive });
+  }, [moving, isActive, mode]);
+  // No hysteresis: a Frame with any pixel on screen is one the user can see, and pauses only under a picture (ONL-3396).
+  const isOnScreen = useFlowStore((state) =>
+    isFrameVisible(
+      { x: positionAbsoluteX, y: positionAbsoluteY, width: width ?? 0, height: height ?? 0 },
+      { width: state.width, height: state.height, transform: state.transform },
+    ),
+  );
+  const canPause = !isActive && !pickerLive && !hasHeldElement && !isResizing &&
     !inlineChat && !data.working && data.health === 'live';
   const pictureKey = `${mountNonce}:${guestEpoch}`;
-  const thumbnail = useFrameIdle(webviewRef, canPause, guestInstance, hasGuest, pictureKey);
+  const thumbnail = useFrameIdle(webviewRef, canPause, guestInstance, hasGuest, pictureKey, isOnScreen);
   // A resize does not reload, so without this the Frame wakes under a picture of its older shape (ONL-2987).
   const picturedShape = useRef<string | null>(null);
   useEffect(() => {
@@ -325,7 +350,9 @@ export function FrameNode({
     const match = matchServerPort(entries, recoveryUrl);
     // The recovery address decides the act, not where the guest sits: its own server is what a Start could lift (ONL-2897).
     if (serverCover !== undefined || isStartableCover(frameServerCover(entries, recoveryUrl))) {
-      studio().serverIntent({ press: 'start', ...(match === undefined ? {} : { entryIds: [match.entry.entryId] }) });
+      const intent = { press: 'start' as const, ...(match === undefined ? {} : { entryIds: [match.entry.entryId] }) };
+      if (reportRunIntent !== null) reportRunIntent(intent);
+      else studio().serverIntent(intent);
     } else {
       retargetFrame(recoveryUrl, id);
       remountGuest(recoveryUrl, false);

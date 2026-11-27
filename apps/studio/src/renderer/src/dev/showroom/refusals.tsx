@@ -1,4 +1,5 @@
 import type { ProjectImportRefusalReason, WorkspaceRefusalReason } from '@studio/events';
+import { t } from '@studio/i18n';
 import { useState } from 'react';
 import { Button } from '@astryxdesign/core/Button';
 import { HStack, VStack } from '@astryxdesign/core/Layout';
@@ -40,6 +41,17 @@ function Interactive(): React.JSX.Element {
 }
 
 const stories: Story[] = [
+  ...(['folder', 'import'] as const).flatMap((surface) => (['default', 'focus', 'hover'] as const).map((state) => ({
+    id: `wsl-${surface}-${state}`,
+    title: `WSL ${surface}: ${state}`,
+    render: () => {
+      const detail = t('machine.wsl.toolsUnavailable', { tools: 'git, node', distro: 'Ubuntu' });
+      const card = surface === 'folder'
+        ? <RefusalDialog isInline refusal={{ reason: 'runtime-unavailable', detail }} onDismiss={noop} />
+        : <ImportRefusalDialog isInline reason="runtime-unavailable" detail={detail} onDismiss={noop} />;
+      return state === 'default' ? card : <Focused selector={surface === 'folder' ? '[data-testid="workspace-refused-dismiss"]' : '[data-testid="import-refused-dismiss"]'} hover={state === 'hover'}>{card}</Focused>;
+    },
+  }))),
   ...(['at-limit', 'unknown-project', 'workspace-missing', 'removing', 'failed'] as const).map((reason) => ({ id: `open-${reason}`, title: `Open project: ${reason}`, render: () => <OpenRefusalDialog reason={reason} isInline onDismiss={noop} /> })),
   ...(['focus', 'hover'] as const).map((state) => ({ id: `open-close-${state}`, title: `Open project Close: ${state}`, render: () => <Focused selector="[data-testid='project-open-dismiss']" hover={state === 'hover'}><OpenRefusalDialog reason="at-limit" isInline onDismiss={noop} /></Focused> })),
   { id: 'refusals-interactive', title: 'Open, focus and dismiss', render: () => <Interactive /> },

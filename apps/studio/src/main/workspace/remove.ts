@@ -6,6 +6,7 @@ import { closeCanvas } from '../canvas/index.js';
 import { log } from '../log/index.js';
 import { serverHost } from '../server/index.js';
 import { appSweepDeps, sweepWorktree } from '../server/sweep.js';
+import { workspaceProcessRoot } from './store.js';
 import { starterHost } from '../starter/index.js';
 import { pathSpellings } from '../lib/canonical-path.js';
 import { forgetProjectSetup } from '../project-setup/service.js';
@@ -19,7 +20,6 @@ import {
   registeredProject,
   registeredProjectKey,
   workspaceHeldOrigin,
-  workspaceRoot,
 } from './store.js';
 
 const logger = log('workspace');
@@ -53,7 +53,7 @@ const stopStarterChild = async (worktreePath: string): Promise<void> => {
 };
 
 const sweepProcesses = async (worktreePath: string): Promise<void> => {
-  await sweepWorktree(worktreePath, workspaceRoot(), appSweepDeps());
+  await sweepWorktree(worktreePath, workspaceProcessRoot(worktreePath), appSweepDeps(worktreePath));
 };
 
 function entriesOf(dir: string): string[] {
@@ -100,7 +100,7 @@ export async function teardownProject(
   const worktree = record.workspacePath;
   const bucket =
     workspaceHeldOrigin(record) !== undefined
-      ? blankBucketPaths(record.repoIdentity, record.workspaceName)
+      ? blankBucketPaths(record.repoIdentity, record.workspaceName, record.sourcePath)
       : undefined;
   const erase = deps.rm ?? removeDir;
   // Both spellings: a card whose folder already went keys lexically, one that still exists keys through realpath (ONL-2315).

@@ -1,5 +1,5 @@
 /** Refusals, never degraded modes: a connect-anyway path puts the agent on the user's real checkout (ONL-1829). */
-export type WorkspaceRefusalReason = 'already-copied' | 'no-base-ref' | 'name-unavailable' | 'nothing-to-copy';
+export type WorkspaceRefusalReason = 'already-copied' | 'no-base-ref' | 'name-unavailable' | 'nothing-to-copy' | 'runtime-unavailable';
 
 export type BaseRefSource = 'upstream' | 'remote-head' | 'sole-remote-branch' | 'conventional-name' | 'local-main';
 
@@ -22,7 +22,8 @@ export type WorkspacePlan =
       workspaceName: string;
       branchName: string;
       workspacePath: string;
-      origin?: 'copied' | 'duplicate';
+      origin?: 'blank' | 'copied' | 'duplicate';
+      history?: 'none';
       duplicateSourceName?: string;
       /** Never folded into `origin`: a copied origin's rollback removes the bucket every sibling is cut from (ONL-2442). */
       held?: { origin: HeldOrigin; sourcePath: string };
@@ -49,6 +50,7 @@ export interface DuplicateProjectRequest {
 
 export interface WorkspaceCreated {
   internal?: 'artifacts';
+  history?: 'none';
   workspacePath: string;
   workspaceName: string;
   branchName: string;
@@ -98,7 +100,7 @@ export interface CreateBlankRequest {
 export type BlankCreateResult =
   | { ok: true; workspace: WorkspaceCreated }
   /** `explanation` is what the machine checks say the person can do about it, beside whatever the failing step reported. */
-  | { ok: false; stage: BlankCreateStage; canceled: boolean; detail?: string; explanation?: string };
+  | { ok: false; stage: BlankCreateStage; canceled: boolean; detail?: string; explanation?: string; cause?: 'git_not_found' };
 
 export type ProjectCreatePhase = 'planning' | 'copying' | 'installing' | 'starting';
 

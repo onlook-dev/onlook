@@ -23,6 +23,15 @@ function titled(markup: string): string[] {
 }
 
 describe('the Blank Draft failure dialog (ONL-3085)', () => {
+  it('explains missing Git without raw output or an unhelpful retry', () => {
+    const markup = renderToStaticMarkup(
+      <BlankCreateFailedDialog failure={{ stage: 'setting-up', cause: 'git_not_found', detail: 'Host executable not found in trusted PATH' }} isInline onRetry={noop} onClose={noop} />,
+    );
+    expect(markup).toContain(t('machine.failure.git_not_found'));
+    expect(markup).not.toContain('Host executable not found');
+    expect(markup).not.toContain('blank-create-retry');
+    expect(markup).toContain('blank-create-dismiss');
+  });
   it('states its title once, so the card reads as one piece', () => {
     expect(failed().split(t('blank.create.failed.title')).length - 1).toBe(1);
     expect(failed().match(/<h[1-6]\b/g)).toHaveLength(1);

@@ -1,6 +1,8 @@
 // A parked `canUseTool` promise has no deadline: a leaked one wedges the session silently, so every abort route goes through `settleAll()`. No `ANTHROPIC_API_KEY`, no credential reads.
 
 import { randomUUID } from 'node:crypto';
+import { wslProject } from '../env/wsl.js';
+import { startWslAgent } from './wsl.js';
 import { ClaudeTurnLifecycle } from './turn-lifecycle.js';
 import { t } from '@studio/i18n';
 import { claudeConnectors, ConnectorMonitor } from './connectors.js';
@@ -985,9 +987,10 @@ export class AgentSession {
   }
 
   private start(): void {
+    const wsl = wslProject(this.cwd);
     const project = readProjectContext(this.cwd);
     const workspaceBriefing = [briefing(this.opts.workspace, {
-      ...sessionBriefingContext('claude'),
+      ...sessionBriefingContext('claude', this.cwd),
       ...(this.opts.starter === undefined ? {} : { starter: this.opts.starter }),
     }), project.instructions].filter(Boolean).join('\n\n');
     const allowRules = [...this.allowRules];
@@ -997,8 +1000,9 @@ export class AgentSession {
     this.q = (this.opts.query ?? query)({
       prompt: this.prompts(),
       options: {
-        cwd: this.cwd,
-        pathToClaudeCodeExecutable: claudeExecutablePath(),
+        cwd: wsl?.linuxPath ?? this.cwd,
+        pathToClaudeCodeExecutable: wsl === undefined ? claudeExecutablePath() : 'claude',
+        ...(wsl === undefined ? {} : { spawnClaudeCodeProcess: (options: import('@anthropic-ai/claude-agent-sdk').SpawnOptions) => startWslAgent('claude', options.args, this.cwd, { env: options.env, signal: options.signal }) }),
         // REPLACES the child env, no merge with `process.env`; `pinClaudeConfigDir` keeps a driven run's store scratch, not its login.
         env: claudeChildSdkEnv(),
         // Verbatim, no alias table. An explicit `model` OVERRIDES the one a resume restores; with no choice, `'default'` moves a resume off the model it was started on, which an SDK bump retires (ONL-2435).

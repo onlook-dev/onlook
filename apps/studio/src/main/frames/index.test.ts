@@ -147,8 +147,12 @@ function fakeGuest(id: number): {
 function navigableGuest(): {
   contents: Electron.WebContents;
   frameNavigate: (url: string, isMainFrame: boolean) => boolean;
+  navigate: (url: string) => boolean;
+  redirect: (url: string, isMainFrame: boolean) => boolean;
 } {
-  const gates: ((event: { preventDefault: () => void; url: string; isMainFrame: boolean }) => void)[] = [];
+  type NavigationEvent = { preventDefault: () => void; url: string; isMainFrame: boolean };
+  type Gate = (event: NavigationEvent, url: string, inPlace: boolean, isMainFrame: boolean) => void;
+  const gates = new Map<string, Gate[]>();
   const contents = {
     id: 77,
     debugger: { on: (): void => undefined },
@@ -157,27 +161,26 @@ function navigableGuest(): {
     setWindowOpenHandler: (): void => undefined,
     setWebRTCIPHandlingPolicy: (): void => undefined,
     on: (event: string, listener: (payload: never) => void): unknown => {
-      if (event === 'will-frame-navigate') {
-        gates.push(listener as unknown as (typeof gates)[number]);
+      if (event === 'will-frame-navigate' || event === 'will-navigate' || event === 'will-redirect') {
+        const listeners = gates.get(event) ?? [];
+        listeners.push(listener as unknown as Gate);
+        gates.set(event, listeners);
       }
       return contents;
     },
   } as unknown as Electron.WebContents;
 
+  const dispatch = (name: string, url: string, isMainFrame: boolean): boolean => {
+    let prevented = false;
+    const event = { preventDefault: (): void => { prevented = true; }, url, isMainFrame };
+    for (const gate of gates.get(name) ?? []) gate(event, url, false, isMainFrame);
+    return !prevented;
+  };
   return {
     contents,
-    frameNavigate: (url, isMainFrame) => {
-      let prevented = false;
-      const event = {
-        preventDefault: (): void => {
-          prevented = true;
-        },
-        url,
-        isMainFrame,
-      };
-      for (const gate of gates) gate(event);
-      return !prevented;
-    },
+    frameNavigate: (url, isMainFrame) => dispatch('will-frame-navigate', url, isMainFrame),
+    navigate: (url) => dispatch('will-navigate', url, true),
+    redirect: (url, isMainFrame) => dispatch('will-redirect', url, isMainFrame),
   };
 }
 
@@ -191,9 +194,25 @@ describe('a subframe navigation (ONL-2568)', () => {
     expect(guest.frameNavigate('blob:http://127.0.0.1:5173/abc', false)).toBe(true);
     expect(guest.frameNavigate('data:text/html,<p>hi', false)).toBe(true);
     expect(guest.frameNavigate('about:srcdoc', false)).toBe(true);
+    expect(guest.frameNavigate(DEV, false)).toBe(true);
     // Its own main frame is still confined to http(s).
     expect(guest.frameNavigate('data:text/html,<p>hi', true)).toBe(false);
-    expect(guest.frameNavigate(DEV, true)).toBe(true);
+    expect(guest.frameNavigate('https://example.test/design', true)).toBe(true);
+  });
+
+  it('denies loopback main-frame navigations and redirects without a project owner', () => {
+    const guest = navigableGuest();
+    watchGuest(guest.contents, { docIdForGuest: () => undefined, frameForGuest: () => undefined, markDirty: () => undefined, loaded: () => undefined });
+
+    for (const url of [DEV, 'http://localhost/', 'https://[::1]/']) {
+      expect(guest.frameNavigate(url, true)).toBe(false);
+      expect(guest.navigate(url)).toBe(false);
+      expect(guest.redirect(url, true)).toBe(false);
+      expect(guest.redirect(url, false)).toBe(true);
+    }
+    expect(guest.navigate('https://example.test/design')).toBe(true);
+    expect(guest.redirect('https://example.test/design', true)).toBe(true);
+    expect(guest.redirect('data:text/html,<p>hi', false)).toBe(true);
   });
 
   it('confines an artifact’s iframes to the artifact scheme', () => {
@@ -204,6 +223,9 @@ describe('a subframe navigation (ONL-2568)', () => {
     expect(guest.frameNavigate(`${ARTIFACT_SCHEME}://aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa/pages/two.html`, false)).toBe(
       true,
     );
+    expect(guest.redirect('https://example.test/design', true)).toBe(false);
+    expect(guest.redirect('https://example.test/design', false)).toBe(false);
+    expect(guest.redirect(`${ARTIFACT_SCHEME}://aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa/pages/two.html`, true)).toBe(true);
   });
 });
 
@@ -321,7 +343,7 @@ describe('a dev guest stays on its own schemes (ONL-2568)', () => {
     const guest = fakeArtifactGuest();
     watchGuest(guest.contents, { docIdForGuest: () => undefined, frameForGuest: () => undefined, markDirty: () => undefined, loaded: () => undefined });
 
-    expect(guest.navigate('http://127.0.0.1:5173/next')).toBe(true);
+    expect(guest.navigate('https://example.com/next')).toBe(true);
     expect(guest.navigate(`${ARTIFACT_SCHEME}://aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa/pages/index.html`)).toBe(false);
     expect(guest.navigate('file:///etc/passwd')).toBe(false);
   });

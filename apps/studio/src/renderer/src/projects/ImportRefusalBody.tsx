@@ -9,6 +9,10 @@ const IMPORT_REFUSAL_COPY: Record<
   ProjectImportRefusalReason,
   { title: StringKey; body: StringKey }
 > = {
+  'runtime-unavailable': {
+    title: 'machine.wsl.unavailable.title',
+    body: 'machine.wsl.unavailable.body',
+  },
   'not-a-repository': {
     title: 'projects.import.refused.notARepository.title',
     body: 'projects.import.refused.notARepository.body',
@@ -45,20 +49,27 @@ const IMPORT_REFUSAL_COPY: Record<
 
 export function ImportRefusalBody({
   reason,
+  detail,
   onDismiss,
   titleId,
   descriptionId,
 }: {
   reason: ProjectImportRefusalReason;
+  detail?: string;
   onDismiss: () => void;
   titleId?: string;
   descriptionId?: string;
 }): React.JSX.Element {
   const copy = IMPORT_REFUSAL_COPY[reason];
+  // A WSL runtime says what to install in Onlook's own words, so it reads as prose, not as a quoted report (ONL-3395).
+  const diagnosis = reason === 'runtime-unavailable'
+    ? { explanation: detail, explanationTestId: 'import-refused-detail' }
+    : { detail, detailTestId: 'import-refused-detail' };
   return (
     <FailureDialogBody
       title={t(copy.title)}
       body={t(copy.body)}
+      {...diagnosis}
       {...(titleId === undefined ? {} : { titleId })}
       {...(descriptionId === undefined ? {} : { descriptionId })}
       data-testid="import-refused"
@@ -74,8 +85,9 @@ export function ImportRefusalBody({
   );
 }
 
-export function ImportRefusalDialog({ reason, onDismiss, isInline }: {
+export function ImportRefusalDialog({ reason, detail, onDismiss, isInline }: {
   reason: ProjectImportRefusalReason | null;
+  detail?: string;
   onDismiss: () => void;
   isInline?: boolean;
 }): React.JSX.Element {
@@ -90,7 +102,7 @@ export function ImportRefusalDialog({ reason, onDismiss, isInline }: {
       {...(isInline === undefined ? {} : { isInline })}
       data-testid="import-dialog"
     >
-      {reason !== null && <ImportRefusalBody reason={reason} onDismiss={onDismiss} titleId={titleId} descriptionId={descriptionId} />}
+      {reason !== null && <ImportRefusalBody reason={reason} detail={detail} onDismiss={onDismiss} titleId={titleId} descriptionId={descriptionId} />}
     </FailureDialog>
   );
 }

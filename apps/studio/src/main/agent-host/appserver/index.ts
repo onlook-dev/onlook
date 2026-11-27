@@ -10,6 +10,7 @@ import { checkHealth, resolveCodex } from './resolve.js';
 import { AppServerSession } from './session.js';
 import type { AppServerSessionOptions } from './session.js';
 import { devSwitches } from '../../env/dev-switches.js';
+import { wslProject } from '../../env/wsl.js';
 
 
 const logger = log('agent-host');
@@ -29,14 +30,15 @@ export function createAppServerSession(
   options: Omit<AppServerSessionOptions, 'codexRoot' | 'captureRoot'>,
 ): AgentBackend {
   const root = codexRoot();
-  const problem = devSwitches.codexRoot === undefined ? undefined : setupProblem(root);
+  const wsl = wslProject(options.cwd);
+  const problem = wsl !== undefined || devSwitches.codexRoot === undefined ? undefined : setupProblem(root);
   logger.info('preparing codex');
 
   return new AppServerSession({
     ...options,
     codexRoot: root ?? '',
     captureRoot: stateRoot(),
-    prepare: prepareCodexForSession,
+    ...(wsl === undefined ? { prepare: prepareCodexForSession } : {}),
     ...(problem === undefined ? {} : { setupProblem: problem }),
     // Without this, reasoning items arrive with empty summary and content.
     reasoningSummary: 'detailed',

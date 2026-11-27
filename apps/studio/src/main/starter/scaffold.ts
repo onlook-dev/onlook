@@ -18,10 +18,21 @@ export const STARTER_BACKSTOP_JS = `const parentPort =
     ? { on: (_event, listener) => process.on('message', (data) => listener({ data })) }
     : undefined);
 if (parentPort) {
+  const parentPid = Number(process.env.STARTER_PARENT_PID ?? process.ppid);
   let deadline;
   const arm = (windowMs) => {
     clearTimeout(deadline);
-    deadline = setTimeout(() => process.exit(3), windowMs);
+    deadline = setTimeout(() => {
+      try {
+        process.kill(parentPid, 0);
+      } catch (error) {
+        if (error.code === 'ESRCH') {
+          process.exit(3);
+          return;
+        }
+      }
+      arm(windowMs);
+    }, windowMs);
   };
   arm(15000);
   parentPort.on('message', (event) => {

@@ -150,6 +150,7 @@ const SCENES: Record<string, (A: number) => (u: number, v: number) => number> = 
 };
 
 function slab(cv: Cv, scene: string): void {
+  if (!Object.hasOwn(SCENES, scene)) throw new Error('Unknown slab scene');
   const { c, W, H, S } = setup(cv);
   const w = cv.width;
   const h = cv.height;
@@ -206,6 +207,7 @@ const studio = (r: number[], Lk: Look): number => {
 
 interface Vert { x: number; y: number; z: number; n: number[]; v: number }
 function ribbon(cv: Cv, preset: string, look: string): void {
+  if (!Object.hasOwn(PRESETS, preset) || !Object.hasOwn(LOOKS, look)) throw new Error('Unknown metal scene');
   const Pr = PRESETS[preset]!;
   const Lk = LOOKS[look]!;
   const { c, W, H, S } = setup(cv);

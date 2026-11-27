@@ -133,6 +133,25 @@ describe('scrubClass', () => {
 });
 
 describe('scrubStack', () => {
+  it('drops overlong stack lines before parsing while keeping the next frame', () => {
+    const valid = '    at next (/app/out/main/index.js:2:3)';
+    const oversized = `    at ${'a '.repeat(500_000)} (/app/out/main/index.js:1:1)`;
+    const started = performance.now();
+    expect(scrubStack(`${oversized}\n${valid}`, 'node:javascript')).toEqual(scrubStack(valid, 'node:javascript'));
+    expect(performance.now() - started).toBeLessThan(1000);
+  });
+  it('bounds repeated app path markers before extracting filenames', () => {
+    const started = performance.now();
+    expect(scrubFrame({ filename: `${'/out/'.repeat(100_000)}main/index.js:1:1` }, 'web:javascript').filename).toBe(REDACTED_PATH);
+    expect(performance.now() - started).toBeLessThan(1000);
+  });
+  it('keeps stack lines at the length limit and drops the next character', () => {
+    const prefix = '    at ';
+    const suffix = ' (/app/out/main/index.js:1:2)';
+    const atLimit = `${prefix}${'f'.repeat(1000 - prefix.length - suffix.length)}${suffix}`;
+    expect(scrubStack(atLimit, 'node:javascript')).toHaveLength(1);
+    expect(scrubStack(` ${atLimit}`, 'node:javascript')).toEqual([]);
+  });
   const stack = [
     'Error: boom',
     '    at cut (/Users/wren/repo/apps/studio/out/main/index.js:10:5)',

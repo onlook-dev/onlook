@@ -30,7 +30,7 @@ export function markdown({ passed, failed, skipped, failures }: ReturnType<typeo
   const lines = [`### Unit tests: ${failed === 0 ? '✅' : '❌'} ${passed} passed, ${failed} failed${skipped ? `, ${skipped} skipped` : ''}`, ''];
   if (failures.length) {
     lines.push('| File | Test | Message |', '| --- | --- | --- |');
-    for (const f of failures.slice(0, 50)) lines.push(`| \`${f.file}\` | ${f.name.replace(/\|/g, '\\|')} | ${f.message.split('\n')[0]!.replace(/\|/g, '\\|').slice(0, 200)} |`);
+    for (const f of failures.slice(0, 50)) lines.push(`| \`${f.file}\` | ${f.name.replace(/[\\|]/g, '\\$&')} | ${f.message.split('\n')[0]!.replace(/[\\|]/g, '\\$&').slice(0, 200)} |`);
     if (failures.length > 50) lines.push('', `…and ${failures.length - 50} more.`);
   }
   return `${lines.join('\n')}\n`;

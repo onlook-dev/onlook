@@ -1,5 +1,7 @@
 import { basename } from 'node:path';
 import { on } from '../ipc/bridge.js';
+import { projectKey } from '../project/key.js';
+import { projectMap } from '../project/state.js';
 import {
   DEFAULT_DEV_PORT,
   IPC_EMIT,
@@ -28,11 +30,15 @@ import {
   workspaceRoot,
 } from '../workspace/store.js';
 import {
+  capturePortMeasurement,
   createServerEntry,
   discriminatePortReport,
   entryForFolder,
   extendServerEntry,
+  invalidatePortMeasurements,
   moveServerEntryPort,
+  portHeldByOtherProject,
+  portMeasurementInvalidator,
   recordPortMeasurement,
   removeServerEntry,
   serverBookEntries,
@@ -67,6 +73,8 @@ import { projectSetupService } from '../project-setup/service.js';
 import type { ProjectSetupService } from '../project-setup/runner.js';
 import { canonicalPath } from '../lib/canonical-path.js';
 import { signalTree } from '../env/child.js';
+import { wslProject } from '../env/wsl.js';
+import { signalWslListener } from '../env/wsl-processes.js';
 
 const logger = log('server');
 
@@ -74,6 +82,9 @@ type Measured = Extract<ServerPortMeasurement, 'live' | 'dead' | 'stranger'>;
 
 interface PortReading {
   measured: Measured;
+  verified: boolean;
+  identity?: ListenerIdentity;
+  current(): boolean;
   listener?: PortListener;
   studioOwned?: boolean;
 }
@@ -85,7 +96,6 @@ export interface StarterControl {
   /** Byte-identical to Studio's template, not merely present; the runner's own `isPresent` is existence only. */
   isPresent(worktreePath: string): boolean;
   spawn(worktreePath: string, port?: number): Promise<number>;
-  retire(worktreePath: string): Promise<void>;
 }
 
 export type AwaitRunningOutcome = 'running' | 'timed-out';
@@ -158,6 +168,10 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
   const isBlankProject = deps.isBlankProject ?? isRegisteredBlankProject;
 
   const workspaces = new Map<string, SeatsByEntry>();
+  const registrations = projectMap<() => void>('server.monitors', {
+    closes: true,
+    dispose: (release) => release(),
+  });
   const retainedStarters = new Set<string>();
   let activeWorktree: string | undefined;
   const lanes = createKeyedQueue<string | undefined>();
@@ -165,7 +179,7 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
   const pendings = new Map<string, ServerMachine>();
   const starterSpawns = new Map<string, number>();
   /** Signalled but not yet escalated: the 2s wait outlives a quit, which would leave the process on its port (ONL-2499). */
-  const awaitingEscalation = new Set<number>();
+  const awaitingEscalation = new Map<string, () => void | Promise<void>>();
 
   function pendingFor(worktreePath: string): ServerMachine {
     const key = normalizePath(worktreePath);
@@ -214,6 +228,14 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
     deps.emit(worktreePath, snapshotFor(worktreePath));
   }
 
+  function broadcastOpenBooks(): void {
+    for (const worktreePath of workspaces.keys()) broadcastFor(worktreePath);
+  }
+
+  function recordMeasurement(...args: Parameters<typeof recordPortMeasurement>): void {
+    if (recordPortMeasurement(...args)) broadcastOpenBooks();
+  }
+
   /** An empty book, not the claims as stopped: unmeasured claims would offer Stop for nothing watched. */
   function broadcastClosed(worktreePath: string | undefined): void {
     if (worktreePath === undefined) return;
@@ -241,10 +263,14 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
 
   // Called inside a chain step; going through `closeWorkspace` re-enters the same lane and deadlocks.
   function teardownRegisteredWorkspace(worktreePath: string): void {
+    registrations.delete(projectKey(worktreePath));
+    invalidatePortMeasurements(worktreePath);
     const seats = workspaces.get(worktreePath);
-    if (seats === undefined) return;
-    teardownSlot(seats);
-    workspaces.delete(worktreePath);
+    if (seats !== undefined) {
+      teardownSlot(seats);
+      workspaces.delete(worktreePath);
+    }
+    broadcastOpenBooks();
   }
 
   async function retireStarterFor(worktreePath: string, reported: number): Promise<void> {
@@ -267,25 +293,24 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
       const seats = workspaces.get(worktreePath);
       seats?.get(entry.id)?.monitor.stop(false);
       seats?.delete(entry.id);
-      recordPortMeasurement(worktreePath, entry.id, starterPort, 'dead');
+      recordMeasurement(worktreePath, entry.id, starterPort, 'dead');
     }
     await deps.authorPortMove(starterPort, reported, worktreePath);
     if (entry !== undefined) removeServerEntry(worktreePath, entry.id);
-    try {
-      await starter.retire(worktreePath);
-    } catch (err) {
-      logger.error('starter retire failed', { error: err });
-    }
   }
 
   async function measure(port: number, folder: string, worktreePath: string): Promise<PortReading> {
+    const current = capturePortMeasurement(port);
     const answered = await probe(port);
-    if (!answered) return { measured: 'dead' };
-    const identity = await identify(port).catch((): undefined => undefined);
-    if (verifiesFor(identity, folder) !== 'foreign') return { measured: 'live' };
-    if (isContainerRuntime(identity?.command)) return { measured: 'stranger', listener: 'container' };
+    if (!answered) return { measured: 'dead', verified: false, current };
+    const identity = await identify(port, { workspacePath: worktreePath }).catch((): undefined => undefined);
+    const ownership = verifiesFor(identity, folder);
+    if (ownership !== 'foreign') return { measured: 'live', verified: ownership === 'ours', current, ...(identity === undefined ? {} : { identity }) };
+    if (isContainerRuntime(identity?.command)) return { measured: 'stranger', listener: 'container', verified: false, current };
     return {
       measured: 'stranger',
+      verified: false,
+      current,
       studioOwned: attributeCwd(identity?.cwd, deps.attributionRoots(worktreePath)) === 'agent-started',
     };
   }
@@ -300,16 +325,22 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
     let watchedPort: number | undefined;
     let wasLive = false;
     let lastAnswer: ServerOwnership | undefined;
-    let lastCommand: string | undefined;
+    let lastIdentity: ListenerIdentity | undefined;
+    let currentMeasurement = () => false;
     const monitor = new ServerMonitor({
       ...(deps.timing === undefined ? {} : { timing: deps.timing }),
       ...(deps.delay === undefined ? {} : { delay: deps.delay }),
-      probe,
+      probe: (port) => {
+        currentMeasurement = capturePortMeasurement(port);
+        lastAnswer = undefined;
+        lastIdentity = undefined;
+        return probe(port);
+      },
       identify,
       adjudicate: (identity: ListenerIdentity | undefined) => {
         const answer = verifiesFor(identity, entry.folder);
         lastAnswer = answer;
-        lastCommand = identity?.command;
+        lastIdentity = identity;
         if (answer === 'ours' && isStarterEntry(entry.folder)) {
           setServerEntryOwnership(worktreePath, entry.id, 'studio-started');
         } else if (answer === 'ours' && identity?.cwd !== undefined) {
@@ -323,15 +354,16 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
       emit: (state) => {
         if (state.port !== undefined) watchedPort = state.port;
         if (state.status === 'running' && state.port !== undefined) {
-          recordPortMeasurement(worktreePath, entry.id, state.port, 'live');
+          recordMeasurement(worktreePath, entry.id, state.port, 'live', undefined, { verified: lastAnswer === 'ours', current: currentMeasurement, ...(lastIdentity === undefined ? {} : { identity: lastIdentity }) });
         } else if (state.status === 'stopped' && watchedPort !== undefined) {
           const stranger = lastAnswer === 'foreign';
-          recordPortMeasurement(
+          recordMeasurement(
             worktreePath,
             entry.id,
             watchedPort,
             stranger ? 'stranger' : 'dead',
-            stranger && isContainerRuntime(lastCommand) ? 'container' : undefined,
+            stranger && isContainerRuntime(lastIdentity?.command) ? 'container' : undefined,
+            { verified: false, current: currentMeasurement },
           );
         }
         portFollow.observed(state);
@@ -347,7 +379,7 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
       monitor,
       watch: (port, workspaceTelemetry) => {
         lastAnswer = undefined;
-        lastCommand = undefined;
+        lastIdentity = undefined;
         watchedPort = port;
         wasLive = false;
         monitor.watch(port, workspaceTelemetry);
@@ -385,25 +417,34 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
       } else {
         const measurements = new Map(
           await Promise.all(
-            known.ports.map(async (claimed) =>
-              [claimed.port, await measure(claimed.port, known.folder, worktreePath)] as const),
+            known.ports.map(async (claimed) => {
+              const measurement = await measure(claimed.port, known.folder, worktreePath);
+              if (measurement.current() && !signal?.aborted && (seatsAtStart === undefined || workspaces.get(worktreePath) === seatsAtStart)) {
+                recordMeasurement(worktreePath, known.id, claimed.port, measurement.measured, measurement.listener, {
+                  ...measurement,
+                  verified: seatsAtStart !== undefined && measurement.verified,
+                });
+                return [claimed.port, { ...measurement, current: capturePortMeasurement(claimed.port) }] as const;
+              }
+              return [claimed.port, measurement] as const;
+            }),
           ),
         );
-        // What was just measured, before any await: a claim left with a stale `live` covers nothing (ONL-3287).
-        for (const [port, measurement] of measurements) {
-          recordPortMeasurement(worktreePath, known.id, port, measurement.measured, measurement.listener);
-        }
         const reading = discriminatePortReport(
           known.ports.map((p) => p.port),
           reported,
-          new Map([...measurements].map(([port, measurement]) => [port, measurement.measured])),
+          new Map((entryForFolder(worktreePath, folder) ?? known).ports.map((claimed) => [claimed.port, claimed.measured])),
         );
         if (reading.kind === 'extend') {
           extendServerEntry(worktreePath, known.id, reported);
         } else if (reading.kind === 'move') {
           const move = (): void =>
             moveServerEntryPort(worktreePath, known.id, { from: reading.deadPort, to: reported });
-          if (measurements.get(reading.deadPort)?.studioOwned === true) {
+          const prior = measurements.get(reading.deadPort);
+          const studioOwned = prior?.current() === true
+            ? prior.studioOwned === true
+            : portHeldByOtherProject(worktreePath, originForPort(reading.deadPort));
+          if (studioOwned) {
             // Frames leave before the entry stops claiming the old port: another Project answers
             // there, and an unclaimed port mounts that Project's page (ONL-3287).
             if ((await deps.authorPortMove(reading.deadPort, reported, worktreePath)) !== 'refused') {
@@ -460,6 +501,11 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
 
         const seats: SeatsByEntry = new Map();
         workspaces.set(worktreePath, seats);
+        registrations.set(projectKey(worktreePath), () => {
+          teardownRegisteredWorkspace(worktreePath);
+          pendings.delete(normalizePath(worktreePath));
+          if (activeWorktree === worktreePath) activeWorktree = undefined;
+        });
         activeWorktree = worktreePath;
         pendingIfAny(worktreePath)?.reset(false);
 
@@ -470,12 +516,13 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
               for (const claimed of entry.ports) {
                 const reading = await measure(claimed.port, entry.folder, worktreePath);
                 if (workspaces.get(worktreePath) !== seats) return;
-                recordPortMeasurement(
+                recordMeasurement(
                   worktreePath,
                   entry.id,
                   claimed.port,
                   reading.measured,
                   reading.listener,
+                  reading,
                 );
                 livePort ??= reading.measured === 'live' ? claimed.port : undefined;
               }
@@ -596,17 +643,19 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
         for (const port of entry.ports) {
           if (runtimePorts.has(port.port)) continue;
           void (async () => {
-            const identity = await identify(port.port);
-            if (identity === undefined || verifiesFor(identity, entry.folder) !== 'ours' || identity.pid <= 1 || identity.pid === process.pid) return;
-            try { await signalProcess(identity.pid, 'SIGTERM'); } catch { return; }
-            awaitingEscalation.add(identity.pid);
+            const identity = await identify(port.port, { workspacePath: worktree });
+            if (identity === undefined || verifiesFor(identity, entry.folder) !== 'ours' || identity.pid <= 1 || (wslProject(worktree) === undefined && identity.pid === process.pid)) return;
+            const send = (signal: NodeJS.Signals): void | Promise<void> => wslProject(worktree) === undefined ? signalProcess(identity.pid, signal) : signalWslListener(worktree, identity.pid, signal, identity.creationTime, identity.cwd);
+            try { await send('SIGTERM'); } catch { return; }
+            const escalationKey = `${worktree}\0${identity.pid}`;
+            awaitingEscalation.set(escalationKey, () => send('SIGKILL'));
             try {
               await delay(2000);
-              const still = await identify(port.port);
-              if (still?.pid === identity.pid && verifiesFor(still, entry.folder) === 'ours') {
-                try { await signalProcess(still.pid, 'SIGKILL'); } catch { return; }
+              const still = await identify(port.port, { workspacePath: worktree });
+              if (still?.pid === identity.pid && verifiesFor(still, entry.folder) === 'ours' && (wslProject(worktree) === undefined || identity.creationTime === still.creationTime)) {
+                try { await send('SIGKILL'); } catch { return; }
               }
-            } finally { awaitingEscalation.delete(identity.pid); }
+            } finally { awaitingEscalation.delete(escalationKey); }
           })().catch(() => { logger.error('scoped server stop failed'); });
         }
       }
@@ -669,7 +718,11 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
       for (const worktree of starter.running()) {
         if (normalizedOpen.has(normalizePath(worktree))) continue;
         if (retainedStarters.has(normalizePath(worktree))) continue;
-        void starter.stop(worktree).catch((err: unknown) => {
+        const stoppedPort = starter.portFor(worktree);
+        const invalidate = stoppedPort === undefined ? undefined : portMeasurementInvalidator(worktree, stoppedPort);
+        void starter.stop(worktree).then(() => {
+          if (invalidate?.()) broadcastOpenBooks();
+        }).catch((err: unknown) => {
           logger.error('starter stop on switch failed', { error: err });
         });
       }
@@ -687,12 +740,16 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
 
     dispose() {
       // Synchronous, because quit does not wait: an unescalated SIGTERM leaves the port held after Studio is gone.
-      for (const pid of awaitingEscalation) {
-        try { void Promise.resolve(signalProcess(pid, 'SIGKILL')).catch(() => undefined); } catch { /* already gone */ }
+      for (const stop of awaitingEscalation.values()) {
+        try { void Promise.resolve(stop()).catch(() => undefined); } catch { /* already gone */ }
       }
       awaitingEscalation.clear();
-      for (const seats of workspaces.values()) teardownSlot(seats);
+      for (const [worktreePath, seats] of workspaces) {
+        invalidatePortMeasurements(worktreePath);
+        teardownSlot(seats);
+      }
       workspaces.clear();
+      registrations.clear();
       pendings.clear();
       starterSpawns.clear();
       activeWorktree = undefined;

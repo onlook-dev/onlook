@@ -13,6 +13,7 @@ import { previewStderrTail, type PreviewDiagnostics } from '../telemetry/preview
 const logger = log('starter');
 
 export interface StarterChildLike {
+  readonly runtime?: 'wsl';
   readonly pid: number | undefined;
   readonly stdout: NodeJS.ReadableStream | null;
   readonly stderr: NodeJS.ReadableStream | null;
@@ -48,7 +49,7 @@ export const DEFAULT_STARTER_TIMING: StarterTiming = {
 
 export interface StarterRunnerDeps {
   fork: StarterFork;
-  env: () => Promise<Record<string, string>>;
+  env: (cwd: string) => Promise<Record<string, string>>;
   pickPort?: (preferred?: number) => Promise<number>;
   /** The script the child runs, always with the worktree as its cwd; the worktree's own `server.mjs` unless given. */
   modulePath?: (worktree: string) => string;
@@ -96,6 +97,7 @@ export function createStarterRunner(deps: StarterRunnerDeps): StarterRunner {
   const kill = (entry: Entry): void => {
     if (entry.stopping) return;
     entry.stopping = true;
+    if (entry.child.runtime === 'wsl') { entry.child.kill(); return; }
     const pid = entry.child.pid;
     if (isWindows() && pid !== undefined) {
       void terminateWindowsTree(pid).catch(() => entry.child.kill());
@@ -128,7 +130,7 @@ export function createStarterRunner(deps: StarterRunnerDeps): StarterRunner {
         catch { logger.warn('starter analytics callback failed'); }
       };
       measure({ project_source: 'template', expected_port: port, port_occupied: null }, true);
-      const env = { ...(await deps.env()), PORT: String(port) };
+      const env = { ...(await deps.env(key)), PORT: String(port), STARTER_PARENT_PID: String(process.pid) };
       const spawnedAt = Date.now();
       const child = deps.fork(modulePathFor(key), {
         cwd: key,

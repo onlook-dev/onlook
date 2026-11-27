@@ -82,6 +82,10 @@ export const FLAGS = {
     removeWhen: 'The machine check before the first project has held up with users (ONL-3111)',
     renderer: true,
   },
+  'wsl-projects': {
+    default: false,
+    removeWhen: 'Projects in WSL open, start and pick up edits reliably on Windows (ONL-3395)',
+  },
 } as const satisfies Record<string, FlagDef>;
 
 /** Keys a release configuration may still bake while it catches up; a retired key decides nothing and is not a build error (ONL-2950). */

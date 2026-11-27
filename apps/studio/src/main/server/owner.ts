@@ -5,6 +5,8 @@ import { log } from '../log/index.js';
 import { windowsProcesses, type WindowsInspectionOptions } from './windows.js';
 import { isWindows, lsofPath } from '../env/platform.js';
 import { APP_ENV, runChild } from '../env/child.js';
+import { wslProject } from '../env/wsl.js';
+import { wslListener } from '../env/wsl-processes.js';
 
 const logger = log('server');
 
@@ -19,9 +21,10 @@ export interface ListenerIdentity {
   pid: number;
   cwd?: string;
   command?: string;
+  creationTime?: string;
 }
 
-export type IdentifyListener = (port: number) => Promise<ListenerIdentity | undefined>;
+export type IdentifyListener = (port: number, options?: { workspacePath?: string }) => Promise<ListenerIdentity | undefined>;
 
 function run(args: readonly string[]): Promise<string | undefined> {
   return new Promise((done) => {
@@ -40,7 +43,8 @@ function run(args: readonly string[]): Promise<string | undefined> {
   });
 }
 
-export const identifyListener = async (port: number, options?: WindowsInspectionOptions & { throwOnInspectionError?: boolean }): Promise<ListenerIdentity | undefined> => {
+export const identifyListener = async (port: number, options?: WindowsInspectionOptions & { throwOnInspectionError?: boolean; workspacePath?: string }): Promise<ListenerIdentity | undefined> => {
+  if (wslProject(options?.workspacePath) !== undefined) return wslListener(options!.workspacePath!, port);
   if (isWindows()) {
     try {
       const listeners = await windowsProcesses(port, options);

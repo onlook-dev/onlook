@@ -35,6 +35,7 @@ export function measurement(patch: Partial<GitMeasurement> = {}, pr?: Partial<Gi
 }
 
 export const MEASUREMENT_FIXTURES: Record<GitPillStateId, GitMeasurement> = {
+  'no-git': measurement({ history: 'none', gitInstalled: false, origin: 'none', head: 'unborn', branch: undefined, repo: undefined }),
   'no-access': measurement({ access: 'denied' }),
   'connect-github': measurement({ ghAuthed: false }),
   'local-only': measurement({ origin: 'none', repo: undefined }),

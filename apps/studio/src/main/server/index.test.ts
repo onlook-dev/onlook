@@ -1,4 +1,4 @@
-import { mkdirSync, realpathSync, rmSync } from 'node:fs';
+import { mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { afterAll, describe, expect, it } from 'bun:test';
 import { frameServerCover, type ProjectSetupSnapshot, type ServerBookState, type ServerEntryState } from '@studio/events';
@@ -241,7 +241,7 @@ describe('saved setup direct controls', () => {
       const before = emitted.length;
       await host.closeWorkspace(world.worktree);
       expect(host.snapshotFor(world.worktree).entries[0]?.status).toBe('stopped');
-      expect(emitted.length).toBe(before);
+      expect(emitted.slice(before)).toEqual([host.snapshotFor(other)]);
       await host.closeProject();
       expect(calls).toEqual([world.worktree, other]);
       expect(emitted.at(-1)).toEqual({ entries: [], pending: false });
@@ -364,7 +364,6 @@ describe('saved setup direct controls', () => {
           stop: async (cwd) => { starters.push(cwd); },
           isPresent: () => true,
           spawn: async () => 49002,
-          retire: async () => undefined,
         },
       });
       try {
@@ -985,7 +984,7 @@ describe('reports bind to their project', () => {
 function makeStarter(
   machine: Machine,
   running: Map<string, number>,
-  options: { hold?: boolean; present?: boolean; retireFails?: boolean; onStop?: () => void } = {},
+  options: { hold?: boolean; present?: boolean; onStop?: () => void } = {},
 ): StarterControl & { calls: string[] } {
   const calls: string[] = [];
   return {
@@ -1005,10 +1004,6 @@ function makeStarter(
       running.set(worktree, 4310);
       machine.listeners.set(4310, { pid: 90, cwd: worktree });
       return 4310;
-    },
-    retire: async (worktree) => {
-      calls.push(`retire ${basename(worktree)}`);
-      if (options.retireFails === true) throw new Error('EACCES: server.mjs');
     },
   };
 }
@@ -1081,7 +1076,7 @@ describe("Studio's own starter through the report seam (ONL-2152)", () => {
     machine.listeners.set(5173, { pid: 8, cwd: world.worktree });
     await host.report(world.worktree, world.worktree, 5173);
 
-    expect(starter.calls).toEqual(['stop main', 'retire main']);
+    expect(starter.calls).toEqual(['stop main']);
     expect(order[0]).toBe('move 4310->5173');
     expect(order).toContain('book 5173');
     const entries = serverBookEntries(world.worktree);
@@ -1144,7 +1139,7 @@ describe("Studio's own starter through the report seam (ONL-2152)", () => {
     machine.listeners.set(5173, { pid: 8, cwd: world.worktree });
     await host.report(world.worktree, world.worktree, 5173);
 
-    expect(starter.calls).toEqual(['stop main', 'retire main']);
+    expect(starter.calls).toEqual(['stop main']);
     expect(moves).toEqual([[4310, 5173, world.worktree]]);
     const entries = serverBookEntries(world.worktree);
     expect(entries).toHaveLength(1);
@@ -1153,7 +1148,7 @@ describe("Studio's own starter through the report seam (ONL-2152)", () => {
     host.dispose();
   });
 
-  it('a retirement whose move the canvas declines still completes: entry gone, server.mjs retired', async () => {
+  it('a retirement whose move the canvas declines still removes the old entry', async () => {
     const world = makeWorld('starter-retire-declined');
     const machine: Machine = {
       listeners: new Map([[4310, { pid: 90, cwd: world.worktree }]]),
@@ -1175,7 +1170,7 @@ describe("Studio's own starter through the report seam (ONL-2152)", () => {
     await host.report(world.worktree, world.worktree, 5173);
 
     expect(declined).toEqual([world.worktree]);
-    expect(starter.calls).toEqual(['stop main', 'retire main']);
+    expect(starter.calls).toEqual(['stop main']);
     const entries = serverBookEntries(world.worktree);
     expect(entries).toHaveLength(1);
     expect(entries[0]?.ports.map((p) => p.port)).toEqual([5173]);
@@ -1183,12 +1178,14 @@ describe("Studio's own starter through the report seam (ONL-2152)", () => {
     host.dispose();
   });
 
-  it('a retire that fails still seats the reported port — move authored, entry gone, no rejection', async () => {
+  it('keeps the server file when a saved setup reports it on another port', async () => {
     const world = makeWorld('starter-retire-fails');
     const machine: Machine = {
       listeners: new Map([[4310, { pid: 90, cwd: world.worktree }]]),
     };
-    const starter = makeStarter(machine, new Map([[world.worktree, 4310]]), { retireFails: true });
+    const content = 'export const ready = true;\n';
+    writeFileSync(join(world.worktree, 'server.mjs'), content);
+    const starter = makeStarter(machine, new Map([[world.worktree, 4310]]));
     const moves: [number, number][] = [];
     const { host, emitted } = makeHost(world, machine, {
       starter,
@@ -1203,7 +1200,8 @@ describe("Studio's own starter through the report seam (ONL-2152)", () => {
     machine.listeners.set(5173, { pid: 8, cwd: world.worktree });
     expect(await host.report(world.worktree, world.worktree, 5173)).toBeUndefined();
 
-    expect(starter.calls).toEqual(['stop main', 'retire main']);
+    expect(starter.calls).toEqual(['stop main']);
+    expect(readFileSync(join(world.worktree, 'server.mjs'), 'utf8')).toBe(content);
     expect(moves).toEqual([[4310, 5173]]);
     const entries = serverBookEntries(world.worktree);
     expect(entries).toHaveLength(1);
@@ -1212,7 +1210,7 @@ describe("Studio's own starter through the report seam (ONL-2152)", () => {
     host.dispose();
   });
 
-  it('a project torn down while its starter retires still completes the retirement: entry gone, server.mjs retired', async () => {
+  it('a project torn down while its starter retires still removes the old entry', async () => {
     const world = makeWorld('starter-retire-closed');
     const machine: Machine = {
       listeners: new Map([[4310, { pid: 90, cwd: world.worktree }]]),
@@ -1236,7 +1234,7 @@ describe("Studio's own starter through the report seam (ONL-2152)", () => {
     machine.listeners.set(5173, { pid: 8, cwd: world.worktree });
     await host.report(world.worktree, world.worktree, 5173);
 
-    expect(starter.calls).toEqual(['stop main', 'retire main']);
+    expect(starter.calls).toEqual(['stop main']);
     expect(moves).toEqual([[4310, 5173]]);
     const entries = serverBookEntries(world.worktree);
     expect(entries).toHaveLength(1);
@@ -1379,7 +1377,7 @@ describe("Studio's own starter through the report seam (ONL-2152)", () => {
     host.dispose();
   });
 
-  it('an agent report AFTER a Stop press still retires: move authored from the entry\'s port, entry gone, server.mjs removed', async () => {
+  it('an agent report after a Stop press still moves frames and removes the old entry', async () => {
     const world = makeWorld('starter-retire-after-stop');
     const machine: Machine = {
       listeners: new Map([[4310, { pid: 90, cwd: world.worktree }]]),
@@ -1402,7 +1400,7 @@ describe("Studio's own starter through the report seam (ONL-2152)", () => {
     machine.listeners.set(5173, { pid: 8, cwd: world.worktree });
     await host.report(world.worktree, world.worktree, 5173);
 
-    expect(starter.calls).toEqual(['stop main', 'retire main']);
+    expect(starter.calls).toEqual(['stop main']);
     expect(moves).toEqual([[4310, 5173]]);
     const entries = serverBookEntries(world.worktree);
     expect(entries).toHaveLength(1);
@@ -1666,7 +1664,7 @@ describe('N projects measured concurrently (ONL-2204)', () => {
     await host.closeWorkspace(world.worktree);
     await immediately();
 
-    expect(emitted.length).toBe(before);
+    expect(emitted.slice(before)).toEqual([host.snapshotFor(other)]);
     expect(lastEntry(emitted)?.folderName).toBe(basename(other));
     expect(lastEntry(emitted)?.status).toBe('running');
     expect(serverBookEntries(world.worktree)).toHaveLength(1);

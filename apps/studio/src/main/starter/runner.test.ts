@@ -71,8 +71,11 @@ it('negotiates the longer heartbeat expiry before the background gap and release
     postMessage(message: unknown) { messages.push(message); },
     kill() { queueMicrotask(() => child.emit('exit', 0)); return true; },
   });
-  const runner = createStarterRunner({ fork: () => child as unknown as StarterChildLike,
-    env: async () => ({}), pickPort: async () => 4000, activity });
+  const runner = createStarterRunner({ fork: (_modulePath, options) => {
+    expect(options.env['STARTER_PARENT_PID']).toBe(String(process.pid));
+    return child as unknown as StarterChildLike;
+  },
+    env: async () => ({ STARTER_PARENT_PID: '1' }), pickPort: async () => 4000, activity });
   try {
     const spawning = runner.spawn(root);
     for (let turn = 0; turn < 10; turn += 1) await Promise.resolve();

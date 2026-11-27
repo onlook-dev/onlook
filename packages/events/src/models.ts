@@ -14,7 +14,7 @@ export const MODEL_ALIASES = Object.keys(MODELS) as ModelAlias[];
 export const DEFAULT_MODEL: ModelAlias = 'opus';
 
 export function modelLabel(modelId: string): string {
-  const id = modelId.toLowerCase().replace(/\[[^\]]*\]$/, '');
+  const id = modelId.toLowerCase().replace(/\[[^[\]]*\]$/, '');
   const gpt = id.match(/^gpt-(\d+(?:\.\d+)?)((?:-[a-z0-9]+)*)$/);
   if (gpt) {
     const suffix = (gpt[2] ?? '')

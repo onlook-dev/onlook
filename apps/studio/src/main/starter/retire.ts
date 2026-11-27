@@ -1,7 +1,10 @@
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { constants, copyFileSync, lstatSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { wslProject } from '../env/wsl.js';
 import { git } from '../workspace/git.js';
 import { STARTER_SERVER_FILE } from './scaffold.js';
+import { projectHasNoHistory } from '../workspace/store.js';
 
 export const STUDIO_SYSTEM_AUTHOR = {
   name: 'Onlook',
@@ -22,25 +25,48 @@ export function systemAuthorArgs(): string[] {
   ];
 }
 
-export async function removeStarterServerFile(worktree: string): Promise<void> {
-  if (!existsSync(join(worktree, STARTER_SERVER_FILE))) return;
-  // `-f`: the agent may have edited the file since the scaffold commit (ONL-2152).
-  const rm = await git(worktree, ['rm', '--quiet', '-f', STARTER_SERVER_FILE]);
-  if (!rm.ok) throw new Error(`git rm ${STARTER_SERVER_FILE} failed: ${rm.err}`);
-  const commit = await git(worktree, [
-    ...systemAuthorArgs(),
-    'commit',
-    '--quiet',
-    '--only',
-    STARTER_SERVER_FILE,
-    '-m',
-    RETIRE_COMMIT_MESSAGE,
-  ]);
-  if (commit.ok) return;
-  const restored = await git(worktree, ['checkout', '--quiet', 'HEAD', '--', STARTER_SERVER_FILE]);
-  throw new Error(
-    restored.ok
-      ? `retire commit failed, ${STARTER_SERVER_FILE} restored: ${commit.err}`
-      : `retire commit failed AND ${STARTER_SERVER_FILE} could not be restored (deletion left staged): ${commit.err}; ${restored.err}`,
-  );
+export async function restoreRetiredStarterServerFile(worktree: string, options: { run?: typeof git; signal?: AbortSignal } = {}): Promise<void> {
+  const run = options.run ?? git;
+  if (options.signal?.aborted) return;
+  if (projectHasNoHistory(worktree)) return;
+  if (lstatSync(join(worktree, STARTER_SERVER_FILE), { throwIfNoEntry: false }) !== undefined) return;
+  const head = await run(worktree, ['rev-parse', 'HEAD']);
+  if (!head.ok || options.signal?.aborted) return;
+  const latest = await run(worktree, ['log', '-1', '--format=%H%x00%s%x00%an%x00%ae', head.out, '--', STARTER_SERVER_FILE]);
+  if (!latest.ok) return;
+  const [commit, subject, author, email] = latest.out.split('\0');
+  if (!commit || subject !== RETIRE_COMMIT_MESSAGE || email !== STUDIO_SYSTEM_AUTHOR.email || (author !== STUDIO_SYSTEM_AUTHOR.name && author !== 'Onlook Studio')) return;
+  const recovered = await run(worktree, ['rev-parse', '--path-format=absolute', '--git-path', `onlook-starter-restored-${commit}`]);
+  if (!recovered.ok || lstatSync(recovered.out, { throwIfNoEntry: false }) !== undefined) return;
+  const deleted = await run(worktree, ['diff-tree', '--no-commit-id', '--name-status', '-r', commit, '--', STARTER_SERVER_FILE]);
+  if (!deleted.ok || deleted.out !== `D\t${STARTER_SERVER_FILE}`) return;
+  const original = await run(worktree, ['ls-tree', `${commit}^`, '--', STARTER_SERVER_FILE]);
+  if (!original.ok || !/^100(?:644|755) blob /.test(original.out)) return;
+  const status = await run(worktree, ['status', '--porcelain', '--', STARTER_SERVER_FILE]);
+  if (!status.ok || status.out !== '') return;
+  const directory = mkdtempSync(join(wslProject(worktree) === undefined ? tmpdir() : dirname(worktree), 'onlook-server-recovery-'));
+  try {
+    const output = join(directory, STARTER_SERVER_FILE);
+    const restored = await run(worktree, [`--work-tree=${directory}`, 'restore', `--source=${commit}^`, '--worktree', '--', STARTER_SERVER_FILE]);
+    if (!restored.ok) throw new Error(restored.err);
+    const currentStatus = await run(worktree, ['status', '--porcelain', '--', STARTER_SERVER_FILE]);
+    const currentHead = await run(worktree, ['rev-parse', 'HEAD']);
+    if (!currentStatus.ok || currentStatus.out !== '' || !currentHead.ok || currentHead.out !== head.out || options.signal?.aborted) return;
+    try {
+      writeFileSync(recovered.out, '', { flag: 'wx' });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'EEXIST') return;
+      throw error;
+    }
+    try {
+      copyFileSync(output, join(worktree, STARTER_SERVER_FILE), constants.COPYFILE_EXCL);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
+        rmSync(recovered.out);
+        throw error;
+      }
+    }
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 }

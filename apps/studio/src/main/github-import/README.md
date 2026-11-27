@@ -6,7 +6,7 @@ Behind the `github-import` flag, off by default. With it off, nothing here runs:
 
 A provider with the `github` capability supplies the broker in `backend.ts`: `start`, `status`, `repositories` and `credential`. The provider's service owns the OAuth grant and its refresh. Onlook holds a short-lived credential in main only while it lists branches or clones. It is never a renderer prop, SDK input, environment variable or saved setting.
 
-Git gets the credential from a helper over a local socket protected by a nonce, matched to an exact HTTPS host and path; the helper's script holds no token. Git runs with credential helpers, hooks, redirects, templates and inherited Git overrides turned off.
+Git gets the credential through the operating system's curl over a Unix socket in a directory only its owner can enter, protected by a nonce and matched to an exact HTTPS host and path; on Windows, where a path listens as a named pipe curl cannot reach, the same request goes to a loopback port. The helper configuration holds the nonce, not the token, and curl ignores user configuration and proxies. The helper does not run the app executable, so packaged security fuses can keep Node mode disabled. Git runs with credential helpers, hooks, redirects, templates and inherited Git overrides turned off.
 
 ## Cloning
 

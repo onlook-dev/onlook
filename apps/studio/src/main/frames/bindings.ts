@@ -1,5 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import { FRAME_ATTACH_PREFIX as ATTACH_PREFIX, FRAME_BIRTH_PREFIX as BIRTH_PREFIX, urlOrigin, type CanvasDoc, type CanvasNode, type CanvasOp, type FrameDestinationReadiness } from '@studio/events';
+import { FRAME_ATTACH_PREFIX as ATTACH_PREFIX, FRAME_BIRTH_PREFIX as BIRTH_PREFIX, IPC_EMIT, localPort, urlOrigin, type CanvasDoc, type CanvasNode, type CanvasOp, type CanvasOpAuthor, type FrameDestinationReadiness } from '@studio/events';
+import { portHeldByOtherProject } from '../server/book.js';
+import { views, workspaceOf } from '../tabs/views.js';
+
 type Owner = Pick<Electron.WebContents, 'id'>;
 type Guest = Pick<Electron.WebContents, 'id' | 'hostWebContents' | 'isDestroyed'>;
 type Claim = { owner: Owner; docId: string; nodeId: string; identity: string; url: string; expires: number; prepared: boolean; birth?: string; guest?: Guest };
@@ -14,7 +17,10 @@ function keepsOrigin(remembered: string, home: string): boolean {
   return origin !== null && origin === urlOrigin(home);
 }
 
-export function createFrameBindings(now = Date.now) {
+export function createFrameBindings(now = Date.now, policy?: {
+  allows(owner: Owner, url: string): boolean;
+  blocked(owner: Owner, nodeId: string | undefined, url: string): void;
+}) {
   const claims = new Map<string, Claim>();
   const created = new WeakMap<Guest, Birth>();
   const challenges = new Map<string, Claim>();
@@ -26,9 +32,15 @@ export function createFrameBindings(now = Date.now) {
   const keyFor = (owner: Owner, docId: string, nodeId: string): string => JSON.stringify([owner.id, docId, nodeId]);
   const currentClaim = (claim: Claim): boolean => claim.expires > now() && latest.get(keyFor(claim.owner, claim.docId, claim.nodeId)) === claim;
   const currentBinding = (binding: Binding): boolean => currentClaim(binding.claim) && !binding.guest.isDestroyed() && binding.guest.hostWebContents === binding.claim.owner;
+  const allows = (owner: Owner, nodeId: string | undefined, url: string): boolean => {
+    if (policy === undefined || policy.allows(owner, url)) return true;
+    policy.blocked(owner, nodeId, url);
+    return false;
+  };
   const launch = (guest: Guest, birth: Birth): string | undefined => {
     const claim = birth.claim;
     if (!claim || !birth.loaded || !birth.owner || birth.launched || claim.owner !== birth.owner || guest.hostWebContents !== birth.owner || guest.isDestroyed() || !currentClaim(claim)) return undefined;
+    if (!allows(claim.owner, claim.nodeId, claim.url)) return undefined;
     birth.launched = true;
     claim.guest = guest;
     bound.set(keyFor(claim.owner, claim.docId, claim.nodeId), { claim, guest, state: 'pending' });
@@ -50,6 +62,7 @@ export function createFrameBindings(now = Date.now) {
       } catch {
         return undefined;
       }
+      if (!allows(owner, node.id, url)) return undefined;
       for (const [token, claim] of claims) if (claim.expires <= now() || (claim.owner === owner && claim.docId === docId && claim.nodeId === node.id)) claims.delete(token);
       for (const [token, claim] of challenges) if (!currentClaim(claim)) challenges.delete(token);
       if (claims.size + challenges.size >= 256) return undefined;
@@ -62,10 +75,15 @@ export function createFrameBindings(now = Date.now) {
     },
     prepare(owner: Owner, preferences: Electron.WebPreferences, params: Record<string, string>, policies: (preferences: Electron.WebPreferences, params: Record<string, string>) => void = () => {}): boolean {
       delete preferences.additionalArguments;
-      if (!params['src']?.startsWith(ATTACH_PREFIX)) { policies(preferences, params); return true; }
+      if (!params['src']?.startsWith(ATTACH_PREFIX)) {
+        if (params['src'] !== undefined && !allows(owner, undefined, params['src'])) return false;
+        policies(preferences, params);
+        return true;
+      }
       const token = params['src'].slice(ATTACH_PREFIX.length);
       const claim = claims.get(token);
       if (!claim || claim.owner !== owner || claim.prepared || claim.expires <= now()) return false;
+      if (!allows(owner, claim.nodeId, claim.url)) return false;
       claim.prepared = true;
       claims.delete(token);
       params['src'] = claim.url;
@@ -126,10 +144,19 @@ export function createFrameBindings(now = Date.now) {
     },
     activate(guest: Guest, url: string): boolean {
       for (const binding of bound.values()) if (binding.guest === guest && binding.state === 'pending' && binding.claim.url === url && currentBinding(binding)) {
+        if (!allows(binding.claim.owner, binding.claim.nodeId, url)) return false;
         binding.state = 'issued';
         return true;
       }
       return false;
+    },
+    allowsNavigation(guest: Guest, url: string): boolean {
+      if (guest.isDestroyed()) return false;
+      for (const [key, binding] of bound) if (binding.guest === guest && latest.get(key) === binding.claim && guest.hostWebContents === binding.claim.owner) {
+        return allows(binding.claim.owner, binding.claim.nodeId, url);
+      }
+      const owner = guest.hostWebContents;
+      return owner === undefined || owner === null ? policy === undefined || localPort(url) === null : allows(owner, undefined, url);
     },
     failed(guest: Guest): void {
       for (const [key, binding] of bound) if (binding.guest === guest && binding.state !== 'ready') bound.delete(key);
@@ -179,7 +206,7 @@ export function createFrameBindings(now = Date.now) {
       const entry = history.get(keyFor(owner, docId, node.id));
       return node.kind === 'browser' && entry?.claim.owner === owner && entry.claim.identity === frameBindingIdentity(node) ? entry.url : undefined;
     },
-    committed(before: CanvasDoc, after: CanvasDoc, op: CanvasOp): void {
+    committed(before: CanvasDoc, after: CanvasDoc, op: CanvasOp, author: CanvasOpAuthor = 'user'): void {
       for (const [key, claim] of latest) {
         if (claim.docId !== before.docId) continue;
         const prior = before.nodes[claim.nodeId];
@@ -192,10 +219,13 @@ export function createFrameBindings(now = Date.now) {
         }
         if (op.type === 'set-home-url' && op.id === claim.nodeId && prior.kind === 'browser' && next.kind === 'browser' && prior.pageId === next.pageId) {
           claim.identity = frameBindingIdentity(next);
-          // A remembered route is where the next mount goes, so one on an origin the home has left
-          // would mount whatever answers there now, which is not this project's app (ONL-3287).
           const remembered = history.get(key);
           if (remembered !== undefined && !keepsOrigin(remembered.url, next.content.homeUrl)) history.delete(key);
+          if (author === 'system' && prior.content.homeUrl !== next.content.homeUrl) {
+            claim.expires = now();
+            bound.delete(key);
+            history.delete(key);
+          }
         }
         if (claim.identity !== frameBindingIdentity(next)) {
           latest.delete(key);
@@ -208,4 +238,14 @@ export function createFrameBindings(now = Date.now) {
   };
 }
 
-export const frameBindings = createFrameBindings();
+export const frameBindings = createFrameBindings(Date.now, {
+  allows(owner, url) {
+    if (localPort(url) === null) return true;
+    const cwd = workspaceOf(owner.id);
+    return cwd !== undefined && !portHeldByOtherProject(cwd, url);
+  },
+  blocked(owner, nodeId, url) {
+    const cwd = workspaceOf(owner.id);
+    if (cwd !== undefined && nodeId !== undefined) views.routeTo(cwd, IPC_EMIT.canvasFrameBlocked, { nodeId, url });
+  },
+});

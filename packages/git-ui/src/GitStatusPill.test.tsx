@@ -20,6 +20,40 @@ const FACTS = ['feat/x', '1 ahead, 0 behind', 'as of now'];
 const HINT = 'Wait for the turn';
 const noop = (): void => undefined;
 
+describe('Create PR recovery', () => {
+  for (const label of ['No Changes to Publish', 'Push Refused', 'GitHub Approval Needed', 'GitHub Sign-In Needed', 'PR Not Created']) {
+    test(`shows ${label} in the button`, () => {
+      const markup = renderToStaticMarkup(<GitStatusPill state={PILL_FIXTURES['create-pr']} strings={STUB_STRINGS} glyphs={GLYPHS} failure={{ label, nextStep: 'Check access, then try Create PR again.' }} isTooltipOpen tooltip={FACTS} onAction={noop} />);
+      expect(markup).toContain(`aria-label="${label}"`);
+      expect(markup).toContain('data-failure="true"');
+      expect(markup).toContain('Check access, then try Create PR again.');
+      expect(markup).not.toContain(FACTS[0]!);
+    });
+  }
+  test('uses the current label and tooltip after a failure followed by a state change', () => {
+    const failure = { label: 'Push Refused', nextStep: 'Check access.' };
+    for (const id of GIT_PILL_STATES) {
+      const markup = renderToStaticMarkup(<GitStatusPill state={PILL_FIXTURES[id]} strings={STUB_STRINGS} glyphs={GLYPHS} failure={failure} isTooltipOpen tooltip={FACTS} onAction={noop} />);
+      if (id === 'create-pr' || id === 'push') {
+        expect(markup).toContain('aria-label="Push Refused"');
+        expect(markup).toContain(failure.nextStep);
+      } else {
+        expect(markup).not.toContain('Push Refused');
+        expect(markup).not.toContain(failure.nextStep);
+        expect(markup).not.toContain('data-failure="true"');
+        if (id !== 'first-paint') expect(markup).toContain(STUB_STRINGS.pillLabel[id]);
+      }
+    }
+  });
+  test('keeps working and queued labels ahead of an earlier failure', () => {
+    for (const props of [{ state: { ...PILL_FIXTURES['create-pr'], mode: 'working' } as GitPillState }, { state: PILL_FIXTURES['create-pr'], isQueued: true }]) {
+      const markup = renderToStaticMarkup(<GitStatusPill {...props} strings={STUB_STRINGS} glyphs={GLYPHS} failure={{ label: 'Push Refused', nextStep: 'Check access.' }} onAction={noop} />);
+      expect(markup).not.toContain('data-failure="true"');
+      expect(markup).not.toContain('aria-label="Push Refused"');
+    }
+  });
+});
+
 describe('tab preview pills', () => {
   test.each([...GIT_PILL_STATES])('shows %s without interactive controls', (id) => {
     const html = renderToStaticMarkup(

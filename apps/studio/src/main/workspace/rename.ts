@@ -5,7 +5,7 @@ import { noteTabLabelsChanged } from '../tabs/signals.js';
 import { renameBranch, type RenameBranchResult } from './git.js';
 import { broadcastWorkspacesChanged } from './workspaces-changed.js';
 import { resolveHandle, slugify } from './naming.js';
-import { knownProject, moveProjectBranch, renameProject } from './store.js';
+import { knownProject, moveProjectBranch, projectHasNoHistory, renameProject } from './store.js';
 
 const logger = log('workspace');
 
@@ -62,7 +62,9 @@ export async function renameProjectByAgent(
   if (target === undefined) return skipped('the name has no letters or digits in it');
 
   renameProject(worktreePath, name, 'agent');
-  const moved = await deps.renameBranch(worktreePath, target);
+  const moved = projectHasNoHistory(worktreePath)
+    ? { ok: true as const, branch: record.branchName, moved: false }
+    : await deps.renameBranch(worktreePath, target);
   if (moved.ok) {
     if (moved.moved) moveProjectBranch(worktreePath, moved.branch);
   } else {

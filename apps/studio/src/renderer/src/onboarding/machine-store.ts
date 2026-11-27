@@ -28,6 +28,11 @@ export function machineCreationBlocked(): boolean {
   return machineBlocked(useMachineStore.getState());
 }
 
+export function blankMachineBlocked(state: MachineState): boolean {
+  return machineHasFailure(state.snapshot.checks.filter((check) => !(check.id === 'git' && check.status === 'failed' &&
+    (check.cause === 'git_not_found' || check.cause === 'developer_tools_missing'))));
+}
+
 export function machineNeedsAttention(state: MachineState): boolean {
   return state.notice === 'machine.unavailable' || state.snapshot.checks.some((check) => check.status !== 'passed');
 }
