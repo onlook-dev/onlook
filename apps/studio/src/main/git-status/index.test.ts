@@ -13,6 +13,7 @@ import {
   makeWorkspaceRoot,
   restoreWorkspaceRoot,
 } from '@studio/fixtures';
+import { derivePillState } from '@studio/git-ui/derive';
 import { forgetProject, normalizePath, rememberProject, resetWorkspaceCache } from '../workspace/store.js';
 import { readGitPillDefaults, resetGitPillDefaultsCache, writeGitPillDefaults } from './defaults.js';
 import { createGitStatusHost, type GitStatusHostDeps } from './index.js';
@@ -644,6 +645,42 @@ describe('apply — what a row keeps', () => {
     expect(m?.ghAccount).toBe('wrenquill');
     expect(m?.access).toBe('granted');
     expect(m?.pr).toEqual(pr);
+  });
+
+  it('a partial result borrows no access while a read failure is live, and the pill does not read denied again', async () => {
+    const { host, calls, emitted } = harness();
+    const open = host.opened(worktree);
+    await settle();
+    calls[0]?.resolve({ measurement: facts({ access: 'denied', accessReason: 'read-only' }), fetched: true });
+    await open;
+
+    const turn = host.turnEnded(worktree);
+    await settle();
+    calls[1]?.resolve({
+      measurement: facts({ partial: true, access: 'unknown', githubReadFailure: { status: 'forbidden' } }),
+      fetched: undefined,
+    });
+    await turn;
+    const row = emitted[1]?.row;
+    expect(row?.measurement.access).toBe('unknown');
+    expect(row?.measurement.accessReason).toBeUndefined();
+    expect(derivePillState(row, GIT_PILL_SHIPPED_DEFAULTS).id).not.toBe('no-access');
+  });
+
+  it('an access the host does carry forward arrives with the reason it was measured with', async () => {
+    const { host, calls, emitted } = harness();
+    const open = host.opened(worktree);
+    await settle();
+    calls[0]?.resolve({ measurement: facts({ access: 'denied', accessReason: 'sso_required' }), fetched: true });
+    await open;
+
+    const turn = host.turnEnded(worktree);
+    await settle();
+    calls[1]?.resolve({ measurement: facts({ partial: true, access: 'unknown' }), fetched: undefined });
+    await turn;
+    const row = emitted[1]?.row;
+    expect(row?.measurement.access).toBe('denied');
+    expect(row?.measurement.accessReason).toBe('sso_required');
   });
 
   it('a partial result that reached identity keeps its fresh sign-in over the stale one', async () => {

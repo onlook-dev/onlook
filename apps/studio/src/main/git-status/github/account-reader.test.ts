@@ -35,11 +35,11 @@ describe('account-backed GitHub status', () => {
     expect(result.state.id).toBe('ready-to-merge');
   });
 
-  it('keeps transient failures partial instead of declaring access denied', async () => {
+  it('asks gh after a transient failure instead of declaring access denied', async () => {
     const result = await measured('unavailable');
-    expect(result.measurement.partial).toBe(true);
+    expect(result.selected.reader).toBe(result.fallback.reader);
+    expect(result.selected.failure?.()).toEqual({ status: 'unavailable', reason: 'provider_unavailable' });
     expect(result.measurement.access).toBe('unknown');
-    expect(result.fallback.asked).toEqual([]);
   });
 
   it('offers the browser connection when disconnected without gh', async () => {
@@ -50,9 +50,9 @@ describe('account-backed GitHub status', () => {
 
   it('uses gh unchanged when a provider has no reads', async () => {
     const fallback = scriptedReader({});
-    expect(await selectGithubReader(undefined, fallback.reader)).toEqual({ reader: fallback.reader, connectViaBrowser: false });
+    expect(await selectGithubReader(undefined, fallback.reader)).toEqual({ reader: fallback.reader, connectViaBrowser: false, via: 'cli' });
     expect(await selectGithubReader({ ...githubBackendFixture('connected'), identity: undefined }, fallback.reader))
-      .toEqual({ reader: fallback.reader, connectViaBrowser: false });
+      .toEqual({ reader: fallback.reader, connectViaBrowser: false, via: 'cli' });
   });
 
   it('calls a provider status-capable only when it carries all three reads', () => {

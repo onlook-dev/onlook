@@ -87,18 +87,22 @@ export async function measure(
   const { measurement, fetched, remote } = await measureGit(worktree, options);
   const selected = measurement.head === 'branch' && measurement.origin === 'github'
     ? await selectGithubReader(deps.backend, deps.reader ?? ghReader(worktree))
-    : { reader: deps.reader ?? ghReader(worktree), connectViaBrowser: false, failure: undefined };
+    : { reader: deps.reader ?? ghReader(worktree), connectViaBrowser: false, via: 'cli' as const, failure: undefined };
   if (selected.connectViaBrowser) measurement.connectViaBrowser = true;
   const m = await probeGithub(measurement, selected.reader);
   const failure = selected.failure?.();
   if (failure !== undefined) m.githubReadFailure = failure;
-  if (failure?.status === 'disconnected' || failure?.status === 'reconnect') {
+  if (selected.via === 'account' && (failure?.status === 'disconnected' || failure?.status === 'reconnect')) {
     m.ghAuthed = false;
     delete m.ghAccount;
     m.access = 'unknown';
     delete m.accessReason;
     delete m.pr;
     delete m.partial;
+  }
+  // The connection could not answer and the CLI established nothing, so the project's own facts stand rather than a signed-out account.
+  if (selected.via === 'cli' && failure !== undefined && failure.status !== 'disconnected' && failure.status !== 'reconnect' && !m.ghAuthed) {
+    m.partial = true;
   }
   const base = m.pr?.baseRefName;
   if (base === undefined || base === m.baseBranch || remote === undefined) return { measurement: m, fetched };

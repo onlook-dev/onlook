@@ -118,7 +118,11 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
           measurement.ghAuthed = kept.ghAuthed;
           if (kept.ghAccount !== undefined) measurement.ghAccount = kept.ghAccount;
         }
-        if (measurement.access === 'unknown') measurement.access = kept.access;
+        // A read that failed establishes no permission, so this pass borrows none; one that is borrowed brings the reason it was measured with.
+        if (measurement.access === 'unknown' && measurement.githubReadFailure === undefined) {
+          measurement.access = kept.access;
+          if (kept.accessReason !== undefined) measurement.accessReason = kept.accessReason;
+        }
         if (measurement.pr === undefined && kept.pr !== undefined) {
           measurement.pr = kept.pr;
           // Only a base this pass did not measure brings its counts along; against the same base the fresh ones are newer (ONL-2411).
