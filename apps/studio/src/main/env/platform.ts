@@ -33,6 +33,10 @@ export function hostSshPath(): string {
   return isWindows() ? systemExecutable('OpenSSH/ssh.exe').replaceAll('\\', '/') : '/usr/bin/ssh';
 }
 
+export function hostCurlPath(): string {
+  return isWindows() ? systemExecutable('curl.exe').replaceAll('\\', '/') : '/usr/bin/curl';
+}
+
 export function lsofPath(): string {
   return isLinux() ? '/usr/bin/lsof' : '/usr/sbin/lsof';
 }
