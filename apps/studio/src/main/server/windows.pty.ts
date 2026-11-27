@@ -190,12 +190,16 @@ test('Windows reads real listener working directories and terminates the owned p
 
 test('Windows batch execution and Codex .exe health use Windows semantics', { skip: process.platform !== 'win32' }, async () => {
   const root = await fixtureDirectory('studio windows commands & unicode-ø-');
+  const flags = process.env['STUDIO_FLAGS'];
   try {
     const command = join(root, 'manager & tools.cmd');
     await writeFile(command, `@echo off\r\nif not "%~1"=="install & echo injected" exit /b 2\r\nif not "%~2"=="bang!caret^" exit /b 3\r\nif not "%~3"=="pipe|redirect>file" exit /b 4\r\necho installed\r\n"${process.execPath}" -e "process.stdout.write(process.cwd())"\r\n`);
-    const result = await runCli(command, root, ['install & echo injected', 'bang!caret^', 'pipe|redirect>file'], { timeoutMs: 15_000 });
-    assert.equal(result.ok, true, result.err);
-    assert.deepEqual(result.out.split(/\r?\n/), ['installed', root]);
+    for (const mode of ['-wsl-projects', 'wsl-projects']) {
+      process.env['STUDIO_FLAGS'] = mode;
+      const result = await runCli(command, root, ['install & echo injected', 'bang!caret^', 'pipe|redirect>file'], { timeoutMs: 15_000 });
+      assert.equal(result.ok, true, result.err);
+      assert.deepEqual(result.out.split(/\r?\n/), ['installed', root]);
+    }
     const missing = await runCli(join(root, 'unavailable-command.exe'), root, [], { timeoutMs: 15_000 });
     assert.equal(missing.ok, false);
     assert.equal(missing.missing, true, missing.err);
@@ -203,7 +207,11 @@ test('Windows batch execution and Codex .exe health use Windows semantics', { sk
     assert.equal(checkHealth(resolveCodex(root), root).ok, false);
     await writeFile(join(root, 'codex-code-mode-host.exe'), 'fixture');
     assert.equal(checkHealth(resolveCodex(root), root).ok, true);
-  } finally { await rm(root, { recursive: true, force: true }); }
+  } finally {
+    if (flags === undefined) delete process.env['STUDIO_FLAGS'];
+    else process.env['STUDIO_FLAGS'] = flags;
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test('Windows CLI job kills a descendant retaining stdout after its parent exits', { skip: process.platform !== 'win32', timeout: 30_000 }, async () => {

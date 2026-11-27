@@ -17,6 +17,9 @@ import { containedPath, setupState, snapshotOf, validatePaths, versionDefinition
 import { setupShell } from './shell.js';
 import { isWindows } from '../env/platform.js';
 import { envWithout, leadsOwnGroup, signalGroup, startChild } from '../env/child.js';
+import { wslEnvironment, wslProject } from '../env/wsl.js';
+import { signalWslListener } from '../env/wsl-processes.js';
+import { ensureWslEnvironment } from '../env/wsl-env.js';
 import { restoreRetiredStarterServerFile } from '../starter/retire.js';
 import { STARTER_SERVER_FILE } from '../starter/scaffold.js';
 
@@ -32,6 +35,7 @@ interface ReconnectedEndpoint extends RuntimeEndpoint {
   folder: string;
   pid: number;
   listenerFolder: string;
+  creationTime?: string;
 }
 interface ProcessHandle extends RuntimeEndpoint {
   child: ChildProcess;
@@ -112,7 +116,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
   const identify = deps.identify ?? identifyListener;
   const identityOf = async (port: number, folder: string, signal: AbortSignal): Promise<ListenerIdentity | undefined> => {
     for (let attempt = 1; ; attempt += 1) {
-      const identity = await untilAborted(identify(port), signal);
+      const identity = await untilAborted(identify(port, { workspacePath: folder }), signal);
       const ownership = verifiesFor(identity, folder);
       if (ownership !== 'unknown' || attempt === IDENTIFY_ATTEMPTS) return identity;
       await delay(deps.identifyRetryMs ?? 250, undefined, { signal }).catch(() => undefined);
@@ -126,7 +130,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
   const reservedPorts = new Map<number, ActiveRun>();
   const portMoves = new Map<string, NonNullable<ProjectSetupSnapshot['portMoves']>>();
   const sameListener = (endpoint: ReconnectedEndpoint, identity: ListenerIdentity | undefined): boolean =>
-    identity?.pid === endpoint.pid && identity.cwd !== undefined && canonicalPath(identity.cwd) === endpoint.listenerFolder && verifiesFor(identity, endpoint.folder) === 'ours';
+    identity?.pid === endpoint.pid && (endpoint.creationTime === undefined || identity.creationTime === endpoint.creationTime) && identity.cwd !== undefined && canonicalPath(identity.cwd) === endpoint.listenerFolder && verifiesFor(identity, endpoint.folder) === 'ours';
   const cancellations = new Map<string, number>();
   const retainedFailures = new Map<string, ProjectSetupFailure>();
   const failureReasons = new WeakMap<ProjectSetupResult, SetupRunFailureReason>();
@@ -287,7 +291,10 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
     };
     try {
       measure({}, true);
+      await untilAborted(ensureWslEnvironment(cwd), controller.signal);
       env = await untilAborted<NodeJS.ProcessEnv>((deps.env ?? userEnv)(), controller.signal);
+      const project = wslProject(cwd);
+      if (project !== undefined) env = wslEnvironment(project, env);
       check();
       validatePaths(cwd, version.definition);
       const commands = [version.definition.prepare, version.definition.install.script, ...version.definition.servers.map((server) => server.start)];
@@ -358,7 +365,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
         check();
         const folder = containedPath(cwd, server.cwd);
         measure({ ...previewProjectTools(folder), expected_port: server.port, actual_port: null, reported_port: null, port_occupied: null, port_owner: null });
-        command = `${version.definition.prepare}\ncd ${quote(folder)}\n${server.start.replaceAll('{{port}}', String(server.port))}`;
+        command = `${version.definition.prepare}\ncd ${quote(wslProject(folder)?.linuxPath ?? folder)}\n${server.start.replaceAll('{{port}}', String(server.port))}`;
         const owned = ownedForServer([...live, ...endpoints], cwd, server, version.definition.servers);
         if (owned.length > 1) throw new Error(t('projectSetup.failure.ambiguousServer'));
         const existing = owned.find((handle): handle is ProcessHandle => 'child' in handle && !handle.exit && !handle.error);
@@ -401,7 +408,7 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
           if (ownership === 'unknown') fail('ready', command, t('projectSetup.failure.listenerUnseen', { port: server.port }), undefined, 'listener_unseen');
           if (ownership !== 'ours') fail('ready', command, t('projectSetup.failure.occupiedPort', { port: server.port }), undefined, 'port_occupied');
           const endpoint: ReconnectedEndpoint = {
-            server, folder: canonicalPath(folder), version: originalVersion, safeCommand: redactSetupOutput(server.start, env), pid: identity!.pid, listenerFolder: canonicalPath(identity!.cwd!),
+            server, folder: canonicalPath(folder), version: originalVersion, safeCommand: redactSetupOutput(server.start, env), pid: identity!.pid, listenerFolder: canonicalPath(identity!.cwd!), ...(wslProject(folder) === undefined ? {} : { creationTime: identity!.creationTime }),
           };
           if (remembered) endpoints.delete(remembered);
           endpoints.add(endpoint);
@@ -568,11 +575,14 @@ export function createProjectSetupService(deps: ProjectSetupDeps) {
       if (!await probe(port)) return;
       const identity = await identityOf(port, endpoint.folder, signal);
       const ownership = verifiesFor(identity, endpoint.folder);
-      if (ownership === 'unknown' || !sameListener(endpoint, identity) || !Number.isInteger(endpoint.pid) || endpoint.pid <= 1 || endpoint.pid === process.pid) {
+      if (ownership === 'unknown' || !sameListener(endpoint, identity) || !Number.isInteger(endpoint.pid) || endpoint.pid <= 1 || (wslProject(endpoint.folder) === undefined && endpoint.pid === process.pid)) {
         if (!await probe(port)) return;
         throw new Error(ownership === 'unknown' ? t('projectSetup.failure.listenerUnseen', { port }) : t('projectSetup.failure.unverifiedListener'));
       }
-      try { process.kill(endpoint.pid, name); }
+      try {
+        if (wslProject(endpoint.folder) !== undefined) await signalWslListener(endpoint.folder, endpoint.pid, name, identity?.creationTime, identity?.cwd);
+        else process.kill(endpoint.pid, name);
+      }
       catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error; }
     };
     if (!await probe(port)) return;

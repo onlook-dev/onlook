@@ -13,9 +13,11 @@ const REASONS: ProjectImportRefusalReason[] = [
   'busy',
   'being-cleaned-up',
   'fields-incomplete',
+  'runtime-unavailable',
 ];
 
 const TITLES: Record<ProjectImportRefusalReason, StringKey> = {
+  'runtime-unavailable': 'machine.wsl.unavailable.title',
   'not-a-repository': 'projects.import.refused.notARepository.title',
   'repository-gone': 'projects.import.refused.repositoryGone.title',
   'is-the-repository': 'projects.import.refused.isTheRepository.title',
@@ -27,6 +29,30 @@ const TITLES: Record<ProjectImportRefusalReason, StringKey> = {
 };
 
 describe('the import refusal dialog (ONL-2522)', () => {
+  it('shows WSL diagnostics in the same failure card', () => {
+    const markup = renderToStaticMarkup(<ImportRefusalDialog reason="runtime-unavailable" detail="Git is unavailable in Ubuntu" isInline onDismiss={() => {}} />);
+    expect(markup).toContain('import-refused-detail');
+    expect(markup).toContain('Git is unavailable in Ubuntu');
+    expect(markup).toContain(t('machine.wsl.unavailable.title'));
+  });
+
+  it('reads the WSL diagnosis as prose, so its words stay whole (ONL-3395)', () => {
+    const diagnosis = t('machine.wsl.toolsUnavailable', { tools: 'git, node', distro: 'Ubuntu' });
+    const markup = renderToStaticMarkup(<ImportRefusalDialog reason="runtime-unavailable" detail={diagnosis} isInline onDismiss={() => {}} />);
+    const prose = markup.indexOf(diagnosis);
+    expect(prose).toBeGreaterThan(-1);
+    expect(markup).not.toContain(t('blank.create.failed.detailLabel'));
+    expect(markup.slice(0, prose)).not.toContain('<code');
+    expect(markup.slice(0, prose)).not.toContain('<pre');
+    const opening = /<[^>]*data-testid="import-refused-detail"[^>]*>/.exec(markup)?.[0] ?? '';
+    expect(opening).toContain('overflow-wrap:anywhere');
+  });
+
+  it('quotes a machine report in its own block', () => {
+    const markup = renderToStaticMarkup(<ImportRefusalDialog reason="not-a-repository" detail="fatal: not a git repository" isInline onDismiss={() => {}} />);
+    expect(markup).toContain(t('blank.create.failed.detailLabel'));
+    expect(markup).toContain('fatal: not a git repository');
+  });
   it('stays closed without a refusal', () => {
     expect(renderToStaticMarkup(<ImportRefusalDialog reason={null} isInline onDismiss={() => {}} />)).toBe('');
   });

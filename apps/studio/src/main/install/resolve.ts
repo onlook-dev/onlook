@@ -6,6 +6,7 @@ import type { Env } from '../env/shell-env.js';
 import type { PackageManager } from './detect.js';
 import { hostExecutable } from '../env/executable.js';
 import { isWindows } from '../env/platform.js';
+import { wslProject } from '../env/wsl.js';
 
 const SYSTEM_DIRECTORIES = ['/opt/homebrew/bin', '/usr/local/bin', '/usr/bin', '/bin'];
 
@@ -66,6 +67,7 @@ export async function resolvePackageManager(
   env: Env,
   options: { systemDirectories?: readonly string[]; cwd?: string } = {},
 ): Promise<string | undefined> {
+  if (wslProject(options.cwd) !== undefined) return manager;
   if (options.cwd !== undefined) {
     return hostExecutable(manager, options.cwd, {
       ...env,

@@ -21,12 +21,25 @@ describe('the folder refusal dialog (ONL-2895)', () => {
     expect(markup).toContain(`${t('workspace.refused.noBaseRef.title')}</h2>`);
   });
 
+  it('reads the WSL diagnosis as prose, so its words stay whole (ONL-3395)', () => {
+    const diagnosis = t('machine.wsl.toolsUnavailable', { tools: 'git, node', distro: 'Ubuntu' });
+    const markup = renderToStaticMarkup(<RefusalBody refusal={{ reason: 'runtime-unavailable', detail: diagnosis }} onDismiss={noop} />);
+    const prose = markup.indexOf(diagnosis);
+    expect(prose).toBeGreaterThan(-1);
+    expect(markup).not.toContain(t('blank.create.failed.detailLabel'));
+    expect(markup.slice(0, prose)).not.toContain('<code');
+    expect(markup.slice(0, prose)).not.toContain('<pre');
+    const opening = /<[^>]*data-testid="workspace-refused-detail"[^>]*>/.exec(markup)?.[0] ?? '';
+    expect(opening).toContain('overflow-wrap:anywhere');
+  });
+
   it('omits Details when there is nothing to quote', () => {
     const markup = renderToStaticMarkup(<RefusalBody refusal={{ reason: 'no-base-ref' }} onDismiss={noop} />);
     expect(markup).not.toContain('workspace-refused-detail');
     expect(markup).not.toContain(t('blank.create.failed.detailLabel'));
   });
   for (const [reason, title] of [
+    ['runtime-unavailable', 'machine.wsl.unavailable.title'],
     ['already-copied', 'workspace.refused.alreadyCopied.title'],
     ['no-base-ref', 'workspace.refused.noBaseRef.title'],
     ['name-unavailable', 'workspace.refused.nameUnavailable.title'],

@@ -1,4 +1,7 @@
 {
+  "machine.wsl.unavailable.title": "WSLのプロジェクトを開けませんでした",
+  "machine.wsl.unavailable.body": "WSLディストリビューションが起動していて、新しいWSLターミナルでGitとNode.jsが動作することを確認してから、もう一度お試しください。",
+  "machine.wsl.toolsUnavailable": "WSL ディストリビューション {distro} で {tools} を実行できませんでした。このディストリビューションにツールをインストールし、新しい WSL ターミナルで実行できることを確認してから、もう一度お試しください。",
   "machine.title": "コンピューターを確認",
   "machine.subtitle": "最初のプロジェクトを始める前に、Onlook にはこのコンピューターでいくつか必要なものがあります。",
   "machine.name.git": "開発者ツール",

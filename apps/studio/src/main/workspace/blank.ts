@@ -34,8 +34,8 @@ export interface BlankBucket {
   marker: string;
 }
 
-export function blankBucketPaths(repoIdentity: string, workspaceName: string): BlankBucket {
-  const worktree = workspacePathFor(repoIdentity, workspaceName);
+export function blankBucketPaths(repoIdentity: string, workspaceName: string, sourcePath?: string): BlankBucket {
+  const worktree = workspacePathFor(repoIdentity, workspaceName, sourcePath);
   const identityDir = dirname(worktree);
   return {
     identityDir,
@@ -79,9 +79,10 @@ export function claimBucket(claim: {
   repoIdentity: string;
   workspaceName: string;
   branchName: string;
+  sourcePath?: string;
 }): { ok: true; bucket: BlankBucket } | { ok: false; reason: 'bucket-exists' } {
-  const bucket = blankBucketPaths(claim.repoIdentity, claim.workspaceName);
-  mkdirSync(workspaceRoot(), { recursive: true });
+  const bucket = blankBucketPaths(claim.repoIdentity, claim.workspaceName, claim.sourcePath);
+  mkdirSync(dirname(bucket.identityDir), { recursive: true });
   try {
     // Non-recursive: EEXIST is the refusal; a recursive mkdir would merge into an existing bucket.
     mkdirSync(bucket.identityDir);

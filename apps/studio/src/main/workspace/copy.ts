@@ -52,7 +52,7 @@ async function hasCopyableFile(dir: string, relDir = ''): Promise<boolean> {
   return false;
 }
 
-type CopiedPlan = Pick<ReadyWorkspacePlan, 'repoIdentity' | 'workspaceName'>;
+type CopiedPlan = Pick<ReadyWorkspacePlan, 'repoIdentity' | 'workspaceName'> & Partial<Pick<ReadyWorkspacePlan, 'sourcePath'>>;
 
 export async function planCopiedWorkspace(sourcePath: string): Promise<WorkspacePlan> {
   const repoIdentity = copiedIdentityFor(canonicalPath(sourcePath));
@@ -63,7 +63,7 @@ export async function planCopiedWorkspace(sourcePath: string): Promise<Workspace
   if (!(await hasCopyableFile(sourcePath))) return { kind: 'refused', reason: 'nothing-to-copy' };
   const handle = resolveHandle({ userName: await configuredUserName(sourcePath) });
   const workspaceName = generateWorkspaceName();
-  const bucket = blankBucketPaths(repoIdentity, workspaceName);
+  const bucket = blankBucketPaths(repoIdentity, workspaceName, sourcePath);
   return {
     kind: 'ready',
     origin: 'copied',
@@ -81,7 +81,7 @@ export async function planCopiedWorkspace(sourcePath: string): Promise<Workspace
 }
 
 export function copiedBucket(plan: CopiedPlan): BlankBucket {
-  return blankBucketPaths(plan.repoIdentity, plan.workspaceName);
+  return blankBucketPaths(plan.repoIdentity, plan.workspaceName, plan.sourcePath);
 }
 
 export type CopyInitResult =
@@ -97,6 +97,7 @@ export async function initCopiedSource(plan: ReadyWorkspacePlan): Promise<CopyIn
       repoIdentity: plan.repoIdentity,
       workspaceName: plan.workspaceName,
       branchName: plan.branchName,
+      sourcePath: plan.sourcePath,
     });
     if (!claimed.ok) {
       return { ok: false, claimed: false, detail: '', copyFailure: { step, cause: 'copy_in_progress' } };

@@ -37,7 +37,7 @@ export function flagOn(key: FlagKey): boolean {
     .map((entry) => entry.trim())
     .filter(Boolean);
   if (forced.includes(`-${key}`)) return false;
-  const baked = (import.meta.env.MAIN_VITE_FLAG_DEFAULTS ?? '').split(',');
+  const baked = (import.meta.env?.MAIN_VITE_FLAG_DEFAULTS ?? '').split(',');
   return forced.includes(key) || (remote?.[key] ?? (baked.includes(key) || FLAGS[key].default));
 }
 

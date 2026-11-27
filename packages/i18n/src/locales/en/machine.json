@@ -1,4 +1,7 @@
 {
+  "machine.wsl.unavailable.title": "Couldn’t open the WSL project",
+  "machine.wsl.unavailable.body": "Check that your WSL distribution is running and that Git and Node.js work in a new WSL terminal, then try again.",
+  "machine.wsl.toolsUnavailable": "Onlook couldn’t run {tools} in the WSL distribution {distro}. Install these tools there, check that they run in a new WSL terminal, then try again.",
   "machine.title": "Check your computer",
   "machine.subtitle": "Onlook needs a few things on your computer before your first project.",
   "machine.name.git": "Developer tools",
