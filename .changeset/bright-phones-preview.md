@@ -2,4 +2,4 @@
 "@studio/app": patch
 ---
 
-Phone Frames respond to taps in Preview.
+Phone frames respond to taps in Preview, however far you zoom out.
