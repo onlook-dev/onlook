@@ -47,6 +47,8 @@ import type {
 } from '@studio/events';
 import type { Locale } from '@studio/i18n/locale';
 import type { GitStateReason } from './git-state.js';
+import type { PreviewDiagnostics } from './preview-diagnostics.js';
+import type { AgentSetupErrorClass } from './setup-failure.js';
 
 /** An enum, not the message: the message is a shell command, which names a directory. */
 export type SetupErrorClass =
@@ -166,11 +168,22 @@ type Forwarded<N extends RendererTelemetryEventName> = RendererTelemetryEventMap
     : RendererTelemetryEventMap[N];
 
 export interface TelemetryEventMap {
+  environment_checked: import('./environment.js').EnvironmentDiagnostics;
   machine_check_failed: { check_id: import('@studio/events').MachineCheckId };
   machine_install_tools: { outcome: import('@studio/events').MachineInstallResult; elapsed_ms: number };
   machine_help_opened: { help: import('@studio/events').MachineHelpId; opened: boolean };
   web_attribution_candidate: WebAttributionProperties & { $process_person_profile: false };
   web_attribution_linked: WebAttributionProperties & { $process_person_profile: true };
+  app_opened_from_link: {
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    utm_content?: string;
+    utm_term?: string;
+    stage?: string;
+    link_id?: string;
+    launch: 'cold' | 'warm';
+  };
   github_connect_finished: {
     outcome: 'connected' | 'waiting' | 'no_connection';
     next_action: 'clone' | 'folder' | 'retry' | 'dismiss' | 'waiting';
@@ -182,8 +195,8 @@ export interface TelemetryEventMap {
   };
   workspace_creation_flow: {
     source: 'folder' | 'scratch' | 'github';
-    step: 'started' | 'created' | 'preview';
-    outcome: 'started' | 'success' | 'failure';
+    step: 'started' | 'created' | 'preview' | 'abandoned';
+    outcome: 'started' | 'success' | 'failure' | 'abandoned';
     project_id?: string;
   };
   account_action: {
@@ -283,6 +296,12 @@ export interface TelemetryEventMap {
     previous_launch_id: string;
     app_version: string | null;
     reporter_app_version: string;
+    process_type?: 'main';
+    exit_code?: number | null;
+    reason?: 'unclean_exit';
+    last_event?: string;
+    last_screen?: string;
+    during_workspace_creation?: boolean;
   };
 
   /** `project_id` is `workspaceTelemetryId()`'s hash; the path does not ship. `oldest_text_node_days` is absent when the op log reads back empty, where zero would read as "every label is new" (ONL-2486). */
@@ -363,7 +382,7 @@ export interface TelemetryEventMap {
   };
 
   /** Setup details stay local: tool output can contain arbitrary repo names and contents. */
-  project_setup_failed: {
+  project_setup_failed: Partial<PreviewDiagnostics> & {
     failure_step?: CopyFailure['step'];
     failure_cause?: CopyFailure['cause'];
     project_id?: string;
@@ -373,13 +392,17 @@ export interface TelemetryEventMap {
     entry_point?: 'onboarding' | 'projects' | 'switcher';
   };
 
-  project_setup_run_completed: {
+  project_setup_run_completed: Partial<PreviewDiagnostics> & {
     project_id?: string;
     action: 'start' | 'stop' | 'restart';
     ok: boolean;
     duration_ms: number;
     failure_stage?: 'prepare' | 'install' | 'start' | 'ready' | 'stop';
     failure_reason?: SetupRunFailureReason;
+  };
+
+  dev_server_exited: Partial<PreviewDiagnostics> & {
+    project_id?: string;
   };
 
   project_setup_installation_checked: {
@@ -418,7 +441,7 @@ export interface TelemetryEventMap {
   };
 
   /** `error_message` only through `scrubMessage`. */
-  preview_ready: {
+  preview_ready: Partial<PreviewDiagnostics> & {
     project_id: string;
     outcome: 'success' | 'failure';
     duration_ms: number;
@@ -542,7 +565,7 @@ export interface TelemetryEventMap {
     moved_distance: number;
   };
 
-  frame_state_changed: {
+  frame_state_changed: Partial<PreviewDiagnostics> & {
     project_id: string;
     state: 'loading' | 'live' | 'unreachable';
     elapsed_ms?: number;
@@ -902,6 +925,9 @@ export interface TelemetryEventMap {
 
   agent_setup_step: {
     provider: 'claude' | 'codex';
+    harness?: HarnessId;
+    error_class?: AgentSetupErrorClass;
+    exit_code?: number | null;
     step:
       | 'opened'
       | 'sign_in_started'
@@ -1127,8 +1153,11 @@ export interface TelemetryEventMap {
   };
 
   /** Fired when the visible tab shows a dead end other than the one it last showed, such as "Your app didn't start" or every frame under a server cover (ONL-2686, ONL-3260). */
-  dead_end_shown: {
+  dead_end_shown: Partial<PreviewDiagnostics> & {
+    harness?: HarnessId;
     state: DeadEndState;
+    server_port?: number;
+    cover?: NonNullable<import('@studio/events').ActivationSurfaceReport['dead_end']>['cover'];
     error_class?: DeadEndErrorClass;
     project_id?: string;
   };
@@ -1204,6 +1233,9 @@ export interface TelemetryEventMap {
     stage: 'check' | 'download' | 'install';
     reason: string;
   };
+  update_check_started: { requested: boolean };
+  update_check_completed: { requested: boolean; outcome: 'available' | 'up_to_date' };
+  update_check_unavailable: { reason: 'unsupported' | 'not_initialized' };
 }
 
 export type TelemetryEventName = keyof TelemetryEventMap;

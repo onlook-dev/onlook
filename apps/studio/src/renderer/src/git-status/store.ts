@@ -5,6 +5,8 @@ import {
   type GitPillDefaultsPatch,
   type GitPillNoActionReason,
   type GitPillOutcome,
+  type GitPrFailure,
+  type StudioEvent,
   type GitSnapshotRow,
   type GitStatusChange,
   type PenView,
@@ -15,6 +17,7 @@ import { ignoreRefusal } from '../refusal.js';
 import { type GitPillState, type GitPillStateId } from '@studio/git-ui/state';
 import type { GitDropdownOption } from '@studio/git-ui';
 import { studio } from '../bridge.js';
+import { classifyPrFailure, prFailureFor, prFailureMark, retiresPrFailure, type PrFailureMark } from './failure.js';
 
 export type GitPillAction = GitPillStateId | GitDropdownOption;
 
@@ -37,6 +40,7 @@ interface GitStatusState {
   defaults: GitPillDefaults;
   working: Record<string, WorkingEntry>;
   held: Record<string, HeldEntry>;
+  failures: Record<string, GitPrFailure>;
 }
 
 interface GitStatusStore extends GitStatusState {
@@ -81,6 +85,27 @@ function sendTelemetry(event: RendererTelemetryEvent): void {
 let openWorktree: string | undefined;
 let shownStateId: string | undefined;
 let defaultsGeneration = 0;
+const prFailures = new WeakMap<WorkingEntry, GitPrFailure>();
+const failureMarks = new Map<string, PrFailureMark>();
+const prTools = new WeakMap<WorkingEntry, Map<string, string>>();
+const reconcilingPrs = new Map<string, { entry: WorkingEntry; timer: ReturnType<typeof setTimeout> }>();
+const queuedPrs = new Map<string, { entry: WorkingEntry; text: string }>();
+const prPrompts = new WeakMap<WorkingEntry, string>();
+const dispatchedPrs = new WeakSet<WorkingEntry>();
+
+function finishReconciliation(worktreePath: string, report: boolean): void {
+  const pending = reconcilingPrs.get(worktreePath);
+  if (pending === undefined) return;
+  clearTimeout(pending.timer);
+  reconcilingPrs.delete(worktreePath);
+  if (!report) return;
+  const { rows, defaults } = useGitStatusStore.getState();
+  const row = rows[worktreePath];
+  const failure = row?.measurement.pr === undefined ? 'unknown' : undefined;
+  failureMarks.delete(worktreePath);
+  useGitStatusStore.setState((state) => ({ failures: failure === undefined ? without(state.failures, worktreePath) : { ...state.failures, [worktreePath]: failure } }));
+  emitOutcome(worktreePath, pending.entry, row === undefined ? pending.entry.fromState : derivePillState(row, defaults).id, failure === undefined ? 'advanced' : 'unchanged', failure);
+}
 
 function emitShownIfChanged(): void {
   if (openWorktree === undefined) return;
@@ -115,10 +140,10 @@ function emitClicked(worktreePath: string, state: GitPillStateId, action: GitPil
   sendTelemetry({ event: 'git_pill_clicked', properties: { worktreePath, state, action } });
 }
 
-function emitOutcome(worktreePath: string, entry: WorkingEntry, toState: GitPillStateId, outcome: GitPillOutcome): void {
+function emitOutcome(worktreePath: string, entry: WorkingEntry, toState: GitPillStateId, outcome: GitPillOutcome, failure?: GitPrFailure): void {
   sendTelemetry({
     event: 'git_pill_outcome',
-    properties: { worktreePath, from_state: entry.fromState, to_state: toState, outcome, duration_ms: Date.now() - entry.clickedAt },
+    properties: { worktreePath, from_state: entry.fromState, to_state: toState, outcome, duration_ms: Date.now() - entry.clickedAt, ...(failure === undefined ? {} : { failure_class: failure }) },
   });
 }
 
@@ -148,22 +173,34 @@ const useGitStatusStore = create<GitStatusStore>()((set, get) => ({
   defaults: GIT_PILL_SHIPPED_DEFAULTS,
   working: {},
   held: {},
+  failures: {},
 
   apply: ({ worktreePath, row }) => {
     const { working, held, defaults } = get();
-    const entry = working[worktreePath];
-    const settled = settles(row, entry);
+    const entry = working[worktreePath] ?? reconcilingPrs.get(worktreePath)?.entry;
+    const finished = settles(row, entry) || (entry !== undefined && reconcilingPrs.has(worktreePath) && Date.parse(row.measuredAt) > entry.clickedAt);
+    const awaitingFacts = finished && entry?.action === 'create-pr' && (row.stale || row.measurement.partial) && prFailures.get(entry) === undefined;
+    if (awaitingFacts && !reconcilingPrs.has(worktreePath)) {
+      reconcilingPrs.set(worktreePath, { entry, timer: setTimeout(() => finishReconciliation(worktreePath, true), 15_000) });
+    } else if (finished && !awaitingFacts) finishReconciliation(worktreePath, false);
+    const settled = finished && !awaitingFacts;
+    const failed = settled && entry?.action === 'create-pr' && !row.measurement.pr;
+    const failure = failed ? prFailureFor(row, prFailures.get(entry)) : undefined;
     const waiting = held[worktreePath];
     // The turn the press waited on has ended, so the pen has had its say about it either way.
     const ranOut = waiting !== undefined && settles(row, { clickedAt: waiting.heldAt });
+    const retired = failure === undefined && retiresPrFailure(row, get().failures[worktreePath], failureMarks.get(worktreePath));
+    if (failure !== undefined) failureMarks.set(worktreePath, prFailureMark(row));
+    else if (retired) failureMarks.delete(worktreePath);
     set((state) => ({
       rows: { ...state.rows, [worktreePath]: row },
-      working: settled ? without(state.working, worktreePath) : state.working,
+      working: finished ? without(state.working, worktreePath) : state.working,
       held: ranOut ? without(state.held, worktreePath) : state.held,
+      failures: failure !== undefined ? { ...state.failures, [worktreePath]: failure } : retired ? without(state.failures, worktreePath) : state.failures,
     }));
     if (settled && entry !== undefined) {
       const toState = derivePillState(row, defaults).id;
-      emitOutcome(worktreePath, entry, toState, toState === entry.fromState ? 'unchanged' : 'advanced');
+      emitOutcome(worktreePath, entry, toState, failed || toState === entry.fromState ? 'unchanged' : 'advanced', failure);
     }
     if (worktreePath === openWorktree) emitShownIfChanged();
   },
@@ -187,6 +224,7 @@ const useGitStatusStore = create<GitStatusStore>()((set, get) => ({
         .catch(ignoreRefusal('git-status', 'pen discard'));
       // Main refuses an id a join retired: the pen is someone else's now, so send nothing into it.
       if (answer?.accepted !== true) return;
+      queuedPrs.delete(worktreePath);
       set((state) => ({ held: without(state.held, worktreePath) }));
       emitQueueEnd(worktreePath, waiting, 'cancelled');
       // The same words again are the take-back itself; different ones go on to queue in their place.
@@ -194,13 +232,18 @@ const useGitStatusStore = create<GitStatusStore>()((set, get) => ({
     }
 
     const fromState = derivePillState(get().rows[worktreePath], get().defaults).id;
+    queuedPrs.delete(worktreePath);
+    failureMarks.delete(worktreePath);
+    finishReconciliation(worktreePath, true);
     const entry: WorkingEntry = { clickedAt: Date.now(), action, fromState };
-    set((state) => ({ working: { ...state.working, [worktreePath]: entry } }));
+    if (action === 'create-pr') prPrompts.set(entry, text);
+    set((state) => ({ working: { ...state.working, [worktreePath]: entry }, failures: without(state.failures, worktreePath) }));
     emitClicked(worktreePath, fromState, action);
     const clear = (): void => {
       if (get().working[worktreePath] !== entry) return;
-      set((state) => ({ working: without(state.working, worktreePath) }));
-      emitOutcome(worktreePath, entry, fromState, 'refused');
+      const failure = action === 'create-pr' ? 'unknown' : undefined;
+      set((state) => ({ working: without(state.working, worktreePath), failures: failure === undefined ? state.failures : { ...state.failures, [worktreePath]: failure } }));
+      emitOutcome(worktreePath, entry, fromState, 'refused', failure);
     };
     try {
       const { accepted, held } = await studio().agentCommand({ type: 'prompt', text });
@@ -210,7 +253,9 @@ const useGitStatusStore = create<GitStatusStore>()((set, get) => ({
       }
       if (held !== true) return;
       if (get().working[worktreePath] !== entry) return;
+      if (dispatchedPrs.has(entry)) return;
       const nowHeld: HeldEntry = { heldAt: entry.clickedAt, action, fromState, text };
+      if (action === 'create-pr') queuedPrs.set(worktreePath, { entry, text });
       set((state) => ({ working: without(state.working, worktreePath), held: { ...state.held, [worktreePath]: nowHeld } }));
       emitQueued(worktreePath, nowHeld);
     } catch {
@@ -249,6 +294,7 @@ export function primeGitStatus(): Promise<void> {
     const { apply, applyAll, applyDefaults } = useGitStatusStore.getState();
 
     studio().onGitStatusChanged(apply);
+    studio().onAgentEvent(notePrToolResult);
 
     // A default chosen while the read is out moves the generation on, and the read's answer is then the older of the two.
     const asked = defaultsGeneration;
@@ -281,7 +327,54 @@ export function resetGitStatusPrimeForTests(): void {
   openWorktree = undefined;
   shownStateId = undefined;
   defaultsGeneration = 0;
+  queuedPrs.clear();
+  failureMarks.clear();
+  for (const path of reconcilingPrs.keys()) finishReconciliation(path, false);
   unwatchOpenWorktree?.();
   unwatchOpenWorktree = undefined;
-  useGitStatusStore.setState({ rows: {}, defaults: GIT_PILL_SHIPPED_DEFAULTS, working: {}, held: {} });
+  useGitStatusStore.setState({ rows: {}, defaults: GIT_PILL_SHIPPED_DEFAULTS, working: {}, held: {}, failures: {} });
+}
+
+function notePrToolResult(event: StudioEvent): void {
+  if (event.cwd === undefined) return;
+  if (event.type === 'message.user') {
+    const working = useGitStatusStore.getState().working[event.cwd];
+    if (working !== undefined && event.ts >= working.clickedAt && prPrompts.get(working) === event.text) dispatchedPrs.add(working);
+    const queued = queuedPrs.get(event.cwd);
+    queuedPrs.delete(event.cwd);
+    if (queued !== undefined && event.text === queued.text && event.ts >= queued.entry.clickedAt) {
+      const entry = { ...queued.entry, clickedAt: event.ts };
+      useGitStatusStore.setState((state) => ({ working: { ...state.working, [event.cwd!]: entry }, held: without(state.held, event.cwd!) }));
+    }
+    return;
+  }
+  const entry = useGitStatusStore.getState().working[event.cwd];
+  if (entry?.action !== 'create-pr' || event.ts < entry.clickedAt) return;
+  const tools = prTools.get(entry) ?? new Map<string, string>();
+  if (event.type === 'tool.start' || event.type === 'tool.update') {
+    if (event.type === 'tool.start' && event.kind !== 'execute' && !/create_pull_request/i.test(event.name)) return;
+    if (event.type === 'tool.update' && !tools.has(event.toolCallId)) return;
+    if (event.type === 'tool.update' && /create_pull_request/i.test(tools.get(event.toolCallId) ?? '')) return;
+    const input = event.input !== null && typeof event.input === 'object' ? event.input as Record<string, unknown> : undefined;
+    const command = typeof input?.['command'] === 'string' ? input['command'] : typeof input?.['cmd'] === 'string' ? input['cmd'] : event.title ?? tools.get(event.toolCallId) ?? '';
+    tools.set(event.toolCallId, event.type === 'tool.start' && /create_pull_request/i.test(event.name) ? `${event.name} ${command}` : command);
+    prTools.set(entry, tools);
+    return;
+  }
+  if (event.type !== 'tool.end') return;
+  const command = tools.get(event.toolCallId);
+  tools.delete(event.toolCallId);
+  if (command === undefined) return;
+  const pushing = /\bgit\b[^;&|\n]*\bpush\b/.test(command);
+  const creatingPr = /\bgh\s+pr\s+create\b|create_pull_request/i.test(command);
+  const publishing = pushing || creatingPr;
+  const prerequisite = /\bgh\s+(?:auth\b|repo\s+view\b)/.test(command);
+  if (!publishing && !prerequisite) return;
+  if (event.status === 'failed' || event.isError === true) {
+    const failure = classifyPrFailure(`${event.errorMessage ?? ''}\n${event.result ?? ''}`);
+    if (failure !== undefined || publishing || !prFailures.has(entry)) prFailures.set(entry, failure ?? 'unknown');
+  } else if (event.status === 'completed') {
+    const previous = prFailures.get(entry);
+    if (creatingPr || (previous === 'sign-in' && /\bgh\s+auth\b/.test(command)) || (previous === 'push-refused' && pushing)) prFailures.delete(entry);
+  }
 }

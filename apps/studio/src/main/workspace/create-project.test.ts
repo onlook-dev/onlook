@@ -303,6 +303,33 @@ const HAPPY_PATH = [
 ];
 
 describe('the sequence', () => {
+  it('passes the Project path separately from emitted properties on creation and setup failure, including retries', async () => {
+    for (const resumed of [false, true]) {
+      const captured: { event: string; properties: object; workspacePath?: string }[] = [];
+      const recorder = makeRecorder({
+        capture: (event, properties, workspacePath) => { captured.push({ event, properties, workspacePath }); },
+      }, { install: { outcome: 'failed', manager: 'bun', detail: 'fixture install failed' } });
+      const created = fakeCut(fakePlan('/somewhere/scoped-setup'));
+      if (!created.ok) throw new Error('fixture failed');
+      const state = await createProject(
+        { sourcePath: '/somewhere/scoped-setup', entryPoint: 'projects' },
+        recorder.deps,
+        createCancelToken(),
+        resumed ? { phase: 'installing', workspace: created.workspace } : undefined,
+      );
+      const failed = expectKind(state, 'failed');
+      expect(failed.phase).toBe('installing');
+      expect(failed.workspace).toBeDefined();
+      const workspacePath = failed.workspace!.workspacePath;
+      expect(captured.map(({ event, workspacePath }) => ({ event, workspacePath }))).toEqual(
+        (resumed ? ['project_setup_failed'] : ['project_created', 'project_setup_failed']).map((event) => ({ event, workspacePath })),
+      );
+      const serialized = JSON.stringify(captured.map(({ event, properties }) => ({ event, properties })));
+      expect(serialized).not.toContain(workspacePath);
+      expect(serialized).not.toContain('/somewhere/scoped-setup');
+    }
+  });
+
   it('reuses the machine diagnosis when a later project cannot be planned', async () => {
     const recorder = makeRecorder({
       plan: async () => { throw new Error('raw Git failure'); },
@@ -681,6 +708,7 @@ describe('the cut going wrong', () => {
     { step: 'copy_files', cause: 'ignored_files' },
     { step: 'copy_files', cause: 'folder_unavailable' },
     { step: 'git_init', cause: 'permission_denied' },
+    { step: 'git_init', cause: 'git_not_found' },
     { step: 'git_config', cause: 'disk_full' },
     { step: 'git_add', cause: 'git_failed' },
     { step: 'git_commit', cause: 'git_timed_out' },
@@ -922,7 +950,7 @@ describe('the stages inside the project failing (ONL-2179)', () => {
     expect(recorder.framed).toEqual([]);
     expect(recorder.calls).not.toContain('awaitRunning');
     expect(recorder.captured.find((entry) => entry.event === 'project_setup_failed')?.properties).toMatchObject({
-      stage: 'starting', error_class: 'dev_server_failed',
+      stage: 'starting', error_class: 'dev_server_failed', cause: 'start_turn_no_report',
     });
   });
 
@@ -978,6 +1006,9 @@ describe('the stages inside the project failing (ONL-2179)', () => {
     const failed = expectKind(state, 'failed');
     expect(failed.phase).toBe('starting');
     expect(failed.detail).toContain('4321');
+    expect(recorder.captured.find((entry) => entry.event === 'project_setup_failed')?.properties).toMatchObject({
+      cause: 'readiness_timeout', expected_port: 4321, reported_port: 4321, actual_port: null,
+    });
     expect(recorder.framed).toEqual([{ cwd: failed.workspace?.workspacePath ?? '', port: 4321 }]);
   });
 });

@@ -6,7 +6,8 @@ import { EventEmitter } from 'node:events';
 import { fromMainFrame, seatedTabs } from '../tabs/test-support.js';
 import { observeTabHealth } from '../tabs/observe-health.js';
 import type { TabHealth } from '../tabs/health.js';
-import { beginTelemetryQuit, showTelemetryRenderer, shutdownTelemetry, workspaceTelemetryProperties } from './index.js';
+import { beginTelemetryQuit, showTelemetryRenderer, shutdownTelemetry, workspaceTelemetryProperties, setTelemetryRendererWorkspace } from './index.js';
+import { notePreviewDiagnostics, resetPreviewDiagnostics } from './preview-diagnostics.js';
 import { abandonSetupForRenderer, checkSetupAbandoned, resetSetupTelemetryForTesting } from './setup-step.js';
 import { CANVAS_PAN_COUNTS, CHAT_TYPING_COUNTS, IPC_SEND, SLOW_INTERACTION_COUNTS, type RendererTelemetryEvent, type WorkspaceCreated } from '@studio/events';
 import { cleanupTempFixtures, makeWorkspaceRoot } from '@studio/fixtures';
@@ -85,6 +86,25 @@ describe('activation telemetry boundary (ONL-2686)', () => {
   });
 
   const deadEnds = () => peekQueueForTesting().filter((row) => row.event === 'dead_end_shown');
+
+  it('carries a validated common server port into dead-end diagnostics and rejects invalid ports', () => {
+    setTelemetryRendererWorkspace(() => 'sample-workspace');
+    notePreviewDiagnostics('sample-workspace', { expected_port: 4100, actual_port: 4101, cause: 'process_exited', exit_code: 17 });
+    showTelemetryRenderer(1);
+    try {
+      const report = { event: 'activation_surface', properties: { surface: 'error_state', dead_end: { state: 'preview_failed', error_class: 'port_unreachable', cover: 'dead', server_port: 4100 } } } as const;
+      for (const server_port of [0, 65536, 1.5, '4100', null]) receiveRendererTelemetry({ ...report, properties: { ...report.properties, dead_end: { ...report.properties.dead_end, server_port } } } as unknown as RendererTelemetryEvent, 1);
+      expect(deadEnds()).toHaveLength(0);
+      receiveRendererTelemetry(report, 1);
+      expect(deadEnds().at(-1)?.properties).toMatchObject({ cause: 'process_exited', expected_port: 4100, actual_port: 4101, exit_code: 17, cover: 'dead' });
+      receiveRendererTelemetry({ ...report, properties: { ...report.properties, dead_end: { ...report.properties.dead_end, server_port: 4200 } } }, 1);
+      expect(deadEnds()).toHaveLength(2);
+      expect(deadEnds().at(-1)?.properties).toMatchObject({ cause: 'unknown', expected_port: null });
+    } finally {
+      setTelemetryRendererWorkspace(() => undefined);
+      resetPreviewDiagnostics();
+    }
+  });
 
   it('records only enumerated connector actions without server names or addresses', () => {
     receiveRendererTelemetry({ event: 'connector_action', properties: { action: 'open-plug', name: 'private server', url: 'https://private.local' } } as unknown as RendererTelemetryEvent, 1);
@@ -931,6 +951,16 @@ describe('receiveRendererTelemetry', () => {
       for (const key of ['account', 'branch', 'repo', 'worktreePath']) expect(captured[0]!.properties).not.toHaveProperty(key);
     });
 
+    it('keeps only enumerated Create PR failure classes', () => {
+      for (const failure_class of ['no-changes', 'push-refused', 'org-approval', 'sign-in', 'unknown', 'private error output']) {
+        receiveRendererTelemetry({ event: 'git_pill_outcome', properties: {
+          worktreePath: worktree, from_state: 'create-pr', to_state: 'create-pr', outcome: 'unchanged', duration_ms: 10, failure_class,
+        } } as unknown as RendererTelemetryEvent);
+      }
+      const events = peekQueueForTesting().filter((event) => event.event === 'git_pill_outcome');
+      expect(events.map((event) => event.properties['failure_class'])).toEqual(['no-changes', 'push-refused', 'org-approval', 'sign-in', 'unknown']);
+    });
+
     it('a queued press and the take-back that ends it both reach the queue (ONL-2379)', () => {
       receiveRendererTelemetry({
         event: 'git_pill_queued',
@@ -1115,9 +1145,21 @@ describe('receiveRendererException', () => {
     expect(JSON.stringify(sent)).not.toContain('/Users/');
   });
 
-  it('a report becomes one $exception owned by us, frames re-scrubbed, surface and mechanism kept', () => {
+  function enableExceptionTelemetry(): void {
     process.env['STUDIO_POSTHOG_KEY'] = 'phc_test';
     initTelemetry();
+  }
+
+  it('Windows renderer exceptions retain scrubbed stack frames and their process type', () => {
+    enableExceptionTelemetry();
+    receiveRendererException({ type: 'TypeError', value: 'failed at C:\\private\\project\\file.ts', surface: 'tab', mechanism: 'window-error', frames: [{ platform: 'web:javascript', filename: 'C:\\private\\Onlook\\resources\\app.asar\\out\\renderer\\index.js', function: 'render', lineno: 19, colno: 4, in_app: true }] });
+    const event = peekQueueForTesting().find((entry) => entry.event === '$exception');
+    expect(event?.properties).toMatchObject({ process_type: 'renderer', $exception_type: 'TypeError', $exception_list: [{ stacktrace: { frames: [{ filename: 'app://studio/out/renderer/index.js', lineno: 19, colno: 4 }] } }] });
+    expect(JSON.stringify(event)).not.toContain('private');
+  });
+
+  it('a report becomes one $exception owned by us, frames re-scrubbed, surface and mechanism kept', () => {
+    enableExceptionTelemetry();
     recordLinesForTesting();
     receiveRendererException({
       type: 'TypeError',
@@ -1136,6 +1178,7 @@ describe('receiveRendererException', () => {
     expect(props['mechanism']).toBe('window-error');
     expect(props['region']).toBe('chat');
     expect(props['subsystem']).toBe('renderer');
+    expect(props['process_type']).toBe('renderer');
     expect(JSON.stringify(props)).not.toContain('/Users/');
     expect((props['$exception_list'] as Array<{ stacktrace: { frames: Array<{ filename: string; platform: string }> } }>)[0]!.stacktrace.frames[0]).toMatchObject({
       filename: 'app://studio/renderer/index.js',

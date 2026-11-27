@@ -63,6 +63,7 @@ import {
   scrubMessage,
   ACTIVATION_DEAD_ENDS,
   ACTIVATION_ERROR_CLASSES,
+  PREVIEW_COVERS,
   ACTIVATION_SURFACES,
   ATTACHMENT_REJECT_REASONS,
   ATTACHMENT_SIZE_BUCKETS,
@@ -76,6 +77,7 @@ import {
   FRAME_SCROLL_METHODS,
   GIT_PILL_NO_ACTION_REASONS,
   GIT_PILL_OUTCOMES,
+  GIT_PR_FAILURES,
   IMAGE_REFUSAL_REASONS,
   INLINE_CHAT_ANCHORS,
   INLINE_DISMISS_METHODS,
@@ -225,7 +227,10 @@ export function receiveRendererTelemetry(payload: RendererTelemetryEvent, render
       if (renderer === undefined || !isRecord(props) || !oneOf(ACTIVATION_SURFACES, props.surface)) return;
       const deadEnd = props.dead_end;
       if (deadEnd !== undefined && (!isRecord(deadEnd) || !oneOf(ACTIVATION_DEAD_ENDS, deadEnd.state) || !oneOf(ACTIVATION_ERROR_CLASSES, deadEnd.error_class) || props.surface !== 'error_state')) return;
-      recordActivationSurface(renderer, { surface: props.surface, ...(deadEnd === undefined ? {} : { dead_end: { state: deadEnd.state, error_class: deadEnd.error_class } }) });
+      if (deadEnd?.cover !== undefined && !oneOf(PREVIEW_COVERS, deadEnd.cover)) return;
+      if (deadEnd?.harness !== undefined && !oneOf(HARNESS_IDS, deadEnd.harness)) return;
+      if (deadEnd?.server_port !== undefined && (typeof deadEnd.server_port !== 'number' || !Number.isInteger(deadEnd.server_port) || deadEnd.server_port < 1 || deadEnd.server_port > 65535)) return;
+      recordActivationSurface(renderer, { surface: props.surface, ...(deadEnd === undefined ? {} : { dead_end: { state: deadEnd.state, error_class: deadEnd.error_class, ...(deadEnd.cover === undefined ? {} : { cover: deadEnd.cover }), ...(deadEnd.server_port === undefined ? {} : { server_port: deadEnd.server_port }), ...(deadEnd.harness === undefined ? {} : { harness: deadEnd.harness }) } }) });
       return;
     }
     case 'cloud_update_required_shown':
@@ -685,7 +690,9 @@ export function receiveRendererTelemetry(payload: RendererTelemetryEvent, render
       if (workspaceProperties === undefined || from_state === undefined || to_state === undefined) return;
       if (!oneOf(GIT_PILL_OUTCOMES, outcome)) return;
       if (typeof duration_ms !== 'number' || !Number.isFinite(duration_ms) || duration_ms < 0) return;
-      capture('git_pill_outcome', { ...workspaceProperties, from_state, to_state, outcome, duration_ms });
+      const failure_class = payload.properties.failure_class;
+      if (failure_class !== undefined && !oneOf(GIT_PR_FAILURES, failure_class)) return;
+      capture('git_pill_outcome', { ...workspaceProperties, from_state, to_state, outcome, duration_ms, ...(failure_class === undefined ? {} : { failure_class }) });
       const export_type = EXPORT_TYPES[from_state];
       if (outcome === 'advanced' && export_type !== undefined) {
         capture('code_exported', { ...workspaceProperties, export_type, duration_ms });
@@ -903,6 +910,7 @@ export function receiveRendererException(payload: RendererExceptionReport): void
     {
       owner: failureOwner(value),
       subsystem: surface === 'frame-preload' ? 'frame-preload' : 'renderer',
+      process_type: 'renderer',
       mechanism,
       surface,
       ...(region === undefined ? {} : { region }),

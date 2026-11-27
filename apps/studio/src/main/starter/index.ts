@@ -6,16 +6,15 @@ import type { StarterControl } from '../server/index.js';
 import { stateRoot } from '../state/root.js';
 import { isStudioServerFile, starterModulePath } from './adapter.js';
 import { writeStaticServer } from './adapters/static.js';
-import { removeStarterServerFile } from './retire.js';
 import { createStarterRunner, STARTER_SERVICE_PREFIX, type StarterRunner } from './runner.js';
 import { STARTER_SERVER_FILE } from './scaffold.js';
 import { log } from '../log/index.js';
+import { capture, resolveWorkspaceTelemetryProperties } from '../telemetry/index.js';
+import { recordProjectPreviewDiagnostics } from '../workspace/preview-diagnostics.js';
 
 const logger = log('starter');
 
-export interface StarterHost extends StarterRunner {
-  retire(worktree: string): Promise<void>;
-}
+export type StarterHost = StarterRunner;
 
 function isStudioServerPresent(worktree: string): boolean {
   let content: string;
@@ -42,19 +41,17 @@ export function registerStarter(): StarterHost {
         serviceName: options.serviceName,
       }),
     env: userEnv,
+    diagnostics: recordProjectPreviewDiagnostics,
+    serverExited: (cwd) => capture('dev_server_exited', { ...resolveWorkspaceTelemetryProperties(cwd) }, cwd),
     modulePath: (worktree) => starterModulePath(worktree, () => writeStaticServer(join(stateRoot(), 'starter'))),
   });
   app.on('child-process-gone', (_event, details) => {
-    if (!details.serviceName?.startsWith(STARTER_SERVICE_PREFIX)) return;
+    if (!details.name?.startsWith(STARTER_SERVICE_PREFIX)) return;
     logger.warn('starter child gone', { reason: details.reason, exit_code: details.exitCode });
   });
   host = {
     ...runner,
     isPresent: isStudioServerPresent,
-    async retire(worktree) {
-      await runner.stop(worktree);
-      await removeStarterServerFile(worktree);
-    },
   } satisfies StarterControl;
   return host;
 }

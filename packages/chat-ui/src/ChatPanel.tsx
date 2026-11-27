@@ -79,7 +79,7 @@ import type { FailureContext } from './failureRow.js';
 import { FADE, ONE_LINE } from './oneLineFade.js';
 import { useOverflows } from './useOverflows.js';
 import { failedTurnFacts, failureLine, type FailedTurnFacts, type FailureLineAction, type FailureLineView, type NoticeAction } from './failureLine.js';
-import { ComposerNotice, ComposerNoticeFrame, type ComposerNoticeButton } from './ComposerNotice.js';
+import { ComposerNotice, type ComposerNoticeButton } from './ComposerNotice.js';
 import type { ChatStrings } from './strings.js';
 import { around } from './fill.js';
 import {
@@ -551,6 +551,18 @@ export function ChatPanel({
   composerRootRef,
   composerLayer,
 }: ChatPanelProps): ReactNode {
+  const composerInput = useRef<HTMLDivElement>(null);
+  const placeholderMaskRevision = useRef(0);
+  useEffect(() => {
+    const input = composerInput.current;
+    if (!input || !isPlaceholderShimmering) return;
+    const observer = new MutationObserver(() => {
+      const placeholder = input.querySelector<HTMLElement>(':scope > div[aria-hidden="true"]');
+      if (placeholder) placeholder.style.setProperty('--chat-placeholder-mask-angle', `${++placeholderMaskRevision.current}deg`);
+    });
+    observer.observe(input, { childList: true, characterData: true, subtree: true });
+    return () => observer.disconnect();
+  }, [isPlaceholderShimmering]);
   const walk = useRef<ComposerWalk | undefined>(undefined);
   const recallEntry = useRef<{ stepsBack: number; hadAttachments: boolean; report?: ChatPanelProps['onRecallAction'] } | undefined>(undefined);
   const finishRecall = useCallback((nextAction: PromptRecallNextAction): void => {
@@ -919,6 +931,9 @@ export function ChatPanel({
             {typeof composerSlots.aboveComposer === 'function' ? composerSlots.aboveComposer({ isComposerHeld, isQuestionOpen }) : composerSlots.aboveComposer}
           </HStack>
         ) : null}
+        {signInNotice ? (
+          <div style={{ padding: 'var(--spacing-3)', paddingBlockEnd: 0 }} data-testid="chat-sign-in-slot" data-placement={signInPlacement}>{signInSlot}</div>
+        ) : null}
         <div data-testid="chat-composer-box" style={{ position: 'relative' }}>
         <ChatComposer
           {...(composerRootRef ? { ref: composerRootRef } : {})}
@@ -953,6 +968,7 @@ export function ChatPanel({
           data-perf-surface="chat_panel"
           input={
             <ChatComposerInput
+              ref={composerInput}
               style={COMPOSER_EDITABLE}
               handleRef={composerHandleRef}
               onFiles={onComposerFiles}
@@ -1101,11 +1117,6 @@ export function ChatPanel({
           // empty slot suppresses Astryx's default without duplicating it.
           sendButton={<></>}
         />
-        {signInNotice ? (
-          <ComposerNoticeFrame>
-            <div style={{ width: '100%' }} data-testid="chat-sign-in-slot" data-placement={signInPlacement}>{signInSlot}</div>
-          </ComposerNoticeFrame>
-        ) : null}
         {standingNotice === undefined || signInNotice ? null : (
           <ComposerNotice
             testId="chat-error-notice"

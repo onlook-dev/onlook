@@ -1,5 +1,7 @@
 import { afterAll, describe, expect, it, spyOn } from 'bun:test';
-import { cleanupTempFixtures, makeDirWithFiles } from '@studio/fixtures';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { cleanupTempFixtures, gitOutput, makeDirWithFiles, makeGitRepo } from '@studio/fixtures';
 import type { VersionedProjectSetup } from '@studio/events';
 import { t } from '@studio/i18n';
 import { createProjectSetupService, redactSetupOutput, type ProjectSetupDeps } from './runner.js';
@@ -9,6 +11,119 @@ afterAll(cleanupTempFixtures);
 const definition = { prepare: '', install: { script: '', inputs: [], outputs: [] }, servers: [{ id: 'web', cwd: '.', start: 'sleep 10', port: 48001 }] };
 
 describe('setup runner failures and state', () => {
+  it('does not recover a retired server file for a setup that uses its own server', async () => {
+    const project = makeGitRepo({ name: 'independent-server', remote: false }).path;
+    writeFileSync(join(project, 'server.mjs'), 'export const ready = true;\n');
+    gitOutput(project, ['add', 'server.mjs']);
+    gitOutput(project, ['commit', '--quiet', '-m', 'Add site server']);
+    gitOutput(project, ['rm', '--quiet', 'server.mjs']);
+    gitOutput(project, ['-c', 'user.name=Onlook', '-c', 'user.email=studio@noreply.onlook.com', 'commit', '--quiet', '-m', 'chore: retire the starter page server']);
+    const root = makeDirWithFiles({});
+    for (let launch = 0; launch < 2; launch += 1) {
+      const service = createProjectSetupService({
+        state: createSetupState(() => root), env: async () => process.env, probe: async () => true,
+        identify: async () => ({ pid: process.pid, cwd: project }), report: async () => undefined,
+      });
+      try {
+        if (launch === 0) service.save(project, definition, null);
+        expect((await service.run(project, { action: 'start' })).ok).toBe(true);
+        expect(existsSync(join(project, 'server.mjs'))).toBe(false);
+      } finally { await service.dispose(); }
+    }
+  });
+
+  it('stops a reconnected own app with one SIGTERM and returns to idle', async () => {
+    const project = makeDirWithFiles({});
+    const root = makeDirWithFiles({});
+    const pid = process.pid + 100000;
+    let listening = true;
+    const service = createProjectSetupService({
+      state: createSetupState(() => root), env: async () => process.env,
+      probe: async () => listening, identify: async () => ({ pid, cwd: project }), report: async () => undefined,
+    });
+    let restore: () => void = () => undefined;
+    try {
+      service.save(project, definition, null);
+      const started = await service.run(project, { action: 'start' });
+      expect(started.ok).toBe(true);
+      const signal = spyOn(process, 'kill').mockImplementation(() => { listening = false; return true; });
+      restore = () => signal.mockRestore();
+      const stopped = await service.run(project, { action: 'stop' });
+      expect(stopped.ok).toBe(true);
+      expect(stopped.snapshot.state).toBe('idle');
+      expect(stopped.snapshot.saved).toEqual(started.snapshot.saved);
+      expect(signal.mock.calls).toEqual([[pid, 'SIGTERM']]);
+    } finally { restore(); await service.dispose(); }
+  });
+
+  it('shows a plain stop failure without exposing a process error', async () => {
+    const project = makeDirWithFiles({});
+    const root = makeDirWithFiles({});
+    const service = createProjectSetupService({
+      state: createSetupState(() => root), env: async () => process.env,
+      probe: async () => true, identify: async () => ({ pid: process.pid + 100000, cwd: project }), report: async () => undefined,
+    });
+    let restore: () => void = () => undefined;
+    try {
+      service.save(project, definition, null);
+      expect((await service.run(project, { action: 'start' })).ok).toBe(true);
+      const signal = spyOn(process, 'kill').mockImplementation(() => { throw new Error('Could not stop the owned process group: Error: denied'); });
+      restore = () => signal.mockRestore();
+      const stopped = await service.run(project, { action: 'stop' });
+      expect(stopped.ok).toBe(false);
+      if (stopped.ok) throw new Error('Expected the stop to fail');
+      expect(stopped.reason).toBe(t('projectSetup.failure.stopListener'));
+      expect(stopped.snapshot.failure?.reason).toBe(t('projectSetup.failure.stopListener'));
+    } finally { restore(); await service.dispose(); }
+  });
+
+  it('diagnoses a verified alternate listening port without treating a printed URL as proof', async () => {
+    for (const owned of [true, false]) {
+      const project = makeDirWithFiles({});
+      const root = makeDirWithFiles({});
+      const elsewhere = makeDirWithFiles({});
+      const diagnostics: Parameters<NonNullable<ProjectSetupDeps['diagnostics']>>[1][] = [];
+      const service = createProjectSetupService({
+        state: createSetupState(() => root), env: async () => process.env,
+        report: async () => undefined, stopGraceMs: 25, readyTimeoutMs: 150,
+        probe: async port => port === 48002,
+        identify: async () => ({ pid: process.pid, cwd: owned ? project : elsewhere }),
+        diagnostics: (_cwd, measurement) => { diagnostics.push(measurement); },
+      });
+      try {
+        service.save(project, { ...definition, servers: [{ ...definition.servers[0]!, start: 'printf "Local: http://localhost:48002/\\n"; sleep 10' }] }, null);
+        expect((await service.run(project, { action: 'start' })).ok).toBe(false);
+        expect(diagnostics.find(row => row.reported_port === 48002)).toMatchObject({ expected_port: 48001, cause: 'readiness_timeout', process_exited: false });
+        expect(diagnostics.some(row => row.actual_port === 48002)).toBe(owned);
+        if (owned) expect(diagnostics.at(-1)).toMatchObject({ actual_port: 48002, cause: 'reported_port_mismatch' });
+      } finally { await service.dispose(); }
+    }
+  });
+
+  it('starts a saved setup after reopening a project whose server file Studio retired', async () => {
+    const project = makeGitRepo({ name: 'saved-start', remote: false }).path;
+    const content = "export const ready = true;\n\n";
+    writeFileSync(join(project, 'server.mjs'), content);
+    gitOutput(project, ['add', 'server.mjs']);
+    gitOutput(project, ['commit', '--quiet', '-m', 'Add site server']);
+    gitOutput(project, ['rm', '--quiet', 'server.mjs']);
+    gitOutput(project, ['-c', 'user.name=Onlook', '-c', 'user.email=studio@noreply.onlook.com', 'commit', '--quiet', '-m', 'chore: retire the starter page server']);
+    const root = makeDirWithFiles({});
+    const first = createProjectSetupService({ state: createSetupState(() => root), report: async () => undefined });
+    first.save(project, { ...definition, prepare: 'test -f server.mjs || exit 1' }, null);
+    await first.dispose();
+    const service = createProjectSetupService({
+      state: createSetupState(() => root), env: async () => process.env, probe: async () => true,
+      identify: async () => ({ pid: process.pid, cwd: project }), report: async () => undefined,
+    });
+    try {
+      expect(existsSync(join(project, 'server.mjs'))).toBe(false);
+      const result = await service.run(project, { action: 'start' });
+      expect(result.ok).toBe(true);
+      expect(readFileSync(join(project, 'server.mjs'), 'utf8')).toBe(content);
+    } finally { await service.dispose(); }
+  });
+
   it('keeps a superseded environment read from replacing the next run failure', async () => {
     const project = makeDirWithFiles({});
     const root = makeDirWithFiles({});
@@ -267,12 +382,14 @@ describe('setup runner failures and state', () => {
     const root = makeDirWithFiles({});
     const measurements: Parameters<NonNullable<ProjectSetupDeps['runCompleted']>>[1][] = [];
     const reuse: boolean[] = [];
+    const diagnostics: Parameters<NonNullable<ProjectSetupDeps['diagnostics']>>[1][] = [];
     const service = createProjectSetupService({
       state: createSetupState(() => root),
       env: async () => process.env,
       report: async () => undefined,
       runCompleted: (_cwd, measurement) => { measurements.push(measurement); },
       installationChecked: (_cwd, reused) => { reuse.push(reused); },
+      diagnostics: (_cwd, measurement) => { diagnostics.push(measurement); },
       stopGraceMs: 25,
     });
     try {
@@ -284,6 +401,9 @@ describe('setup runner failures and state', () => {
       expect(JSON.stringify(measurements)).not.toContain(project);
       expect(JSON.stringify(measurements)).not.toContain('private-install-output');
       expect(JSON.stringify(measurements)).not.toContain('exit 17');
+      expect(diagnostics.at(-1)).toMatchObject({ cause: 'install_failed', process_exited: true, exit_code: 17, install_succeeded: false, spawn_to_failure_ms: expect.any(Number) });
+      expect(JSON.stringify(diagnostics)).not.toContain(project);
+      expect(JSON.stringify(diagnostics)).not.toContain('private-install-output');
     } finally { await service.dispose(); }
   });
 
@@ -433,7 +553,7 @@ describe('setup runner failures and state', () => {
     for (const entry of [{ start: 'exit 23', stage: 'start' }, { start: 'sleep 10', stage: 'ready' }] as const) {
       const project = makeDirWithFiles({});
       const root = makeDirWithFiles({});
-      const service = createProjectSetupService({ state: createSetupState(() => root), env: async () => process.env, probe: async () => false, report: async () => undefined, readyTimeoutMs: 150, stopGraceMs: 25 });
+      const service = createProjectSetupService({ state: createSetupState(() => root), env: async () => process.env, probe: async () => false, report: async () => undefined, readyTimeoutMs: entry.stage === 'start' ? 2000 : 150, stopGraceMs: 25 });
       service.save(project, { ...definition, servers: [{ ...definition.servers[0]!, start: entry.start }] }, null);
       const failed = await service.run(project, { action: 'start' });
       expect(failed.ok).toBe(false);

@@ -90,6 +90,37 @@ async function externalServer(project: string, port: number) {
 }
 
 describe('saved setup shell lifetime', () => {
+  it('stops and restarts a cooperative reconnected own app with one SIGTERM', async () => {
+    for (const action of ['stop', 'restart'] as const) {
+      const item = await fixture();
+      const serverPath = join(item.project, 'server.mjs');
+      writeFileSync(serverPath, readFileSync(serverPath, 'utf8').replace("process.on('SIGTERM',()=>{});", "process.on('SIGTERM',()=>{appendFileSync('server.stops','SIGTERM\\n');process.exit(0);});"));
+      const port = item.definition.servers[0]!.port;
+      const external = await externalServer(item.project, port);
+      try {
+        const started = await item.service.run(item.project, { action: 'start', serverIds: ['web'] });
+        assert.equal(started.ok, true, JSON.stringify(started));
+        const result = await item.service.run(item.project, { action, serverIds: ['web'] });
+        assert.equal(result.ok, true, JSON.stringify(result));
+        await external.closed;
+        assert.equal(external.child.exitCode, 0);
+        assert.equal(external.child.signalCode, null);
+        assert.equal(readFileSync(join(item.project, 'server.stops'), 'utf8'), 'SIGTERM\n');
+        assert.equal(await probePort(port), action === 'restart');
+        assert.equal(launchCount(item.project), action === 'restart' ? 2 : 1);
+        if (action === 'stop') {
+          assert.equal((await item.service.run(item.project, { action: 'start', serverIds: ['web'] })).ok, true);
+          assert.equal(launchCount(item.project), 2);
+          assert.equal(await probePort(port), true);
+        }
+      } finally {
+        external.child.kill('SIGKILL');
+        await external.closed;
+        await item.service.dispose();
+      }
+    }
+  });
+
   it('stops a reconnected listener by PID, confirms shutdown, and leaves its process-group companion and launched sibling alone', async () => {
     const item = await fixture();
     const serverPath = join(item.project, 'server.mjs');
@@ -106,12 +137,11 @@ describe('saved setup shell lifetime', () => {
       const stopped = await item.service.run(item.project, { action: 'stop', serverIds: ids });
       assert.equal(stopped.ok, true, JSON.stringify(stopped));
       assert.equal(await probePort(item.definition.servers[0]!.port), false);
+      assert.equal(item.service.ownsPort(item.project, item.definition.servers[0]!.port), false);
       await external.closed;
       assert.equal(external.child.signalCode, 'SIGKILL');
       assert.equal(process.kill(companion, 0), true);
       assert.equal(await probePort(item.definition.servers[1]!.port), true);
-      assert.equal(item.service.ownsPort(item.project, item.definition.servers[0]!.port), false);
-      assert.deepEqual(item.service.serverIdsForPorts(item.project, [item.definition.servers[0]!.port]), []);
       const relaunched = await item.service.run(item.project, { action: 'start', serverIds: ['web'] });
       assert.equal(relaunched.ok, true, JSON.stringify(relaunched));
       assert.equal(launchCount(item.project), 2);
@@ -128,7 +158,7 @@ describe('saved setup shell lifetime', () => {
     }
   });
 
-  it('restarts a reconnected listener with the edited command through its retained pre-rename ID', async () => {
+  it('restarts a reconnected listener with the edited saved command through its retained ID', async () => {
     const item = await fixture();
     const external = await externalServer(item.project, item.definition.servers[0]!.port);
     try {
@@ -145,6 +175,7 @@ describe('saved setup shell lifetime', () => {
       const restarted = await item.service.run(item.project, { action: 'restart', serverIds: ['web'] });
       assert.equal(restarted.ok, true, JSON.stringify(restarted));
       await external.closed;
+      assert.equal(external.child.signalCode, 'SIGKILL');
       assert.equal(readFileSync(join(item.project, 'restarted.marker'), 'utf8'), 'restarted');
       assert.notEqual(Number(readFileSync(join(item.project, 'server.pid'), 'utf8')), external.child.pid);
       assert.equal(launchCount(item.project), 2);
@@ -435,7 +466,7 @@ describe('saved setup shell lifetime', () => {
       assert.equal(stopped.ok, false);
       assert.equal(stopped.snapshot.state, 'failed');
       assert.equal(stopped.snapshot.failure?.stage, 'stop');
-      assert(stopped.snapshot.failure?.reason.includes('probe unavailable'));
+      assert.equal(stopped.snapshot.failure?.reason, t('projectSetup.failure.stopListener'));
       assert.equal((await item.service.run(item.project, { action: 'stop' })).ok, true);
       const recovered = await item.service.run(item.project, { action: 'start' });
       assert.equal(recovered.ok, true, JSON.stringify(recovered));

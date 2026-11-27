@@ -5,6 +5,7 @@ import {
   isArtifactNode,
   isBrowserNode,
   nextPosition,
+  placeBeside,
   placeNearSource,
   PLACEMENT_GAP,
   resolveStackOps,
@@ -14,7 +15,6 @@ import {
   type CanvasNodeId,
   type CanvasOp,
   type StackPosition,
-  type ViewRect,
 } from '@studio/events';
 import type { StateCreator } from 'zustand';
 import { log as rendererLog } from '../log.js';
@@ -64,10 +64,10 @@ export interface NodeActions {
   endDeleteArtifactAsk: () => void;
   /** Destroys the artifact itself. The nodes showing it stay, and land in their missing state. */
   deleteArtifact: (nodeId: CanvasNodeId) => Promise<void>;
-  /** `at` is exact, except dropped back on the source, where the anti-stack placement answers as ⌘D would. */
-  duplicateFrame: (id: string, view?: ViewRect, at?: { x: number; y: number }) => string | undefined;
-  duplicateSelectedFrame: (view?: ViewRect) => string | undefined;
-  openInNewFrame: (sourceId: string, url: string, view?: ViewRect) => string;
+  /** `at` is exact, except dropped back on the source, where the anti-stack placement offsets it. */
+  duplicateFrame: (id: string, at?: { x: number; y: number }) => string | undefined;
+  duplicateSelectedFrame: () => string | undefined;
+  openInNewFrame: (sourceId: string, url: string) => string;
   beginRename: (id: CanvasNodeId) => void;
   endRename: () => void;
   renameFrame: (id: CanvasNodeId, name: string) => void;
@@ -308,7 +308,7 @@ export const createNodeActions: StateCreator<CanvasState, [], [], NodeActions> =
     forgetArtifact(artifactId);
   },
 
-  duplicateFrame: (id, view, at) => {
+  duplicateFrame: (id, at) => {
     const state = get();
     const doc = state.doc;
     const source = doc?.nodes[id];
@@ -317,25 +317,26 @@ export const createNodeActions: StateCreator<CanvasState, [], [], NodeActions> =
       at !== undefined &&
       Math.abs(at.x - source.x) < PLACEMENT_GAP &&
       Math.abs(at.y - source.y) < PLACEMENT_GAP;
-    const position =
-      at !== undefined && !isOnSource
+    const position = at === undefined
+      ? placeBeside(source, source, state.nodes.flatMap((node) => doc.nodes[node.id] ?? []))
+      : !isOnSource
         ? at
         : placeNearSource(
             source,
             { width: source.width, height: source.height },
             state.nodes.map((n) => n.position),
-            view,
           );
     const minted = mintDuplicate(source, position, nextOrder(doc));
     if (minted === undefined) return undefined;
-    set((current) =>
-      recomposed(composable(current, { selectedNodeIds: [minted] }), current.nodes),
-    );
+    set((current) => ({
+      ...recomposed(composable(current, { selectedNodeIds: [minted] }), current.nodes),
+      ...(at === undefined ? { flyTo: { id: minted, seq: (current.flyTo?.seq ?? 0) + 1, panOnly: true as const } } : {}),
+    }));
     reportNodesCreated([source], 'duplicate');
     return minted;
   },
 
-  duplicateSelectedFrame: (view) => {
+  duplicateSelectedFrame: () => {
     const state = get();
     const doc = state.doc;
     if (!doc) return undefined;
@@ -345,7 +346,7 @@ export const createNodeActions: StateCreator<CanvasState, [], [], NodeActions> =
     );
     if (sources.length === 0) return undefined;
     // Accumulates the batch's own slots: mints arrive only on echoes, so siblings would otherwise stack (ONL-2043).
-    const occupied = state.nodes.map((n) => ({ x: n.position.x, y: n.position.y }));
+    const occupied = state.nodes.flatMap((node) => doc.nodes[node.id] ?? []);
     let order = nextOrder(doc);
     const minted: string[] = [];
     const copied: CanvasNode[] = [];
@@ -356,13 +357,12 @@ export const createNodeActions: StateCreator<CanvasState, [], [], NodeActions> =
     for (const id of sources) {
       const source = doc.nodes[id];
       if (!source) continue;
-      const position = grouped ? { x: source.x + right - left + PLACEMENT_GAP, y: source.y } : placeNearSource(
+      const position = grouped ? { x: source.x + right - left + PLACEMENT_GAP, y: source.y } : placeBeside(
         source,
         { width: source.width, height: source.height },
         occupied,
-        view,
       );
-      occupied.push(position);
+      occupied.push({ ...source, ...position });
       const duplicate = mintedDuplicate(source, position, order);
       if (duplicate === undefined) continue;
       minted.push(duplicate.id);
@@ -371,21 +371,24 @@ export const createNodeActions: StateCreator<CanvasState, [], [], NodeActions> =
       order += 1;
     }
     if (!dispatchCanvasOps(ops)) return undefined;
-    set((current) =>
-      recomposed(composable(current, { selectedNodeIds: minted }), current.nodes),
-    );
+    set((current) => ({
+      ...recomposed(composable(current, { selectedNodeIds: minted }), current.nodes),
+      flyTo: { id: minted[minted.length - 1]!, seq: (current.flyTo?.seq ?? 0) + 1, panOnly: true },
+    }));
     reportNodesCreated(copied, 'duplicate');
     return minted.at(-1);
   },
 
-  openInNewFrame: (sourceId, url, view) => {
+  openInNewFrame: (sourceId, url) => {
     const state = get();
     const source = state.doc?.nodes[sourceId];
     if (!source) return get().addFrame(url);
-    return get().addFrame(
+    const minted = get().addFrame(
       url,
-      placeNearSource(source, DEFAULT_FRAME_SIZE, state.nodes.map((n) => n.position), view),
+      placeBeside(source, DEFAULT_FRAME_SIZE, state.nodes.flatMap((node) => state.doc?.nodes[node.id] ?? [])),
     );
+    set((current) => ({ flyTo: { id: minted, seq: (current.flyTo?.seq ?? 0) + 1, panOnly: true } }));
+    return minted;
   },
 
   beginRename: (id) => {

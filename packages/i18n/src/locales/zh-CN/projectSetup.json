@@ -1,4 +1,6 @@
 {
+  "projectSetup.portMoved": "端口 {from} 已被占用，应用和画框已切换到端口 {to}。",
+  "projectSetup.failure.portMove": "画框无法切换到端口 {port}。请重新启动应用。",
   "projectSetup.ask.install": "我的应用依赖包没能安装成功。你能帮我解决，或者告诉我该怎么做吗？",
   "projectSetup.ask.start": "我的应用没能启动。你能帮我解决，或者告诉我该怎么做吗？",
   "projectSetup.loading": "正在载入配置脚本…",
@@ -43,7 +45,6 @@
   "projectSetup.failure.readinessTimeout": "等待服务器就绪超时",
   "projectSetup.failure.unexpectedExit": "服务器意外退出",
   "projectSetup.failure.stopListener": "已停止自有进程组，但端口仍有响应",
-  "projectSetup.failure.stopTermination": "无法停止自有进程组：{reason}",
   "projectSetup.failure.processGroupAlive": "自有进程组仍在运行",
   "projectSetup.failure.staleRevision": "读取后配置已更改",
   "projectSetup.failure.unknownAction": "未知的配置操作",

@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import type { HarnessId, OnboardingImportChoice, OnboardingScreen, SurveyAnswer } from '@studio/events';
+import type { HarnessId, OnboardingImportChoice, OnboardingProgress, OnboardingScreen, SurveyAnswer } from '@studio/events';
 
 import { ConnectStep } from '../agent-setup/ConnectStep.js';
 import { harnessToRecord } from '../agent-setup/gate.js';
@@ -15,7 +15,7 @@ import { ignoreRefusal } from '../refusal.js';
 import { MachineStep } from './MachineStep.js';
 import { showsChecklist } from './checklist.js';
 import { useFlag } from '../flags/store.js';
-import { machineBlocked, machineCreationBlocked, machineNeedsAttention, refreshMachineChecks, useMachineStore } from './machine-store.js';
+import { blankMachineBlocked, machineBlocked, machineCreationBlocked, machineNeedsAttention, refreshMachineChecks, useMachineStore } from './machine-store.js';
 import { studio } from '../bridge.js';
 import { capable } from '../capabilities.js';
 import { BlockedWindowBarContext } from '../topbar/slots.js';
@@ -23,7 +23,7 @@ import { createOnboardingWalk } from './walk.js';
 
 // Commits nothing: project state committed mid-flow flips the window bar to connected under an onboarding screen.
 
-type OnboardingStep = 'role' | 'found' | 'agent' | 'import';
+type OnboardingStep = OnboardingProgress['resumeAt'];
 type Step = OnboardingStep;
 
 function reportPassed(screen: Exclude<OnboardingScreen, 'import'>): void;
@@ -38,10 +38,11 @@ export interface OnboardingFlowProps {
   onCreateBlank: (harness?: HarnessId) => void;
   aside?: React.ReactNode;
   startAt?: OnboardingStep;
+  resumeHarness?: HarnessId;
   onOpenExisting?: (path: string) => void;
 }
 
-export function OnboardingFlow({ onComplete, onCreateBlank, aside, startAt, onOpenExisting }: OnboardingFlowProps): React.JSX.Element {
+export function OnboardingFlow({ onComplete, onCreateBlank, aside, startAt, resumeHarness, onOpenExisting }: OnboardingFlowProps): React.JSX.Element {
   const asksSurvey = capable('survey');
   const first: Step = asksSurvey ? startAt ?? 'role' : startAt === undefined || startAt === 'role' || startAt === 'found' ? 'agent' : startAt;
   // The checks run from here, behind the agents screen, so a quiet machine is never waited on; off they do not run, and the refresh is what knows it (ONL-3111).
@@ -50,6 +51,7 @@ export function OnboardingFlow({ onComplete, onCreateBlank, aside, startAt, onOp
     void refreshMachineChecks();
   }, [isMachineCheckOn]);
   const blocked = useMachineStore(machineBlocked);
+  const isCreatingBlank = useBlankCreateStore((state) => state.status.kind === 'creating' || state.status.kind === 'canceling');
   const needsMachine = useMachineStore(machineNeedsAttention);
   // A last check recovering would otherwise replace the checklist before the person saw it turn ready (ONL-3111).
   const [machineShown, setMachineShown] = useState(false);
@@ -78,7 +80,7 @@ export function OnboardingFlow({ onComplete, onCreateBlank, aside, startAt, onOp
   const [roleAnswer, setRoleAnswer] = useState<SurveyAnswer | undefined>(undefined);
   const [foundAnswer, setFoundAnswer] = useState<SurveyAnswer | undefined>(undefined);
   const [refusal, setRefusal] = useState<Refusal | undefined>(undefined);
-  const harness = useRef<HarnessId | undefined>(undefined);
+  const harness = useRef<HarnessId | undefined>(resumeHarness);
   // Two picks in flight both resolve on the import step; only the first may create.
   const isCompleted = useRef(false);
 
@@ -111,7 +113,8 @@ export function OnboardingFlow({ onComplete, onCreateBlank, aside, startAt, onOp
   );
 
   const createBlank = (): void => {
-    if (machineCreationBlocked()) return;
+    const status = useBlankCreateStore.getState().status.kind;
+    if (isCompleted.current || status === 'creating' || status === 'canceling' || blankMachineBlocked(useMachineStore.getState())) return;
     reportPassed('import', 'blank');
     onCreateBlank(harness.current);
   };
@@ -123,6 +126,7 @@ export function OnboardingFlow({ onComplete, onCreateBlank, aside, startAt, onOp
       onContinue={(answer) => {
         setRoleAnswer(answer);
         void studio().onlookAnswerSurvey(answer).catch(ignoreRefusal('onboarding', 'answer-survey'));
+        void studio().onboardingProgress({ resumeAt: 'found' }).catch(ignoreRefusal('onboarding', 'save-progress'));
         reportPassed('role');
         setStep('found');
       }}
@@ -135,6 +139,7 @@ export function OnboardingFlow({ onComplete, onCreateBlank, aside, startAt, onOp
       onContinue={(answer) => {
         setFoundAnswer(answer);
         void studio().onlookAnswerSurvey(answer).catch(ignoreRefusal('onboarding', 'answer-survey'));
+        void studio().onboardingProgress({ resumeAt: 'agent' }).catch(ignoreRefusal('onboarding', 'save-progress'));
         reportPassed('found');
         setStep('agent');
       }}
@@ -145,6 +150,8 @@ export function OnboardingFlow({ onComplete, onCreateBlank, aside, startAt, onOp
       reportPassed('machine');
       setMachineTold(true);
     }}
+      onCreateBlank={createBlank}
+      isCreatingBlank={isCreatingBlank}
       onBack={() => { setStep('agent'); }} />
   ) : step === 'agent' ? (
     <ConnectStep
@@ -154,6 +161,7 @@ export function OnboardingFlow({ onComplete, onCreateBlank, aside, startAt, onOp
       onContinue={(preferred) => {
         // A starred default wins: completing onboarding writes this harness to Settings › Agent.
         harness.current = preferred ?? harnessToRecord(useAgentSetupStore.getState());
+        void studio().onboardingProgress({ resumeAt: 'import', ...(harness.current === undefined ? {} : { harness: harness.current }) }).catch(ignoreRefusal('onboarding', 'save-progress'));
         reportPassed('agent');
         setStep('import');
       }}

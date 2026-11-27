@@ -18,6 +18,10 @@ const background = (status: UpdateStatus): UpdateState => ({ status });
 const asked = (status: UpdateStatus): UpdateState => ({ status, requested: true });
 
 describe('the update pill', () => {
+  it('explains paused updates while keeping an explicit retry available in the menu', () => {
+    expect(pillKey({ status: 'error', message: 'UPDATE_AUTHORIZATION_DENIED' })).toBe('topbar.update.authorizationDenied');
+    expect(presentation('error', 'UPDATE_AUTHORIZATION_DENIED').menu).toEqual({ key: 'menu.update.check', enabled: true });
+  });
   it('stays out of the band for a check the user never asked for', () => {
     const silent = ALL_STATUSES.filter((status) => pillKey(background(status)) === null);
     expect(silent).toEqual(['unsupported', 'idle', 'checking', 'up-to-date']);

@@ -146,27 +146,30 @@ function PillLabel({ state, text }: { state: UpdateState; text: string }): React
 export interface UpdatePillViewProps {
   state: UpdateState;
   onRestart: () => void;
+  onRetry: () => void;
   isRestarting?: boolean;
 }
 
 export function UpdatePillView({
   state,
   onRestart,
+  onRetry,
   isRestarting = false,
 }: UpdatePillViewProps): React.JSX.Element | null {
   const text = label(state);
   if (text === undefined) return null;
 
   const ready = state.status === 'downloaded' && !isRestarting;
+  const retry = state.status === 'error' && state.message === 'UPDATE_AUTHORIZATION_DENIED';
 
   return (
     <Stack
-      as={ready ? 'button' : undefined}
+      as={ready || retry ? 'button' : undefined}
       aria-live="polite"
       aria-busy={isRestarting}
       data-testid="topbar-update"
       data-update-status={state.status}
-      onClick={ready ? onRestart : undefined}
+      onClick={retry ? onRetry : ready ? onRestart : undefined}
       // Inside the drag surface: without this it is unclickable.
       className={state.status === 'checking' ? 'region-no-drag update-pill update-pill-quiet' : 'region-no-drag update-pill'}
       direction="horizontal"
@@ -179,7 +182,7 @@ export function UpdatePillView({
         border: 'none',
         font: 'inherit',
         flex: '0 0 auto',
-        cursor: ready ? 'pointer' : 'default',
+        cursor: ready || retry ? 'pointer' : 'default',
       }}
     >
       <EasedWidth>
@@ -204,6 +207,7 @@ export function UpdatePill({ gap }: { gap: number }): React.JSX.Element {
     <Presence isShown={label(state) !== undefined} gap={gap}>
       <UpdatePillView
         state={state}
+        onRetry={() => window.studioChrome.runAppCommand({ command: 'check-for-updates' })}
         isRestarting={state.restarting === true}
         onRestart={() => {
           window.studioChrome.updateRestart();

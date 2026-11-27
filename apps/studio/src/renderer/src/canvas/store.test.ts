@@ -1079,7 +1079,7 @@ describe('duplicate and create gestures (ONL-1994)', () => {
       id: minted,
       pageId: 'pg_main',
       kind: 'browser',
-      x: 100 + 800 + PLACEMENT_GAP,
+      x: DEFAULT_FRAME_SIZE.width + PLACEMENT_GAP,
       y: 50,
       width: 800,
       height: 600,
@@ -1110,19 +1110,15 @@ describe('duplicate and create gestures (ONL-1994)', () => {
     expect({ x: second.node.x, y: second.node.y }).toEqual({ x: slot * 2, y: 0 });
   });
 
-  it('clamps placement into the given view, so the copy of an on-screen frame lands on-screen', async () => {
+  it('places a duplicate to the right even when the viewport has no room for it', async () => {
     const wire = await connect(
       docOf([browserNode('a', { x: 900, y: 700, width: 400, height: 300 })], 1),
     );
-    const view = { x: 0, y: 0, width: 1000, height: 800 };
-
-    useCanvasStore.getState().duplicateFrame('a', view);
+    useCanvasStore.getState().duplicateFrame('a');
 
     const op = wire.sent[0]?.op;
     if (op?.type !== 'duplicate') throw new Error('expected a duplicate op');
-    expect({ x: op.node.x, y: op.node.y }).toEqual({ x: 600, y: 500 });
-    expect(op.node.x + op.node.width).toBeLessThanOrEqual(view.x + view.width);
-    expect(op.node.y + op.node.height).toBeLessThanOrEqual(view.y + view.height);
+    expect({ x: op.node.x, y: op.node.y }).toEqual({ x: 1400, y: 700 });
   });
 
   it('⌘D with no selection is a no-op, and a vanished id duplicates nothing', async () => {
@@ -1131,6 +1127,66 @@ describe('duplicate and create gestures (ONL-1994)', () => {
     expect(useCanvasStore.getState().duplicateSelectedFrame()).toBeUndefined();
     expect(useCanvasStore.getState().duplicateFrame('gone')).toBeUndefined();
     expect(wire.sent).toEqual([]);
+  });
+
+  it('repeated keyboard duplicates keep the source intact and continue right in the same row', async () => {
+    const source = browserNode('a', { x: 900, y: 700, width: 800, height: 600 });
+    const wire = await connect(docOf([source], 1));
+    useCanvasStore.getState().selectFrame('a', false);
+    for (let index = 0; index < 3; index += 1) {
+      useCanvasStore.getState().duplicateSelectedFrame();
+      const op = singleOp(wire.sent[index]);
+      if (op.type !== 'duplicate') throw new Error('expected a duplicate op');
+      expect({ x: op.node.x, y: op.node.y }).toEqual({
+        x: source.x + (index + 1) * (source.width + PLACEMENT_GAP),
+        y: source.y,
+      });
+      fakeUpdate(entryOf(index + 2, op));
+      expect(selection()).toEqual([op.node.id]);
+      expect(useCanvasStore.getState().doc?.nodes.a).toEqual(source);
+    }
+  });
+
+  it('opens a new frame past the full width of a resized source', async () => {
+    const wire = await connect(docOf([browserNode('a', { x: 900, y: 700, width: 2400 })], 1));
+    useCanvasStore.getState().openInNewFrame('a', 'http://localhost:9000/');
+    const op = singleOp(wire.sent[0]);
+    if (op.type !== 'create') throw new Error('expected a create op');
+    expect({ x: op.node.x, y: op.node.y }).toEqual({ x: 3400, y: 700 });
+  });
+
+  it('skips an offset neighbour and requests a pan only for duplicates and new-frame opens', async () => {
+    const source = browserNode('a', { x: 0, y: 100, width: 400, height: 300 });
+    const neighbour = browserNode('b', { x: 650, y: 150, width: 700, height: 300, order: 1 });
+    for (const action of ['keyboard', 'menu', 'new-frame'] as const) {
+      const wire = await connect(docOf([source, neighbour], 1));
+      useCanvasStore.getState().selectFrame('a', false);
+      const state = useCanvasStore.getState();
+      const minted = action === 'keyboard' ? state.duplicateSelectedFrame()
+        : action === 'menu' ? state.duplicateFrame('a') : state.openInNewFrame('a', 'http://localhost:9000/');
+      const op = singleOp(wire.sent[0]);
+      if (op.type !== 'duplicate' && op.type !== 'create') throw new Error('expected a new node');
+      expect({ x: op.node.x, y: op.node.y }).toEqual({ x: 1450, y: 100 });
+      expect(useCanvasStore.getState().flyTo).toMatchObject({ id: minted, panOnly: true });
+      fakeUpdate(entryOf(2, op));
+      expect(selection()).toEqual([minted!]);
+      expect(useCanvasStore.getState().doc?.nodes.a).toEqual(source);
+      expect(useCanvasStore.getState().doc?.nodes.b).toEqual(neighbour);
+      disconnect?.();
+      disconnect = null;
+    }
+  });
+
+  it('keeps an exact option-drag drop even over a neighbour and does not request a pan', async () => {
+    const wire = await connect(docOf([
+      browserNode('a', { width: 400, height: 300 }),
+      browserNode('b', { x: 650, y: 150, width: 700, height: 300 }),
+    ]));
+    useCanvasStore.getState().duplicateFrame('a', { x: 680, y: 160 });
+    const op = singleOp(wire.sent[0]);
+    if (op.type !== 'duplicate') throw new Error('expected a duplicate');
+    expect({ x: op.node.x, y: op.node.y }).toEqual({ x: 680, y: 160 });
+    expect(useCanvasStore.getState().flyTo).toBeNull();
   });
 
   it('a refused single duplicate mints nothing — never a selection of an id main never heard', async () => {
@@ -2575,10 +2631,10 @@ describe('a localhost link from chat opens its own frame', () => {
 });
 
 describe('navigation on the broadcast: the author decides', () => {
-  it('an agent- or system-authored home move retargets the live frame; the mount URL never moves', async () => {
+  it('an agent-authored home move retargets the live frame; the mount URL never moves', async () => {
     await connect(docOf([browserNode('a')], 1));
 
-    fakeUpdate(entryOf(2, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:5173/a' }, 'system'));
+    fakeUpdate(entryOf(2, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:5173/a' }, 'agent'));
     expect(homeUrlOf(useCanvasStore.getState().doc, 'a')).toBe('http://localhost:5173/a');
     expect(targets()).toEqual(['http://localhost:5173/a']);
 
@@ -2589,6 +2645,23 @@ describe('navigation on the broadcast: the author decides', () => {
     });
 
     expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:3000/a');
+    expect(frameNodes()[0]?.data.guestEpoch).toBe(0);
+  });
+
+  it('a system-authored home move re-seats the mount before a later agent navigation', async () => {
+    await connect(docOf([browserNode('a')], 1));
+
+    fakeUpdate(entryOf(2, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:5173/a' }, 'system'));
+    expect(homeUrlOf(useCanvasStore.getState().doc, 'a')).toBe('http://localhost:5173/a');
+    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:5173/a');
+    expect(frameNodes()[0]?.data.currentUrl).toBe('http://localhost:5173/a');
+    expect(frameNodes()[0]?.data.guestEpoch).toBe(1);
+    expect(targets()).toEqual([undefined]);
+
+    fakeUpdate(entryOf(3, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:5174/' }, 'agent'));
+    expect(frameNodes()[0]?.data.target).toEqual({ url: 'http://localhost:5174/', seq: 1 });
+    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:5173/a');
+    expect(frameNodes()[0]?.data.guestEpoch).toBe(1);
   });
 
   it('the USER echo does not re-navigate — the committing renderer already did', async () => {
@@ -2688,7 +2761,7 @@ describe('navigation on the broadcast: the author decides', () => {
     }
   });
 
-  it('a home move landing on a COVERED frame re-seats the mount — the revival comes up at the new origin', async () => {
+  it('system home moves re-seat the mount both while covered and after revival', async () => {
     await connect(docOf([browserNode('a', { content: { homeUrl: 'http://localhost:4401/' } })], 1));
     useCanvasStore.getState().applyServerBook([serverEntry(4401, { everLive: true })]);
     expect(covers()).toEqual(['dead']);
@@ -2710,11 +2783,14 @@ describe('navigation on the broadcast: the author decides', () => {
     expect(covers()).toEqual([undefined]);
     expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:4402/');
 
+    const guestEpoch = frameNodes()[0]?.data.guestEpoch ?? 0;
     fakeUpdate(
       entryOf(3, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:4402/about' }, 'system'),
     );
-    expect(frameNodes()[0]?.data.target?.url).toBe('http://localhost:4402/about');
-    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:4402/');
+    expect(frameNodes()[0]?.data.target).toBeUndefined();
+    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:4402/about');
+    expect(frameNodes()[0]?.data.currentUrl).toBe('http://localhost:4402/about');
+    expect(frameNodes()[0]?.data.guestEpoch).toBe(guestEpoch + 1);
   });
 
   it('an agent-authored create composes through the normal read-model path — the mount is the navigation', async () => {
@@ -2730,7 +2806,7 @@ describe('navigation on the broadcast: the author decides', () => {
 });
 
 describe('the undo/redo dispatch seam (ONL-2042)', () => {
-  it('an undone set-home-url comes back SYSTEM-authored and re-navigates the live frame (two-sided)', async () => {
+  it('an undone set-home-url comes back SYSTEM-authored and re-seats the live frame (two-sided)', async () => {
     const wire = await connect(docOf([browserNode('a')], 2));
 
     dispatchCanvasUndo();
@@ -2743,8 +2819,10 @@ describe('the undo/redo dispatch seam (ONL-2042)', () => {
     expect(homeUrlOf(useCanvasStore.getState().doc, 'a')).toBe(
       'http://localhost:5173/prior',
     );
-    expect(targets()).toEqual(['http://localhost:5173/prior']);
-    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:3000/a');
+    expect(targets()).toEqual([undefined]);
+    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:5173/prior');
+    expect(frameNodes()[0]?.data.currentUrl).toBe('http://localhost:5173/prior');
+    expect(frameNodes()[0]?.data.guestEpoch).toBe(1);
   });
 });
 
@@ -3138,6 +3216,7 @@ describe('selection validity is three-tier (ONL-1994)', () => {
     fakeUpdate(
       entryOf(2, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:3001/a' }, 'system'),
     );
+    expect(useCanvasStore.getState().portFollowRefresh.a).toBeUndefined();
     useCanvasStore.getState().patchFrame('a', { currentUrl: 'http://localhost:3001/a' });
     expect(useCanvasStore.getState().elementSelections.map((s) => s.evidence.id)).toEqual([
       'picked',
@@ -3161,6 +3240,7 @@ describe('selection validity is three-tier (ONL-1994)', () => {
     fakeUpdate(
       entryOf(2, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:3001/a' }, 'system'),
     );
+    expect(useCanvasStore.getState().elementSelections[0]?.evidence.frameUrl).toBe('http://localhost:3001/a');
     useCanvasStore.getState().patchFrame('a', { currentUrl: 'http://localhost:3001/a' });
 
     expect(useCanvasStore.getState().elementSelections[0]?.evidence.frameUrl).toBe(
@@ -3173,6 +3253,26 @@ describe('selection validity is three-tier (ONL-1994)', () => {
         'http://localhost:3001/a',
       ).map((s) => s.evidence.id),
     ).toEqual(['picked']);
+  });
+
+  it('refreshes selected evidence once after a trusted system port follow recovered through a revision gap', async () => {
+    const wire = await connect(docOf([browserNode('a')], 1));
+    useCanvasStore.getState().addElementSelection(evidence('picked'), 'a', false);
+    useCanvasStore.getState().applyServerBook([serverEntry(3001, { measured: 'live', everLive: true, status: 'running' })]);
+    wire.answerSnapshotsWith(docOf([browserNode('a', { content: { homeUrl: 'http://localhost:3001/a' } })], 4));
+
+    fakeUpdate(entryOf(4, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:3001/a' }, 'system'));
+    await settled();
+
+    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:3001/a');
+    expect(targets()).toEqual([undefined]);
+    expect(useCanvasStore.getState().elementSelections[0]?.evidence.frameUrl).toBe('http://localhost:3001/a');
+    expect(seedableSelectionsForFrame(useCanvasStore.getState().elementSelections, 'a', 'http://localhost:3001/a')
+      .map(selection => selection.evidence.id)).toEqual(['picked']);
+    expect(useCanvasStore.getState().portFollowRefresh).toEqual({});
+
+    useCanvasStore.getState().patchFrame('a', { currentUrl: 'https://example.test/unrelated' });
+    expect(useCanvasStore.getState().elementSelections).toEqual([]);
   });
 
   it('a system move onto a DIFFERENT book entry’s port is no carve-out — two entries is a hop, not a follow', async () => {
@@ -7487,18 +7587,47 @@ describe('a port move landing on a frame whose server died (ONL-2568)', () => {
     expect(targets()).toEqual([undefined]);
   });
 
-  it('still navigates a frame whose page is live, which has something to lose', async () => {
+  it('re-seats a live frame immediately after the system accepts its new port', async () => {
     await connect(docOf([browserNode('a', { content: { homeUrl: 'http://localhost:3000/' } })], 1));
     useCanvasStore.getState().patchFrame('a', { health: 'live' });
 
     fakeUpdate(entryOf(2, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:4000/' }, 'system'));
 
-    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:3000/');
-    expect(targets()).toEqual(['http://localhost:4000/']);
+    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:4000/');
+    expect(frameNodes()[0]?.data.currentUrl).toBe('http://localhost:4000/');
+    expect(frameNodes()[0]?.data.guestEpoch).toBe(1);
+    expect(targets()).toEqual([undefined]);
   });
 });
 
 describe('a moved address that arrives through a resync (ONL-2568)', () => {
+  it('re-seats a live guest after a same-origin system undo arrives through a gap', async () => {
+    const wire = await connect(docOf([browserNode('a', { content: { homeUrl: 'http://localhost:3000/about' } })], 1));
+    useCanvasStore.getState().patchFrame('a', { currentUrl: 'http://localhost:3000/about', health: 'live' });
+    wire.answerSnapshotsWith(docOf([browserNode('a', { content: { homeUrl: 'http://localhost:3000/' } })], 4));
+    fakeUpdate(entryOf(4, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:3000/' }, 'system'));
+    await settled();
+    expect(frameNodes()[0]?.data.currentUrl).toBe('http://localhost:3000/');
+    expect(frameNodes()[0]?.data.guestEpoch).toBe(1);
+    expect(targets()).toEqual([undefined]);
+  });
+
+  for (const superseding of ['second-frame', 'general-resync', 'unrelated-update'] as const) {
+    it(`keeps every trusted system move when its resync overlaps ${superseding}`, async () => {
+      const frames = (port: number) => ['a', 'b'].map((id) => browserNode(id, { content: { homeUrl: `http://localhost:${port}/${id}` } }));
+      const wire = await connect(docOf(frames(3000), 1));
+      for (const id of ['a', 'b']) useCanvasStore.getState().patchFrame(id, { health: 'live' });
+      wire.answerSnapshotsWith(docOf(frames(4000), 5));
+      fakeUpdate(entryOf(3, { type: 'set-home-url', id: 'a', homeUrl: 'http://localhost:4000/a' }, 'system'));
+      if (superseding === 'second-frame') fakeUpdate(entryOf(4, { type: 'set-home-url', id: 'b', homeUrl: 'http://localhost:4000/b' }, 'system'));
+      else if (superseding === 'unrelated-update') fakeUpdate(entryOf(4, { type: 'rename', id: 'b', name: 'Details' }, 'user'));
+      else await resyncCanvas();
+      await settled();
+      expect(useCanvasStore.getState().overlay.a?.guestEpoch).toBe(1);
+      if (superseding === 'second-frame') expect(useCanvasStore.getState().overlay.b?.guestEpoch).toBe(1);
+    });
+  }
+
   for (const currentUrl of ['https://accounts.example.test/authorize', 'http://localhost:3001/settings']) {
     it(`keeps live navigation to ${currentUrl} when the stored home did not move`, async () => {
       const doc = docOf([browserNode('a', { content: { homeUrl: 'http://localhost:3000/' } })], 1);
@@ -7512,7 +7641,7 @@ describe('a moved address that arrives through a resync (ONL-2568)', () => {
     });
   }
 
-  it('re-aims the mounted guest at the new origin', async () => {
+  it('re-seats the mount at the trusted system origin recovered through a gap', async () => {
     const wire = await connect(
       docOf([browserNode('a', { content: { homeUrl: 'http://localhost:3000/' } })], 1),
     );
@@ -7528,7 +7657,10 @@ describe('a moved address that arrives through a resync (ONL-2568)', () => {
     await settled();
 
     expect(homeUrlOf(useCanvasStore.getState().doc, 'a')).toBe('http://localhost:4000/');
-    expect(targets()).toEqual(['http://localhost:4000/']);
+    expect(frameNodes()[0]?.data.homeUrl).toBe('http://localhost:4000/');
+    expect(frameNodes()[0]?.data.currentUrl).toBe('http://localhost:4000/');
+    expect(frameNodes()[0]?.data.guestEpoch).toBe(1);
+    expect(targets()).toEqual([undefined]);
   });
 
   it('leaves a frame the designer took deeper into the same origin where it stands', async () => {

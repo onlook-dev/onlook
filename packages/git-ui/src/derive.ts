@@ -25,6 +25,7 @@ export function pillStateOf(
 }
 
 function cascade(m: GitMeasurement, defaults: GitPillDefaults): GitPillState {
+  if (m.history === 'none') return { id: 'no-git' };
   if (!m.gitInstalled) return { id: 'first-paint' };
   if (m.head !== 'branch' || m.origin !== 'github') return { id: 'local-only' };
   if (!m.ghInstalled || !m.ghAuthed) return { id: 'connect-github' };
@@ -50,6 +51,7 @@ function cascade(m: GitMeasurement, defaults: GitPillDefaults): GitPillState {
 }
 
 const CARD_OF: Record<GitPillStateId, GitCardStateId> = {
+  'no-git': 'no-git',
   'no-access': 'local-only',
   'connect-github': 'local-only',
   'local-only': 'local-only',

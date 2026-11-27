@@ -6,8 +6,9 @@ import { makeStateRoot } from '@studio/fixtures';
 process.env['STUDIO_TEST_OFFICIAL_BUILD'] = '0';
 const { OFFICIAL_BUILD } = await import('../build-kind.js');
 const { analyticsEnabled, analyticsChoiceStored, resetSettingsCache, setAnalyticsEnabled, storeAnalyticsDefault } = await import('./state.js');
-const { capture, captureException, currentTelemetryConfig, initTelemetry, peekQueueForTesting, refreshTelemetryConsent, resetTelemetryForTesting, setAppForTesting } = await import('../telemetry/index.js');
+const { capture, captureException, checkLaunchEnvironment, currentTelemetryConfig, initTelemetry, peekQueueForTesting, refreshTelemetryConsent, resetTelemetryForTesting, setAppForTesting } = await import('../telemetry/index.js');
 const { TurnSeenWatch } = await import('../telemetry/turn-seen.js');
+const ANALYTICS_KEY = 'STUDIO_POSTHOG_KEY';
 
 const turn = { project_id: 'p', workspace_instance_id: 'w', agent_session_id: 's', harness: 'codex' as const, turn_id: 't', origin: 'user' as const, outcome: 'success' as const };
 
@@ -18,7 +19,7 @@ function turnWatch(sent: unknown[]): InstanceType<typeof TurnSeenWatch> {
 afterEach(() => {
   resetTelemetryForTesting();
   resetSettingsCache();
-  delete process.env['STUDIO_POSTHOG_KEY'];
+  delete process.env[ANALYTICS_KEY];
 });
 
 function fresh(): string {
@@ -35,6 +36,16 @@ test('source boot never treats a missing analytics choice as consent', () => {
   expect(analyticsChoiceStored()).toBe(false);
   storeAnalyticsDefault();
   expect(analyticsChoiceStored()).toBe(false);
+});
+
+test('environment checks run no subprocesses before source analytics consent', async () => {
+  const root = fresh();
+  process.env[ANALYTICS_KEY] = 'source-test-key';
+  setAppForTesting({ getPath: () => root, getVersion: () => '0.0.0', getLocale: () => 'en-US', isPackaged: true });
+  initTelemetry();
+  const unexpected = (): never => { throw new Error('Environment diagnostics require analytics consent'); };
+  await checkLaunchEnvironment({ platform: 'darwin', release: '25.1.0', arch: 'arm64', env: unexpected, resolves: unexpected, run: unexpected });
+  expect(peekQueueForTesting()).toEqual([]);
 });
 
 test('declining on first run is durable even though analytics was already off', () => {
@@ -59,7 +70,7 @@ test('accepting and withdrawing reuse the settings consent authority', () => {
 test('accepted source analytics never enables replay or remote exceptions', () => {
   const root = fresh();
   setAnalyticsEnabled(true);
-  process.env['STUDIO_POSTHOG_KEY'] = 'source-test-key';
+  process.env[ANALYTICS_KEY] = 'source-test-key';
   setAppForTesting({ getPath: () => root, getVersion: () => '0.0.0', getLocale: () => 'en-US', isPackaged: true });
   initTelemetry();
   expect(currentTelemetryConfig()).toEqual({ enabled: false });

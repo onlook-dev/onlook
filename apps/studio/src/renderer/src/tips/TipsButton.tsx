@@ -12,10 +12,10 @@ const SHIMMER_RULES = `
 .tips-pill-ring { padding: 1.5px; -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor; mask-composite: exclude; }
 .tips-pill-bloom { z-index: ${LAYER.behind}; opacity: 0; box-shadow: 0 0 22px 3px rgba(255,255,255,.14), 0 0 6px rgba(255,255,255,.08);
-  animation: tips-bloom 9s ease-in-out 1.6s infinite; }
+  animation: tips-bloom 9s ease-in-out 1.6s infinite; will-change: opacity; }
 @keyframes tips-bloom { 0%, 30%, 100% { opacity: 0; } 14% { opacity: 1; } }
 .tips-pill-light { position: absolute; top: 0; left: 0; border-radius: 50%; offset-path: padding-box; offset-rotate: 0deg;
-  offset-anchor: center; opacity: 0; animation: tips-lap 9s linear 1.6s infinite; }
+  offset-anchor: center; opacity: 0; animation: tips-lap 9s linear 1.6s infinite; will-change: transform, opacity; }
 .tips-pill-ring .tips-pill-light { width: 44px; height: 44px;
   background: radial-gradient(closest-side, rgba(255,255,255,.95), rgba(255,255,255,.35) 45%, transparent); }
 .tips-pill-light.is-counter { --tips-from: 50%; }

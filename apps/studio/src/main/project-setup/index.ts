@@ -1,6 +1,7 @@
 import { handle } from '../ipc/bridge.js';
 import { IPC_EMIT, IPC_INVOKE, type ProjectSetupSnapshot, type ProjectSetupAskResult } from '@studio/events';
 import { applyCanvasOps } from '../canvas/index.js';
+import { createSetupPortMove } from './frames.js';
 import { serverHost } from '../server/index.js';
 import { views, workspaceOf } from '../tabs/views.js';
 import { registeredProject } from '../workspace/store.js';
@@ -11,6 +12,7 @@ import { createProjectSetupAsk } from './ask.js';
 import { createProjectSetupReport } from './report.js';
 import { t } from '@studio/i18n';
 import { capture, resolveWorkspaceTelemetryProperties } from '../telemetry/index.js';
+import { recordProjectPreviewDiagnostics } from '../workspace/preview-diagnostics.js';
 import { log } from '../log/index.js';
 
 const logger = log('project-setup');
@@ -19,8 +21,11 @@ function initialize(): void {
   initializeProjectSetup({
     allowed: (cwd) => registeredProject(cwd) !== undefined,
     changed: (cwd, snapshot) => views.routeTo(cwd, IPC_EMIT.projectSetupChanged, snapshot),
-    runCompleted: (cwd, measurement) => capture('project_setup_run_completed', { ...resolveWorkspaceTelemetryProperties(cwd), ...measurement }),
+    runCompleted: (cwd, measurement) => capture('project_setup_run_completed', { ...resolveWorkspaceTelemetryProperties(cwd), ...measurement }, cwd),
     installationChecked: (cwd, reused) => capture('project_setup_installation_checked', { ...resolveWorkspaceTelemetryProperties(cwd), reused }),
+    diagnostics: recordProjectPreviewDiagnostics,
+    serverExited: (cwd) => capture('dev_server_exited', { ...resolveWorkspaceTelemetryProperties(cwd) }, cwd),
+    movePort: createSetupPortMove(applyCanvasOps),
     report: createProjectSetupReport({
       host: serverHost,
       telemetryProperties: resolveWorkspaceTelemetryProperties,

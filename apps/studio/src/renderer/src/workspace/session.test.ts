@@ -216,12 +216,21 @@ describe('opening a project', () => {
     expect(phase()).toEqual({ kind: 'open', workspacePath: '/ws/a' });
   });
 
-  it('a project main cannot open leaves no cover and nothing cleared', async () => {
+  it.each(['workspace-missing', 'unknown-project', 'removing', 'at-limit'] as const)('a %s refusal reaches the caller with no cover and nothing cleared', async (reason) => {
     const opened = openProject(A.workspacePath);
-    main.opens[0]!.answer.settle({ ok: false, reason: 'workspace-missing' });
-    expect(await opened).toEqual({ kind: 'failed' });
+    main.opens[0]!.answer.settle({ ok: false, reason });
+    expect(await opened).toEqual({ kind: 'failed', reason });
     expect(phase()).toEqual({ kind: 'none' });
     expect(main.steps).toEqual(['ask main /ws/a']);
+  });
+
+  it('a project refused at the limit can be opened again after a tab closes', async () => {
+    const opened = openProject(A.workspacePath);
+    main.opens[0]!.answer.settle({ ok: false, reason: 'at-limit' });
+    expect(await opened).toEqual({ kind: 'failed', reason: 'at-limit' });
+    await settleOpen(A);
+    expect(main.opens).toHaveLength(2);
+    expect(phase()).toEqual({ kind: 'open', workspacePath: A.workspacePath });
   });
 
   it('a prime that fails leaves a phase the next open starts from', async () => {

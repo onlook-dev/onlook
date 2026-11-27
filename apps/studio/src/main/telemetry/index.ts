@@ -4,6 +4,8 @@
 
 import { createHash, randomUUID } from 'node:crypto';
 import os from 'node:os';
+import { readEnvironment, type EnvironmentReaders } from './environment.js';
+import { failureContext, resetFailureContext } from './failure-context.js';
 import { configureLogExport, log, setLogCorrelation } from '../log/index.js';
 import { batchGrant, enforceCap, pendingBatches, readBatch, removeBatch, resetOutboxForTesting, writeBatch, type OutboxEvent } from './outbox.js';
 import { mintGrant, readGrant } from './grant.js';
@@ -19,6 +21,7 @@ import { markMergeCompleted, readIdentity, readMergeCompleted } from '../identit
 import { knownProject } from '../workspace/store.js';
 import { bindWebAttribution, legacyWebIdOnDisk, markAttributionQueued, parseAttribution, readWebAttribution, retainAttribution, FIRST_TOUCH_PROPERTIES } from './attribution.js';
 import { cpuFamily, underRosetta } from './hardware.js';
+import { previewFailureDiagnostics, resetPreviewDiagnostics } from './preview-diagnostics.js';
 import { isSourceBuild } from './build.js';
 import { flagOn, flagSnapshot } from '../flags/index.js';
 import { activeLocale } from '@studio/i18n';
@@ -33,6 +36,7 @@ import type {
 } from './events.js';
 import { hostPlatform } from '../env/platform.js';
 import { devSwitches } from '../env/dev-switches.js';
+import type { OpenLinkParams } from './attribution-links.js';
 
 const DEFAULT_HOST = 'https://us.i.posthog.com';
 const logger = log('telemetry');
@@ -365,11 +369,13 @@ function activateTelemetry(): void {
     if (analyticsWithdrawn()) {
       for (const path of pendingBatches()) removeBatch(path);
     }
+    pendingOpenLinks = [];
     return;
   }
 
   apiKey = resolveKey();
   if (!isEnabled()) {
+    pendingOpenLinks = [];
     logger.info('no key — analytics is a no-op; set MAIN_VITE_POSTHOG_KEY in .env to enable');
     return;
   }
@@ -389,6 +395,7 @@ function activateTelemetry(): void {
   superProperties = buildSuperProperties(launchId!);
 
   applyWebAttribution();
+  drainPendingOpenLinks();
 
   logger.info('on', { host });
 
@@ -434,6 +441,31 @@ function applyWebAttribution(): void {
   void drain.send();
 }
 
+const OPEN_LINK_LAUNCH_CAP = 16;
+let openLinkCount = 0;
+const seenOpenLinkIds = new Set<string>();
+let pendingOpenLinks: { params: OpenLinkParams; launch: 'cold' | 'warm' }[] = [];
+
+export function receiveOpenLink(params: OpenLinkParams, launch: 'cold' | 'warm'): void {
+  if (openLinkCount >= OPEN_LINK_LAUNCH_CAP) return;
+  if (prepared && !isEnabled()) return;
+  const linkId = params.link_id?.toLowerCase();
+  if (linkId !== undefined && seenOpenLinkIds.has(linkId)) return;
+  openLinkCount += 1;
+  if (linkId !== undefined) seenOpenLinkIds.add(linkId);
+  if (!isEnabled()) {
+    pendingOpenLinks.push({ params, launch });
+    return;
+  }
+  capture('app_opened_from_link', { ...params, launch });
+}
+
+function drainPendingOpenLinks(): void {
+  const links = pendingOpenLinks;
+  pendingOpenLinks = [];
+  for (const { params, launch } of links) capture('app_opened_from_link', { ...params, launch });
+}
+
 export type BootOutcome = 'reported' | 'timeout' | 'renderer-gone';
 
 // Once per launch: `ready-to-show` fires again for every window the dock reopens.
@@ -467,6 +499,7 @@ export function refreshTelemetryConsent(): void {
   flushTimer = undefined;
   configureLogExport(undefined);
   queue = [];
+  pendingOpenLinks = [];
   // A grant resolved before the move authorizes nothing written after it (ONL-2904).
   grantForLaunch = undefined;
   for (const path of pendingBatches()) removeBatch(path);
@@ -652,12 +685,45 @@ export function perfWindowOverride(): number | undefined {
   return Number.isSafeInteger(value) && value >= 1_000 ? value : undefined;
 }
 
+let previewDiagnosticsRestorer: ((cwd: string, port: number) => void) | undefined;
+
+export function setPreviewDiagnosticsRestorer(restore: ((cwd: string, port: number) => void) | undefined): void {
+  previewDiagnosticsRestorer = restore;
+}
+
+let crashContextRecorder: ((event: string, properties: object) => void) | undefined;
+
+export function setCrashContextRecorder(record: typeof crashContextRecorder): void {
+  crashContextRecorder = record;
+}
+
+let launchEnvironmentCheck: Promise<void> | undefined;
+
+export function checkLaunchEnvironment(readers: EnvironmentReaders): Promise<void> {
+  if (!isEnabled()) return Promise.resolve();
+  if (launchEnvironmentCheck !== undefined) return launchEnvironmentCheck;
+  const signal = consentAbort.signal;
+  const enabled = (): boolean => !signal.aborted && isEnabled();
+  launchEnvironmentCheck = readEnvironment({
+    ...readers,
+    resolves: (bin, env) => enabled() && readers.resolves(bin, env),
+    run: (bin, args, env) => enabled() ? readers.run(bin, args, env, signal) : Promise.resolve({ ok: false, out: '' }),
+  }).then((context) => { if (enabled()) capture('environment_checked', context); });
+  return launchEnvironmentCheck;
+}
+
 export function capture<N extends TelemetryEventName>(
   event: N,
   properties: TelemetryProperties<N>,
+  workspacePath?: string,
 ): boolean {
+  crashContextRecorder?.(event, properties);
   if (!isEnabled()) return false;
-  enqueue(event, { ...envelope(), ...properties });
+  if (event === 'dead_end_shown' && 'state' in properties && properties.state === 'preview_failed' && workspacePath !== undefined && 'server_port' in properties && typeof properties.server_port === 'number') {
+    previewDiagnosticsRestorer?.(workspacePath, properties.server_port);
+  }
+  const preview = previewFailureDiagnostics(event, properties, workspacePath);
+  enqueue(event, { ...envelope(), ...preview, ...properties, ...failureContext(event, properties, preview, workspacePath) });
   return true;
 }
 
@@ -910,12 +976,15 @@ export function beginTelemetryQuit(): void {
   surfaceFrozen = true;
 }
 
-export function recordDeadEndShown(state: DeadEndState, errorClass?: DeadEndErrorClass, projectId?: string): void {
+export function recordDeadEndShown(state: DeadEndState, errorClass?: DeadEndErrorClass, projectId?: string, context: { cover?: NonNullable<ActivationSurfaceReport['dead_end']>['cover']; server_port?: number; workspacePath?: string; harness?: import('@studio/events').HarnessId } = {}): void {
   capture('dead_end_shown', {
     state,
     ...(errorClass === undefined ? {} : { error_class: errorClass }),
     ...(projectId === undefined ? {} : { project_id: projectId }),
-  });
+    ...(context.cover === undefined ? {} : { cover: context.cover }),
+    ...(context.server_port === undefined ? {} : { server_port: context.server_port }),
+    ...(context.harness === undefined ? {} : { harness: context.harness }),
+  }, context.workspacePath);
 }
 
 function rendererProjectId(renderer: number): string | undefined {
@@ -924,7 +993,7 @@ function rendererProjectId(renderer: number): string | undefined {
 }
 
 function sameDeadEnd(left: ShownDeadEnd | undefined, right: ShownDeadEnd): boolean {
-  return left?.state === right.state && left.error_class === right.error_class && left.project_id === right.project_id;
+  return left?.state === right.state && left.error_class === right.error_class && left.project_id === right.project_id && left.cover === right.cover && left.server_port === right.server_port && left.harness === right.harness;
 }
 
 /** Sent when what the tab shows differs from what it last showed the person; bringing the tab back alone sends nothing (ONL-3260). */
@@ -934,7 +1003,7 @@ function showSurface(renderer: number, report: ActivationSurfaceReport): void {
   const shown = shownDeadEnds.get(renderer);
   shownDeadEnds.set(renderer, deadEnd);
   if (deadEnd === undefined || sameDeadEnd(shown, deadEnd)) return;
-  recordDeadEndShown(deadEnd.state, deadEnd.error_class, deadEnd.project_id);
+  recordDeadEndShown(deadEnd.state, deadEnd.error_class, deadEnd.project_id, { cover: deadEnd.cover, server_port: deadEnd.server_port, workspacePath: workspaceOfRenderer(renderer), harness: deadEnd.harness });
 }
 
 export function recordActivationSurface(renderer: number, report: ActivationSurfaceReport): void {
@@ -978,6 +1047,11 @@ export function peekQueueForTesting(): readonly QueuedEvent[] {
 }
 
 export function resetTelemetryForTesting(): void {
+  launchEnvironmentCheck = undefined;
+  crashContextRecorder = undefined;
+  resetFailureContext();
+  previewDiagnosticsRestorer = undefined;
+  resetPreviewDiagnostics();
   consentAbort.abort();
   consentAbort = new AbortController();
   liveIdentity = undefined;
@@ -1012,4 +1086,7 @@ export function resetTelemetryForTesting(): void {
   surfaces.clear();
   shownDeadEnds.clear();
   workspaceOfRenderer = () => undefined;
+  pendingOpenLinks = [];
+  openLinkCount = 0;
+  seenOpenLinkIds.clear();
 }

@@ -17,6 +17,8 @@ import { applyCanvasOps } from '../canvas/index.js';
 import { capture, resolveWorkspaceTelemetryProperties } from '../telemetry/index.js';
 import type { WorkspaceTelemetryProperties } from '../telemetry/events.js';
 import { recordPreviewSettlement } from '../telemetry/preview.js';
+import { recordProjectPreviewDiagnostics } from '../workspace/preview-diagnostics.js';
+import { newPreviewAttempt, previewDiagnostics } from '../telemetry/preview-diagnostics.js';
 import { settleCreationPreview } from '../github-import/telemetry.js';
 import {
   knownProject,
@@ -47,7 +49,7 @@ import {
 import { ServerMonitor, sleep } from './monitor.js';
 import { installFrameHealthProofHook, removeFrameHealthProofHook } from './frame-health-proof.js';
 import { noteStartIntent } from './start-intent.js';
-import { noteServerStart, noteServerStop } from './user-stop.js';
+import { noteServerStart, noteServerStop, serverWasStopped } from './user-stop.js';
 import { views, workspaceOf } from '../tabs/views.js';
 import {
   attributeCwd,
@@ -83,7 +85,6 @@ export interface StarterControl {
   /** Byte-identical to Studio's template, not merely present; the runner's own `isPresent` is existence only. */
   isPresent(worktreePath: string): boolean;
   spawn(worktreePath: string, port?: number): Promise<number>;
-  retire(worktreePath: string): Promise<void>;
 }
 
 export type AwaitRunningOutcome = 'running' | 'timed-out';
@@ -107,7 +108,7 @@ export interface ServerHostDeps {
   signalProcess?: (pid: number, signal: NodeJS.Signals) => void | Promise<void>;
   delay?: (ms: number) => Promise<void>;
   timing?: Partial<MonitorTiming>;
-  onFrameState?: (change: FrameStateChange & { worktreePath: string }) => void;
+  onFrameState?: (change: FrameStateChange & { worktreePath: string; folder: string; port?: number; wasLive: boolean }) => void;
   workspaceTelemetryPropertiesFor?: (worktreePath: string) => WorkspaceTelemetryProperties | undefined;
 }
 
@@ -269,11 +270,6 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
     }
     await deps.authorPortMove(starterPort, reported, worktreePath);
     if (entry !== undefined) removeServerEntry(worktreePath, entry.id);
-    try {
-      await starter.retire(worktreePath);
-    } catch (err) {
-      logger.error('starter retire failed', { error: err });
-    }
   }
 
   async function measure(port: number, folder: string, worktreePath: string): Promise<PortReading> {
@@ -296,6 +292,7 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
     const roots = deps.attributionRoots(worktreePath);
     const isStarterEntry = starterEntryTest(worktreePath);
     let watchedPort: number | undefined;
+    let wasLive = false;
     let lastAnswer: ServerOwnership | undefined;
     let lastCommand: string | undefined;
     const monitor = new ServerMonitor({
@@ -335,14 +332,18 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
         broadcastFor(worktreePath);
         for (const observer of seat.observers) observer(state);
       },
-      ...(deps.onFrameState === undefined ? {} : { onFrameState: (change) => deps.onFrameState?.({ ...change, worktreePath }) }),
+      ...(deps.onFrameState === undefined ? {} : { onFrameState: (change) => {
+        wasLive ||= change.state === 'live';
+        deps.onFrameState?.({ ...change, worktreePath, folder: entry.folder, wasLive, ...(watchedPort === undefined ? {} : { port: watchedPort }) });
+      } }),
     });
     const seat: Seat = {
       monitor,
       watch: (port, workspaceTelemetry) => {
         lastAnswer = undefined;
         lastCommand = undefined;
-        watchedPort = undefined;
+        watchedPort = port;
+        wasLive = false;
         monitor.watch(port, workspaceTelemetry);
       },
       observers: new Set(),
@@ -746,13 +747,23 @@ export function registerServerBook(options: { starter?: StarterControl } = {}): 
       sourceRepoRoot: knownProject(worktreePath)?.sourceRepoRoot,
     }),
     onFrameState: (change) => {
+      const previous = previewDiagnostics(change.worktreePath);
+      const endpoint = change.port === undefined ? newPreviewAttempt() : previewDiagnostics(change.worktreePath, change.port);
+      recordProjectPreviewDiagnostics(change.worktreePath, {
+        ...endpoint,
+        was_live: previous.was_live || change.state === 'live',
+        ...(change.port === undefined ? {} : { expected_port: endpoint.expected_port ?? change.port }),
+        ...(change.state === 'live' ? { was_live: true, actual_port: change.port ?? null, cause: 'unknown' as const } : {}),
+        ...(change.state === 'unreachable' ? { cause: change.port !== undefined && serverWasStopped(change.worktreePath, [{ folder: change.folder, port: change.port }]) ? 'user_stop' as const : endpoint.cause !== 'unknown' ? endpoint.cause : change.wasLive ? 'server_down' as const : 'not_started' as const } : {}),
+      });
       capture('frame_state_changed', {
         ...change.workspaceTelemetry,
         state: change.state,
         elapsed_ms: change.elapsedMs,
-      });
+      }, change.worktreePath);
       recordPreviewSettlement({
         workspaceTelemetry: change.workspaceTelemetry,
+        workspacePath: change.worktreePath,
         state: change.state,
         elapsedMs: change.elapsedMs,
         entryPoint: settleCreationPreview(change.workspaceTelemetry.project_id, change.state, change.worktreePath),

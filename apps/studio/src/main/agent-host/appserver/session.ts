@@ -1068,7 +1068,7 @@ export class AppServerSession implements AgentBackend {
 
     const toolSpecs = this.opts.tools ? appServerToolSpecs(this.opts.tools) : [];
     const briefingText = briefing(this.opts.workspace, {
-      ...sessionBriefingContext('codex'),
+      ...sessionBriefingContext('codex', this.cwd),
       ...(this.opts.starter === undefined ? {} : { starter: this.opts.starter }),
     });
 

@@ -103,7 +103,7 @@ function ProjectTitle(): React.JSX.Element {
           {title === undefined ? '\u00a0' : workspace !== null && isBlankWorkspace(workspace) && isDrawnName(title, workspace.branchName) ? t('sidebar.projectTitle.untitled') : title}
         </Text>
       )}
-      {workspace && typeof workspace.branchName === 'string' && workspace.branchName !== '' ? (
+      {workspace && workspace.history !== 'none' && typeof workspace.branchName === 'string' && workspace.branchName !== '' ? (
         <Tooltip
           content={isBlankWorkspace(workspace)
             // A blank project's folder is Studio's own, so its drawn name means nothing to the designer (ONL-2744).

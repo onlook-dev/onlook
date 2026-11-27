@@ -13,7 +13,7 @@ const APP_MENU = <AppMenuView sections={appMenuSections(['new-tab', 'quit'], [],
 function bar(slots: ChromeSlots, isHome = true, update?: UpdateState, windowControls: WindowControlsEdge = 'leading'): string {
   return renderToStaticMarkup(
     <TopBarView
-      update={update ? <UpdatePillView state={update} onRestart={noop} /> : null}
+      update={update ? <UpdatePillView state={update} onRestart={noop} onRetry={noop} /> : null}
       appMenu={APP_MENU}
       tabs={[]}
       activeTabId="home"
@@ -73,12 +73,20 @@ describe('the app menu (ONL-3127)', () => {
 });
 
 it('draws a contrasting restart spinner, not another clickable button', () => {
-  const markup = renderToStaticMarkup(<UpdatePillView state={{ status: 'downloaded' }} onRestart={noop} isRestarting />);
+  const markup = renderToStaticMarkup(<UpdatePillView state={{ status: 'downloaded' }} onRestart={noop} onRetry={noop} isRestarting />);
   const spinner = markup.match(/<span[^>]*data-testid="update-restart-spinner"[^>]*>/)?.[0];
   expect(spinner).toContain('color:var(--studio-update-ink)');
   expect(markup).toContain('aria-busy="true"');
   expect(markup).not.toContain('<button');
   expect(markup).toContain('data-testid="update-restart-spinner"');
+});
+
+it('makes authorization guidance a retry button without making ordinary errors clickable', () => {
+  const refused = bar(ONBOARDING, true, { status: 'error', message: 'UPDATE_AUTHORIZATION_DENIED' });
+  expect(refused).toMatch(/<button[^>]*data-testid="topbar-update"/);
+  expect(refused).toContain('Update needs administrator access. Click to retry.');
+  const ordinary = bar(ONBOARDING, true, { status: 'error', message: 'download interrupted' });
+  expect(ordinary).not.toMatch(/<button[^>]*data-testid="topbar-update"/);
 });
 
 describe('Projects control visibility (ONL-2625)', () => {

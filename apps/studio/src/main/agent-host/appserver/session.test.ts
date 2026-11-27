@@ -2471,6 +2471,40 @@ describe('the permission mode codex publishes (ONL-2190)', () => {
 });
 
 describe('a codex model pick (ONL-2542)', () => {
+  test('offers GPT-6.2 Sol and Astra and uses the catalog default for the next turn', async () => {
+    const { session, emitted, wire } = await openedSession((method, params) => {
+      if (method === 'model/list') return {
+        data: [
+          { id: 'gpt-6.2-sol', displayName: 'GPT-6.2 Sol', isDefault: true },
+          { id: 'gpt-6.2-astra', displayName: 'GPT-6.2 Astra', isDefault: false },
+        ],
+      };
+      if (method === 'thread/start') return { thread: { id: 'thread-1' }, model: (params as { model: string }).model };
+      return HANDSHAKE(method);
+    });
+    expect(foldSessionState(emitted)).toMatchObject({
+      model: 'gpt-6.2-sol',
+      models: [
+        { value: 'gpt-6.2-sol', displayName: 'GPT-6.2 Sol' },
+        { value: 'gpt-6.2-astra', displayName: 'GPT-6.2 Astra' },
+      ],
+    });
+    session.prompt('Update the heading.');
+    await until(() => startsSent(wire) === 1);
+    expect(wire.sent.find((request) => request.method === 'turn/start')?.params).toMatchObject({ model: 'gpt-6.2-sol' });
+  });
+
+  test('keeps a saved model when the catalog default changes to Sol', async () => {
+    const { emitted } = await openedSession((method, params) => {
+      if (method === 'model/list') return {
+        data: [{ id: 'gpt-6.2-sol', displayName: 'GPT-6.2 Sol', isDefault: true }],
+      };
+      if (method === 'thread/start') return { thread: { id: 'thread-1' }, model: (params as { model: string }).model };
+      return HANDSHAKE(method);
+    }, { model: 'gpt-6.1-sol' });
+    expect(foldSessionState(emitted).model).toBe('gpt-6.1-sol');
+  });
+
   test('offers GPT 6.1 Sol with its reported efforts and sends the selected model on the next turn (ONL-2741)', async () => {
     const { session, emitted, wire } = await openedSession((method) => method === 'model/list' ? {
       data: [{

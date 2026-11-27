@@ -173,6 +173,10 @@ export function ProjectSetupBody({ snapshot, readFailed = false, ask = 'idle', i
   const askKind = snapshot === null ? null : projectSetupAskKind(snapshot);
   return <VStack gap={4} style={{ minWidth: 0 }} data-testid="project-setup-panel" data-setup-state={header.state}>
     <SectionHeader header={header} />
+    {(snapshot?.portMoves ?? []).map((move) => <div key={move.from} style={STEP_GRID}>
+      <div />
+      <Text size="sm" color="secondary" role="status" data-testid="project-setup-port-moved">{t('projectSetup.portMoved', move)}</Text>
+    </div>)}
     {/* A changed heading is not announced; this line is. */}
     <VisuallyHidden><Text role="status" data-testid="project-setup-status-text">{t(header.headline)}</Text></VisuallyHidden>
     {steps.map((step, index) => <StepRow key={`${step.kind}-${step.id}`} step={step}

@@ -67,6 +67,7 @@ export async function askProjectSetup(
 
 export function connectProjectSetup(
   bridge: Pick<StudioBridge, 'projectSetupRead' | 'onProjectSetupChanged'> = studio(),
+  portMoved?: (move: NonNullable<ProjectSetupSnapshot['portMoves']>[number]) => void,
 ): () => void {
   let closed = false;
   let unsubscribe = (): void => undefined;
@@ -82,6 +83,9 @@ export function connectProjectSetup(
       const previous = selectProjectSetupSnapshot(useProjectSetupStore.getState());
       const sameAsk = askKey(previous) === askKey(snapshot);
       useProjectSetupStore.setState({ read: { kind: 'ready', snapshot }, ...(sameAsk ? {} : { ask: 'idle' }) });
+      if (snapshot.state === 'running' && JSON.stringify(snapshot.portMoves) !== JSON.stringify(previous?.portMoves)) {
+        for (const move of snapshot.portMoves ?? []) portMoved?.(move);
+      }
       if (snapshot.saved != null && (snapshot.state === 'idle' || snapshot.state === 'failed' || snapshot.state === 'running')) {
         useServerStore.getState().clearStopPressed();
       }

@@ -3,7 +3,7 @@ import { Button } from '@astryxdesign/core/Button';
 import { HStack, VStack } from '@astryxdesign/core/Layout';
 import { ProgressBar } from '@astryxdesign/core/ProgressBar';
 import { Text } from '@astryxdesign/core/Text';
-import { ShimmerText } from '@studio/chat-ui';
+import { NoticeButtons, ShimmerText } from '@studio/chat-ui';
 import { CODE_MAX_LENGTH, type ClaudeBrowser, type HarnessId } from '@studio/events';
 import { ClaudeSignInButton, signInLabel } from './ClaudeSignInButton.js';
 import {
@@ -131,12 +131,13 @@ export function SignInCard({ state, host, strings, glyphs, onAction, onCodeChang
   ) : null;
 
   if (host === 'chat') {
+    const action = chatButton(state, strings, onAction, browsers, isBusy);
     return (
       <VStack gap={2} align="start" width="100%" {...common}>
         <ChatLine state={state} strings={strings} />
         {fieldRow}
         {detail}
-        {chatButton(state, strings, onAction, browsers, isBusy)}
+        {action === null ? null : <NoticeButtons layout="wrap" primary={action} />}
       </VStack>
     );
   }
@@ -220,8 +221,8 @@ const CHAT_ACTION: Partial<Record<SetupStateId, SetupAction>> = {
 function chatButton(state: SetupState, strings: OnboardingUiStrings, onAction?: (action: SetupAction, browserId?: string) => void, browsers?: readonly ClaudeBrowser[], isBusy?: boolean): ReactNode {
   if (state.state === 'fallback' && state.harness === 'claude') {
     return (
-      <HStack gap={2} align="center">
-        <ClaudeSignInButton browsers={browsers} strings={strings} size="sm" variant="secondary" isDisabled={isBusy} onSignIn={(browserId) => onAction?.('sign-in', browserId)} testId="sign-in-action-sign-in" />
+      <HStack gap={2} width="100%" justify="end" style={{ flexWrap: 'wrap' }}>
+        <ClaudeSignInButton browsers={browsers} strings={strings} size="sm" wrapLabel variant="secondary" isDisabled={isBusy} onSignIn={(browserId) => onAction?.('sign-in', browserId)} testId="sign-in-action-sign-in" />
         <Button label={strings.action['check-again']} variant="primary" size="sm" isDisabled={isBusy} onClick={() => onAction?.('check-again')} data-testid="sign-in-action-check-again" />
       </HStack>
     );

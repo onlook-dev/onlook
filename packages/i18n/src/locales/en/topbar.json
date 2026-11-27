@@ -10,5 +10,6 @@
   "topbar.update.ready": "Restart to update",
   "topbar.update.upToDate": "Up to date",
   "topbar.update.failed": "Update failed",
+  "topbar.update.authorizationDenied": "Update needs administrator access. Click to retry.",
   "topbar.update.diskFull": "Disk full. Free up space to update."
 }

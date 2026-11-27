@@ -16,19 +16,31 @@ import { registerChatSubmit } from '../../chat/submitRegistry.js';
 import { seedFlags } from '../../flags/store.js';
 import { useProjectCreateStore } from '../../create/projectCreate.js';
 import { publishSetupTurn } from '../../create/setupProgress.js';
+import { selectProjectSetupSnapshot, useProjectSetupStore } from '../../project-setup/store.js';
+import { runFeedback, useRunFeedbackStore } from '../../server/runFeedbackStore.js';
+import { reportRunIntent } from '../../project-setup/runControl.js';
+import { FrameRunIntentContext } from './runIntent.js';
 
 mock.module('../menu/CanvasNodeMenu.jsx', () => ({ CanvasNodeMenu: ({ children }: { children: ReactNode }) => children }));
 let resizeScale: number | undefined;
 mock.module('../NodeResizeHandles.jsx', () => ({ NodeResizeHandles: ({ scale }: { scale: number }) => { resizeScale = scale; return null; } }));
 mock.module('../InlineElementChat.jsx', () => ({ InlineElementChat: () => null }));
 let toolbarRenders = 0;
-mock.module('./FrameToolbar.jsx', () => ({ FrameToolbar: ({ onRefresh }: { onRefresh: (bypassCache: boolean) => void }) => { toolbarRenders += 1; return <button onClick={() => onRefresh(false)}>Refresh fixture</button>; } }));
+mock.module('./FrameToolbar.jsx', () => ({ FrameToolbar: ({ onRefresh, data }: { onRefresh: (bypassCache: boolean) => void; data: { canGoBack: boolean; canGoForward: boolean } }) => {
+  toolbarRenders += 1;
+  return <>
+    <button onClick={() => onRefresh(false)}>Refresh fixture</button>
+    {data.canGoBack && <button data-testid="frame-back-fixture">Back fixture</button>}
+    {data.canGoForward && <button data-testid="frame-forward-fixture">Forward fixture</button>}
+  </>;
+} }));
 
 const { FrameNode } = await import('./FrameNode.js');
 const FRAME_ID = 'frame-a';
 const URL_A = 'http://localhost:3000/a';
 const URL_B = 'http://localhost:3000/b';
 const originalBridge = window.studio;
+const originalSetup = useProjectSetupStore.getState();
 let root: Root | undefined;
 let flowStore: ReturnType<typeof useStoreApi>;
 let container: HTMLElement;
@@ -102,23 +114,40 @@ afterEach(async () => {
   unregisterChat = undefined;
   useAgentStore.setState({ hasSession: false, connection: { status: 'unknown' } });
   useServerStore.setState({ entries: [], pending: false });
+  runFeedback.reset();
+  useProjectSetupStore.setState(originalSetup, true);
   resetCanvasStoreForTests();
   useTabFrames.setState({ discarded: false, epoch: 0 });
   expect(takeComplaints()).toEqual([]);
 });
 
-function Surface({ width = 640, height = 480 }: { width?: number; height?: number }) {
+function Surface({ width = 640, height = 480, withRunControl = true }: { width?: number; height?: number; withRunControl?: boolean }) {
   flowStore = useStoreApi();
   const frame = useCanvasStore((state) => state.nodes.find((node) => node.id === FRAME_ID));
   if (!frame) return null;
   if (frame?.type !== 'frame') throw new Error('missing Frame');
-  return <FrameNode id={FRAME_ID} type="frame" data={frame.data} selected={frame.selected ?? false} dragging={false} zIndex={0} isConnectable={false} selectable draggable deletable width={width} height={height} positionAbsoluteX={0} positionAbsoluteY={0} />;
+  const node = <FrameNode id={FRAME_ID} type="frame" data={frame.data} selected={frame.selected ?? false} dragging={false} zIndex={0} isConnectable={false} selectable draggable deletable width={width} height={height} positionAbsoluteX={0} positionAbsoluteY={0} />;
+  return withRunControl ? <FrameRunIntentContext value={(intent) => reportRunIntent(intent, selectProjectSetupSnapshot(useProjectSetupStore.getState())?.saved != null, useServerStore.getState().entries, [URL_A])}>{node}</FrameRunIntentContext> : node;
 }
 
-async function mount() {
-  root = createRoot(container);
-  await act(async () => { root!.render(<ReactFlowProvider><Surface /></ReactFlowProvider>); });
+async function mount(onCanvasClick?: () => void, withRunControl = true) {
+  const surface = document.createElement('div');
+  container.appendChild(surface);
+  root = createRoot(surface);
+  if (onCanvasClick) container.addEventListener('click', onCanvasClick);
+  await act(async () => { root!.render(<ReactFlowProvider><Surface withRunControl={withRunControl} /></ReactFlowProvider>); });
   return guests.at(-1)!;
+}
+
+async function pressRecoveryAction(button: HTMLButtonElement) {
+  expect(button.closest('.nodrag.nopan')).not.toBeNull();
+  expect((button.closest('.nodrag.nopan') as HTMLElement).style.pointerEvents).toBe('auto');
+  await act(async () => {
+    for (const type of ['pointerdown', 'mousedown', 'pointerup', 'mouseup']) {
+      button.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, button: 0, buttons: type.endsWith('down') ? 1 : 0 }));
+    }
+    button.click();
+  });
 }
 
 it('does not rerender a live unselected Frame on every zoom tick', async () => {
@@ -420,6 +449,211 @@ for (const replyOrder of ['retirement-before-echo', 'retirement-after-echo']) {
       await act(async () => { useCanvasStore.getState().retargetFrame(next, FRAME_ID); });
       expect(replacement.navigations).toEqual([next]);
       expect(redirected.navigations).toEqual([]);
+    } finally {
+      disconnect?.();
+    }
+  });
+}
+
+for (const [delivery, replyOrder, phase] of [
+  ['direct', 'retirement-before-echo', 'live'],
+  ['direct', 'retirement-after-echo', 'live'],
+  ['gap', 'retirement-before-echo', 'live'],
+  ['gap', 'retirement-after-echo', 'live'],
+  ['direct', 'pending-forever', 'prelaunch'],
+  ['gap', 'pending-forever', 'prelaunch'],
+] as const) {
+  it(`immediately replaces a ${phase} guest after trusted system port-follow acceptance (${delivery}, ${replyOrder})`, async () => {
+    const initialDoc = useCanvasStore.getState().doc!;
+    const initialFrame = initialDoc.nodes[FRAME_ID];
+    if (initialFrame?.kind !== 'browser') throw new Error('missing browser frame');
+    const sent: CanvasOpRequest[] = [];
+    let onUpdate: ((update: CanvasUpdate) => void) | undefined;
+    let snapshotRequests = 0;
+    let pendingReadiness = 0;
+    let answerSnapshot: ((doc: CanvasDoc) => void) | undefined;
+    type Readiness = Awaited<ReturnType<StudioBridge['canvasFrameReady']>>;
+    const replies: { id: number; resolve: (value: Readiness) => void }[] = [];
+    window.studio = {
+      ...window.studio,
+      canvasSnapshot: () => {
+        snapshotRequests += 1;
+        return snapshotRequests === 1 ? Promise.resolve({ doc: initialDoc }) : new Promise<{ doc: CanvasDoc }>(resolve => {
+          answerSnapshot = doc => resolve({ doc });
+        });
+      },
+      canvasPageCameras: async () => ({ byPage: {} }),
+      canvasOp: (request) => { sent.push(request); },
+      canvasUndo: () => {},
+      canvasRedo: () => {},
+      canvasViewport: () => {},
+      canvasCurrentPage: () => {},
+      canvasFrames: () => {},
+      onCanvasUpdate: (listener) => { onUpdate = listener; return () => { onUpdate = undefined; }; },
+      onCanvasRejected: () => () => {},
+      onAgentWorkingFrames: () => () => {},
+      onCanvasFrameQuotes: () => () => {},
+      canvasFrameReady: ({ webContentsId }) => {
+        if (phase === 'prelaunch' && webContentsId === 1) {
+          pendingReadiness += 1;
+          return Promise.resolve('pending' as const);
+        }
+        return new Promise<Readiness>((resolve) => { replies.push({ id: webContentsId, resolve }); });
+      },
+    };
+    const attachments = deferFrameAttachments();
+    let disconnect: (() => void) | undefined;
+    try {
+      await act(async () => { disconnect = connectCanvas(); });
+      await mount();
+      await act(async () => { attachments[0]!.resolve({ url: 'about:blank#studio-frame-attach=starter' }); });
+      const original = guests.at(-1)!;
+      await loaded(original, phase === 'prelaunch' ? original.element.getAttribute('src')! : URL_A);
+      expect(useCanvasStore.getState().overlay[FRAME_ID]?.health).toBe(phase === 'prelaunch' ? 'loading' : 'live');
+      const beforeEcho = replies.splice(0);
+      if (phase === 'prelaunch') expect(pendingReadiness).toBeGreaterThan(0);
+      else expect(beforeEcho.length).toBeGreaterThan(0);
+      if (replyOrder === 'retirement-before-echo') {
+        await act(async () => { for (const reply of beforeEcho) reply.resolve('retired'); });
+      }
+      expect(attachments).toHaveLength(1);
+      expect(container.querySelector('webview')).toBe(original.element);
+
+      const destination = 'http://localhost:4000/a';
+      const revision = initialDoc.revision + (delivery === 'gap' ? 2 : 1);
+      await act(async () => { onUpdate!({ docId: initialDoc.docId, entry: {
+        revision, author: 'system', at: '2026-11-20T00:00:00Z',
+        op: { type: 'set-home-url', id: FRAME_ID, homeUrl: destination }, prior: { kind: 'none' },
+      } }); });
+      if (delivery === 'gap') {
+        expect(snapshotRequests).toBe(2);
+        expect(answerSnapshot).toBeDefined();
+        expect(attachments).toHaveLength(1);
+        expect(useCanvasStore.getState().overlay[FRAME_ID]?.acceptedTarget).toBeUndefined();
+        await act(async () => { answerSnapshot!({
+          ...initialDoc, revision,
+          nodes: { ...initialDoc.nodes, [FRAME_ID]: { ...initialFrame, content: { ...initialFrame.content, homeUrl: destination } } },
+        }); });
+      } else {
+        expect(snapshotRequests).toBe(1);
+      }
+      expect(attachments).toHaveLength(2);
+      expect(useCanvasStore.getState().overlay[FRAME_ID]?.mountUrl).toBe(destination);
+      expect(useCanvasStore.getState().overlay[FRAME_ID]?.target).toBeUndefined();
+      await act(async () => { attachments[1]!.resolve({ url: 'about:blank#studio-frame-attach=port-follow' }); });
+      const replacement = guests.at(-1)!;
+      expect(replacement.element).not.toBe(original.element);
+      await loaded(replacement, destination);
+      const current = replies.splice(0);
+      expect(current.some(reply => reply.id === 2)).toBe(true);
+      await act(async () => { for (const reply of current) reply.resolve('ready'); });
+      if (replyOrder === 'retirement-after-echo') {
+        await act(async () => { for (const reply of beforeEcho) reply.resolve('retired'); });
+      }
+      await act(async () => { original.element.dispatchEvent(new Event('dom-ready')); });
+      expect(attachments).toHaveLength(2);
+      expect(container.querySelector('webview')).toBe(replacement.element);
+      expect(useCanvasStore.getState().overlay[FRAME_ID]?.currentUrl).toBe(destination);
+      expect(useCanvasStore.getState().overlay[FRAME_ID]?.health).toBe('live');
+      expect(original.navigations).toEqual([]);
+      expect(sent).toEqual([]);
+    } finally {
+      disconnect?.();
+    }
+  });
+}
+
+for (const scenario of ['superseding-destination', 'concurrent-local-target', 'concurrent-distinct-local-target', 'agent-gap'] as const) {
+  it(`does not accept an unproven port-follow target from a gap snapshot (${scenario})`, async () => {
+    const initialDoc = useCanvasStore.getState().doc!;
+    const initialFrame = initialDoc.nodes[FRAME_ID];
+    if (initialFrame?.kind !== 'browser') throw new Error('missing browser frame');
+    const destination = 'http://localhost:4000/a';
+    const snapshotDestination = scenario === 'superseding-destination' ? 'http://localhost:5000/a' : destination;
+    const concurrent = scenario === 'concurrent-local-target' || scenario === 'concurrent-distinct-local-target';
+    const localDestination = scenario === 'concurrent-distinct-local-target' ? 'http://localhost:6000/local' : destination;
+    const revision = initialDoc.revision + 2;
+    const sent: CanvasOpRequest[] = [];
+    let onUpdate: ((update: CanvasUpdate) => void) | undefined;
+    let snapshotRequests = 0;
+    let answerSnapshot: ((doc: CanvasDoc) => void) | undefined;
+    type Readiness = Awaited<ReturnType<StudioBridge['canvasFrameReady']>>;
+    const replies: { resolve: (value: Readiness) => void }[] = [];
+    window.studio = {
+      ...window.studio,
+      canvasSnapshot: () => {
+        snapshotRequests += 1;
+        return snapshotRequests === 1 ? Promise.resolve({ doc: initialDoc }) : new Promise<{ doc: CanvasDoc }>(resolve => {
+          answerSnapshot = doc => resolve({ doc });
+        });
+      },
+      canvasPageCameras: async () => ({ byPage: {} }),
+      canvasOp: (request) => { sent.push(request); },
+      canvasUndo: () => {},
+      canvasRedo: () => {},
+      canvasViewport: () => {},
+      canvasCurrentPage: () => {},
+      canvasFrames: () => {},
+      onCanvasUpdate: (listener) => { onUpdate = listener; return () => { onUpdate = undefined; }; },
+      onCanvasRejected: () => () => {},
+      onAgentWorkingFrames: () => () => {},
+      onCanvasFrameQuotes: () => () => {},
+      canvasFrameReady: () => new Promise<Readiness>(resolve => { replies.push({ resolve }); }),
+    };
+    const attachments = deferFrameAttachments();
+    let disconnect: (() => void) | undefined;
+    try {
+      await act(async () => { disconnect = connectCanvas(); });
+      await mount();
+      await act(async () => { attachments[0]!.resolve({ url: 'about:blank#studio-frame-attach=gap-safety' }); });
+      const original = guests.at(-1)!;
+      await loaded(original, URL_A);
+      const initialReplies = replies.splice(0);
+      await act(async () => { for (const reply of initialReplies) reply.resolve('pending'); });
+      if (concurrent) {
+        await act(async () => { useCanvasStore.getState().retargetFrame(destination, FRAME_ID); });
+        const queuedReplies = replies.splice(0);
+        await act(async () => { for (const reply of queuedReplies) reply.resolve('pending'); });
+      }
+      const capturedTarget = useCanvasStore.getState().overlay[FRAME_ID]?.target;
+      if (concurrent) expect(capturedTarget?.url).toBe(destination);
+      let localTarget: typeof capturedTarget;
+      await act(async () => { onUpdate!({ docId: initialDoc.docId, entry: {
+        revision, author: scenario === 'agent-gap' ? 'agent' : 'system', at: '2026-11-20T00:00:00Z',
+        op: { type: 'set-home-url', id: FRAME_ID, homeUrl: destination }, prior: { kind: 'none' },
+      } }); });
+      expect(snapshotRequests).toBe(2);
+      expect(answerSnapshot).toBeDefined();
+      if (concurrent) {
+        await act(async () => { useCanvasStore.getState().retargetFrame(localDestination, FRAME_ID); });
+        localTarget = useCanvasStore.getState().overlay[FRAME_ID]?.target;
+        expect(localTarget?.url).toBe(localDestination);
+        if (scenario === 'concurrent-local-target') expect(localTarget?.url).toBe(capturedTarget?.url);
+        else expect(localTarget?.url).not.toBe(capturedTarget?.url);
+        expect(localTarget).not.toBe(capturedTarget);
+      }
+      expect(attachments).toHaveLength(1);
+      expect(useCanvasStore.getState().overlay[FRAME_ID]?.acceptedTarget).toBeUndefined();
+      await act(async () => { answerSnapshot!({
+        ...initialDoc, revision,
+        nodes: { ...initialDoc.nodes, [FRAME_ID]: { ...initialFrame, content: { ...initialFrame.content, homeUrl: snapshotDestination } } },
+      }); });
+      expect(useCanvasStore.getState().doc?.revision).toBe(revision);
+      expect(useCanvasStore.getState().doc?.nodes[FRAME_ID]).toMatchObject({ kind: 'browser', content: { homeUrl: snapshotDestination } });
+      if (concurrent) {
+        expect(useCanvasStore.getState().overlay[FRAME_ID]?.target).toBe(localTarget);
+        expect(useCanvasStore.getState().overlay[FRAME_ID]?.target?.url).toBe(localDestination);
+      } else {
+        expect(useCanvasStore.getState().overlay[FRAME_ID]?.target?.url).toBe(snapshotDestination);
+      }
+      expect(useCanvasStore.getState().overlay[FRAME_ID]?.acceptedTarget).toBeUndefined();
+      const current = replies.splice(0);
+      expect(current.length).toBeGreaterThan(0);
+      await act(async () => { for (const reply of current) reply.resolve('retired'); });
+      expect(attachments).toHaveLength(1);
+      expect(container.querySelector('webview')).toBe(original.element);
+      expect(original.navigations).toEqual([]);
+      expect(sent).toEqual([]);
     } finally {
       disconnect?.();
     }
@@ -779,8 +1013,9 @@ it('uses a moved server origin after rehoming a previously discarded Frame', asy
   expect(guests.at(-1)!.element.getAttribute('src')).toBe(moved);
 });
 
-it('puts working recovery controls above the Design shield when the measured server dies', async () => {
-  await loaded(await mount());
+for (const withRunControl of [true, false]) it(`puts working recovery controls above the Design shield when the measured server dies (run control: ${String(withRunControl)})`, async () => {
+  let canvasClicks = 0;
+  await loaded(await mount(() => { canvasClicks += 1; }, withRunControl));
   const entries = useCanvasStore.getState().serverEntries.map((entry) => ({ ...entry, status: 'stopped' as const, ports: entry.ports.map((port) => ({ ...port, measured: 'dead' as const })) }));
   const intents: unknown[] = [];
   window.studio = { ...window.studio, telemetryEvent: () => {}, serverIntent: (intent) => { intents.push(intent); } };
@@ -790,8 +1025,11 @@ it('puts working recovery controls above the Design shield when the measured ser
   const recovery = container.querySelector('[data-testid="frame-recovery"]')!;
   expect(recovery.textContent).toContain('Ask the agent to fix it');
   const restart = [...recovery.querySelectorAll('button')].find((button) => button.textContent === 'Restart')!;
-  await act(async () => restart.click());
+  expect(useCanvasStore.getState().selectedNodeIds).toEqual([]);
+  await pressRecoveryAction(restart);
   expect(intents).toEqual([{ press: 'start', entryIds: ['server'] }]);
+  expect(canvasClicks).toBe(0);
+  expect(useCanvasStore.getState().selectedNodeIds).toEqual([]);
   await act(async () => {
     useServerStore.setState({ entries: [], pending: false });
   });
@@ -800,7 +1038,8 @@ it('puts working recovery controls above the Design shield when the measured ser
 it('with frame covers on, a stopped server’s cover restarts it and names the press', async () => {
   seedFlags({ 'frame-covers': true });
   try {
-    await loaded(await mount());
+    let canvasClicks = 0;
+    await loaded(await mount(() => { canvasClicks += 1; }));
     const entries = useCanvasStore.getState().serverEntries.map((entry) => ({ ...entry, status: 'stopped' as const, ports: entry.ports.map((port) => ({ ...port, measured: 'dead' as const })) }));
     const intents: unknown[] = [];
     const pressed: unknown[] = [];
@@ -811,14 +1050,46 @@ it('with frame covers on, a stopped server’s cover restarts it and names the p
     expect(container.querySelector('[data-testid="frame-recovery"]')).toBeNull();
     const cover = container.querySelector('[data-testid="frame-cover"]')!;
     expect(cover.getAttribute('data-cover')).toBe('stopped');
-    await act(async () => cover.querySelector<HTMLButtonElement>('[data-action="restart"]')!.click());
+    expect(useCanvasStore.getState().selectedNodeIds).toEqual([]);
+    await pressRecoveryAction(cover.querySelector<HTMLButtonElement>('[data-action="restart"]')!);
     expect(intents).toEqual([{ press: 'start', entryIds: ['server'] }]);
+    expect(canvasClicks).toBe(0);
+    expect(useCanvasStore.getState().selectedNodeIds).toEqual([]);
     expect(pressed).toEqual([{ event: 'preview_recovery_pressed', properties: { action: 'restart' } }]);
   } finally {
     await act(async () => {
       seedFlags();
       useServerStore.setState({ entries: [], pending: false });
     });
+  }
+});
+
+it('keeps a saved setup pending cover present from minimum to maximum canvas zoom', async () => {
+  seedFlags({ 'frame-covers': true });
+  publishSetupTurn(undefined);
+  try {
+    await loaded(await mount());
+    const entries = useCanvasStore.getState().serverEntries.map((entry) => ({ ...entry, status: 'stopped' as const, ports: entry.ports.map((port) => ({ ...port, measured: 'dead' as const })) }));
+    useServerStore.setState({ entries, pending: false });
+    await act(async () => useCanvasStore.getState().applyServerBook(entries));
+    for (const state of ['preparing', 'installing', 'starting'] as const) {
+      await act(async () => {
+        useProjectSetupStore.setState({ read: { kind: 'ready', snapshot: {
+          saved: { revision: 'r1', definition: { prepare: '', install: { script: '', inputs: [], outputs: [] }, servers: [{ id: 'web', cwd: '.', start: 'npm run dev', port: 3000 }] } },
+          verified: null, state, failure: null,
+        } } });
+      });
+      for (const zoom of [0.05, 0.1, 0.25, 0.5, 1, 2, 4]) {
+        await act(async () => { flowStore.setState({ transform: [0, 0, zoom] }); });
+        const cover = container.querySelector('[data-testid="frame-cover"]')!;
+        expect(cover.getAttribute('data-cover')).toBe('studio-starting');
+        expect(cover.querySelector('[data-action]')).toBeNull();
+        const band = cover.getAttribute('data-band');
+        expect(cover.querySelector(band === 'art' || band === 'title' ? '[data-testid="frame-cover-mark"]' : '[data-breathing]')).not.toBeNull();
+      }
+    }
+  } finally {
+    await act(async () => { seedFlags(); });
   }
 });
 
@@ -916,6 +1187,100 @@ it('covers startup with a neutral loading surface until the new guest is live', 
   await loaded(guest, URL_A);
   expect(container.querySelector('[data-testid="frame-loading"]')).toBeNull();
   expect(container.querySelector('.frame-loading-glyph')).toBeNull();
+});
+
+it('unloads the page under Nothing answered and mounts a fresh guest on Try again', async () => {
+  seedFlags({ 'frame-covers': true });
+  try {
+    const original = await mount();
+    await loaded(original);
+    Object.assign(original.element, { canGoBack: () => true, canGoForward: () => true });
+    await act(async () => { original.element.dispatchEvent(new Event('did-navigate')); });
+    expect(container.querySelector('[data-testid="frame-back-fixture"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="frame-forward-fixture"]')).not.toBeNull();
+    await act(async () => useCanvasStore.getState().patchFrame(FRAME_ID, { health: 'unreachable' }));
+    expect(container.querySelector('[data-cover="nothing"]')).not.toBeNull();
+    expect(container.querySelector('webview')).toBeNull();
+    expect(useCanvasStore.getState().overlay[FRAME_ID]?.health).toBe('unreachable');
+    expect(container.querySelector('[data-testid="frame-back-fixture"]')).toBeNull();
+    expect(container.querySelector('[data-testid="frame-forward-fixture"]')).toBeNull();
+    expect(useCanvasStore.getState().overlay[FRAME_ID]).toMatchObject({ canGoBack: false, canGoForward: false });
+    const retry = container.querySelector<HTMLButtonElement>('[data-action="try-again"]')!;
+    await act(async () => retry.click());
+    const replacement = guests.at(-1)!;
+    expect(replacement.element).not.toBe(original.element);
+    expect(useCanvasStore.getState().overlay[FRAME_ID]).toMatchObject({ health: 'loading', canGoBack: false, canGoForward: false });
+    await loaded(replacement);
+    expect(container.querySelector('[data-cover="nothing"]')).toBeNull();
+    expect(useCanvasStore.getState().overlay[FRAME_ID]?.health).toBe('live');
+    expect(container.querySelector('[data-testid="frame-back-fixture"]')).toBeNull();
+    expect(container.querySelector('[data-testid="frame-forward-fixture"]')).toBeNull();
+    await act(async () => {
+      replacement.url = URL_B;
+      replacement.element.dispatchEvent(new Event('did-navigate'));
+    });
+    expect(container.querySelector('[data-testid="frame-back-fixture"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="frame-forward-fixture"]')).toBeNull();
+  } finally {
+    await act(async () => seedFlags());
+  }
+});
+
+it('keeps the guest and its history capabilities under a named page failure', async () => {
+  seedFlags({ 'frame-covers': true });
+  try {
+    const original = await mount();
+    await loaded(original);
+    Object.assign(original.element, { canGoBack: () => true, canGoForward: () => true });
+    await act(async () => {
+      original.element.dispatchEvent(new Event('did-navigate'));
+      original.element.dispatchEvent(Object.assign(new Event('did-fail-load'), { errorCode: -102, isMainFrame: true, validatedURL: URL_B, errorDescription: 'refused' }));
+    });
+    expect(container.querySelector('[data-cover="page-failed"]')).not.toBeNull();
+    expect(container.querySelector('webview')).toBe(original.element);
+    expect(useCanvasStore.getState().overlay[FRAME_ID]).toMatchObject({ health: 'unreachable', canGoBack: true, canGoForward: true });
+    expect(container.querySelector('[data-testid="frame-back-fixture"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="frame-forward-fixture"]')).not.toBeNull();
+  } finally {
+    await act(async () => seedFlags());
+  }
+});
+
+it('ignores a deferred navigation rejection after the failed guest is unloaded', async () => {
+  seedFlags({ 'frame-covers': true });
+  useCanvasStore.setState({ serverEntries: [] });
+  useServerStore.setState({ entries: [], pending: false });
+  try {
+    const original = await mount();
+    await loaded(original);
+    let rejectNavigation!: (error: Error) => void;
+    Object.assign(original.element, { loadURL: (url: string) => {
+      original.navigations.push(url);
+      original.element.dispatchEvent(new Event('did-start-loading'));
+      return new Promise<void>((_resolve, reject) => { rejectNavigation = reject; });
+    } });
+    await act(async () => useCanvasStore.getState().retargetFrame(URL_B, FRAME_ID));
+    expect(original.navigations).toEqual([URL_B]);
+    await act(async () => {
+      original.element.dispatchEvent(Object.assign(new Event('did-fail-load'), { errorCode: -102, isMainFrame: true, validatedURL: URL_B, errorDescription: 'refused' }));
+    });
+    expect(container.querySelector('webview')).toBeNull();
+    const pendingTarget = useCanvasStore.getState().overlay[FRAME_ID]?.target;
+    const guestCount = guests.length;
+    await act(async () => { rejectNavigation(new Error('navigation refused')); });
+    expect(guests).toHaveLength(guestCount);
+    expect(container.querySelector('webview')).toBeNull();
+    expect(useCanvasStore.getState().overlay[FRAME_ID]?.target).toBe(pendingTarget);
+    expect(useCanvasStore.getState().overlay[FRAME_ID]).toMatchObject({ health: 'unreachable', loadFailure: { url: URL_B }, canGoBack: false, canGoForward: false });
+    await act(async () => { container.querySelector<HTMLButtonElement>('[data-action="try-again"]')!.click(); });
+    const replacement = guests.at(-1)!;
+    expect(replacement.element).not.toBe(original.element);
+    await loaded(replacement);
+    expect(replacement.navigations).toEqual([URL_B]);
+    expect(useCanvasStore.getState().overlay[FRAME_ID]).toMatchObject({ health: 'live', currentUrl: URL_B });
+  } finally {
+    await act(async () => seedFlags());
+  }
 });
 
 it('restarts an unclaimed failed preview by replacing its guest, not starting unrelated project servers', async () => {
@@ -1086,7 +1451,11 @@ it('targets the server at the pending navigation address rather than the previou
   const targetUrl = 'http://localhost:3001/next';
   const entries = [{ entryId: 'target-server', folderName: 'app', ownership: 'studio-started' as const, status: 'stopped' as const, port: 3001, ports: [{ port: 3001, origin: 'http://localhost:3001', measured: 'dead' as const, everLive: true }], everMeasuredLive: true }];
   const intents: unknown[] = [];
-  window.studio = { ...window.studio, serverIntent: (intent) => { intents.push(intent); } };
+  useProjectSetupStore.setState({ read: { kind: 'ready', snapshot: {
+    saved: { revision: 'r1', definition: { prepare: '', install: { script: '', inputs: [], outputs: [] }, servers: [{ id: 'web', cwd: '.', start: 'npm run dev', port: 3001 }] } },
+    verified: null, state: 'idle', failure: null,
+  } } });
+  window.studio = { ...window.studio, serverIntent: (intent) => { intents.push(intent); runFeedback.observeSetup('failed'); } };
   useServerStore.setState({ entries, pending: false });
   useCanvasStore.getState().applyServerBook(entries);
   useCanvasStore.getState().patchFrame(FRAME_ID, { target: { url: targetUrl, seq: 1 } });
@@ -1095,6 +1464,7 @@ it('targets the server at the pending navigation address rather than the previou
   const restart = [...container.querySelectorAll<HTMLButtonElement>('[data-testid="frame-recovery"] button')].find((button) => button.textContent === 'Restart')!;
   await act(async () => restart.click());
   expect(intents).toEqual([{ press: 'start', entryIds: ['target-server'] }]);
+  expect(useRunFeedbackStore.getState().notice).toBe('start-failed');
 });
 
 it('with frame covers off, a frame with a brief draws no brief and still mounts its guest', async () => {

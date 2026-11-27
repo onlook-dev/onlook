@@ -4,7 +4,7 @@ import { hostPlatform, isMac, isWindows, windowsLocalAppData } from '../env/plat
 import { devSwitches } from '../env/dev-switches.js';
 
 /** Also pins the committed protocol snapshot; the app-server has no version negotiation, so a bump is `bun run codex:drift` plus a read. */
-export const CODEX_VERSION = '0.167.1';
+export const CODEX_VERSION = '0.171.0';
 
 /** A version suffix of `@openai/codex`, not a separate package name. */
 export function codexPlatformTag(

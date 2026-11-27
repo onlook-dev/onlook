@@ -311,7 +311,7 @@ function BandMock({ update }: { update: UpdateState }): React.JSX.Element {
     >
       <div style={{ width: 52, height: 12, flex: '0 0 auto', background: 'var(--color-border)' }} />
       <div style={{ width: 32, height: 32, flex: '0 0 auto', background: 'var(--color-border)' }} />
-      <UpdatePillView state={update} onRestart={noop} />
+      <UpdatePillView state={update} onRestart={noop} onRetry={noop} />
       <TabStrip canCreate tabs={MANY} activeTabId="t1" onSelect={noop} onClose={noop} onNew={noop} onRename={noop} testId="tab-strip-band" />
       <div data-testid="band-spacer" style={{ flex: '1 0 0', minWidth: 0, alignSelf: 'stretch' }} />
       <div style={{ width: 32, height: 32, flex: '0 0 auto', background: 'var(--color-border)' }} />

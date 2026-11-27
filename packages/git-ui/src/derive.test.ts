@@ -111,6 +111,7 @@ describe('derivePillState', () => {
 describe('cardStateFor', () => {
   test('the card table', () => {
     const expected = {
+      'no-git': 'no-git',
       'no-access': 'local-only',
       'connect-github': 'local-only',
       'local-only': 'local-only',

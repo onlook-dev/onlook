@@ -68,7 +68,7 @@ export function thrownFailure(step: BlankCreationStep, error: unknown): BlankCre
 
 export function copyGitFailure(step: CopyFailure['step'], result: GitResult): CopyFailure {
   const cause = gitFailureCause(result);
-  return { step, cause: result.timedOut ? 'git_timed_out' : cause === 'disk_full' || cause === 'permission_denied' ? cause : 'git_failed' };
+  return { step, cause: result.timedOut ? 'git_timed_out' : cause === 'disk_full' || cause === 'permission_denied' || cause === 'git_not_found' ? cause : 'git_failed' };
 }
 
 export function copyThrownFailure(step: CopyFailure['step'], error: unknown): CopyFailure {

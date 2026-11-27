@@ -26,6 +26,7 @@ export interface ProjectSetupSnapshot {
   verified: VersionedProjectSetup | null;
   state: 'idle' | 'preparing' | 'installing' | 'starting' | 'running' | 'stopping' | 'failed';
   failure: ProjectSetupFailure | null;
+  portMoves?: { from: number; to: number }[];
 }
 
 export interface ProjectSetupAction {

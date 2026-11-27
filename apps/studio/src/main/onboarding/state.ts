@@ -1,7 +1,7 @@
 // The env doors are not gated on `is.dev`: the packaged e2e drives the signed `.app` through them (ONL-1849).
 
 import { join } from 'node:path';
-import { HARNESS_IDS, type HarnessId, type OnboardingCompletion, type OnboardingState } from '@studio/events';
+import { HARNESS_IDS, ONBOARDING_RESUME_STEPS, isHarnessId, isRecord, type HarnessId, type OnboardingCompletion, type OnboardingState, type OnboardingProgress } from '@studio/events';
 import { canWriteStateFile, eraseStateFile, readStateFile, writeStateFile } from '../state/file.js';
 import { clearSettingsHarness, setSettingsHarness } from '../settings/state.js';
 import { stateRoot } from '../state/root.js';
@@ -15,6 +15,7 @@ function statePath(): string {
 interface PersistedState {
   completedAt?: string;
   harness?: HarnessId;
+  resumeAt?: OnboardingProgress['resumeAt'];
 }
 
 export function pinnedHarness(): HarnessId | undefined {
@@ -31,6 +32,13 @@ export function pinnedHarness(): HarnessId | undefined {
 
 let cache: PersistedState | undefined;
 let sealed = false;
+let recoveringCrash: boolean | undefined;
+
+export function prepareOnboardingRecovery(crashed: boolean | undefined): void {
+  cache = undefined;
+  recoveringCrash = crashed;
+  if (crashed === false && forced() === undefined) load();
+}
 
 function load(): PersistedState {
   if (cache) return cache;
@@ -38,6 +46,10 @@ function load(): PersistedState {
     const file = readStateFile(statePath(), 1);
     const parsed = file.kind === 'data' ? file.data : undefined;
     cache = typeof parsed === 'object' && parsed !== null ? (parsed as PersistedState) : {};
+    if (recoveringCrash === false && cache.completedAt === undefined) {
+      if (file.kind === 'data') eraseStateFile(statePath(), 1);
+      cache = {};
+    }
   } catch {
     // Absent or unreadable both mean no record; the flow shows again.
     cache = {};
@@ -57,8 +69,17 @@ export function readOnboardingState(): OnboardingState {
   const harness = pinned ?? state.harness;
   return {
     hasOnboarded: state.completedAt !== undefined,
+    ...(state.completedAt === undefined && state.resumeAt !== undefined && ONBOARDING_RESUME_STEPS.includes(state.resumeAt) ? { resumeAt: state.resumeAt } : {}),
     ...(harness ? { harness } : {}),
   };
+}
+
+export function saveOnboardingProgress(progress: OnboardingProgress): void {
+  if (forced() !== undefined || sealed || load().completedAt !== undefined) return;
+  if (!isRecord(progress) || !ONBOARDING_RESUME_STEPS.includes(progress.resumeAt)) return;
+  if (progress.harness !== undefined && !isHarnessId(progress.harness)) return;
+  const next: PersistedState = { ...load(), resumeAt: progress.resumeAt, ...(progress.harness === undefined ? {} : { harness: progress.harness }) };
+  if (writeStateFile(statePath(), 1, next)) cache = next;
 }
 
 export function chosenHarness(): HarnessId | undefined {
@@ -89,6 +110,7 @@ export function completeOnboarding(completion: OnboardingCompletion = {}): void 
 export function resetOnboardingCache(): void {
   cache = undefined;
   sealed = false;
+  recoveringCrash = undefined;
 }
 
 // Seals as well as deletes: the renderer outlives the quit teardown, and a late

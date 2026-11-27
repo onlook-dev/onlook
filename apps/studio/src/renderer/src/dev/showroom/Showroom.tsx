@@ -39,6 +39,10 @@ const SIDEBAR_WIDTH = 240;
 
 export const noop = (): void => undefined;
 
+export function isTargeted(id: string): boolean {
+  return window.location.hash.split(/[/:]/).pop() === id;
+}
+
 /** A still cannot point or press: this puts one control under the pointer, or in keyboard focus, as the gallery renders. */
 export function Focused({ selector, hover = false, children }: { selector?: string; hover?: boolean; children: React.ReactNode }): React.JSX.Element {
   const root = useRef<HTMLDivElement>(null);

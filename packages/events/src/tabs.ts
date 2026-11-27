@@ -1,4 +1,4 @@
-import type { GitPillDefaults, GitSnapshotRow } from './git-status.js';
+import type { GitPillDefaults, GitPrFailure, GitSnapshotRow } from './git-status.js';
 
 /** 36, not the design's 38; matches `chrome/tabs/geometry.ts`. */
 export const WINDOW_BAR_HEIGHT = 36;
@@ -46,6 +46,7 @@ export interface ChromeSlots {
     isWorking: boolean;
     /** The action or dropdown pick that started the work; absent reads as the state's own. */
     workingAction?: string;
+    failure?: GitPrFailure;
     canSubmit: boolean;
     /** The action main's pen is holding until the turn ends; absent means nothing waits (ONL-2379). */
     queuedAction?: string;

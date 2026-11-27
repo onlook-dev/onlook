@@ -22,7 +22,8 @@ export type WorkspacePlan =
       workspaceName: string;
       branchName: string;
       workspacePath: string;
-      origin?: 'copied' | 'duplicate';
+      origin?: 'blank' | 'copied' | 'duplicate';
+      history?: 'none';
       duplicateSourceName?: string;
       /** Never folded into `origin`: a copied origin's rollback removes the bucket every sibling is cut from (ONL-2442). */
       held?: { origin: HeldOrigin; sourcePath: string };
@@ -49,6 +50,7 @@ export interface DuplicateProjectRequest {
 
 export interface WorkspaceCreated {
   internal?: 'artifacts';
+  history?: 'none';
   workspacePath: string;
   workspaceName: string;
   branchName: string;
@@ -77,7 +79,7 @@ export function workspaceDisplayName(workspace: {
 
 export interface CopyFailure {
   step: 'claim' | 'copy_files' | 'git_init' | 'git_config' | 'git_add' | 'git_commit' | 'worktree_cut';
-  cause: 'ignored_files' | 'permission_denied' | 'folder_unavailable' | 'copy_in_progress' | 'disk_full' | 'git_timed_out' | 'git_failed' | 'unknown';
+  cause: 'ignored_files' | 'permission_denied' | 'folder_unavailable' | 'copy_in_progress' | 'disk_full' | 'git_not_found' | 'git_timed_out' | 'git_failed' | 'unknown';
 }
 
 export type WorkspaceCreateResult =
@@ -98,7 +100,7 @@ export interface CreateBlankRequest {
 export type BlankCreateResult =
   | { ok: true; workspace: WorkspaceCreated }
   /** `explanation` is what the machine checks say the person can do about it, beside whatever the failing step reported. */
-  | { ok: false; stage: BlankCreateStage; canceled: boolean; detail?: string; explanation?: string };
+  | { ok: false; stage: BlankCreateStage; canceled: boolean; detail?: string; explanation?: string; cause?: 'git_not_found' };
 
 export type ProjectCreatePhase = 'planning' | 'copying' | 'installing' | 'starting';
 

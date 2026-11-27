@@ -2,7 +2,6 @@ import { execFile } from 'node:child_process';
 import { totalmem } from 'node:os';
 import { performance } from 'node:perf_hooks';
 import electron from 'electron';
-import { GONE_REASONS, type GoneReason, type ProcessClass } from '@studio/events';
 import { log } from '../log/index.js';
 import { isTaskManagerSender } from '../ipc/roles.js';
 import { STARTER_SERVICE_PREFIX } from '../starter/runner.js';
@@ -183,29 +182,4 @@ export function startResourceSampling(readers?: Parameters<typeof readResourcePr
     run();
     setInterval(run, windowMs).unref();
   }, Math.min(FIRST_SAMPLE_MS, windowMs)).unref();
-  installGoneCounting();
-}
-
-function goneReason(reason: string): GoneReason | undefined {
-  return (GONE_REASONS as readonly string[]).includes(reason) ? (reason as GoneReason) : undefined;
-}
-
-function installGoneCounting(): void {
-  electron.app.on('render-process-gone', (_event, contents, details) => {
-    const reason = goneReason(details.reason);
-    if (reason === undefined) return;
-    const processClass: ProcessClass =
-      contents.getType() === 'webview' ? 'frame' : tabHost()?.isBandContents(contents.id) === true ? 'band' : 'tab';
-    capture('process_gone', { process_class: processClass, reason, exit_code: details.exitCode });
-  });
-  electron.app.on('child-process-gone', (_event, details) => {
-    const reason = goneReason(details.reason);
-    if (reason === undefined) return;
-    const starter = details.serviceName?.startsWith(STARTER_SERVICE_PREFIX) === true;
-    // Main stops the starter's process itself when a project closes.
-    if (starter && reason === 'killed') return;
-    const processClass: ProcessClass =
-      details.type === 'GPU' ? 'gpu' : starter ? 'dev_server' : details.type === 'Utility' ? 'utility' : 'other';
-    capture('process_gone', { process_class: processClass, reason, exit_code: details.exitCode });
-  });
 }

@@ -8,6 +8,7 @@ import type { HarnessId } from './models.js';
 import type { ScrubbedFrame } from './scrub.js';
 import type { ArtifactCreateMethod } from './artifacts.js';
 import type { OnboardingImportChoice, OnboardingScreen } from './onboarding.js';
+import type { GitPrFailure } from './git-status.js';
 
 export const TIPS_OPEN_SOURCES = ['button', 'shortcut', 'help', 'pill', 'rail_tip'] as const;
 
@@ -305,6 +306,7 @@ export interface RendererTelemetryEventMap {
     from_state: string;
     to_state: string;
     outcome: GitPillOutcome;
+    failure_class?: GitPrFailure;
     duration_ms: number;
   };
 
@@ -427,9 +429,10 @@ export const ACTIVATION_DEAD_ENDS = ['app_not_started', 'setup_failed', 'preview
 export type ActivationDeadEnd = (typeof ACTIVATION_DEAD_ENDS)[number];
 export const ACTIVATION_ERROR_CLASSES = ['canceled', 'dependency_install_failed', 'dev_server_failed', 'port_unreachable', 'clone_failed', 'timeout', 'unknown', 'render_gone', 'load_failed'] as const;
 export type ActivationErrorClass = (typeof ACTIVATION_ERROR_CLASSES)[number];
+export const PREVIEW_COVERS = ['non-started', 'dead', 'users-own', 'occupied', 'container', 'nothing', 'page-failed', 'mixed'] as const;
 export interface ActivationSurfaceReport {
   surface: ActivationSurface;
-  dead_end?: { state: ActivationDeadEnd; error_class: ActivationErrorClass };
+  dead_end?: { state: ActivationDeadEnd; error_class: ActivationErrorClass; cover?: (typeof PREVIEW_COVERS)[number]; server_port?: number; harness?: HarnessId };
 }
 
 /** `agent` is main's stamp at the tool; the renderer's own maps exclude it, as the label and picture maps do (ONL-2488). */

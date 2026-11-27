@@ -3,11 +3,13 @@ import type { BriefingContext } from '../../instructions/context.js';
 import { flagOn } from '../flags/index.js';
 import { agentLanguage } from '../locale/agent-language.js';
 import { APPSERVER_WITHHELD_TOOLS } from './appserver/tools.js';
+import { projectHasNoHistory } from '../workspace/store.js';
 
-export function sessionBriefingContext(harness: HarnessId): BriefingContext {
+export function sessionBriefingContext(harness: HarnessId, cwd?: string): BriefingContext {
   const language = agentLanguage();
   return {
     harness,
+    ...(cwd !== undefined && projectHasNoHistory(cwd) ? { history: 'none' as const } : {}),
     blankFirstMoment: flagOn('blank-first-moment'),
     ...(harness === 'codex'
       ? {

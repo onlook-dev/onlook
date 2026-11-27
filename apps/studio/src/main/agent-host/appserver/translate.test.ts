@@ -759,6 +759,10 @@ describe('a codex failure reports a codex reason (ONL-2463)', () => {
     expect(failed({ message: 'capacity unavailable', codexErrorInfo: 'flexUnavailable' }).code).toBe('api_error');
   });
 
+  it.each(['bioPolicy', 'inferenceHookDenied'])('keeps %s out of API and account failures', (codexErrorInfo) => {
+    expect(failed({ message: 'Request denied', codexErrorInfo })).toMatchObject({ code: 'unknown', status: null });
+  });
+
   it('names every error string the pinned codex protocol declares, so a bump cannot fall into unknown unseen', () => {
     const dir = fileURLToPath(new URL('./protocol/', import.meta.url));
     const [file] = readdirSync(dir).filter((name) => name.endsWith('.protocol.json'));

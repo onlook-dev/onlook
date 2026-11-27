@@ -21,6 +21,7 @@ interface Job {
 }
 interface Workflow {
   permissions?: Record<string, string>;
+  concurrency?: { group: string; 'cancel-in-progress': boolean };
   on: {
     pull_request?: unknown;
     push?: { branches: string[] };
@@ -141,8 +142,9 @@ test('Windows runtime checks run on every PR and main push', () => {
   expect(runtime?.if).toBeUndefined();
 });
 
-test('unsigned Windows packaging and upload require an explicit manual dispatch opt-in', () => {
+test('unsigned Windows packaging and upload run on every main push and opted-in dispatch', () => {
   const { source, parsed } = workflow('ci.yml');
+  expect(parsed.on.push).toEqual({ branches: ['main'] });
   expect(parsed.on.workflow_dispatch?.inputs['package']).toMatchObject({ type: 'boolean', default: false });
   const windows = parsed.jobs['windows'];
   const packaging = windows?.steps?.find((step) => step.run === 'bun run build:windows');
@@ -150,12 +152,24 @@ test('unsigned Windows packaging and upload require an explicit manual dispatch 
   expect(packaging).toBeDefined();
   expect(upload).toBeDefined();
   for (const step of [packaging, upload]) {
-    expect(step?.if).toBe("${{ github.event_name == 'workflow_dispatch' && inputs.package }}");
+    expect(step?.if).toBe("${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.package) }}");
+    expect(step).not.toHaveProperty('continue-on-error');
   }
+  expect(windows).not.toHaveProperty('continue-on-error');
+  expect(upload?.with?.['if-no-files-found']).toBe('error');
   expect(packaging?.env?.['ONLOOK_WINDOWS_ALLOW_UNSIGNED']).toBe('1');
+  expect(packaging?.env?.['STUDIO_CLOUD_BUILD']).toBe('0');
   expect(source.match(/ONLOOK_WINDOWS_ALLOW_UNSIGNED/g)).toHaveLength(1);
   expect(parsed.env?.['ONLOOK_WINDOWS_ALLOW_UNSIGNED']).toBeUndefined();
   expect(windows?.env?.['ONLOOK_WINDOWS_ALLOW_UNSIGNED']).toBeUndefined();
+});
+
+test('each main push has its own CI group while stale PR runs can be cancelled', () => {
+  const { parsed } = workflow('ci.yml');
+  expect(parsed.concurrency).toEqual({
+    group: "ci-${{ github.event_name }}-${{ github.event_name == 'push' && github.run_id || github.event.pull_request.number || github.ref }}",
+    'cancel-in-progress': true,
+  });
 });
 
 test('Windows dependency downloads do not share a cross-run cache', () => {

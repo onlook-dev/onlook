@@ -1,9 +1,40 @@
 import { describe, expect, it } from 'bun:test';
 import type { PanelsState } from '@studio/events';
 import { REGION } from '../layout.js';
-import { cameraFollowingCover, restingFitOptions, type Camera } from './camera.js';
+import { cameraFollowingCover, cameraRevealingNode, restingFitOptions, type Camera } from './camera.js';
 
 const PANELS: PanelsState = { sidebar: 260, end: 300, code: 640 };
+
+describe('panning to a newly duplicated frame', () => {
+  const pane = { width: 1280, height: 900 };
+  const cover = { start: 300, end: 300 };
+
+  it('pans only as far as needed past the chat panel without changing zoom', () => {
+    expect(cameraRevealingNode({ x: 0, y: 0, zoom: 1 },
+      { x: 900, y: 200, width: 200, height: 300 }, pane, cover))
+      .toEqual({ x: -168, y: 0, zoom: 1 });
+  });
+
+  it('leaves a fully visible frame and the current camera alone', () => {
+    const camera = { x: 0, y: 0, zoom: 1 };
+    expect(cameraRevealingNode(camera, { x: 400, y: 200, width: 200, height: 300 }, pane, cover)).toEqual(camera);
+  });
+
+  it('reveals a second large copy and an offscreen frame at 4x without zooming out', () => {
+    for (const zoom of [1, 4]) {
+      const camera = cameraRevealingNode({ x: 0, y: 0, zoom },
+        { x: 3000, y: 0, width: 1400, height: 900 }, pane, cover);
+      expect(camera.zoom).toBe(zoom);
+      expect(camera.x + 3000 * zoom).toBe(348);
+      expect(camera.x + 4400 * zoom).toBeGreaterThan(pane.width - cover.end);
+    }
+  });
+
+  it('does not move a camera whose oversized frame already fills the visible pane', () => {
+    const camera = { x: -1000, y: -1000, zoom: 4 };
+    expect(cameraRevealingNode(camera, { x: 0, y: 0, width: 1400, height: 900 }, pane, cover)).toEqual(camera);
+  });
+});
 
 const inset = (side: 'left' | 'right', view: 'designs' | 'code'): number =>
   Number.parseFloat(restingFitOptions({ view, panels: PANELS }).padding[side]);

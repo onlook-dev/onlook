@@ -30,6 +30,10 @@ it('renders a restored blank project without a saved branch name', () => {
   const withBranch = renderToStaticMarkup(<Sidebar />);
   expect(withBranch).toContain(t('sidebar.projectTitle.untitled'));
   expect(withBranch).toContain('fixture/teal-skylark');
+  workspace.history = 'none';
+  const withoutHistory = renderToStaticMarkup(<Sidebar />);
+  expect(withoutHistory).not.toContain('data-testid="sidebar-project-branch"');
+  expect(withoutHistory).not.toContain('fixture/teal-skylark');
   workspace.displayName = 'Landing Page';
   delete (workspace as Partial<WorkspaceCreated>).branchName;
   expect(renderToStaticMarkup(<Sidebar />)).toContain('Landing Page');

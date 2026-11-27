@@ -21,7 +21,7 @@ import { serverHost, type AwaitRunningOutcome, type StarterControl } from '../se
 import { starterHost } from '../starter/index.js';
 import type { BlankCreationStep, TelemetryEventName, TelemetryProperties, WorkspaceTelemetryProperties } from '../telemetry/events.js';
 import { capture, workspaceTelemetryProperties } from '../telemetry/index.js';
-import { claimBlankBucket, clearBlankMarker, constructBlankPlan, initBlankSource, rollbackBlank } from './blank.js';
+import { blankWithoutHistory, claimBlankBucket, clearBlankMarker, constructBlankPlan, initBlankSource, rollbackBlank } from './blank.js';
 import { createCancelToken, type CancelToken } from './cancel.js';
 import { type BlankCreationFailure, gitFailure, systemErrorCode, thrownFailure } from './creation-failure.js';
 import { createWorkspaceFromPlan } from './index.js';
@@ -116,6 +116,9 @@ export async function createBlankProject(
         logger.error('blank rollback incomplete', { system_error: systemErrorCode(err) });
         detail = detail === undefined ? `rollback: ${String(err)}` : `${detail}; rollback: ${String(err)}`;
       }
+      if (!canceled && failure?.failure_cause === 'git_not_found') {
+        return { ok: false, stage, canceled, cause: 'git_not_found' };
+      }
       // The reading from before the rollback: a cancel landing during the diagnosis would otherwise answer a real failure as canceled, with its explanation dropped (ONL-3111).
       const explained = canceled ? {} : await diagnosed();
       return { ok: false, stage, canceled, ...(detail === undefined ? {} : { detail }), ...explained };
@@ -132,7 +135,11 @@ export async function createBlankProject(
 
     step = 'worktree_cut';
     let cutFailure: BlankCreationFailure | undefined;
-    const created = await createWorkspaceFromPlan(constructBlankPlan(claim), (result) => {
+    const plan = constructBlankPlan(claim);
+    const created = inited.history === 'none' ? {
+      ok: true as const,
+      workspace: blankWithoutHistory(claim),
+    } : await createWorkspaceFromPlan(plan, (result) => {
       cutFailure = gitFailure('worktree_cut', result);
     });
     if (!created.ok) return await abort(created.detail, cutFailure);
