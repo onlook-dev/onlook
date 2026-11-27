@@ -1,5 +1,7 @@
 import { basename } from 'node:path';
 import { on } from '../ipc/bridge.js';
+import { projectKey } from '../project/key.js';
+import { projectMap } from '../project/state.js';
 import {
   DEFAULT_DEV_PORT,
   IPC_EMIT,
@@ -163,6 +165,10 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
   const isBlankProject = deps.isBlankProject ?? isRegisteredBlankProject;
 
   const workspaces = new Map<string, SeatsByEntry>();
+  const registrations = projectMap<() => void>('server.monitors', {
+    closes: true,
+    dispose: (release) => release(),
+  });
   const retainedStarters = new Set<string>();
   let activeWorktree: string | undefined;
   const lanes = createKeyedQueue<string | undefined>();
@@ -254,6 +260,7 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
 
   // Called inside a chain step; going through `closeWorkspace` re-enters the same lane and deadlocks.
   function teardownRegisteredWorkspace(worktreePath: string): void {
+    registrations.delete(projectKey(worktreePath));
     invalidatePortMeasurements(worktreePath);
     const seats = workspaces.get(worktreePath);
     if (seats !== undefined) {
@@ -491,6 +498,11 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
 
         const seats: SeatsByEntry = new Map();
         workspaces.set(worktreePath, seats);
+        registrations.set(projectKey(worktreePath), () => {
+          teardownRegisteredWorkspace(worktreePath);
+          pendings.delete(normalizePath(worktreePath));
+          if (activeWorktree === worktreePath) activeWorktree = undefined;
+        });
         activeWorktree = worktreePath;
         pendingIfAny(worktreePath)?.reset(false);
 
@@ -732,6 +744,7 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
         teardownSlot(seats);
       }
       workspaces.clear();
+      registrations.clear();
       pendings.clear();
       starterSpawns.clear();
       activeWorktree = undefined;

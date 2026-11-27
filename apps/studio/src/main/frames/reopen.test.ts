@@ -9,6 +9,7 @@ import { createFsDocumentStore } from '../canvas/fs-backend.js';
 import { createCanvasHost } from '../canvas/host.js';
 import { resetCanvasRegistryCache } from '../canvas/registry.js';
 import { applyLocationTransition, type LocationTransitionDeps } from '../location/transition.js';
+import { projectStateHeld } from '../project/state.js';
 import {
   createServerEntry,
   portHeldByOtherProject,
@@ -18,6 +19,7 @@ import {
 } from '../server/book.js';
 import { createServerHost } from '../server/index.js';
 import type { ListenerIdentity } from '../server/owner.js';
+import { noteTabClosed } from '../tabs/closed.js';
 import { createFrameBindings } from './bindings.js';
 
 afterAll(() => {
@@ -135,6 +137,7 @@ it('refuses a reopened project’s saved port before its own reverification when
 for (const lifecycle of [
   'closeProject',
   'closeWorkspace',
+  'last Tab close',
   'stopStarterExcept',
   'pending starter stop',
   'rejected starter stop',
@@ -171,6 +174,7 @@ for (const lifecycle of [
     const running = new Map(hasStarter ? [[sibling, port]] : []);
     const stopped: string[] = [];
     const emitted: { cwd: string; state: ServerBookState }[] = [];
+    const monitorDelays: (() => void)[] = [];
     let finishStop: () => void = () => undefined;
     let failStop: (error: Error) => void = () => undefined;
     const stopGate = new Promise<void>((resolve, reject) => {
@@ -186,7 +190,9 @@ for (const lifecycle of [
       probe: async (candidate) => listeners.has(candidate),
       identify: async (candidate) => listeners.get(candidate),
       signalProcess: () => undefined,
-      delay: () => new Promise<void>(() => undefined),
+      delay: () => new Promise<void>((resolve) => {
+        if (lifecycle === 'last Tab close') monitorDelays.push(resolve);
+      }),
       starter: {
         portFor: (cwd) => running.get(cwd),
         running: () => [...running.keys()],
@@ -282,6 +288,26 @@ for (const lifecycle of [
           emitted.length = 0;
           await host.closeWorkspace(sibling);
           break;
+        case 'last Tab close': {
+          expect(projectStateHeld(sibling)).toContain('server.monitors');
+          expect(projectStateHeld(project)).toContain('server.monitors');
+          expect(host.snapshotFor(sibling).entries.map((entry) => entry.status)).toEqual(['running']);
+          expect(monitorDelays.length).toBeGreaterThan(0);
+          noteTabClosed(sibling);
+          expect(projectStateHeld(sibling)).not.toContain('server.monitors');
+          expect(projectStateHeld(project)).toContain('server.monitors');
+          expect(host.snapshotFor(sibling).entries.map((entry) => entry.status)).toEqual(['stopped']);
+          expect(portHeldByOtherProject(project, homeUrl)).toBe(false);
+          expect(serverBookEntries(sibling)).toEqual(savedSibling);
+          const afterCloseEmissions = emitted.length;
+          listeners.set(port, { pid: 471, cwd: project });
+          for (const resume of monitorDelays.splice(0)) resume();
+          await Promise.resolve();
+          await Promise.resolve();
+          expect(emitted.slice(afterCloseEmissions)).toEqual([]);
+          expect(serverBookEntries(sibling)).toEqual(savedSibling);
+          break;
+        }
         case 'stopStarterExcept': {
           host.stopStarterExcept(new Set([project]));
           await Promise.resolve();
@@ -403,7 +429,7 @@ for (const lifecycle of [
         }
       }
 
-      if (lifecycle === 'closeProject' || lifecycle === 'closeWorkspace'
+      if (lifecycle === 'closeProject' || lifecycle === 'closeWorkspace' || lifecycle === 'last Tab close'
         || lifecycle === 'stopStarterExcept' || lifecycle === 'pending starter stop') {
         expect(host.snapshotFor(project)).toEqual(unchangedProject);
         expect(projectEmissions()).toContainEqual(unchangedProject);
