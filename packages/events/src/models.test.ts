@@ -2,6 +2,14 @@ import { describe, expect, it } from 'bun:test';
 import { findModelChoice, modelDisplayName, modelLabel, offeredModels } from './models.js';
 
 describe('modelLabel', () => {
+  it('handles repeated opening brackets in a model suffix quickly', () => {
+    expect(modelLabel('gpt-6.1-sol[[1m]')).toBe('gpt-6.1-sol[[1m]');
+    const started = performance.now();
+    for (const model of [`unknown${'['.repeat(100_000)}`, `unknown${'['.repeat(1_000_000)}1m]`]) {
+      expect(modelLabel(model)).toBe(model);
+    }
+    expect(performance.now() - started).toBeLessThan(1000);
+  });
   it('labels a bare alias, which is what a session runs under before init', () => {
     expect(modelLabel('opus')).toBe('Opus');
     expect(modelLabel('sonnet')).toBe('Sonnet');
