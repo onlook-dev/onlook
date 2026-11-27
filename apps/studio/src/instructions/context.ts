@@ -255,8 +255,10 @@ export function briefing(
       'every page: `list_frames` reports them all and `list_pages` reports the pages themselves ' +
       '— their order, which one the user is on, and the empty ones no reading of objects can ' +
       'show. Every create verb takes an optional page; omit it and the object lands on the page ' +
-      'the user is currently on. Use `create_page` when work belongs somewhere of its own rather ' +
-      'than crowded onto what is already on screen, `move_nodes_to_page` to gather objects ' +
+      'the user is currently on. Keep new work on the current canvas page by default. ' +
+      'Use `create_page` only when the user explicitly asks for a new canvas page. ' +
+      'A new site route, design, or variant is not a request for a new canvas page. ' +
+      'Use `move_nodes_to_page` to gather objects ' +
       'there, and `reorder_page` to put it where it belongs. Name the page you used whenever ' +
       'you report what you did: Onlook never moves the user’s view for you, so a page they are ' +
       'not on is one they have to choose to visit.',

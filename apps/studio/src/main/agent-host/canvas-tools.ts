@@ -393,8 +393,8 @@ export type CreatePageTool = SdkMcpToolDefinition<typeof createPageSchema>;
 export function createPageTool(onCreatePage: CanvasToolSinks['onCreatePage']): CreatePageTool {
   return tool(
     CREATE_PAGE_TOOL_NAME,
-    'Add a page to this project’s canvas, so a separate piece of work gets its own named place ' +
-      'rather than crowding what is already on screen. The new page goes last and the user ' +
+    'Add a page to this project’s canvas only when the user explicitly asks for a new canvas page. ' +
+      'Keep new work on the current canvas page by default. The new page goes last and the user ' +
       'stays where they are — Onlook never moves their view for you, so name the page you used ' +
       'when you report back. The result carries its id; pass that id to the create verbs to put ' +
       'objects on it.',

@@ -632,6 +632,13 @@ describe('the page verbs at the tool seam (ONL-2488)', () => {
     };
   };
 
+  it('create_page is described as requiring an explicit request for a new canvas page', () => {
+    const definition = createPageTool(async () => minted);
+    expect(definition.description).toContain('only when the user explicitly asks for a new canvas page');
+    expect(definition.description).toContain('Keep new work on the current canvas page by default');
+    expect(definition.description).not.toContain('rather than crowding what is already on screen');
+  });
+
   it('create_page hands the name over and answers with the minted page, id and name', async () => {
     const asked: unknown[] = [];
     const definition = createPageTool(async (request) => {

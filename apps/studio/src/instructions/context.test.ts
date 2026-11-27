@@ -22,6 +22,20 @@ const workspace: WelcomeProject = {
   baseBranch: 'main',
 };
 
+describe('canvas page creation (ONL-3092)', () => {
+  for (const harness of ['claude', 'codex'] as const) {
+    for (const context of [{ harness }, { harness, history: 'none' as const }]) {
+      it(`keeps ${harness} on the current canvas page unless the user explicitly asks for a new one${context.history === 'none' ? ' without Git' : ''}`, () => {
+        const text = briefing(workspace, context);
+        expect(text).toContain('Keep new work on the current canvas page by default');
+        expect(text).toContain('Use `create_page` only when the user explicitly asks for a new canvas page');
+        expect(text).toContain('A new site route, design, or variant is not a request for a new canvas page');
+        expect(text).not.toContain('rather than crowded onto what is already on screen');
+      });
+    }
+  }
+});
+
 it('keeps history-free projects editable and asks for Git only after an explicit publishing or GitHub request', () => {
   for (const harness of ['claude', 'codex'] as const) {
     const text = briefing(workspace, { harness, history: 'none' });
