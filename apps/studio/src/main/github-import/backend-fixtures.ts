@@ -28,9 +28,9 @@ export function githubBackendFixture(scenario: GithubStatusScenario = 'connected
     repositoryAccess: async () => structuredClone(overrides.repositoryAccess ?? failure ?? {
       status: 'connected', repository: { fullName: 'example/design', permission, parent: null },
     }),
-    pullRequests: async () => structuredClone(overrides.pullRequests ?? failure ?? {
+    pullRequests: async (repository) => structuredClone(overrides.pullRequests ?? failure ?? {
       status: 'connected', pullRequests: scenario === 'pull-request-open' ? [{
-        number: 42, url: 'https://github.com/example/design/pull/42', state: 'OPEN', isDraft: false,
+        number: 42, url: `https://github.com/${repository}/pull/42`, state: 'OPEN', isDraft: false,
         mergeStateStatus: 'CLEAN', checks: 'passing', baseRefName: 'main', updatedAt: '2026-01-01T00:00:00Z',
       }] : [],
     }),

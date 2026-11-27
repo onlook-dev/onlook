@@ -1,3 +1,4 @@
+import type { GitChecksRollup, GitMeasuredPullRequest, GitPrState } from '@studio/events';
 import type { GithubBackend, GithubIdentity, GithubPermission, GithubReadFailure, GithubReads } from '../../github-import/backend.js';
 import type { GitHubAccess, GitHubReader, GitHubRepoAccess } from './reader.js';
 
@@ -10,6 +11,34 @@ function denied(failure: GithubReadFailure): GitHubRepoAccess | undefined {
   if (failure.status === 'not_found') return { permission: 'denied', reason: 'repo-not-visible' };
   if (failure.status === 'sso_required' || failure.status === 'approval_required') return { permission: 'denied', reason: failure.status };
   return undefined;
+}
+
+const REPOSITORY = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
+const PR_STATES: readonly GitPrState[] = ['OPEN', 'CLOSED', 'MERGED'];
+const PR_CHECKS: readonly GitChecksRollup[] = ['failing', 'pending', 'passing', 'none'];
+
+function bounded(value: unknown, limit: number): value is string {
+  return typeof value === 'string' && value.length > 0 && value.length <= limit;
+}
+
+export function measuredPullRequest(row: GitMeasuredPullRequest, repository: string): GitMeasuredPullRequest | undefined {
+  if (row === null || typeof row !== 'object' || !REPOSITORY.test(repository)) return undefined;
+  if (!Number.isSafeInteger(row.number) || row.number <= 0) return undefined;
+  // The renderer opens this address, and the repository is known here, so nothing else counts as this pull request.
+  if (typeof row.url !== 'string' || row.url.toLowerCase() !== `https://github.com/${repository}/pull/${row.number}`.toLowerCase()) return undefined;
+  if (!PR_STATES.includes(row.state) || !PR_CHECKS.includes(row.checks)) return undefined;
+  if (!bounded(row.mergeStateStatus, 64) || !bounded(row.baseRefName, 255) || !bounded(row.updatedAt, 64)) return undefined;
+  return {
+    number: row.number,
+    url: row.url,
+    state: row.state,
+    isDraft: row.isDraft === true,
+    mergeStateStatus: row.mergeStateStatus,
+    checks: row.checks,
+    baseRefName: row.baseRefName,
+    updatedAt: row.updatedAt,
+    ...(typeof row.viewerCanMerge === 'boolean' ? { viewerCanMerge: row.viewerCanMerge } : {}),
+  };
 }
 
 async function safely<Result>(read: () => Promise<Result>): Promise<Result | { status: 'unavailable'; reason: 'provider_unavailable' }> {
@@ -41,8 +70,12 @@ function accountReader(reads: GithubReads, identity: GoverningIdentity): Selecti
     async pullRequests(repository, branch, filter) {
       if (repository === undefined) return { ok: false, partial: true };
       const result = await safely(() => reads.pullRequests(repository, branch, filter?.headOwner));
-      if (result.status !== 'connected') failure = result;
-      return result.status === 'connected' ? { ok: true, value: result.pullRequests } : { ok: false, partial: true };
+      if (result.status !== 'connected') {
+        failure = result;
+        return { ok: false, partial: true };
+      }
+      const rows = Array.isArray(result.pullRequests) ? result.pullRequests : [];
+      return { ok: true, value: rows.map((row) => measuredPullRequest(row, repository)).filter((row) => row !== undefined) };
     },
   };
   return { reader, connectViaBrowser: true, via: 'account', failure: () => failure };

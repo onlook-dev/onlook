@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { GIT_PILL_SHIPPED_DEFAULTS } from '@studio/events';
+import { GIT_PILL_SHIPPED_DEFAULTS, type GitMeasuredPullRequest } from '@studio/events';
 import { derivePillState } from '@studio/git-ui/derive';
 import { emptyMeasurement, probeGithub } from '../measure.js';
 import { hasGithubStatusReads, selectGithubReader } from './account-reader.js';
@@ -93,6 +93,52 @@ describe('account-backed GitHub status', () => {
     const result = await probeGithub({ ...emptyMeasurement('main', true), head: 'branch', branch: 'design', origin: 'github', repo: 'example/design' }, selected.reader);
     expect(calls).toEqual([['upstream/design', 'design', 'example']]);
     expect(result.pr?.viewerCanMerge).toBe(false);
+  });
+
+  describe('a provider pull-request row', () => {
+    const row = {
+      number: 42, url: 'https://github.com/example/design/pull/42', state: 'OPEN' as const, isDraft: false,
+      mergeStateStatus: 'CLEAN', checks: 'passing' as const, baseRefName: 'main', updatedAt: '2026-01-01T00:00:00Z',
+    };
+    const second = { ...row, number: 7, url: 'https://github.com/example/design/pull/7' };
+    const listed = async (rows: unknown[]) => {
+      const backend = githubBackendFixture('connected', {
+        pullRequests: { status: 'connected', pullRequests: rows as GitMeasuredPullRequest[] },
+      });
+      const selected = await selectGithubReader(backend, scriptedReader({}).reader);
+      return selected.reader.pullRequests('example/design', 'design');
+    };
+
+    it('reaches the measurement as its known fields and nothing else', async () => {
+      const extra = { ...row, viewerCanMerge: false, headRepositoryOwner: { login: 'example' }, author: 'designer' };
+      expect(await listed([extra])).toEqual({ ok: true, value: [{ ...row, viewerCanMerge: false }] });
+    });
+
+    it('is dropped whole when any field fails its check, and the sound rows stay', async () => {
+      const broken: Array<Record<string, unknown>> = [
+        { number: 4.2 }, { number: -1 }, { number: '42' },
+        { url: 'javascript:alert(1)' },
+        { url: 'https://designer:token@github.com/example/design/pull/42' },
+        { url: 'https://github.example.com/example/design/pull/42' },
+        { url: 'https://github.com/example/other/pull/42' },
+        { url: 'https://github.com/example/design/pull/43' },
+        { state: 'DRAFT' }, { checks: 'green' },
+        { mergeStateStatus: '' }, { baseRefName: 'x'.repeat(300) }, { updatedAt: 42 },
+      ];
+      for (const over of broken) {
+        expect(await listed([{ ...row, ...over }, second]), JSON.stringify(over)).toEqual({ ok: true, value: [second] });
+      }
+    });
+
+    it('a list whose every row fails is an empty answer, never an incomplete read', async () => {
+      expect(await listed([{ ...row, state: 'DRAFT' }])).toEqual({ ok: true, value: [] });
+    });
+
+    it('is pinned to the repository asked about however the remote spells it', async () => {
+      const backend = githubBackendFixture('connected', { pullRequests: { status: 'connected', pullRequests: [row] } });
+      const selected = await selectGithubReader(backend, scriptedReader({}).reader);
+      expect(await selected.reader.pullRequests('Example/Design', 'design')).toEqual({ ok: true, value: [row] });
+    });
   });
 
   it('treats a rejected read as unavailable, never as no pull requests', async () => {
