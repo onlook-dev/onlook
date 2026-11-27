@@ -58,6 +58,11 @@ export const ACCOUNT_MEASUREMENTS = {
   connected: measurement({ connectViaBrowser: true, dirty: true }),
   disconnected: measurement({ connectViaBrowser: true, ghInstalled: false, ghAuthed: false }),
   'no-access': measurement({ connectViaBrowser: true, access: 'denied' }),
+  'no-access-unnamed': measurement({ connectViaBrowser: true, access: 'denied', ghAccount: undefined }),
+  'no-access-sso': measurement({ connectViaBrowser: true, access: 'denied', accessReason: 'sso_required' }),
+  'no-access-sso-unnamed': measurement({ connectViaBrowser: true, access: 'denied', accessReason: 'sso_required', ghAccount: undefined }),
+  'no-access-approval': measurement({ connectViaBrowser: true, access: 'denied', accessReason: 'approval_required' }),
+  'no-access-approval-unnamed': measurement({ connectViaBrowser: true, access: 'denied', accessReason: 'approval_required', ghAccount: undefined }),
   'pull-request-open': measurement({ connectViaBrowser: true, dirty: false, aheadOfUpstream: false }, { checks: 'passing' }),
   fallback: measurement({ dirty: true }),
 } satisfies Record<string, GitMeasurement>;

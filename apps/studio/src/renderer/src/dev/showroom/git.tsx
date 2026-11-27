@@ -1,6 +1,7 @@
 /** Fixture props, so the still lifes carry the package's stub strings; ProjectCard owns its own, through the catalog (ONL-2174). */
 
 import { useState } from 'react';
+import { GIT_PILL_SHIPPED_DEFAULTS } from '@studio/events';
 import {
   GIT_CARD_STATES,
   GIT_PILL_STATES,
@@ -8,19 +9,24 @@ import {
   GitStatusDropdown,
   GitStatusPill,
   isActionable,
+  noAccessLineFor,
   type GitDropdownOption,
   type GitPillGlyphs,
   type GitPillState,
   type GitPillStateId,
 } from '@studio/git-ui';
 import { PILL_FIXTURES as STATES, STUB_STRINGS as STRINGS } from '@studio/git-ui/fixtures';
-import { cardStateFor } from '@studio/git-ui/derive';
+import { ACCOUNT_MEASUREMENTS, row } from '@studio/git-ui/measurement-fixtures';
+import { cardStateFor, derivePillState } from '@studio/git-ui/derive';
 import { GIT_PILL_GLYPHS as GLYPHS, GIT_PR_FAILURE_STRINGS, cardGlyphFor, leadingFor } from '../../git-status/presentation.js';
 import { PROJECT_CARD_WIDTH, ProjectCard, type ProjectCardProps } from '../../projects/ProjectCard.js';
 import { Focused, noop, type Category, type Gallery } from './Showroom.js';
 import { t } from '@studio/i18n';
 
 const TOOLTIP = ['feat/pricing-v2', '2 ahead, 4 behind', 'as of 3:41 PM'];
+
+/** A No Access pill has no button, so the window-bar gallery's hover and focus queries cannot open its tooltip; these stories force it open. */
+const NO_ACCESS_FIXTURES = Object.entries(ACCOUNT_MEASUREMENTS).filter(([name]) => name.startsWith('no-access'));
 
 function LivePill({ initial, glyphs, testId }: { initial: GitPillState; glyphs: GitPillGlyphs; testId: string }) {
   const [state, setState] = useState(initial);
@@ -158,6 +164,23 @@ const CATEGORIES: Category[] = [
         ),
       },
     ],
+  },
+  {
+    id: 'no-access',
+    title: 'No Access — the line that says what to do',
+    stories: NO_ACCESS_FIXTURES.map(([name, measured]) => {
+      const state = derivePillState(row(measured), GIT_PILL_SHIPPED_DEFAULTS);
+      return {
+        id: `git-gallery-${name}`,
+        title: name,
+        note: noAccessLineFor(state, STRINGS) ?? name,
+        render: () => (
+          <div style={{ paddingBlock: 56 }}>
+            <GitStatusPill state={state} strings={STRINGS} glyphs={GLYPHS} isTooltipOpen onAction={noop} onOpenPr={noop} testId={`git-status-pill-${name}`} />
+          </div>
+        ),
+      };
+    }),
   },
   {
     id: 'card',
