@@ -17,7 +17,8 @@ import { PILL_FIXTURES as STATES, STUB_STRINGS as STRINGS } from '@studio/git-ui
 import { cardStateFor } from '@studio/git-ui/derive';
 import { GIT_PILL_GLYPHS as GLYPHS, GIT_PR_FAILURE_STRINGS, cardGlyphFor, leadingFor } from '../../git-status/presentation.js';
 import { PROJECT_CARD_WIDTH, ProjectCard, type ProjectCardProps } from '../../projects/ProjectCard.js';
-import { noop, type Category, type Gallery } from './Showroom.js';
+import { Focused, noop, type Category, type Gallery } from './Showroom.js';
+import { t } from '@studio/i18n';
 
 const TOOLTIP = ['feat/pricing-v2', '2 ahead, 4 behind', 'as of 3:41 PM'];
 
@@ -62,6 +63,29 @@ function pillStory(id: GitPillStateId) {
 }
 
 const CATEGORIES: Category[] = [
+  {
+    id: 'no-history', title: 'Without Git history', stories: [
+      ...(['default', 'hover', 'focus'] as const).map((state) => ({
+        id: `no-history-${state}`, title: state,
+        render: () => (
+          <Focused selector={state === 'default' ? undefined : '[data-testid="no-history-pill"] [tabindex="0"]'} hover={state === 'hover'}>
+            <div style={{ paddingBlock: 64 }}>
+              <GitStatusPill state={STATES['no-git']} strings={STRINGS} glyphs={GLYPHS}
+                tooltip={[t('gitStatus.tooltip.no-git')]} isTooltipOpen={state === 'hover' ? true : undefined} testId="no-history-pill" />
+            </div>
+          </Focused>
+        ),
+      })),
+      ...(['default', 'hover', 'focus'] as const).map((state) => ({
+        id: `no-history-card-${state}`, title: `Project card ${state}`,
+        render: () => (
+          <Focused selector={state === 'default' ? undefined : '[data-testid="project-card-open"]'} hover={state === 'hover'}>
+            <div style={PROJECT_CARD_FRAME}><ProjectCard name="New design" meta="4h" gitState="no-git" /></div>
+          </Focused>
+        ),
+      })),
+    ],
+  },
   {
     id: 'failures',
     title: 'Create PR — recovery',

@@ -578,6 +578,7 @@ export function GitStatusPill({
     <HStack
       {...bodyProps}
       className={CELL_CLASS}
+      tabIndex={state.id === 'no-git' && isChrome ? 0 : undefined}
       onClick={action === undefined && isChrome ? onNoActionPress : undefined}
       {...(action === undefined ? {} : { 'data-interactive': 'true' })}
       onMouseEnter={() => setIsBodyHovered(true)}

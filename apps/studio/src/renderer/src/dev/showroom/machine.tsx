@@ -10,7 +10,11 @@ const copy = async (): Promise<boolean> => true;
 /** The window the prototype's frames were captured at, so a still lays over one without rescaling (ONL-3111). */
 const PROTOTYPE_FRAME = { width: 1233, height: 730 };
 
-function Still({ cause, failures, platform = 'mac', pending = false, unanswered = false, inconclusive = false, acting, answered, unconfirmedIds, stalled, detail, fixedFolder = false, notice, focus = false, split = false, proto = false, agents }: {
+function Still({ cause, failures, platform = 'mac', pending = false, unanswered = false, inconclusive = false, acting, answered, unconfirmedIds, stalled, detail, fixedFolder = false, notice, focus = false, split = false, proto = false, agents, blankChoice = false, blankFocus = false, blankHover = false, blankBusy = false }: {
+  blankChoice?: boolean;
+  blankFocus?: boolean;
+  blankHover?: boolean;
+  blankBusy?: boolean;
   cause?: MachineFailureCause;
   failures?: Partial<Record<MachineCheckId, MachineFailureCause>>;
   platform?: MachineSnapshot['platform'];
@@ -43,7 +47,7 @@ function Still({ cause, failures, platform = 'mac', pending = false, unanswered 
     : answered !== undefined ? settled.filter((check) => answered.includes(check.id))
     : pending ? [] : settled;
   // The split still is the window's floor plus what the compact rules drop there — the shell's column padding and this screen's header drop, step and row padding — since no viewport query reaches inside a story (ONL-3111).
-  return <Focused selector={focus ? '[data-testid="machine-check-again"]' : undefined}>
+  return <Focused selector={blankFocus || blankHover ? '[data-testid="onboarding-import-blank"]' : focus ? '[data-testid="machine-check-again"]' : undefined} hover={blankHover}>
     <div style={{ width: proto ? PROTOTYPE_FRAME.width : split ? 960 : 900, height: proto ? PROTOTYPE_FRAME.height : split ? 713 : 600, background: 'var(--studio-ground)' }}>
       <MachineStepView
         snapshot={{ checks, platform, canChooseFolder: !fixedFolder }}
@@ -52,6 +56,8 @@ function Still({ cause, failures, platform = 'mac', pending = false, unanswered 
         stalled={stalled}
         detail={detail}
         notice={notice}
+        {...(blankChoice ? { onCreateBlank: noop } : {})}
+        isCreatingBlank={blankBusy}
         aside={split || proto ? <div /> : undefined}
         onContinue={noop} onBack={noop} onInstall={noop} onChoose={noop} onFix={noop} onCheckAgain={noop} onCloseDetail={noop} onCopy={copy} onHelp={noop} onOpenAgent={noop} {...(agents === undefined ? {} : { agents })} />
     </div>
@@ -61,6 +67,10 @@ function Still({ cause, failures, platform = 'mac', pending = false, unanswered 
 export const MACHINE_GALLERY: Gallery = {
   id: 'machine', title: 'Check your computer', categories: [
     { id: 'list', title: 'The four checks', stories: [
+      { id: 'blank-choice', title: 'Imports need Git, New Draft does not', wide: true, render: () => <Still cause="git_not_found" blankChoice /> },
+      { id: 'blank-focus', title: 'New Draft keyboard focus', wide: true, render: () => <Still cause="git_not_found" blankChoice blankFocus /> },
+      { id: 'blank-hover', title: 'New Draft hover', wide: true, render: () => <Still cause="git_not_found" blankChoice blankHover /> },
+      { id: 'blank-busy', title: 'Creating a blank project', wide: true, render: () => <Still cause="git_not_found" blankChoice blankBusy /> },
       { id: 'pending', title: 'Every check starts at once', wide: true, render: () => <Still pending /> },
       { id: 'landing', title: 'Checks land one by one', wide: true, render: () => <Still pending answered={['git', 'workspace']} /> },
       { id: 'passed', title: 'All four ready, Continue lights up', wide: true, render: () => <Still /> },

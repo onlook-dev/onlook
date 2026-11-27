@@ -27,6 +27,7 @@ export const GIT_PR_FAILURE_STRINGS = {
 
 export const GIT_STATUS_STRINGS: GitStatusStrings = {
   pillLabel: {
+    'no-git': t('gitStatus.label.no-git'),
     'no-access': t('gitStatus.label.no-access'),
     'connect-github': t('gitStatus.label.connect-github'),
     'local-only': t('gitStatus.label.local-only'),
@@ -53,6 +54,7 @@ export const GIT_STATUS_STRINGS: GitStatusStrings = {
     push: t('gitStatus.working.push'),
   },
   cardLabel: {
+    'no-git': t('gitStatus.card.no-git'),
     'checks-failed': t('gitStatus.card.checks-failed'),
     conflicts: t('gitStatus.card.conflicts'),
     'checks-running': t('gitStatus.card.checks-running'),

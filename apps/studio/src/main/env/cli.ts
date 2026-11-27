@@ -61,6 +61,7 @@ export async function runCli(
       child = dependencies.spawn(command.bin, command.args, {
         cwd,
         env,
+        shell: false,
         detached: leadsOwnGroup(),
         stdio: [options.stdin === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe'],
         windowsHide: true,

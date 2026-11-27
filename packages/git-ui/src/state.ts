@@ -19,6 +19,7 @@ export type NoPrDefault = 'create-pr' | 'push';
 export type ReadyDefault = 'open-in-browser' | 'merge';
 
 export type GitPillState =
+  | ({ id: 'no-git' } & Readout)
   | ({ id: 'no-access'; repo: string; account: string } & Readout)
   | ({ id: 'connect-github' } & Actionable)
   | ({ id: 'local-only' } & Readout)
@@ -38,6 +39,7 @@ export type GitPillState =
 export type GitPillStateId = GitPillState['id'];
 
 export const GIT_PILL_STATES = [
+  'no-git',
   'no-access',
   'connect-github',
   'local-only',
@@ -106,6 +108,7 @@ export function prOf(state: GitPillState): GitPullRequest | undefined {
 
 export type GitCardStateId =
   | 'none'
+  | 'no-git'
   | 'checks-failed'
   | 'conflicts'
   | 'checks-running'
@@ -116,6 +119,7 @@ export type GitCardStateId =
   | 'local-only';
 
 export const GIT_CARD_STATES = [
+  'no-git',
   'none',
   'checks-failed',
   'conflicts',

@@ -20,6 +20,7 @@ export interface GitMeasuredPullRequest {
 }
 
 export interface GitMeasurement {
+  history?: 'none';
   gitInstalled: boolean;
   ghInstalled: boolean;
   ghAuthed: boolean;

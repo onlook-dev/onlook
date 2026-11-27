@@ -3,6 +3,7 @@ import type { GitStatusStrings } from './strings.js';
 
 export const STUB_STRINGS: GitStatusStrings = {
   pillLabel: {
+    'no-git': 'No Git yet',
     'no-access': 'No Access',
     'connect-github': 'Connect GitHub',
     'local-only': 'Local Only',
@@ -29,6 +30,7 @@ export const STUB_STRINGS: GitStatusStrings = {
     push: 'Pushing',
   },
   cardLabel: {
+    'no-git': 'No Git yet',
     'checks-failed': 'Checks Failed',
     conflicts: 'Conflicts',
     'checks-running': 'Checks Running',
@@ -62,6 +64,7 @@ export const STUB_STRINGS: GitStatusStrings = {
 const PR = { number: 313, url: 'https://example.test/pr/313' };
 
 export const PILL_FIXTURES: Record<GitPillStateId, GitPillState> = {
+  'no-git': { id: 'no-git' },
   'no-access': { id: 'no-access', repo: 'onlook-dev/studio', account: 'wrenquill' },
   'connect-github': { id: 'connect-github' },
   'local-only': { id: 'local-only' },

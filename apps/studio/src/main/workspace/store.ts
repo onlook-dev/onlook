@@ -150,6 +150,11 @@ export function knownProject(path: string): ProjectRecord | undefined {
   return domain.read().workspaces[normalizePath(path)];
 }
 
+export function projectHasNoHistory(path: string): boolean {
+  const project = knownProject(path);
+  return project?.history === 'none' && workspaceHeldOrigin(project) === 'blank' && !existsSync(join(path, '.git'));
+}
+
 // `canonicalPath` falls back to a lexical resolve once the directory is gone, which on macOS is a second key for one project; the stored path is the fallback (ONL-2315).
 function locate(
   workspaces: Record<string, ProjectRecord>,
