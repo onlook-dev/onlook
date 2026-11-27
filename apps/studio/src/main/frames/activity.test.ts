@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it, spyOn } from 'bun:test';
 import { EventEmitter } from 'node:events';
 import type { WebContents } from 'electron';
 import { activityFor, checkFrameProcessSharing, createFrameActivity, withFrameAwake } from './activity.js';
@@ -13,6 +13,7 @@ function nativeRig(pid = 123, size = { width: 800, height: 600 }) {
   let hostCaptured = false;
   let confirmPause = true;
   let deferred: { state: string; work: Promise<void> } | undefined;
+  let captures = 0;
   const commands: string[] = [];
   const debuggerPort = Object.assign(new EventEmitter(), {
     isAttached: () => attached,
@@ -45,6 +46,7 @@ function nativeRig(pid = 123, size = { width: 800, height: 600 }) {
     executeJavaScriptInIsolatedWorld: async () => { trace.push('painted'); return true; },
     sendInputEvent: (event: { type: string }) => { trace.push(event.type); },
     capturePage: async () => {
+      captures += 1;
       trace.push('capture');
       if (offscreen) throw new Error('UnknownVizError');
       return image;
@@ -56,6 +58,7 @@ function nativeRig(pid = 123, size = { width: 800, height: 600 }) {
   return {
     guest, debuggerPort, commands, activity, registry, frames, trace,
     attached: () => attached,
+    captures: () => captures,
     offscreen: () => { offscreen = true; },
     onscreen: () => { offscreen = false; },
     resized: () => resized,
@@ -64,6 +67,11 @@ function nativeRig(pid = 123, size = { width: 800, height: 600 }) {
     capture: () => { captured = true; },
     recordWindow: () => { captured = true; hostCaptured = true; },
     unconfirmed: () => { confirmPause = false; },
+    hold: (state: string) => {
+      let finish: () => void = () => {};
+      deferred = { state, work: new Promise<void>((resolve) => { finish = resolve; }) };
+      return finish;
+    },
     defer: (state: string) => {
       let reject: (error: Error) => void = () => {};
       const work = new Promise<void>((_resolve, fail) => { reject = fail; });
@@ -154,6 +162,7 @@ describe('native Frame lifecycle', () => {
     test.debuggerPort.detach();
     test.debuggerPort.attach();
     expect(await activity.setIdle(true)).toEqual({ paused: false });
+    await Bun.sleep(300);
     expect(test.attached()).toBe(true);
     expect(test.frozen()).toBe(false);
     expect(test.commands).toEqual(['Debugger.enable', 'Animation:0', 'Debugger.pause', 'Runtime.evaluate']);
@@ -208,6 +217,49 @@ describe('native Frame lifecycle', () => {
     expect(test.attached()).toBe(false);
   });
 
+  it('wakes a renderer joined after the creation event without waiting for navigation', async () => {
+    const test = nativeRig();
+    const newborn = nativeRig(0);
+    test.registry.push(newborn.guest);
+    try {
+      await test.activity.setIdle(true);
+      checkFrameProcessSharing();
+      const commands = [...test.commands];
+      await Bun.sleep(300);
+      expect(test.frozen()).toBe(true);
+      expect(test.commands).toEqual(commands);
+      newborn.frames[0]!.osProcessId = 123;
+      const deadline = Date.now() + 1500;
+      while (test.frozen() && Date.now() < deadline) await Bun.sleep(20);
+      expect(test.frozen()).toBe(false);
+      expect(test.attached()).toBe(false);
+      expect(test.activity.snapshot()).toEqual({ paused: false });
+    } finally {
+      await test.activity.setIdle(false);
+    }
+  });
+
+  it('wakes a pictureless offscreen renderer when a newborn joins it', async () => {
+    const test = nativeRig();
+    const newborn = nativeRig(0);
+    test.registry.push(newborn.guest);
+    test.offscreen();
+    try {
+      expect(await test.activity.setIdle(true, false, false)).toEqual({ paused: true });
+      expect(test.captures()).toBe(0);
+      checkFrameProcessSharing();
+      newborn.frames[0]!.osProcessId = 123;
+      const deadline = Date.now() + 1500;
+      while (test.frozen() && Date.now() < deadline) await Bun.sleep(20);
+      expect(test.frozen()).toBe(false);
+      expect(test.attached()).toBe(false);
+      expect(test.activity.snapshot()).toEqual({ paused: false });
+      expect(test.captures()).toBe(0);
+    } finally {
+      await test.activity.setIdle(false, false, false);
+    }
+  });
+
   it('wakes a shared renderer immediately even during a camera gesture', async () => {
     const test = nativeRig();
     const other = nativeRig(456);
@@ -219,6 +271,30 @@ describe('native Frame lifecycle', () => {
     await test.activity.setIdle(true, true);
     expect(test.frozen()).toBe(false);
     expect(test.activity.snapshot()).toEqual({ paused: false });
+  });
+
+  it('coalesces sharing checks while a renderer is still waking', async () => {
+    const test = nativeRig();
+    await test.activity.setIdle(true);
+    const refresh = spyOn(test.activity, 'refresh');
+    const finish = test.hold('Debugger.disable');
+    test.registry.push(nativeRig().guest);
+    try {
+      const deadline = Date.now() + 1500;
+      while (!test.commands.includes('Debugger.disable') && Date.now() < deadline) await Bun.sleep(20);
+      expect(test.commands).toContain('Debugger.disable');
+      await Bun.sleep(600);
+      expect(refresh).toHaveBeenCalledTimes(1);
+      finish();
+      while (test.activity.snapshot().paused && Date.now() < deadline) await Bun.sleep(20);
+      await Bun.sleep(20);
+      expect(test.activity.snapshot()).toEqual({ paused: false });
+      expect(test.captures()).toBe(1);
+    } finally {
+      finish();
+      refresh.mockRestore();
+      await test.activity.setIdle(false);
+    }
   });
 
   it('cleans up if sharing appears while pause confirmation is pending', async () => {
