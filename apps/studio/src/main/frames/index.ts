@@ -33,12 +33,13 @@ export function registerFrameHandlers(): void {
   handle(IPC_INVOKE.artifactSnapshot, (event, request) => snapshot(event.sender, request));
   handle(IPC_INVOKE.frameIdle, async (event, req: FrameIdleRequest): Promise<FrameIdleResult> => {
     if (!Number.isInteger(req?.webContentsId) || typeof req?.idle !== 'boolean' ||
-      (req.moving !== undefined && typeof req.moving !== 'boolean')) return { paused: false };
+      (req.moving !== undefined && typeof req.moving !== 'boolean') ||
+      (req.seen !== undefined && typeof req.seen !== 'boolean')) return { paused: false };
     const guest = electron.webContents.fromId(req.webContentsId);
     if (!guest || guest.isDestroyed() || guest.getType() !== 'webview' || guest.hostWebContents !== event.sender) return { paused: false };
     const activity = activityFor(guest);
     try {
-      return await activity.setIdle(req.idle, req.moving);
+      return await activity.setIdle(req.idle, req.moving, req.seen);
     } catch {
       return activity.snapshot();
     }

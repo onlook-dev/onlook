@@ -30,6 +30,8 @@ function nativeRig(pid = 123, size = { width: 800, height: 600 }) {
       if (method === 'Debugger.disable') frozen = false;
     },
   });
+  let offscreen = false;
+  const trace: string[] = [];
   let resized: { width: number; height: number } | undefined;
   const image = { isEmpty: () => false, getSize: () => size, toDataURL: () => 'thumbnail', resize: (dimensions: { width: number; height: number }) => { resized = dimensions; return { toDataURL: () => 'thumbnail' }; } };
   const frames = [{ osProcessId: pid, detached: false, frameTreeNodeId: nextFrameId++ }];
@@ -40,14 +42,22 @@ function nativeRig(pid = 123, size = { width: 800, height: 600 }) {
     hostWebContents: { isDestroyed: () => false, isBeingCaptured: () => hostCaptured },
     getOSProcessId: () => pid,
     mainFrame: { framesInSubtree: frames },
-    capturePage: async () => image,
+    executeJavaScriptInIsolatedWorld: async () => { trace.push('painted'); return true; },
+    sendInputEvent: (event: { type: string }) => { trace.push(event.type); },
+    capturePage: async () => {
+      trace.push('capture');
+      if (offscreen) throw new Error('UnknownVizError');
+      return image;
+    },
     debugger: debuggerPort,
   }) as unknown as WebContents;
   const registry = [guest];
   const activity = activityFor(guest, () => registry);
   return {
-    guest, debuggerPort, commands, activity, registry, frames,
+    guest, debuggerPort, commands, activity, registry, frames, trace,
     attached: () => attached,
+    offscreen: () => { offscreen = true; },
+    onscreen: () => { offscreen = false; },
     resized: () => resized,
     frozen: () => frozen,
     fail: () => { failFreeze = true; },
@@ -72,6 +82,39 @@ describe('native Frame lifecycle', () => {
     expect(await bounded.activity.setIdle(true)).toEqual({ paused: true, thumbnail: 'thumbnail' });
     expect(bounded.resized()).toEqual({ width: 4096, height: 1024 });
   });
+  it('pauses a Frame panned off the screen without picturing it at all', async () => {
+    const test = nativeRig();
+    test.offscreen();
+    expect(await test.activity.setIdle(true, false, false)).toEqual({ paused: true });
+    expect(test.frozen()).toBe(true);
+    expect(test.trace).toEqual([]);
+    expect(await test.activity.setIdle(false, false, false)).toEqual({ paused: false });
+    expect(test.frozen()).toBe(false);
+  });
+
+  it('wakes a pictureless Frame that comes back on screen, and pauses it again under a picture', async () => {
+    const test = nativeRig();
+    test.offscreen();
+    expect(await test.activity.setIdle(true, false, false)).toEqual({ paused: true });
+    test.onscreen();
+    expect(await test.activity.setIdle(true)).toEqual({ paused: true, thumbnail: 'thumbnail' });
+    expect(test.frozen()).toBe(true);
+  });
+
+  it('keeps a Frame the user can see awake while it cannot be pictured', async () => {
+    const test = nativeRig();
+    test.offscreen();
+    expect(await test.activity.setIdle(true)).toEqual({ paused: false });
+    expect(test.frozen()).toBe(false);
+    expect(test.attached()).toBe(false);
+  });
+
+  it('takes the picture with the pointer out of the page, once it has painted', async () => {
+    const test = nativeRig();
+    expect(await test.activity.setIdle(true)).toEqual({ paused: true, thumbnail: 'thumbnail' });
+    expect(test.trace).toEqual(['mouseLeave', 'painted', 'capture']);
+  });
+
   it('retains its debugger while frozen and releases it before capture or evaluation', async () => {
     const test = nativeRig();
     const activity = test.activity;
@@ -129,8 +172,9 @@ describe('native Frame lifecycle', () => {
     const test = nativeRig();
     const other = nativeRig();
     test.registry.push(other.guest);
-    await expect(test.activity.setIdle(true)).rejects.toThrow('Frame renderer is shared');
+    expect(await test.activity.setIdle(true)).toEqual({ paused: false });
     expect(test.commands).toEqual([]);
+    expect(test.trace).toEqual([]);
     expect(test.attached()).toBe(false);
   });
 
@@ -158,7 +202,7 @@ describe('native Frame lifecycle', () => {
     await test.activity.setIdle(true);
     other.frames.push({ osProcessId: 123, detached: false, frameTreeNodeId: nextFrameId++ });
     checkFrameProcessSharing();
-    await expect(test.activity.setIdle(true)).rejects.toThrow('Frame renderer is shared');
+    expect(await test.activity.setIdle(true)).toEqual({ paused: false });
     expect(test.activity.snapshot()).toEqual({ paused: false });
     expect(test.frozen()).toBe(false);
     expect(test.attached()).toBe(false);
@@ -228,6 +272,7 @@ function rig() {
   const activity = createFrameActivity({
     isDestroyed: () => destroyed,
     isLoading: () => loading,
+    isBusy: () => false,
     thumbnail: async () => { snapshots += 1; return 'data:image/png;base64,thumb'; },
     transition: async (paused) => { transitions.push(paused); },
   });
@@ -252,6 +297,7 @@ describe('Frame activity', () => {
     const activity = createFrameActivity({
       isDestroyed: () => false,
       isLoading: () => false,
+      isBusy: () => false,
       thumbnail: async () => 'thumbnail',
       transition: async (paused) => {
         transitions.push(paused);
@@ -266,6 +312,20 @@ describe('Frame activity', () => {
     await Promise.all([pausing, moving]);
     expect(transitions).toEqual([true]);
     await activity.setIdle(false, false);
+    expect(transitions).toEqual([true, false]);
+  });
+
+  it('does not hold a pictureless pause through a camera gesture', async () => {
+    const transitions: boolean[] = [];
+    const activity = createFrameActivity({
+      isDestroyed: () => false,
+      isLoading: () => false,
+      isBusy: () => false,
+      thumbnail: async () => undefined,
+      transition: async (paused) => { transitions.push(paused); },
+    });
+    expect(await activity.setIdle(true, false, false)).toEqual({ paused: true });
+    expect(await activity.setIdle(false, true)).toEqual({ paused: false });
     expect(transitions).toEqual([true, false]);
   });
 
@@ -287,6 +347,7 @@ describe('Frame activity', () => {
     const activity = createFrameActivity({
       isDestroyed: () => false,
       isLoading: () => false,
+      isBusy: () => false,
       thumbnail: () => new Promise<string>((resolve) => { finish = resolve; }),
       transition: async (paused) => { transitions.push(paused); },
     });
@@ -355,6 +416,7 @@ describe('Frame activity', () => {
     const activity = createFrameActivity({
       isDestroyed: () => false,
       isLoading: () => false,
+      isBusy: () => false,
       thumbnail: () => new Promise<string>((resolve) => { finish = resolve; }),
       transition: async (paused) => { transitions.push(paused); },
     });
@@ -374,6 +436,7 @@ describe('Frame activity', () => {
     const activity = createFrameActivity({
       isDestroyed: () => false,
       isLoading: () => loading,
+      isBusy: () => false,
       thumbnail: async () => {
         captures += 1;
         if (captures === 1) return new Promise<string>((resolve) => { finish = resolve; });
@@ -400,6 +463,7 @@ describe('Frame activity', () => {
     const activity = createFrameActivity({
       isDestroyed: () => false,
       isLoading: () => false,
+      isBusy: () => false,
       thumbnail: async () => 'thumbnail',
       transition: async (paused) => {
         transitions.push(paused);
@@ -420,6 +484,7 @@ describe('Frame activity', () => {
     const activity = createFrameActivity({
       isDestroyed: () => false,
       isLoading: () => false,
+      isBusy: () => false,
       thumbnail: async () => { if (fails) throw new Error('capture unavailable'); return 'thumbnail'; },
       transition: async () => {},
     });
@@ -433,6 +498,7 @@ describe('Frame activity', () => {
     const activity = createFrameActivity({
       isDestroyed: () => false,
       isLoading: () => false,
+      isBusy: () => false,
       thumbnail: async () => 'thumbnail',
       transition: async (paused) => { if (!paused && failResume) throw new Error('debugger busy'); },
     });
@@ -448,6 +514,7 @@ describe('Frame activity', () => {
     const activity = createFrameActivity({
       isDestroyed: () => destroyed,
       isLoading: () => { if (destroyed) throw new Error('guest destroyed'); return false; },
+      isBusy: () => false,
       thumbnail: async () => 'thumbnail',
       transition: async () => { destroyed = true; },
     });

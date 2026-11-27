@@ -2,10 +2,14 @@ import type { WebContents } from 'electron';
 import electron from 'electron';
 import type { FrameIdleResult } from '@studio/events';
 import { canvasPicture } from '../images/canvas-picture.js';
+import { whenGuestPainted } from './picture.js';
 
 export interface ActivityGuest {
   isDestroyed(): boolean;
   isLoading(): boolean;
+  /** True while something else owns the guest's renderer, which a pause must not interrupt. */
+  isBusy(): boolean;
+  /** Undefined when the guest cannot be pictured now, which keeps a Frame the user can see awake (ONL-3396). */
   thumbnail(): Promise<string | undefined>;
   transition(paused: boolean): Promise<void>;
 }
@@ -13,6 +17,7 @@ export interface ActivityGuest {
 export function createFrameActivity(guest: ActivityGuest) {
   let idle = false;
   let moving = false;
+  let seen = true;
   let paused = false;
   let holds = 0;
   let generation = 0;
@@ -22,24 +27,27 @@ export function createFrameActivity(guest: ActivityGuest) {
   let pending = Promise.resolve();
 
   const wantsPause = (): boolean => idle && holds === 0 && !guest.isLoading();
+  // A pause with no picture shows nothing, so a gesture has nothing to hold still for.
   const cameraHolds = (): boolean => moving && holds === 0 && !guest.isLoading() &&
-    (!paused || pausedGeneration === generation);
-  const snapshot = (): FrameIdleResult => paused && thumbnail ? { paused, thumbnail } : { paused: false };
+    (!paused || (thumbnail !== undefined && pausedGeneration === generation));
+  const snapshot = (): FrameIdleResult => !paused ? { paused: false } : thumbnail === undefined ? { paused } : { paused, thumbnail };
   const reconcile = async (): Promise<void> => {
     if (guest.isDestroyed()) return;
     if (cameraHolds()) return;
-    if (paused && (!wantsPause() || pausedGeneration !== generation)) {
+    // A Frame back on screen with no picture wakes, and pauses again under the picture it can now be given (ONL-3396).
+    if (paused && (!wantsPause() || pausedGeneration !== generation || (seen && thumbnail === undefined))) {
       await guest.transition(false);
       paused = false;
       thumbnail = undefined;
     }
     if (guest.isDestroyed()) return;
-    if (moving || !wantsPause() || paused) return;
+    if (moving || !wantsPause() || paused || guest.isBusy()) return;
     const captureGeneration = generation;
     const captureMotionRevision = motionRevision;
-    const image = await guest.thumbnail();
-    if (!image || guest.isDestroyed() || moving || !wantsPause() || captureGeneration !== generation ||
-      captureMotionRevision !== motionRevision) return;
+    // Off screen a guest answers no capture, and needs no picture: nobody can see it (ONL-3396).
+    const image = seen ? await guest.thumbnail() : undefined;
+    if ((seen && image === undefined) || guest.isDestroyed() || moving || !wantsPause() ||
+      captureGeneration !== generation || captureMotionRevision !== motionRevision) return;
     await guest.transition(true);
     if (guest.isDestroyed()) return;
     paused = true;
@@ -63,8 +71,9 @@ export function createFrameActivity(guest: ActivityGuest) {
       generation += 1;
       return schedule();
     },
-    async setIdle(value: boolean, cameraMoving = false): Promise<FrameIdleResult> {
+    async setIdle(value: boolean, cameraMoving = false, onScreen = true): Promise<FrameIdleResult> {
       idle = value;
+      seen = onScreen;
       if (cameraMoving && !moving) motionRevision += 1;
       moving = cameraMoving;
       await schedule();
@@ -132,10 +141,17 @@ export function activityFor(guest: WebContents, allGuests: () => WebContents[] =
   const activity = createFrameActivity({
     isDestroyed: () => guest.isDestroyed(),
     isLoading: () => guest.isLoading(),
+    // Both of `transition(true)`'s own conditions, so a pause that cannot succeed costs no capture.
+    isBusy: () => guest.debugger.isAttached() || !isolated(),
     thumbnail: async () => {
-      if (guest.debugger.isAttached() || isCapturing()) return undefined;
-      const image = await within(guest.capturePage(), 1500);
-      if (image.isEmpty()) return undefined;
+      if (guest.isDestroyed()) return undefined;
+      // The pointer's hover state is in the picture, so without this a paused Frame shows a lit button
+      // under a pointer that has left it (ONL-3396).
+      guest.sendInputEvent({ type: 'mouseLeave', x: 0, y: 0 });
+      if (!await whenGuestPainted(guest) || guest.isDestroyed()) return undefined;
+      // A guest off screen answers no capture, and a Frame nobody can see pauses without a picture (ONL-3396).
+      const image = await within(guest.capturePage(), 1500).catch(() => undefined);
+      if (!image || image.isEmpty()) return undefined;
       return canvasPicture(image).image;
     },
     transition: async (frozen) => {

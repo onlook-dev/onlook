@@ -19,6 +19,8 @@ export interface FrameIdleRequest {
   webContentsId: number;
   idle: boolean;
   moving?: boolean;
+  /** False when no part of the Frame is on screen, which is the only way it pauses without a picture (ONL-3396). */
+  seen?: boolean;
 }
 
 export interface FrameIdleResult {
