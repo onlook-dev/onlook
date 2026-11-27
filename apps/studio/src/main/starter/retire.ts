@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { wslProject } from '../env/wsl.js';
 import { git } from '../workspace/git.js';
 import { STARTER_SERVER_FILE } from './scaffold.js';
+import { projectHasNoHistory } from '../workspace/store.js';
 
 export const STUDIO_SYSTEM_AUTHOR = {
   name: 'Onlook',
@@ -27,6 +28,7 @@ export function systemAuthorArgs(): string[] {
 export async function restoreRetiredStarterServerFile(worktree: string, options: { run?: typeof git; signal?: AbortSignal } = {}): Promise<void> {
   const run = options.run ?? git;
   if (options.signal?.aborted) return;
+  if (projectHasNoHistory(worktree)) return;
   if (lstatSync(join(worktree, STARTER_SERVER_FILE), { throwIfNoEntry: false }) !== undefined) return;
   const head = await run(worktree, ['rev-parse', 'HEAD']);
   if (!head.ok || options.signal?.aborted) return;

@@ -27,13 +27,21 @@ export function hostSearchPath(cwd: string, env: Env): string {
 
 export function hostExecutable(bin: string, cwd: string, env: Env, platform: NodeJS.Platform = hostPlatform()): string | undefined {
   if (isAbsolute(bin)) return bin;
-  if (!bin || /[/\\]/.test(bin)) return undefined;
   let project: string;
   try {
     project = realpathSync(cwd);
   } catch {
     return undefined;
   }
+  return findExecutable(bin, env, platform, project);
+}
+
+export function pathExecutable(bin: string, env: Env, platform: NodeJS.Platform = hostPlatform()): string | undefined {
+  return findExecutable(bin, env, platform);
+}
+
+function findExecutable(bin: string, env: Env, platform: NodeJS.Platform, project?: string): string | undefined {
+  if (!bin || /[/\\]/.test(bin)) return undefined;
   const names = isWindows(platform) && !/\.(exe|cmd|bat)$/i.test(bin)
     ? [`${bin}.exe`, `${bin}.cmd`, `${bin}.bat`]
     : [bin];
@@ -42,7 +50,7 @@ export function hostExecutable(bin: string, cwd: string, env: Env, platform: Nod
     for (const name of names) {
       const candidate = join(directory, name);
       try {
-        if (within(project, realpathSync(candidate))) continue;
+        if (project !== undefined && within(project, realpathSync(candidate))) continue;
         if (!statSync(candidate).isFile()) continue;
         accessSync(candidate, constants.X_OK);
         return candidate;

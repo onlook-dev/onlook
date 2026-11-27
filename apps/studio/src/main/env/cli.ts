@@ -66,6 +66,7 @@ export async function runCli(
         cwd,
         env,
         unset: options.unset,
+        shell: false,
         detached: leadsOwnGroup(),
         stdio: [options.stdin === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe'],
         windowsHide: true,

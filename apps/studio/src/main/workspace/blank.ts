@@ -17,6 +17,8 @@ import type { ReadyWorkspacePlan } from './index.js';
 import { generateWorkspaceName, mintBlankIdentity, SWEPT_DIR_PREFIXES, titleCaseWorkspaceName } from './naming.js';
 import { workspacePathFor, workspaceRoot } from './store.js';
 import { canForgetProjectState, forgetProjectState } from './project-state.js';
+import { gitAvailable } from '../env/git-available.js';
+import type { WorkspaceCreated } from '@studio/events';
 
 const logger = log('workspace');
 
@@ -112,8 +114,15 @@ export async function initBlankSource(
   claim: BlankClaim,
   adapter: StarterAdapter,
   manager?: ManagerChoice,
-): Promise<{ ok: true } | { ok: false; detail: string; failure: BlankCreationFailure }> {
+  available: () => Promise<boolean> = () => gitAvailable(),
+): Promise<{ ok: true; history?: 'none' } | { ok: false; detail: string; failure: BlankCreationFailure }> {
   const { source } = claim.bucket;
+  if (!await available()) {
+    writeScaffold(source, adapter.files(manager));
+    mkdirSync(claim.bucket.worktree);
+    writeScaffold(claim.bucket.worktree, adapter.files(manager));
+    return { ok: true, history: 'none' };
+  }
   writeScaffold(source, adapter.files(manager));
   const initialized = await initializeRepository(source);
   if (!initialized.ok) return { ok: false, detail: gitFailureDetail('init', initialized), failure: gitFailure('git_init', initialized) };
@@ -142,6 +151,16 @@ export function constructBlankPlan(claim: BlankClaim): ReadyWorkspacePlan {
     workspaceName: claim.workspaceName,
     branchName: claim.branchName,
     workspacePath: claim.bucket.worktree,
+  };
+}
+
+export function blankWithoutHistory(claim: BlankClaim): WorkspaceCreated {
+  const { kind: _kind, baseRef: _baseRef, baseRefSource: _baseRefSource, ...workspace } = constructBlankPlan(claim);
+  return {
+    ...workspace,
+    origin: 'blank',
+    history: 'none',
+    copiedEnvFiles: [],
   };
 }
 

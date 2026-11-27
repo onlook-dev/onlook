@@ -1,6 +1,8 @@
 import { type CliResult, type RunCliOptions, runCli } from './cli.js';
 import { hostSshPath, isWindows, nullDevice } from './platform.js';
 import { wslHostPath, wslProject } from './wsl.js';
+import { gitExecutable } from './git-available.js';
+import { userEnv } from './shell-env.js';
 
 export type GitResult = CliResult;
 
@@ -12,10 +14,18 @@ export interface RunGitOptions extends RunCliOptions {
   config: readonly string[];
 }
 
-export async function runGit(cwd: string, args: readonly string[], options: RunGitOptions): Promise<GitResult> {
+export async function runGit(cwd: string, args: readonly string[], options: RunGitOptions, dependencies: {
+  gitExecutable: typeof gitExecutable;
+  userEnv: typeof userEnv;
+  runCli: typeof runCli;
+} = { gitExecutable, userEnv, runCli }): Promise<GitResult> {
   const { config, ...rest } = options;
-  const result = await runCli('git', cwd, [...config.flatMap((setting) => ['-c', setting]), ...args], rest);
   const project = wslProject(cwd);
+  const executable = project === undefined ? await dependencies.gitExecutable(await dependencies.userEnv(), undefined, cwd) : 'git';
+  if (executable === undefined) {
+    return { ok: false, out: '', err: 'Git is unavailable without developer tools.', timedOut: false, missing: true, exitCode: null };
+  }
+  const result = await dependencies.runCli(executable, cwd, [...config.flatMap((setting) => ['-c', setting]), ...args], rest);
   if (project === undefined || !result.ok) return result;
   const pathResult = args[0] === 'rev-parse' && args.some((arg) => ['--show-toplevel', '--absolute-git-dir', '--git-common-dir', '--git-path'].includes(arg));
   if (pathResult) return { ...result, out: wslHostPath(project, result.out) };

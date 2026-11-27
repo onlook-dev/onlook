@@ -22,7 +22,8 @@ export type WorkspacePlan =
       workspaceName: string;
       branchName: string;
       workspacePath: string;
-      origin?: 'copied' | 'duplicate';
+      origin?: 'blank' | 'copied' | 'duplicate';
+      history?: 'none';
       duplicateSourceName?: string;
       /** Never folded into `origin`: a copied origin's rollback removes the bucket every sibling is cut from (ONL-2442). */
       held?: { origin: HeldOrigin; sourcePath: string };
@@ -49,6 +50,7 @@ export interface DuplicateProjectRequest {
 
 export interface WorkspaceCreated {
   internal?: 'artifacts';
+  history?: 'none';
   workspacePath: string;
   workspaceName: string;
   branchName: string;

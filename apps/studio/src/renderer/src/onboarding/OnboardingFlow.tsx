@@ -15,7 +15,7 @@ import { ignoreRefusal } from '../refusal.js';
 import { MachineStep } from './MachineStep.js';
 import { showsChecklist } from './checklist.js';
 import { useFlag } from '../flags/store.js';
-import { machineBlocked, machineCreationBlocked, machineNeedsAttention, refreshMachineChecks, useMachineStore } from './machine-store.js';
+import { blankMachineBlocked, machineBlocked, machineCreationBlocked, machineNeedsAttention, refreshMachineChecks, useMachineStore } from './machine-store.js';
 import { studio } from '../bridge.js';
 import { capable } from '../capabilities.js';
 import { BlockedWindowBarContext } from '../topbar/slots.js';
@@ -51,6 +51,7 @@ export function OnboardingFlow({ onComplete, onCreateBlank, aside, startAt, resu
     void refreshMachineChecks();
   }, [isMachineCheckOn]);
   const blocked = useMachineStore(machineBlocked);
+  const isCreatingBlank = useBlankCreateStore((state) => state.status.kind === 'creating' || state.status.kind === 'canceling');
   const needsMachine = useMachineStore(machineNeedsAttention);
   // A last check recovering would otherwise replace the checklist before the person saw it turn ready (ONL-3111).
   const [machineShown, setMachineShown] = useState(false);
@@ -112,7 +113,8 @@ export function OnboardingFlow({ onComplete, onCreateBlank, aside, startAt, resu
   );
 
   const createBlank = (): void => {
-    if (machineCreationBlocked()) return;
+    const status = useBlankCreateStore.getState().status.kind;
+    if (isCompleted.current || status === 'creating' || status === 'canceling' || blankMachineBlocked(useMachineStore.getState())) return;
     reportPassed('import', 'blank');
     onCreateBlank(harness.current);
   };
@@ -148,6 +150,8 @@ export function OnboardingFlow({ onComplete, onCreateBlank, aside, startAt, resu
       reportPassed('machine');
       setMachineTold(true);
     }}
+      onCreateBlank={createBlank}
+      isCreatingBlank={isCreatingBlank}
       onBack={() => { setStep('agent'); }} />
   ) : step === 'agent' ? (
     <ConnectStep

@@ -990,7 +990,7 @@ export class AgentSession {
     const wsl = wslProject(this.cwd);
     const project = readProjectContext(this.cwd);
     const workspaceBriefing = [briefing(this.opts.workspace, {
-      ...sessionBriefingContext('claude'),
+      ...sessionBriefingContext('claude', this.cwd),
       ...(this.opts.starter === undefined ? {} : { starter: this.opts.starter }),
     }), project.instructions].filter(Boolean).join('\n\n');
     const allowRules = [...this.allowRules];

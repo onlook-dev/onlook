@@ -6,6 +6,7 @@ import type { CliResult } from '../env/cli.js';
 import { runGit, USER_GIT_CONFIG, worktreeGitConfig } from '../env/git.js';
 import { t } from '@studio/i18n';
 import { wslHostPath, wslProject } from '../env/wsl.js';
+import { projectHasNoHistory } from './store.js';
 
 const GIT_TIMEOUT_MS = 20_000;
 
@@ -84,6 +85,9 @@ export async function git(
   args: string[],
   options: { timeoutMs?: number; env?: Record<string, string> } = {},
 ): Promise<GitResult> {
+  if (projectHasNoHistory(cwd)) {
+    return { ok: false, out: '', err: 'This project has no Git history yet.', timedOut: false, missing: true, exitCode: null };
+  }
   const safety = worktreeGitConfig(cwd);
   const env = { GIT_PAGER: 'cat', GIT_TERMINAL_PROMPT: '0', ...(wslProject(cwd) === undefined ? {} : { LC_ALL: 'C' }), ...options.env };
   const filters = await runGit(cwd, ['config', '--null', '--get-regexp', '^filter\\..*\\.(clean|smudge|process|required)$'], {
