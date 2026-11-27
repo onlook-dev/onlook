@@ -34,7 +34,7 @@
   "projectSetup.failure.commandTimeout": "Setup command timed out",
   "projectSetup.failure.commandFailed": "Setup command failed",
   "projectSetup.failure.unknownServer": "Unknown setup server",
-  "projectSetup.failure.shellMissing": "Setup scripts on Windows run in the sh.exe that Git for Windows installs, and Studio found none next to git. Install Git for Windows from git-scm.com, then run the setup again.",
+  "projectSetup.failure.shellMissing": "Setup scripts on Windows run in the sh.exe that Git for Windows installs, and Onlook found none next to git. Install Git for Windows from git-scm.com, then run the setup again.",
   "projectSetup.failure.ambiguousServer": "The setup server selection matches more than one owned process group",
   "projectSetup.failure.changedSetup": "Restart the existing servers to validate the changed setup",
   "projectSetup.failure.changedServer": "Stop the existing server before running its changed setup",

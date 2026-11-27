@@ -34,6 +34,7 @@
   "projectSetup.failure.commandTimeout": "配置命令超时",
   "projectSetup.failure.commandFailed": "配置命令失败",
   "projectSetup.failure.unknownServer": "未知的配置服务器",
+  "projectSetup.failure.shellMissing": "Windows 上的配置脚本在 Git for Windows 安装的 sh.exe 中运行，但 Onlook 在 git 所在目录中没有找到 sh.exe。从 git-scm.com 安装 Git for Windows 后请重试。",
   "projectSetup.failure.ambiguousServer": "所选配置服务器匹配到多个自有进程组",
   "projectSetup.failure.changedSetup": "请重新启动现有服务器，以验证更改后的配置",
   "projectSetup.failure.changedServer": "请先停止现有服务器，再运行更改后的配置",
