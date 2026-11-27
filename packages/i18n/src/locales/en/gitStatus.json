@@ -1,4 +1,7 @@
 {
+  "gitStatus.label.no-git": "No Git yet",
+  "gitStatus.card.no-git": "No Git yet",
+  "gitStatus.tooltip.no-git": "You can keep designing without Git history. Git is needed to publish or connect GitHub.",
   "gitStatus.failure.no-changes": "No Changes to Publish",
   "gitStatus.failure.no-changes.nextStep": "Make a change in this Project, then try Create PR again.",
   "gitStatus.failure.push-refused": "Push Refused",

@@ -1,4 +1,7 @@
 {
+  "gitStatus.label.no-git": "Git 未設定",
+  "gitStatus.card.no-git": "Git 未設定",
+  "gitStatus.tooltip.no-git": "Git の履歴がなくてもデザインを続けられます。公開や GitHub への接続には Git が必要です。",
   "gitStatus.failure.no-changes": "公開する変更なし",
   "gitStatus.failure.no-changes.nextStep": "このプロジェクトで変更を加えてから、もう一度プルリクエストを作成してください。",
   "gitStatus.failure.push-refused": "プッシュが拒否されました",

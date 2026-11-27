@@ -10,6 +10,7 @@ export interface StarterBriefing {
 }
 
 export interface BriefingContext {
+  history?: 'none';
   harness?: HarnessId;
   mode?: WorkMode;
   canRemove?: boolean;
@@ -144,10 +145,18 @@ export function briefing(
   return [
     PRODUCT_CONTEXT,
     '',
-    'This is a git worktree — an isolated copy of the repository. Run all commands from ' +
+    context.history === 'none'
+      ? 'This is an isolated blank project owned by Onlook, created without Git history. ' +
+        'Run all commands here. Editing and the preview do not require Git. Do not run Git, ' +
+        'initialize history or ask for Git installation unless the user asks to publish or connect GitHub. ' +
+        'Only then check for Git and, if it is missing, explain that it is needed and ask the user how to proceed. ' +
+        'Never install developer tools without their permission.'
+      : 'This is a git worktree — an isolated copy of the repository. Run all commands from ' +
       'this directory. Do NOT `cd` to the original repository root.',
     '',
-    `You are already inside this project, ${workspace.workspaceName}: Onlook’s own copy of ` +
+    context.history === 'none'
+      ? `You are already inside this project, ${workspace.workspaceName}. Its files belong to Onlook’s private project folder, not a connected checkout.`
+      : `You are already inside this project, ${workspace.workspaceName}: Onlook’s own copy of ` +
       `${workspace.sourceRepoName} on branch ${workspace.branchName}, branched from ` +
       `${workspace.baseBranch}. It belongs to the workspace for that repository, which ` +
       'groups every project made from it. You do not need to locate or enter it — you are ' +

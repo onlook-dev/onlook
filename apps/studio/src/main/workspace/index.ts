@@ -58,6 +58,7 @@ import {
   resolveHandle,
 } from './naming.js';
 import { installSetupProofHook } from './setup-proof.js';
+import { fabricateBlankSibling, planBlankSibling, rollbackBlankSibling } from './blank-sibling.js';
 import { recordFolderRefused, recordProjectArchived, recordWorkspacesReordered } from './telemetry.js';
 import {
   heldWorkspaceAt,
@@ -77,6 +78,8 @@ const logger = log('workspace');
 // Inspects and creates nothing, so every refusal lands before anything is touched (ONL-1829).
 export async function planWorkspace(sourcePath: string): Promise<WorkspacePlan> {
   beginCreation(sourcePath, 'folder');
+  const blankSibling = planBlankSibling(sourcePath);
+  if (blankSibling !== undefined) return blankSibling;
   const root = await repoRoot(sourcePath);
   if (!root) return planCopiedWorkspace(sourcePath);
   // A held repository keeps the identity it was minted with, remote or not (ONL-2152, ONL-2442).
@@ -152,6 +155,7 @@ async function proposeName(
 }
 
 export async function fabricateFromPlan(plan: ReadyWorkspacePlan): Promise<WorkspaceCreateResult> {
+  if (plan.origin === 'blank' && plan.history === 'none') return fabricateBlankSibling(plan);
   if (plan.origin !== 'copied') return createWorkspaceFromPlan(plan);
   const inited = await initCopiedSource(plan);
   if (!inited.ok) {
@@ -165,6 +169,7 @@ export async function fabricateFromPlan(plan: ReadyWorkspacePlan): Promise<Works
 }
 
 export async function rollbackFromPlan(plan: ReadyWorkspacePlan): Promise<void> {
+  if (plan.origin === 'blank' && plan.history === 'none') return rollbackBlankSibling(plan);
   if (plan.origin === 'copied') {
     await rollbackCopied(plan);
     return;
