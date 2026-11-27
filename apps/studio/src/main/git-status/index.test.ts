@@ -211,7 +211,7 @@ it('reports the fresh measured denial and failed refresh through the real teleme
     initTelemetry();
     const { host, calls } = harness();
     const first = host.opened(worktree);
-    calls[0]!.resolve({ measurement: facts({ access: 'denied', accessReason: 'read-only' }), fetched: true });
+    calls[0]!.resolve({ measurement: facts({ access: 'denied', accessReason: 'read-only' }), fetched: true, via: 'account' });
     await first;
     await settle();
     const second = host.check(worktree, { trigger: 'focus', fetch: false });
@@ -219,8 +219,8 @@ it('reports the fresh measured denial and failed refresh through the real teleme
     await second;
     const captured = peekQueueForTesting().filter((event) => event.event === 'git_state_measured');
     expect(captured).toHaveLength(2);
-    expect(captured[0]!.properties).toMatchObject({ reason: 'read-only', gh_installed: true, gh_authenticated: true, ahead: 1, behind: 0 });
-    expect(captured[1]!.properties).toMatchObject({ reason: 'measurement-unavailable', gh_installed: null, gh_authenticated: null, ahead: null, behind: null });
+    expect(captured[0]!.properties).toMatchObject({ reason: 'read-only', gh_installed: true, gh_authenticated: true, ahead: 1, behind: 0, reader: 'account' });
+    expect(captured[1]!.properties).toMatchObject({ reason: 'measurement-unavailable', gh_installed: null, gh_authenticated: null, ahead: null, behind: null, reader: null });
     expect(captured[0]!.properties['project_id']).toMatch(/^[0-9a-f]{16}$/);
     for (const privateValue of ['teal-skylark', 'acme/repo', 'private-', workspaceRootDir]) expect(JSON.stringify(captured)).not.toContain(privateValue);
   } finally {

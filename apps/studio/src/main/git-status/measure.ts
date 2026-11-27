@@ -8,6 +8,7 @@ import type { GitHubReader } from './github/reader.js';
 import { runGit, USER_GIT_CONFIG } from '../env/git.js';
 import { hostSshPath } from '../env/platform.js';
 import type { GithubBackend } from '../github-import/backend.js';
+import type { GitStateReader } from '../telemetry/git-state.js';
 import { selectGithubReader } from './github/account-reader.js';
 
 const FETCH_TIMEOUT_MS = 20_000;
@@ -50,6 +51,8 @@ export interface MeasureOutcome {
   measurement: GitMeasurement;
   /** `undefined` = no fetch attempted; `false` = attempted and failed; `true` advances `fetchedAt`. */
   fetched: boolean | undefined;
+  /** Which reader answered. Both readers can carry the browser connection and a typed failure, so the measurement itself does not say. */
+  via?: GitStateReader;
 }
 
 interface StatusFacts {
@@ -108,12 +111,12 @@ export async function measure(
     m.partial = true;
   }
   const base = m.pr?.baseRefName;
-  if (base === undefined || base === m.baseBranch || remote === undefined) return { measurement: m, fetched };
+  if (base === undefined || base === m.baseBranch || remote === undefined) return { measurement: m, fetched, via: selected.via };
   // `behind` offers Download changes, so it counts against the branch the PR merges into, never the one the project was cut from (ONL-2411).
   const refetched = options.fetch ? await fetchBase(worktree, remote, base) : fetched;
   const compared = await compareToBase(worktree, `${remote}/${base}`);
   // A base a fetch has never landed counts zero of everything, which is not the same as up to date (ONL-2411).
-  return { measurement: { ...m, baseBranch: base, ...compared }, fetched: compared.baseExists ? refetched : false };
+  return { measurement: { ...m, baseBranch: base, ...compared }, fetched: compared.baseExists ? refetched : false, via: selected.via };
 }
 
 interface GitPass {

@@ -46,7 +46,7 @@ import type {
   RendererTelemetryEventName,
 } from '@studio/events';
 import type { Locale } from '@studio/i18n/locale';
-import type { GitStateReason } from './git-state.js';
+import type { GitStateReader, GitStateReason } from './git-state.js';
 import type { PreviewDiagnostics } from './preview-diagnostics.js';
 import type { AgentSetupErrorClass } from './setup-failure.js';
 
@@ -232,6 +232,8 @@ export interface TelemetryEventMap {
     origin: import('@studio/events').GitOriginKind | null;
     head: import('@studio/events').GitHead | null;
     access: import('@studio/events').GitRepoAccess | null;
+    reader: GitStateReader | null;
+    read_failure: import('@studio/events').GithubReadFailure['status'] | null;
     partial: boolean | null;
     fetch_succeeded: boolean | null;
     ahead: number | null;

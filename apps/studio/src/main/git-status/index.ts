@@ -157,7 +157,7 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
       const workspaceProperties = resolveWorkspaceTelemetryProperties(worktreePath);
       if (workspaceProperties !== undefined) capture('git_state_measured', {
         ...workspaceProperties,
-        ...gitStateProperties(outcome?.measurement, trigger, outcome?.fetched),
+        ...gitStateProperties(outcome?.measurement, trigger, outcome?.fetched, outcome?.via),
       });
     });
   };
