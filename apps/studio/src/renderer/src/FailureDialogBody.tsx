@@ -8,7 +8,7 @@ import { t } from '@studio/i18n';
 export interface FailureDialogBodyProps {
   title: string;
   body: string;
-  /** A diagnosis in the product's own words, read before the machine's report. `pre-wrap`, so it can be more than one paragraph (ONL-3111). */
+  /** A diagnosis in the product's own words, read before the machine's report. `pre-wrap`, so it can be more than one paragraph (ONL-3111); it breaks lines between words, and inside one only when that word alone overflows (ONL-3395). */
   explanation?: string;
   detail?: string;
   actions: ReactNode;
@@ -37,7 +37,7 @@ export function FailureDialogBody({ title, body, explanation, detail, actions, t
               </Text>
             </VStack>
             {explanation === undefined ? null : (
-              <Text type="body" style={{ lineHeight: 1.5, whiteSpace: 'pre-wrap' }} data-testid={explanationTestId}>
+              <Text type="body" style={{ lineHeight: 1.5, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }} data-testid={explanationTestId}>
                 {explanation}
               </Text>
             )}

@@ -53,7 +53,8 @@ export type ProjectImportRefusalReason =
   | 'busy'
   /** The bucket is swept-prefixed and still carries the creating marker, so the boot sweep removes it whole (ONL-2522). */
   | 'being-cleaned-up'
-  | 'fields-incomplete';
+  | 'fields-incomplete'
+  | 'runtime-unavailable';
 
 export type ProjectImportEntryPoint = 'discovered' | 'picked';
 
@@ -66,7 +67,7 @@ export interface ProjectImportRequest {
 /** Listed, not opened: the imported Project arrives as an ordinary card (ONL-2522). */
 export type ProjectImportOutcome =
   | { ok: true }
-  | { ok: false; reason: ProjectImportRefusalReason };
+  | { ok: false; reason: ProjectImportRefusalReason; detail?: string };
 
 export interface OpenProjectRequest {
   workspacePath: string;

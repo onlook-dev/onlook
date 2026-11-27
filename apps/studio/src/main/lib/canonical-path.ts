@@ -2,19 +2,27 @@ import { createHash } from 'node:crypto';
 import { realpathSync } from 'node:fs';
 import { resolve } from 'node:path';
 
+let mapPath: (path: string) => string | undefined = () => undefined;
+
+export function setCanonicalPathMapper(mapper: (path: string) => string | undefined): void {
+  mapPath = mapper;
+}
+
 // `resolve()` alone does not follow symlinks: on macOS `/var` and `/private/var` are two keys for one directory.
 export function canonicalPath(path: string): string {
+  const mapped = mapPath(path);
   try {
-    return realpathSync.native(path);
+    const real = realpathSync.native(path);
+    return mapPath(real) ?? real;
   } catch {
-    return resolve(path);
+    return mapped ?? resolve(path);
   }
 }
 
 /** Both spellings one path can key under: the resolved one while it exists, the lexical one once it is gone (ONL-2315). */
 export function pathSpellings(path: string): string[] {
   const canonical = canonicalPath(path);
-  const lexical = resolve(path);
+  const lexical = mapPath(path) ?? resolve(path);
   return canonical === lexical ? [canonical] : [canonical, lexical];
 }
 

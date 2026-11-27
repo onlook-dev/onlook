@@ -3,6 +3,8 @@ import { existsSync } from 'node:fs';
 import { getSessionInfo } from '@anthropic-ai/claude-agent-sdk';
 import type { HarnessId } from '@studio/events';
 import { canonicalPath } from '../lib/canonical-path.js';
+import { wslProject } from '../env/wsl.js';
+import { wslClaudeSessionExists } from './wsl.js';
 import { defineDomain } from '../state/store.js';
 import type { SessionHarness } from './backend.js';
 import { harnessFor, harnessStoredAs } from './harness.js';
@@ -148,6 +150,8 @@ export async function planSession(
   const sdkSessionId = storedClaudeSession(cwd);
   if (sdkSessionId === undefined) return fresh;
   if (!existsSync(cwd)) return fresh;
+
+  if (wslProject(cwd) !== undefined) return await wslClaudeSessionExists(cwd, sdkSessionId) ? { kind: 'resume', sessionId: sdkSessionId } : fresh;
 
   try {
     const info = await getSessionInfo(sdkSessionId, { dir: cwd });

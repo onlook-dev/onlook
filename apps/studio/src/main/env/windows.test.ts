@@ -4,6 +4,25 @@ import { windowsJobCommand } from './windows-job.js';
 import { requiresShellApproval } from '../agent-host/shell-approval.js';
 import { parseWindowsProcesses } from '../server/windows.js';
 import { codexPlatformTag } from '../codex/paths.js';
+import { canonicalPath, setCanonicalPathMapper } from '../lib/canonical-path.js';
+import { wslProject } from './wsl.js';
+
+test('the two WSL share prefixes identify the same project on Windows', () => {
+  const descriptor = Object.getOwnPropertyDescriptor(process, 'platform')!;
+  const flags = process.env['STUDIO_FLAGS'];
+  try {
+    process.env['STUDIO_FLAGS'] = 'wsl-projects';
+    setCanonicalPathMapper((path) => wslProject(path)?.hostPath);
+    Object.defineProperty(process, 'platform', { ...descriptor, value: 'win32' });
+    expect(canonicalPath('\\\\wsl$\\Ubuntu\\home\\developer\\project')).toBe('\\\\wsl.localhost\\ubuntu\\home\\developer\\project');
+    expect(canonicalPath('\\\\wsl.localhost\\Ubuntu\\home\\developer\\project')).toBe('\\\\wsl.localhost\\ubuntu\\home\\developer\\project');
+  } finally {
+    setCanonicalPathMapper(() => undefined);
+    Object.defineProperty(process, 'platform', descriptor);
+    if (flags === undefined) delete process.env['STUDIO_FLAGS'];
+    else process.env['STUDIO_FLAGS'] = flags;
+  }
+});
 
 test('Windows shell commands cannot use a Bash wrapper to bypass approval', () => {
   expect(requiresShellApproval('Bash', 'win32')).toBe(true);

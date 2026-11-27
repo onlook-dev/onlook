@@ -1,10 +1,11 @@
 import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { pathSpellings } from '../lib/canonical-path.js';
 import type { CliResult } from '../env/cli.js';
 import { runGit, USER_GIT_CONFIG, worktreeGitConfig } from '../env/git.js';
 import { t } from '@studio/i18n';
+import { wslHostPath, wslProject } from '../env/wsl.js';
 import { projectHasNoHistory } from './store.js';
 
 const GIT_TIMEOUT_MS = 20_000;
@@ -44,7 +45,7 @@ export interface DiskSnapshot {
 export async function captureDiskSnapshot(sourcePath: string): Promise<DiskSnapshot> {
   const head = await worktreeHead(sourcePath);
   if (head === undefined) throw new Error(t('projects.copy.error.noHead'));
-  const directory = mkdtempSync(join(tmpdir(), 'studio-copy-index-'));
+  const directory = mkdtempSync(join(wslProject(sourcePath) === undefined ? tmpdir() : dirname(sourcePath), 'studio-copy-index-'));
   const indexPath = join(directory, 'index');
   const env = { GIT_INDEX_FILE: indexPath };
   try {
@@ -87,8 +88,8 @@ export async function git(
   if (projectHasNoHistory(cwd)) {
     return { ok: false, out: '', err: 'This project has no Git history yet.', timedOut: false, missing: true, exitCode: null };
   }
-  const safety = worktreeGitConfig();
-  const env = { GIT_PAGER: 'cat', GIT_TERMINAL_PROMPT: '0', ...options.env };
+  const safety = worktreeGitConfig(cwd);
+  const env = { GIT_PAGER: 'cat', GIT_TERMINAL_PROMPT: '0', ...(wslProject(cwd) === undefined ? {} : { LC_ALL: 'C' }), ...options.env };
   const filters = await runGit(cwd, ['config', '--null', '--get-regexp', '^filter\\..*\\.(clean|smudge|process|required)$'], {
     config: safety,
     // A caller may only tighten this read: a worktree's own 120s is for the work, not for reading config (ONL-3111).
@@ -123,6 +124,7 @@ export async function git(
 
 export async function repoRoot(path: string): Promise<string | undefined> {
   const result = await git(path, ['rev-parse', '--show-toplevel']);
+  if (wslProject(path) !== undefined && !result.ok && !result.err.includes('not a git repository')) throw new Error(gitFailureDetail('rev-parse', result));
   return result.ok && result.out ? result.out : undefined;
 }
 
@@ -304,7 +306,8 @@ export function worktreePointer(path: string): string | undefined {
   }
   const gitdir = /^gitdir:[ \t]*(.+)$/m.exec(contents)?.[1]?.trim();
   if (gitdir === undefined || gitdir === '') return undefined;
-  return resolve(path, gitdir);
+  const project = wslProject(path);
+  return project !== undefined && gitdir.startsWith('/') ? wslHostPath(project, gitdir) : resolve(path, gitdir);
 }
 
 /** `worktree <path>` from each porcelain block the filter keeps. */

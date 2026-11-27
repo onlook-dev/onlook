@@ -4,6 +4,8 @@ import { isAlive, isContainedIn } from './owner.js';
 import { inspectWindowsProcess, windowsProcesses } from './windows.js';
 import { isWindows, lsofPath } from '../env/platform.js';
 import { APP_ENV, runChild, signalTree } from '../env/child.js';
+import { wslProject } from '../env/wsl.js';
+import { signalWslListener, wslProcesses, type WslProcessIdentity } from '../env/wsl-processes.js';
 
 const logger = log('server');
 
@@ -54,9 +56,23 @@ export interface SweepDeps {
   kill: (pid: number) => void | Promise<void>;
   inspect?: (pid: number) => SweepProcess | undefined | Promise<SweepProcess | undefined>;
   self?: number;
+  alive?: (pid: number) => boolean;
 }
 
-export function appSweepDeps(): SweepDeps {
+export function appSweepDeps(worktree?: string): SweepDeps {
+  if (worktree !== undefined && wslProject(worktree) !== undefined) {
+    const captured = new Map<number, WslProcessIdentity>();
+    return {
+      self: -1,
+      alive: () => true,
+      running: async () => {
+        const found = await wslProcesses(worktree);
+        for (const entry of found) captured.set(entry.pid, entry);
+        return found;
+      },
+      kill: (pid) => signalWslListener(worktree, pid, 'SIGTERM', captured.get(pid)?.creationTime, captured.get(pid)?.cwd),
+    };
+  }
   return {
     running: runningWithCwd,
     ...(isWindows() ? { inspect: inspectWindowsProcess } : {}),
@@ -82,7 +98,7 @@ export async function sweepWorktree(
   for (const candidate of await deps.running()) {
     if (candidate.pid === self || candidate.pid <= 1) continue;
     if (!isContainedIn(canonicalPath(candidate.cwd), target)) continue;
-    if (!isAlive(candidate.pid)) continue;
+    if (!(deps.alive ?? isAlive)(candidate.pid)) continue;
     try {
       if (deps.inspect !== undefined) {
         if (!candidate.creationTime) continue;

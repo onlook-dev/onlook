@@ -51,7 +51,7 @@
     "test:unit": "GIT_CONFIG_GLOBAL=/dev/null bun scripts/test-unit.ts",
     "test:report": "bun run test:unit --junit \"${JUNIT_REPORT_PATH:-.test-results/unit.xml}\"",
     "test:focused": "bun run test:unit",
-    "test:windows": "node --import ./tests/apparatus/node-test-preload.ts --test --test-timeout=30000 apps/studio/src/main/server/windows.pty.ts apps/studio/src/main/updater/signature.pty.ts && GIT_CONFIG_GLOBAL=NUL bun test ./apps/studio/src/main/github-import/clone.test.ts",
+    "test:windows": "node --import ./tests/apparatus/node-test-preload.ts --test --test-timeout=30000 apps/studio/src/main/env/windows-runtime.pty.ts apps/studio/src/main/env/wsl.pty.ts apps/studio/src/main/server/windows.pty.ts apps/studio/src/main/updater/signature.pty.ts && GIT_CONFIG_GLOBAL=NUL bun test --timeout 30000 ./apps/studio/src/main/github-import/clone.test.ts",
     "test:pty": "node scripts/check-node.mjs && GIT_CONFIG_GLOBAL=/dev/null node --import ./tests/apparatus/node-test-preload.ts --test --test-timeout=30000 'apps/studio/src/main/**/*.pty.ts'",
     "test:wide": "bun scripts/test-wide.ts",
     "test:sdk": "node --import ./tests/apparatus/node-live-preload.ts --test 'tests/live/**/*.live.ts'",

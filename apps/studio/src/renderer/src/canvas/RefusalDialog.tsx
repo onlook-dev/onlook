@@ -9,6 +9,10 @@ import type { Refusal } from './refusal.js';
 export { refusalFrom, type Refusal } from './refusal.js';
 
 const REFUSAL_COPY: Record<WorkspaceRefusalReason, { title: StringKey; body: StringKey }> = {
+  'runtime-unavailable': {
+    title: 'machine.wsl.unavailable.title',
+    body: 'machine.wsl.unavailable.body',
+  },
   'nothing-to-copy': {
     title: 'workspace.startFresh.title',
     body: 'workspace.startFresh.body',
@@ -43,14 +47,17 @@ export function RefusalBody({
   const isEmpty = refusal.reason === 'nothing-to-copy';
   const copy = REFUSAL_COPY[refusal.reason];
   const params = { projectName: refusal.projectName ?? '', folderName: refusal.folderName ?? '' };
+  // A WSL runtime says what to install in Onlook's own words, so it reads as prose, not as a quoted report (ONL-3395).
+  const diagnosis = refusal.reason === 'runtime-unavailable'
+    ? { explanation: refusal.detail, explanationTestId: 'workspace-refused-detail' }
+    : { detail: refusal.detail, detailTestId: 'workspace-refused-detail' };
   return (
     <FailureDialogBody
       title={t(copy.title, params)}
       body={t(copy.body, params)}
       {...(titleId === undefined ? {} : { titleId })}
       {...(descriptionId === undefined ? {} : { descriptionId })}
-      {...(refusal.detail === undefined ? {} : { detail: refusal.detail })}
-      detailTestId="workspace-refused-detail"
+      {...(refusal.detail === undefined ? {} : diagnosis)}
       data-testid={isEmpty ? 'workspace-start-fresh' : 'workspace-refused'}
       actions={
         <>

@@ -73,6 +73,8 @@ import { projectSetupService } from '../project-setup/service.js';
 import type { ProjectSetupService } from '../project-setup/runner.js';
 import { canonicalPath } from '../lib/canonical-path.js';
 import { signalTree } from '../env/child.js';
+import { wslProject } from '../env/wsl.js';
+import { signalWslListener } from '../env/wsl-processes.js';
 
 const logger = log('server');
 
@@ -176,7 +178,7 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
   const pendings = new Map<string, ServerMachine>();
   const starterSpawns = new Map<string, number>();
   /** Signalled but not yet escalated: the 2s wait outlives a quit, which would leave the process on its port (ONL-2499). */
-  const awaitingEscalation = new Set<number>();
+  const awaitingEscalation = new Map<string, () => void | Promise<void>>();
 
   function pendingFor(worktreePath: string): ServerMachine {
     const key = normalizePath(worktreePath);
@@ -300,7 +302,7 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
     const current = capturePortMeasurement(port);
     const answered = await probe(port);
     if (!answered) return { measured: 'dead', verified: false, current };
-    const identity = await identify(port).catch((): undefined => undefined);
+    const identity = await identify(port, { workspacePath: worktreePath }).catch((): undefined => undefined);
     const ownership = verifiesFor(identity, folder);
     if (ownership !== 'foreign') return { measured: 'live', verified: ownership === 'ours', current };
     if (isContainerRuntime(identity?.command)) return { measured: 'stranger', listener: 'container', verified: false, current };
@@ -640,17 +642,19 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
         for (const port of entry.ports) {
           if (runtimePorts.has(port.port)) continue;
           void (async () => {
-            const identity = await identify(port.port);
-            if (identity === undefined || verifiesFor(identity, entry.folder) !== 'ours' || identity.pid <= 1 || identity.pid === process.pid) return;
-            try { await signalProcess(identity.pid, 'SIGTERM'); } catch { return; }
-            awaitingEscalation.add(identity.pid);
+            const identity = await identify(port.port, { workspacePath: worktree });
+            if (identity === undefined || verifiesFor(identity, entry.folder) !== 'ours' || identity.pid <= 1 || (wslProject(worktree) === undefined && identity.pid === process.pid)) return;
+            const send = (signal: NodeJS.Signals): void | Promise<void> => wslProject(worktree) === undefined ? signalProcess(identity.pid, signal) : signalWslListener(worktree, identity.pid, signal, identity.creationTime, identity.cwd);
+            try { await send('SIGTERM'); } catch { return; }
+            const escalationKey = `${worktree}\0${identity.pid}`;
+            awaitingEscalation.set(escalationKey, () => send('SIGKILL'));
             try {
               await delay(2000);
-              const still = await identify(port.port);
-              if (still?.pid === identity.pid && verifiesFor(still, entry.folder) === 'ours') {
-                try { await signalProcess(still.pid, 'SIGKILL'); } catch { return; }
+              const still = await identify(port.port, { workspacePath: worktree });
+              if (still?.pid === identity.pid && verifiesFor(still, entry.folder) === 'ours' && (wslProject(worktree) === undefined || identity.creationTime === still.creationTime)) {
+                try { await send('SIGKILL'); } catch { return; }
               }
-            } finally { awaitingEscalation.delete(identity.pid); }
+            } finally { awaitingEscalation.delete(escalationKey); }
           })().catch(() => { logger.error('scoped server stop failed'); });
         }
       }
@@ -735,8 +739,8 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
 
     dispose() {
       // Synchronous, because quit does not wait: an unescalated SIGTERM leaves the port held after Studio is gone.
-      for (const pid of awaitingEscalation) {
-        try { void Promise.resolve(signalProcess(pid, 'SIGKILL')).catch(() => undefined); } catch { /* already gone */ }
+      for (const stop of awaitingEscalation.values()) {
+        try { void Promise.resolve(stop()).catch(() => undefined); } catch { /* already gone */ }
       }
       awaitingEscalation.clear();
       for (const [worktreePath, seats] of workspaces) {

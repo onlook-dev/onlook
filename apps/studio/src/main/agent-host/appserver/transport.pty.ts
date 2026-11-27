@@ -4,6 +4,7 @@ import { execFileSync, spawn } from 'node:child_process';
 import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { after, describe, it } from 'node:test';
 
 const workDir = mkdtempSync(join(tmpdir(), 'appserver-transport-node-'));
@@ -100,7 +101,8 @@ after(() => {
 
 async function run(mode: string): Promise<Ran> {
   // Its own group: the fake is a grandchild, so only a group kill reaches it.
-  const child = spawn(process.execPath, [SCENARIO, mode, FAKE], {
+  const resolver = pathToFileURL(join(process.cwd(), 'tests/apparatus/node-ts-resolve.ts')).href;
+  const child = spawn(process.execPath, ['--import', resolver, SCENARIO, mode, FAKE], {
     cwd: workDir,
     stdio: ['ignore', 'pipe', 'pipe'],
     detached: true,

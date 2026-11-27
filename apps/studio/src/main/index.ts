@@ -2,6 +2,8 @@ import { mkdirSync } from 'node:fs';
 import { release, tmpdir } from 'node:os';
 import { flag } from '@onlook/cloud-provider';
 import { primeFlags } from './flags/index.js';
+import { setCanonicalPathMapper } from './lib/canonical-path.js';
+import { wslProject } from './env/wsl.js';
 import { applyChromiumLanguage, chooseLocale } from './locale/index.js';
 import { registerProjectSetup } from './project-setup/index.js';
 import { disposeProjectSetup, beginProjectSetupQuit } from './project-setup/service.js';
@@ -288,6 +290,7 @@ void app.whenReady().then(() => {
   initLog({ mirror: !app.isPackaged });
   // Flags before telemetry: activation reads `web-attribution-link` to decide a retained handoff, and an unprimed read answers from the baked default whatever Cloud targets (ONL-3080).
   primeFlags(flag);
+  setCanonicalPathMapper((path) => wslProject(path)?.hostPath);
   chooseLocale();
   setPreviewDiagnosticsRestorer(restoreProjectPreviewDiagnostics);
   setCrashContextRecorder(updateRunningContext);
