@@ -35,6 +35,24 @@ describe('the import refusal dialog (ONL-2522)', () => {
     expect(markup).toContain('Git is unavailable in Ubuntu');
     expect(markup).toContain(t('machine.wsl.unavailable.title'));
   });
+
+  it('reads the WSL diagnosis as prose, so its words stay whole (ONL-3395)', () => {
+    const diagnosis = t('machine.wsl.toolsUnavailable', { tools: 'git, node', distro: 'Ubuntu' });
+    const markup = renderToStaticMarkup(<ImportRefusalDialog reason="runtime-unavailable" detail={diagnosis} isInline onDismiss={() => {}} />);
+    const prose = markup.indexOf(diagnosis);
+    expect(prose).toBeGreaterThan(-1);
+    expect(markup).not.toContain(t('blank.create.failed.detailLabel'));
+    expect(markup.slice(0, prose)).not.toContain('<code');
+    expect(markup.slice(0, prose)).not.toContain('<pre');
+    const opening = /<[^>]*data-testid="import-refused-detail"[^>]*>/.exec(markup)?.[0] ?? '';
+    expect(opening).toContain('overflow-wrap:anywhere');
+  });
+
+  it('quotes a machine report in its own block', () => {
+    const markup = renderToStaticMarkup(<ImportRefusalDialog reason="not-a-repository" detail="fatal: not a git repository" isInline onDismiss={() => {}} />);
+    expect(markup).toContain(t('blank.create.failed.detailLabel'));
+    expect(markup).toContain('fatal: not a git repository');
+  });
   it('stays closed without a refusal', () => {
     expect(renderToStaticMarkup(<ImportRefusalDialog reason={null} isInline onDismiss={() => {}} />)).toBe('');
   });

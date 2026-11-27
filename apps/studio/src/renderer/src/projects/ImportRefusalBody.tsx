@@ -61,12 +61,15 @@ export function ImportRefusalBody({
   descriptionId?: string;
 }): React.JSX.Element {
   const copy = IMPORT_REFUSAL_COPY[reason];
+  // A WSL runtime says what to install in Onlook's own words, so it reads as prose, not as a quoted report (ONL-3395).
+  const diagnosis = reason === 'runtime-unavailable'
+    ? { explanation: detail, explanationTestId: 'import-refused-detail' }
+    : { detail, detailTestId: 'import-refused-detail' };
   return (
     <FailureDialogBody
       title={t(copy.title)}
       body={t(copy.body)}
-      detail={detail}
-      detailTestId="import-refused-detail"
+      {...diagnosis}
       {...(titleId === undefined ? {} : { titleId })}
       {...(descriptionId === undefined ? {} : { descriptionId })}
       data-testid="import-refused"
