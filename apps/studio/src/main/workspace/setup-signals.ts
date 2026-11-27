@@ -94,7 +94,7 @@ export async function noteSetupReport(cwd: string, port: number, signal?: AbortS
     frame = await first.place(port, signal);
   } catch (err) {
     logger.warn('first frame not authored', { error: err });
-    frame = { kind: 'not-placed', reason: 'Onlook hit an error placing it' };
+    frame = { kind: 'not-placed', reason: t('projectSetup.failure.placeError') };
   }
   for (const waiter of waiters) waiter.resolve({ kind: 'reported', port, frame });
   return frame;

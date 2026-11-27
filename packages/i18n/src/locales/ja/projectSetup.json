@@ -65,6 +65,8 @@
   "projectSetup.failure.hostUnavailable": "Onlook のサーバーホストを利用できません",
   "projectSetup.failure.bookNotReady": "サーバーブックでアプリの準備完了を確認できませんでした",
   "projectSetup.failure.frameNotPlaced": "実行中のアプリを配置できませんでした: {reason}",
+  "projectSetup.failure.placeError": "配置中にエラーが発生しました",
+  "projectSetup.failure.frameMissing": "フレームがキャンバスに表示されませんでした",
   "projectSetup.stage.prepare": "準備",
   "projectSetup.stage.install": "インストール",
   "projectSetup.stage.start": "起動",

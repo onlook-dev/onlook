@@ -65,6 +65,8 @@
   "projectSetup.failure.hostUnavailable": "Onlook 的服务器主机不可用",
   "projectSetup.failure.bookNotReady": "服务器记录未确认应用已就绪",
   "projectSetup.failure.frameNotPlaced": "无法放置正在运行的应用：{reason}",
+  "projectSetup.failure.placeError": "放置时出错",
+  "projectSetup.failure.frameMissing": "画框未出现在画布上",
   "projectSetup.stage.prepare": "准备",
   "projectSetup.stage.install": "安装",
   "projectSetup.stage.start": "启动",

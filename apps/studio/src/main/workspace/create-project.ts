@@ -611,7 +611,7 @@ export async function placeFirstFrame(
   const op = result.entries[0]?.op;
   const node = op?.type === 'create' ? result.doc.nodes[op.node.id] : op?.type === 'set-home-url' ? result.doc.nodes[op.id] : undefined;
   return node === undefined || !isBrowserNode(node)
-    ? { kind: 'not-placed', reason: 'the frame did not land' }
+    ? { kind: 'not-placed', reason: t('projectSetup.failure.frameMissing') }
     : { kind: 'placed', node };
 }
 
