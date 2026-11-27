@@ -146,7 +146,7 @@ export function App({
         }} />
         <Dialog isOpen={githubOpen} onOpenChange={(open) => { if (!open) closeGithub(); }}
           purpose="form" width={SETTINGS_FLOW_WIDTH} maxHeight={SETTINGS_FLOW_HEIGHT} style={{ height: SETTINGS_FLOW_HEIGHT }} data-testid="github-status-dialog">
-          {githubOpen && <GithubImportFlow entryPoint="settings" onClose={closeGithub} onOpen={closeGithub} />}
+          {githubOpen && <GithubImportFlow entryPoint="topbar" onClose={closeGithub} onOpen={closeGithub} />}
         </Dialog>
 
         {/* THE PANELS ARE OVERLAYS, NOT COLUMNS: `inset: 0` is what keeps a

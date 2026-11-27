@@ -127,7 +127,7 @@ test('an existing Workspace offers Open Workspace instead of Clone repository', 
 });
 
 test('Settings only manages the connection and cannot silently clone a repository', () => {
-  const html = renderToStaticMarkup(<GithubSettingsView state={CONNECTED} onCommand={noop} onClose={noop} />);
+  const html = renderToStaticMarkup(<GithubSettingsView state={CONNECTED} entryPoint="settings" onCommand={noop} onClose={noop} />);
   expect(html).toContain(t('github.connected'));
   expect(html).not.toContain(t('github.clone'));
   expect(html).not.toContain(t('github.search'));
@@ -136,7 +136,7 @@ test('Settings only manages the connection and cannot silently clone a repositor
 /* Settings is the dialog it was before the picker grew: the library's own chrome, not the modal's (ONL-3182). */
 test('the Settings dialog keeps the library chrome and none of the import modal styling', () => {
   for (const state of [CONNECTED, { ...EMPTY_GITHUB, enabled: true, connectionAttempted: true }]) {
-    const html = renderToStaticMarkup(<GithubSettingsView state={state} onCommand={noop} onClose={noop} />);
+    const html = renderToStaticMarkup(<GithubSettingsView state={state} entryPoint="settings" onCommand={noop} onClose={noop} />);
     expect(html).toContain(t('github.name'));
     expect(html).not.toContain('background:#000');
     expect(html).not.toContain('font-size:19px');

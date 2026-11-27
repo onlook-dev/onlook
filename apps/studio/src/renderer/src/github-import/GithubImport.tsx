@@ -194,8 +194,8 @@ function ConnectionBody({ prompt, buttonProgress, isWaiting, style, onCommand }:
 }
 
 /** Settings as it stood before the picker grew: the library's own dialog chrome around one connection state. */
-export function GithubSettingsView({ state, pendingCommands = [], progressCommands = [], onCommand, onClose }: Omit<GithubImportViewProps, 'onOpen' | 'entryPoint' | 'onFolder'>): React.JSX.Element {
-  const prompt = connectionPrompt(state, 'settings');
+export function GithubSettingsView({ state, pendingCommands = [], progressCommands = [], entryPoint, onCommand, onClose }: Omit<GithubImportViewProps, 'onOpen' | 'onFolder'>): React.JSX.Element {
+  const prompt = connectionPrompt(state, entryPoint);
   const pending = (kind: GithubImportCommand['kind']): boolean => pendingCommands.some((command) => command.kind === kind);
   const buttonProgress = (kind: GithubImportCommand['kind']): { isDisabled: boolean; isLoading: boolean } => ({
     isDisabled: pending(kind), isLoading: progressCommands.some((command) => command.kind === kind),
@@ -254,7 +254,10 @@ export function GithubImportFlow({ entryPoint, onClose, onFolder, onOpen }: Omit
     }
   }, [state.phase, state.sourcePath, onOpen, entryPoint]);
   const leave = (): void => { gone.current = true; dismissGithub(); onClose(); };
-  if (entryPoint === 'settings') return <GithubSettingsView state={state} pendingCommands={pendingCommands} progressCommands={progressCommands} onCommand={onCommand} onClose={leave} />;
+  // The top bar manages the same one connection Settings does, so it opens that view and keeps its own entry point.
+  if (entryPoint === 'settings' || entryPoint === 'topbar') {
+    return <GithubSettingsView state={state} pendingCommands={pendingCommands} progressCommands={progressCommands} entryPoint={entryPoint} onCommand={onCommand} onClose={leave} />;
+  }
   return <GithubImportView state={state} pendingCommands={pendingCommands} progressCommands={progressCommands} entryPoint={entryPoint}
     onCommand={onCommand}
     onClose={leave} {...(onFolder ? { onFolder: () => { gone.current = true; leaveForFolder(onFolder); } } : {})} onOpen={onOpen} />;
