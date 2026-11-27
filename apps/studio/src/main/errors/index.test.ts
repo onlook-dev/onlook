@@ -6,6 +6,8 @@ import { afterAll, afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import type { ScrubbedException } from '@studio/events';
 import type { PostHog } from 'posthog-js/dist/module.no-external';
 import type { AppLike } from '../telemetry/index.js';
+import { observeTabHealth } from '../tabs/observe-health.js';
+import type { TabHealth } from '../tabs/health.js';
 
 const { resetIdentityCache } = await import('../identity/store.js');
 const { flush, initTelemetry, peekQueueForTesting, resetTelemetryForTesting, setAppForTesting } = await import('../telemetry/index.js');
@@ -135,6 +137,56 @@ it('process crash hooks observe startup exits before performance sampling and in
   expect(events.filter(({ event }) => event === 'crash_detected')).toEqual([]);
   expect(events.filter(({ event }) => event === 'process_gone').map(({ properties }) => properties['process_class'])).toEqual(['gpu', 'utility', 'tab']);
   expect(events.filter(({ event }) => event === '$exception').map(({ properties }) => [properties['$exception_type'], properties['process_type']])).toEqual([['NativeProcessCrash', 'gpu'], ['NativeProcessCrash', 'utility'], ['NativeProcessCrash', 'renderer']]);
+});
+
+it.each(['crashed', 'integrity-failure', 'oom'] as const)('a tab %s produces one native exception while health and recovery still update', async (reason) => {
+  const target = new EventEmitter();
+  const contents = Object.assign(new EventEmitter(), { id: 99, getType: () => 'window' });
+  let health: TabHealth | undefined;
+  installProcessCrashHooks(target as unknown as Parameters<typeof installProcessCrashHooks>[0]);
+  observeTabHealth(contents, {
+    isLive: () => true,
+    health: () => health,
+    setHealth: (next) => { health = next; },
+    projectFields: () => ({ project_id: 'test-project' }),
+  });
+  const details = { reason, exitCode: 5 };
+  for (const appFirst of [true, false]) {
+    if (appFirst) target.emit('render-process-gone', {}, contents, details);
+    contents.emit('render-process-gone', {}, details);
+    if (!appFirst) target.emit('render-process-gone', {}, contents, details);
+    expect(health).toBe('gone');
+    await flush();
+    const events = [...postedEvents, ...peekQueueForTesting()];
+    const count = appFirst ? 1 : 2;
+    const reports = events.filter(({ event }) => event === '$exception');
+    expect(reports).toHaveLength(count);
+    for (const report of reports) expect(report.properties).toMatchObject({ $exception_type: 'NativeProcessCrash', process_class: 'tab', reason, exit_code: 5 });
+    expect(events.filter(({ event }) => event === 'process_gone')).toHaveLength(count);
+    const failures = events.filter(({ event }) => event === 'tab_view_failed');
+    expect(failures).toHaveLength(count);
+    for (const failure of failures) expect(failure.properties).toMatchObject({ reason: 'renderer-gone', exit_reason: reason, project_id: 'test-project' });
+    contents.emit('did-finish-load');
+    expect(health).toBeUndefined();
+  }
+});
+
+it.each(['abnormal-exit', 'launch-failed'] as const)('a tab %s still reports an exception', async (reason) => {
+  const target = new EventEmitter();
+  const contents = Object.assign(new EventEmitter(), { id: 99, getType: () => 'window' });
+  installProcessCrashHooks(target as unknown as Parameters<typeof installProcessCrashHooks>[0]);
+  observeTabHealth(contents, {
+    isLive: () => true,
+    health: () => undefined,
+    setHealth: () => {},
+    projectFields: () => ({}),
+  });
+  target.emit('render-process-gone', {}, contents, { reason, exitCode: 1 });
+  contents.emit('render-process-gone', {}, { reason, exitCode: 1 });
+  await flush();
+  const reports = [...postedEvents, ...peekQueueForTesting()].filter(({ event }) => event === '$exception');
+  expect(reports).toHaveLength(1);
+  expect(reports[0]!.properties).toMatchObject({ subsystem: 'tabs', exit_reason: reason });
 });
 
 it('classifies a named starter exit as a dev server and ignores a killed starter', async () => {
