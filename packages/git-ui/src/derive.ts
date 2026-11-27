@@ -40,6 +40,8 @@ function cascade(m: GitMeasurement, defaults: GitPillDefaults): GitPillState {
   }
   const pr = m.pr;
   if (pr === undefined) {
+    // An answer the reader could not read never becomes "no pull request", or the button offers to open a second one (ONL-3371).
+    if (m.prUnknown === true) return { id: 'first-paint' };
     const dirty = m.dirty || m.aheadOfUpstream;
     return defaults.noPr === 'push' ? { id: 'push', dirty } : { id: 'create-pr', dirty };
   }

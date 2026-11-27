@@ -130,7 +130,7 @@ describe('account-backed GitHub status', () => {
       expect(await listed([extra])).toEqual({ ok: true, value: [{ ...row, viewerCanMerge: false }] });
     });
 
-    it('is dropped whole when any field fails its check, and the sound rows stay', async () => {
+    it('leaves the whole read incomplete when any field fails its check, sound rows beside it', async () => {
       const broken: Array<Record<string, unknown>> = [
         { number: 4.2 }, { number: -1 }, { number: '42' },
         { url: 'javascript:alert(1)' },
@@ -142,12 +142,37 @@ describe('account-backed GitHub status', () => {
         { mergeStateStatus: '' }, { baseRefName: 'x'.repeat(300) }, { updatedAt: 42 },
       ];
       for (const over of broken) {
-        expect(await listed([{ ...row, ...over }, second]), JSON.stringify(over)).toEqual({ ok: true, value: [second] });
+        expect(await listed([{ ...row, ...over }, second]), JSON.stringify(over)).toEqual({ ok: false, partial: true, unread: true });
       }
     });
 
-    it('a list whose every row fails is an empty answer, never an incomplete read', async () => {
-      expect(await listed([{ ...row, state: 'DRAFT' }])).toEqual({ ok: true, value: [] });
+    it('leaves the read incomplete when every row fails its check, never an empty answer', async () => {
+      expect(await listed([{ ...row, state: 'DRAFT' }])).toEqual({ ok: false, partial: true, unread: true });
+    });
+
+    it('leaves the read incomplete when the answer is not a list at all', async () => {
+      for (const payload of [undefined, null, 'none', 42, { pullRequests: [] }]) {
+        expect(await listed(payload as unknown as unknown[]), JSON.stringify(payload ?? null)).toEqual({ ok: false, partial: true, unread: true });
+      }
+    });
+
+    it('answers with no pull request only when the list itself is empty', async () => {
+      expect(await listed([])).toEqual({ ok: true, value: [] });
+    });
+
+    it('marks the measurement incomplete rather than measuring no pull request, and offers nothing', async () => {
+      const backend = githubBackendFixture('connected', {
+        pullRequests: { status: 'connected', pullRequests: [{ ...row, state: 'DRAFT' }] as unknown as GitMeasuredPullRequest[] },
+      });
+      const selected = await selectGithubReader(backend, scriptedReader({}).reader);
+      const measurement = await probeGithub({
+        ...emptyMeasurement('main', true), head: 'branch', branch: 'design', origin: 'github', repo: 'example/design',
+      }, selected.reader);
+      expect(measurement).toMatchObject({ partial: true, prUnknown: true });
+      expect(measurement.pr).toBeUndefined();
+      // Nothing to borrow, as right after an account change: the button must still not offer to open a second pull request.
+      const state = derivePillState({ measurement, measuredAt: '2026-01-01T00:00:00Z', trigger: 'open', stale: true }, GIT_PILL_SHIPPED_DEFAULTS);
+      expect(state.id).toBe('first-paint');
     });
 
     it('is pinned to the repository asked about however the remote spells it', async () => {

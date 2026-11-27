@@ -6,6 +6,9 @@ type Probe<T> = { ok: true; value: T } | { ok: false; partial: boolean };
 // `access` and `pullRequests` carry their negative as a value ('denied', []); a `Probe` here would invite a second, unreachable negative.
 type Answered<T> = { ok: true; value: T } | { ok: false; partial: true };
 
+/** `unread` is an answer that arrived and could not be read, which says less than one that never arrived: it may have described a pull request. */
+type Listed<T> = { ok: true; value: T } | { ok: false; partial: true; unread?: true };
+
 interface GitHubIdentity {
   /** Absent when the connection is established but reports no login. */
   account?: string;
@@ -31,5 +34,5 @@ export interface GitHubReader {
   present(): Promise<Probe<true>>;
   identity(): Promise<Probe<GitHubIdentity>>;
   access(repo?: string): Promise<Answered<GitHubRepoAccess>>;
-  pullRequests(repo: string | undefined, head: string, filter?: PullRequestFilter): Promise<Answered<GitMeasuredPullRequest[]>>;
+  pullRequests(repo: string | undefined, head: string, filter?: PullRequestFilter): Promise<Listed<GitMeasuredPullRequest[]>>;
 }

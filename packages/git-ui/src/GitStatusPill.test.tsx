@@ -210,6 +210,14 @@ describe('queued (ONL-2379)', () => {
     expect(html).toContain(STUB_STRINGS.queuedLabel);
   });
 
+  test('the skeleton carries no queue, so a press waiting through a re-read draws no blank button', () => {
+    const html = renderToStaticMarkup(
+      <GitStatusPill state={PILL_FIXTURES['first-paint']} strings={STUB_STRINGS} glyphs={GLYPHS} isQueued onAction={noop} />,
+    );
+    expect(html).not.toContain('data-queued="true"');
+    expect(html).not.toContain('git-status-body-press');
+  });
+
   test('the card scale carries no queue of its own', () => {
     const html = renderToStaticMarkup(
       <GitStatusPill state={PILL_FIXTURES['upload-changes']} strings={STUB_STRINGS} glyphs={GLYPHS} scale="card" isQueued onAction={noop} onOpenPr={noop} />,

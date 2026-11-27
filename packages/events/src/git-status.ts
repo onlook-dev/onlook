@@ -48,6 +48,8 @@ export interface GitMeasurement {
   pr?: GitMeasuredPullRequest;
   /** `gh` failed part-way; the git facts hold and `pr` is unknown, not absent. */
   partial?: boolean;
+  /** The pull-request answer arrived and could not be read, so a missing `pr` is not the absence of one (ONL-3371). */
+  prUnknown?: boolean;
 }
 
 export type GitMeasureTrigger = 'open' | 'turn-end' | 'interval' | 'focus' | 'activate';

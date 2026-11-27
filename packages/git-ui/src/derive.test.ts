@@ -87,6 +87,12 @@ describe('derivePillState', () => {
     expect(derivePillState(row(measurement({})), PUSH)).toEqual({ id: 'push', dirty: false });
   });
 
+  test('a pull-request answer that could not be read offers neither Create PR nor Push', () => {
+    for (const defaults of [D, PUSH]) {
+      expect(derivePillState(row(measurement({ dirty: true, prUnknown: true })), defaults)).toEqual({ id: 'first-paint' });
+    }
+  });
+
   test('BLOCKED or a read-only viewer forces the dropdown to open-in-browser, whatever the default is', () => {
     const blocked = derivePillState(row(BLOCKED_MEASUREMENT), { ...D, ready: 'merge' });
     expect(blocked.id).toBe('ready-to-merge');

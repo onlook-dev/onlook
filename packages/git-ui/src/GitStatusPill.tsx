@@ -448,7 +448,8 @@ export function GitStatusPill({
   const isChrome = scale === 'chrome';
   const isWorking = state.mode === 'working';
   /* Chrome-only, like the menu: the card pill carries no queue of its own. */
-  const showsQueued = isQueued && isChrome && !isWorking;
+  // Never on the skeleton: it has no label, so a queued one would read as a tinted blank the pointer can still press.
+  const showsQueued = isQueued && isChrome && !isWorking && state.id !== 'first-paint';
   const look = lookOf(state, showsQueued);
   const pr = prOf(state);
   const dropdown = menuFor(state, scale);

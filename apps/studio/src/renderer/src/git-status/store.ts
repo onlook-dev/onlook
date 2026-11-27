@@ -93,6 +93,17 @@ const queuedPrs = new Map<string, { entry: WorkingEntry; text: string }>();
 const prPrompts = new WeakMap<WorkingEntry, string>();
 const dispatchedPrs = new WeakSet<WorkingEntry>();
 
+/** How long a settled Create PR waits for facts complete enough to say whether it worked. */
+const RECONCILE_MS = 15_000;
+
+/** The facts it was waiting on were retired, so the window starts again for the ones replacing them. */
+function restartReconciliation(worktreePath: string): void {
+  const pending = reconcilingPrs.get(worktreePath);
+  if (pending === undefined) return;
+  clearTimeout(pending.timer);
+  pending.timer = setTimeout(() => finishReconciliation(worktreePath, true), RECONCILE_MS);
+}
+
 function finishReconciliation(worktreePath: string, report: boolean): void {
   const pending = reconcilingPrs.get(worktreePath);
   if (pending === undefined) return;
@@ -101,10 +112,12 @@ function finishReconciliation(worktreePath: string, report: boolean): void {
   if (!report) return;
   const { rows, defaults } = useGitStatusStore.getState();
   const row = rows[worktreePath];
-  const failure = row?.measurement.pr === undefined ? 'unknown' : undefined;
+  // Retired facts can neither credit the press nor blame it, so it ends unjudged rather than reported as a pull request that was never created.
+  const retired = row?.invalidated === true;
+  const failure = retired ? undefined : row?.measurement.pr === undefined ? 'unknown' : undefined;
   failureMarks.delete(worktreePath);
   useGitStatusStore.setState((state) => ({ failures: failure === undefined ? without(state.failures, worktreePath) : { ...state.failures, [worktreePath]: failure } }));
-  emitOutcome(worktreePath, pending.entry, row === undefined ? pending.entry.fromState : derivePillState(row, defaults).id, failure === undefined ? 'advanced' : 'unchanged', failure);
+  emitOutcome(worktreePath, pending.entry, row === undefined || retired ? pending.entry.fromState : derivePillState(row, defaults).id, failure === undefined && !retired ? 'advanced' : 'unchanged', failure);
 }
 
 function emitShownIfChanged(): void {
@@ -177,13 +190,22 @@ const useGitStatusStore = create<GitStatusStore>()((set, get) => ({
 
   apply: ({ worktreePath, row }) => {
     if (row.invalidated) {
-      finishReconciliation(worktreePath, false);
-      queuedPrs.delete(worktreePath);
+      // A press the agent already accepted keeps running, so its tracking outlives the facts it was pressed against: dropping it would let the pill offer the same press again (ONL-3371).
+      const entry = get().working[worktreePath] ?? reconcilingPrs.get(worktreePath)?.entry;
+      // The turn that carried the press still ends it, whatever became of the facts, or nothing ever would.
+      const ended = entry !== undefined && settles(row, entry);
+      const waiting = get().held[worktreePath];
+      const ranOut = waiting !== undefined && settles(row, { clickedAt: waiting.heldAt });
+      if (ended) finishReconciliation(worktreePath, false);
+      else restartReconciliation(worktreePath);
       failureMarks.delete(worktreePath);
       set((state) => ({
-        rows: { ...state.rows, [worktreePath]: row }, working: without(state.working, worktreePath),
-        held: without(state.held, worktreePath), failures: without(state.failures, worktreePath),
+        rows: { ...state.rows, [worktreePath]: row },
+        working: ended ? without(state.working, worktreePath) : state.working,
+        held: ranOut ? without(state.held, worktreePath) : state.held,
+        failures: without(state.failures, worktreePath),
       }));
+      if (ended && entry !== undefined) emitOutcome(worktreePath, entry, entry.fromState, 'unchanged');
       if (worktreePath === openWorktree) emitShownIfChanged();
       return;
     }
@@ -192,7 +214,7 @@ const useGitStatusStore = create<GitStatusStore>()((set, get) => ({
     const finished = settles(row, entry) || (entry !== undefined && reconcilingPrs.has(worktreePath) && Date.parse(row.measuredAt) > entry.clickedAt);
     const awaitingFacts = finished && entry?.action === 'create-pr' && (row.stale || row.measurement.partial) && prFailures.get(entry) === undefined;
     if (awaitingFacts && !reconcilingPrs.has(worktreePath)) {
-      reconcilingPrs.set(worktreePath, { entry, timer: setTimeout(() => finishReconciliation(worktreePath, true), 15_000) });
+      reconcilingPrs.set(worktreePath, { entry, timer: setTimeout(() => finishReconciliation(worktreePath, true), RECONCILE_MS) });
     } else if (finished && !awaitingFacts) finishReconciliation(worktreePath, false);
     const settled = finished && !awaitingFacts;
     const failed = settled && entry?.action === 'create-pr' && !row.measurement.pr;

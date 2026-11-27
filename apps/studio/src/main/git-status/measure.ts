@@ -251,6 +251,7 @@ export async function probeGithub(facts: GitMeasurement, reader: GitHubReader): 
     const upstream = await reader.pullRequests(parent, branch, { headOwner, ...(m.ghAccount ? { account: m.ghAccount } : {}) });
     if (!upstream.ok) {
       m.partial = true;
+      if (upstream.unread === true) m.prUnknown = true;
       return m;
     }
     const pr = pickPullRequest(upstream.value, m.baseBranch);
@@ -264,6 +265,7 @@ export async function probeGithub(facts: GitMeasurement, reader: GitHubReader): 
   const own = await reader.pullRequests(m.repo, branch);
   if (!own.ok) {
     m.partial = true;
+    if (own.unread === true) m.prUnknown = true;
     return m;
   }
   const pr = pickPullRequest(own.value, m.baseBranch);

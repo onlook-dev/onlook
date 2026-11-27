@@ -87,8 +87,11 @@ function accountReader(reads: GithubReads, identity: GoverningIdentity, boundMs:
         failure = result;
         return { ok: false, partial: true };
       }
-      const rows = Array.isArray(result.pullRequests) ? result.pullRequests : [];
-      return { ok: true, value: rows.map((row) => measuredPullRequest(row, repository)).filter((row) => row !== undefined) };
+      if (!Array.isArray(result.pullRequests)) return { ok: false, partial: true, unread: true };
+      const rows = result.pullRequests.map((row) => measuredPullRequest(row, repository));
+      // A row this cannot read makes the whole answer unusable: an empty one reads as "no pull request", which offers Create PR over a pull request that exists (ONL-3371).
+      if (rows.some((row) => row === undefined)) return { ok: false, partial: true, unread: true };
+      return { ok: true, value: rows.filter((row) => row !== undefined) };
     },
   };
   return { reader, connectViaBrowser: true, via: 'account', failure: () => failure };

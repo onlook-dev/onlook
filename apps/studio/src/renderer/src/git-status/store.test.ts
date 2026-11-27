@@ -184,8 +184,6 @@ it('immediately retires an old account’s visible actions on invalidation', () 
   store.apply({ worktreePath: WT, row: row(MEASUREMENT_FIXTURES['first-paint'], { invalidated: true }) });
   const next = useGitStatusStore.getState();
   expect(pillStateOf(next.rows[WT], GIT_PILL_SHIPPED_DEFAULTS, undefined).id).toBe('first-paint');
-  expect(next.working[WT]).toBeUndefined();
-  expect(next.held[WT]).toBeUndefined();
   expect(next.failures[WT]).toBeUndefined();
 });
 
@@ -583,6 +581,120 @@ describe('apply against a working form', () => {
     useGitStatusStore.getState().apply(change(row(MEASUREMENT_FIXTURES['local-only'], { trigger: 'open', measuredAt: new Date(clickedAt() + 1_000).toISOString() })));
 
     expect(pill()).toEqual({ id: 'local-only' });
+  });
+});
+
+describe('an account change while a press is in flight', () => {
+  const invalidate = (): void => {
+    useGitStatusStore.getState().apply(change(row(MEASUREMENT_FIXTURES['first-paint'], { invalidated: true })));
+  };
+  const armed = (): number => {
+    useGitStatusStore.getState().apply(change(row(MEASUREMENT_FIXTURES['create-pr'], { measuredAt: at(-60_000) })));
+    void useGitStatusStore.getState().click(WT, 'create-pr', 'open a pull request');
+    return useGitStatusStore.getState().working[WT]?.clickedAt ?? Number.NaN;
+  };
+  const outcomes = (): Record<string, unknown>[] =>
+    bridge.telemetry.filter((e) => e.event === 'git_pill_outcome').map((e) => e.properties);
+
+  it('keeps tracking the press while the retired account’s action is offered to nobody', () => {
+    armed();
+    invalidate();
+
+    expect(useGitStatusStore.getState().working[WT]?.action).toBe('create-pr');
+    expect(pill()).toEqual({ id: 'first-paint' });
+  });
+
+  it('ends the press on a turn-end row the measurement never answered, so no project is left pressing nothing', () => {
+    const clickedAt = armed();
+    useGitStatusStore.getState().apply(change({
+      ...row(MEASUREMENT_FIXTURES['first-paint'], { trigger: 'turn-end', measuredAt: new Date(clickedAt + 1_000).toISOString() }),
+      invalidated: true,
+    }));
+
+    expect(useGitStatusStore.getState().working[WT]).toBeUndefined();
+    expect(useGitStatusStore.getState().failures[WT]).toBeUndefined();
+    expect(outcomes()).toMatchObject([{ outcome: 'unchanged', from_state: 'create-pr' }]);
+  });
+
+  it('drops a held press whose turn ended while the facts were retired', async () => {
+    const clicked = useGitStatusStore.getState().click(WT, 'create-pr', PROMPT);
+    bridge.answerCommand({ accepted: true, held: true });
+    await clicked;
+    await settle();
+    const heldAt = useGitStatusStore.getState().held[WT]!.heldAt;
+    useGitStatusStore.getState().apply(change({
+      ...row(MEASUREMENT_FIXTURES['first-paint'], { trigger: 'turn-end', measuredAt: new Date(heldAt + 1_000).toISOString() }),
+      invalidated: true,
+    }));
+
+    expect(useGitStatusStore.getState().held[WT]).toBeUndefined();
+  });
+
+  it('reads as working again once the new account’s facts arrive, so the press cannot be sent twice', () => {
+    const clickedAt = armed();
+    invalidate();
+    useGitStatusStore.getState().apply(change(row(MEASUREMENT_FIXTURES['create-pr'], { trigger: 'open', measuredAt: new Date(clickedAt + 1_000).toISOString() })));
+
+    expect(pill()).toMatchObject({ id: 'create-pr', mode: 'working' });
+  });
+
+  it('reports the press when the turn that carried it ends', () => {
+    const clickedAt = armed();
+    invalidate();
+    useGitStatusStore.getState().apply(change(row(MEASUREMENT_FIXTURES['ready-to-merge'], { trigger: 'turn-end', measuredAt: new Date(clickedAt + 1_000).toISOString() })));
+
+    expect(useGitStatusStore.getState().working[WT]).toBeUndefined();
+    expect(outcomes()).toMatchObject([{ outcome: 'advanced', from_state: 'create-pr', to_state: 'ready-to-merge' }]);
+  });
+
+  it('reports a press the agent refused after the facts were retired', async () => {
+    const clicked = useGitStatusStore.getState().click(WT, 'create-pr', 'open a pull request');
+    invalidate();
+    bridge.answerCommand({ accepted: false });
+    await clicked;
+
+    expect(useGitStatusStore.getState().working[WT]).toBeUndefined();
+    expect(useGitStatusStore.getState().failures[WT]).toBe('unknown');
+    expect(outcomes()).toMatchObject([{ outcome: 'refused' }]);
+  });
+
+  it('keeps a press the pen is still holding', async () => {
+    const clicked = useGitStatusStore.getState().click(WT, 'create-pr', PROMPT);
+    bridge.answerCommand({ accepted: true, held: true });
+    await clicked;
+    await settle();
+    invalidate();
+
+    expect(useGitStatusStore.getState().held[WT]?.action).toBe('create-pr');
+    expect(queuedActionFor(useGitStatusStore.getState().held[WT], penOf())).toBe('create-pr');
+  });
+
+  it('claims no failure when the window runs out with the facts still retired', () => {
+    jest.useFakeTimers();
+    try {
+      const clickedAt = armed();
+      useGitStatusStore.getState().apply(change({ ...row(MEASUREMENT_FIXTURES['create-pr'], { trigger: 'turn-end', measuredAt: new Date(clickedAt + 1_000).toISOString() }), stale: true }));
+      invalidate();
+      jest.advanceTimersByTime(20_000);
+
+      expect(useGitStatusStore.getState().failures[WT]).toBeUndefined();
+      expect(outcomes()).toMatchObject([{ outcome: 'unchanged' }]);
+      expect(outcomes()[0]).not.toHaveProperty('failure_class');
+    } finally { jest.useRealTimers(); }
+  });
+
+  it('gives a settled press a fresh window to find facts, rather than failing it against the skeleton', () => {
+    jest.useFakeTimers();
+    try {
+      const clickedAt = armed();
+      useGitStatusStore.getState().apply(change({ ...row(MEASUREMENT_FIXTURES['create-pr'], { trigger: 'turn-end', measuredAt: new Date(clickedAt + 1_000).toISOString() }), stale: true }));
+      jest.advanceTimersByTime(10_000);
+      invalidate();
+      jest.advanceTimersByTime(10_000);
+      expect(outcomes()).toHaveLength(0);
+      useGitStatusStore.getState().apply(change(row(MEASUREMENT_FIXTURES['ready-to-merge'], { trigger: 'turn-end', measuredAt: new Date(clickedAt + 20_000).toISOString() })));
+      expect(outcomes()).toMatchObject([{ outcome: 'advanced' }]);
+    } finally { jest.useRealTimers(); }
   });
 });
 
