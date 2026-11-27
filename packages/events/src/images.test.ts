@@ -8,8 +8,37 @@ const png = (extra = 0) =>
   ]);
 
 describe('stored SVG canvas assets', () => {
+  it('does not reinterpret closed prolog entries to swallow non-XML text', () => {
+    for (const text of ['<!-- closed -->text<!-- next --><svg/>', '<?xml version="1.0"?>text<?xml?><svg/>']) {
+      expect(sniffStoredImageMediaType(new TextEncoder().encode(text))).toBeNull();
+    }
+  });
+  it('handles repeated comment markers without backtracking', () => {
+    const bytes = new TextEncoder().encode(`<!--${'--><!--'.repeat(100_000)}<svg/>`);
+    const started = performance.now();
+    expect(sniffStoredImageMediaType(bytes)).toBeNull();
+    expect(performance.now() - started).toBeLessThan(1000);
+  });
+  it('scans large and unterminated prologs in linear time', () => {
+    const started = performance.now();
+    for (const text of [
+      `<?xml ${'?'.repeat(1_000_000)}`,
+      `<!--${'-'.repeat(1_000_000)}`,
+      `<!DOCTYPE svg "${'>'.repeat(1_000_000)}`,
+      `<${'a'.repeat(1_000_000)}:svg-fake/>`,
+      '<?xml'.repeat(100_000),
+      '<!--'.repeat(100_000),
+      '<!DOCTYPE svg'.repeat(100_000),
+      `<!DOCTYPE svg"${'"<!DOCTYPE svg"'.repeat(100_000)}`,
+      `<!DOCTYPE svg'${"'<!DOCTYPE svg'".repeat(100_000)}`,
+    ]) {
+      expect(sniffStoredImageMediaType(new TextEncoder().encode(text))).toBeNull();
+    }
+    expect(sniffStoredImageMediaType(new TextEncoder().encode(`${'<!-- ok --> '.repeat(100_000)}<ns:svg/>`))).toBe('image/svg+xml');
+    expect(performance.now() - started).toBeLessThan(1000);
+  });
   it('recognizes SVG roots with XML declarations, comments, BOM and a doctype', () => {
-    for (const text of ['<svg xmlns="http://www.w3.org/2000/svg"/>', '\ufeff <?xml version="1.0"?>\n<!-- generated -->\n<svg viewBox="0 0 20 10"/>', '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg/>']) {
+    for (const text of ['<svg xmlns="http://www.w3.org/2000/svg"/>', '\ufeff <?xml version="1.0"?>\n<!-- generated -->\n<svg viewBox="0 0 20 10"/>', '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg/>', '<!DOCTYPE svg "quoted > value" \'another > value\'><ns:svg/>']) {
       const bytes = new TextEncoder().encode(text);
       expect(sniffStoredImageMediaType(bytes)).toBe('image/svg+xml');
       expect(classifyCanvasImageBytes(bytes)).toEqual({ ok: true, mediaType: 'image/svg+xml' });

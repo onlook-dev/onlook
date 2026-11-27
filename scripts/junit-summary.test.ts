@@ -8,6 +8,16 @@ const REPORT = `<?xml version="1.0"?><testsuites><testsuite name="a.test.ts" fil
 </testsuite></testsuites>`;
 
 describe('the JUnit test summary', () => {
+  it('escapes backslashes next to pipes in both names and messages', () => {
+    const value = 'name\\|value\\';
+    const result = { passed: 0, failed: 1, skipped: 0, failures: [{ file: 'test.ts', name: value, message: value }] };
+    expect(markdown(result)).toContain('| `test.ts` | name\\\\\\|value\\\\ | name\\\\\\|value\\\\ |');
+    const started = performance.now();
+    result.failures[0]!.name = '\\|'.repeat(100_000);
+    result.failures[0]!.message = '\\|'.repeat(100_000);
+    expect(markdown(result)).toContain('\\\\\\|'.repeat(100_000));
+    expect(performance.now() - started).toBeLessThan(1000);
+  });
   it('counts passed, failed and skipped tests and names each failure', () => {
     const result = summarize(REPORT);
     expect(result).toMatchObject({ passed: 1, failed: 1, skipped: 1 });
