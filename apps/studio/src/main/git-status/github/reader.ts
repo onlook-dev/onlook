@@ -15,7 +15,7 @@ export type GitHubAccess = Exclude<GitRepoAccess, 'unknown'>;
 
 export interface GitHubRepoAccess {
   permission: GitHubAccess;
-  reason?: 'repo-not-visible' | 'read-only' | 'unknown';
+  reason?: 'repo-not-visible' | 'read-only' | 'unknown' | 'sso_required' | 'approval_required';
   parent?: string;
   parentPermission?: GitHubAccess;
   /** The origin's owner as GitHub spells it; the remote URL's spelling may differ in case. */

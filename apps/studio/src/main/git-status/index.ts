@@ -14,7 +14,8 @@ import { knownProject, listWorkspaces, normalizePath } from '../workspace/store.
 import { readGitPillDefaults, writeGitPillDefaults } from './defaults.js';
 import { GH_TIMEOUT_MS } from './gh.js';
 import { emptyMeasurement, measure as realMeasure, type MeasureOutcome } from './measure.js';
-import { gitStatusProjectGeneration, gitStatusRowFor, listGitStatusRows, writeGitStatusRow } from './store.js';
+import { forgetGitStatusRow, reopenGitStatusRow, gitStatusProjectGeneration, gitStatusRowFor, listGitStatusRows, writeGitStatusRow } from './store.js';
+import type { GithubBackend } from '../github-import/backend.js';
 import { log } from '../log/index.js';
 import { capture, resolveWorkspaceTelemetryProperties } from '../telemetry/index.js';
 import { gitStateProperties } from '../telemetry/git-state.js';
@@ -31,6 +32,7 @@ export interface GitStatusHostDeps {
   now?: () => Date;
   deadlineMs?: number;
   backstopMs?: number;
+  backend?: () => GithubBackend | undefined;
 }
 
 interface GitCheckOptions {
@@ -48,6 +50,7 @@ export interface GitStatusHost {
   turnEnded(worktreePath: string): Promise<void>;
   check(worktreePath: string, opts: GitCheckOptions): Promise<void>;
   list(): GitStatusList;
+  connectionChanged(): Promise<void>;
 }
 
 interface Pending {
@@ -82,7 +85,7 @@ function guarded(what: string, act: () => void): void {
 }
 
 export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
-  const measure = deps.measure ?? realMeasure;
+  const measure = deps.measure ?? ((path, options) => realMeasure(path, options, { backend: deps.backend?.() }));
   const now = deps.now ?? (() => new Date());
   const deadlineMs = deps.deadlineMs ?? MEASURE_DEADLINE_MS;
   const backstopMs = deps.backstopMs ?? SETTLE_BACKSTOP_MS;
@@ -262,6 +265,18 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
     },
     turnEnded: (worktreePath) => trigger(worktreePath, { trigger: 'turn-end', fetch: false }),
     check: (worktreePath, opts) => trigger(worktreePath, opts),
+    connectionChanged: async () => {
+      const checks: Promise<void>[] = [];
+      for (const workspace of listWorkspaces()) {
+        for (const project of workspace.projects) {
+          if (project.missing) continue;
+          forgetGitStatusRow(project.workspacePath);
+          reopenGitStatusRow(project.workspacePath);
+          checks.push(trigger(project.workspacePath, { trigger: 'focus', fetch: false }));
+        }
+      }
+      await Promise.all(checks);
+    },
     list: () => {
       const rows = listGitStatusRows();
       const list: GitStatusList = {};

@@ -1,4 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Dialog } from './overlay/Dialog.js';
+import { GithubImportFlow, SETTINGS_FLOW_HEIGHT, SETTINGS_FLOW_WIDTH } from './github-import/GithubImport.js';
+import { dismissGithub, githubCommand } from './github-import/store.js';
 import { ReactFlowProvider } from '@xyflow/react';
 import { HStack, Stack } from '@astryxdesign/core/Layout';
 import { ResizeHandle, useResizable } from '@astryxdesign/core/Resizable';
@@ -123,6 +126,8 @@ export function App({
   const left = isCode ? code : designs;
 
   const covered = usePanelCover();
+  const [githubOpen, setGithubOpen] = useState(false);
+  const closeGithub = (): void => { dismissGithub(); setGithubOpen(false); };
 
 
   return (
@@ -135,7 +140,14 @@ export function App({
             them for the project switcher, and unmounting with them takes Create
             PR off a screen where submitting lands in an unseen transcript
             (ONL-1935). */}
-        <EditorBarSlot onExitToProjects={onExitToProjects} />
+        <EditorBarSlot onExitToProjects={onExitToProjects} onConnectGithub={() => {
+          setGithubOpen(true);
+          void githubCommand({ kind: 'start', entryPoint: 'topbar' });
+        }} />
+        <Dialog isOpen={githubOpen} onOpenChange={(open) => { if (!open) closeGithub(); }}
+          purpose="form" width={SETTINGS_FLOW_WIDTH} maxHeight={SETTINGS_FLOW_HEIGHT} style={{ height: SETTINGS_FLOW_HEIGHT }} data-testid="github-status-dialog">
+          {githubOpen && <GithubImportFlow entryPoint="settings" onClose={closeGithub} onOpen={closeGithub} />}
+        </Dialog>
 
         {/* THE PANELS ARE OVERLAYS, NOT COLUMNS: `inset: 0` is what keeps a
             panel from moving React Flow's bounds, measured at 259px of jump on

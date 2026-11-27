@@ -20,6 +20,12 @@ it('shows a history-free project without offering to install Git', () => {
 });
 
 describe('actionFor', () => {
+  it('connects in the browser without an agent session when account reads are available', () => {
+    expect(actionFor(PILL_FIXTURES['connect-github'], false, true)).toEqual({ kind: 'connect-github' });
+    expect(isPressable(PILL_FIXTURES['connect-github'], false, true)).toBe(true);
+    expect(actionFor(PILL_FIXTURES['connect-github'], false, false)).toEqual({ kind: 'none' });
+    expect(actionFor(PILL_FIXTURES['connect-github'], true, false).kind).toBe('send');
+  });
   it('opens the browser on Ready to Merge / Open in browser, ignoring canSubmit', () => {
     expect(actionFor(READY_OPEN, false)).toEqual({ kind: 'open-browser', url: READY_OPEN.pr.url });
     expect(actionFor(READY_OPEN, true)).toEqual({ kind: 'open-browser', url: READY_OPEN.pr.url });

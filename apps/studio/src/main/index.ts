@@ -59,7 +59,7 @@ import { disposeStarter, registerStarter } from './starter/index.js';
 import { sweepBlankBuckets } from './workspace/blank.js';
 import { registerBlankCreateHandlers } from './workspace/create-blank.js';
 import { registerWorkspaceHandlers } from './workspace/index.js';
-import { registerGithubImportHandlers } from './github-import/index.js';
+import { githubImportBackend, registerGithubImportHandlers } from './github-import/index.js';
 import { initAutoUpdater, registerUpdaterHandlers } from './updater/index.js';
 import { offerMoveToApplications } from './updater/location.js';
 import { beginTurnSeenQuit } from './telemetry/turn-seen.js';
@@ -377,6 +377,7 @@ void app.whenReady().then(() => {
   registerImageHandlers();
   // Before the agent host: a seam holding `undefined` drops the measurement silently (ONL-2173).
   const gitStatus = registerGitStatusHost({
+    backend: githubImportBackend,
     emit: (change) => broadcastToRenderers(IPC_EMIT.gitStatusChanged, change),
     onApplied: (worktreePath, row) => gitStatusCadence()?.applied(worktreePath, row),
   });

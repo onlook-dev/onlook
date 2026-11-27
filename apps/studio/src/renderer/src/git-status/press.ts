@@ -38,6 +38,7 @@ function promptKeyForOption(option: GitDropdownOption): StringKey | undefined {
 }
 
 export type GitClickResult =
+  | { kind: 'connect-github' }
   | { kind: 'open-browser'; url: string }
   | { kind: 'send'; action: GitPillAction; key: StringKey }
   | { kind: 'none' };
@@ -57,7 +58,8 @@ function sendOrNone(
   return { kind: 'send', action, key };
 }
 
-export function actionFor(state: GitPillState, canSubmit: boolean): GitClickResult {
+export function actionFor(state: GitPillState, canSubmit: boolean, connectViaBrowser = false): GitClickResult {
+  if (state.id === 'connect-github' && connectViaBrowser) return { kind: 'connect-github' };
   if (opensBrowserFor(state)) return { kind: 'open-browser', url: state.pr.url };
   return sendOrNone(promptKeyFor(state), state.id, canSubmit);
 }
@@ -79,8 +81,8 @@ export function drawsPill(row: GitSnapshotRow | undefined): boolean {
   return row === undefined || row.measurement.history === 'none' || row.measurement.gitInstalled;
 }
 
-export function isPressable(state: GitPillState, canSubmit: boolean): boolean {
-  return canSubmit || opensBrowserFor(state);
+export function isPressable(state: GitPillState, canSubmit: boolean, connectViaBrowser = false): boolean {
+  return canSubmit || opensBrowserFor(state) || (state.id === 'connect-github' && connectViaBrowser);
 }
 
 export function isNoPrOption(option: GitDropdownOption): option is NoPrDefault {

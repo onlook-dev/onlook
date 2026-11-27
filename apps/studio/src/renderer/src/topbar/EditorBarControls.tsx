@@ -38,9 +38,10 @@ export function railStatusFor(state: {
 }
 
 export function EditorBarSlot({
-  onExitToProjects,
+  onExitToProjects, onConnectGithub,
 }: {
   onExitToProjects: () => void;
+  onConnectGithub: () => void;
 }): React.JSX.Element | null {
   useEffect(() => subscribeToAgent(), []);
 
@@ -112,9 +113,12 @@ export function EditorBarSlot({
       const store = useGitStatusStore.getState();
       const state = pillStateOf(row, defaults, working !== undefined, working?.action);
       const base = row?.measurement.baseBranch ?? '';
+      const connectViaBrowser = row?.measurement.connectViaBrowser === true;
 
       const dispatch = (result: GitClickResult): void => {
-        if (result.kind === 'open-browser') {
+        if (result.kind === 'connect-github') {
+          onConnectGithub();
+        } else if (result.kind === 'open-browser') {
           noteBrowserOpen(worktreePath);
           window.open(result.url, '_blank', 'noopener');
         } else if (result.kind === 'send') {
@@ -129,11 +133,11 @@ export function EditorBarSlot({
           void store.click(worktreePath, takeBack.action, takeBack.text, pen);
           return;
         }
-        if (working !== undefined || actionFor(state, canSubmit).kind === 'none') {
+        if (working !== undefined || actionFor(state, canSubmit, connectViaBrowser).kind === 'none') {
           noteNoActionPress(worktreePath, working !== undefined ? 'working' : promptKeyFor(state) === undefined ? 'passive-state' : 'agent-unavailable');
           return;
         }
-        dispatch(actionFor(state, canSubmit));
+        dispatch(actionFor(state, canSubmit, connectViaBrowser));
         return;
       }
       const option = action.option as GitDropdownOption;
@@ -141,7 +145,7 @@ export function EditorBarSlot({
       else if (isReadyOption(option)) void store.setDefault({ ready: option });
       dispatch(pickFor(state, option, canSubmit));
     });
-  }, [onExitToProjects, isSwitching, worktreePath, row, defaults, working, canSubmit]);
+  }, [onExitToProjects, onConnectGithub, isSwitching, worktreePath, row, defaults, working, canSubmit]);
 
   return null;
 }

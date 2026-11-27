@@ -5,6 +5,7 @@ export type GithubFailure =
   | { status: 'forbidden' | 'not_found' | 'invalid_request' };
 
 export type GithubConnection = GithubFailure | { status: 'connected'; scopes: string[]; expiresAt: number | null };
+export type GithubReadFailure = GithubFailure | { status: 'sso_required' | 'approval_required' };
 export type GithubStart = GithubFailure | { status: 'connecting'; url: string };
 export interface GithubRepository {
   id: number;
@@ -20,7 +21,7 @@ export interface GithubRepository {
 }
 export type GithubRepositoryPage = GithubFailure | { status: 'connected'; repositories: GithubRepository[]; nextPage: number | null };
 export type GithubCloneFailure = 'network' | 'access' | 'disk' | 'empty' | 'cancelled' | 'destination' | 'existing' | 'cleanup' | 'unknown';
-export type GithubEntryPoint = 'onboarding' | 'projects' | 'settings';
+export type GithubEntryPoint = 'onboarding' | 'projects' | 'settings' | 'topbar';
 export type GithubImportCommand =
   | { kind: 'begin'; entryPoint: GithubEntryPoint }
   | { kind: 'status' }

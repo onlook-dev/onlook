@@ -7,6 +7,8 @@ import { ghReader } from './github/gh-reader.js';
 import type { GitHubReader } from './github/reader.js';
 import { runGit, USER_GIT_CONFIG } from '../env/git.js';
 import { hostSshPath } from '../env/platform.js';
+import type { GithubBackend } from '../github-import/backend.js';
+import { selectGithubReader } from './github/account-reader.js';
 
 const FETCH_TIMEOUT_MS = 20_000;
 
@@ -40,6 +42,7 @@ export interface MeasureOptions {
 
 export interface MeasureDeps {
   reader?: GitHubReader;
+  backend?: GithubBackend;
 }
 
 export interface MeasureOutcome {
@@ -82,7 +85,13 @@ export async function measure(
     return { measurement: { ...emptyMeasurement(options.baseBranch, await gitAvailable()), history: 'none' }, fetched: undefined };
   }
   const { measurement, fetched, remote } = await measureGit(worktree, options);
-  const m = await probeGithub(measurement, deps.reader ?? ghReader(worktree));
+  const selected = measurement.head === 'branch' && measurement.origin === 'github'
+    ? await selectGithubReader(deps.backend, deps.reader ?? ghReader(worktree))
+    : { reader: deps.reader ?? ghReader(worktree), connectViaBrowser: false, failure: undefined };
+  if (selected.connectViaBrowser) measurement.connectViaBrowser = true;
+  const m = await probeGithub(measurement, selected.reader);
+  const failure = selected.failure?.();
+  if (failure !== undefined) m.githubReadFailure = failure;
   const base = m.pr?.baseRefName;
   if (base === undefined || base === m.baseBranch || remote === undefined) return { measurement: m, fetched };
   // `behind` offers Download changes, so it counts against the branch the PR merges into, never the one the project was cut from (ONL-2411).

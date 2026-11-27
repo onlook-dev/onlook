@@ -22,6 +22,36 @@ import { initTelemetry, peekQueueForTesting, resetTelemetryForTesting, setAppFor
 
 const savedStateRoot = process.env['STUDIO_STATE_ROOT'];
 
+it('refreshes every project after a connection change, without fetching', async () => {
+  const other = join(workspaceRootDir, 'repo', 'other-design');
+  mkdirSync(other, { recursive: true });
+  rememberProject({ ...workspaceRecord(other), workspaceName: 'other-design', branchName: 'user/other-design' });
+  const measured: Array<{ path: string; fetch: boolean }> = [];
+  const host = createGitStatusHost({
+    emit: () => {},
+    measure: async (path, options) => { measured.push({ path, fetch: options.fetch }); return { measurement: facts(), fetched: undefined }; },
+  });
+  await host.connectionChanged();
+  expect(measured.map(({ path }) => path).sort()).toEqual([worktree, other].sort());
+  expect(measured.every(({ fetch }) => fetch === false)).toBe(true);
+});
+
+it('drops an old account’s in-flight result and partial cache on connection change', async () => {
+  const { host, calls, emitted } = harness();
+  const opened = host.opened(worktree);
+  await settle();
+  const refreshed = host.connectionChanged();
+  calls[0]!.resolve({ measurement: facts({ ghAccount: 'previous-account' }), fetched: true });
+  await opened;
+  await settle();
+  expect(emitted).toHaveLength(0);
+  calls[1]!.resolve({ measurement: facts({ ghAuthed: false, ghAccount: undefined, partial: true, access: 'unknown' }), fetched: undefined });
+  await refreshed;
+  expect(emitted).toHaveLength(1);
+  expect(emitted[0]!.row.measurement.ghAccount).toBeUndefined();
+  expect(emitted[0]!.row.measurement.ghAuthed).toBe(false);
+});
+
 afterAll(() => {
   restoreWorkspaceRoot();
   if (savedStateRoot === undefined) delete process.env['STUDIO_STATE_ROOT'];

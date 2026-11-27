@@ -25,11 +25,13 @@ export interface GitMeasurement {
   ghInstalled: boolean;
   ghAuthed: boolean;
   ghAccount?: string;
+  connectViaBrowser?: boolean;
+  githubReadFailure?: import('./github-import.js').GithubReadFailure;
   origin: GitOriginKind;
   /** `owner/name`. */
   repo?: string;
   access: GitRepoAccess;
-  accessReason?: 'repo-not-visible' | 'read-only' | 'unknown';
+  accessReason?: 'repo-not-visible' | 'read-only' | 'unknown' | 'sso_required' | 'approval_required';
   branch?: string;
   head: GitHead;
   /** What `ahead`/`behind` count against: `pr.baseRefName` when a PR was measured, else the project's recorded base (ONL-2411). */

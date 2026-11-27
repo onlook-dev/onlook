@@ -236,7 +236,7 @@ function ProjectedGitPill({
   if (!drawsPill(git.row)) return null;
   const leading = leadingFor(state.id);
   const glyphs = leading ? { ...GIT_PILL_GLYPHS, leading } : GIT_PILL_GLYPHS;
-  const pressable = isPressable(state, git.canSubmit);
+  const pressable = isPressable(state, git.canSubmit, git.row?.measurement.connectViaBrowser);
   return (
     <Stack onMouseEnter={hover.onMouseEnter} onMouseLeave={hover.onMouseLeave} style={{ flex: '0 0 auto' }}>
       <GitStatusPill

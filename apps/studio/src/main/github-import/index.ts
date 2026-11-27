@@ -15,11 +15,20 @@ import { beginCreation, creationAbandoned, creationStarted } from './telemetry.j
 import { cleanupPendingClones } from './pending.js';
 import { proofSwitchOn } from '../diagnostics/gate.js';
 import { cloneRepository } from './clone.js';
+import { gitStatusHost } from '../git-status/index.js';
+import { log } from '../log/index.js';
+import type { GithubBackend } from './backend.js';
+
+let fixture: Partial<GithubImportDeps> | undefined;
+
+export function githubImportBackend(): GithubBackend | undefined {
+  return fixture?.backend === undefined ? githubBackend() : fixture.backend();
+}
 
 function validGithubCommand(value: unknown): value is GithubImportCommand {
   if (value === null || typeof value !== 'object' || !('kind' in value)) return false;
   const command = value as Record<string, unknown>;
-  const entry = (): boolean => ['onboarding', 'projects', 'settings'].includes(command['entryPoint'] as string);
+  const entry = (): boolean => ['onboarding', 'projects', 'settings', 'topbar'].includes(command['entryPoint'] as string);
   switch (command['kind']) {
     case 'status': case 'repositories': case 'cancel': case 'access': case 'list': return true;
     case 'start': case 'begin': return entry();
@@ -34,7 +43,7 @@ function validGithubCommand(value: unknown): value is GithubImportCommand {
 export function registerGithubImportHandlers(): void {
   const cleaned = flagOn('github-import') ? cleanupPendingClones() : Promise.resolve();
   const services = new Map<number, ReturnType<typeof createGithubImport>>();
-  let fixture: Partial<GithubImportDeps> | undefined;
+  let lastConnection: string | undefined;
   if (proofSwitchOn('STUDIO_GITHUB_PROOF')) {
     const observations: GithubObservation[] = [];
     const hook = {
@@ -44,6 +53,7 @@ export function registerGithubImportHandlers(): void {
         fixture = deps;
       },
       clone: cloneRepository,
+      refreshStatus: () => gitStatusHost()?.connectionChanged() ?? Promise.resolve(),
       observe(event: GithubObservation): void { observations.push(event); },
       events: () => [...observations],
     };
@@ -56,7 +66,7 @@ export function registerGithubImportHandlers(): void {
     if (service === undefined) {
       service = createGithubImport({
         enabled: () => flagOn('github-import'),
-        backend: githubBackend,
+        backend: githubImportBackend,
         subject: () => verifiedSubject(readIdentity()),
         open: (url) => shell.openExternal(url),
         parent: async (choice) => {
@@ -77,6 +87,14 @@ export function registerGithubImportHandlers(): void {
       services.set(event.sender.id, service);
       event.sender.once('destroyed', () => { service?.dispose(); services.delete(event.sender.id); });
     }
-    return service.command(command);
+    const state = await service.command(command);
+    if (command.kind === 'status' && state.connection.status !== 'unavailable' && (githubImportBackend()?.identity !== undefined || lastConnection !== undefined)) {
+      const connection = `${verifiedSubject(readIdentity()) ?? ''}:${state.connection.status}`;
+      if (connection !== lastConnection) {
+        lastConnection = connection;
+        void gitStatusHost()?.connectionChanged().catch((error: unknown) => log('git-status').error('connection refresh failed', { error }));
+      }
+    }
+    return state;
   });
 }
