@@ -50,7 +50,7 @@ it('holds the thumbnail through pan and zoom, cancels pending pause and wakes on
   expect(requests).toEqual([]);
   await act(async () => { useCameraMotion.setState({ moving: true }); });
   expect(timers.size).toBe(0);
-  expect(requests.at(-1)).toEqual({ webContentsId: 17, idle: true, moving: true });
+  expect(requests.at(-1)).toEqual({ webContentsId: 17, idle: true, moving: true, seen: true });
   expect(container.textContent).toBe('live');
   await act(async () => { useCameraMotion.setState({ moving: false }); });
   await act(async () => { for (const callback of timers.values()) callback(); timers.clear(); });
@@ -63,7 +63,7 @@ it('holds the thumbnail through pan and zoom, cancels pending pause and wakes on
   expect(container.textContent).toBe('snapshot');
   await act(async () => { useCameraMotion.setState({ moving: false }); });
   expect(container.textContent).toBe('live');
-  expect(requests.at(-1)).toEqual({ webContentsId: 17, idle: false, moving: false });
+  expect(requests.at(-1)).toEqual({ webContentsId: 17, idle: false, moving: false, seen: true });
 });
 
 it('retries a picture waiting on paint at its own pace, not the idle delay', async () => {

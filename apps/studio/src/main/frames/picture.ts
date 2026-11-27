@@ -19,6 +19,11 @@ function hasInk(image: NativeImage): boolean {
   return false;
 }
 
+/** Two frames: what a page was just told to do reaches its surface only after it paints (ONL-2304). */
+export async function whenGuestPainted(guest: WebContents): Promise<boolean> {
+  return await within(guest.executeJavaScriptInIsolatedWorld(999, [{ code: PAINTED }]), 1500).catch(() => null) === true;
+}
+
 function capturableUrl(guest: WebContents, owner?: WebContents): string | null {
   if (guest.isDestroyed() || guest.getType() !== 'webview' || (owner !== undefined && guest.hostWebContents !== owner)) return null;
   const url = guest.getURL();
@@ -43,8 +48,7 @@ export function rememberFramePicture(guest: WebContents): void {
   if (url === null || guest.isLoading() || capturing.has(guest) || guest.debugger.isAttached()) return;
   capturing.add(guest);
   void (async () => {
-    const ready = await within(guest.executeJavaScriptInIsolatedWorld(999, [{ code: PAINTED }]), 1500);
-    if (ready !== true || guest.isDestroyed() || guest.getURL() !== url) return;
+    if (!await whenGuestPainted(guest) || guest.isDestroyed() || guest.getURL() !== url) return;
     const image = await within(guest.capturePage(undefined, { stayHidden: true, stayAwake: true }), 1500);
     if (image === null || image.isEmpty() || guest.isDestroyed() || guest.getURL() !== url || !hasInk(image)) return;
     kept.set(guest, { url, picture: canvasPicture(image).image, tile: cardTile(image) });
@@ -90,8 +94,7 @@ export function createFramePicture(lookup: (id: number) => WebContents | undefin
     const current = (): boolean => active && !sender.isDestroyed() && !guest.isDestroyed() && guest.hostWebContents === sender && guest.getURL() === url;
     guest.on('did-start-navigation', invalidate);
     try {
-      const ready = await within(guest.executeJavaScriptInIsolatedWorld(999, [{ code: PAINTED }]), 1500);
-      if (ready !== true || !current()) return null;
+      if (!await whenGuestPainted(guest) || !current()) return null;
       // One pixel: only whether the surface answers at all is read from this (ONL-2304).
       const image = await within(guest.capturePage({ x: 0, y: 0, width: 1, height: 1 }, { stayHidden: true, stayAwake: true }), 1500);
       return image !== null && !image.isEmpty() && current() ? true : null;

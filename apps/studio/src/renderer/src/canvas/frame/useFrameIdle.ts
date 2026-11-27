@@ -8,7 +8,7 @@ import { studio } from '../../bridge.js';
 
 const PAINT_WAIT_MS = 20_000;
 
-export function useFrameIdle(ref: RefObject<WebviewTag | null>, idle: boolean, instance: number | string, hasGuest: boolean, pictureKey = instance): string | null {
+export function useFrameIdle(ref: RefObject<WebviewTag | null>, idle: boolean, instance: number | string, hasGuest: boolean, pictureKey = instance, seen = true): string | null {
   const [thumbnail, renderThumbnail] = useState<{ instance: number | string; value: string | null } | null>(null);
   const retained = useRef<typeof thumbnail>(null);
   const setThumbnail = useCallback((next: typeof thumbnail) => {
@@ -63,11 +63,12 @@ export function useFrameIdle(ref: RefObject<WebviewTag | null>, idle: boolean, i
       const requestedRevision = ++revision;
       const requestedCapture = captureRevision.current;
       try {
-        const result = await studio().frameIdle({ webContentsId: guest.getWebContentsId(), idle, moving: useCameraMotion.getState().moving });
+        const result = await studio().frameIdle({ webContentsId: guest.getWebContentsId(), idle, moving: useCameraMotion.getState().moving, seen });
         if (!active) return;
         if (requestedRevision !== revision || requestedCapture !== captureRevision.current || useCameraMotion.getState().moving) return;
         let soonest = result.paused !== idle ? (idle ? 5000 : 1000) : undefined;
-        if (result.paused) setThumbnail({ instance: pictureKey, value: result.thumbnail ?? null });
+        // A pause with no picture of its own keeps the one it has: dropping a cover is the wake's job, after paint.
+        if (result.paused) { if (result.thumbnail !== undefined) setThumbnail({ instance: pictureKey, value: result.thumbnail }); }
         else {
           const hasPicture = retained.current?.instance === pictureKey && retained.current.value !== null;
           const painted = !hasPicture || studio().framePicture === undefined || await studio().framePicture({ webContentsId: guest.getWebContentsId(), afterPaint: true }) !== null;
@@ -101,6 +102,6 @@ export function useFrameIdle(ref: RefObject<WebviewTag | null>, idle: boolean, i
       unsubscribe();
       clearTimeout(timer);
     };
-  }, [ref, idle, instance, hasGuest, pictureKey, setThumbnail]);
+  }, [ref, idle, seen, instance, hasGuest, pictureKey, setThumbnail]);
   return thumbnail?.instance === pictureKey ? thumbnail.value : null;
 }

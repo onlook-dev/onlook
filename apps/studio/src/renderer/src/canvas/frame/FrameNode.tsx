@@ -30,7 +30,7 @@ import {
 import { CanvasNodeMenu } from '../menu/CanvasNodeMenu.jsx';
 import { FrameRing } from './FrameRing.jsx';
 import { focusedFrameId } from '../elementPicking.js';
-import { armedNodeId, isFrameShielded, useCanvasStore } from '../store.js';
+import { armedNodeId, isFrameShielded, useCanvasStore, type CanvasMode } from '../store.js';
 import { NodeResizeHandles } from '../NodeResizeHandles.jsx';
 import { FrameQuote } from './FrameQuote.js';
 import { frameCover, isAskableCover, olderCover, type CoverAction } from './coverState.js';
@@ -252,19 +252,30 @@ export function FrameNode({
   const scroll = useFrameScroll(webviewRef, guestInstance,
     scrollbarEligible({ armed: isArmed, isScrollKeyOn, mode, exporting: isExportMode, hasGuest, health: data.health }));
   const moving = useCameraMotion((state) => state.moving);
-  const [wasActive, setWasActive] = useState(true);
+  const staysActive = mode === 'interact' ? isFrameVisible : isFrameReadable;
+  // Each mode remembers on its own, so what Design does with a Frame never depends on a visit to Preview (ONL-3396).
+  const [wasActive, setWasActive] = useState<Record<CanvasMode, boolean>>({ design: true, interact: true });
   const isActive = useFlowStore((state) =>
-    (mode === 'interact' ? isFrameVisible : isFrameReadable)(
+    staysActive(
       { x: positionAbsoluteX, y: positionAbsoluteY, width: width ?? 0, height: height ?? 0 },
       { width: state.width, height: state.height, transform: state.transform },
-      wasActive,
+      wasActive[mode],
     ),
   );
-  useEffect(() => { if (!moving) setWasActive(isActive); }, [moving, isActive]);
+  useEffect(() => {
+    if (!moving) setWasActive((previous) => previous[mode] === isActive ? previous : { ...previous, [mode]: isActive });
+  }, [moving, isActive, mode]);
+  // No hysteresis: a Frame with any pixel on screen is one the user can see, and pauses only under a picture (ONL-3396).
+  const isOnScreen = useFlowStore((state) =>
+    isFrameVisible(
+      { x: positionAbsoluteX, y: positionAbsoluteY, width: width ?? 0, height: height ?? 0 },
+      { width: state.width, height: state.height, transform: state.transform },
+    ),
+  );
   const canPause = !isActive && !pickerLive && !hasHeldElement && !isResizing &&
     !inlineChat && !data.working && data.health === 'live';
   const pictureKey = `${mountNonce}:${guestEpoch}`;
-  const thumbnail = useFrameIdle(webviewRef, canPause, guestInstance, hasGuest, pictureKey);
+  const thumbnail = useFrameIdle(webviewRef, canPause, guestInstance, hasGuest, pictureKey, isOnScreen);
   // A resize does not reload, so without this the Frame wakes under a picture of its older shape (ONL-2987).
   const picturedShape = useRef<string | null>(null);
   useEffect(() => {

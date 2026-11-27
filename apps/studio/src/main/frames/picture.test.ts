@@ -2,6 +2,9 @@ import { expect, it, spyOn } from 'bun:test';
 import type { Session, WebContents } from 'electron';
 import { createFramePicture, forgetFramePicture, rememberedFramePicture, rememberFramePicture } from './picture.js';
 
+/** A task, not a tick count: the capture it waits for is a chain of awaits whose length is the module's business. */
+const settled = (): Promise<void> => new Promise(resolve => { setTimeout(resolve, 0); });
+
 function fixture() {
   let navigated: { isMainFrame: boolean } | undefined;
   const listeners = new Set<(details: { isMainFrame: boolean }) => void>();
@@ -26,7 +29,7 @@ function fixture() {
   const picture = createFramePicture(() => guest as unknown as WebContents, () => undefined, () => frames);
   const remember = async (): Promise<void> => {
     rememberFramePicture(guest as unknown as WebContents);
-    for (let tick = 0; tick < 6; tick += 1) await Promise.resolve();
+    await settled();
   };
   return { owner: owner as WebContents, guest, picture, frames, image, remember, navigate: (isMainFrame: boolean) => { navigated = { isMainFrame }; }, listeners };
 }
@@ -80,7 +83,7 @@ it('takes the picture again for a Frame that has changed shape, and only for its
   expect(await picture({} as WebContents, { webContentsId: 1, retake: true })).toBeNull();
   expect(await picture(owner, { webContentsId: 1 })).toBe('picture');
   expect(await picture(owner, { webContentsId: 1, retake: true })).toBeNull();
-  for (let tick = 0; tick < 6; tick += 1) await Promise.resolve();
+  await settled();
   expect(await picture(owner, { webContentsId: 1 })).toBe('taller');
 });
 
