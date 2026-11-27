@@ -2,7 +2,7 @@ import type { ChildProcess, SpawnOptions, spawn } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
-import { signalGroup, signalTree, startChild } from './child.js';
+import { signalGroup, signalTree, startChild, startWslChild } from './child.js';
 import { WSL_EXEC_SCRIPT, rememberWslEnvironment, wslArgument, wslEnvironment, wslHostPath, wslLaunch, wslProject, wslStop, wslWorktreePath } from './wsl.js';
 
 const folder = '\\\\wsl$\\Ubuntu-24.04\\projects\\example\\my project';
@@ -137,6 +137,23 @@ describe('WSL launches', () => {
     } finally {
       Object.defineProperty(process, 'platform', descriptor);
     }
+  });
+
+  it('keeps a selected WSL runtime when the flag changes before launch', () => {
+    process.env['STUDIO_FLAGS'] = '-wsl-projects';
+    const launches: { bin: string; args: string[]; options: SpawnOptions }[] = [];
+    const child = Object.assign(new EventEmitter(), { pid: 8767, stdout: new PassThrough(), stderr: new PassThrough(), kill: () => true }) as unknown as ChildProcess;
+    const started = startWslChild(project, 'git', ['status', '--porcelain'], { cwd: folder, env: {}, stdio: 'pipe' }, (bin, args, options) => {
+      launches.push({ bin, args, options });
+      return child;
+    });
+    expect(started).toBe(child);
+    expect(launches).toHaveLength(1);
+    expect(launches[0]!.bin).toEndWith('wsl.exe');
+    expect(launches[0]!.args.slice(0, 4)).toEqual(['-d', project.distro, '--cd', project.linuxPath]);
+    expect(launches[0]!.args).toContain('/usr/bin/setsid');
+    expect(launches[0]!.options.cwd).toBeUndefined();
+    child.emit('close', 0);
   });
 
   it('bounds cancellation when WSL never reaches its startup handshake', async () => {

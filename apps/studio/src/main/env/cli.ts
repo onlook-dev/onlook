@@ -1,5 +1,5 @@
 import type { ChildProcess } from 'node:child_process';
-import { type ChildOptions, envWithout, leadsOwnGroup, signalGroup, startChild } from './child.js';
+import { type ChildOptions, envWithout, leadsOwnGroup, signalGroup, startChild, startWslChild } from './child.js';
 import { type Env, mergeEnv, userEnv } from './shell-env.js';
 import { executableCommand } from './windows.js';
 import { windowsJobCommand } from './windows-job.js';
@@ -61,8 +61,7 @@ export async function runCli(
   return new Promise((resolve) => {
     let child: ChildProcess;
     try {
-      const command = wsl !== undefined ? { bin: executable, args, windowsVerbatimArguments: false } : isWindows() ? windowsJobCommand(executable, args) : executableCommand(executable, args);
-      child = dependencies.spawn(command.bin, command.args, {
+      const childOptions: ChildOptions = {
         cwd,
         env,
         unset: options.unset,
@@ -70,8 +69,13 @@ export async function runCli(
         detached: leadsOwnGroup(),
         stdio: [options.stdin === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe'],
         windowsHide: true,
-        windowsVerbatimArguments: command.windowsVerbatimArguments,
-      });
+      };
+      if (wsl !== undefined) {
+        child = startWslChild(wsl, executable, args, childOptions, dependencies.spawn);
+      } else {
+        const command = isWindows() ? windowsJobCommand(executable, args) : executableCommand(executable, args);
+        child = dependencies.spawn(command.bin, command.args, { ...childOptions, windowsVerbatimArguments: command.windowsVerbatimArguments });
+      }
     } catch (error) {
       resolve({
         ok: false,

@@ -30,14 +30,18 @@ function nodeOptions<Options extends { env: ChildEnv; unset?: readonly string[] 
 
 export function startChild(bin: string, args: readonly string[], options: ChildOptions, launchWsl: typeof spawn = spawn): ChildProcess {
   const project = wslProject(typeof options.cwd === 'string' ? options.cwd : undefined);
-  if (project !== undefined) {
-    const marker = `ONLOOK_WSL_${randomUUID()}:`;
-    const command = wslLaunch(project, bin, args, marker);
-    const child = launchWsl(command.bin, command.args, wslOptions(options, project));
-    bindWslChild(child, project, marker, true, launchWsl);
-    return child;
-  }
+  if (project !== undefined) return startWslChild(project, bin, args, options, launchWsl);
   return spawn(bin, args, { ...nodeOptions(options), shell: false });
+}
+
+type WslLauncher = (bin: string, args: string[], options: SpawnOptions & { env: NodeJS.ProcessEnv }) => ChildProcess;
+
+export function startWslChild(project: WslProject, bin: string, args: readonly string[], options: ChildOptions, launchWsl: WslLauncher = spawn): ChildProcess {
+  const marker = `ONLOOK_WSL_${randomUUID()}:`;
+  const command = wslLaunch(project, bin, args, marker);
+  const child = launchWsl(command.bin, command.args, wslOptions(options, project));
+  bindWslChild(child, project, marker, true, launchWsl);
+  return child;
 }
 
 /** `execFile`'s own bounds apply: `timeout` kills with `killSignal`, `maxBuffer` ends the child. */
@@ -78,7 +82,7 @@ function wslOptions<Options extends ChildOptions | RunChildOptions>(options: Opt
 
 interface WslChild {
   project: WslProject;
-  launch: typeof spawn;
+  launch: WslLauncher;
   group?: number;
   pending?: NodeJS.Signals;
   signalled?: boolean;
@@ -103,7 +107,7 @@ function stopWsl(state: WslChild, signal: NodeJS.Signals): void {
   control.on('exit', (code) => { if (code !== 0) log('env').warn('WSL process group signal failed', { exit_code: code }); });
 }
 
-function bindWslChild(child: ChildProcess, project: WslProject, marker: string, filter: boolean, launch: typeof spawn): void {
+function bindWslChild(child: ChildProcess, project: WslProject, marker: string, filter: boolean, launch: WslLauncher): void {
   const killWrapper = child.kill.bind(child, 'SIGKILL');
   const state: WslChild = { project, launch, closed: false, killWrapper };
   wslChildren.set(child, state);
