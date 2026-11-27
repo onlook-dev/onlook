@@ -65,7 +65,7 @@ function accountReader(reads: GithubReads, identity: GoverningIdentity, boundMs:
   let failure: GithubReadFailure | undefined = identity.status === 'connected' ? undefined : identity;
   const reader: GitHubReader = {
     present: async () => ({ ok: true, value: true }),
-    identity: async () => ({ ok: true, value: { account: identity.status === 'connected' ? identity.account : '' } }),
+    identity: async () => ({ ok: true, value: identity.status === 'connected' ? { account: identity.account } : {} }),
     async access(repository) {
       if (identity.status !== 'connected') return { ok: true, value: { permission: 'denied', reason: identity.status } };
       if (repository === undefined) return { ok: false, partial: true };

@@ -7,8 +7,8 @@ type Probe<T> = { ok: true; value: T } | { ok: false; partial: boolean };
 type Answered<T> = { ok: true; value: T } | { ok: false; partial: true };
 
 interface GitHubIdentity {
-  /** `''` = signed in with no login reported. */
-  account: string;
+  /** Absent when the connection is established but reports no login. */
+  account?: string;
 }
 
 export type GitHubAccess = Exclude<GitRepoAccess, 'unknown'>;

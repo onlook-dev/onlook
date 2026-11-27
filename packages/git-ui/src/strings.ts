@@ -1,4 +1,4 @@
-import type { GitCardStateId, GitDropdownOption, GitPillActionableId, GitPillStateId, ReadyDefault } from './state.js';
+import type { GitCardStateId, GitDropdownOption, GitNoAccessReason, GitPillActionableId, GitPillStateId, ReadyDefault } from './state.js';
 
 /** Working labels end in three periods in the app's catalog, not here. */
 export interface GitStatusStrings {
@@ -13,8 +13,8 @@ export interface GitStatusStrings {
   queuedTakeBack: string;
   queuedHint: string;
   dropdownHeading: string;
-  /** `{repo}` and `{account}` templates. */
-  noAccessLine: string;
+  /** The tooltip's leading line, by what blocks the account: `named` fills `{repo}` and `{account}`, `nameless` only `{repo}`. */
+  noAccessLine: Record<GitNoAccessReason | 'plain', { named: string; nameless: string }>;
   /** `{number}` template. */
   openPrAria: string;
   openMenuAria: string;

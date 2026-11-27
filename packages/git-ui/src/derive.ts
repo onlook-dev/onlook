@@ -29,7 +29,15 @@ function cascade(m: GitMeasurement, defaults: GitPillDefaults): GitPillState {
   if (!m.gitInstalled) return { id: 'first-paint' };
   if (m.head !== 'branch' || m.origin !== 'github') return { id: 'local-only' };
   if (!m.ghInstalled || !m.ghAuthed) return { id: 'connect-github' };
-  if (m.access === 'denied') return { id: 'no-access', repo: m.repo ?? '', account: m.ghAccount ?? '' };
+  if (m.access === 'denied') {
+    const reason = m.accessReason === 'sso_required' ? 'sso' : m.accessReason === 'approval_required' ? 'approval' : undefined;
+    return {
+      id: 'no-access',
+      repo: m.repo ?? '',
+      ...(m.ghAccount === undefined ? {} : { account: m.ghAccount }),
+      ...(reason === undefined ? {} : { reason }),
+    };
+  }
   const pr = m.pr;
   if (pr === undefined) {
     const dirty = m.dirty || m.aheadOfUpstream;

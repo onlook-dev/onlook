@@ -15,12 +15,15 @@ interface Actionable {
   workingAs?: GitPillActionableId;
 }
 
+/** An organisation's own block on this account, which the person can lift themselves. */
+export type GitNoAccessReason = 'sso' | 'approval';
+
 export type NoPrDefault = 'create-pr' | 'push';
 export type ReadyDefault = 'open-in-browser' | 'merge';
 
 export type GitPillState =
   | ({ id: 'no-git' } & Readout)
-  | ({ id: 'no-access'; repo: string; account: string } & Readout)
+  | ({ id: 'no-access'; repo: string; account?: string; reason?: GitNoAccessReason } & Readout)
   | ({ id: 'connect-github' } & Actionable)
   | ({ id: 'local-only' } & Readout)
   | ({ id: 'first-paint' } & Readout)
