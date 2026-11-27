@@ -222,8 +222,9 @@ test('the credential helper works when the app executable cannot run as Node', a
   Object.defineProperty(process, 'execPath', { ...executable, value: join(root, 'packaged-app-without-node-mode') });
   try {
     await withGitCredential(credential(), async (run) => {
-      const result = await run(['credential', 'fill'], { stdin: 'protocol=https\nhost=github.com\npath=team/website.git\n\n' });
-      expect(result.err).toBe('');
+      const result = await run(['credential', 'fill'], { stdin: credentialFields });
+      // Windows runs every command through PowerShell, whose first use writes a CLIXML progress record to stderr (ONL-3203).
+      expect(result.err).not.toContain('could not read Username');
       expect(result.ok).toBe(true);
       expect(result.out).toContain(`password=${credential().password}`);
     });
