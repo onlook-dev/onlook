@@ -59,7 +59,7 @@ import { useFrameWebview } from './useFrameWebview.js';
 import { useFrameAttachUrl } from './useFrameAttachUrl.js';
 import { bindGuestReady } from './guestReady.js';
 import { ignoreRefusal } from '../../refusal.js';
-import { isFrameReadable } from './idle.js';
+import { isFrameReadable, isFrameVisible } from './idle.js';
 import { useFrameIdle } from './useFrameIdle.js';
 import { useLatestRef } from '../../useLatestRef.js';
 import { useTabFrames } from './tabFrames.js';
@@ -252,16 +252,16 @@ export function FrameNode({
   const scroll = useFrameScroll(webviewRef, guestInstance,
     scrollbarEligible({ armed: isArmed, isScrollKeyOn, mode, exporting: isExportMode, hasGuest, health: data.health }));
   const moving = useCameraMotion((state) => state.moving);
-  const [wasReadable, setWasReadable] = useState(true);
-  const isReadable = useFlowStore((state) =>
-    isFrameReadable(
+  const [wasActive, setWasActive] = useState(true);
+  const isActive = useFlowStore((state) =>
+    (mode === 'interact' ? isFrameVisible : isFrameReadable)(
       { x: positionAbsoluteX, y: positionAbsoluteY, width: width ?? 0, height: height ?? 0 },
       { width: state.width, height: state.height, transform: state.transform },
-      wasReadable,
+      wasActive,
     ),
   );
-  useEffect(() => { if (!moving) setWasReadable(isReadable); }, [moving, isReadable]);
-  const canPause = !isReadable && !pickerLive && !hasHeldElement && !isResizing &&
+  useEffect(() => { if (!moving) setWasActive(isActive); }, [moving, isActive]);
+  const canPause = !isActive && !pickerLive && !hasHeldElement && !isResizing &&
     !inlineChat && !data.working && data.health === 'live';
   const pictureKey = `${mountNonce}:${guestEpoch}`;
   const thumbnail = useFrameIdle(webviewRef, canPause, guestInstance, hasGuest, pictureKey);

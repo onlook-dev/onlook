@@ -178,6 +178,41 @@ async function resizeTo(width: number, height: number) {
   await act(async () => { root!.render(<ReactFlowProvider><Surface width={width} height={height} /></ReactFlowProvider>); });
 }
 
+it('wakes a small phone Frame in Preview and pauses it again in Design', async () => {
+  const requests: boolean[] = [];
+  window.studio = {
+    ...window.studio,
+    frameIdle: async ({ idle }) => {
+      requests.push(idle);
+      return { paused: idle, thumbnail: idle ? 'data:image/png;base64,phone' : undefined };
+    },
+    framePicture: async () => 'data:image/png;base64,phone',
+  };
+  await loaded(await mount());
+  await resizeTo(390, 844);
+  await act(async () => {
+    flowStore.setState({ width: 1280, height: 720, transform: [0, 0, 0.36] });
+    useCanvasStore.getState().patchFrame(FRAME_ID, { health: 'live' });
+  });
+  await act(async () => { await new Promise((resolve) => setTimeout(resolve, 850)); });
+  expect(requests.at(-1)).toBe(true);
+  expect(container.querySelector('.frame-idle-thumbnail')).not.toBeNull();
+
+  await act(async () => { useCanvasStore.getState().setMode('interact'); });
+  expect(requests.at(-1)).toBe(false);
+  expect(container.querySelector('.frame-idle-thumbnail')).toBeNull();
+
+  await act(async () => { flowStore.setState({ transform: [1280, 0, 0.36] }); });
+  await act(async () => { await new Promise((resolve) => setTimeout(resolve, 850)); });
+  expect(requests.at(-1)).toBe(true);
+  await act(async () => { flowStore.setState({ transform: [0, 0, 0.36] }); });
+  expect(requests.at(-1)).toBe(false);
+
+  await act(async () => { useCanvasStore.getState().setMode('design'); });
+  await act(async () => { await new Promise((resolve) => setTimeout(resolve, 850)); });
+  expect(requests.at(-1)).toBe(true);
+});
+
 async function loaded(guest: (typeof guests)[number], url = guest.element.getAttribute('src') ?? guest.url) {
   await act(async () => {
     guest.url = url;
