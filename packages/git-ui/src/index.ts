@@ -1,4 +1,4 @@
-export { GitStatusPill } from './GitStatusPill.js';
+export { GitStatusPill, noAccessLineFor } from './GitStatusPill.js';
 export type { GitPillGlyphs, GitPillScale, GitStatusPillProps } from './GitStatusPill.js';
 export { GitStatusDropdown, dropdownOptions } from './GitStatusDropdown.js';
 export type { GitStatusDropdownProps } from './GitStatusDropdown.js';

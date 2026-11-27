@@ -68,9 +68,29 @@ describe('derivePillState', () => {
     });
   });
 
+  test('a denial carries the organisation reason, and no account name where there is none', () => {
+    expect(derivePillState(row(measurement({ access: 'denied', accessReason: 'sso_required' })), D)).toEqual({
+      id: 'no-access', repo: 'onlook-dev/studio', account: 'wrenquill', reason: 'sso',
+    });
+    expect(derivePillState(row(measurement({ access: 'denied', accessReason: 'approval_required', ghAccount: undefined })), D)).toEqual({
+      id: 'no-access', repo: 'onlook-dev/studio', reason: 'approval',
+    });
+    for (const accessReason of ['read-only', 'repo-not-visible', 'unknown', undefined] as const) {
+      expect(derivePillState(row(measurement({ access: 'denied', accessReason })), D), String(accessReason)).toEqual({
+        id: 'no-access', repo: 'onlook-dev/studio', account: 'wrenquill',
+      });
+    }
+  });
+
   test('no PR follows the user default and carries dirty', () => {
     expect(derivePillState(row(measurement({ dirty: true })), D)).toEqual({ id: 'create-pr', dirty: true });
     expect(derivePillState(row(measurement({})), PUSH)).toEqual({ id: 'push', dirty: false });
+  });
+
+  test('a pull-request answer that could not be read offers neither Create PR nor Push', () => {
+    for (const defaults of [D, PUSH]) {
+      expect(derivePillState(row(measurement({ dirty: true, prUnknown: true })), defaults)).toEqual({ id: 'first-paint' });
+    }
   });
 
   test('BLOCKED or a read-only viewer forces the dropdown to open-in-browser, whatever the default is', () => {

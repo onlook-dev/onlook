@@ -6,6 +6,148 @@ import type { GitMeasuredPullRequest, GitMeasurement } from '@studio/events';
 import { gh } from './gh.js';
 import { forkView, MISSING, ok, rawPr, scriptedGh, scriptedReader } from './github/test-support.js';
 import { classifyRemote, emptyMeasurement, fetchEnv, measure, pickPullRequest, probeGithub } from './measure.js';
+import { PROVIDER_READ_DEADLINE_MS } from './github/account-reader.js';
+import { MEASURE_DEADLINE_MS } from './index.js';
+import { GITHUB_READ_FAILURES, githubBackendFixture } from '../github-import/backend-fixtures.js';
+import type { GithubIdentity } from '../github-import/backend.js';
+
+for (const status of ['disconnected', 'reconnect'] as const) {
+  for (const method of ['repositoryAccess', 'pullRequests'] as const) {
+    it(`clears authenticated facts when ${method} reports ${status} after identity succeeded`, async () => {
+      const failure = status === 'disconnected' ? { status } : { status, reason: 'revoked' as const };
+      const backend = githubBackendFixture('connected', { [method]: failure });
+      const { measurement } = await measure(shared.repo, { baseBranch: 'main', fetch: false }, { backend });
+      expect(measurement.connectViaBrowser).toBe(true);
+      expect(measurement.githubReadFailure).toEqual(failure);
+      expect(measurement.ghAuthed).toBe(false);
+      expect(measurement.ghAccount).toBeUndefined();
+      expect(measurement.pr).toBeUndefined();
+      expect(measurement.partial).toBeUndefined();
+    });
+  }
+}
+
+const SILENT_IDENTITY = GITHUB_READ_FAILURES.filter(
+  (failure) => failure.status !== 'disconnected' && failure.status !== 'reconnect'
+    && failure.status !== 'sso_required' && failure.status !== 'approval_required',
+);
+const SIGNED_OUT_GH = { auth: ok(JSON.stringify({ hosts: { 'github.com': [] } })) };
+
+describe('an identity read that does not establish the account connection', () => {
+  const measured = (identity: GithubIdentity, script = {}) => {
+    const { reader, calls } = scriptedGh(script);
+    const backend = githubBackendFixture('connected', { identity });
+    return measure(shared.repo, { baseBranch: 'main', fetch: false }, { reader, backend }).then((outcome) => ({ ...outcome, calls }));
+  };
+
+  for (const failure of [...SILENT_IDENTITY, { status: 'reconnect', reason: 'revoked' } as const, { status: 'disconnected' } as const]) {
+    it(`leaves a signed-in gh user measured by gh after ${JSON.stringify(failure)}`, async () => {
+      const { measurement: m, calls } = await measured(failure);
+      expect(m.ghAuthed).toBe(true);
+      expect(m.ghAccount).toBe('wrenquill');
+      expect(m.access).toBe('granted');
+      expect(m.partial).toBeUndefined();
+      expect(m.githubReadFailure).toEqual(failure);
+      expect(m.connectViaBrowser).toBe(true);
+      expect(calls.map((call) => call[0])).toEqual(['--version', 'auth', 'repo', 'pr']);
+    });
+  }
+
+  for (const failure of SILENT_IDENTITY) {
+    it(`keeps the measurement incomplete when neither the account connection nor gh answers ${JSON.stringify(failure)}`, async () => {
+      const { measurement: m } = await measured(failure, SIGNED_OUT_GH);
+      expect(m.partial).toBe(true);
+      expect(m.ghAuthed).toBe(false);
+      expect(m.ghAccount).toBeUndefined();
+      expect(m.access).toBe('unknown');
+      expect(m.githubReadFailure).toEqual(failure);
+    });
+  }
+
+  it('a signed-out account connection asks for the browser connection without an incomplete read', async () => {
+    const { measurement: m } = await measured({ status: 'disconnected' }, SIGNED_OUT_GH);
+    expect(m.partial).toBeUndefined();
+    expect(m.ghAuthed).toBe(false);
+    expect(m.connectViaBrowser).toBe(true);
+  });
+
+  for (const status of ['sso_required', 'approval_required'] as const) {
+    it(`reports no access with its reason when gh has no signed-in user and the connection answers ${status}`, async () => {
+      const { measurement: m } = await measured({ status }, SIGNED_OUT_GH);
+      expect(m.access).toBe('denied');
+      expect(m.accessReason).toBe(status);
+      expect(m.ghAccount).toBeUndefined();
+      expect(m.githubReadFailure).toEqual({ status });
+    });
+
+    it(`leaves a signed-in gh user where gh puts them when the connection answers ${status}`, async () => {
+      const { measurement: m } = await measured({ status });
+      expect(m.access).toBe('granted');
+      expect(m.accessReason).toBeUndefined();
+      expect(m.ghAccount).toBe('wrenquill');
+      expect(m.githubReadFailure).toEqual({ status });
+    });
+  }
+});
+
+describe('a provider read that never answers', () => {
+  const hang = () => new Promise<never>(() => undefined);
+  const hangingBackend = (read: 'identity' | 'repositoryAccess') => {
+    const backend = githubBackendFixture('connected');
+    if (read === 'identity') backend.identity = hang;
+    else backend.repositoryAccess = hang;
+    return backend;
+  };
+  const bounded = (backend: ReturnType<typeof githubBackendFixture>) =>
+    measure(shared.repo, { baseBranch: 'main', fetch: false }, { backend, reader: scriptedGh({}).reader, providerReadMs: 20 });
+
+  it('degrades the identity read to unavailable, and gh measures instead', async () => {
+    const { measurement: m } = await bounded(hangingBackend('identity'));
+    expect(m.githubReadFailure).toEqual({ status: 'unavailable', reason: 'provider_unavailable' });
+    expect(m.ghAccount).toBe('wrenquill');
+    expect(m.access).toBe('granted');
+  });
+
+  it('leaves access unknown and the measurement incomplete when the repository read hangs', async () => {
+    const { measurement: m } = await bounded(hangingBackend('repositoryAccess'));
+    expect(m.access).toBe('unknown');
+    expect(m.partial).toBe(true);
+    expect(m.githubReadFailure).toEqual({ status: 'unavailable', reason: 'provider_unavailable' });
+  });
+
+  it('keeps every read a measurement makes well inside the measurement deadline', () => {
+    expect(PROVIDER_READ_DEADLINE_MS * 4).toBeLessThan(MEASURE_DEADLINE_MS / 2);
+  });
+
+  it('answers inside the bound without waiting for it', async () => {
+    const started = Date.now();
+    const { measurement: m } = await measure(shared.repo, { baseBranch: 'main', fetch: false }, {
+      backend: githubBackendFixture('connected'), reader: scriptedGh({}).reader, providerReadMs: 30_000,
+    });
+    expect(Date.now() - started).toBeLessThan(5_000);
+    expect(m.access).toBe('granted');
+  });
+});
+
+it('records the account the connection measured the status for, and nothing on the gh path', async () => {
+  const viaConnection = await measure(shared.repo, { baseBranch: 'main', fetch: false }, {
+    backend: githubBackendFixture('connected'), reader: scriptedGh({}).reader,
+  });
+  expect(viaConnection.measurement.connectionAccount).toBe('designer');
+  const viaGh = await measure(shared.repo, { baseBranch: 'main', fetch: false }, scriptedGh({}));
+  expect(viaGh.measurement.ghAccount).toBe('wrenquill');
+  expect(viaGh.measurement.connectionAccount).toBeUndefined();
+});
+
+it('a forbidden repository answer leaves access unknown instead of denying it', async () => {
+  const backend = githubBackendFixture('connected', { repositoryAccess: { status: 'forbidden' } });
+  const { measurement: m } = await measure(shared.repo, { baseBranch: 'main', fetch: false }, { backend, reader: scriptedGh({}).reader });
+  expect(m.access).toBe('unknown');
+  expect(m.accessReason).toBeUndefined();
+  expect(m.partial).toBe(true);
+  expect(m.pr).toBeUndefined();
+  expect(m.githubReadFailure).toEqual({ status: 'forbidden' });
+});
 
 const GITHUB_URL = 'https://github.com/onlook-dev/fixture.git';
 

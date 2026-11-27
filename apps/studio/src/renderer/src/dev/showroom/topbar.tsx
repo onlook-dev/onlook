@@ -8,27 +8,30 @@ import { appMenuSections } from '../../chrome/appMenuSections.js';
 import { helpMenuItems } from '../../rail/helpMenu.js';
 import { pillKey } from '@studio/i18n/update';
 import { noop, type Gallery } from './Showroom.js';
+import { ACCOUNT_MEASUREMENTS, row } from '@studio/git-ui/measurement-fixtures';
+import { GIT_PILL_SHIPPED_DEFAULTS } from '@studio/events';
 
 const ONBOARDING_SLOTS: ChromeSlots = { blendsIntoScreen: true };
 
 /** The ground below the band, so the seam between them is what the still shows. */
 const SCREEN_BELOW = 96;
 
-function Band({ slots, isHome, update = IDLE_UPDATE_STATE, interaction, isWindowFocused = true, updateInteraction = false, windowControls = 'leading' }: {
+function Band({ slots, isHome, update = IDLE_UPDATE_STATE, interaction, isWindowFocused = true, updateInteraction = false, gitInteraction = false, windowControls = 'leading' }: {
   slots: ChromeSlots;
   isHome: boolean;
   update?: UpdateState;
   interaction?: 'hover' | 'focus';
   isWindowFocused?: boolean;
   updateInteraction?: boolean;
+  gitInteraction?: boolean;
   windowControls?: WindowControlsEdge;
 }): React.JSX.Element {
   const host = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const button = host.current?.querySelector<HTMLButtonElement>(updateInteraction ? '[data-testid="topbar-update"]' : '[data-testid="topbar-folder"]');
+    const button = host.current?.querySelector<HTMLButtonElement>(gitInteraction ? '[data-testid="topbar-git-status"] button' : updateInteraction ? '[data-testid="topbar-update"]' : '[data-testid="topbar-folder"]');
     if (interaction === 'focus') button?.focus();
     if (interaction === 'hover') button?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-  }, [interaction, updateInteraction]);
+  }, [interaction, updateInteraction, gitInteraction]);
   return <div ref={host} style={{ width: 700 }}>
     <TopBarView
       update={<Presence isShown={pillKey(update) !== null} gap={12}><UpdatePillView state={update} onRestart={noop} onRetry={noop} isRestarting={update.restarting} /></Presence>}
@@ -59,6 +62,17 @@ export const TOPBAR_GALLERY: Gallery = {
   title: 'Onboarding window bar',
   subtitle: 'Select one state to inspect the real window-bar component over the screen below it.',
   categories: [
+    {
+      id: 'github-connection', title: 'GitHub connection',
+      stories: Object.entries(ACCOUNT_MEASUREMENTS).flatMap(([name, measurement]) =>
+        (['default', 'hover', 'focus'] as const).map((state) => ({
+          id: `github-${name}-${state}`, title: `${name} · ${state}`,
+          render: () => <Band isHome={false} gitInteraction interaction={state === 'default' ? undefined : state} slots={{
+            showFolder: true, rails: { left: false, right: false },
+            git: { row: row(measurement), defaults: GIT_PILL_SHIPPED_DEFAULTS, isWorking: false, canSubmit: name !== 'disconnected' },
+          }} />,
+        }))),
+    },
     {
       id: 'authorization-denied', title: 'Update · administrator access',
       stories: [{ id: 'topbar-gallery-authorization-denied', title: 'Updates paused', render: () => <Band slots={ONBOARDING_SLOTS} isHome update={{ status: 'error', message: 'UPDATE_AUTHORIZATION_DENIED' }} /> }],

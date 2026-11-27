@@ -3,6 +3,7 @@ import { handle } from '../ipc/bridge.js';
 import {
   IPC_INVOKE,
   type GitCadenceTrigger,
+  type GitMeasurement,
   type GitMeasureTrigger,
   type GitPillDefaultsPatch,
   type GitSnapshotRow,
@@ -14,15 +15,19 @@ import { knownProject, listWorkspaces, normalizePath } from '../workspace/store.
 import { readGitPillDefaults, writeGitPillDefaults } from './defaults.js';
 import { GH_TIMEOUT_MS } from './gh.js';
 import { emptyMeasurement, measure as realMeasure, type MeasureOutcome } from './measure.js';
-import { gitStatusProjectGeneration, gitStatusRowFor, listGitStatusRows, writeGitStatusRow } from './store.js';
+import { forgetGitStatusRow, reopenGitStatusRow, gitStatusProjectGeneration, gitStatusRowFor, listGitStatusRows, writeGitStatusRow } from './store.js';
+import type { GithubBackend, GithubIdentity } from '../github-import/backend.js';
+import { hasGithubStatusReads, readGithubIdentity } from './github/account-reader.js';
 import { log } from '../log/index.js';
 import { capture, resolveWorkspaceTelemetryProperties } from '../telemetry/index.js';
-import { gitStateProperties } from '../telemetry/git-state.js';
+import { gitStateProperties, type GitStateReader } from '../telemetry/git-state.js';
 
 const logger = log('git-status');
 
-const MEASURE_DEADLINE_MS = 180_000;
+export const MEASURE_DEADLINE_MS = 180_000;
 const SETTLE_BACKSTOP_MS = GH_TIMEOUT_MS + KILL_GRACE_MS;
+/** How many projects a connection change re-reads at once. */
+const REFRESH_LANES = 4;
 
 export interface GitStatusHostDeps {
   emit(change: GitStatusChange): void;
@@ -31,6 +36,8 @@ export interface GitStatusHostDeps {
   now?: () => Date;
   deadlineMs?: number;
   backstopMs?: number;
+  refreshLanes?: number;
+  backend?: () => GithubBackend | undefined;
 }
 
 interface GitCheckOptions {
@@ -48,6 +55,9 @@ export interface GitStatusHost {
   turnEnded(worktreePath: string): Promise<void>;
   check(worktreePath: string, opts: GitCheckOptions): Promise<void>;
   list(): GitStatusList;
+  invalidateEveryProject(): Promise<void>;
+  /** Re-reads every project only when the live connection is not the one the saved rows were measured for. */
+  refreshForConnection(identity?: GithubIdentity): Promise<void>;
 }
 
 interface Pending {
@@ -59,8 +69,10 @@ interface Pending {
 }
 
 interface Runner {
+  /** Which start owns the lane: an older flight neither applies its result nor frees the lane. */
   seq: number;
   inFlight?: Promise<void>;
+  flightGeneration?: number;
   pending?: Pending;
 }
 
@@ -69,9 +81,52 @@ interface Flight {
   settled: Promise<void>;
 }
 
+interface MeasurableProject {
+  worktreePath: string;
+  baseBranch: string;
+}
+
+/** Every project a measurement can run in: registered, and still on disk. */
+function measurableProjects(): MeasurableProject[] {
+  const projects: MeasurableProject[] = [];
+  for (const workspace of listWorkspaces()) {
+    for (const project of workspace.projects) {
+      const known = knownProject(project.workspacePath);
+      if (project.missing || known === undefined) continue;
+      projects.push({ worktreePath: project.workspacePath, baseBranch: known.baseBranch });
+    }
+  }
+  return projects;
+}
+
 const DEADLINE = Symbol('deadline');
 
 const finished = (): Flight => ({ done: Promise.resolve(), settled: Promise.resolve() });
+
+/** What a measurement that did not finish keeps from the row before it. */
+function borrowFromPrevious(measurement: GitMeasurement, kept: GitMeasurement, via: GitStateReader | undefined): void {
+  if (!measurement.ghAuthed) {
+    measurement.ghAuthed = kept.ghAuthed;
+    if (kept.ghAccount !== undefined) measurement.ghAccount = kept.ghAccount;
+    if (kept.connectionAccount !== undefined) measurement.connectionAccount = kept.connectionAccount;
+    if (kept.connectionMeasured === true) measurement.connectionMeasured = true;
+  }
+  // Only the reader that failed establishes no permission, so this pass borrows none; one that is borrowed brings the reason it was measured with.
+  if (measurement.access === 'unknown' && !(via === 'account' && measurement.githubReadFailure !== undefined)) {
+    measurement.access = kept.access;
+    if (kept.accessReason !== undefined) measurement.accessReason = kept.accessReason;
+  }
+  if (measurement.pr === undefined && kept.pr !== undefined) {
+    measurement.pr = kept.pr;
+    // Only a base this pass did not measure brings its counts along; against the same base the fresh ones are newer (ONL-2411).
+    if (kept.baseBranch !== measurement.baseBranch) {
+      measurement.baseBranch = kept.baseBranch;
+      measurement.baseExists = kept.baseExists;
+      measurement.ahead = kept.ahead;
+      measurement.behind = kept.behind;
+    }
+  }
+}
 
 function guarded(what: string, act: () => void): void {
   try {
@@ -82,10 +137,11 @@ function guarded(what: string, act: () => void): void {
 }
 
 export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
-  const measure = deps.measure ?? realMeasure;
+  const measure = deps.measure ?? ((path, options) => realMeasure(path, options, { backend: deps.backend?.() }));
   const now = deps.now ?? (() => new Date());
   const deadlineMs = deps.deadlineMs ?? MEASURE_DEADLINE_MS;
   const backstopMs = deps.backstopMs ?? SETTLE_BACKSTOP_MS;
+  const refreshLanes = deps.refreshLanes ?? REFRESH_LANES;
   const runners = new Map<string, Runner>();
 
   const apply = (
@@ -101,6 +157,7 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
     if (outcome === undefined) {
       row = {
         measurement: previous?.measurement ?? emptyMeasurement(baseBranch, false),
+        ...(previous?.invalidated ? { invalidated: true } : {}),
         measuredAt,
         ...(previous?.fetchedAt === undefined ? {} : { fetchedAt: previous.fetchedAt }),
         trigger,
@@ -108,24 +165,7 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
       };
     } else {
       const measurement = { ...outcome.measurement };
-      if (measurement.partial && previous !== undefined) {
-        const kept = previous.measurement;
-        if (!measurement.ghAuthed) {
-          measurement.ghAuthed = kept.ghAuthed;
-          if (kept.ghAccount !== undefined) measurement.ghAccount = kept.ghAccount;
-        }
-        if (measurement.access === 'unknown') measurement.access = kept.access;
-        if (measurement.pr === undefined && kept.pr !== undefined) {
-          measurement.pr = kept.pr;
-          // Only a base this pass did not measure brings its counts along; against the same base the fresh ones are newer (ONL-2411).
-          if (kept.baseBranch !== measurement.baseBranch) {
-            measurement.baseBranch = kept.baseBranch;
-            measurement.baseExists = kept.baseExists;
-            measurement.ahead = kept.ahead;
-            measurement.behind = kept.behind;
-          }
-        }
-      }
+      if (measurement.partial && previous !== undefined) borrowFromPrevious(measurement, previous.measurement, outcome.via);
       const fetchedAt = outcome.fetched === true ? startedAt : previous?.fetchedAt;
       row = {
         measurement,
@@ -142,7 +182,7 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
       const workspaceProperties = resolveWorkspaceTelemetryProperties(worktreePath);
       if (workspaceProperties !== undefined) capture('git_state_measured', {
         ...workspaceProperties,
-        ...gitStateProperties(outcome?.measurement, trigger, outcome?.fetched),
+        ...gitStateProperties(outcome?.measurement, trigger, outcome?.fetched, outcome?.via),
       });
     });
   };
@@ -154,10 +194,10 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
     fetch: boolean,
     baseBranch: string | undefined,
     requestedAt: string | undefined,
+    generation: number,
+    seq: number,
   ): Flight => {
     if (baseBranch === undefined) return finished();
-    const seq = ++runner.seq;
-    const generation = gitStatusProjectGeneration(worktreePath);
     const startedAt = now().toISOString();
     const measuredAt = requestedAt ?? startedAt;
     const applyIfCurrent = (outcome: MeasureOutcome | undefined): void => {
@@ -201,14 +241,20 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
     baseBranch: string | undefined,
     requestedAt?: string,
   ): Promise<void> => {
-    const { done, settled } = run(runner, worktreePath, trigger, fetch, baseBranch, requestedAt);
+    const generation = gitStatusProjectGeneration(worktreePath);
+    const seq = ++runner.seq;
+    runner.flightGeneration = generation;
+    const { done, settled } = run(runner, worktreePath, trigger, fetch, baseBranch, requestedAt, generation, seq);
     let backstop: ReturnType<typeof setTimeout> | undefined;
     const ceiling = new Promise<void>((resolve) => {
       backstop = setTimeout(resolve, deadlineMs + backstopMs);
     });
     runner.inFlight = Promise.race([settled, ceiling]).finally(() => {
       if (backstop !== undefined) clearTimeout(backstop);
+      // A flight the lane has moved past neither frees it nor promotes what is parked behind the flight that holds it.
+      if (runner.seq !== seq) return;
       runner.inFlight = undefined;
+      runner.flightGeneration = undefined;
       const pending = runner.pending;
       if (pending === undefined) return;
       runner.pending = undefined;
@@ -238,6 +284,8 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
       for (const wake of runner.pending.waiters) wake();
       runner.pending = undefined;
     }
+    // The in-flight pass measured a project the generation has moved past, so its answer is already discarded: this one starts now.
+    if (runner.flightGeneration !== generation) return start(runner, worktreePath, opts.trigger, opts.fetch, baseBranch);
     const pending = (runner.pending ??= { generation, trigger: opts.trigger, fetch: false, waiters: [] });
     if (opts.trigger === 'turn-end') {
       pending.trigger = 'turn-end';
@@ -254,6 +302,43 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
     return known === undefined ? Promise.resolve() : enqueue(worktreePath, known.baseBranch, opts);
   };
 
+  const invalidateEveryProject = async (projects = measurableProjects()): Promise<void> => {
+    for (const { worktreePath, baseBranch } of projects) {
+      forgetGitStatusRow(worktreePath);
+      reopenGitStatusRow(worktreePath);
+      const row: GitSnapshotRow = {
+        invalidated: true, measurement: emptyMeasurement(baseBranch, true),
+        measuredAt: now().toISOString(), trigger: 'focus', stale: true,
+      };
+      writeGitStatusRow(worktreePath, row);
+      guarded('emit threw', () => deps.emit({ worktreePath, row }));
+    }
+    // Every project retires its facts at once, and they re-read a few at a time: one account change must not spend the whole shared GitHub budget (ONL-3371).
+    const waiting = [...projects];
+    const lanes = Array.from({ length: Math.min(refreshLanes, waiting.length) }, async () => {
+      for (let next = waiting.shift(); next !== undefined; next = waiting.shift()) {
+        await trigger(next.worktreePath, { trigger: 'focus', fetch: false });
+      }
+    });
+    await Promise.all(lanes);
+  };
+
+  let firstObservation = true;
+
+  const connectionMoved = (identity: GithubIdentity, first: boolean, projects: MeasurableProject[]): boolean => {
+    const rows = projects.map(({ worktreePath }) => gitStatusRowFor(worktreePath)).filter((row) => row !== undefined);
+    // A quit cannot leave a skeleton behind: a row still invalidated when the app starts is re-read once.
+    if (first && rows.some((row) => row.invalidated === true)) return true;
+    const measuredFor = rows.map((row) => row.measurement.connectionAccount).filter((account) => account !== undefined);
+    // A connection that measured a project without naming a login was blocked or signed out, so a live one is a different connection whatever it is called.
+    const nameless = rows.some((row) => row.measurement.connectionMeasured === true && row.measurement.connectionAccount === undefined);
+    if (measuredFor.length === 0 && !nameless) return false;
+    if (identity.status === 'connected') {
+      return nameless || measuredFor.some((account) => account.toLowerCase() !== identity.account.toLowerCase());
+    }
+    return identity.status === 'disconnected' || identity.status === 'reconnect';
+  };
+
   return {
     opened: (worktreePath) => {
       const known = knownProject(worktreePath);
@@ -262,6 +347,17 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
     },
     turnEnded: (worktreePath) => trigger(worktreePath, { trigger: 'turn-end', fetch: false }),
     check: (worktreePath, opts) => trigger(worktreePath, opts),
+    refreshForConnection: async (live) => {
+      const backend = deps.backend?.();
+      if (!hasGithubStatusReads(backend)) return;
+      const first = firstObservation;
+      firstObservation = false;
+      const identity = live ?? await readGithubIdentity(backend);
+      const projects = measurableProjects();
+      if (!connectionMoved(identity, first, projects)) return;
+      await invalidateEveryProject(projects);
+    },
+    invalidateEveryProject: () => invalidateEveryProject(),
     list: () => {
       const rows = listGitStatusRows();
       const list: GitStatusList = {};

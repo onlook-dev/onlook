@@ -186,6 +186,29 @@ test('background checks leave every picker control unchanged and selection is im
   expect(row.getAttribute('aria-disabled')).not.toBe('true');
 });
 
+test('the top bar opens the connection view, credited to the top bar and not to Settings', async () => {
+  const repository = { id: 1, fullName: 'team/website', private: false, defaultBranch: 'main', archived: false, canPull: true, canPush: true };
+  for (const entryPoint of ['topbar', 'settings'] as const) {
+    const calls: GithubImportCommand[] = [];
+    const answer = deferred<GithubImportState>();
+    await mount({ githubImport: (command) => { calls.push(command); return answer.promise; } });
+    await act(async () => {
+      useGithubImport.setState({ state: { ...disconnected, connection: { status: 'connected', scopes: [], expiresAt: null }, repositories: [repository] } });
+      root!.render(<GithubImportFlow entryPoint={entryPoint} onClose={() => {}} onOpen={() => {}} />);
+    });
+    expect(document.querySelector('[data-testid="github-search"]'), entryPoint).toBeNull();
+    expect(flow()!.textContent, entryPoint).toContain(t('github.connected'));
+
+    await act(async () => { useGithubImport.setState({ state: { ...disconnected, connectionAttempted: true } }); });
+    const connect = document.querySelector<HTMLButtonElement>('[data-testid="github-import-connect"] button')!;
+    await act(async () => { connect.click(); });
+    expect(calls, entryPoint).toEqual([{ kind: 'start', entryPoint }]);
+    await act(async () => { answer.settle({ ...disconnected, connectionAttempted: true }); });
+    await act(async () => { root?.unmount(); });
+    container?.remove();
+  }
+});
+
 test('a submitted clone immediately shows progress and locks navigation and duplicates', async () => {
   const repository = { id: 1, fullName: 'team/website', private: false, defaultBranch: 'main', archived: false, canPull: true, canPush: true };
   const connected: GithubImportState = { ...disconnected, connection: { status: 'connected', scopes: [], expiresAt: null }, repositories: [repository], repositoryId: 1, branches: ['main', 'design'], destination: '/clones' };

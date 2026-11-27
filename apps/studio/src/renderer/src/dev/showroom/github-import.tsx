@@ -74,7 +74,7 @@ function SurfaceStory({ name }: { name: typeof SURFACES[number] }): React.JSX.El
     const state = name === 'settings-connected' ? stateFor('list') : name === 'settings-connecting' ? stateFor('connecting') : name === 'settings-error' ? stateFor('rate-limited') : stateFor('no-connection');
     return <div style={{ width: SETTINGS_FLOW_WIDTH + 80, padding: 20 }}>
       <Dialog isInline isOpen onOpenChange={noop} purpose="form" width={SETTINGS_FLOW_WIDTH} maxHeight={SETTINGS_FLOW_HEIGHT} style={{ height: SETTINGS_FLOW_HEIGHT }} aria-label={t('github.name')}>
-        <GithubSettingsView state={state} onCommand={noop} onClose={noop} />
+        <GithubSettingsView state={state} entryPoint="settings" onCommand={noop} onClose={noop} />
       </Dialog>
     </div>;
   }

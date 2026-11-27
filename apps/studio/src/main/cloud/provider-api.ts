@@ -33,6 +33,7 @@ export type { StudioIdentity as AccountIdentity, OnlookMe as AccountMe, OnlookSt
 
 // What `submitReport` answers with once a report is filed.
 export type { ReportFiled } from '@studio/events';
+export type { GithubBackend, GithubReads, GithubReadFailure, GithubIdentity, GithubPermission, GithubRepositoryAccess, GithubPullRequests } from '../github-import/backend.js';
 export { AUTH_SIGN_IN_ERROR_CODES } from '../../../../../packages/events/src/identity.js';
 
 // Persists identity metadata where main reads it on the next launch.

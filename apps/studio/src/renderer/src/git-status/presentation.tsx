@@ -79,7 +79,11 @@ export const GIT_STATUS_STRINGS: GitStatusStrings = {
     'upload-changes': t('gitStatus.option.upload-changes'),
   },
   dropdownHeading: t('gitStatus.dropdownHeading'),
-  noAccessLine: t('gitStatus.noAccessLine'),
+  noAccessLine: {
+    plain: { named: t('gitStatus.noAccessLine'), nameless: t('gitStatus.noAccessLineNameless') },
+    sso: { named: t('gitStatus.noAccessSsoLine'), nameless: t('gitStatus.noAccessSsoLineNameless') },
+    approval: { named: t('gitStatus.noAccessApprovalLine'), nameless: t('gitStatus.noAccessApprovalLineNameless') },
+  },
   openPrAria: t('gitStatus.openPrAria'),
   openMenuAria: t('gitStatus.openMenuAria'),
   separator: t('gitStatus.separator'),

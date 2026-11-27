@@ -25,11 +25,17 @@ export interface GitMeasurement {
   ghInstalled: boolean;
   ghAuthed: boolean;
   ghAccount?: string;
+  /** The GitHub login the account connection reported when these facts were measured; absent when `gh` measured them, and absent when the connection named none. */
+  connectionAccount?: string;
+  /** Set when the account connection measured these facts, whether or not it named a login. */
+  connectionMeasured?: boolean;
+  connectViaBrowser?: boolean;
+  githubReadFailure?: import('./github-import.js').GithubReadFailure;
   origin: GitOriginKind;
   /** `owner/name`. */
   repo?: string;
   access: GitRepoAccess;
-  accessReason?: 'repo-not-visible' | 'read-only' | 'unknown';
+  accessReason?: 'repo-not-visible' | 'read-only' | 'unknown' | 'sso_required' | 'approval_required';
   branch?: string;
   head: GitHead;
   /** What `ahead`/`behind` count against: `pr.baseRefName` when a PR was measured, else the project's recorded base (ONL-2411). */
@@ -42,12 +48,15 @@ export interface GitMeasurement {
   pr?: GitMeasuredPullRequest;
   /** `gh` failed part-way; the git facts hold and `pr` is unknown, not absent. */
   partial?: boolean;
+  /** The pull-request answer arrived and could not be read, so a missing `pr` is not the absence of one (ONL-3371). */
+  prUnknown?: boolean;
 }
 
 export type GitMeasureTrigger = 'open' | 'turn-end' | 'interval' | 'focus' | 'activate';
 export type GitCadenceTrigger = Extract<GitMeasureTrigger, 'interval' | 'focus' | 'activate'>;
 
 export interface GitSnapshotRow {
+  invalidated?: boolean;
   measurement: GitMeasurement;
   /** Stamped before the first git command runs. */
   measuredAt: string;

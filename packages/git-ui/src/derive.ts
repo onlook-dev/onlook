@@ -6,7 +6,7 @@ export function derivePillState(
   row: GitSnapshotRow | undefined,
   defaults: GitPillDefaults,
 ): GitPillState {
-  if (row === undefined) return { id: 'first-paint' };
+  if (row === undefined || row.invalidated) return { id: 'first-paint' };
   const state = cascade(row.measurement, defaults);
   return row.stale ? { ...state, mode: 'stale' } : state;
 }
@@ -29,9 +29,19 @@ function cascade(m: GitMeasurement, defaults: GitPillDefaults): GitPillState {
   if (!m.gitInstalled) return { id: 'first-paint' };
   if (m.head !== 'branch' || m.origin !== 'github') return { id: 'local-only' };
   if (!m.ghInstalled || !m.ghAuthed) return { id: 'connect-github' };
-  if (m.access === 'denied') return { id: 'no-access', repo: m.repo ?? '', account: m.ghAccount ?? '' };
+  if (m.access === 'denied') {
+    const reason = m.accessReason === 'sso_required' ? 'sso' : m.accessReason === 'approval_required' ? 'approval' : undefined;
+    return {
+      id: 'no-access',
+      repo: m.repo ?? '',
+      ...(m.ghAccount === undefined ? {} : { account: m.ghAccount }),
+      ...(reason === undefined ? {} : { reason }),
+    };
+  }
   const pr = m.pr;
   if (pr === undefined) {
+    // An answer the reader could not read never becomes "no pull request", or the button offers to open a second one (ONL-3371).
+    if (m.prUnknown === true) return { id: 'first-paint' };
     const dirty = m.dirty || m.aheadOfUpstream;
     return defaults.noPr === 'push' ? { id: 'push', dirty } : { id: 'create-pr', dirty };
   }

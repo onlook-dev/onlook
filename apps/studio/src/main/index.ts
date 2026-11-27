@@ -26,7 +26,7 @@ import { hostPlatform } from './env/platform.js';
 import { hostExecutable } from './env/executable.js';
 import { runCli } from './env/cli.js';
 import { registerIdentityHandlers } from './identity/ipc.js';
-import { registerOnlookHandlers, initializeOnlook, disposeOnlook } from './cloud/index.js';
+import { registerOnlookHandlers, initializeOnlook, disposeOnlook, onAccountSessionChanged } from './cloud/index.js';
 import { registerImageHandlers } from './images/index.js';
 import { identity as providerIdentity } from '@onlook/cloud-provider';
 import { capabilities } from './cloud/capabilities.js';
@@ -59,7 +59,7 @@ import { disposeStarter, registerStarter } from './starter/index.js';
 import { sweepBlankBuckets } from './workspace/blank.js';
 import { registerBlankCreateHandlers } from './workspace/create-blank.js';
 import { registerWorkspaceHandlers } from './workspace/index.js';
-import { registerGithubImportHandlers } from './github-import/index.js';
+import { githubImportBackend, registerGithubImportHandlers } from './github-import/index.js';
 import { initAutoUpdater, registerUpdaterHandlers } from './updater/index.js';
 import { offerMoveToApplications } from './updater/location.js';
 import { beginTurnSeenQuit } from './telemetry/turn-seen.js';
@@ -377,8 +377,12 @@ void app.whenReady().then(() => {
   registerImageHandlers();
   // Before the agent host: a seam holding `undefined` drops the measurement silently (ONL-2173).
   const gitStatus = registerGitStatusHost({
+    backend: githubImportBackend,
     emit: (change) => broadcastToRenderers(IPC_EMIT.gitStatusChanged, change),
     onApplied: (worktreePath, row) => gitStatusCadence()?.applied(worktreePath, row),
+  });
+  onAccountSessionChanged(() => {
+    void gitStatus.refreshForConnection().catch((error: unknown) => log('git-status').error('account refresh failed', { error }));
   });
   registerGitStatusCadence({ check: (worktreePath, opts) => gitStatus.check(worktreePath, opts) });
   // Two sources: the window events stop once the app is views in a `BaseWindow`, and the app-level pair is macOS-only (ONL-2206, ONL-2222).

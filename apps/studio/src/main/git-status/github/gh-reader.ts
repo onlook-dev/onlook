@@ -155,7 +155,7 @@ export interface RawRepoView {
   parent?: { id?: string; name?: string; owner?: { id?: string; login?: string } } | null;
 }
 
-function accessFromPermission(permission: string | undefined): GitHubAccess {
+export function accessFromPermission(permission: string | undefined): GitHubAccess {
   return permission === 'WRITE' || permission === 'MAINTAIN' || permission === 'ADMIN' ? 'granted' : 'denied';
 }
 

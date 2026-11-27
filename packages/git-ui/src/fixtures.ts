@@ -55,7 +55,20 @@ export const STUB_STRINGS: GitStatusStrings = {
     'upload-changes': 'Upload Changes',
   },
   dropdownHeading: 'Choose the default action',
-  noAccessLine: '{repo} · no access for @{account} · ask an owner',
+  noAccessLine: {
+    plain: {
+      named: '{repo} · no access for @{account} · ask an owner',
+      nameless: '{repo} · no access · ask an owner',
+    },
+    sso: {
+      named: '{repo} · no access for @{account} · authorize this account for SSO on GitHub',
+      nameless: '{repo} · no access · authorize your account for SSO on GitHub',
+    },
+    approval: {
+      named: '{repo} · no access for @{account} · ask the organization to approve Onlook on GitHub',
+      nameless: '{repo} · no access · ask the organization to approve Onlook on GitHub',
+    },
+  },
   openPrAria: 'Open pull request #{number}',
   openMenuAria: 'More actions',
   separator: '·',

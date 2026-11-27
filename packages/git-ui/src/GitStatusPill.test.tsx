@@ -9,6 +9,7 @@ import {
   hoverLinesFor,
   labelFor,
   menuFor,
+  noAccessLineFor,
   type GitPillGlyphs,
 } from './GitStatusPill.js';
 import { PILL_FIXTURES, STUB_STRINGS } from './fixtures.js';
@@ -100,6 +101,42 @@ describe('labelFor', () => {
   });
 });
 
+describe('the no-access line', () => {
+  const denied = (over: Partial<Extract<GitPillState, { id: 'no-access' }>> = {}): GitPillState =>
+    ({ id: 'no-access', repo: 'onlook-dev/studio', ...over });
+
+  test('says what unblocks the person, and names the account when one is known', () => {
+    expect(noAccessLineFor(denied({ account: 'wrenquill' }), STUB_STRINGS))
+      .toBe('onlook-dev/studio · no access for @wrenquill · ask an owner');
+    expect(noAccessLineFor(denied({ account: 'wrenquill', reason: 'sso' }), STUB_STRINGS))
+      .toBe('onlook-dev/studio · no access for @wrenquill · authorize this account for SSO on GitHub');
+    expect(noAccessLineFor(denied({ account: 'wrenquill', reason: 'approval' }), STUB_STRINGS))
+      .toBe('onlook-dev/studio · no access for @wrenquill · ask the organization to approve Onlook on GitHub');
+  });
+
+  test('stands without a name rather than with a bare @', () => {
+    for (const reason of [undefined, 'sso', 'approval'] as const) {
+      const line = noAccessLineFor(denied(reason === undefined ? {} : { reason }), STUB_STRINGS);
+      expect(line, String(reason)).not.toContain('@');
+      expect(line, String(reason)).toContain('onlook-dev/studio · no access · ');
+    }
+  });
+
+  test('no state the pill can show leaves an @ with nothing after it', () => {
+    for (const state of Object.values(PILL_FIXTURES)) {
+      const line = noAccessLineFor(state, STUB_STRINGS) ?? '';
+      expect(line, state.id).not.toMatch(/@(\s|$)/);
+    }
+  });
+
+  test('every other state has no leading line at all', () => {
+    for (const id of GIT_PILL_STATES) {
+      if (id === 'no-access') continue;
+      expect(noAccessLineFor(PILL_FIXTURES[id], STUB_STRINGS), id).toBeUndefined();
+    }
+  });
+});
+
 describe('the body cell', () => {
   test('working is disabled and busy; a wordless cell is busy; a resting one is neither', () => {
     expect(bodyPropsFor('Uploading', { isWorking: true })).toEqual({ 'aria-disabled': 'true', 'aria-busy': 'true' });
@@ -171,6 +208,14 @@ describe('queued (ONL-2379)', () => {
     );
     expect(html).toContain('data-queued="true"');
     expect(html).toContain(STUB_STRINGS.queuedLabel);
+  });
+
+  test('the skeleton carries no queue, so a press waiting through a re-read draws no blank button', () => {
+    const html = renderToStaticMarkup(
+      <GitStatusPill state={PILL_FIXTURES['first-paint']} strings={STUB_STRINGS} glyphs={GLYPHS} isQueued onAction={noop} />,
+    );
+    expect(html).not.toContain('data-queued="true"');
+    expect(html).not.toContain('git-status-body-press');
   });
 
   test('the card scale carries no queue of its own', () => {

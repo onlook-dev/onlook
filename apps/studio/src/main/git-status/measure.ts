@@ -7,6 +7,9 @@ import { ghReader } from './github/gh-reader.js';
 import type { GitHubReader } from './github/reader.js';
 import { runGit, USER_GIT_CONFIG } from '../env/git.js';
 import { hostSshPath } from '../env/platform.js';
+import type { GithubBackend } from '../github-import/backend.js';
+import type { GitStateReader } from '../telemetry/git-state.js';
+import { selectGithubReader } from './github/account-reader.js';
 
 const FETCH_TIMEOUT_MS = 20_000;
 
@@ -40,12 +43,16 @@ export interface MeasureOptions {
 
 export interface MeasureDeps {
   reader?: GitHubReader;
+  backend?: GithubBackend;
+  providerReadMs?: number;
 }
 
 export interface MeasureOutcome {
   measurement: GitMeasurement;
   /** `undefined` = no fetch attempted; `false` = attempted and failed; `true` advances `fetchedAt`. */
   fetched: boolean | undefined;
+  /** Which reader answered. Both readers can carry the browser connection and a typed failure, so the measurement itself does not say. */
+  via?: GitStateReader;
 }
 
 interface StatusFacts {
@@ -82,14 +89,37 @@ export async function measure(
     return { measurement: { ...emptyMeasurement(options.baseBranch, await gitAvailable()), history: 'none' }, fetched: undefined };
   }
   const { measurement, fetched, remote } = await measureGit(worktree, options);
-  const m = await probeGithub(measurement, deps.reader ?? ghReader(worktree));
+  const selected = measurement.head === 'branch' && measurement.origin === 'github'
+    ? await selectGithubReader(deps.backend, deps.reader ?? ghReader(worktree), deps.providerReadMs)
+    : { reader: deps.reader ?? ghReader(worktree), connectViaBrowser: false, via: 'cli' as const, failure: undefined };
+  if (selected.connectViaBrowser) measurement.connectViaBrowser = true;
+  const m = await probeGithub(measurement, selected.reader);
+  if (selected.via === 'account') {
+    m.connectionMeasured = true;
+    if (m.ghAccount !== undefined) m.connectionAccount = m.ghAccount;
+  }
+  const failure = selected.failure?.();
+  if (failure !== undefined) m.githubReadFailure = failure;
+  if (selected.via === 'account' && (failure?.status === 'disconnected' || failure?.status === 'reconnect')) {
+    m.ghAuthed = false;
+    delete m.ghAccount;
+    delete m.connectionAccount;
+    m.access = 'unknown';
+    delete m.accessReason;
+    delete m.pr;
+    delete m.partial;
+  }
+  // The connection could not answer and the CLI established nothing, so the project's own facts stand rather than a signed-out account.
+  if (selected.via === 'cli' && failure !== undefined && failure.status !== 'disconnected' && failure.status !== 'reconnect' && !m.ghAuthed) {
+    m.partial = true;
+  }
   const base = m.pr?.baseRefName;
-  if (base === undefined || base === m.baseBranch || remote === undefined) return { measurement: m, fetched };
+  if (base === undefined || base === m.baseBranch || remote === undefined) return { measurement: m, fetched, via: selected.via };
   // `behind` offers Download changes, so it counts against the branch the PR merges into, never the one the project was cut from (ONL-2411).
   const refetched = options.fetch ? await fetchBase(worktree, remote, base) : fetched;
   const compared = await compareToBase(worktree, `${remote}/${base}`);
   // A base a fetch has never landed counts zero of everything, which is not the same as up to date (ONL-2411).
-  return { measurement: { ...m, baseBranch: base, ...compared }, fetched: compared.baseExists ? refetched : false };
+  return { measurement: { ...m, baseBranch: base, ...compared }, fetched: compared.baseExists ? refetched : false, via: selected.via };
 }
 
 interface GitPass {
@@ -221,6 +251,7 @@ export async function probeGithub(facts: GitMeasurement, reader: GitHubReader): 
     const upstream = await reader.pullRequests(parent, branch, { headOwner, ...(m.ghAccount ? { account: m.ghAccount } : {}) });
     if (!upstream.ok) {
       m.partial = true;
+      if (upstream.unread === true) m.prUnknown = true;
       return m;
     }
     const pr = pickPullRequest(upstream.value, m.baseBranch);
@@ -234,6 +265,7 @@ export async function probeGithub(facts: GitMeasurement, reader: GitHubReader): 
   const own = await reader.pullRequests(m.repo, branch);
   if (!own.ok) {
     m.partial = true;
+    if (own.unread === true) m.prUnknown = true;
     return m;
   }
   const pr = pickPullRequest(own.value, m.baseBranch);

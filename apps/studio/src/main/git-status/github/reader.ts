@@ -6,16 +6,19 @@ type Probe<T> = { ok: true; value: T } | { ok: false; partial: boolean };
 // `access` and `pullRequests` carry their negative as a value ('denied', []); a `Probe` here would invite a second, unreachable negative.
 type Answered<T> = { ok: true; value: T } | { ok: false; partial: true };
 
+/** `unread` is an answer that arrived and could not be read, which says less than one that never arrived: it may have described a pull request. */
+type Listed<T> = { ok: true; value: T } | { ok: false; partial: true; unread?: true };
+
 interface GitHubIdentity {
-  /** `''` = signed in with no login reported. */
-  account: string;
+  /** Absent when the connection is established but reports no login. */
+  account?: string;
 }
 
 export type GitHubAccess = Exclude<GitRepoAccess, 'unknown'>;
 
 export interface GitHubRepoAccess {
   permission: GitHubAccess;
-  reason?: 'repo-not-visible' | 'read-only' | 'unknown';
+  reason?: 'repo-not-visible' | 'read-only' | 'unknown' | 'sso_required' | 'approval_required';
   parent?: string;
   parentPermission?: GitHubAccess;
   /** The origin's owner as GitHub spells it; the remote URL's spelling may differ in case. */
@@ -31,5 +34,5 @@ export interface GitHubReader {
   present(): Promise<Probe<true>>;
   identity(): Promise<Probe<GitHubIdentity>>;
   access(repo?: string): Promise<Answered<GitHubRepoAccess>>;
-  pullRequests(repo: string | undefined, head: string, filter?: PullRequestFilter): Promise<Answered<GitMeasuredPullRequest[]>>;
+  pullRequests(repo: string | undefined, head: string, filter?: PullRequestFilter): Promise<Listed<GitMeasuredPullRequest[]>>;
 }
