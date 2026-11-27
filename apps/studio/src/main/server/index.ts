@@ -83,6 +83,7 @@ type Measured = Extract<ServerPortMeasurement, 'live' | 'dead' | 'stranger'>;
 interface PortReading {
   measured: Measured;
   verified: boolean;
+  identity?: ListenerIdentity;
   current(): boolean;
   listener?: PortListener;
   studioOwned?: boolean;
@@ -304,7 +305,7 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
     if (!answered) return { measured: 'dead', verified: false, current };
     const identity = await identify(port, { workspacePath: worktreePath }).catch((): undefined => undefined);
     const ownership = verifiesFor(identity, folder);
-    if (ownership !== 'foreign') return { measured: 'live', verified: ownership === 'ours', current };
+    if (ownership !== 'foreign') return { measured: 'live', verified: ownership === 'ours', current, ...(identity === undefined ? {} : { identity }) };
     if (isContainerRuntime(identity?.command)) return { measured: 'stranger', listener: 'container', verified: false, current };
     return {
       measured: 'stranger',
@@ -324,7 +325,7 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
     let watchedPort: number | undefined;
     let wasLive = false;
     let lastAnswer: ServerOwnership | undefined;
-    let lastCommand: string | undefined;
+    let lastIdentity: ListenerIdentity | undefined;
     let currentMeasurement = () => false;
     const monitor = new ServerMonitor({
       ...(deps.timing === undefined ? {} : { timing: deps.timing }),
@@ -332,14 +333,14 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
       probe: (port) => {
         currentMeasurement = capturePortMeasurement(port);
         lastAnswer = undefined;
-        lastCommand = undefined;
+        lastIdentity = undefined;
         return probe(port);
       },
       identify,
       adjudicate: (identity: ListenerIdentity | undefined) => {
         const answer = verifiesFor(identity, entry.folder);
         lastAnswer = answer;
-        lastCommand = identity?.command;
+        lastIdentity = identity;
         if (answer === 'ours' && isStarterEntry(entry.folder)) {
           setServerEntryOwnership(worktreePath, entry.id, 'studio-started');
         } else if (answer === 'ours' && identity?.cwd !== undefined) {
@@ -353,7 +354,7 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
       emit: (state) => {
         if (state.port !== undefined) watchedPort = state.port;
         if (state.status === 'running' && state.port !== undefined) {
-          recordMeasurement(worktreePath, entry.id, state.port, 'live', undefined, { verified: lastAnswer === 'ours', current: currentMeasurement });
+          recordMeasurement(worktreePath, entry.id, state.port, 'live', undefined, { verified: lastAnswer === 'ours', current: currentMeasurement, ...(lastIdentity === undefined ? {} : { identity: lastIdentity }) });
         } else if (state.status === 'stopped' && watchedPort !== undefined) {
           const stranger = lastAnswer === 'foreign';
           recordMeasurement(
@@ -361,7 +362,7 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
             entry.id,
             watchedPort,
             stranger ? 'stranger' : 'dead',
-            stranger && isContainerRuntime(lastCommand) ? 'container' : undefined,
+            stranger && isContainerRuntime(lastIdentity?.command) ? 'container' : undefined,
             { verified: false, current: currentMeasurement },
           );
         }
@@ -378,7 +379,7 @@ export function createServerHost(deps: ServerHostDeps): ServerHost {
       monitor,
       watch: (port, workspaceTelemetry) => {
         lastAnswer = undefined;
-        lastCommand = undefined;
+        lastIdentity = undefined;
         watchedPort = port;
         wasLive = false;
         monitor.watch(port, workspaceTelemetry);

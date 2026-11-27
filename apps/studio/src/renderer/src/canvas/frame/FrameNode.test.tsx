@@ -391,7 +391,7 @@ for (const eventOrder of ['before-reply', 'after-reply'] as const) it(`covers a 
   if (eventOrder === 'before-reply') await act(async () => { blocked!({ nodeId: FRAME_ID, url: URL_A }); });
   await act(async () => { pending[0]!.resolve(null); });
   if (eventOrder === 'after-reply') await act(async () => { blocked!({ nodeId: FRAME_ID, url: URL_A }); });
-  expect(guests).toHaveLength(0);
+  expect(container.querySelector('webview')).toBeNull();
   expect(container.querySelector('[data-server-cover="occupied"]')).not.toBeNull();
   expect(container.textContent).toContain('Port 3000 is in use');
   expect(container.textContent).not.toContain('Nothing is answering');
@@ -404,8 +404,8 @@ for (const eventOrder of ['before-reply', 'after-reply'] as const) it(`covers a 
   });
   expect(pending).toHaveLength(2);
   await act(async () => { pending[1]!.resolve({ url: 'about:blank#studio-frame-attach=own' }); });
-  expect(guests).toHaveLength(1);
-  expect(guests[0]!.element.getAttribute('src')).toBe('about:blank#studio-frame-attach=own');
+  expect(container.querySelectorAll('webview')).toHaveLength(1);
+  expect(guests.at(-1)!.element.getAttribute('src')).toBe('about:blank#studio-frame-attach=own');
 });
 
 it('keeps the measured occupied cover when an attachment block arrives after the server book', async () => {
@@ -927,7 +927,7 @@ it('mounts a leased guest after attachment and restores listeners without revivi
   }
 });
 
-for (const refusal of ['null', 'rejected'] as const) it(`does not mount an unauthorized guest after a ${refusal} attachment response`, async () => {
+for (const refusal of ['null', 'rejected'] as const) it(`falls back to the saved Frame URL after an ordinary ${refusal} attachment response`, async () => {
   seedFlags({ 'frame-covers': true });
   const pending = deferFrameAttachments();
   await mount();
@@ -937,14 +937,9 @@ for (const refusal of ['null', 'rejected'] as const) it(`does not mount an unaut
     if (refusal === 'null') pending[0]!.resolve(null);
     else pending[0]!.reject(new Error('attachment refused'));
   });
-  expect(guests).toHaveLength(0);
-  expect(container.querySelector('webview')).toBeNull();
-  const retry = [...container.querySelectorAll('button')].find(button => button.textContent === 'Try again');
-  expect(retry).toBeDefined();
-  await act(async () => { retry!.click(); });
-  expect(pending).toHaveLength(2);
-  await act(async () => { pending[1]!.resolve({ url: 'about:blank#studio-frame-attach=retry' }); });
   expect(guests).toHaveLength(1);
+  expect(container.querySelector('webview')?.getAttribute('src')).toBe(URL_A);
+  expect(container.querySelector('[data-server-cover="occupied"]')).toBeNull();
 });
 
 it('navigates recovery to failed B after a deferred replacement lease initially loads current A', async () => {

@@ -32,7 +32,7 @@ export function ArtifactWebview({ url, revision, snapshotRevision, cover, webvie
   const snapshotKey = `${nodeId ?? ''}:${url}:${keyRevision}`;
   const attachmentKey = JSON.stringify([nodeId, url]);
   const [unavailable, setUnavailable] = useState<string | null>(null);
-  const attachUrl = useFrameAttachUrl(nodeId, url, 'artifact', true, () => setUnavailable(attachmentKey));
+  const attachUrl = useFrameAttachUrl(nodeId, url, 'artifact', true, () => setUnavailable(attachmentKey), false);
   const [loaded, setLoaded] = useState<string | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   const snapshot = artifactSnapshots.peek(snapshotKey);

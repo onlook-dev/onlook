@@ -8,7 +8,7 @@ const original = window.studio;
 afterEach(() => { window.studio = original; });
 
 for (const outcome of ['refused', 'failed'] as const) {
-  it(`never falls back to the saved URL after an attachment is ${outcome}`, async () => {
+  it(`falls back to the saved URL after an attachment is ${outcome} without a sibling-port refusal`, async () => {
     const refusals: string[] = [];
     window.studio = {
       canvasFrameAttach: async () => {
@@ -18,8 +18,8 @@ for (const outcome of ['refused', 'failed'] as const) {
       onCanvasFrameBlocked: () => () => {},
     } as unknown as StudioBridge;
     const hook = await mountHook(() => useFrameAttachUrl('frame', 'http://localhost:4700/', 0, true, reason => { refusals.push(reason); }), undefined);
-    expect(hook.current).toBeUndefined();
-    expect(refusals).toEqual(['unavailable']);
+    expect(hook.current).toBe('http://localhost:4700/');
+    expect(refusals).toEqual([]);
     await hook.unmount();
   });
 }
@@ -59,5 +59,23 @@ it('ignores an old attachment answer after a port move and uses only the new lea
   expect(hook.current).toBeUndefined();
   await hook.settle(() => { replies[1]!({ url: 'new-lease' }); });
   expect(hook.current).toBe('new-lease');
+  await hook.unmount();
+});
+
+it('clears a saved-URL fallback if the native attachment guard later reports a sibling port', async () => {
+  let listener: Parameters<StudioBridge['onCanvasFrameBlocked']>[0] | undefined;
+  const refusals: string[] = [];
+  window.studio = {
+    canvasFrameAttach: async () => null,
+    onCanvasFrameBlocked: (next: Parameters<StudioBridge['onCanvasFrameBlocked']>[0]) => {
+      listener = next;
+      return () => {};
+    },
+  } as unknown as StudioBridge;
+  const hook = await mountHook(() => useFrameAttachUrl('frame', 'http://localhost:4700/', 0, true, reason => { refusals.push(reason); }), undefined);
+  expect(hook.current).toBe('http://localhost:4700/');
+  await hook.settle(() => { listener!({ nodeId: 'frame', url: 'http://localhost:4700/' }); });
+  expect(hook.current).toBeUndefined();
+  expect(refusals).toEqual(['blocked']);
   await hook.unmount();
 });

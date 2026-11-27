@@ -3,6 +3,7 @@ import type { ServerAttribution, ServerPortMeasurement, ServerPortState } from '
 import { localPort } from '@studio/events';
 import { defineDomain } from '../state/store.js';
 import { normalizePath, workspaceRoot } from '../workspace/store.js';
+import { verifiesFor, type ListenerIdentity } from './owner.js';
 
 export type PortListener = NonNullable<ServerPortState['listener']>;
 
@@ -35,7 +36,7 @@ const domain = defineDomain<ServerBookFile>({
 });
 
 const removedProjects = new Set<string>();
-const livePortOwners = new Map<number, { projectKey: string; entryId: string }>();
+const livePortOwners = new Map<number, { projectKey: string; entryId: string; identity?: ListenerIdentity }>();
 const measurementVersions = new Map<number, number>();
 
 export function capturePortMeasurement(port: number): () => boolean {
@@ -84,6 +85,8 @@ export function portHeldByOtherProject(worktreePath: string, url: string): boole
   const projectKey = normalizePath(worktreePath);
   const owner = livePortOwners.get(port);
   if (owner === undefined || owner.projectKey === projectKey) return false;
+  if (verifiesFor(owner.identity, worktreePath) === 'ours'
+    || serverBookEntries(worktreePath).some((entry) => verifiesFor(owner.identity, entry.folder) === 'ours')) return false;
   const entry = domain.read().projects[owner.projectKey]?.[owner.entryId];
   return entry?.ports.some((claim) => claim.port === port && claim.measured === 'live') === true;
 }
@@ -162,7 +165,7 @@ export function recordPortMeasurement(
   port: number,
   measured: ServerPortMeasurement,
   listener?: PortListener,
-  observation?: { verified: boolean; current(): boolean },
+  observation?: { verified: boolean; current(): boolean; identity?: ListenerIdentity },
 ): boolean {
   if (observation !== undefined && !observation.current()) return false;
   const projectKey = normalizePath(worktreePath);
@@ -184,9 +187,9 @@ export function recordPortMeasurement(
   }));
   if (measured === 'live') {
     if (observation?.verified === false) return false;
-    livePortOwners.set(port, { projectKey, entryId });
+    livePortOwners.set(port, { projectKey, entryId, ...(observation?.identity === undefined ? {} : { identity: observation.identity }) });
     advanceMeasurement(port);
-    return prior?.projectKey !== projectKey || prior.entryId !== entryId;
+    return prior?.projectKey !== projectKey || prior.entryId !== entryId || prior.identity?.cwd !== observation?.identity?.cwd;
   }
   if (prior?.projectKey === projectKey && prior.entryId === entryId) {
     advanceMeasurement(port);
