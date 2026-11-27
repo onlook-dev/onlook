@@ -8,7 +8,7 @@ import type { CliResult } from '../env/cli.js';
 import { runGit, untrustedCloneGitConfig } from '../env/git.js';
 import { userEnv } from '../env/shell-env.js';
 import type { GithubCredential } from './backend.js';
-import { isWindows, nullDevice, systemExecutable } from '../env/platform.js';
+import { hostCurlPath, isWindows, nullDevice } from '../env/platform.js';
 
 type Credential = Extract<GithubCredential, { status: 'ready' }>;
 
@@ -43,13 +43,21 @@ export function validCredential(credential: Credential, repository: string, now 
     && credential.expiresAt <= now + 8 * 60 * 60 * 1000;
 }
 
+// Binding a Unix socket fails on a path near 104 bytes, and a configured temporary directory can sit arbitrarily deep (ONL-3203).
+function credentialSocketRoot(): string {
+  const configured = tmpdir();
+  const socketPath = join(configured, 'onlook-github-XXXXXX', 'credential.sock');
+  return isWindows() || Buffer.byteLength(socketPath) <= 100 ? configured : '/tmp';
+}
+
 export async function withGitCredential<Result>(credential: Credential, work: (run: (args: string[], options?: {
   signal?: AbortSignal; onStderr?: (chunk: string) => void;
   stdin?: string; timeoutMs?: number;
 }) => Promise<CliResult>) => Promise<Result>): Promise<Result> {
-  const directory = await mkdtemp(join(tmpdir(), 'onlook-github-'));
+  const directory = await mkdtemp(join(credentialSocketRoot(), 'onlook-github-'));
   const nonce = randomUUID();
   const helper = join(directory, 'helper.conf');
+  const socket = join(directory, 'credential.sock');
   const remote = new URL(credential.remoteUrl);
   const server = createServer((request, response) => {
     request.socket.setTimeout(2000, () => request.destroy());
@@ -76,14 +84,17 @@ export async function withGitCredential<Result>(credential: Credential, work: (r
   try {
     await new Promise<void>((resolve, reject) => {
       server.once('error', reject);
-      server.listen(0, '127.0.0.1', resolve);
+      // A path listens as a named pipe on Windows, which curl cannot reach, so only there is it a loopback port (ONL-3203).
+      if (isWindows()) server.listen(0, '127.0.0.1', resolve); else server.listen(socket, resolve);
     });
     const address = server.address();
-    if (!address || typeof address === 'string') throw new Error('Credential listener unavailable');
-    const url = `http://127.0.0.1:${address.port}/`;
+    if (address === null) throw new Error('Credential listener unavailable');
+    const endpoint = typeof address === 'string'
+      ? [`unix-socket = ${JSON.stringify(address)}`, 'url = "http://localhost/"']
+      : [`url = ${JSON.stringify(`http://127.0.0.1:${address.port}/`)}`];
     await writeFile(helper, [
       'silent', 'show-error', 'fail', 'noproxy = "*"', 'max-time = 2', 'proto = "=http"',
-      `url = ${JSON.stringify(url)}`, `header = "X-Onlook-Nonce: ${nonce}"`,
+      ...endpoint, `header = "X-Onlook-Nonce: ${nonce}"`,
       '',
     ].join('\n'), { mode: 0o600 });
     const inherited = await userEnv();
@@ -94,8 +105,7 @@ export async function withGitCredential<Result>(credential: Credential, work: (r
       GIT_ASKPASS: '', SSH_ASKPASS: '', GIT_LFS_SKIP_SMUDGE: '1',
     };
     const quote = (value: string): string => `'${value.replaceAll("'", "'\\''")}'`;
-    const curl = isWindows() ? systemExecutable('curl.exe').replaceAll('\\', '/') : '/usr/bin/curl';
-    const helperCommand = `!credential() { if test "$1" = get; then ${quote(curl)} --disable --config ${quote(helper.replaceAll('\\', '/'))} --data-binary @-; fi; }; credential`;
+    const helperCommand = `!credential() { if test "$1" = get; then ${quote(hostCurlPath())} --disable --config ${quote(helper.replaceAll('\\', '/'))} --data-binary @-; fi; }; credential`;
     const safety = untrustedCloneGitConfig(helperCommand);
     return await work((args, options = {}) => runGit(directory, args, {
       config: safety, timeoutMs: 15 * 60 * 1000, maxBuffer: 1024 * 1024, ...options,
