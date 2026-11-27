@@ -11,6 +11,7 @@ import { SkillSuggestions, type SkillCatalog } from '../../chat/SkillSuggestions
 import { matchSkills } from '../../chat/skillMatch.js';
 import { useSkillComposer } from '../../chat/useSkillComposer.js';
 import { composerStatusFor } from '../../chat/composerStatus.js';
+import { formatFileSize } from '../../chat/fileSize.js';
 import { t } from '@studio/i18n';
 import { FileGlyph, ForwardIcon, TextGlyph } from '../../icons/glyphs.js';
 import { chatPanelProps } from '../../chat/panelProps.js';
@@ -102,7 +103,7 @@ function FilesSkills({ state, width }: { state: State; width: number }): React.J
                 : [],
             },
             connection: { status: state === 'disabled' ? 'error' : 'ok' },
-            strings: { ...CHAT_FIXTURE_STRINGS, fileSizeLabel: (bytes) => t('chat.attach.size', { bytes }) },
+            strings: { ...CHAT_FIXTURE_STRINGS, fileSizeLabel: formatFileSize },
             onInterrupt: noop,
             onRespond: noop,
             onCopy: noop,

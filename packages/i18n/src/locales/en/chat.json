@@ -141,7 +141,6 @@
   "chat.attach.selectionName": "the selection",
   "chat.attach.remove": "Remove {name}",
   "chat.attach.preview": "Preview of {name}",
-  "chat.attach.size": "{bytes} bytes",
   "chat.attach.failed.unsupported-format": "Couldn’t attach {name} — use a readable UTF-8 text file, PNG, JPEG, GIF, WebP, or a PDF on Claude",
   "chat.attach.failed.too-large": "Couldn’t attach {name} — the limit is 10 MB",
   "chat.attach.failed.pdfUnsupported": "Couldn’t attach {name} — ChatGPT can’t read PDFs. Switch to Claude.",

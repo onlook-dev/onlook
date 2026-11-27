@@ -5,6 +5,7 @@ import { IconButton } from '@astryxdesign/core/IconButton';
 import type { AttachmentDraft } from '../attachments.js';
 import { CloseIcon, TextGlyph, FileGlyph } from '../icons/glyphs.js';
 import { t } from '@studio/i18n';
+import { formatFileSize } from './fileSize.js';
 
 function AttachmentChip({
   draft,
@@ -36,7 +37,7 @@ function AttachmentChip({
         <AttachmentPill
           state="unsubmitted"
           label={draft.name}
-          labelTitle={`${draft.name}${draft.ref.originalSize === undefined ? '' : ` · ${t('chat.attach.size', { bytes: draft.ref.originalSize })}`}`}
+          labelTitle={`${draft.name}${draft.ref.originalSize === undefined ? '' : ` · ${formatFileSize(draft.ref.originalSize)}`}`}
           flushLeading
           maxWidth={180}
           leading={
