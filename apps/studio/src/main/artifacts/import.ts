@@ -35,7 +35,8 @@ function containedFile(root: string, path: string): string {
 }
 
 function decodedReference(value: string): string {
-  return value.replace(/&(?:#x([\da-f]+)|#(\d+)|(amp|colon|sol));?/gi,
+  // A browser resolves a named reference only when its semicolon is there, and a numeric one without it.
+  return value.replace(/&(?:#x([\da-f]+);?|#(\d+);?|(amp|colon|sol);)/gi,
     (_match, hex: string | undefined, decimal: string | undefined, named: string | undefined) => {
       if (named !== undefined) return named.toLowerCase() === 'amp' ? '&' : named.toLowerCase() === 'colon' ? ':' : '/';
       const code = Number.parseInt(hex ?? decimal ?? '0', hex === undefined ? 10 : 16);

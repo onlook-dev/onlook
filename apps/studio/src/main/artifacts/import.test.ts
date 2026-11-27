@@ -16,10 +16,16 @@ describe('import copies only local image/font dependencies without editing the s
       writeFileSync(join(root, 'index.html'), `<link rel="stylesheet" href="${reference}">`);
       expect(importArtifactFromProject(root, 'index.html', () => null).ok).toBe(false);
     }
-    for (const reference of ['styles&sol;theme.css', 'styles&#47;theme.css', 'styles&#x2f;theme.css']) {
+    for (const reference of ['styles&sol;theme.css', 'styles&#47;theme.css', 'styles&#x2f;theme.css', 'styles&#47theme.css', 'styles&#x2ftheme.css']) {
       writeFileSync(join(root, 'index.html'), `<link rel="stylesheet" href="${reference}">`);
       expect(importArtifactFromProject(root, 'index.html', () => null).ok).toBe(true);
     }
+    // A browser leaves a named reference alone without its semicolon, so this is still a path with an `&` in it.
+    writeFileSync(join(root, 'index.html'), '<link rel="stylesheet" href="styles&soltheme.css">');
+    const refused = importArtifactFromProject(root, 'index.html', () => null);
+    expect(refused.ok).toBe(false);
+    if (refused.ok) throw new Error('Expected import to fail');
+    expect(refused.reason).toContain('plain relative path');
   });
   it('names a reference whose character is out of range instead of answering with the HTML guidance', () => {
     for (const reference of ['styles&#x110000;theme.css', 'styles&#xd800;theme.css', `styles&#x${'f'.repeat(100_000)};theme.css`]) {
