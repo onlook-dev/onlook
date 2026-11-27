@@ -37,7 +37,7 @@ export function startChild(bin: string, args: readonly string[], options: ChildO
     bindWslChild(child, project, marker, true, launch);
     return child;
   }
-  return launch(bin, args, nodeOptions(options));
+  return launch(bin, args, { ...nodeOptions(options), shell: false });
 }
 
 /** `execFile`'s own bounds apply: `timeout` kills with `killSignal`, `maxBuffer` ends the child. */
@@ -57,7 +57,7 @@ export function runChild(
     bindWslChild(child, project, marker, false, spawn);
     return child;
   }
-  return execFile(bin, args, nodeOptions(options), done);
+  return execFile(bin, args, { ...nodeOptions(options), shell: false }, done);
 }
 
 export function runChildOutput(bin: string, args: readonly string[], options: RunChildOptions): Promise<{ stdout: string; stderr: string }> {

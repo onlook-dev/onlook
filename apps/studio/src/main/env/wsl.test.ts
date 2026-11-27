@@ -63,7 +63,7 @@ describe('WSL launches', () => {
       const launch = ((bin, args, passed) => {
         expect(bin).toBe('git.exe');
         expect(args).toEqual(['status']);
-        expect(passed).toEqual(options);
+        expect(passed).toEqual({ ...options, shell: false });
         return new EventEmitter() as ChildProcess;
       }) as typeof spawn;
       startChild('git.exe', ['status'], options, launch);

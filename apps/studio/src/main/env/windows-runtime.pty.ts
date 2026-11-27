@@ -111,7 +111,7 @@ test('flag-off child launches preserve the original executable, UNC cwd and envi
       launches++;
       assert.equal(bin, 'git.exe');
       assert.deepEqual(args, ['status']);
-      assert.deepEqual(passed, options);
+      assert.deepEqual(passed, { ...options, shell: false });
       return new EventEmitter() as ChildProcess;
     }) as typeof spawn;
     startChild('git.exe', ['status'], options, launch);
@@ -119,4 +119,19 @@ test('flag-off child launches preserve the original executable, UNC cwd and envi
   } finally {
     Object.defineProperty(process, 'platform', descriptor);
   }
+});
+
+test('native children retain literal arguments even if shell execution is requested', () => {
+  const options = { cwd: 'C:\\projects\\example', env: {}, shell: true };
+  const args = ['literal & echo unexpected', '$(unexpected)'];
+  let launches = 0;
+  const launch = ((bin, passedArgs, passed) => {
+    launches++;
+    assert.equal(bin, 'node.exe');
+    assert.deepEqual(passedArgs, args);
+    assert.equal(passed?.shell, false);
+    return new EventEmitter() as ChildProcess;
+  }) as typeof spawn;
+  startChild('node.exe', args, options, launch);
+  assert.equal(launches, 1);
 });
