@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { createServer } from 'node:net';
+import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { GithubCloneFailure } from '@studio/events';
@@ -8,7 +8,7 @@ import type { CliResult } from '../env/cli.js';
 import { runGit, untrustedCloneGitConfig } from '../env/git.js';
 import { userEnv } from '../env/shell-env.js';
 import type { GithubCredential } from './backend.js';
-import { isWindows, nullDevice } from '../env/platform.js';
+import { isWindows, nullDevice, systemExecutable } from '../env/platform.js';
 
 type Credential = Extract<GithubCredential, { status: 'ready' }>;
 
@@ -49,57 +49,60 @@ export async function withGitCredential<Result>(credential: Credential, work: (r
 }) => Promise<CliResult>) => Promise<Result>): Promise<Result> {
   const directory = await mkdtemp(join(tmpdir(), 'onlook-github-'));
   const nonce = randomUUID();
-  const socketPath = isWindows() ? `\\\\.\\pipe\\onlook-github-${nonce}` : join(directory, 'credential.sock');
-  const helper = join(directory, 'helper.cjs');
+  const helper = join(directory, 'helper.conf');
   const remote = new URL(credential.remoteUrl);
-  const server = createServer((socket) => {
-    socket.setTimeout(2000, () => socket.destroy());
+  const server = createServer((request, response) => {
+    request.socket.setTimeout(2000, () => request.destroy());
+    response.setHeader('Connection', 'close');
     let input = '';
-    socket.on('data', (chunk: Buffer) => {
+    request.on('data', (chunk: Buffer) => {
       input += chunk.toString();
-      if (input.length > 8192) { socket.destroy(); return; }
-      if (!input.endsWith('\n\n')) return;
+      if (input.length > 8192) request.destroy();
+    });
+    request.on('end', () => {
       const fields = Object.fromEntries(input.trimEnd().split('\n').map((line) => {
         const separator = line.indexOf('=');
         return [line.slice(0, separator), line.slice(separator + 1)];
       }));
-      const allowed = fields['nonce'] === nonce && fields['protocol'] === 'https'
+      const allowed = request.method === 'POST' && request.url === '/' && request.headers['x-onlook-nonce'] === nonce
+        && fields['protocol'] === 'https'
         && fields['host'] === remote.host && fields['path'] === remote.pathname.slice(1)
         && Date.now() < credential.expiresAt;
-      socket.end(allowed ? `username=${credential.username}\npassword=${credential.password}\n\n` : '\n');
+      response.writeHead(allowed ? 200 : 403);
+      response.end(allowed ? `username=${credential.username}\npassword=${credential.password}\n\n` : '\n');
     });
-    socket.on('error', () => {});
+    request.on('error', () => {});
   });
   try {
-    await writeFile(helper, `const net = require('node:net');
-if (process.argv[2] !== 'get') process.exit(0);
-let input = '';
-process.stdin.setEncoding('utf8');
-process.stdin.on('data', chunk => { input += chunk; if (input.length > 8192) process.exit(1); });
-process.stdin.on('end', () => {
-  const socket = net.connect(${JSON.stringify(socketPath)});
-  socket.setTimeout(2000, () => process.exit(1));
-  socket.on('connect', () => socket.write('nonce=${nonce}\\n' + input.trimEnd() + '\\n\\n'));
-  socket.on('data', chunk => process.stdout.write(chunk));
-  socket.on('error', () => process.exit(1));
-});
-`, { mode: 0o600 });
-    await new Promise<void>((resolve, reject) => { server.once('error', reject); server.listen(socketPath, resolve); });
+    await new Promise<void>((resolve, reject) => {
+      server.once('error', reject);
+      server.listen(0, '127.0.0.1', resolve);
+    });
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('Credential listener unavailable');
+    const url = `http://127.0.0.1:${address.port}/`;
+    await writeFile(helper, [
+      'silent', 'show-error', 'fail', 'noproxy = "*"', 'max-time = 2', 'proto = "=http"',
+      `url = ${JSON.stringify(url)}`, `header = "X-Onlook-Nonce: ${nonce}"`,
+      '',
+    ].join('\n'), { mode: 0o600 });
     const inherited = await userEnv();
     const noFile = nullDevice();
     const unset = Object.keys(inherited).filter((key) => /^(GIT_|SSH_|NODE_OPTIONS$|NODE_PATH$|ELECTRON_)/i.test(key));
     const env = {
       GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: noFile, GIT_TERMINAL_PROMPT: '0',
-      GIT_ASKPASS: '', SSH_ASKPASS: '', GIT_LFS_SKIP_SMUDGE: '1', ELECTRON_RUN_AS_NODE: '1',
+      GIT_ASKPASS: '', SSH_ASKPASS: '', GIT_LFS_SKIP_SMUDGE: '1',
     };
     const quote = (value: string): string => `'${value.replaceAll("'", "'\\''")}'`;
-    const helperCommand = `!${quote(process.execPath)} ${quote(helper)}`;
+    const curl = isWindows() ? systemExecutable('curl.exe').replaceAll('\\', '/') : '/usr/bin/curl';
+    const helperCommand = `!credential() { if test "$1" = get; then ${quote(curl)} --disable --config ${quote(helper.replaceAll('\\', '/'))} --data-binary @-; fi; }; credential`;
     const safety = untrustedCloneGitConfig(helperCommand);
     return await work((args, options = {}) => runGit(directory, args, {
       config: safety, timeoutMs: 15 * 60 * 1000, maxBuffer: 1024 * 1024, ...options,
       unset: unset.filter((key) => !(key in env)), env,
     }));
   } finally {
+    server.closeAllConnections();
     await new Promise<void>((resolve) => server.close(() => resolve()));
     await rm(directory, { recursive: true, force: true });
   }

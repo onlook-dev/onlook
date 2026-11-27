@@ -1,5 +1,5 @@
 import { afterAll, expect, test } from 'bun:test';
-import { chmod, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import { cleanupTempFixtures, makeGitRepo } from '@studio/fixtures';
@@ -7,6 +7,7 @@ import { runCli } from '../env/cli.js';
 import { cloneRepository, type GithubCloneNetwork } from './clone.js';
 import { withGitCredential } from './git.js';
 import { cleanupPendingClones, trackClone } from './pending.js';
+import { isWindows } from '../env/platform.js';
 
 const root = await mkdtemp(join(tmpdir(), 'onlook-github-clone-test-'));
 afterAll(async () => { cleanupTempFixtures(); await rm(root, { recursive: true, force: true }); });
@@ -94,9 +95,75 @@ test('real Git credential helper only returns a secret for its exact HTTPS repos
   await withGitCredential(credential(), async (run) => {
     const allowed = await run(['credential', 'fill'], { stdin: 'protocol=https\nhost=github.com\npath=team/website.git\n\n' });
     expect(allowed.ok).toBe(true); expect(allowed.out).toContain('password=secret-not-for-projects');
-    for (const fields of ['protocol=https\nhost=attacker.test\npath=team/website.git', 'protocol=https\nhost=github.com\npath=other/repo.git']) {
+    for (const fields of ['protocol=https\nhost=attacker.test\npath=team/website.git', 'protocol=https\nhost=github.com\npath=other/repo.git', 'protocol=http\nhost=github.com\npath=team/website.git']) {
       const denied = await run(['credential', 'fill'], { stdin: `${fields}\n\n` });
       expect(denied.ok).toBe(false); expect(denied.out).not.toContain('secret-not-for-projects');
     }
   });
+});
+
+test('credential requests require the nonce and keep the password out of helper files and commands', async () => {
+  let helperPath = '';
+  await withGitCredential(credential(), async (run) => {
+    const command = await run(['config', '--get', 'credential.helper']);
+    expect(command.ok).toBe(true);
+    expect(command.out).not.toContain(credential().password);
+    helperPath = /--config ('.*') --data-binary @-/.exec(command.out)![1]!.slice(1, -1).replaceAll("'\\''", "'");
+    const config = await readFile(helperPath, 'utf8');
+    expect(config).not.toContain(credential().password);
+    if (!isWindows()) expect((await stat(helperPath)).mode & 0o777).toBe(0o600);
+    const url = JSON.parse(/^url = (.+)$/m.exec(config)![1]!);
+    const nonce = /^header = "X-Onlook-Nonce: (.+)"$/m.exec(config)![1]!;
+    const body = 'protocol=https\nhost=github.com\npath=team/website.git\n\n';
+    for (const supplied of ['', 'incorrect']) {
+      const denied = await fetch(url, { method: 'POST', body, headers: { 'X-Onlook-Nonce': supplied } });
+      expect(denied.status).toBe(403);
+      expect(await denied.text()).not.toContain(credential().password);
+    }
+    const allowed = await fetch(url, { method: 'POST', body, headers: { 'X-Onlook-Nonce': nonce } });
+    expect(allowed.status).toBe(200);
+    expect(await allowed.text()).toContain(`password=${credential().password}`);
+  });
+  await expect(stat(helperPath)).rejects.toThrow();
+});
+
+test('the credential helper ignores curl settings that redirect its response or use a proxy', async () => {
+  const curlHome = await mkdtemp(join(root, 'curl-home-'));
+  const redirected = join(curlHome, 'credential-output');
+  await writeFile(join(curlHome, '.curlrc'), `output = ${JSON.stringify(redirected.replaceAll('\\', '/'))}\n`);
+  await withGitCredential(credential(), async (run) => {
+    const command = await run(['config', '--get', 'credential.helper']);
+    expect(command.ok).toBe(true);
+    const home = `'${curlHome.replaceAll('\\', '/').replaceAll("'", "'\\''")}'`;
+    const helper = `!export CURL_HOME=${home} ALL_PROXY='http://127.0.0.1:9' NO_PROXY=''; ${command.out.slice(1)}`;
+    const result = await run(['-c', 'credential.helper=', '-c', `credential.helper=${helper}`, 'credential', 'fill'], {
+      stdin: 'protocol=https\nhost=github.com\npath=team/website.git\n\n',
+    });
+    expect(result.ok).toBe(true);
+    expect(result.out).toContain(`password=${credential().password}`);
+  });
+  expect(await readdir(curlHome)).toEqual(['.curlrc']);
+});
+
+test('the credential helper refuses expired credentials', async () => {
+  await withGitCredential({ ...credential(), expiresAt: Date.now() - 1 }, async (run) => {
+    const result = await run(['credential', 'fill'], { stdin: 'protocol=https\nhost=github.com\npath=team/website.git\n\n' });
+    expect(result.ok).toBe(false);
+    expect(result.out).not.toContain(credential().password);
+  });
+});
+
+test('the credential helper works when the app executable cannot run as Node', async () => {
+  const executable = Object.getOwnPropertyDescriptor(process, 'execPath')!;
+  Object.defineProperty(process, 'execPath', { ...executable, value: join(root, 'packaged-app-without-node-mode') });
+  try {
+    await withGitCredential(credential(), async (run) => {
+      const result = await run(['credential', 'fill'], { stdin: 'protocol=https\nhost=github.com\npath=team/website.git\n\n' });
+      expect(result.err).toBe('');
+      expect(result.ok).toBe(true);
+      expect(result.out).toContain(`password=${credential().password}`);
+    });
+  } finally {
+    Object.defineProperty(process, 'execPath', executable);
+  }
 });
