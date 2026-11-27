@@ -25,6 +25,7 @@ import { primeUserEnv, userEnv } from './env/shell-env.js';
 import { hostPlatform } from './env/platform.js';
 import { hostExecutable } from './env/executable.js';
 import { runCli } from './env/cli.js';
+import { trustSystemCertificates } from './env/system-ca.js';
 import { registerIdentityHandlers } from './identity/ipc.js';
 import { registerOnlookHandlers, initializeOnlook, disposeOnlook } from './cloud/index.js';
 import { registerImageHandlers } from './images/index.js';
@@ -288,6 +289,8 @@ void app.whenReady().then(() => {
 
   // First: the launch and install ids exist before any window, so the logger, the crash marker and every early error carry them (ONL-2343, ONL-2352).
   initLog({ mirror: !app.isPackaged });
+  // Before the flags and telemetry: main's first HTTPS request comes after this line.
+  trustSystemCertificates();
   // Flags before telemetry: activation reads `web-attribution-link` to decide a retained handoff, and an unprimed read answers from the baked default whatever Cloud targets (ONL-3080).
   primeFlags(flag);
   setCanonicalPathMapper((path) => wslProject(path)?.hostPath);
