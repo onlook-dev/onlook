@@ -5,6 +5,7 @@ import { emptyMeasurement, probeGithub } from '../measure.js';
 import { hasGithubStatusReads, selectGithubReader } from './account-reader.js';
 import { scriptedReader } from './test-support.js';
 import { GITHUB_READ_FAILURES, githubBackendFixture } from '../../github-import/backend-fixtures.js';
+import type { GithubReadFailure } from '../../github-import/backend.js';
 
 async function measured(scenario: Parameters<typeof githubBackendFixture>[0]) {
   const backend = githubBackendFixture(scenario);
@@ -70,15 +71,30 @@ describe('account-backed GitHub status', () => {
     expect(selected.reader).toBe(fallback.reader);
   });
 
-  for (const failure of GITHUB_READ_FAILURES) {
-    it(`preserves the typed ${JSON.stringify(failure)} failure without granting access`, async () => {
-      const fallback = scriptedReader({});
-      const selected = await selectGithubReader(githubBackendFixture('connected', { repositoryAccess: failure }), fallback.reader);
-      const result = await selected.reader.access('example/design');
-      expect(selected.failure?.()).toEqual(failure);
-      if (result.ok) expect(result.value.permission).toBe('denied');
-      else expect(result.partial).toBe(true);
-      expect(fallback.asked).toEqual([]);
+  const deniedBy = async (failure: GithubReadFailure) => {
+    const fallback = scriptedReader({});
+    const selected = await selectGithubReader(githubBackendFixture('connected', { repositoryAccess: failure }), fallback.reader);
+    const result = await selected.reader.access('example/design');
+    expect(selected.failure?.()).toEqual(failure);
+    expect(fallback.asked).toEqual([]);
+    return result;
+  };
+
+  for (const [failure, reason] of [
+    [{ status: 'not_found' }, 'repo-not-visible'],
+    [{ status: 'sso_required' }, 'sso_required'],
+    [{ status: 'approval_required' }, 'approval_required'],
+  ] as const) {
+    it(`establishes no access, and says why, for ${failure.status}`, async () => {
+      expect(await deniedBy(failure)).toEqual({ ok: true, value: { permission: 'denied', reason } });
+    });
+  }
+
+  for (const failure of GITHUB_READ_FAILURES.filter(
+    (entry) => entry.status !== 'not_found' && entry.status !== 'sso_required' && entry.status !== 'approval_required',
+  )) {
+    it(`leaves the read incomplete, never a denial, for ${JSON.stringify(failure)}`, async () => {
+      expect(await deniedBy(failure)).toEqual({ ok: false, partial: true });
     });
   }
 

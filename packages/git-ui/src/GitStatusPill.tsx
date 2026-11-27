@@ -231,7 +231,6 @@ const POPOVER_OPTIONS = {
   hasEscapeDismiss: true,
 } as const;
 
-/** The cell's host type never changes: a changed type unmounts the subtree and loses the label's morph; the press is an overlay. */
 export function noAccessLineFor(state: GitPillState, strings: GitStatusStrings): string | undefined {
   if (state.id !== 'no-access') return undefined;
   const line = strings.noAccessLine[state.reason ?? 'plain'];
@@ -239,6 +238,7 @@ export function noAccessLineFor(state: GitPillState, strings: GitStatusStrings):
   return account === undefined ? fill(line.nameless, { repo: state.repo }) : fill(line.named, { repo: state.repo, account });
 }
 
+/** The cell's host type never changes: a changed type unmounts the subtree and loses the label's morph; the press is an overlay. */
 export function bodyPropsFor(label: string | undefined, { isWorking }: { isWorking: boolean }) {
   if (isWorking) return { 'aria-disabled': 'true' as const, 'aria-busy': 'true' as const };
   if (label === undefined) return { 'aria-busy': 'true' as const };

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Dialog } from './overlay/Dialog.js';
 import { GithubImportFlow, SETTINGS_FLOW_HEIGHT, SETTINGS_FLOW_WIDTH } from './github-import/GithubImport.js';
 import { dismissGithub, githubCommand } from './github-import/store.js';
@@ -128,6 +128,11 @@ export function App({
   const covered = usePanelCover();
   const [githubOpen, setGithubOpen] = useState(false);
   const closeGithub = (): void => { dismissGithub(); setGithubOpen(false); };
+  // The band's press handler re-subscribes whenever this identity changes, so it keeps one across renders.
+  const openGithub = useCallback(() => {
+    setGithubOpen(true);
+    void githubCommand({ kind: 'start', entryPoint: 'topbar' });
+  }, []);
 
 
   return (
@@ -140,10 +145,7 @@ export function App({
             them for the project switcher, and unmounting with them takes Create
             PR off a screen where submitting lands in an unseen transcript
             (ONL-1935). */}
-        <EditorBarSlot onExitToProjects={onExitToProjects} onConnectGithub={() => {
-          setGithubOpen(true);
-          void githubCommand({ kind: 'start', entryPoint: 'topbar' });
-        }} />
+        <EditorBarSlot onExitToProjects={onExitToProjects} onConnectGithub={openGithub} />
         <Dialog isOpen={githubOpen} onOpenChange={(open) => { if (!open) closeGithub(); }}
           purpose="form" width={SETTINGS_FLOW_WIDTH} maxHeight={SETTINGS_FLOW_HEIGHT} style={{ height: SETTINGS_FLOW_HEIGHT }} data-testid="github-status-dialog">
           {githubOpen && <GithubImportFlow entryPoint="topbar" onClose={closeGithub} onOpen={closeGithub} />}

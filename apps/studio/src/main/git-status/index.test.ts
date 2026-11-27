@@ -1,5 +1,5 @@
 import { chmodSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { afterAll, afterEach, beforeEach, describe, expect, it, jest } from 'bun:test';
 import {
   GIT_PILL_SHIPPED_DEFAULTS,
@@ -34,16 +34,43 @@ it('refreshes every project after a connection change, without fetching', async 
     emit: () => {},
     measure: async (path, options) => { measured.push({ path, fetch: options.fetch }); return { measurement: facts(), fetched: undefined }; },
   });
-  await host.connectionChanged();
+  await host.invalidateEveryProject();
   expect(measured.map(({ path }) => path).sort()).toEqual([worktree, other].sort());
   expect(measured.every(({ fetch }) => fetch === false)).toBe(true);
+});
+
+it('retires every project’s facts at once and re-reads them a few at a time', async () => {
+  const extra = ['one', 'two', 'three', 'four', 'five'].map((name) => join(workspaceRootDir, 'repo', `lane-${name}`));
+  for (const path of extra) {
+    mkdirSync(path, { recursive: true });
+    rememberProject({ ...workspaceRecord(path), workspaceName: basename(path), branchName: `user/${basename(path)}` });
+  }
+  const skeletons: string[] = [];
+  let measuring = 0;
+  let atOnce = 0;
+  const host = createGitStatusHost({
+    emit: ({ worktreePath, row }) => { if (row.invalidated) skeletons.push(worktreePath); },
+    refreshLanes: 2,
+    measure: async () => {
+      measuring += 1;
+      atOnce = Math.max(atOnce, measuring);
+      // Every lane is in flight before any of them finishes, so the ceiling is the lanes and not the scheduler.
+      await sleep(1);
+      measuring -= 1;
+      return { measurement: facts(), fetched: undefined };
+    },
+  });
+  await host.invalidateEveryProject();
+  expect(skeletons.length).toBeGreaterThan(2);
+  expect(atOnce).toBe(2);
+  for (const path of extra) forgetProject(path);
 });
 
 it('drops an old account’s in-flight result and partial cache on connection change', async () => {
   const { host, calls, emitted } = harness();
   const opened = host.opened(worktree);
   await settle();
-  const refreshed = host.connectionChanged();
+  const refreshed = host.invalidateEveryProject();
   calls[0]!.resolve({ measurement: facts({ ghAccount: 'previous-account' }), fetched: true });
   await opened;
   await settle();
@@ -59,7 +86,7 @@ it('drops an old account’s in-flight result and partial cache on connection ch
 
 it.each(['rejection', 'deadline'] as const)('keeps connection invalidation until fresh facts arrive after a %s', async (failure) => {
   const { host, calls, emitted } = harness({ deadlineMs: failure === 'deadline' ? 5 : 30_000 });
-  const refreshed = host.connectionChanged();
+  const refreshed = host.invalidateEveryProject();
   if (failure === 'rejection') calls[0]!.reject(new Error('read failed'));
   await refreshed;
   expect(emitted).toHaveLength(2);
@@ -219,7 +246,7 @@ it('reports the fresh measured denial and failed refresh through the real teleme
     await second;
     const captured = peekQueueForTesting().filter((event) => event.event === 'git_state_measured');
     expect(captured).toHaveLength(2);
-    expect(captured[0]!.properties).toMatchObject({ reason: 'read-only', gh_installed: true, gh_authenticated: true, ahead: 1, behind: 0, reader: 'account' });
+    expect(captured[0]!.properties).toMatchObject({ reason: 'read-only', gh_installed: null, gh_authenticated: null, access: 'denied', ahead: 1, behind: 0, reader: 'account' });
     expect(captured[1]!.properties).toMatchObject({ reason: 'measurement-unavailable', gh_installed: null, gh_authenticated: null, ahead: null, behind: null, reader: null });
     expect(captured[0]!.properties['project_id']).toMatch(/^[0-9a-f]{16}$/);
     for (const privateValue of ['teal-skylark', 'acme/repo', 'private-', workspaceRootDir]) expect(JSON.stringify(captured)).not.toContain(privateValue);
@@ -280,6 +307,28 @@ describe('the connection the saved rows were measured for', () => {
     expect(gitStatusRowFor(worktree)?.invalidated).toBeUndefined();
   });
 
+  it('re-reads a row the connection measured without naming a login, once the connection names one', async () => {
+    const blocked = { connectionMeasured: true, access: 'denied' as const, accessReason: 'sso_required' as const, ghAccount: undefined };
+    const { host, calls } = await seeded(blocked, githubBackendFixture('connected'));
+    const refreshed = host.refreshForConnection();
+    await settle();
+    expect(calls).toHaveLength(2);
+    calls[1]!.resolve({ measurement: facts(MEASURED_FOR_DESIGNER), fetched: false, via: 'account' });
+    await refreshed;
+    expect(gitStatusRowFor(worktree)?.measurement.connectionAccount).toBe('designer');
+  });
+
+  it('leaves such a row alone while the connection still cannot name one', async () => {
+    const backend = githubBackendFixture('connected');
+    backend.identity = async () => ({ status: 'sso_required' });
+    const { host, calls } = await seeded(
+      { connectionMeasured: true, access: 'denied', accessReason: 'sso_required', ghAccount: undefined }, backend,
+    );
+    await host.refreshForConnection();
+    expect(calls).toHaveLength(1);
+    expect(gitStatusRowFor(worktree)?.invalidated).toBeUndefined();
+  });
+
   it('re-reads nothing with no saved rows at all', async () => {
     const { host, calls } = harness({ backend: () => githubBackendFixture('connected') });
     await host.refreshForConnection();
@@ -334,7 +383,7 @@ describe('a measurement the project has moved past', () => {
     await settle();
     expect(calls).toHaveLength(1);
 
-    const refreshed = host.connectionChanged();
+    const refreshed = host.invalidateEveryProject();
     await settle();
     expect(calls).toHaveLength(2);
     calls[1]!.resolve({ measurement: facts({ ghAccount: 'current-account' }), fetched: false });
@@ -352,7 +401,7 @@ describe('a measurement the project has moved past', () => {
     const { host, calls } = harness();
     const opened = host.opened(worktree);
     await settle();
-    const refreshed = host.connectionChanged();
+    const refreshed = host.invalidateEveryProject();
     await settle();
     const queued = host.turnEnded(worktree);
     await settle();
@@ -790,11 +839,11 @@ describe('apply — what a row keeps', () => {
     expect(m?.pr).toEqual(pr);
   });
 
-  it('a partial result borrows no access while a read failure is live, and the pill does not read denied again', async () => {
+  it('a partial result borrows no access while the connection’s own read failure is live, and the pill does not read denied again', async () => {
     const { host, calls, emitted } = harness();
     const open = host.opened(worktree);
     await settle();
-    calls[0]?.resolve({ measurement: facts({ access: 'denied', accessReason: 'read-only' }), fetched: true });
+    calls[0]?.resolve({ measurement: facts({ access: 'denied', accessReason: 'read-only' }), fetched: true, via: 'account' });
     await open;
 
     const turn = host.turnEnded(worktree);
@@ -802,12 +851,33 @@ describe('apply — what a row keeps', () => {
     calls[1]?.resolve({
       measurement: facts({ partial: true, access: 'unknown', githubReadFailure: { status: 'forbidden' } }),
       fetched: undefined,
+      via: 'account',
     });
     await turn;
     const row = emitted[1]?.row;
     expect(row?.measurement.access).toBe('unknown');
     expect(row?.measurement.accessReason).toBeUndefined();
     expect(derivePillState(row, GIT_PILL_SHIPPED_DEFAULTS).id).not.toBe('no-access');
+  });
+
+  it('a gh pass keeps the access it measured, even while the connection’s own read failure rides along', async () => {
+    const { host, calls, emitted } = harness();
+    const open = host.opened(worktree);
+    await settle();
+    calls[0]?.resolve({ measurement: facts({ access: 'denied', accessReason: 'read-only' }), fetched: true, via: 'cli' });
+    await open;
+
+    const turn = host.turnEnded(worktree);
+    await settle();
+    calls[1]?.resolve({
+      measurement: facts({ partial: true, access: 'unknown', githubReadFailure: { status: 'sso_required' } }),
+      fetched: undefined,
+      via: 'cli',
+    });
+    await turn;
+    const row = emitted[1]?.row;
+    expect(row?.measurement.access).toBe('denied');
+    expect(row?.measurement.accessReason).toBe('read-only');
   });
 
   it('an access the host does carry forward arrives with the reason it was measured with', async () => {

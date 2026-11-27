@@ -1,10 +1,7 @@
 import type { GitChecksRollup, GitMeasuredPullRequest, GitPrState } from '@studio/events';
-import type { GithubBackend, GithubIdentity, GithubPermission, GithubReadFailure, GithubReads } from '../../github-import/backend.js';
-import type { GitHubAccess, GitHubReader, GitHubRepoAccess } from './reader.js';
-
-function permissionFor(permission: GithubPermission | null): GitHubAccess {
-  return permission === 'ADMIN' || permission === 'MAINTAIN' || permission === 'WRITE' ? 'granted' : 'denied';
-}
+import type { GithubBackend, GithubIdentity, GithubReadFailure, GithubReads } from '../../github-import/backend.js';
+import type { GitHubReader, GitHubRepoAccess } from './reader.js';
+import { accessFromPermission } from './gh-reader.js';
 
 /** A 403 is a rate limit, a scope or SAML, so `forbidden` establishes no permission; only 404 and the two organisation blocks demote. */
 function denied(failure: GithubReadFailure): GitHubRepoAccess | undefined {
@@ -76,11 +73,11 @@ function accountReader(reads: GithubReads, identity: GoverningIdentity, boundMs:
         return value === undefined ? { ok: false, partial: true } : { ok: true, value };
       }
       const { fullName, permission, parent } = result.repository;
-      const access = permissionFor(permission);
+      const access = accessFromPermission(permission ?? undefined);
       return { ok: true, value: {
         permission: access, owner: fullName.split('/')[0],
         ...(access === 'denied' ? { reason: 'read-only' as const } : {}),
-        ...(parent === null ? {} : { parent: parent.fullName, parentPermission: permissionFor(parent.permission) }),
+        ...(parent === null ? {} : { parent: parent.fullName, parentPermission: accessFromPermission(parent.permission ?? undefined) }),
       } };
     },
     async pullRequests(repository, branch, filter) {

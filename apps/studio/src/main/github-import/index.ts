@@ -16,7 +16,7 @@ import { cleanupPendingClones } from './pending.js';
 import { proofSwitchOn } from '../diagnostics/gate.js';
 import { cloneRepository } from './clone.js';
 import { gitStatusHost } from '../git-status/index.js';
-import { hasGithubStatusReads } from '../git-status/github/account-reader.js';
+import { hasGithubStatusReads, readGithubIdentity } from '../git-status/github/account-reader.js';
 import { log } from '../log/index.js';
 import type { GithubBackend } from './backend.js';
 import { createGithubConnectionWatch } from './connection-watch.js';
@@ -55,7 +55,7 @@ export function registerGithubImportHandlers(): void {
         fixture = deps;
       },
       clone: cloneRepository,
-      refreshStatus: () => gitStatusHost()?.connectionChanged() ?? Promise.resolve(),
+      refreshStatus: () => gitStatusHost()?.invalidateEveryProject() ?? Promise.resolve(),
       observe(event: GithubObservation): void { observations.push(event); },
       events: () => [...observations],
     };
@@ -93,7 +93,7 @@ export function registerGithubImportHandlers(): void {
     const backend = githubImportBackend();
     if ((command.kind === 'status' || command.kind === 'start') && hasGithubStatusReads(backend)) {
       const subject = verifiedSubject(readIdentity());
-      const identity = state.connection.status === 'connected' ? await backend.identity().catch(() => undefined) : undefined;
+      const identity = state.connection.status === 'connected' ? await readGithubIdentity(backend) : undefined;
       if (subject === verifiedSubject(readIdentity()) && connectionChanged(subject, state.connection, identity)) {
         void gitStatusHost()?.refreshForConnection(identity).catch((error: unknown) => log('git-status').error('connection refresh failed', { error }));
       }

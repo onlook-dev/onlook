@@ -177,9 +177,7 @@ const useGitStatusStore = create<GitStatusStore>()((set, get) => ({
 
   apply: ({ worktreePath, row }) => {
     if (row.invalidated) {
-      const reconciliation = reconcilingPrs.get(worktreePath);
-      if (reconciliation !== undefined) clearTimeout(reconciliation.timer);
-      reconcilingPrs.delete(worktreePath);
+      finishReconciliation(worktreePath, false);
       queuedPrs.delete(worktreePath);
       failureMarks.delete(worktreePath);
       set((state) => ({

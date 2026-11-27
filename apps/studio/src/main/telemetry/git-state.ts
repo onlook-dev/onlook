@@ -35,8 +35,11 @@ export function gitStateProperties(
   reader?: GitStateReader,
 ): Omit<TelemetryEventMap['git_state_measured'], 'project_id'> {
   const githubProbed = measurement?.head === 'branch' && measurement.origin === 'github';
-  const ghInstalled = !githubProbed || measurement === undefined ? null : measurement.partial && !measurement.ghAuthed ? null : measurement.ghInstalled;
+  // The CLI's own facts count only where the CLI answered: the account connection never asked it, so it saw neither (ONL-3371).
+  const askedTheCli = reader !== 'account';
+  const ghInstalled = !githubProbed || measurement === undefined || !askedTheCli ? null : measurement.partial && !measurement.ghAuthed ? null : measurement.ghInstalled;
   const ghAuthed = ghInstalled === true ? measurement?.ghAuthed ?? null : null;
+  const authed = askedTheCli ? ghAuthed : measurement?.ghAuthed ?? null;
   let reason: GitStateReason;
   if (measurement === undefined) reason = 'measurement-unavailable';
   else if (!measurement.gitInstalled) reason = 'git-missing';
@@ -45,7 +48,7 @@ export function gitStateProperties(
   else if (measurement.origin === 'none') reason = 'no-remote';
   else if (measurement.origin !== 'github') reason = 'non-github';
   else if (ghInstalled === false) reason = 'gh-missing';
-  else if (ghAuthed === false) reason = 'gh-signed-out';
+  else if (authed === false) reason = 'gh-signed-out';
   else if (measurement.access === 'denied') reason = DENIAL_REASON[measurement.accessReason ?? 'unknown'] ?? 'access-denied';
   else if (measurement.partial || measurement.access === 'unknown') reason = 'partial';
   else reason = 'ready';
@@ -57,7 +60,7 @@ export function gitStateProperties(
     gh_authenticated: ghAuthed,
     origin: measurement?.gitInstalled ? measurement.origin : null,
     head: measurement?.gitInstalled ? measurement.head : null,
-    access: ghAuthed === true ? measurement?.access ?? null : null,
+    access: authed === true ? measurement?.access ?? null : null,
     partial: measurement?.partial ?? (measurement === undefined ? null : false),
     reader: reader ?? null,
     read_failure: measurement?.githubReadFailure?.status ?? null,
