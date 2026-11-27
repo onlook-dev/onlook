@@ -21,7 +21,7 @@ function bounded(value: unknown, limit: number): value is string {
   return typeof value === 'string' && value.length > 0 && value.length <= limit;
 }
 
-export function measuredPullRequest(row: GitMeasuredPullRequest, repository: string): GitMeasuredPullRequest | undefined {
+function measuredPullRequest(row: GitMeasuredPullRequest, repository: string): GitMeasuredPullRequest | undefined {
   if (row === null || typeof row !== 'object' || !REPOSITORY.test(repository)) return undefined;
   if (!Number.isSafeInteger(row.number) || row.number <= 0) return undefined;
   // The renderer opens this address, and the repository is known here, so nothing else counts as this pull request.
