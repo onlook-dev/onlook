@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from 'bun:test';
-import { executableName, hostPlatform, hostSshPath, isLinux, isMac, isWindows, lsofPath, nullDevice, pathSeparator, systemExecutable, windowsLocalAppData } from './platform.js';
+import { executableName, hostCurlPath, hostPlatform, hostSshPath, isLinux, isMac, isWindows, lsofPath, nullDevice, pathSeparator, systemExecutable, windowsLocalAppData } from './platform.js';
 
 const real = Object.getOwnPropertyDescriptor(process, 'platform')!;
 const realRoot = process.env['SystemRoot'];
@@ -42,6 +42,7 @@ test('Windows keeps its own null device, separator, executable names and system 
   expect(hostSshPath()).toBe(systemExecutable('OpenSSH/ssh.exe').replaceAll('\\', '/'));
   expect(hostSshPath()).not.toContain('\\');
   expect(hostSshPath()).toContain('D:/Win');
+  expect(hostCurlPath()).toBe('D:/Win/System32/curl.exe');
 });
 
 test('a missing SystemRoot falls back to the default Windows directory', () => {
@@ -52,9 +53,9 @@ test('a missing SystemRoot falls back to the default Windows directory', () => {
 
 test('macOS and Linux answers', () => {
   on('darwin');
-  expect([nullDevice(), pathSeparator(), executableName('codex'), lsofPath(), hostSshPath()]).toEqual(['/dev/null', '/', 'codex', '/usr/sbin/lsof', '/usr/bin/ssh']);
+  expect([nullDevice(), pathSeparator(), executableName('codex'), lsofPath(), hostSshPath(), hostCurlPath()]).toEqual(['/dev/null', '/', 'codex', '/usr/sbin/lsof', '/usr/bin/ssh', '/usr/bin/curl']);
   on('linux');
-  expect([nullDevice(), pathSeparator(), executableName('codex'), lsofPath(), hostSshPath()]).toEqual(['/dev/null', '/', 'codex', '/usr/bin/lsof', '/usr/bin/ssh']);
+  expect([nullDevice(), pathSeparator(), executableName('codex'), lsofPath(), hostSshPath(), hostCurlPath()]).toEqual(['/dev/null', '/', 'codex', '/usr/bin/lsof', '/usr/bin/ssh', '/usr/bin/curl']);
 });
 
 test("Windows' per-user data folder is read as it is set, an empty value included", () => {
