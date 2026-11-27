@@ -42,7 +42,7 @@ export async function planDuplicate(sourcePath: string): Promise<WorkspacePlan> 
   for (const cut of cuts.values()) if (cut.source.repoIdentity === source.repoIdentity) occupied.push(cut.name);
   const name = nextCopyName(workspaceDisplayName(source), occupied);
   const workspaceName = `copy-${randomUUID()}`;
-  const workspacePath = workspacePathFor(source.repoIdentity, workspaceName);
+  const workspacePath = workspacePathFor(source.repoIdentity, workspaceName, source.sourceRepoRoot);
   const sourceDocId = knownCanvasDocId(source.workspacePath);
   const servers = serverBookEntries(source.workspacePath);
   const server = entryForFolder(source.workspacePath, source.workspacePath) ?? (servers.length === 1 ? servers[0] : undefined);

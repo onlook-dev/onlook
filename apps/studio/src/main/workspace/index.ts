@@ -1,6 +1,8 @@
 import { existsSync } from 'node:fs';
 import { basename } from 'node:path';
 import { handle } from '../ipc/bridge.js';
+import { checkWslTools } from '../env/wsl-tools.js';
+import { wslProject } from '../env/wsl.js';
 import {
   IPC_EMIT,
   IPC_INVOKE,
@@ -76,6 +78,16 @@ const logger = log('workspace');
 
 // Inspects and creates nothing, so every refusal lands before anything is touched (ONL-1829).
 export async function planWorkspace(sourcePath: string): Promise<WorkspacePlan> {
+  try {
+    await checkWslTools(sourcePath, ['git', 'node']);
+    return await planWorkspaceInRuntime(sourcePath);
+  } catch (error) {
+    if (wslProject(sourcePath) === undefined) throw error;
+    return { kind: 'refused', reason: 'runtime-unavailable', detail: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+async function planWorkspaceInRuntime(sourcePath: string): Promise<WorkspacePlan> {
   beginCreation(sourcePath, 'folder');
   const root = await repoRoot(sourcePath);
   if (!root) return planCopiedWorkspace(sourcePath);
@@ -143,7 +155,7 @@ async function proposeName(
   for (let attempt = 0; attempt < NAME_ATTEMPTS; attempt += 1) {
     const workspaceName = generateWorkspaceName();
     const branchName = `${handle}/${workspaceName}`;
-    const workspacePath = workspacePathFor(repoIdentity, workspaceName);
+    const workspacePath = workspacePathFor(repoIdentity, workspaceName, root);
     if (existsSync(workspacePath)) continue;
     if (await branchExists(root, branchName)) continue;
     return { workspaceName, branchName, workspacePath };
@@ -289,7 +301,7 @@ function setArchived(req: SetArchivedRequest): void {
 // The imported row leaves the list here, not in `import.ts`, which owns the one registry write and no channel (ONL-2522).
 async function importWorktree(req: ProjectImportRequest): Promise<ProjectImportOutcome> {
   const result = await importWorktreeAt(req.handle, req.entryPoint);
-  if (!result.ok) return { ok: false, reason: result.reason };
+  if (!result.ok) return result;
   broadcastToRenderers(IPC_EMIT.discoveredWorktreesChanged, await discoveredWorktrees());
   return { ok: true };
 }

@@ -1,5 +1,6 @@
 import { type CliResult, type RunCliOptions, runCli } from './cli.js';
 import { hostSshPath, isWindows, nullDevice } from './platform.js';
+import { wslHostPath, wslProject } from './wsl.js';
 
 export type GitResult = CliResult;
 
@@ -11,9 +12,17 @@ export interface RunGitOptions extends RunCliOptions {
   config: readonly string[];
 }
 
-export function runGit(cwd: string, args: readonly string[], options: RunGitOptions): Promise<GitResult> {
+export async function runGit(cwd: string, args: readonly string[], options: RunGitOptions): Promise<GitResult> {
   const { config, ...rest } = options;
-  return runCli('git', cwd, [...config.flatMap((setting) => ['-c', setting]), ...args], rest);
+  const result = await runCli('git', cwd, [...config.flatMap((setting) => ['-c', setting]), ...args], rest);
+  const project = wslProject(cwd);
+  if (project === undefined || !result.ok) return result;
+  const pathResult = args[0] === 'rev-parse' && args.some((arg) => ['--show-toplevel', '--absolute-git-dir', '--git-common-dir', '--git-path'].includes(arg));
+  if (pathResult) return { ...result, out: wslHostPath(project, result.out) };
+  if (args[0] === 'worktree' && args[1] === 'list' && args.includes('--porcelain')) {
+    return { ...result, out: result.out.replace(/^worktree (\/.+)$/gm, (_line, path: string) => `worktree ${wslHostPath(project, path)}`) };
+  }
+  return result;
 }
 
 function noRepositoryPrograms(): string[] {
@@ -23,15 +32,16 @@ function noRepositoryPrograms(): string[] {
 const NO_BACKGROUND_WORK = ['maintenance.auto=false', 'gc.auto=0'] as const;
 
 /** For a Project's worktree and the repository behind it. */
-export function worktreeGitConfig(): string[] {
+export function worktreeGitConfig(cwd?: string): string[] {
+  const wsl = wslProject(cwd);
   return [
-    ...noRepositoryPrograms(),
-    `core.sshCommand="${hostSshPath()}"`,
+    ...(wsl === undefined ? noRepositoryPrograms() : ['core.hooksPath=/dev/null', 'core.fsmonitor=false']),
+    `core.sshCommand="${wsl === undefined ? hostSshPath() : '/usr/bin/ssh'}"`,
     'credential.helper=',
     'core.gitProxy=',
     'protocol.ext.allow=never',
     ...NO_BACKGROUND_WORK,
-    ...(isWindows() ? ['core.longpaths=true'] : []),
+    ...(isWindows() && wsl === undefined ? ['core.longpaths=true'] : []),
   ];
 }
 

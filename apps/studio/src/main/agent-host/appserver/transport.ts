@@ -1,4 +1,6 @@
-import { spawn } from 'node:child_process';
+import { APP_ENV, startChild } from '../../env/child.js';
+import { wslProject } from '../../env/wsl.js';
+import { startWslAgent } from '../wsl.js';
 import type { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 
@@ -100,12 +102,14 @@ export class AppServerTransport {
     if (options.codexHome !== undefined) env['CODEX_HOME'] = options.codexHome;
 
     // No `shell: true` — `kill()` would signal the shell and orphan a 220MB child.
-    this.child = spawn(options.bin, args, {
+    this.child = (wslProject(options.cwd) !== undefined
+      ? startWslAgent(options.bin, args, options.cwd!, { env: env ?? APP_ENV })
+      : startChild(options.bin, args, {
       cwd: options.cwd,
-      env,
+      env: env ?? APP_ENV,
       stdio: ['pipe', 'pipe', 'pipe'],
       windowsHide: true,
-    }) as ChildProcessWithoutNullStreams;
+    })) as ChildProcessWithoutNullStreams;
 
     this.child.stdout.setEncoding('utf8');
     this.child.stdout.on('data', (chunk: string) => {

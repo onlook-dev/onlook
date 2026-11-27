@@ -5,10 +5,12 @@ import { readQuarantinedProjects } from './quarantine.js';
 import { nameUnnamedWorkspace, registeredProject, rememberProject, workspaceRoot } from './store.js';
 import { recordProjectImported, type Capture } from './telemetry.js';
 import { broadcastWorkspacesChanged } from './workspaces-changed.js';
+import { checkWslTools } from '../env/wsl-tools.js';
+import { wslProject } from '../env/wsl.js';
 
 export type ProjectImportResult =
   | { ok: true; workspace: WorkspaceCreated }
-  | { ok: false; reason: ProjectImportRefusalReason };
+  | { ok: false; reason: ProjectImportRefusalReason; detail?: string };
 
 export interface ProjectImportDeps {
   capture: Capture;
@@ -23,6 +25,17 @@ export async function importWorktreeAt(
   entryPoint: ProjectImportEntryPoint,
   deps: ProjectImportDeps = defaultDeps,
 ): Promise<ProjectImportResult> {
+  try {
+    await checkWslTools(workspacePath, ['git', 'node']);
+    return await importWorktreeInRuntime(workspacePath, entryPoint, deps);
+  } catch (error) {
+    if (wslProject(workspacePath) === undefined) throw error;
+    recordProjectImported(entryPoint, { ok: false, refusal: 'runtime-unavailable' }, deps.capture);
+    return { ok: false, reason: 'runtime-unavailable', detail: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+async function importWorktreeInRuntime(workspacePath: string, entryPoint: ProjectImportEntryPoint, deps: ProjectImportDeps): Promise<ProjectImportResult> {
   const outcome = await recoverWorktreeAt(workspacePath, readQuarantinedProjects(workspaceRoot()));
   if (!outcome.ok) {
     recordProjectImported(entryPoint, { ok: false, refusal: outcome.reason }, deps.capture);

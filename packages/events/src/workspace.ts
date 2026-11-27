@@ -1,5 +1,5 @@
 /** Refusals, never degraded modes: a connect-anyway path puts the agent on the user's real checkout (ONL-1829). */
-export type WorkspaceRefusalReason = 'already-copied' | 'no-base-ref' | 'name-unavailable' | 'nothing-to-copy';
+export type WorkspaceRefusalReason = 'already-copied' | 'no-base-ref' | 'name-unavailable' | 'nothing-to-copy' | 'runtime-unavailable';
 
 export type BaseRefSource = 'upstream' | 'remote-head' | 'sole-remote-branch' | 'conventional-name' | 'local-main';
 

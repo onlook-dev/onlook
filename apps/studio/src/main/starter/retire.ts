@@ -1,6 +1,7 @@
 import { constants, copyFileSync, lstatSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { wslProject } from '../env/wsl.js';
 import { git } from '../workspace/git.js';
 import { STARTER_SERVER_FILE } from './scaffold.js';
 
@@ -41,7 +42,7 @@ export async function restoreRetiredStarterServerFile(worktree: string, options:
   if (!original.ok || !/^100(?:644|755) blob /.test(original.out)) return;
   const status = await run(worktree, ['status', '--porcelain', '--', STARTER_SERVER_FILE]);
   if (!status.ok || status.out !== '') return;
-  const directory = mkdtempSync(join(tmpdir(), 'onlook-server-recovery-'));
+  const directory = mkdtempSync(join(wslProject(worktree) === undefined ? tmpdir() : dirname(worktree), 'onlook-server-recovery-'));
   try {
     const output = join(directory, STARTER_SERVER_FILE);
     const restored = await run(worktree, [`--work-tree=${directory}`, 'restore', `--source=${commit}^`, '--worktree', '--', STARTER_SERVER_FILE]);

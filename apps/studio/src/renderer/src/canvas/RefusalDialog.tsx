@@ -9,6 +9,10 @@ import type { Refusal } from './refusal.js';
 export { refusalFrom, type Refusal } from './refusal.js';
 
 const REFUSAL_COPY: Record<WorkspaceRefusalReason, { title: StringKey; body: StringKey }> = {
+  'runtime-unavailable': {
+    title: 'machine.wsl.unavailable.title',
+    body: 'machine.wsl.unavailable.body',
+  },
   'nothing-to-copy': {
     title: 'workspace.startFresh.title',
     body: 'workspace.startFresh.body',

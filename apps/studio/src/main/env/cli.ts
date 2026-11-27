@@ -6,6 +6,8 @@ import { windowsJobCommand } from './windows-job.js';
 import { hostExecutable, hostSearchPath } from './executable.js';
 import { type DeadlineClock, systemClock } from './deadline.js';
 import { isWindows } from './platform.js';
+import { wslProject } from './wsl.js';
+import { ensureWslEnvironment } from './wsl-env.js';
 
 export const KILL_GRACE_MS = 2_000;
 
@@ -44,9 +46,11 @@ export async function runCli(
     signalGroup: typeof signalGroup;
   } = { spawn: startChild, signalGroup },
 ): Promise<CliResult> {
+  await ensureWslEnvironment(cwd);
   const env = envWithout(mergeEnv(await userEnv(), options.env), options.unset ?? []);
-  env['PATH'] = hostSearchPath(cwd, env);
-  const executable = hostExecutable(bin, cwd, env);
+  const wsl = wslProject(cwd);
+  if (wsl === undefined) env['PATH'] = hostSearchPath(cwd, env);
+  const executable = wsl === undefined ? hostExecutable(bin, cwd, env) : bin;
   if (executable === undefined) {
     return { ok: false, out: '', err: 'Host executable not found in trusted PATH', timedOut: false, missing: true, exitCode: null };
   }
@@ -57,10 +61,11 @@ export async function runCli(
   return new Promise((resolve) => {
     let child: ChildProcess;
     try {
-      const command = isWindows() ? windowsJobCommand(executable, args) : executableCommand(executable, args);
+      const command = wsl !== undefined ? { bin: executable, args, windowsVerbatimArguments: false } : isWindows() ? windowsJobCommand(executable, args) : executableCommand(executable, args);
       child = dependencies.spawn(command.bin, command.args, {
         cwd,
         env,
+        unset: options.unset,
         detached: leadsOwnGroup(),
         stdio: [options.stdin === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe'],
         windowsHide: true,
@@ -109,7 +114,7 @@ export async function runCli(
         out: out.trim(),
         err: (err || failure?.err || '').trim(),
         timedOut,
-        missing: failure?.missing ?? (isWindows() && exitCode === 127 && err.includes('ONLOOK_CLI_EXECUTABLE_MISSING')),
+        missing: failure?.missing ?? (exitCode === 127 && (wsl !== undefined || (isWindows() && err.includes('ONLOOK_CLI_EXECUTABLE_MISSING')))),
         exitCode: failure === undefined ? (exitCode ?? null) : null,
       });
     };

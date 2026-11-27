@@ -3,6 +3,7 @@ import { win32 } from 'node:path';
 import { hostExecutable } from '../env/executable.js';
 import type { Env } from '../env/shell-env.js';
 import { hostPlatform, isWindows } from '../env/platform.js';
+import { wslProject } from '../env/wsl.js';
 
 const GIT_ROOT_DEPTH = 3;
 
@@ -25,6 +26,7 @@ export function gitBashShell(git: string, exists: (path: string) => boolean = is
 }
 
 export function setupShell(cwd: string, env: NodeJS.ProcessEnv, platform: NodeJS.Platform = hostPlatform()): string | undefined {
+  if (wslProject(cwd, platform) !== undefined) return '/bin/sh';
   if (!isWindows(platform)) return '/bin/sh';
   const defined = Object.fromEntries(Object.entries(env).filter((entry): entry is [string, string] => entry[1] !== undefined)) as Env;
   const git = hostExecutable('git', cwd, defined, platform);

@@ -27,6 +27,7 @@ describe('the folder refusal dialog (ONL-2895)', () => {
     expect(markup).not.toContain(t('blank.create.failed.detailLabel'));
   });
   for (const [reason, title] of [
+    ['runtime-unavailable', 'machine.wsl.unavailable.title'],
     ['already-copied', 'workspace.refused.alreadyCopied.title'],
     ['no-base-ref', 'workspace.refused.noBaseRef.title'],
     ['name-unavailable', 'workspace.refused.nameUnavailable.title'],

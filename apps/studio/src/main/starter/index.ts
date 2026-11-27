@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { app, utilityProcess } from 'electron';
 import { userEnv } from '../env/shell-env.js';
 import type { StarterControl } from '../server/index.js';
@@ -11,6 +11,9 @@ import { STARTER_SERVER_FILE } from './scaffold.js';
 import { log } from '../log/index.js';
 import { capture, resolveWorkspaceTelemetryProperties } from '../telemetry/index.js';
 import { recordProjectPreviewDiagnostics } from '../workspace/preview-diagnostics.js';
+import { wslProject } from '../env/wsl.js';
+import { forkWslStarter } from './wsl.js';
+import { ensureWslEnvironment } from '../env/wsl-env.js';
 
 const logger = log('starter');
 
@@ -33,17 +36,18 @@ let host: StarterHost | undefined;
 // After `app` is ready. `utilityProcess.fork`, not `ELECTRON_RUN_AS_NODE`: no dependence on the `runAsNode` fuse.
 export function registerStarter(): StarterHost {
   const runner = createStarterRunner({
-    fork: (modulePath, options) =>
-      utilityProcess.fork(modulePath, [], {
+    fork: (modulePath, options) => wslProject(options.cwd) !== undefined
+      ? forkWslStarter(modulePath, options)
+      : utilityProcess.fork(modulePath, [], {
         cwd: options.cwd,
         env: options.env,
         stdio: 'pipe',
         serviceName: options.serviceName,
       }),
-    env: userEnv,
+    env: async (cwd) => { await ensureWslEnvironment(cwd); return userEnv(); },
     diagnostics: recordProjectPreviewDiagnostics,
     serverExited: (cwd) => capture('dev_server_exited', { ...resolveWorkspaceTelemetryProperties(cwd) }, cwd),
-    modulePath: (worktree) => starterModulePath(worktree, () => writeStaticServer(join(stateRoot(), 'starter'))),
+    modulePath: (worktree) => starterModulePath(worktree, () => writeStaticServer(wslProject(worktree) === undefined ? join(stateRoot(), 'starter') : join(dirname(worktree), '.onlook-runtime'))),
   });
   app.on('child-process-gone', (_event, details) => {
     if (!details.name?.startsWith(STARTER_SERVICE_PREFIX)) return;

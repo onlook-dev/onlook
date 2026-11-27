@@ -6,7 +6,6 @@ import {
   type DiscoverCtaOutcome,
   type ProjectImportEntryPoint,
   type ProjectImportOutcome,
-  type ProjectImportRefusalReason,
   type ProjectsSelection,
   type ProjectSummary,
   type RenameRequest,
@@ -89,7 +88,7 @@ export function ProjectsScreen({
       : { kind: 'recent' },
   );
   const [refusal, setRefusal] = useState<Refusal | null>(null);
-  const [importRefusal, setImportRefusal] = useState<ProjectImportRefusalReason | null>(null);
+  const [importRefusal, setImportRefusal] = useState<Extract<ProjectImportOutcome, { ok: false }> | null>(null);
   const [openRefusal, setOpenRefusal] = useState<React.ComponentProps<typeof OpenRefusalDialog>['reason']>(null);
   const [removing, setRemoving] = useState<string[]>([]);
   const version = useAppInfoStore((state) => state.version);
@@ -266,7 +265,7 @@ export function ProjectsScreen({
         .importWorktree({ handle, entryPoint })
         .catch(ignoreRefusal('projects', 'import worktree'));
       if (!result) return undefined;
-      if (!result.ok) setImportRefusal(result.reason);
+      if (!result.ok) setImportRefusal(result);
       return result;
     },
     [],
@@ -530,7 +529,8 @@ export function ProjectsScreen({
         }}
       />
       <ImportRefusalDialog
-        reason={importRefusal}
+        detail={importRefusal?.detail}
+        reason={importRefusal?.reason ?? null}
         onDismiss={() => {
           setImportRefusal(null);
         }}

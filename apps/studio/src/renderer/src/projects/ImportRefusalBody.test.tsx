@@ -13,9 +13,11 @@ const REASONS: ProjectImportRefusalReason[] = [
   'busy',
   'being-cleaned-up',
   'fields-incomplete',
+  'runtime-unavailable',
 ];
 
 const TITLES: Record<ProjectImportRefusalReason, StringKey> = {
+  'runtime-unavailable': 'machine.wsl.unavailable.title',
   'not-a-repository': 'projects.import.refused.notARepository.title',
   'repository-gone': 'projects.import.refused.repositoryGone.title',
   'is-the-repository': 'projects.import.refused.isTheRepository.title',
@@ -27,6 +29,12 @@ const TITLES: Record<ProjectImportRefusalReason, StringKey> = {
 };
 
 describe('the import refusal dialog (ONL-2522)', () => {
+  it('shows WSL diagnostics in the same failure card', () => {
+    const markup = renderToStaticMarkup(<ImportRefusalDialog reason="runtime-unavailable" detail="Git is unavailable in Ubuntu" isInline onDismiss={() => {}} />);
+    expect(markup).toContain('import-refused-detail');
+    expect(markup).toContain('Git is unavailable in Ubuntu');
+    expect(markup).toContain(t('machine.wsl.unavailable.title'));
+  });
   it('stays closed without a refusal', () => {
     expect(renderToStaticMarkup(<ImportRefusalDialog reason={null} isInline onDismiss={() => {}} />)).toBe('');
   });

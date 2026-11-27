@@ -1,4 +1,6 @@
 import { appendFileSync, existsSync } from 'node:fs';
+import { wslProject } from '../env/wsl.js';
+import { checkWslTools } from '../env/wsl-tools.js';
 import { createArtifactAccess } from '../artifacts/access.js';
 import { artifactCodebaseTarget } from './artifact-target.js';
 import { artifactStore } from '../artifacts/instance.js';
@@ -723,6 +725,11 @@ export class AgentHost {
   /** `error`/`ok` are this project's, the rest are machine facts (ONL-2247), and a refused codex credential is every codex tab's (ONL-2114). */
   private makeEmitConnection(cwd: string, harness: SessionHarness): (connection: AgentConnection) => void {
     return (connection) => {
+      if (wslProject(cwd) !== undefined) {
+        this.own.set(projectKey(cwd), { cwd, harness, connection });
+        views.routeTo(cwd, IPC_EMIT.agentConnection, connection);
+        return;
+      }
       if (
         harness === 'appserver' &&
         (connection.status === 'unauthenticated' || (connection.status === 'ok' && this.codexRefused))
@@ -750,7 +757,7 @@ export class AgentHost {
     this.machineByHarness.set(harness, connection);
     // Errors only: dropping a held `ok` lets another runtime's verdict stick on that tab.
     for (const [key, held] of this.own) {
-      if (held.harness === harness && held.connection.status === 'error') this.own.delete(key);
+      if (held.harness === harness && held.connection.status === 'error' && wslProject(held.cwd) === undefined) this.own.delete(key);
     }
     broadcastToRenderers(IPC_EMIT.agentConnection, connection);
     for (const held of this.own.values()) views.routeTo(held.cwd, IPC_EMIT.agentConnection, held.connection);
@@ -765,7 +772,7 @@ export class AgentHost {
   private holdCodexRefusal(): void {
     this.codexRefused = true;
     for (const session of this.sessions.values()) {
-      if (session.harness !== 'appserver') continue;
+      if (session.harness !== 'appserver' || wslProject(session.cwd) !== undefined) continue;
       this.own.set(projectKey(session.cwd), { cwd: session.cwd, harness: 'appserver', connection: CODEX_REFUSED });
       views.routeTo(session.cwd, IPC_EMIT.agentConnection, CODEX_REFUSED);
     }
@@ -775,7 +782,7 @@ export class AgentHost {
   private answerCodexRefusal(answer: AgentConnection): void {
     this.codexRefused = false;
     for (const [key, held] of this.own) {
-      if (held.harness !== 'appserver' || held.connection.status !== 'unauthenticated') continue;
+      if (held.harness !== 'appserver' || held.connection.status !== 'unauthenticated' || wslProject(held.cwd) !== undefined) continue;
       this.own.set(key, { ...held, connection: answer });
       this.stale.add(key);
     }
@@ -788,6 +795,7 @@ export class AgentHost {
   private verdictFor(cwd: string | undefined): AgentConnection {
     const held = cwd === undefined ? undefined : this.own.get(projectKey(cwd));
     if (held !== undefined) return held.connection;
+    if (cwd !== undefined && wslProject(cwd) !== undefined) return { status: 'unknown', harness: projectHarness(cwd) };
     const harness = cwd === undefined ? undefined : this.sessions.get(cwd)?.harness ?? this.offDefaultHarness(cwd);
     if (harness === undefined) return this.machine;
     return this.machineByHarness.get(harness) ?? { status: 'unknown', harness: harnessStoredAs(harness).id };
@@ -827,6 +835,18 @@ export class AgentHost {
   }
 
   async probe(req: AgentProbeRequest = {}, cwd?: string): Promise<AgentConnection> {
+    if (cwd !== undefined && wslProject(cwd) !== undefined) {
+      const harness = projectHarness(cwd);
+      let connection: AgentConnection;
+      try {
+        await checkWslTools(cwd, ['git', 'node', harness === 'codex' ? 'codex' : 'claude']);
+        connection = { status: 'ok', harness };
+      } catch (error) {
+        connection = { status: 'cli_missing', harness, detail: error instanceof Error ? error.message : undefined };
+      }
+      this.own.set(projectKey(cwd), { cwd, harness: storedHarness(harness), connection });
+      return connection;
+    }
     // A fresh ask from a tab holding a verdict is about that runtime, not the default.
     const held = cwd === undefined ? undefined : this.own.get(projectKey(cwd));
     await this.probeMachine(req, req.fresh ? held?.harness : undefined);
@@ -853,7 +873,7 @@ export class AgentHost {
     if (state.status !== 'checking' && state.status !== 'verifying') this.claudeSetup = state.status;
     if (marksSessionsStale(previous, state.status, meta.afterLogin)) {
       for (const session of this.sessions.values()) {
-        if (session.harness === 'claude') this.stale.add(projectKey(session.cwd));
+        if (session.harness === 'claude' && wslProject(session.cwd) === undefined) this.stale.add(projectKey(session.cwd));
       }
     }
     const derived = deriveClaudeConnection(this.claudeProbe(), state.status, state.detail);
@@ -1007,7 +1027,7 @@ export class AgentHost {
     if (!this.inPlay('appserver')) return;
     if (derived.status === 'ok' && this.codexRefused) this.answerCodexRefusal(derived);
     for (const [key, held] of this.own) {
-      if (held.harness !== 'appserver' || !this.stale.has(key)) continue;
+      if (held.harness !== 'appserver' || !this.stale.has(key) || wslProject(held.cwd) !== undefined) continue;
       this.own.set(key, { ...held, connection: derived });
     }
     this.emitMachine(derived, 'appserver');
@@ -1288,6 +1308,7 @@ export class AgentHost {
     noteWorkspaceOpened(cwd);
 
     const harness = storedHarness(projectHarness(cwd));
+    await checkWslTools(cwd, ['git', 'node', harness === 'appserver' ? 'codex' : 'claude']);
 
     // A resume restores the conversation into the model only; the transcript is ours (ONL-1913).
     const plan = harness === 'appserver' ? ({ kind: 'appserver' } as const) : await planSession(cwd);

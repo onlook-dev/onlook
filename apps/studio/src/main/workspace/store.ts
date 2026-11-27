@@ -18,6 +18,7 @@ import { heldBy } from './candidate.js';
 import { chosenProjectsFolder } from './root.js';
 import { reopenRemovedState } from './removed-state.js';
 import { devSwitches } from '../env/dev-switches.js';
+import { wslProject, wslWorktreePath, wslWorktreeRoot } from '../env/wsl.js';
 
 // Without this door an e2e run cuts real worktrees in the real user-data directory and leaves them there.
 // Not behind `machine-check`: only that screen can choose a folder, and a build with it off must still find the projects a build with it on saved there (ONL-3111).
@@ -34,8 +35,14 @@ export function projectsFolderMayChange(): boolean {
   catch (error) { return (error as NodeJS.ErrnoException).code === 'ENOENT'; }
 }
 
-export function workspacePathFor(repoIdentity: string, workspaceName: string): string {
-  return join(workspaceRoot(), repoIdentityDirName(repoIdentity), workspaceName);
+export function workspacePathFor(repoIdentity: string, workspaceName: string, source?: string): string {
+  const project = wslProject(source);
+  return project === undefined ? join(workspaceRoot(), repoIdentityDirName(repoIdentity), workspaceName) : wslWorktreePath(project, repoIdentityDirName(repoIdentity), workspaceName);
+}
+
+export function workspaceProcessRoot(worktree: string): string {
+  const project = wslProject(worktree);
+  return project === undefined ? workspaceRoot() : wslWorktreeRoot(project);
 }
 
 export interface ProjectRecord extends WorkspaceCreated {
@@ -147,7 +154,8 @@ export function workspaceOrigin(record: Pick<WorkspaceCreated, 'origin'>): Works
 
 // The session guard's oracle.
 export function knownProject(path: string): ProjectRecord | undefined {
-  return domain.read().workspaces[normalizePath(path)];
+  const workspaces = domain.read().workspaces;
+  return workspaces[normalizePath(path)] ?? (wslProject(path) === undefined ? undefined : locate(workspaces, path)?.record);
 }
 
 // `canonicalPath` falls back to a lexical resolve once the directory is gone, which on macOS is a second key for one project; the stored path is the fallback (ONL-2315).
@@ -160,6 +168,7 @@ function locate(
   if (direct) return { key, record: direct };
   const target = resolve(workspacePath);
   for (const [held, record] of Object.entries(workspaces)) {
+    if (wslProject(workspacePath) !== undefined && normalizePath(record.workspacePath) === key) return { key: held, record };
     if (resolve(record.workspacePath) === target) return { key: held, record };
   }
   return undefined;
@@ -219,7 +228,7 @@ export function newProjectSource(record: Pick<WorkspaceCreated, 'origin' | 'sour
 }
 
 export function workspaceHeldOrigin(record: WorkspaceCreated): HeldOrigin | undefined {
-  const identityDir = dirname(workspacePathFor(record.repoIdentity, record.workspaceName));
+  const identityDir = dirname(workspacePathFor(record.repoIdentity, record.workspaceName, record.sourcePath));
   const classified = heldBy(basename(identityDir));
   if (classified === undefined || classified.repoIdentity !== record.repoIdentity) return undefined;
   const origin = workspaceOrigin(record);
@@ -228,7 +237,7 @@ export function workspaceHeldOrigin(record: WorkspaceCreated): HeldOrigin | unde
     : origin === 'blank' || origin === 'copied' ? origin : undefined;
   if (heldOrigin !== classified.origin) return undefined;
   const canonicalBucket = normalizePath(identityDir);
-  if (canonicalBucket !== join(normalizePath(workspaceRoot()), basename(identityDir))) return undefined;
+  if (wslProject(record.sourcePath) === undefined && canonicalBucket !== join(normalizePath(workspaceRoot()), basename(identityDir))) return undefined;
   const source = existsSync(record.sourceRepoRoot)
     ? normalizePath(record.sourceRepoRoot)
     : join(normalizePath(dirname(record.sourceRepoRoot)), basename(record.sourceRepoRoot));
