@@ -38,7 +38,10 @@ function decodedReference(value: string): string {
   return value.replace(/&(?:#x([\da-f]+)|#(\d+)|(amp|colon|sol));?/gi,
     (_match, hex: string | undefined, decimal: string | undefined, named: string | undefined) => {
       if (named !== undefined) return named.toLowerCase() === 'amp' ? '&' : named.toLowerCase() === 'colon' ? ':' : '/';
-      return String.fromCodePoint(Number.parseInt(hex ?? decimal ?? '0', hex === undefined ? 10 : 16));
+      const code = Number.parseInt(hex ?? decimal ?? '0', hex === undefined ? 10 : 16);
+      // A browser reads a surrogate or out-of-range reference as U+FFFD; `fromCodePoint` would throw,
+      // and the import would then answer with the generic HTML guidance instead of naming the reference.
+      return code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff) ? '�' : String.fromCodePoint(code);
     });
 }
 

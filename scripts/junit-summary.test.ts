@@ -8,6 +8,10 @@ const REPORT = `<?xml version="1.0"?><testsuites><testsuite name="a.test.ts" fil
 </testsuite></testsuites>`;
 
 describe('the JUnit test summary', () => {
+  it('keeps a pipe in a file name inside its cell, and the path readable', () => {
+    const result = { passed: 0, failed: 1, skipped: 0, failures: [{ file: 'suites\\a|b.test.ts', name: 'holds', message: 'nope' }] };
+    expect(markdown(result)).toContain('| `suites\\a\\|b.test.ts` | holds | nope |');
+  });
   it('escapes backslashes next to pipes in both names and messages', () => {
     const value = 'name\\|value\\';
     const result = { passed: 0, failed: 1, skipped: 0, failures: [{ file: 'test.ts', name: value, message: value }] };

@@ -21,6 +21,17 @@ describe('import copies only local image/font dependencies without editing the s
       expect(importArtifactFromProject(root, 'index.html', () => null).ok).toBe(true);
     }
   });
+  it('names a reference whose character is out of range instead of answering with the HTML guidance', () => {
+    for (const reference of ['styles&#x110000;theme.css', 'styles&#xd800;theme.css', `styles&#x${'f'.repeat(100_000)};theme.css`]) {
+      const html = `<link rel="stylesheet" href="${reference}">`;
+      writeFileSync(join(root, 'index.html'), html);
+      const refused = importArtifactFromProject(root, 'index.html', () => null);
+      expect(refused.ok).toBe(false);
+      if (refused.ok) throw new Error('Expected import to fail');
+      expect(refused.reason).toContain(`reference at character ${html.indexOf(reference) + 1}`);
+      expect(refused.reason).not.toContain('module scripts');
+    }
+  });
   it('handles long reference entities and near matches quickly', () => {
     mkdirSync(join(root, 'styles'));
     writeFileSync(join(root, 'styles', 'theme.css'), 'body{color:blue}');

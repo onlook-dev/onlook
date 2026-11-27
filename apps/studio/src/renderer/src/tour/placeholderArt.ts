@@ -207,6 +207,7 @@ const studio = (r: number[], Lk: Look): number => {
 
 interface Vert { x: number; y: number; z: number; n: number[]; v: number }
 function ribbon(cv: Cv, preset: string, look: string): void {
+  if (!Object.hasOwn(PRESETS, preset) || !Object.hasOwn(LOOKS, look)) throw new Error('Unknown metal scene');
   const Pr = PRESETS[preset]!;
   const Lk = LOOKS[look]!;
   const { c, W, H, S } = setup(cv);
