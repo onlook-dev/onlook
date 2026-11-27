@@ -44,12 +44,33 @@ it('drops an old account’s in-flight result and partial cache on connection ch
   calls[0]!.resolve({ measurement: facts({ ghAccount: 'previous-account' }), fetched: true });
   await opened;
   await settle();
-  expect(emitted).toHaveLength(0);
+  expect(emitted).toHaveLength(1);
+  expect(emitted[0]!.row.invalidated).toBe(true);
+  expect(emitted[0]!.row.measurement.ghAccount).toBeUndefined();
   calls[1]!.resolve({ measurement: facts({ ghAuthed: false, ghAccount: undefined, partial: true, access: 'unknown' }), fetched: undefined });
   await refreshed;
-  expect(emitted).toHaveLength(1);
-  expect(emitted[0]!.row.measurement.ghAccount).toBeUndefined();
-  expect(emitted[0]!.row.measurement.ghAuthed).toBe(false);
+  expect(emitted).toHaveLength(2);
+  expect(emitted[1]!.row.measurement.ghAccount).toBeUndefined();
+  expect(emitted[1]!.row.measurement.ghAuthed).toBe(false);
+});
+
+it.each(['rejection', 'deadline'] as const)('keeps connection invalidation until fresh facts arrive after a %s', async (failure) => {
+  const { host, calls, emitted } = harness({ deadlineMs: failure === 'deadline' ? 5 : 30_000 });
+  const refreshed = host.connectionChanged();
+  if (failure === 'rejection') calls[0]!.reject(new Error('read failed'));
+  await refreshed;
+  expect(emitted).toHaveLength(2);
+  expect(emitted.every(({ row }) => row.invalidated === true)).toBe(true);
+  expect(gitStatusRowFor(worktree)?.invalidated).toBe(true);
+  if (failure === 'deadline') {
+    calls[0]!.resolve({ measurement: facts(), fetched: undefined });
+    await settle();
+  } else {
+    const retry = host.check(worktree, { trigger: 'focus', fetch: false });
+    calls[1]!.resolve({ measurement: facts(), fetched: undefined });
+    await retry;
+  }
+  expect(gitStatusRowFor(worktree)?.invalidated).toBeUndefined();
 });
 
 afterAll(() => {

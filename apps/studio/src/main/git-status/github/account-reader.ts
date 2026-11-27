@@ -24,6 +24,7 @@ function accountReader(reads: GithubReads, identity: GithubIdentity): Selection 
       ? { ok: true, value: { account: identity.status === 'connected' ? identity.account : '' } }
       : { ok: false, partial: identity.status !== 'disconnected' && identity.status !== 'reconnect' },
     async access(repository) {
+      if (identity.status === 'sso_required' || identity.status === 'approval_required') return { ok: true, value: { permission: 'denied', reason: identity.status } };
       if (repository === undefined) return { ok: false, partial: true };
       const result = await safely(() => reads.repositoryAccess(repository));
       if (result.status !== 'connected') {
@@ -66,5 +67,5 @@ export async function selectGithubReader(backend: GithubBackend | undefined, fal
     pullRequests: (repository, branch, headOwner) => pullRequests.call(backend, repository, branch, headOwner),
   };
   const account = await safely(() => reads.identity());
-  return account.status === 'disconnected' ? { reader: fallback, connectViaBrowser: true, failure: () => account } : accountReader(reads, account);
+  return account.status === 'disconnected' ? { reader: fallback, connectViaBrowser: true } : accountReader(reads, account);
 }

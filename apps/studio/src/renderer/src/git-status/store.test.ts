@@ -177,6 +177,18 @@ afterEach(() => {
   Reflect.deleteProperty(globalThis, 'window');
 });
 
+it('immediately retires an old account’s visible actions on invalidation', () => {
+  const store = useGitStatusStore.getState();
+  store.apply({ worktreePath: WT, row: row(MEASUREMENT_FIXTURES['ready-to-merge']) });
+  expect(pillStateOf(useGitStatusStore.getState().rows[WT], GIT_PILL_SHIPPED_DEFAULTS, undefined).id).toBe('ready-to-merge');
+  store.apply({ worktreePath: WT, row: row(MEASUREMENT_FIXTURES['first-paint'], { invalidated: true }) });
+  const next = useGitStatusStore.getState();
+  expect(pillStateOf(next.rows[WT], GIT_PILL_SHIPPED_DEFAULTS, undefined).id).toBe('first-paint');
+  expect(next.working[WT]).toBeUndefined();
+  expect(next.held[WT]).toBeUndefined();
+  expect(next.failures[WT]).toBeUndefined();
+});
+
 it('the inert-press producer records the state without sending an agent prompt', () => {
   noteNoActionPress(WT, 'passive-state');
   expect(bridge.telemetry).toEqual([{

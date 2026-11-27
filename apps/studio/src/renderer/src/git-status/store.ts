@@ -176,6 +176,19 @@ const useGitStatusStore = create<GitStatusStore>()((set, get) => ({
   failures: {},
 
   apply: ({ worktreePath, row }) => {
+    if (row.invalidated) {
+      const reconciliation = reconcilingPrs.get(worktreePath);
+      if (reconciliation !== undefined) clearTimeout(reconciliation.timer);
+      reconcilingPrs.delete(worktreePath);
+      queuedPrs.delete(worktreePath);
+      failureMarks.delete(worktreePath);
+      set((state) => ({
+        rows: { ...state.rows, [worktreePath]: row }, working: without(state.working, worktreePath),
+        held: without(state.held, worktreePath), failures: without(state.failures, worktreePath),
+      }));
+      if (worktreePath === openWorktree) emitShownIfChanged();
+      return;
+    }
     const { working, held, defaults } = get();
     const entry = working[worktreePath] ?? reconcilingPrs.get(worktreePath)?.entry;
     const finished = settles(row, entry) || (entry !== undefined && reconcilingPrs.has(worktreePath) && Date.parse(row.measuredAt) > entry.clickedAt);

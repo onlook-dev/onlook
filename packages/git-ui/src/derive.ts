@@ -6,7 +6,7 @@ export function derivePillState(
   row: GitSnapshotRow | undefined,
   defaults: GitPillDefaults,
 ): GitPillState {
-  if (row === undefined) return { id: 'first-paint' };
+  if (row === undefined || row.invalidated) return { id: 'first-paint' };
   const state = cascade(row.measurement, defaults);
   return row.stale ? { ...state, mode: 'stale' } : state;
 }

@@ -39,6 +39,12 @@ function providerIdentity(): CloudIdentity {
   return proofProvider()?.identity ?? cloudIdentity;
 }
 let client: OnlookClient = createLocalOnlookClient();
+const sessionListeners = new Set<() => void>();
+
+export function onAccountSessionChanged(listener: () => void): () => void {
+  sessionListeners.add(listener);
+  return () => sessionListeners.delete(listener);
+}
 
 export function githubBackend(): OnlookClient['github'] {
   return flagOn('github-import') ? client.github : undefined;
@@ -110,6 +116,9 @@ function accountSnapshot(): OnlookState {
     const previous = accountState;
     accountState = { ...state, revision: (previous?.revision ?? -1) + 1, sessionEpoch: epoch, teamsEnabled, signInStep: step, sessionEnded };
     previousProviderState = state;
+    if (previous?.sessionEpoch !== epoch) {
+      for (const listener of sessionListeners) listener();
+    }
     if (previous !== undefined && !providerChanged) broadcastToRenderers(IPC_EMIT.onlookState, accountState);
   }
   return accountState;

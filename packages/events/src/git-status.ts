@@ -50,6 +50,7 @@ export type GitMeasureTrigger = 'open' | 'turn-end' | 'interval' | 'focus' | 'ac
 export type GitCadenceTrigger = Extract<GitMeasureTrigger, 'interval' | 'focus' | 'activate'>;
 
 export interface GitSnapshotRow {
+  invalidated?: boolean;
   measurement: GitMeasurement;
   /** Stamped before the first git command runs. */
   measuredAt: string;

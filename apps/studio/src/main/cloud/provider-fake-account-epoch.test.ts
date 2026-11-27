@@ -41,7 +41,9 @@ afterAll(() => {
 test('sign-out and deletion supersede a pending sign-in first, and a deletion confirmed for one session epoch cannot act on another', async () => {
   process.env['STUDIO_STATE_ROOT'] = root;
   resetIdentityCache();
-  const { initializeOnlook, registerOnlookHandlers, disposeOnlook } = await import('./index.js');
+  const { initializeOnlook, registerOnlookHandlers, disposeOnlook, onAccountSessionChanged } = await import('./index.js');
+  let sessionChanges = 0;
+  const unsubscribeSession = onAccountSessionChanged(() => { sessionChanges += 1; });
   const { completeBrowserSignIn } = await import('../identity/ipc.js');
   const ask = async (channel: string, argument?: unknown) => handlers.get(channel)!({} as Electron.IpcMainInvokeEvent, argument);
   const state = async () => await ask(IPC_INVOKE.onlookState) as OnlookState;
@@ -66,9 +68,12 @@ test('sign-out and deletion supersede a pending sign-in first, and a deletion co
     const original = await state();
     expect(original.session).toBe('signed-in');
     expect(original.sessionEpoch).not.toBe(before.sessionEpoch);
+    const signedInChanges = sessionChanges;
+    expect(signedInChanges).toBeGreaterThan(0);
     // A rotated credential is the same session.
     provider.setSession(true);
     expect((await state()).sessionEpoch).toBe(original.sessionEpoch);
+    expect(sessionChanges).toBe(signedInChanges);
 
     provider.calls.length = 0;
     expect(await ask(IPC_INVOKE.onlookSignOut)).toEqual({ ok: true });
@@ -79,6 +84,8 @@ test('sign-out and deletion supersede a pending sign-in first, and a deletion co
     expect(readIdentity()).toBeNull();
     expect(resets).toBe(1);
     expect((await state()).session).toBe('signed-out');
+    expect(sessionChanges).toBeGreaterThan(signedInChanges);
+    unsubscribeSession();
 
     const enriching = writeIdentity({ email: 'legacy@onlook.test', source: 'provider' });
     provider.setSession(true);

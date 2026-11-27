@@ -18,6 +18,7 @@ import { cloneRepository } from './clone.js';
 import { gitStatusHost } from '../git-status/index.js';
 import { log } from '../log/index.js';
 import type { GithubBackend } from './backend.js';
+import { createGithubConnectionWatch } from './connection-watch.js';
 
 let fixture: Partial<GithubImportDeps> | undefined;
 
@@ -43,7 +44,7 @@ function validGithubCommand(value: unknown): value is GithubImportCommand {
 export function registerGithubImportHandlers(): void {
   const cleaned = flagOn('github-import') ? cleanupPendingClones() : Promise.resolve();
   const services = new Map<number, ReturnType<typeof createGithubImport>>();
-  let lastConnection: string | undefined;
+  const connectionChanged = createGithubConnectionWatch();
   if (proofSwitchOn('STUDIO_GITHUB_PROOF')) {
     const observations: GithubObservation[] = [];
     const hook = {
@@ -88,10 +89,11 @@ export function registerGithubImportHandlers(): void {
       event.sender.once('destroyed', () => { service?.dispose(); services.delete(event.sender.id); });
     }
     const state = await service.command(command);
-    if (command.kind === 'status' && state.connection.status !== 'unavailable' && (githubImportBackend()?.identity !== undefined || lastConnection !== undefined)) {
-      const connection = `${verifiedSubject(readIdentity()) ?? ''}:${state.connection.status}`;
-      if (connection !== lastConnection) {
-        lastConnection = connection;
+    const backend = githubImportBackend();
+    if ((command.kind === 'status' || command.kind === 'start') && backend?.identity !== undefined) {
+      const subject = verifiedSubject(readIdentity());
+      const identity = state.connection.status === 'connected' ? await backend.identity().catch(() => undefined) : undefined;
+      if (subject === verifiedSubject(readIdentity()) && connectionChanged(subject, state.connection, identity)) {
         void gitStatusHost()?.connectionChanged().catch((error: unknown) => log('git-status').error('connection refresh failed', { error }));
       }
     }

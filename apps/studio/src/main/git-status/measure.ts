@@ -92,6 +92,14 @@ export async function measure(
   const m = await probeGithub(measurement, selected.reader);
   const failure = selected.failure?.();
   if (failure !== undefined) m.githubReadFailure = failure;
+  if (failure?.status === 'disconnected' || failure?.status === 'reconnect') {
+    m.ghAuthed = false;
+    delete m.ghAccount;
+    m.access = 'unknown';
+    delete m.accessReason;
+    delete m.pr;
+    delete m.partial;
+  }
   const base = m.pr?.baseRefName;
   if (base === undefined || base === m.baseBranch || remote === undefined) return { measurement: m, fetched };
   // `behind` offers Download changes, so it counts against the branch the PR merges into, never the one the project was cut from (ONL-2411).

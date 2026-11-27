@@ -104,6 +104,7 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
     if (outcome === undefined) {
       row = {
         measurement: previous?.measurement ?? emptyMeasurement(baseBranch, false),
+        ...(previous?.invalidated ? { invalidated: true } : {}),
         measuredAt,
         ...(previous?.fetchedAt === undefined ? {} : { fetchedAt: previous.fetchedAt }),
         trigger,
@@ -269,9 +270,16 @@ export function createGitStatusHost(deps: GitStatusHostDeps): GitStatusHost {
       const checks: Promise<void>[] = [];
       for (const workspace of listWorkspaces()) {
         for (const project of workspace.projects) {
-          if (project.missing) continue;
+          const known = knownProject(project.workspacePath);
+          if (project.missing || known === undefined) continue;
           forgetGitStatusRow(project.workspacePath);
           reopenGitStatusRow(project.workspacePath);
+          const row: GitSnapshotRow = {
+            invalidated: true, measurement: emptyMeasurement(known.baseBranch, true),
+            measuredAt: now().toISOString(), trigger: 'focus', stale: true,
+          };
+          writeGitStatusRow(project.workspacePath, row);
+          guarded('emit threw', () => deps.emit({ worktreePath: project.workspacePath, row }));
           checks.push(trigger(project.workspacePath, { trigger: 'focus', fetch: false }));
         }
       }

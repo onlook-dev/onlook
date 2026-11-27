@@ -6,6 +6,23 @@ import type { GitMeasuredPullRequest, GitMeasurement } from '@studio/events';
 import { gh } from './gh.js';
 import { forkView, MISSING, ok, rawPr, scriptedGh, scriptedReader } from './github/test-support.js';
 import { classifyRemote, emptyMeasurement, fetchEnv, measure, pickPullRequest, probeGithub } from './measure.js';
+import { githubBackendFixture } from '../github-import/backend-fixtures.js';
+
+for (const status of ['disconnected', 'reconnect'] as const) {
+  for (const method of ['repositoryAccess', 'pullRequests'] as const) {
+    it(`clears authenticated facts when ${method} reports ${status} after identity succeeded`, async () => {
+      const failure = status === 'disconnected' ? { status } : { status, reason: 'revoked' as const };
+      const backend = githubBackendFixture('connected', { [method]: failure });
+      const { measurement } = await measure(shared.repo, { baseBranch: 'main', fetch: false }, { backend });
+      expect(measurement.connectViaBrowser).toBe(true);
+      expect(measurement.githubReadFailure).toEqual(failure);
+      expect(measurement.ghAuthed).toBe(false);
+      expect(measurement.ghAccount).toBeUndefined();
+      expect(measurement.pr).toBeUndefined();
+      expect(measurement.partial).toBeUndefined();
+    });
+  }
+}
 
 const GITHUB_URL = 'https://github.com/onlook-dev/fixture.git';
 
