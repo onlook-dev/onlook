@@ -43,6 +43,7 @@ export interface MeasureOptions {
 export interface MeasureDeps {
   reader?: GitHubReader;
   backend?: GithubBackend;
+  providerReadMs?: number;
 }
 
 export interface MeasureOutcome {
@@ -86,7 +87,7 @@ export async function measure(
   }
   const { measurement, fetched, remote } = await measureGit(worktree, options);
   const selected = measurement.head === 'branch' && measurement.origin === 'github'
-    ? await selectGithubReader(deps.backend, deps.reader ?? ghReader(worktree))
+    ? await selectGithubReader(deps.backend, deps.reader ?? ghReader(worktree), deps.providerReadMs)
     : { reader: deps.reader ?? ghReader(worktree), connectViaBrowser: false, via: 'cli' as const, failure: undefined };
   if (selected.connectViaBrowser) measurement.connectViaBrowser = true;
   const m = await probeGithub(measurement, selected.reader);

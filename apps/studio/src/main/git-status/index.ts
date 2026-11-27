@@ -22,7 +22,7 @@ import { gitStateProperties } from '../telemetry/git-state.js';
 
 const logger = log('git-status');
 
-const MEASURE_DEADLINE_MS = 180_000;
+export const MEASURE_DEADLINE_MS = 180_000;
 const SETTLE_BACKSTOP_MS = GH_TIMEOUT_MS + KILL_GRACE_MS;
 
 export interface GitStatusHostDeps {

@@ -6,6 +6,8 @@ import type { GitMeasuredPullRequest, GitMeasurement } from '@studio/events';
 import { gh } from './gh.js';
 import { forkView, MISSING, ok, rawPr, scriptedGh, scriptedReader } from './github/test-support.js';
 import { classifyRemote, emptyMeasurement, fetchEnv, measure, pickPullRequest, probeGithub } from './measure.js';
+import { PROVIDER_READ_DEADLINE_MS } from './github/account-reader.js';
+import { MEASURE_DEADLINE_MS } from './index.js';
 import { GITHUB_READ_FAILURES, githubBackendFixture } from '../github-import/backend-fixtures.js';
 import type { GithubIdentity } from '../github-import/backend.js';
 
@@ -86,6 +88,45 @@ describe('an identity read that does not establish the account connection', () =
       expect(m.githubReadFailure).toEqual({ status });
     });
   }
+});
+
+describe('a provider read that never answers', () => {
+  const hang = () => new Promise<never>(() => undefined);
+  const hangingBackend = (read: 'identity' | 'repositoryAccess') => {
+    const backend = githubBackendFixture('connected');
+    if (read === 'identity') backend.identity = hang;
+    else backend.repositoryAccess = hang;
+    return backend;
+  };
+  const bounded = (backend: ReturnType<typeof githubBackendFixture>) =>
+    measure(shared.repo, { baseBranch: 'main', fetch: false }, { backend, reader: scriptedGh({}).reader, providerReadMs: 20 });
+
+  it('degrades the identity read to unavailable, and gh measures instead', async () => {
+    const { measurement: m } = await bounded(hangingBackend('identity'));
+    expect(m.githubReadFailure).toEqual({ status: 'unavailable', reason: 'provider_unavailable' });
+    expect(m.ghAccount).toBe('wrenquill');
+    expect(m.access).toBe('granted');
+  });
+
+  it('leaves access unknown and the measurement incomplete when the repository read hangs', async () => {
+    const { measurement: m } = await bounded(hangingBackend('repositoryAccess'));
+    expect(m.access).toBe('unknown');
+    expect(m.partial).toBe(true);
+    expect(m.githubReadFailure).toEqual({ status: 'unavailable', reason: 'provider_unavailable' });
+  });
+
+  it('keeps every read a measurement makes well inside the measurement deadline', () => {
+    expect(PROVIDER_READ_DEADLINE_MS * 4).toBeLessThan(MEASURE_DEADLINE_MS / 2);
+  });
+
+  it('answers inside the bound without waiting for it', async () => {
+    const started = Date.now();
+    const { measurement: m } = await measure(shared.repo, { baseBranch: 'main', fetch: false }, {
+      backend: githubBackendFixture('connected'), reader: scriptedGh({}).reader, providerReadMs: 30_000,
+    });
+    expect(Date.now() - started).toBeLessThan(5_000);
+    expect(m.access).toBe('granted');
+  });
 });
 
 it('a forbidden repository answer leaves access unknown instead of denying it', async () => {

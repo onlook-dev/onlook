@@ -41,11 +41,27 @@ export function measuredPullRequest(row: GitMeasuredPullRequest, repository: str
   };
 }
 
-async function safely<Result>(read: () => Promise<Result>): Promise<Result | { status: 'unavailable'; reason: 'provider_unavailable' }> {
-  try { return await read(); } catch { return { status: 'unavailable', reason: 'provider_unavailable' }; }
+const PROVIDER_UNAVAILABLE = { status: 'unavailable', reason: 'provider_unavailable' } as const;
+
+/** A tenth of the measurement deadline: one measurement makes up to four of these reads in order, so even four hung reads publish well inside it. */
+export const PROVIDER_READ_DEADLINE_MS = 18_000;
+
+async function safely<Result>(read: () => Promise<Result>, boundMs: number): Promise<Result | typeof PROVIDER_UNAVAILABLE> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const answered = (async () => {
+    try { return await read(); } catch { return PROVIDER_UNAVAILABLE; }
+  })();
+  const bound = new Promise<typeof PROVIDER_UNAVAILABLE>((resolve) => {
+    timer = setTimeout(() => resolve(PROVIDER_UNAVAILABLE), boundMs);
+  });
+  try {
+    return await Promise.race([answered, bound]);
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
 }
 
-function accountReader(reads: GithubReads, identity: GoverningIdentity): Selection {
+function accountReader(reads: GithubReads, identity: GoverningIdentity, boundMs: number): Selection {
   let failure: GithubReadFailure | undefined = identity.status === 'connected' ? undefined : identity;
   const reader: GitHubReader = {
     present: async () => ({ ok: true, value: true }),
@@ -53,7 +69,7 @@ function accountReader(reads: GithubReads, identity: GoverningIdentity): Selecti
     async access(repository) {
       if (identity.status !== 'connected') return { ok: true, value: { permission: 'denied', reason: identity.status } };
       if (repository === undefined) return { ok: false, partial: true };
-      const result = await safely(() => reads.repositoryAccess(repository));
+      const result = await safely(() => reads.repositoryAccess(repository), boundMs);
       if (result.status !== 'connected') {
         failure = result;
         const value = denied(result);
@@ -69,7 +85,7 @@ function accountReader(reads: GithubReads, identity: GoverningIdentity): Selecti
     },
     async pullRequests(repository, branch, filter) {
       if (repository === undefined) return { ok: false, partial: true };
-      const result = await safely(() => reads.pullRequests(repository, branch, filter?.headOwner));
+      const result = await safely(() => reads.pullRequests(repository, branch, filter?.headOwner), boundMs);
       if (result.status !== 'connected') {
         failure = result;
         return { ok: false, partial: true };
@@ -100,13 +116,17 @@ async function cliSignedIn(fallback: GitHubReader): Promise<boolean> {
   return present.ok && (await fallback.identity()).ok;
 }
 
-export async function selectGithubReader(backend: GithubBackend | undefined, fallback: GitHubReader): Promise<Selection> {
+export async function selectGithubReader(
+  backend: GithubBackend | undefined,
+  fallback: GitHubReader,
+  boundMs: number = PROVIDER_READ_DEADLINE_MS,
+): Promise<Selection> {
   if (!hasGithubStatusReads(backend)) return { reader: fallback, connectViaBrowser: false, via: 'cli' };
   const reads: GithubReads = backend;
-  const identity = await safely(() => reads.identity());
-  if (identity.status === 'connected') return accountReader(reads, identity);
+  const identity = await safely(() => reads.identity(), boundMs);
+  if (identity.status === 'connected') return accountReader(reads, identity, boundMs);
   // An organisation blocking this connection is not the designer losing the access their own CLI still has.
   const blocked = identity.status === 'sso_required' || identity.status === 'approval_required';
-  if (blocked && !(await cliSignedIn(fallback))) return accountReader(reads, identity);
+  if (blocked && !(await cliSignedIn(fallback))) return accountReader(reads, identity, boundMs);
   return { reader: fallback, connectViaBrowser: true, via: 'cli', failure: () => identity };
 }
