@@ -1,0 +1,29 @@
+name: Documentation
+description: Something in Onlook's docs is wrong, unclear or missing.
+labels: [documentation]
+body:
+  - type: input
+    id: location
+    attributes:
+      label: Where
+      description: The file or link, and the section if there is one.
+      placeholder: SOURCE_BUILD.md, Package an app
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What's wrong
+      options:
+        - It's wrong or out of date
+        - It's unclear
+        - Something is missing
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: What it says now, and what it should say or cover.
+    validations:
+      required: true

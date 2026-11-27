@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest something Onlook could do, or do better.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you're trying to do
+      description: The task, and what gets in the way today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would help
+      description: How you'd like Onlook to handle it. A rough idea is fine.
+    validations:
+      required: true
+  - type: textarea
+    id: workaround
+    attributes:
+      label: What you do instead today
+      description: A workaround, another tool, or nothing.
+  - type: input
+    id: version
+    attributes:
+      label: Onlook version
+      description: In the menu bar, Onlook > About Onlook.
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Sketches, screenshots or a recording
+      description: Drag files in here. Leave out secrets and anything from a private project.

@@ -24,7 +24,7 @@ interface Workflow {
   concurrency?: { group: string; 'cancel-in-progress': boolean };
   on: {
     pull_request?: unknown;
-    push?: { branches: string[] };
+    push?: { branches: string[]; paths?: string[] };
     workflow_dispatch?: { inputs: Record<string, { type: string; default: unknown }> };
   };
   env?: Record<string, string>;
@@ -111,6 +111,14 @@ test('the source build runs only on main pushes and manual runs', () => {
   ]);
   expect(source).not.toContain('STUDIO_WORKOS_CLIENT_ID');
   expect(source).not.toContain('STUDIO_CLOUD_URL');
+});
+
+test('workflow lint runs whenever a workflow or the linter pin changes', () => {
+  const { parsed } = workflow('workflow-lint.yml');
+  const paths = ['.github/workflows/**', 'scripts/check-workflows.ts'];
+  expect(parsed.on.pull_request).toEqual({ paths });
+  expect(parsed.on.push).toEqual({ branches: ['main'], paths });
+  expect(parsed.jobs['workflow-lint']?.steps?.at(-1)).toEqual({ name: 'Lint workflows', run: 'bun run check:workflows' });
 });
 
 test('every Linux job that installs dependencies runs on the runner Verify pins', () => {

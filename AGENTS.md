@@ -35,6 +35,7 @@ Run from the repo root. Bun is the package manager and script runner, Turborepo 
 | `bun install` | Installs dependencies and downloads Electron. A Git worktree needs its own install: one nested under the repo root half-resolves into the root's `node_modules` and fails in confusing ways. |
 | `bun dev` | Dev server and Electron window, with hot reload for the renderer. |
 | `bun run verify` | Every check a PR must pass: the secret and publication scans, typecheck, unit and pty tests, the string, import, unused-code, scratch, lint and React scans, and the production build. It needs network access and full Git history. CI runs the same steps on every PR. |
+| `bun run check:workflows` | Lints `.github/workflows` with actionlint. It isn't part of `verify`; CI runs it when a workflow changes. |
 | `bun run test` | `test:unit` (Bun), then `test:pty` (Node). |
 | `bun test <path>` | One unit file or directory. Set `GIT_CONFIG_GLOBAL=/dev/null` if a git fixture misbehaves. |
 | `node --import ./tests/apparatus/node-test-preload.ts --test --test-timeout=30000 <file.pty.ts>` | One pty test. |

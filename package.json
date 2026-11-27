@@ -46,6 +46,7 @@
     "check:imports": "bun scripts/check-imports.ts",
     "check:unused": "knip --no-progress",
     "check:scratch": "bun scripts/check-scratch.ts",
+    "check:workflows": "bun scripts/check-workflows.ts",
     "check:react": "CI=1 react-doctor --no-telemetry -y .",
     "test": "bun run test:unit && bun run test:pty",
     "test:unit": "GIT_CONFIG_GLOBAL=/dev/null bun scripts/test-unit.ts",
