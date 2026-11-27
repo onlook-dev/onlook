@@ -89,7 +89,7 @@ Tests that must run under Node, because Bun doesn't model some runtime behaviour
 
 ### `test:windows`
 
-The Windows dev-server tests, under Node. CI runs them on a Windows runner.
+The tests of code whose behaviour is Windows' own: the dev-server and update-signature tests under Node, then the GitHub import clone tests under Bun, which reach their credential over a different transport there. CI runs them on a Windows runner.
 
 ### `test:wide`
 
