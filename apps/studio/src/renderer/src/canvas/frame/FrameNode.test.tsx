@@ -392,7 +392,9 @@ for (const eventOrder of ['before-reply', 'after-reply'] as const) it(`covers a 
   await act(async () => { pending[0]!.resolve(null); });
   if (eventOrder === 'after-reply') await act(async () => { blocked!({ nodeId: FRAME_ID, url: URL_A }); });
   expect(guests).toHaveLength(0);
-  expect(container.querySelector('[data-server-cover="dead"]')).not.toBeNull();
+  expect(container.querySelector('[data-server-cover="occupied"]')).not.toBeNull();
+  expect(container.textContent).toContain('Port 3000 is in use');
+  expect(container.textContent).not.toContain('Nothing is answering');
   await act(async () => {
     const state = useCanvasStore.getState();
     const doc = state.doc!;
@@ -438,7 +440,7 @@ for (const wasLive of [false, true]) it(`rechecks a refused port after the proje
     blocked!({ nodeId: FRAME_ID, url: URL_A });
     pending[0]!.resolve(null);
   });
-  expect(container.querySelector('[data-server-cover="dead"]')).not.toBeNull();
+  expect(container.querySelector('[data-server-cover="occupied"]')).not.toBeNull();
   expect(container.querySelector('webview')).toBeNull();
   await act(async () => {
     const state = useCanvasStore.getState();
@@ -447,7 +449,7 @@ for (const wasLive of [false, true]) it(`rechecks a refused port after the proje
   expect(pending).toHaveLength(2);
   await act(async () => { pending[1]!.resolve({ url: 'about:blank#studio-frame-attach=restarted' }); });
   expect(container.querySelectorAll('webview')).toHaveLength(1);
-  expect(container.querySelector('[data-server-cover="dead"]')).toBeNull();
+  expect(container.querySelector('[data-server-cover="occupied"]')).toBeNull();
 });
 
 for (const replyOrder of ['retirement-before-echo', 'retirement-after-echo']) {

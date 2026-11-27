@@ -241,7 +241,7 @@ describe('saved setup direct controls', () => {
       const before = emitted.length;
       await host.closeWorkspace(world.worktree);
       expect(host.snapshotFor(world.worktree).entries[0]?.status).toBe('stopped');
-      expect(emitted.length).toBe(before);
+      expect(emitted.slice(before)).toEqual([host.snapshotFor(other)]);
       await host.closeProject();
       expect(calls).toEqual([world.worktree, other]);
       expect(emitted.at(-1)).toEqual({ entries: [], pending: false });
@@ -1664,7 +1664,7 @@ describe('N projects measured concurrently (ONL-2204)', () => {
     await host.closeWorkspace(world.worktree);
     await immediately();
 
-    expect(emitted.length).toBe(before);
+    expect(emitted.slice(before)).toEqual([host.snapshotFor(other)]);
     expect(lastEntry(emitted)?.folderName).toBe(basename(other));
     expect(lastEntry(emitted)?.status).toBe('running');
     expect(serverBookEntries(world.worktree)).toHaveLength(1);
