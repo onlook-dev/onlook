@@ -54,22 +54,16 @@ describe('WSL project paths', () => {
 });
 
 describe('WSL launches', () => {
-  it('leaves the launch and Windows cwd unchanged while the flag is off', () => {
-    const descriptor = Object.getOwnPropertyDescriptor(process, 'platform')!;
-    try {
-      Object.defineProperty(process, 'platform', { ...descriptor, value: 'win32' });
-      process.env['STUDIO_FLAGS'] = '-wsl-projects';
-      const options = { cwd: folder, env: { PATH: 'C:\\tools' } };
-      const launch = ((bin, args, passed) => {
-        expect(bin).toBe('git.exe');
-        expect(args).toEqual(['status']);
-        expect(passed).toEqual({ ...options, shell: false });
-        return new EventEmitter() as ChildProcess;
-      }) as typeof spawn;
-      startChild('git.exe', ['status'], options, launch);
-    } finally {
-      Object.defineProperty(process, 'platform', descriptor);
-    }
+  it('leaves native launches unchanged while the WSL flag is off', async () => {
+    process.env['STUDIO_FLAGS'] = '-wsl-projects';
+    const child = startChild(process.execPath, ['-e', 'process.stdout.write(process.cwd())'], { cwd: process.cwd(), env: {}, stdio: ['ignore', 'pipe', 'pipe'] }, () => { throw new Error('Native launches must not use the WSL launcher'); });
+    const output = await new Promise<string>((resolve, reject) => {
+      let text = '';
+      child.stdout!.on('data', (chunk) => { text += chunk; });
+      child.once('error', reject);
+      child.once('close', (code) => code === 0 ? resolve(text) : reject(new Error(`Child exited ${code}`)));
+    });
+    expect(output).toBe(process.cwd());
   });
 
   it('executes an argument vector in the distro under setsid without cmd.exe or interpolation', () => {

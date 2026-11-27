@@ -28,16 +28,16 @@ function nodeOptions<Options extends { env: ChildEnv; unset?: readonly string[] 
   return env === APP_ENV ? rest : { ...rest, env };
 }
 
-export function startChild(bin: string, args: readonly string[], options: ChildOptions, launch: typeof spawn = spawn): ChildProcess {
+export function startChild(bin: string, args: readonly string[], options: ChildOptions, launchWsl: typeof spawn = spawn): ChildProcess {
   const project = wslProject(typeof options.cwd === 'string' ? options.cwd : undefined);
   if (project !== undefined) {
     const marker = `ONLOOK_WSL_${randomUUID()}:`;
     const command = wslLaunch(project, bin, args, marker);
-    const child = launch(command.bin, command.args, wslOptions(options, project));
-    bindWslChild(child, project, marker, true, launch);
+    const child = launchWsl(command.bin, command.args, wslOptions(options, project));
+    bindWslChild(child, project, marker, true, launchWsl);
     return child;
   }
-  return launch(bin, args, { ...nodeOptions(options), shell: false });
+  return spawn(bin, args, { ...nodeOptions(options), shell: false });
 }
 
 /** `execFile`'s own bounds apply: `timeout` kills with `killSignal`, `maxBuffer` ends the child. */

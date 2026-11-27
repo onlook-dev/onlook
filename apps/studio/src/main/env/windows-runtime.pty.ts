@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
-import { type ChildProcess, type spawn } from 'node:child_process';
-import { EventEmitter } from 'node:events';
+import type { ChildProcess } from 'node:child_process';
+import { once } from 'node:events';
 import { afterEach, test } from 'node:test';
 import { canonicalPath, setCanonicalPathMapper, workspaceHash } from '../lib/canonical-path.js';
 import { startChild } from './child.js';
@@ -100,38 +100,25 @@ test('missing distro tools identify the tools and distribution instead of fallin
   }
 });
 
-test('flag-off child launches preserve the original executable, UNC cwd and environment', () => {
-  const descriptor = Object.getOwnPropertyDescriptor(process, 'platform')!;
-  try {
-    Object.defineProperty(process, 'platform', { ...descriptor, value: 'win32' });
-    process.env['STUDIO_FLAGS'] = '-wsl-projects';
-    const options = { cwd: folder, env: { PATH: 'C:\\tools' } };
-    let launches = 0;
-    const launch = ((bin, args, passed) => {
-      launches++;
-      assert.equal(bin, 'git.exe');
-      assert.deepEqual(args, ['status']);
-      assert.deepEqual(passed, { ...options, shell: false });
-      return new EventEmitter() as ChildProcess;
-    }) as typeof spawn;
-    startChild('git.exe', ['status'], options, launch);
-    assert.equal(launches, 1);
-  } finally {
-    Object.defineProperty(process, 'platform', descriptor);
-  }
+test('flag-off native launches preserve their cwd, arguments and built environment', async () => {
+  process.env['STUDIO_FLAGS'] = '-wsl-projects';
+  const args = ['literal & echo unexpected', '$(unexpected)'];
+  const child = startChild(process.execPath, ['-e', 'process.stdout.write(JSON.stringify({cwd:process.cwd(),value:process.env.EXAMPLE_VALUE,args:process.argv.slice(1)}))', ...args], {
+    cwd: process.cwd(), env: { EXAMPLE_VALUE: 'literal value', SystemRoot: process.env['SystemRoot'] }, stdio: ['ignore', 'pipe', 'pipe'],
+  }, () => { throw new Error('Native launches must not use the WSL launcher'); });
+  assert.deepEqual(JSON.parse(await output(child)), { cwd: process.cwd(), value: 'literal value', args });
 });
 
-test('native children retain literal arguments even if shell execution is requested', () => {
-  const options = { cwd: 'C:\\projects\\example', env: {}, shell: true };
+test('native children retain literal arguments even if shell execution is requested', async () => {
   const args = ['literal & echo unexpected', '$(unexpected)'];
-  let launches = 0;
-  const launch = ((bin, passedArgs, passed) => {
-    launches++;
-    assert.equal(bin, 'node.exe');
-    assert.deepEqual(passedArgs, args);
-    assert.equal(passed?.shell, false);
-    return new EventEmitter() as ChildProcess;
-  }) as typeof spawn;
-  startChild('node.exe', args, options, launch);
-  assert.equal(launches, 1);
+  const child = startChild(process.execPath, ['-e', 'process.stdout.write(JSON.stringify(process.argv.slice(1)))', ...args], { env: { SystemRoot: process.env['SystemRoot'] }, shell: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  assert.deepEqual(JSON.parse(await output(child)), args);
 });
+
+async function output(child: ChildProcess): Promise<string> {
+  let text = '';
+  child.stdout!.on('data', (chunk) => { text += chunk; });
+  const [code] = await once(child, 'close');
+  assert.equal(code, 0);
+  return text;
+}
