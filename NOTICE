@@ -5004,10 +5004,10 @@ SOFTWARE.
 
 
 ========================================================================
-electron@43.7.7
+electron@43.8.1
 License: MIT
 Review: permissive
-Source: https://registry.npmjs.org/electron/43.7.7
+Source: https://registry.npmjs.org/electron/43.8.1
 Additional notice: LICENSES.chromium.html (audit snapshot SHA-256 7ae82e97b8a60b9d97871e0e11a05285aea2d42bef665f93f6a4f415235839ed; packaged copy is target-specific)
 
 --- LICENSE ---

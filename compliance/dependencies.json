@@ -2553,11 +2553,11 @@
   },
   {
     "name": "electron",
-    "version": "43.7.7",
+    "version": "43.8.1",
     "license": "MIT",
     "flag": "permissive",
     "textStatus": "preserved",
-    "source": "https://registry.npmjs.org/electron/43.7.7",
+    "source": "https://registry.npmjs.org/electron/43.8.1",
     "texts": [
       {
         "file": "LICENSE",
