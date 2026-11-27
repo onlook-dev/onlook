@@ -22,7 +22,7 @@ import { Icon } from '@astryxdesign/core/Icon';
 import { Tooltip } from '@astryxdesign/core/Tooltip';
 import { Stack } from '@astryxdesign/core/Layout';
 import { canSubmitPrompt, useAgentStore } from '../agent/store.js';
-import { runControlPhase, usePaintedCreateState, useProjectCreateStore } from '../create/projectCreate.js';
+import { ownCreateState, runControlPhase, usePaintedCreateState, useProjectCreateStore } from '../create/projectCreate.js';
 import { useImportSetupProgress, useSetupTurnStore } from '../create/setupProgress.js';
 import { setupHidesRunControl, useInspireTipShown } from '../sidebar/footSeat.js';
 import { t } from '@studio/i18n';
@@ -83,7 +83,7 @@ import { framesVisible, panKindOf } from '../perf/pan.js';
 import { dispatchCanvasRedo, dispatchCanvasUndo } from './historyDispatch.js';
 import { dimensionBadgeNodeId, useCanvasStore, isChromeHidden } from './store.js';
 import { isBlankWorkspace, useWorkspaceStore } from '../workspace/store.js';
-import { startControlShown } from './toolbarRunControl.js';
+import { hasSavedAppFramesOnAnyPage, startControlShown } from './toolbarRunControl.js';
 import { useAppBeenUp } from './useAppBeenUp.js';
 import { useSpacePanHold } from './useSpacePanHold.js';
 import { useScrollKeyHold } from './frame/scrollKey.js';
@@ -484,9 +484,13 @@ export function Canvas({
   const isFootOn = useFlag('rail-foot');
   const setupProgress = useImportSetupProgress();
   const hasLiveServer = hasLiveEntry(serverEntries);
-  const isBlankProject = useWorkspaceStore((state) => isBlankWorkspace(state.workspace));
+  const workspace = useWorkspaceStore((state) => state.workspace);
+  const isBlankProject = isBlankWorkspace(workspace);
+  const create = ownCreateState(useProjectCreateStore((state) => state.state), workspace);
+  const isCreating = create?.kind === 'planning' || create?.kind === 'copying' || create?.kind === 'installing' || create?.kind === 'starting';
   const hasNodes = nodes.length > 0;
   const inspirationId = useCanvasStore((state) => state.inspiration?.frameId ?? null);
+  const hasSavedFrames = useCanvasStore((state) => hasSavedAppFramesOnAnyPage(state.doc, inspirationId));
   const isOnlyInspiration = nodes.length === 1 && nodes[0]?.id === inspirationId;
   const emptyState = useEmptyCanvasState({ hasLiveServer, hasNodes: hasNodes && !isOnlyInspiration });
   const holdsForInspiration = isOnlyInspiration && (emptyState.kind === 'ideas' || emptyState.kind === 'quiet');
@@ -876,7 +880,7 @@ export function Canvas({
             isPreview={!canAdd}
             hasFrames={nodes.some((node) => node.type === 'frame')}
             hasSectionTool={hasSections}
-            hasRunControl={startControlShown({ isOn: isStartControlOn, isBlankProject, isImportSettingUp: setupHidesRunControl(setupProgress, paintedCreate), hasBeenUp: wasAppUp || hasLiveServer })}
+            hasRunControl={startControlShown({ isOn: isStartControlOn, isBlankProject, isImportSettingUp: setupHidesRunControl(setupProgress, paintedCreate), hasBeenUp: wasAppUp || hasLiveServer, serverEntries, hasFrames: hasSavedFrames, isCreating })}
             isRunEnabled={showsSetupPending || hasSavedSetup || canRun || hasStarter}
           />
         </Stack>

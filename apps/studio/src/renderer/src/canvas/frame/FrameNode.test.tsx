@@ -105,6 +105,7 @@ beforeEach(() => {
 
 afterEach(async () => {
   await act(async () => { root?.unmount(); });
+  seedFlags();
   root = undefined;
   container.remove();
   restoreCreateElement();
@@ -379,6 +380,77 @@ function deferFrameAttachments() {
   }) };
   return pending;
 }
+
+for (const eventOrder of ['before-reply', 'after-reply'] as const) it(`covers a frame refused for another project with the block event ${eventOrder} and recovers on its own new port`, async () => {
+  seedFlags({ 'frame-covers': true });
+  let blocked: Parameters<StudioBridge['onCanvasFrameBlocked']>[0] | undefined;
+  window.studio = { ...window.studio, onCanvasFrameBlocked: listener => { blocked = listener; return () => { blocked = undefined; }; } };
+  const pending = deferFrameAttachments();
+  await mount();
+  expect(guests).toHaveLength(0);
+  if (eventOrder === 'before-reply') await act(async () => { blocked!({ nodeId: FRAME_ID, url: URL_A }); });
+  await act(async () => { pending[0]!.resolve(null); });
+  if (eventOrder === 'after-reply') await act(async () => { blocked!({ nodeId: FRAME_ID, url: URL_A }); });
+  expect(container.querySelector('webview')).toBeNull();
+  expect(container.querySelector('[data-server-cover="occupied"]')).not.toBeNull();
+  expect(container.textContent).toContain('Port 3000 is in use');
+  expect(container.textContent).not.toContain('Nothing is answering');
+  await act(async () => {
+    const state = useCanvasStore.getState();
+    const doc = state.doc!;
+    const frame = doc.nodes[FRAME_ID] as BrowserNode;
+    state.replaceDoc({ ...doc, revision: doc.revision + 1, nodes: { ...doc.nodes, [FRAME_ID]: { ...frame, content: { homeUrl: 'http://localhost:4701/menu' } } } });
+    expect(state.rehomeDeadFrame(FRAME_ID, 'http://localhost:4701/menu')).toBe(true);
+  });
+  expect(pending).toHaveLength(2);
+  await act(async () => { pending[1]!.resolve({ url: 'about:blank#studio-frame-attach=own' }); });
+  expect(container.querySelectorAll('webview')).toHaveLength(1);
+  expect(guests.at(-1)!.element.getAttribute('src')).toBe('about:blank#studio-frame-attach=own');
+});
+
+it('keeps the measured occupied cover when an attachment block arrives after the server book', async () => {
+  seedFlags({ 'frame-covers': true });
+  let blocked: Parameters<StudioBridge['onCanvasFrameBlocked']>[0] | undefined;
+  window.studio = { ...window.studio, onCanvasFrameBlocked: listener => { blocked = listener; return () => { blocked = undefined; }; } };
+  const pending = deferFrameAttachments();
+  await mount();
+  await act(async () => {
+    const state = useCanvasStore.getState();
+    state.applyServerBook(state.serverEntries.map(entry => ({ ...entry, ports: entry.ports.map(port => ({ ...port, measured: 'stranger' as const })) })));
+  });
+  expect(container.querySelector('[data-server-cover="occupied"]')).not.toBeNull();
+  await act(async () => { blocked!({ nodeId: FRAME_ID, url: URL_A }); });
+  await act(async () => { pending[0]!.resolve(null); });
+  expect(container.querySelector('[data-server-cover="occupied"]')).not.toBeNull();
+  expect(container.querySelector('[data-server-cover="dead"]')).toBeNull();
+  expect(container.querySelector('webview')).toBeNull();
+});
+
+for (const wasLive of [false, true]) it(`rechecks a refused port after the project server book changes without moving its saved address (was live: ${String(wasLive)})`, async () => {
+  seedFlags({ 'frame-covers': true });
+  let blocked: Parameters<StudioBridge['onCanvasFrameBlocked']>[0] | undefined;
+  window.studio = { ...window.studio, onCanvasFrameBlocked: listener => { blocked = listener; return () => { blocked = undefined; }; } };
+  const pending = deferFrameAttachments();
+  await mount();
+  if (wasLive) {
+    await act(async () => { pending[0]!.resolve({ url: 'about:blank#studio-frame-attach=before-reuse' }); });
+    await loaded(guests[0]!);
+  }
+  await act(async () => {
+    blocked!({ nodeId: FRAME_ID, url: URL_A });
+    pending[0]!.resolve(null);
+  });
+  expect(container.querySelector('[data-server-cover="occupied"]')).not.toBeNull();
+  expect(container.querySelector('webview')).toBeNull();
+  await act(async () => {
+    const state = useCanvasStore.getState();
+    state.applyServerBook(state.serverEntries.map(entry => ({ ...entry, ports: entry.ports.map(port => ({ ...port })) })));
+  });
+  expect(pending).toHaveLength(2);
+  await act(async () => { pending[1]!.resolve({ url: 'about:blank#studio-frame-attach=restarted' }); });
+  expect(container.querySelectorAll('webview')).toHaveLength(1);
+  expect(container.querySelector('[data-server-cover="occupied"]')).toBeNull();
+});
 
 for (const replyOrder of ['retirement-before-echo', 'retirement-after-echo']) {
   it(`replaces a live initial redirect only after USER acceptance (${replyOrder})`, async () => {
@@ -855,7 +927,8 @@ it('mounts a leased guest after attachment and restores listeners without revivi
   }
 });
 
-for (const refusal of ['null', 'rejected'] as const) it(`mounts a usable raw-URL guest after a ${refusal} attachment response`, async () => {
+for (const refusal of ['null', 'rejected'] as const) it(`falls back to the saved Frame URL after an ordinary ${refusal} attachment response`, async () => {
+  seedFlags({ 'frame-covers': true });
   const pending = deferFrameAttachments();
   await mount();
   expect(container.querySelector('webview')).toBeNull();
@@ -864,16 +937,9 @@ for (const refusal of ['null', 'rejected'] as const) it(`mounts a usable raw-URL
     if (refusal === 'null') pending[0]!.resolve(null);
     else pending[0]!.reject(new Error('attachment refused'));
   });
-  const fallback = guests.at(-1)!;
-  expect(fallback.element.getAttribute('src')).toBe(URL_A);
-  await loaded(fallback);
-  expect(useCanvasStore.getState().overlay[FRAME_ID]?.health).toBe('live');
-  expect(fallback.messages.some((message) => message.type === 'arm')).toBe(true);
-  await act(async () => {
-    fallback.url = URL_B;
-    fallback.element.dispatchEvent(new Event('did-navigate'));
-  });
-  expect(useCanvasStore.getState().overlay[FRAME_ID]?.currentUrl).toBe(URL_B);
+  expect(guests).toHaveLength(1);
+  expect(container.querySelector('webview')?.getAttribute('src')).toBe(URL_A);
+  expect(container.querySelector('[data-server-cover="occupied"]')).toBeNull();
 });
 
 it('navigates recovery to failed B after a deferred replacement lease initially loads current A', async () => {

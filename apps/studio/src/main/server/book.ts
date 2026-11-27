@@ -1,7 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import type { ServerAttribution, ServerPortMeasurement, ServerPortState } from '@studio/events';
+import { localPort } from '@studio/events';
+import { canonicalPath } from '../lib/canonical-path.js';
 import { defineDomain } from '../state/store.js';
 import { normalizePath, workspaceRoot } from '../workspace/store.js';
+import { isContainedIn, type ListenerIdentity } from './owner.js';
 
 export type PortListener = NonNullable<ServerPortState['listener']>;
 
@@ -34,6 +37,39 @@ const domain = defineDomain<ServerBookFile>({
 });
 
 const removedProjects = new Set<string>();
+const livePortOwners = new Map<number, { projectKey: string; entryId: string; identity?: ListenerIdentity }>();
+const measurementVersions = new Map<number, number>();
+
+export function capturePortMeasurement(port: number): () => boolean {
+  const version = measurementVersions.get(port);
+  return () => measurementVersions.get(port) === version;
+}
+
+function advanceMeasurement(port: number): void {
+  measurementVersions.set(port, (measurementVersions.get(port) ?? 0) + 1);
+}
+
+export function invalidatePortMeasurements(worktreePath: string): void {
+  const projectKey = normalizePath(worktreePath);
+  for (const [port, owner] of livePortOwners) {
+    if (owner.projectKey === projectKey) {
+      livePortOwners.delete(port);
+      advanceMeasurement(port);
+    }
+  }
+}
+
+export function portMeasurementInvalidator(worktreePath: string, port: number): () => boolean {
+  const projectKey = normalizePath(worktreePath);
+  const measured = livePortOwners.get(port);
+  const current = capturePortMeasurement(port);
+  return () => {
+    if (!current() || livePortOwners.get(port) !== measured) return false;
+    if (measured !== undefined && measured.projectKey !== projectKey) return false;
+    advanceMeasurement(port);
+    return measured !== undefined && livePortOwners.delete(port);
+  };
+}
 
 export function reopenServerBookProject(worktreePath: string): void {
   removedProjects.delete(worktreePath);
@@ -42,6 +78,24 @@ export function reopenServerBookProject(worktreePath: string): void {
 
 export function serverBookEntries(worktreePath: string): ServerBookEntry[] {
   return Object.values(domain.read().projects[normalizePath(worktreePath)] ?? {});
+}
+
+export function portHeldByOtherProject(worktreePath: string, url: string): boolean {
+  const port = localPort(url);
+  if (port === null) return false;
+  const projectKey = normalizePath(worktreePath);
+  const owner = livePortOwners.get(port);
+  if (owner === undefined || owner.projectKey === projectKey) return false;
+  if (owner.identity?.cwd !== undefined) {
+    const listenerFolder = canonicalPath(owner.identity.cwd);
+    const related = (folder: string): boolean => {
+      const projectFolder = canonicalPath(folder);
+      return isContainedIn(listenerFolder, projectFolder) || isContainedIn(projectFolder, listenerFolder);
+    };
+    if (related(worktreePath) || serverBookEntries(worktreePath).some((entry) => related(entry.folder))) return false;
+  }
+  const entry = domain.read().projects[owner.projectKey]?.[owner.entryId];
+  return entry?.ports.some((claim) => claim.port === port && claim.measured === 'live') === true;
 }
 
 export function entryForFolder(worktreePath: string, folder: string): ServerBookEntry | undefined {
@@ -118,7 +172,12 @@ export function recordPortMeasurement(
   port: number,
   measured: ServerPortMeasurement,
   listener?: PortListener,
-): void {
+  observation?: { verified: boolean; current(): boolean; identity?: ListenerIdentity },
+): boolean {
+  if (observation !== undefined && !observation.current()) return false;
+  const projectKey = normalizePath(worktreePath);
+  if (!domain.read().projects[projectKey]?.[entryId]?.ports.some((claim) => claim.port === port)) return false;
+  const prior = livePortOwners.get(port);
   mutate(worktreePath, entryId, (entry) => ({
     ...entry,
     everMeasuredLive: entry.everMeasuredLive || measured === 'live',
@@ -133,6 +192,17 @@ export function recordPortMeasurement(
       };
     }),
   }));
+  if (measured === 'live') {
+    if (observation?.verified === false) return false;
+    livePortOwners.set(port, { projectKey, entryId, ...(observation?.identity === undefined ? {} : { identity: observation.identity }) });
+    advanceMeasurement(port);
+    return prior?.projectKey !== projectKey || prior.entryId !== entryId || prior.identity?.cwd !== observation?.identity?.cwd;
+  }
+  if (prior?.projectKey === projectKey && prior.entryId === entryId) {
+    advanceMeasurement(port);
+    return livePortOwners.delete(port);
+  }
+  return false;
 }
 
 export function setServerEntryOwnership(
@@ -159,6 +229,7 @@ export function removeServerEntry(worktreePath: string, entryId: string): void {
 /** Only for a worktree being removed (ONL-2152); a live project's dead claims stay. */
 export function forgetServerBookProject(worktreePath: string): void {
   const projectKey = normalizePath(worktreePath);
+  invalidatePortMeasurements(worktreePath);
   removedProjects.add(projectKey);
   domain.update((state) => {
     if (state.projects[projectKey] === undefined) return state;
@@ -190,4 +261,6 @@ export function discriminatePortReport(
 export function resetServerBookCache(): void {
   domain.reset();
   removedProjects.clear();
+  livePortOwners.clear();
+  measurementVersions.clear();
 }

@@ -1,11 +1,12 @@
 import { expect, it } from 'bun:test';
 import { normalizeDevUrl, type ArtifactNode, type BrowserNode, type CanvasDoc, type CanvasNode } from '@studio/events';
-import { createFrameBindings } from './bindings.js';
+import { createFrameBindings, frameBindings } from './bindings.js';
 import { createFrameAttachHandler } from '../canvas/frame-attach.js';
 import { createImageTargetResolver } from '../canvas/image-target.js';
 
 const artifactId = 'aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa';
 const browserUrl = 'https://example.test/design';
+const guardedUrl = 'http://localhost:5173/design';
 const artifactUrl = (pagePath: string): string => `studio-artifact://${artifactId}/${pagePath}`;
 
 function browser(id = 'frame-a'): BrowserNode {
@@ -34,13 +35,13 @@ function nativeGuest(owner: Electron.WebContents, id: number, session: Electron.
   };
 }
 
-function fixture() {
+function fixture(policy?: Parameters<typeof createFrameBindings>[1], defaultUrl = browserUrl) {
   let time = 0;
   let nextId = 10;
   const owner = { id: 7 } as Electron.WebContents;
   const session = {} as Electron.Session;
-  const bindings = createFrameBindings(() => time);
-  const issue = (node: CanvasNode, url = browserUrl): string => {
+  const bindings = createFrameBindings(() => time, policy);
+  const issue = (node: CanvasNode, url = defaultUrl): string => {
     const lease = bindings.issue(owner, 'doc', node, url);
     expect(lease).toStartWith('about:blank#studio-frame-attach=');
     if (lease === undefined) throw new Error('lease unavailable');
@@ -57,7 +58,7 @@ function fixture() {
     bindings.created(guest);
     return guest;
   };
-  const finish = (guest: ReturnType<typeof born>, birthUrl: string, url = browserUrl) => {
+  const finish = (guest: ReturnType<typeof born>, birthUrl: string, url = defaultUrl) => {
     expect(bindings.navigating(guest, birthUrl)).toBeUndefined();
     expect(bindings.attached(owner, guest)).toBeUndefined();
     expect(bindings.loaded(guest, birthUrl)).toBe(url);
@@ -66,13 +67,13 @@ function fixture() {
     guest.navigate(url);
     bindings.navigated(guest, url);
   };
-  const bind = (node: CanvasNode, url = browserUrl) => {
+  const bind = (node: CanvasNode, url = defaultUrl) => {
     const prepared = prepare(issue(node, url));
     const guest = born(prepared.params['src']);
     finish(guest, prepared.params['src']!, url);
     return guest;
   };
-  const pending = (node: CanvasNode, url = browserUrl) => {
+  const pending = (node: CanvasNode, url = defaultUrl) => {
     const birthUrl = prepare(issue(node, url)).params['src']!;
     const guest = born(birthUrl);
     bindings.navigating(guest, birthUrl);
@@ -82,6 +83,134 @@ function fixture() {
   };
   return { owner, session, bindings, issue, prepare, born, finish, bind, pending, advance: (milliseconds: number) => { time += milliseconds; } };
 }
+
+function guardedFixture() {
+  const foreign = new Set<string>();
+  const blocked: { ownerId: number; nodeId: string | undefined; url: string }[] = [];
+  const test = fixture({
+    allows: (_owner, url) => !foreign.has(url),
+    blocked: (owner, nodeId, url) => { blocked.push({ ownerId: owner.id, nodeId, url }); },
+  }, guardedUrl);
+  return { ...test, foreign, blocked };
+}
+
+it('refuses a destination already held by another project before issuing a lease', () => {
+  const test = guardedFixture();
+  test.foreign.add(guardedUrl);
+  expect(test.bindings.issue(test.owner, 'doc', browser(), guardedUrl)).toBeUndefined();
+  expect(test.blocked).toEqual([{ ownerId: test.owner.id, nodeId: 'frame-a', url: guardedUrl }]);
+});
+
+it('rechecks the project permission between lease issue and preparation', () => {
+  const test = guardedFixture();
+  const lease = test.issue(browser());
+  test.foreign.add(guardedUrl);
+  let applied = false;
+  expect(test.bindings.prepare(test.owner, {}, { src: lease }, () => { applied = true; })).toBe(false);
+  expect(applied).toBe(false);
+  expect(test.blocked).toEqual([{ ownerId: test.owner.id, nodeId: 'frame-a', url: guardedUrl }]);
+});
+
+for (const order of ['attached-first', 'loaded-first'] as const) {
+  it(`rechecks permission before birth launch with ${order}`, () => {
+    const test = guardedFixture();
+    const prepared = test.prepare(test.issue(browser()));
+    const birthUrl = prepared.params['src']!;
+    const guest = test.born(birthUrl);
+    test.bindings.navigating(guest, birthUrl);
+    if (order === 'attached-first') test.bindings.attached(test.owner, guest);
+    else test.bindings.loaded(guest, birthUrl);
+    test.foreign.add(guardedUrl);
+    const destination = order === 'attached-first'
+      ? test.bindings.loaded(guest, birthUrl)
+      : test.bindings.attached(test.owner, guest);
+    expect(destination).toBeUndefined();
+    expect(test.bindings.activate(guest, guardedUrl)).toBe(false);
+    expect(test.blocked).toEqual([{ ownerId: test.owner.id, nodeId: 'frame-a', url: guardedUrl }]);
+  });
+}
+
+it('rechecks permission between birth launch and the queued load activation', () => {
+  const test = guardedFixture();
+  const guest = test.pending(browser());
+  test.foreign.add(guardedUrl);
+  expect(test.bindings.activate(guest, guardedUrl)).toBe(false);
+  expect(test.blocked).toEqual([{ ownerId: test.owner.id, nodeId: 'frame-a', url: guardedUrl }]);
+});
+
+it('rechecks navigation and redirects against the bound node after the lease expires', () => {
+  const test = guardedFixture();
+  const node = browser();
+  const guest = test.bind(node);
+  const redirect = 'http://localhost:5174/design';
+  test.advance(60_000);
+  test.foreign.add(redirect);
+  expect(test.bindings.allowsNavigation(guest, redirect)).toBe(false);
+  expect(test.blocked).toEqual([{ ownerId: test.owner.id, nodeId: node.id, url: redirect }]);
+  test.foreign.add(guardedUrl);
+  expect(test.bindings.allowsNavigation(guest, guardedUrl)).toBe(false);
+  expect(test.blocked).toEqual([
+    { ownerId: test.owner.id, nodeId: node.id, url: redirect },
+    { ownerId: test.owner.id, nodeId: node.id, url: guardedUrl },
+  ]);
+  expect(test.bindings.allowsNavigation(guest, browserUrl)).toBe(true);
+  test.foreign.delete(redirect);
+  expect(test.bindings.allowsNavigation(guest, redirect)).toBe(true);
+});
+
+it('does not let a raw src bypass the same project permission', () => {
+  const test = guardedFixture();
+  const url = 'http://localhost:5173/design';
+  test.foreign.add(url);
+  expect(test.bindings.prepare(test.owner, {}, { src: url })).toBe(false);
+  const guest = test.born();
+  expect(test.bindings.allowsNavigation(guest, url)).toBe(false);
+  expect(test.blocked).toEqual([
+    { ownerId: test.owner.id, nodeId: undefined, url },
+    { ownerId: test.owner.id, nodeId: undefined, url },
+  ]);
+});
+
+it('keeps own-project, remote and artifact destinations available while a sibling is blocked', () => {
+  const test = guardedFixture();
+  test.foreign.add('http://localhost:5174/');
+  for (const url of ['http://localhost:5173/', browserUrl, artifactUrl('pages/index.html')]) {
+    const node = url.startsWith('studio-artifact:') ? artifact('artifact-allowed', 'pages/index.html') : browser('browser-allowed');
+    const guest = test.bind(node, url);
+    expect(test.bindings.allowsNavigation(guest, url)).toBe(true);
+    expect(test.bindings.prepare(test.owner, {}, { src: url })).toBe(true);
+  }
+  expect(test.blocked).toEqual([]);
+});
+
+it('uses the current host without attributing an old binding to its new owner', () => {
+  const test = guardedFixture();
+  const guest = test.bind(browser());
+  guest.hostWebContents = { id: 8 } as Electron.WebContents;
+  test.foreign.add(guardedUrl);
+  expect(test.bindings.allowsNavigation(guest, guardedUrl)).toBe(false);
+  expect(test.blocked).toEqual([{ ownerId: 8, nodeId: undefined, url: guardedUrl }]);
+});
+
+it('denies loopback for an unknown workspace without affecting remote or artifact loads', () => {
+  const owner = { id: 70_007 } as Electron.WebContents;
+  const guest = nativeGuest(owner, 70_008, {} as Electron.Session);
+  const node = browser('unknown-project-frame');
+  try {
+    for (const url of [guardedUrl, 'http://127.0.0.1/', 'https://[::1]/', 'http://0.0.0.0:5173/']) {
+      expect(frameBindings.issue(owner, 'doc', node, url)).toBeUndefined();
+      expect(frameBindings.prepare(owner, {}, { src: url })).toBe(false);
+      expect(frameBindings.allowsNavigation(guest, url)).toBe(false);
+    }
+    for (const url of [browserUrl, artifactUrl('pages/index.html')]) {
+      expect(frameBindings.issue(owner, 'doc', node, url)).toStartWith('about:blank#studio-frame-attach=');
+      expect(frameBindings.prepare(owner, {}, { src: url })).toBe(true);
+      expect(frameBindings.allowsNavigation(guest, url)).toBe(true);
+    }
+  } finally {
+    frameBindings.forget(owner);
+  }
+});
 
 for (const creationOrder of ['created-first', 'prepared-first'] as const) {
   for (const order of [['navigating', 'attached', 'loaded'], ['attached', 'navigating', 'loaded'], ['navigating', 'loaded', 'attached']] as const) {
