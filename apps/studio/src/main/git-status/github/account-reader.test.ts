@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { GIT_PILL_SHIPPED_DEFAULTS } from '@studio/events';
 import { derivePillState } from '@studio/git-ui/derive';
 import { emptyMeasurement, probeGithub } from '../measure.js';
-import { selectGithubReader } from './account-reader.js';
+import { hasGithubStatusReads, selectGithubReader } from './account-reader.js';
 import { scriptedReader } from './test-support.js';
 import { GITHUB_READ_FAILURES, githubBackendFixture } from '../../github-import/backend-fixtures.js';
 
@@ -53,6 +53,15 @@ describe('account-backed GitHub status', () => {
     expect(await selectGithubReader(undefined, fallback.reader)).toEqual({ reader: fallback.reader, connectViaBrowser: false });
     expect(await selectGithubReader({ ...githubBackendFixture('connected'), identity: undefined }, fallback.reader))
       .toEqual({ reader: fallback.reader, connectViaBrowser: false });
+  });
+
+  it('calls a provider status-capable only when it carries all three reads', () => {
+    const backend = githubBackendFixture('connected');
+    expect(hasGithubStatusReads(backend)).toBe(true);
+    expect(hasGithubStatusReads({ ...backend, identity: undefined })).toBe(false);
+    expect(hasGithubStatusReads({ ...backend, repositoryAccess: undefined })).toBe(false);
+    expect(hasGithubStatusReads({ ...backend, pullRequests: undefined })).toBe(false);
+    expect(hasGithubStatusReads(undefined)).toBe(false);
   });
 
   it('keeps an authenticated gh user working without an account connection', async () => {

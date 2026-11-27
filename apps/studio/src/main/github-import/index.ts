@@ -16,6 +16,7 @@ import { cleanupPendingClones } from './pending.js';
 import { proofSwitchOn } from '../diagnostics/gate.js';
 import { cloneRepository } from './clone.js';
 import { gitStatusHost } from '../git-status/index.js';
+import { hasGithubStatusReads } from '../git-status/github/account-reader.js';
 import { log } from '../log/index.js';
 import type { GithubBackend } from './backend.js';
 import { createGithubConnectionWatch } from './connection-watch.js';
@@ -90,7 +91,7 @@ export function registerGithubImportHandlers(): void {
     }
     const state = await service.command(command);
     const backend = githubImportBackend();
-    if ((command.kind === 'status' || command.kind === 'start') && backend?.identity !== undefined) {
+    if ((command.kind === 'status' || command.kind === 'start') && hasGithubStatusReads(backend)) {
       const subject = verifiedSubject(readIdentity());
       const identity = state.connection.status === 'connected' ? await backend.identity().catch(() => undefined) : undefined;
       if (subject === verifiedSubject(readIdentity()) && connectionChanged(subject, state.connection, identity)) {

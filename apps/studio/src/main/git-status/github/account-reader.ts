@@ -56,16 +56,13 @@ interface Selection {
   failure?: () => GithubReadFailure | undefined;
 }
 
+export function hasGithubStatusReads(backend: GithubBackend | undefined): backend is GithubBackend & GithubReads {
+  return backend?.identity !== undefined && backend.repositoryAccess !== undefined && backend.pullRequests !== undefined;
+}
+
 export async function selectGithubReader(backend: GithubBackend | undefined, fallback: GitHubReader): Promise<Selection> {
-  const { identity, repositoryAccess, pullRequests } = backend ?? {};
-  if (identity === undefined || repositoryAccess === undefined || pullRequests === undefined) {
-    return { reader: fallback, connectViaBrowser: false };
-  }
-  const reads: GithubReads = {
-    identity: () => identity.call(backend),
-    repositoryAccess: (repository) => repositoryAccess.call(backend, repository),
-    pullRequests: (repository, branch, headOwner) => pullRequests.call(backend, repository, branch, headOwner),
-  };
+  if (!hasGithubStatusReads(backend)) return { reader: fallback, connectViaBrowser: false };
+  const reads: GithubReads = backend;
   const account = await safely(() => reads.identity());
   return account.status === 'disconnected' ? { reader: fallback, connectViaBrowser: true } : accountReader(reads, account);
 }
