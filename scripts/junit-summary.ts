@@ -30,8 +30,8 @@ export function markdown({ passed, failed, skipped, failures }: ReturnType<typeo
   const lines = [`### Unit tests: ${failed === 0 ? '✅' : '❌'} ${passed} passed, ${failed} failed${skipped ? `, ${skipped} skipped` : ''}`, ''];
   if (failures.length) {
     lines.push('| File | Test | Message |', '| --- | --- | --- |');
-    // Only the pipe in the code span: `\|` is the one escape a table cell resolves inside backticks, so a path keeps its backslashes.
-    for (const f of failures.slice(0, 50)) lines.push(`| \`${f.file.replace(/\|/g, '\\|')}\` | ${f.name.replace(/[\\|]/g, '\\$&')} | ${f.message.split('\n')[0]!.replace(/[\\|]/g, '\\$&').slice(0, 200)} |`);
+    // One rule for all three cells: a code span would keep a `\\` escape literal, so the file name is not one.
+    for (const f of failures.slice(0, 50)) lines.push(`| ${f.file.replace(/[\\|]/g, '\\$&')} | ${f.name.replace(/[\\|]/g, '\\$&')} | ${f.message.split('\n')[0]!.replace(/[\\|]/g, '\\$&').slice(0, 200)} |`);
     if (failures.length > 50) lines.push('', `…and ${failures.length - 50} more.`);
   }
   return `${lines.join('\n')}\n`;
