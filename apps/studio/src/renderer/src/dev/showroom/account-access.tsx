@@ -56,6 +56,8 @@ const LABELS: Record<string, StringKey> = {
   cancelling: 'account.cancellingSignIn',
 };
 
+const CAUSES = ['mfa_enrollment', 'mfa_challenge', 'mfa_verification', 'organization_selection_required', 'sso_required'] as const;
+
 export function accountAccessGallery(): Gallery {
   const started = (id: string, props: { busy?: SignInMethod | 'sign-out'; error?: AccountError; errorMethod?: SignInMethod | null; step?: OnlookState['signInStep'] } = {}, light = false): Story => ({
     id: `account-access-start-${id.replaceAll('_', '-')}${light ? '-light' : ''}`, title: id === 'verification' ? t('account.emailVerification') : id === 'browser' ? t('account.hostedSignIn') : props.error === undefined ? t(LABELS[id]!) : accountErrorText(props.error, props.errorMethod ?? null), wide: true,
@@ -93,7 +95,7 @@ export function accountAccessGallery(): Gallery {
         started('verification', { busy: 'github', step: 'email-verification' }),
         started('browser', { busy: 'google', step: 'browser' }),
         ...(['google', 'github', 'email'] as const).map((method) => started(`${method}_failed`, { error: 'invalid_grant', errorMethod: method })),
-        started('sso_required', { error: 'sso_required' }),
+        ...CAUSES.map((error) => started(error, { error, errorMethod: 'github' })),
         started('team_only', { error: 'team_only' }),
         ...(['google', 'github', 'email'] as const).map((busy) => started(busy, { busy })),
         started('cancelling', { busy: 'sign-out' }),
@@ -104,7 +106,7 @@ export function accountAccessGallery(): Gallery {
         started('verification', { busy: 'github', step: 'email-verification' }, true),
         started('browser', { busy: 'google', step: 'browser' }, true),
         ...(['google', 'github', 'email'] as const).map((method) => started(`${method}_failed`, { error: 'invalid_grant', errorMethod: method }, true)),
-        started('sso_required', { error: 'sso_required' }, true),
+        ...CAUSES.map((error) => started(error, { error, errorMethod: 'github' }, true)),
         started('team_only', { error: 'team_only' }, true),
         ...(['google', 'github', 'email'] as const).map((busy) => started(busy, { busy }, true)),
         started('cancelling', { busy: 'sign-out' }, true),

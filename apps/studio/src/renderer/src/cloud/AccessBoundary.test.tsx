@@ -94,13 +94,22 @@ describe('account access gate', () => {
     expect(node.textContent).not.toContain(text);
   });
 
-  it.each(['team_only', 'email_verification_required', 'mfa_enrollment', 'mfa_challenge', 'organization_selection_required', 'sso_required', 'invalid_grant'] as const)('names GitHub in the %s result returned by sign-in, unless WorkOS reported a cause (ONL-2948)', async (code) => {
+  it.each([
+    ['team_only', 'account.signInDenied'],
+    ['email_verification_required', 'account.signInGithubFailed'],
+    ['mfa_enrollment', 'account.mfaSetupRequired'],
+    ['mfa_challenge', 'account.mfaRequired'],
+    ['mfa_verification', 'account.mfaFailed'],
+    ['organization_selection_required', 'account.organizationRequired'],
+    ['sso_required', 'account.ssoRequired'],
+    ['invalid_grant', 'account.signInGithubFailed'],
+  ] as const)('names GitHub in the %s result returned by sign-in, unless WorkOS reported a cause (ONL-2948)', async (code, key) => {
     const cloud = fixture();
     const node = await mount(<div />);
     await act(async () => { cloud.snapshot.settle(SIGNED_OUT); });
     await act(async () => { node.querySelector<HTMLButtonElement>('[data-testid="account-continue-github"]')!.click(); });
     await act(async () => { cloud.signIn.settle({ ok: false, code }); });
-    expect(node.querySelector('[role="alert"]')?.textContent).toBe(t(code === 'team_only' ? 'account.signInDenied' : 'account.signInGithubFailed'));
+    expect(node.querySelector('[role="alert"]')?.textContent).toBe(t(key));
   });
 
   it.each(['google', 'email'] as const)('names %s when that button started the failed sign-in', async (method) => {

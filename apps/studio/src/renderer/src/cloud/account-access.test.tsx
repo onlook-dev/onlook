@@ -154,7 +154,7 @@ describe('pure account access surfaces', () => {
       expect(html).toContain(sentence);
     }
     // A refusal WorkOS reported a cause for keeps that cause, even when the method is known.
-    for (const code of ['team_only', 'denied', 'access_denied', 'last_admin', 'busy', 'not_configured', 'superseded'] as const) {
+    for (const code of ['team_only', 'mfa_enrollment', 'mfa_challenge', 'mfa_verification', 'organization_selection_required', 'sso_required', 'denied', 'access_denied', 'last_admin', 'busy', 'not_configured', 'superseded'] as const) {
       const html = renderToStaticMarkup(<GettingStarted error={code} errorMethod="github" onSignIn={noop} onCancel={noop} />);
       expect(html).toContain(accountErrorText(code));
       expect(html).not.toContain(t('account.signInGithubFailed'));
@@ -208,7 +208,7 @@ describe('pure account access surfaces', () => {
     const gallery = accountAccessGallery();
     const stories = gallery.categories.flatMap((category) => category.stories);
     expect(gallery.id).toBe('account-access');
-    for (const state of ['default', 'hover', 'focus', 'google', 'github', 'email', 'google_failed', 'github_failed', 'email_failed', 'cancelling', 'failed', 'denied', 'busy', 'not_configured', 'superseded']) {
+    for (const state of ['default', 'hover', 'focus', 'google', 'github', 'email', 'google_failed', 'github_failed', 'email_failed', 'mfa_enrollment', 'mfa_challenge', 'mfa_verification', 'organization_selection_required', 'sso_required', 'cancelling', 'failed', 'denied', 'busy', 'not_configured', 'superseded']) {
       expect(stories.some((story) => story.id === `account-access-start-${state.replaceAll('_', '-')}`)).toBe(true);
     }
     for (const state of ['default', 'hover', 'focus', 'long', 'signout', 'failed', 'confirmation', 'deleting', 'last_admin', 'denied', 'busy', 'superseded', 'not_configured']) {
