@@ -260,6 +260,7 @@ describe('the permission-mode control (ONL-2190)', () => {
       ['default', 'chat.composer.mode.default'],
       ['acceptEdits', 'chat.composer.mode.acceptEdits'],
       ['plan', 'chat.composer.mode.plan'],
+      ['bypassPermissions', 'chat.composer.mode.bypassPermissions'],
       ['read-only', 'chat.composer.mode.read-only'],
       ['workspace-write', 'chat.composer.mode.workspace-write'],
       ['danger-full-access', 'chat.composer.mode.danger-full-access'],

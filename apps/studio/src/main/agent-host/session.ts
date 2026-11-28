@@ -173,6 +173,25 @@ function bashCommand(toolName: string, input: Record<string, unknown>): string |
   return typeof command === 'string' ? command : undefined;
 }
 
+/**
+ * The git a bypassed Windows shell still asks about. `destructiveClassOf` reads Bash only, so without
+ * this a PowerShell `git push --force` would run unasked once the blanket shell prompt is gone.
+ */
+function bypassedShellAsk(toolName: string, input: Record<string, unknown>): string | undefined {
+  const command = (input as { command?: unknown }).command;
+  if (typeof command !== 'string') return undefined;
+  try {
+    const found = classifyDestructiveGit(command);
+    if (found !== undefined) return destructiveReason(found);
+    return externallyVisibleGit(command)
+      ? 'Publishing to the remote needs the user to approve it first.'
+      : undefined;
+  } catch {
+    // The same safe side as `destructiveClassOf`: a command the classifier cannot read asks.
+    return `Onlook could not check this ${toolName} command, so it needs the user to approve it first.`;
+  }
+}
+
 /** Shared by the hook and the card so one command cannot be a class to one and not the other. */
 function destructiveClassOf(
   toolName: string,
@@ -221,11 +240,24 @@ export const CLAUDE_PERMISSION_MODES = [
   'plan',
 ] as const satisfies readonly PermissionMode[];
 
-/** The four Studio offers are all members of the SDK's own narrower union, so no cast reaches `query()` (ONL-2190). */
-type ClaudePermissionMode = (typeof CLAUDE_PERMISSION_MODES)[number];
+/**
+ * Offered beside the enforced modes but never the default. The SDK approves every call before
+ * `canUseTool`, but its deny and ask rules still hold, and the hook keeps its own asks except the
+ * blanket Windows shell prompt.
+ */
+export const CLAUDE_BYPASS_PERMISSION_MODE = 'bypassPermissions' as const satisfies PermissionMode;
+
+/** What the composer offers: the enforced modes, then bypass. */
+export const CLAUDE_OFFERED_PERMISSION_MODES = [
+  ...CLAUDE_PERMISSION_MODES,
+  CLAUDE_BYPASS_PERMISSION_MODE,
+] as const satisfies readonly PermissionMode[];
+
+/** Every mode Studio offers is a member of the SDK's own narrower union, so no cast reaches `query()` (ONL-2190). */
+type ClaudePermissionMode = (typeof CLAUDE_OFFERED_PERMISSION_MODES)[number];
 
 function isClaudePermissionMode(mode: PermissionMode): mode is ClaudePermissionMode {
-  return (CLAUDE_PERMISSION_MODES as readonly PermissionMode[]).includes(mode);
+  return (CLAUDE_OFFERED_PERMISSION_MODES as readonly PermissionMode[]).includes(mode);
 }
 
 interface HookAnswer {
@@ -234,6 +266,13 @@ interface HookAnswer {
     hookEventName: 'PreToolUse';
     permissionDecision: 'ask' | 'deny';
     permissionDecisionReason: string;
+  };
+}
+
+function askBecause(reason: string): HookAnswer {
+  return {
+    continue: true,
+    hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'ask', permissionDecisionReason: reason },
   };
 }
 
@@ -465,7 +504,7 @@ export class AgentSession {
     this.log.push({
       type: 'session.settings',
       permissionMode: this.permissionMode,
-      permissionModes: [...CLAUDE_PERMISSION_MODES],
+      permissionModes: [...CLAUDE_OFFERED_PERMISSION_MODES],
     });
     void this.publishModels();
     void this.publishSkills();
@@ -750,22 +789,17 @@ export class AgentSession {
       };
     }
     // Asking on a classifier fault is the safe side: no opinion would let the wrapped shapes no rule reaches through.
-    const found = destructiveClassOf(
-      input.tool_name ?? '',
-      (input.tool_input as Record<string, unknown> | undefined) ?? {},
-    );
-    if (found === undefined && !requiresShellApproval(input.tool_name ?? '')) return { continue: true };
-
-    return {
-      continue: true,
-      hookSpecificOutput: {
-        hookEventName: 'PreToolUse',
-        permissionDecision: 'ask',
-        permissionDecisionReason: found === undefined
-          ? 'Shell commands on Windows need your approval before they run.'
-          : destructiveReason(found),
-      },
-    };
+    const toolName = input.tool_name ?? '';
+    const toolInput = (input.tool_input as Record<string, unknown> | undefined) ?? {};
+    const found = destructiveClassOf(toolName, toolInput);
+    if (found !== undefined) return askBecause(destructiveReason(found));
+    if (!requiresShellApproval(toolName)) return { continue: true };
+    // The opt-in drops only the blanket shell prompt; git that rewrites or publishes still asks, whichever shell runs it.
+    if (this.permissionMode === CLAUDE_BYPASS_PERMISSION_MODE) {
+      const reason = bypassedShellAsk(toolName, toolInput);
+      return reason === undefined ? { continue: true } : askBecause(reason);
+    }
+    return askBecause('Shell commands on Windows need your approval before they run.');
   };
 
   respond(requestId: string, optionId: string, answers?: QuestionAnswers): boolean {
@@ -1012,6 +1046,8 @@ export class AgentSession {
         includePartialMessages: true,
         // A classifier, not a bypass: under `bypassPermissions` the SDK approves everything before `canUseTool` is reached, which is why the destructive gate rides the hook instead (ONL-2190).
         permissionMode: this.permissionMode,
+        // Required to start in bypass or to switch into it later from the composer; it changes nothing until bypass is chosen.
+        allowDangerouslySkipPermissions: true,
         canUseTool: this.canUseTool as never,
         hooks: {
           PreToolUse: [{ hooks: [this.preToolUse as never] }],

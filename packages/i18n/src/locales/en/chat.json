@@ -91,6 +91,7 @@
   "chat.composer.mode.default": "Ask",
   "chat.composer.mode.acceptEdits": "Accept edits",
   "chat.composer.mode.plan": "Plan",
+  "chat.composer.mode.bypassPermissions": "Bypass permissions",
   "chat.composer.mode.read-only": "Read only",
   "chat.composer.mode.workspace-write": "Workspace",
   "chat.composer.mode.danger-full-access": "Full access",

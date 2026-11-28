@@ -91,6 +91,7 @@
   "chat.composer.mode.default": "都度確認",
   "chat.composer.mode.acceptEdits": "編集を自動承認",
   "chat.composer.mode.plan": "プランモード",
+  "chat.composer.mode.bypassPermissions": "権限確認をスキップ",
   "chat.composer.mode.read-only": "読み取り専用",
   "chat.composer.mode.workspace-write": "ワークスペース",
   "chat.composer.mode.danger-full-access": "フルアクセス",
