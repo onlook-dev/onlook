@@ -61,6 +61,28 @@ describe('the shapes a prefix rule cannot catch', () => {
     expect(classifyDestructiveGit('npx --no-install git reset --hard')).toBe('hard_reset');
   });
 
+  test('a runner option that takes a value', () => {
+    expect(
+      classifyDestructiveGit('git branch --merged | grep -v main | xargs -n 1 git branch -d'),
+    ).toBe('branch_delete');
+    expect(classifyDestructiveGit('git branch --merged | xargs -I {} git branch -D {}')).toBe(
+      'branch_delete',
+    );
+    expect(classifyDestructiveGit('xargs -P 4 -n 1 git push origin --delete < gone.txt')).toBe(
+      'branch_delete',
+    );
+    expect(classifyDestructiveGit('git branch | xargs -rn 1 git branch -d')).toBe('branch_delete');
+    expect(classifyDestructiveGit('git branch | xargs -0I {} git branch -D {}')).toBe(
+      'branch_delete',
+    );
+    expect(classifyDestructiveGit('git branch | xargs -tn 1 git push origin --delete')).toBe(
+      'branch_delete',
+    );
+    expect(classifyDestructiveGit('git branch | xargs --max-args 1 git branch -d')).toBe(
+      'branch_delete',
+    );
+  });
+
   test('a compound command, where only one part is destructive', () => {
     expect(classifyDestructiveGit('cd /tmp/x && git push -f')).toBe('force_push');
     expect(classifyDestructiveGit('git fetch; git reset --hard origin/main')).toBe('hard_reset');
@@ -78,6 +100,18 @@ describe('the shapes a prefix rule cannot catch', () => {
     expect(classifyDestructiveGit('timeout 30 git push -f')).toBe('force_push');
     expect(classifyDestructiveGit('timeout 30s git push --force')).toBe('force_push');
     expect(classifyDestructiveGit('nice -n 10 git reset --hard')).toBe('hard_reset');
+  });
+
+  test('a wrapper option that takes a value', () => {
+    expect(classifyDestructiveGit('timeout -s KILL 30 git push -f')).toBe('force_push');
+    expect(classifyDestructiveGit('timeout --signal KILL 30 git push -f')).toBe('force_push');
+    expect(classifyDestructiveGit('timeout -s KILL -k 5 30 git reset --hard')).toBe('hard_reset');
+    expect(classifyDestructiveGit('env -u GIT_DIR git push -f')).toBe('force_push');
+    expect(classifyDestructiveGit('env --unset GIT_DIR git branch -D topic')).toBe('branch_delete');
+    expect(classifyDestructiveGit('env -C app git push -f')).toBe('force_push');
+    expect(classifyDestructiveGit('env -P /usr/bin git push -f')).toBe('force_push');
+    expect(classifyDestructiveGit('stdbuf -o L git push -f')).toBe('force_push');
+    expect(classifyDestructiveGit('stdbuf -oL git push -f')).toBe('force_push');
   });
 
   test('the compound spellings ordinary shell work produces', () => {
@@ -119,6 +153,14 @@ describe('what must stay quiet, so routine work does not ask', () => {
     expect(classifyDestructiveGit('git commit -m "revert the --hard reset"')).toBeUndefined();
   });
 
+  test('a runner whose command is not git', () => {
+    expect(classifyDestructiveGit('ls | xargs -n 1 echo')).toBeUndefined();
+    expect(classifyDestructiveGit('ls | xargs -0n1 echo')).toBeUndefined();
+    expect(classifyDestructiveGit('git branch | xargs -I {} git log -1 {}')).toBeUndefined();
+    expect(externallyVisibleGit('ls | xargs -n 1 echo')).toBe(false);
+    expect(externallyVisibleGit('git branch | xargs -I {} git log -1 {}')).toBe(false);
+  });
+
   test('ordinary read-only git', () => {
     expect(classifyDestructiveGit('git status --short')).toBeUndefined();
     expect(classifyDestructiveGit('git log --oneline')).toBeUndefined();
@@ -144,7 +186,10 @@ describe('what must stay quiet, so routine work does not ask', () => {
 
   test('a wrapper around routine work stays quiet', () => {
     expect(classifyDestructiveGit('timeout 30 git status')).toBeUndefined();
+    expect(classifyDestructiveGit('timeout -s KILL 30 git status')).toBeUndefined();
+    expect(classifyDestructiveGit('env -u GIT_DIR git log -1')).toBeUndefined();
     expect(classifyDestructiveGit('bash -lc "git commit -m fix"')).toBeUndefined();
+    expect(externallyVisibleGit('env -u GIT_DIR git log -1')).toBe(false);
   });
 
   test('a branch whose name merely contains a dash and a letter', () => {
@@ -190,8 +235,10 @@ describe('a command that publishes work, which is asked about every time (ONL-29
 
   test('a wrapper, a runner or a shell around it', () => {
     expect(externallyVisibleGit('timeout 30s git push')).toBe(true);
+    expect(externallyVisibleGit('timeout -s KILL 30 git push')).toBe(true);
     expect(externallyVisibleGit('bash -lc "git push origin main"')).toBe(true);
     expect(externallyVisibleGit('mise exec -- git push')).toBe(true);
+    expect(externallyVisibleGit('git branch | xargs -n 1 git push origin')).toBe(true);
     expect(externallyVisibleGit('if git push; then echo ok; fi')).toBe(true);
     // A group closing on the subcommand itself, which is the token being compared (ONL-2933).
     expect(externallyVisibleGit('(cd app && git push)')).toBe(true);
