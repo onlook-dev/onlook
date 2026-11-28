@@ -153,6 +153,7 @@ const PERMISSION_MODE_KEYS: Record<PermissionMode, StringKey> = {
   default: 'chat.composer.mode.default',
   acceptEdits: 'chat.composer.mode.acceptEdits',
   plan: 'chat.composer.mode.plan',
+  bypassPermissions: 'chat.composer.mode.bypassPermissions',
   'read-only': 'chat.composer.mode.read-only',
   'workspace-write': 'chat.composer.mode.workspace-write',
   'danger-full-access': 'chat.composer.mode.danger-full-access',

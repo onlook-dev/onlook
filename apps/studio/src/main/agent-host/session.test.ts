@@ -7,6 +7,7 @@ import type { BackendState } from './backend.js';
 import { CLOSE_INTERRUPT_LIMIT_MS, DISPOSE_SESSION_LIMIT_MS } from './close-limits.js';
 import {
   AgentSession,
+  CLAUDE_OFFERED_PERMISSION_MODES,
   CLAUDE_PERMISSION_MODES,
   DESTRUCTIVE_GIT_RULES,
   EXTERNALLY_VISIBLE_GIT_RULES,
@@ -154,6 +155,7 @@ function fakeSdk(
   const mcpPermissionModes: [string, string][] = [];
   const spawnModels: unknown[] = [];
   let executionPolicy: { settingSources?: string[]; strictMcpConfig?: boolean } | undefined;
+  let spawnPermissions: { permissionMode?: unknown; allowDangerouslySkipPermissions?: unknown } | undefined;
   let projectOptions: { systemPrompt?: unknown; agents?: unknown } | undefined;
 
   const queryFn = ((args: {
@@ -169,9 +171,17 @@ function fakeSdk(
       agents?: unknown;
       mcpServers?: Record<string, McpSdkServerConfigWithInstance>;
       allowedTools?: string[];
+      permissionMode?: unknown;
+      allowDangerouslySkipPermissions?: unknown;
     };
   }) => {
     spawnModels.push(args.options.model);
+    spawnPermissions = {
+      permissionMode: args.options.permissionMode,
+      ...('allowDangerouslySkipPermissions' in args.options
+        ? { allowDangerouslySkipPermissions: args.options.allowDangerouslySkipPermissions }
+        : {}),
+    };
     executionPolicy = { settingSources: args.options.settingSources, strictMcpConfig: args.options.strictMcpConfig };
     projectOptions = { systemPrompt: args.options.systemPrompt, agents: args.options.agents };
     canUseTool = args.options.canUseTool;
@@ -234,6 +244,7 @@ function fakeSdk(
     get connectorReads() { return connectorReads; },
     recover(): void { failure = undefined; },
     get executionPolicy() { return executionPolicy; },
+    get spawnPermissions() { return spawnPermissions; },
     get projectOptions() { return projectOptions; },
     mcpPermissionModes,
     get studioServer() {
@@ -1231,7 +1242,7 @@ describe('permission posture (ONL-2285, ONL-2190)', () => {
   });
 
   it('asks in every mode the backend offers, because the hook runs before the mode does', async () => {
-    for (const mode of CLAUDE_PERMISSION_MODES) {
+    for (const mode of CLAUDE_OFFERED_PERMISSION_MODES) {
       const { sdk } = open({ permissionMode: mode });
       expect(
         await sdk.preToolUse({ tool_name: 'Bash', tool_input: { command: 'git push --force' } }),
@@ -1312,6 +1323,18 @@ describe('Windows shell approval', () => {
     }
   });
 
+  it('outside bypass, gives every PowerShell ask the Windows reason', async () => {
+    for (const permissionMode of CLAUDE_PERMISSION_MODES) {
+      const { sdk } = open({ permissionMode });
+      expect(await sdk.preToolUse({ tool_name: 'PowerShell', tool_input: { command: 'Get-ChildItem' } })).toMatchObject({
+        hookSpecificOutput: {
+          permissionDecision: 'ask',
+          permissionDecisionReason: 'Shell commands on Windows need your approval before they run.',
+        },
+      });
+    }
+  });
+
   it('never grants persistent PowerShell access and a denial does not execute the tool', async () => {
     const { session, sdk, emitted } = open();
     const answer = sdk.canUseTool('PowerShell', { command: 'git reset --hard' }, {
@@ -1322,6 +1345,69 @@ describe('Windows shell approval', () => {
     expect(ofType(emitted, 'permission.requested').at(-1)?.options.map((option) => option.kind)).toEqual(['allow_once', 'reject_once']);
     session.respond('req_ps', 'deny');
     expect(await answer).toMatchObject({ behavior: 'deny' });
+  });
+});
+
+describe('the Bypass permissions mode', () => {
+  it('is always offered after the enforced modes, but a session still opens on Auto', () => {
+    const { sdk, emitted } = open();
+    // The skip flag only makes bypass reachable from the composer; the mode passed is what decides.
+    expect(sdk.spawnPermissions).toEqual({ permissionMode: 'auto', allowDangerouslySkipPermissions: true });
+    const state = foldSessionState(emitted);
+    expect(state.permissionMode).toBe('auto');
+    expect(state.permissionModes).toEqual([...CLAUDE_PERMISSION_MODES, 'bypassPermissions']);
+    expect(CLAUDE_OFFERED_PERMISSION_MODES).toEqual([...CLAUDE_PERMISSION_MODES, 'bypassPermissions']);
+  });
+
+  it('can be chosen in the composer, and a project that remembered it opens on it', async () => {
+    const { session, emitted } = open();
+    expect(await session.setPermissionMode('bypassPermissions')).toBe(true);
+    expect(foldSessionState(emitted).permissionMode).toBe('bypassPermissions');
+
+    const remembered = open({ permissionMode: 'bypassPermissions' });
+    expect(foldSessionState(remembered.emitted).permissionMode).toBe('bypassPermissions');
+    expect(remembered.sdk.spawnPermissions).toEqual({ permissionMode: 'bypassPermissions', allowDangerouslySkipPermissions: true });
+  });
+
+  it('keeps the ask and deny rules the SDK still enforces under bypass', () => {
+    const { sdk } = open({ permissionMode: 'bypassPermissions' });
+    expect(sdk.permissions?.ask).toEqual(expect.arrayContaining([...EXTERNALLY_VISIBLE_GIT_RULES, ...DESTRUCTIVE_GIT_RULES]));
+    expect(sdk.permissions?.deny).toEqual(expect.arrayContaining(['Read(./.env)']));
+  });
+
+  it('drops the blanket PowerShell prompt but still asks before git that rewrites or publishes', async () => {
+    const { sdk } = open({ permissionMode: 'bypassPermissions' });
+    for (const command of ['Get-ChildItem', 'git status', 'bun run build', 'git commit -m "wip"']) {
+      expect(await sdk.preToolUse({ tool_name: 'PowerShell', tool_input: { command } })).toEqual({ continue: true });
+    }
+    for (const command of ['git push --force', 'git branch -D topic', 'git reset --hard', 'git push origin main', 'gh pr create']) {
+      expect(await sdk.preToolUse({ tool_name: 'PowerShell', tool_input: { command } })).toMatchObject({
+        hookSpecificOutput: { permissionDecision: 'ask' },
+      });
+    }
+  });
+
+  it('still asks before destructive Bash git and still refuses background Bash', async () => {
+    const { sdk } = open({ permissionMode: 'bypassPermissions' });
+    for (const command of ['git push --force', 'git branch -D topic', 'git reset --hard']) {
+      expect(await sdk.preToolUse({ tool_name: 'Bash', tool_input: { command } })).toMatchObject({
+        hookSpecificOutput: { permissionDecision: 'ask' },
+      });
+    }
+    expect(await sdk.preToolUse({ tool_name: 'Bash', tool_input: { command: 'bun dev', run_in_background: true } })).toMatchObject({
+      hookSpecificOutput: { permissionDecision: 'deny' },
+    });
+  });
+
+  it('switching to an enforced mode brings the Windows shell prompt back, and bypass can be chosen again', async () => {
+    const { sdk, session, emitted } = open({ permissionMode: 'bypassPermissions' });
+    expect(await session.setPermissionMode('auto')).toBe(true);
+    expect(await sdk.preToolUse({ tool_name: 'PowerShell', tool_input: { command: 'Get-ChildItem' } })).toMatchObject({
+      hookSpecificOutput: { permissionDecision: 'ask' },
+    });
+    expect(await session.setPermissionMode('bypassPermissions')).toBe(true);
+    expect(foldSessionState(emitted).permissionMode).toBe('bypassPermissions');
+    expect(await sdk.preToolUse({ tool_name: 'PowerShell', tool_input: { command: 'Get-ChildItem' } })).toEqual({ continue: true });
   });
 });
 
@@ -1603,7 +1689,7 @@ describe('the permission mode the composer is shown (ONL-2190)', () => {
       (e) => e.permissionModes !== undefined,
     );
     expect(published?.permissionMode).toBe('auto');
-    expect(published?.permissionModes).toEqual(['default', 'acceptEdits', 'auto', 'plan']);
+    expect(published?.permissionModes).toEqual(['default', 'acceptEdits', 'auto', 'plan', 'bypassPermissions']);
 
     // `system:init` reports the CLI's own value; reading it showed a mode the session was not running under.
     sdk.push({

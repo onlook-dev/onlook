@@ -91,6 +91,7 @@
   "chat.composer.mode.default": "询问",
   "chat.composer.mode.acceptEdits": "自动接受编辑",
   "chat.composer.mode.plan": "计划模式",
+  "chat.composer.mode.bypassPermissions": "跳过权限确认",
   "chat.composer.mode.read-only": "只读",
   "chat.composer.mode.workspace-write": "工作区",
   "chat.composer.mode.danger-full-access": "完全访问",

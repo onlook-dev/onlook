@@ -424,6 +424,7 @@ export type PermissionMode =
   | 'acceptEdits'
   | 'auto'
   | 'plan'
+  | 'bypassPermissions'
   | 'read-only'
   | 'workspace-write'
   | 'danger-full-access';
